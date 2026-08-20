@@ -22,7 +22,6 @@ ACKNOWLEDGEMENT = (
     "execution profile."
 )
 
-
 class AttrDict(dict):
     def __getattr__(self, name: str) -> Any:
         try:
@@ -428,6 +427,27 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
         self.frappe.get_hooks = lambda _name: ["one", "two"]
         with self.assertRaisesRegex(RuntimeError, "ambiguous"):
             self.api._configured_profile("TENANT-A", UUID(PROJECT_ID))
+
+    def test_stream_conflict_problems_are_explicitly_non_retryable(self) -> None:
+        from npi_integration.item_publish.problems import (
+            ItemPublishEffectRetained,
+            ItemPublishStreamActive,
+            ItemPublishStreamReconciliationRequired,
+        )
+
+        for problem_type, code in (
+            (ItemPublishStreamActive, "ITEM_PUBLISH_STREAM_ACTIVE"),
+            (ItemPublishEffectRetained, "ITEM_PUBLISH_EFFECT_RETAINED"),
+            (
+                ItemPublishStreamReconciliationRequired,
+                "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+            ),
+        ):
+            with self.subTest(code=code):
+                problem = problem_type()
+                self.assertEqual(problem.code, code)
+                self.assertEqual(problem.status, 409)
+                self.assertFalse(problem.retryable)
 
     def test_router_maps_only_fixed_project_first_methods(self) -> None:
         base = f"/api/npi/v1/projects/{PROJECT_ID}/item-publish-requests"

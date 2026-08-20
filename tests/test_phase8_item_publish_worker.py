@@ -104,6 +104,20 @@ class StubRepository:
         return self.recoverable
 
 
+class RecoveryRepository(StubRepository):
+    def recover_or_seal_result(self, claim, *, profile, result, now):
+        self.owner.events.append("recover")
+        self.results.append(result)
+        return StubOutcome(result.observation.state.value)
+
+
+class SealFailureRecoveryRepository(RecoveryRepository):
+    def seal_result(self, claim, *, profile, result, now):
+        self.owner.events.append("seal")
+        self.results.append(result)
+        raise RuntimeError("injected local seal failure")
+
+
 class Phase8ItemPublishWorkerTest(unittest.TestCase):
     MODULES = (
         "frappe",
@@ -262,6 +276,50 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
                 "seal",
                 "commit",
                 "rollback",
+            ],
+        )
+
+    def test_result_commit_failure_recovers_once_without_redispatch(self) -> None:
+        self.repository = RecoveryRepository(self)
+        sys.modules["frappe"].db.fail_commit_number = 3
+        outcome = self.execute()
+        self.assertEqual(outcome.state, "synthetic_verified")
+        self.assertEqual(self.adapter_calls, 1)
+        self.assertEqual(
+            self.events,
+            [
+                "claim",
+                "commit",
+                "profile",
+                "boundary",
+                "commit",
+                "adapter",
+                "seal",
+                "commit",
+                "rollback",
+                "recover",
+                "commit",
+            ],
+        )
+
+    def test_seal_failure_rolls_back_then_recovers_without_redispatch(self) -> None:
+        self.repository = SealFailureRecoveryRepository(self)
+        outcome = self.execute()
+        self.assertEqual(outcome.state, "synthetic_verified")
+        self.assertEqual(self.adapter_calls, 1)
+        self.assertEqual(
+            self.events,
+            [
+                "claim",
+                "commit",
+                "profile",
+                "boundary",
+                "commit",
+                "adapter",
+                "seal",
+                "rollback",
+                "recover",
+                "commit",
             ],
         )
 

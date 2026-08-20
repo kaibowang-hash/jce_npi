@@ -61,11 +61,50 @@ class ItemPublishSourceConflict(NpiProblem):
         )
 
 
+class ItemPublishStreamActive(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "ITEM_PUBLISH_STREAM_ACTIVE",
+            _(
+                "Another Item publish request is active for this source stream."
+            ),
+            retryable=False,
+        )
+
+
+class ItemPublishEffectRetained(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "ITEM_PUBLISH_EFFECT_RETAINED",
+            _(
+                "This exact Item publish effect was already retained and cannot be replayed."
+            ),
+            retryable=False,
+        )
+
+
+class ItemPublishStreamReconciliationRequired(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+            _(
+                "The Item source stream requires reconciliation before another publish request can be queued."
+            ),
+            retryable=False,
+        )
+
+
 __all__ = [
     "ItemExecutionProfileUnavailable",
     "ItemPublishAuthorityUnavailable",
     "ItemPublishIdempotencyConflict",
     "ItemPublishSourceConflict",
     "ItemPublishStateConflict",
+    "ItemPublishStreamActive",
+    "ItemPublishEffectRetained",
+    "ItemPublishStreamReconciliationRequired",
     "ItemPublishUnavailable",
 ]

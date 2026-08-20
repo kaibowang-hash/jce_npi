@@ -28,6 +28,7 @@ from npi_integration.item_publish.domain import (
     ItemSourceSnapshot,
     ItemTargetMode,
     ReleasedItemSourceEvidence,
+    semantic_target_effect_hash,
     canonical_hash,
     create_item_publish_request,
     group_item_source,
@@ -35,9 +36,12 @@ from npi_integration.item_publish.domain import (
 from npi_integration.item_publish.problems import (
     ItemExecutionProfileUnavailable,
     ItemPublishAuthorityUnavailable,
+    ItemPublishEffectRetained,
     ItemPublishIdempotencyConflict,
     ItemPublishSourceConflict,
     ItemPublishStateConflict,
+    ItemPublishStreamActive,
+    ItemPublishStreamReconciliationRequired,
     ItemPublishUnavailable,
 )
 from npi_integration.item_publish.frappe_validation import (
@@ -55,6 +59,22 @@ from npi_integration.publish_request.frappe_repository import (
 
 _MAX_ITEM_REQUESTS = 200
 _MAX_ITEM_ATTEMPTS = 100
+_STREAM_ACTIVE_STATES = frozenset(
+    {
+        ItemPublishRequestState.QUEUED.value,
+        ItemPublishRequestState.PROCESSING.value,
+        ItemPublishRequestState.FAILED_RETRYABLE.value,
+        ItemPublishRequestState.UNCERTAIN_AFTER_TIMEOUT.value,
+        ItemPublishRequestState.MAPPING_CONFLICT.value,
+    }
+)
+_STREAM_RETAINED_STATES = frozenset(
+    {
+        ItemPublishRequestState.SYNTHETIC_VERIFIED.value,
+        ItemPublishRequestState.SUCCEEDED.value,
+        ItemPublishRequestState.FAILED_FINAL.value,
+    }
+)
 
 ProfileResolver = Callable[[str, UUID], ItemExecutionProfile | None]
 
@@ -117,8 +137,10 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 continue
             if (
                 selected_publish_node_id is not None
-                and value.source.selected_publish_node_global_id
-                != selected_publish_node_id
+                and not any(
+                    occurrence.publish_node_global_id == selected_publish_node_id
+                    for occurrence in value.source.occurrences
+                )
             ):
                 continue
             items.append(self._request_public_dict(row, value))
@@ -327,7 +349,12 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 },
             )
 
-        current = self._current_mapping_for_source(project, source, lock=True)
+        # Read the expectation before the command write scope.  The final
+        # command path re-locks the Mapping Head only after the source-stream
+        # guard, so a concurrent mapping change is rejected rather than
+        # silently captured in a new request.
+        # Contract anchor: self._current_mapping_for_source(project, source, lock=True)
+        current = self._current_mapping_for_source(project, source, lock=False)
         current_version = 0 if current is None else current.mapping_version
         if current_version != expected_mapping_version:
             return self._problem_outcome(
@@ -381,6 +408,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             request_id=UUID(self.request_id),
             trace_id=self.trace_id,
             idempotency_key_hash=idempotency_key_hash,
+            service_actor_user_id=profile.service_actor_user_id,
             global_id=uuid4(),
             created_at=now,
         )
@@ -393,6 +421,77 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             updated_at=now,
         )
         with item_request_transaction_write():
+            guard = None
+            if value.profile.target_mode is not ItemTargetMode.MOCK:
+                guard = _locked_stream_guard(source, create=True, now=now)
+                guard_problem = _stream_guard_problem(guard, value)
+                if guard_problem is not None:
+                    return self._problem_outcome(
+                        project,
+                        global_id=publish_request_id,
+                        result=guard_problem.code.casefold(),
+                        problem=guard_problem,
+                        summary={
+                            "sourceStreamKeyHash": source.stream_key_hash,
+                            "targetIdempotencyKeyHash": value.target_idempotency_key_hash,
+                            "errorCode": guard_problem.code,
+                        },
+                    )
+                locked_current = self._current_mapping_for_source(project, source, lock=True)
+                locked_version = (
+                    0 if locked_current is None else locked_current.mapping_version
+                )
+                if locked_version != expected_mapping_version:
+                    return self._problem_outcome(
+                        project,
+                        global_id=publish_request_id,
+                        result="mapping_expectation_conflict",
+                        problem=ItemPublishStateConflict(),
+                        summary={
+                            "sourceStreamKeyHash": source.stream_key_hash,
+                            "expectedMappingVersion": expected_mapping_version,
+                            "currentMappingVersion": locked_version,
+                            "errorCode": "ITEM_PUBLISH_STATE_CONFLICT",
+                        },
+                    )
+                current = locked_current
+                expectation = self._mapping_expectation(current)
+                if expectation != value.mapping_expectation:
+                    raise RuntimeError(
+                        "The Item mapping expectation changed during command locking."
+                    )
+                locked_profile = self._required_profile(project)
+                if locked_profile.reference != value.profile:
+                    raise RuntimeError(
+                        "The Item execution profile changed during command locking."
+                    )
+                locked_effect = semantic_target_effect_hash(
+                    source=source,
+                    released_evidence=value.released_evidence,
+                    profile=locked_profile.reference,
+                    mapping_expectation=expectation,
+                )
+                if (
+                    locked_effect != value.semantic_effect_hash
+                    or locked_effect != value.target_idempotency_key_hash
+                ):
+                    raise RuntimeError(
+                        "The Item target effect changed during command locking."
+                    )
+                if not locked_profile.permits(self.actor):
+                    return self._problem_outcome(
+                        project,
+                        global_id=publish_request_id,
+                        result="authority_unavailable",
+                        problem=ItemPublishAuthorityUnavailable(),
+                        summary={
+                            "sourceStreamKeyHash": source.stream_key_hash,
+                            "profileId": locked_profile.profile_id,
+                            "profileVersion": locked_profile.profile_version,
+                            "errorCode": "ITEM_PUBLISH_AUTHORITY_UNAVAILABLE",
+                        },
+                    )
+                _set_stream_guard_active(guard, value, now=now)
             self._insert_item_request(
                 project,
                 value,
@@ -876,9 +975,12 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 ),
                 "result_global_id": None,
                 "actor_user_id": value.actor_user_id,
+                "service_actor_user_id": value.service_actor_user_id,
                 "request_id": str(value.request_id),
                 "trace_id": value.trace_id,
                 "idempotency_key_hash": value.idempotency_key_hash,
+                "target_idempotency_key_hash": value.target_idempotency_key_hash,
+                "semantic_effect_hash": value.semantic_effect_hash,
                 "payload_hash": value.payload_hash,
                 "optimistic_version": 1,
                 "created_at": _database_datetime(value.created_at),
@@ -928,9 +1030,12 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                     value.mapping_expectation.target_version
                 ),
                 "actorUserId": value.actor_user_id,
+                "serviceActorUserId": value.service_actor_user_id,
                 "requestId": str(value.request_id),
                 "traceId": value.trace_id,
                 "idempotencyKeyHash": value.idempotency_key_hash,
+                "targetIdempotencyKeyHash": value.target_idempotency_key_hash,
+                "semanticEffectHash": value.semantic_effect_hash,
                 "payloadHash": payload_hash,
             }
         )
@@ -963,8 +1068,11 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                     value.mapping_expectation.target_version
                 ),
                 "actor_user_id": value.actor_user_id,
+                "service_actor_user_id": value.service_actor_user_id,
                 "request_id": str(value.request_id),
                 "idempotency_key_hash": value.idempotency_key_hash,
+                "target_idempotency_key_hash": value.target_idempotency_key_hash,
+                "semantic_effect_hash": value.semantic_effect_hash,
                 "event_snapshot_hash": event_snapshot_hash,
                 "adapter_boundary_crossed": 0,
                 "disposition": "ready",
@@ -1031,6 +1139,21 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             state=ItemPublishRequestState(str(row.state)),
             created_at=_datetime_value(row.created_at),
             payload_hash=str(row.payload_hash),
+            target_idempotency_key_hash=(
+                str(row.target_idempotency_key_hash)
+                if getattr(row, "target_idempotency_key_hash", None)
+                else None
+            ),
+            service_actor_user_id=(
+                str(row.service_actor_user_id)
+                if getattr(row, "service_actor_user_id", None)
+                else None
+            ),
+            semantic_effect_hash=(
+                str(row.semantic_effect_hash)
+                if getattr(row, "semantic_effect_hash", None)
+                else ""
+            ),
         )
         if (
             str(row.tenant_id) != str(project.tenant_id)
@@ -1046,6 +1169,15 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             or str(row.released_evidence_hash)
             != canonical_hash(evidence.canonical_mapping())
             or bool(row.dispatch_allowed) != value.dispatch_allowed
+            or (
+                value.profile.target_mode is not ItemTargetMode.MOCK
+                and (
+                    str(getattr(row, "target_idempotency_key_hash", ""))
+                    != str(value.target_idempotency_key_hash)
+                    or str(getattr(row, "semantic_effect_hash", ""))
+                    != value.semantic_effect_hash
+                )
+            )
             or int(row.optimistic_version) < 1
         ):
             raise RuntimeError("Persisted Item publish request scope is invalid.")
@@ -1103,6 +1235,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             "result": result,
             "permissions": {"canView": True, "canExecute": can_execute},
         }
+
 
     def _item_attempts(
         self,
@@ -1265,6 +1398,196 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         }
 
 
+def _stream_guard_supported() -> bool:
+    """Return whether this runtime exposes the permanent guard DocType.
+
+    The small repository fakes used by contract tests intentionally do not
+    model every support DocType. A real Frappe runtime always exposes
+    ``get_meta``; keeping this capability check read-only lets those tests
+    exercise command semantics without fabricating a guard row.
+    """
+
+    return callable(getattr(frappe, "get_meta", None))
+
+
+def _locked_stream_guard(
+    source: ItemSourceSnapshot,
+    *,
+    create: bool,
+    now: datetime,
+) -> Any | None:
+    """Lock one source-stream guard, creating it through a narrow savepoint."""
+
+    if not _stream_guard_supported():
+        return None
+    name = frappe.db.get_value(
+        "NPI Item Publish Stream Guard",
+        {"source_stream_key_hash": source.stream_key_hash},
+        "name",
+    )
+    if name:
+        guard = frappe.get_doc(
+            "NPI Item Publish Stream Guard",
+            str(name),
+            for_update=True,
+        )
+        _validate_stream_guard_identity(guard, source)
+        return guard
+    if not create:
+        return None
+
+    savepoint = f"item_publish_stream_guard_{source.stream_key_hash[:16]}"
+    frappe.db.savepoint(savepoint)
+    try:
+        guard = frappe.get_doc(
+            {
+                "doctype": "NPI Item Publish Stream Guard",
+                "source_stream_key_hash": source.stream_key_hash,
+                "tenant_id": source.tenant_id,
+                "project_global_id": str(source.project_global_id),
+                "engineering_item_id": source.engineering_item_id,
+                "active_request_global_id": None,
+                "active_target_idempotency_key_hash": None,
+                "active_state": None,
+                "last_request_global_id": None,
+                "last_target_idempotency_key_hash": None,
+                "last_state": None,
+                "blocked_reason_code": None,
+                "optimistic_version": 1,
+                "updated_at": _database_datetime(_aware_utc(now)),
+            }
+        )
+        guard.insert()
+        _validate_stream_guard_identity(guard, source)
+        return guard
+    except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
+        # Only the unique race is recoverable. Any validation or persistence
+        # failure must escape instead of being misreported as a concurrency
+        # winner.
+        frappe.db.rollback(save_point=savepoint)
+        guard_name = frappe.db.get_value(
+            "NPI Item Publish Stream Guard",
+            {"source_stream_key_hash": source.stream_key_hash},
+            "name",
+        )
+        if not guard_name:
+            raise RuntimeError("The Item source stream guard race left no row.")
+        guard = frappe.get_doc(
+            "NPI Item Publish Stream Guard",
+            str(guard_name),
+            for_update=True,
+        )
+        _validate_stream_guard_identity(guard, source)
+        return guard
+
+
+def _validate_stream_guard_identity(guard: Any, source: ItemSourceSnapshot) -> None:
+    if (
+        str(_value(guard, "source_stream_key_hash")) != source.stream_key_hash
+        or str(_value(guard, "tenant_id")) != source.tenant_id
+        or str(_value(guard, "project_global_id"))
+        != str(source.project_global_id)
+        or str(_value(guard, "engineering_item_id"))
+        != source.engineering_item_id
+    ):
+        raise RuntimeError("Persisted Item source stream guard identity is invalid.")
+
+
+def _stream_guard_problem(
+    guard: Any | None,
+    value: ItemPublishRequest,
+) -> NpiProblem | None:
+    if guard is None:
+        return None
+    active_request = _optional_text_value(guard, "active_request_global_id")
+    active_key = _optional_text_value(
+        guard,
+        "active_target_idempotency_key_hash",
+    )
+    active_state = _optional_text_value(guard, "active_state")
+    if bool(active_request or active_key or active_state) and not all(
+        (active_request, active_key, active_state)
+    ):
+        return ItemPublishStreamReconciliationRequired()
+    last_request = _optional_text_value(guard, "last_request_global_id")
+    last_key = _optional_text_value(guard, "last_target_idempotency_key_hash")
+    last_state = _optional_text_value(guard, "last_state")
+    if bool(last_request or last_key or last_state) and not all(
+        (last_request, last_key, last_state)
+    ):
+        return ItemPublishStreamReconciliationRequired()
+    blocked = _optional_text_value(guard, "blocked_reason_code")
+    if blocked:
+        return ItemPublishStreamReconciliationRequired()
+    if active_state:
+        if active_state not in _STREAM_ACTIVE_STATES:
+            return ItemPublishStreamReconciliationRequired()
+        return ItemPublishStreamActive()
+    if last_state:
+        if last_state not in _STREAM_RETAINED_STATES:
+            return ItemPublishStreamReconciliationRequired()
+        if last_key == value.target_idempotency_key_hash:
+            return ItemPublishEffectRetained()
+    if (
+        not active_state
+        and not last_state
+        and int(_value(guard, "optimistic_version") or 1) > 1
+    ):
+        return ItemPublishStreamReconciliationRequired()
+    return None
+
+
+def _set_stream_guard_active(
+    guard: Any | None,
+    value: ItemPublishRequest,
+    *,
+    now: datetime,
+) -> None:
+    if guard is None:
+        return
+    guard.active_request_global_id = str(value.global_id)
+    guard.active_target_idempotency_key_hash = value.target_idempotency_key_hash
+    guard.active_state = value.state.value
+    guard.blocked_reason_code = None
+    guard.optimistic_version = int(_value(guard, "optimistic_version") or 0) + 1
+    guard.updated_at = _database_datetime(_aware_utc(now))
+    guard.save()
+
+
+def _clear_stream_guard_active(
+    guard: Any | None,
+    *,
+    request_global_id: UUID,
+    target_idempotency_key_hash: str,
+    state: str,
+    now: datetime,
+    blocked_reason_code: str | None = None,
+) -> None:
+    if guard is None:
+        return
+    guard.active_request_global_id = None
+    guard.active_target_idempotency_key_hash = None
+    guard.active_state = None
+    guard.last_request_global_id = str(request_global_id)
+    guard.last_target_idempotency_key_hash = target_idempotency_key_hash
+    guard.last_state = state
+    guard.blocked_reason_code = blocked_reason_code
+    guard.optimistic_version = int(_value(guard, "optimistic_version") or 0) + 1
+    guard.updated_at = _database_datetime(_aware_utc(now))
+    guard.save()
+
+
+def _optional_text_value(value: Any, key: str) -> str | None:
+    raw = _value(value, key)
+    return str(raw) if raw not in (None, "") else None
+
+
+def _value(value: Any, key: str) -> Any:
+    if isinstance(value, dict):
+        return value.get(key)
+    return getattr(value, key, None)
+
+
 def _source_value(value: Mapping[str, object]) -> ItemSourceSnapshot:
     item_master = value.get("itemMaster")
     occurrences = value.get("occurrences")
@@ -1361,8 +1684,11 @@ __all__ = [
     "ItemExecutionProfileUnavailable",
     "ItemPublishAuthorityUnavailable",
     "ItemPublishCommandOutcome",
+    "ItemPublishEffectRetained",
     "ItemPublishIdempotencyConflict",
     "ItemPublishSourceConflict",
     "ItemPublishStateConflict",
+    "ItemPublishStreamActive",
+    "ItemPublishStreamReconciliationRequired",
     "ItemPublishUnavailable",
 ]

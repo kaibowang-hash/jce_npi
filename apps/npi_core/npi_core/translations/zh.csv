@@ -7970,3 +7970,6 @@ The semantic target effect hash does not match its immutable request.,语义目�
 Executable Item Outbox messages require the exact target key and service actor.,可执行物料发件箱消息需要精确目标键和服务主体。
 Service Actor User ID,服务主体用户 ID
 Semantic Target Effect Hash,语义目标效果哈希
+Another Item publish request is active for this source stream.,此来源串流已有其他物料发布请求处于活动状态。
+This exact Item publish effect was already retained and cannot be replayed.,此精确物料发布效果已保留，不能重放。
+The Item source stream requires reconciliation before another publish request can be queued.,物料来源串流在排队其他发布请求前需要对账。

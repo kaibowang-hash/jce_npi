@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'ad4686d273337617';
+export const catalogVersion = '1df9daf3e7aa222e';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -548,6 +548,7 @@ export const catalogs = {
     "An unbound Project source stream cannot contain a Project result.": "未绑定的项目来源流不能包含项目结果。",
     "An uncertain Item Outbox message requires a crossed adapter boundary.": "不确定的物料发件箱消息必须已跨越适配器边界。",
     "An uncertain Item publish attempt requires reconciliation after the adapter boundary.": "跨越适配器边界后的不确定物料发布尝试必须对账。",
+    "Another Item publish request is active for this source stream.": "此来源串流已有其他物料发布请求处于活动状态。",
     "An unexpected request error occurred.": "发生意外的请求错误。",
     "An unmapped Item request must use the create intent without target identity.": "未映射的物料请求必须使用创建意图且不含目标标识。",
     "An unmapped node cannot contain formal ERP identifiers.": "未映射节点不能包含正式企业资源计划系统标识符。",
@@ -6653,6 +6654,7 @@ export const catalogs = {
     "The Item publish source or mapping changed. Reload it before continuing.": "物料发布来源或映射已变化。请重新加载后再继续。",
     "The Item source stream guard version must advance by one.": "物料来源串流守卫版本必须递增一位。",
     "The Item source stream key hash does not match its identity.": "物料来源流键哈希与其身份不匹配。",
+    "The Item source stream requires reconciliation before another publish request can be queued.": "物料来源串流在排队其他发布请求前需要对账。",
     "The job and rollback result remain in the immutable import audit history.": "任务和回滚结果会保留在不可变导入审计历史中。",
     "The language change could not be confirmed.": "无法确认语言更改。",
     "The last confirmed navigation mode was kept. Retry to reconcile with the current Frappe session.": "已保留上次确认的导航模式。请重试以与当前 Frappe 会话对账。",
@@ -7111,6 +7113,7 @@ export const catalogs = {
     "This command cannot approve Tooling, dispatch a request, contact ERPNext or create a formal Asset.": "此命令不能批准模具、分发请求、联系 ERPNext 或创建正式资产。",
     "This condition does not accept a priority.": "此条件不接受优先级。",
     "This event proves an exact Gate input snapshot hash change. It does not claim which source-object fields changed.": "此事件证明阶段门输入快照哈希发生了精确变更，但不声称任何来源对象字段发生变更。",
+    "This exact Item publish effect was already retained and cannot be replayed.": "此精确物料发布效果已保留，不能重放。",
     "This exception request already exists.": "此豁免请求已存在。",
     "This exception request already has a decision.": "此豁免请求已有决策。",
     "This feedback is proposed only. It does not change or publish a Project Template.": "此反馈仅为拟议内容，不会更改或发布项目模板。",
@@ -8522,6 +8525,7 @@ export const catalogs = {
     "An unbound Project source stream cannot contain a Project result.": "未綁定的專案來源流不能包含專案結果。",
     "An uncertain Item Outbox message requires a crossed adapter boundary.": "不確定的物料寄件匣訊息必須已跨越適配器邊界。",
     "An uncertain Item publish attempt requires reconciliation after the adapter boundary.": "跨越適配器邊界後的不確定物料發佈嘗試必須對帳。",
+    "Another Item publish request is active for this source stream.": "此來源串流已有其他物料發佈請求處於作用中。",
     "An unexpected request error occurred.": "發生未預期的請求錯誤。",
     "An unmapped Item request must use the create intent without target identity.": "未映射的物料請求必須使用建立意圖且不含目標識別。",
     "An unmapped node cannot contain formal ERP identifiers.": "未映射節點不能包含正式企業資源規劃系統識別碼。",
@@ -14627,6 +14631,7 @@ export const catalogs = {
     "The Item publish source or mapping changed. Reload it before continuing.": "物料發佈來源或映射已變更。請重新載入後再繼續。",
     "The Item source stream guard version must advance by one.": "物料來源串流守衛版本必須遞增一位。",
     "The Item source stream key hash does not match its identity.": "物料來源串流鍵雜湊與其身分不符。",
+    "The Item source stream requires reconciliation before another publish request can be queued.": "物料來源串流在排隊其他發佈請求前需要對帳。",
     "The job and rollback result remain in the immutable import audit history.": "工作和回復結果會保留在不可變匯入稽核歷史中。",
     "The language change could not be confirmed.": "無法確認語言變更。",
     "The last confirmed navigation mode was kept. Retry to reconcile with the current Frappe session.": "已保留上次確認的導覽模式。請重試以與目前 Frappe 工作階段對帳。",
@@ -15085,6 +15090,7 @@ export const catalogs = {
     "This command cannot approve Tooling, dispatch a request, contact ERPNext or create a formal Asset.": "此命令不能核准模具、分發請求、聯絡 ERPNext 或建立正式資產。",
     "This condition does not accept a priority.": "此條件不接受優先順序。",
     "This event proves an exact Gate input snapshot hash change. It does not claim which source-object fields changed.": "此事件證明確切的階段門輸入快照雜湊已變更，但不宣稱哪些來源物件欄位已變更。",
+    "This exact Item publish effect was already retained and cannot be replayed.": "此精確物料發佈效果已保留，不能重播。",
     "This exception request already exists.": "此豁免申請已存在。",
     "This exception request already has a decision.": "此豁免申請已有決策。",
     "This feedback is proposed only. It does not change or publish a Project Template.": "此回饋僅為提議內容，不會變更或發佈專案模板。",

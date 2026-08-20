@@ -93,13 +93,13 @@ def _execute_worker(
             observed_at=clock(),
             safe_error_code="ITEM_PUBLISH_RECOVERED_AFTER_ADAPTER_BOUNDARY",
         )
-        outcome = repository.seal_result(
+        outcome = _persist_observed_result_without_redispatch(
+            repository,
             claim,
             profile=None,
             result=result,
             now=clock(),
         )
-        _commit_or_raise("ITEM_PUBLISH_RESULT_COMMIT_FAILED", claim.trace_id)
         return outcome
 
     profile: ItemExecutionProfile | None = None
@@ -125,13 +125,13 @@ def _execute_worker(
             observed_at=clock(),
             safe_error_code=error.code,
         )
-        outcome = repository.seal_result(
+        outcome = _persist_observed_result_without_redispatch(
+            repository,
             claim,
             profile=None,
             result=result,
             now=clock(),
         )
-        _commit_or_raise("ITEM_PUBLISH_RESULT_COMMIT_FAILED", claim.trace_id)
         return outcome
     except Exception as error:
         _rollback_safely()
@@ -145,13 +145,13 @@ def _execute_worker(
             observed_at=clock(),
             safe_error_code="ITEM_PUBLISH_EXECUTION_CONFIGURATION_INVALID",
         )
-        outcome = repository.seal_result(
+        outcome = _persist_observed_result_without_redispatch(
+            repository,
             claim,
             profile=None,
             result=result,
             now=clock(),
         )
-        _commit_or_raise("ITEM_PUBLISH_RESULT_COMMIT_FAILED", claim.trace_id)
         return outcome
 
     if not repository.mark_adapter_boundary(
@@ -183,14 +183,79 @@ def _execute_worker(
             observed_at=clock(),
             safe_error_code="ITEM_PUBLISH_ADAPTER_OUTCOME_UNCERTAIN",
         )
-    outcome = repository.seal_result(
+    outcome = _persist_observed_result_without_redispatch(
+        repository,
         claim,
         profile=profile,
         result=classified,
         now=clock(),
     )
-    _commit_or_raise("ITEM_PUBLISH_RESULT_COMMIT_FAILED", claim.trace_id)
     return outcome
+
+
+def _persist_observed_result_without_redispatch(
+    repository: FrappeItemPublishWorkerRepository,
+    claim: object,
+    *,
+    profile: ItemExecutionProfile | None,
+    result: object,
+    now: datetime,
+) -> ItemPublishWorkerOutcome:
+    """Seal evidence with one bounded local-only recovery attempt.
+
+    This boundary is deliberately after the adapter call.  A failed seal or
+    commit can therefore recover only the same claim/observation; it can never
+    return to adapter dispatch.
+    """
+
+    commit_attempted = False
+    try:
+        outcome = repository.seal_result(
+            claim,
+            profile=profile,
+            result=result,
+            now=now,
+        )
+        commit_attempted = True
+        _commit_or_raise(
+            "ITEM_PUBLISH_RESULT_COMMIT_FAILED",
+            str(getattr(claim, "trace_id")),
+        )
+        return outcome
+    except Exception as first_error:
+        if not commit_attempted:
+            _rollback_safely()
+            _record_failure(
+                "ITEM_PUBLISH_RESULT_PERSISTENCE_FAILED",
+                first_error,
+                str(getattr(claim, "trace_id")),
+            )
+        recover = getattr(repository, "recover_or_seal_result", None)
+        if not callable(recover):
+            raise
+        recovery_commit_attempted = False
+        try:
+            outcome = recover(
+                claim,
+                profile=profile,
+                result=result,
+                now=now,
+            )
+            recovery_commit_attempted = True
+            _commit_or_raise(
+                "ITEM_PUBLISH_RESULT_RECOVERY_COMMIT_FAILED",
+                str(getattr(claim, "trace_id")),
+            )
+            return outcome
+        except Exception as recovery_error:
+            if not recovery_commit_attempted:
+                _rollback_safely()
+                _record_failure(
+                    "ITEM_PUBLISH_RESULT_RECOVERY_FAILED",
+                    recovery_error,
+                    str(getattr(claim, "trace_id")),
+                )
+            raise
 
 
 def _configured_profile(

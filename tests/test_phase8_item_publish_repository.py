@@ -96,6 +96,7 @@ class FakeDocument(AttrDict):
 class FakeDatabase:
     def __init__(self, owner: "Phase8ItemPublishRepositoryTest") -> None:
         self.owner = owner
+        self.savepoints: dict[str, int] = {}
 
     def get_value(
         self,
@@ -115,11 +116,19 @@ class FakeDatabase:
         self.owner.events.append("commit")
         self.owner.pending.clear()
 
-    def rollback(self) -> None:
+    def savepoint(self, name: str) -> None:
+        self.savepoints[name] = len(self.owner.pending)
+        self.owner.events.append(f"savepoint:{name}")
+
+    def rollback(self, save_point: str | None = None) -> None:
         self.owner.events.append("rollback")
-        for doctype, name in reversed(self.owner.pending):
+        start = 0 if save_point is None else self.savepoints.get(save_point, 0)
+        pending = self.owner.pending[start:]
+        for doctype, name in reversed(pending):
             self.owner.documents.get(doctype, {}).pop(name, None)
-        self.owner.pending.clear()
+        del self.owner.pending[start:]
+        if save_point is not None:
+            self.savepoints.pop(save_point, None)
 
 
 class Phase8ItemPublishRepositoryTest(unittest.TestCase):
@@ -444,6 +453,87 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
         self.assertFalse(bool(outbox.adapter_boundary_crossed))
         self.assertEqual(outbox.attempt_count, 0)
         self.assertNotIn("adapter_resolver", repr(outbox.payload))
+
+    def test_nonmock_rows_bind_one_semantic_target_effect_and_service_actor(self) -> None:
+        self.repository = self.new_repository(self.synthetic_profile())
+        outcome = self.create()
+        self.assertIsNone(outcome.problem)
+        request = self.only("NPI Item Publish Request")
+        outbox = self.only("NPI Outbox Message")
+        self.assertEqual(
+            request.target_idempotency_key_hash,
+            request.semantic_effect_hash,
+        )
+        self.assertEqual(request.service_actor_user_id, "item-worker@example.invalid")
+        self.assertEqual(
+            outbox.target_idempotency_key_hash,
+            request.target_idempotency_key_hash,
+        )
+        self.assertEqual(outbox.semantic_effect_hash, request.semantic_effect_hash)
+        self.assertEqual(outbox.service_actor_user_id, request.service_actor_user_id)
+        self.assertEqual(
+            outbox.payload["target_idempotency_key_hash"],
+            request.target_idempotency_key_hash,
+        )
+
+    def test_selected_occurrence_filter_matches_any_sibling_occurrence(self) -> None:
+        outcome = self.create()
+        self.frappe.db.commit()
+        sibling = self.phase5.nodes[1].global_id
+        listed = self.repository.list_item_publish_requests(
+            PROJECT_ID,
+            selected_publish_node_id=sibling,
+        )
+        self.assertEqual(
+            [item["globalId"] for item in listed["items"]],
+            [outcome.response["requestGlobalId"]],
+        )
+
+    def test_stream_guard_problem_is_closed_for_active_retained_and_legacy_rows(self) -> None:
+        self.repository = self.new_repository(self.synthetic_profile())
+        outcome = self.create()
+        request = self.only("NPI Item Publish Request")
+        value = self.repository._item_request_value(self.project, request)
+        helper = self.module._stream_guard_problem
+
+        active = AttrDict(
+            active_request_global_id=str(value.global_id),
+            active_target_idempotency_key_hash=value.target_idempotency_key_hash,
+            active_state="processing",
+            last_request_global_id=None,
+            last_target_idempotency_key_hash=None,
+            last_state=None,
+            blocked_reason_code=None,
+        )
+        self.assertEqual(helper(active, value).code, "ITEM_PUBLISH_STREAM_ACTIVE")
+
+        retained = AttrDict(
+            active_request_global_id=None,
+            active_target_idempotency_key_hash=None,
+            active_state=None,
+            last_request_global_id=str(value.global_id),
+            last_target_idempotency_key_hash=value.target_idempotency_key_hash,
+            last_state="succeeded",
+            blocked_reason_code=None,
+        )
+        self.assertEqual(
+            helper(retained, value).code,
+            "ITEM_PUBLISH_EFFECT_RETAINED",
+        )
+
+        legacy = AttrDict(
+            active_request_global_id=None,
+            active_target_idempotency_key_hash=None,
+            active_state=None,
+            last_request_global_id=str(value.global_id),
+            last_target_idempotency_key_hash=value.target_idempotency_key_hash,
+            last_state="failed_retryable",
+            blocked_reason_code=None,
+        )
+        self.assertEqual(
+            helper(legacy, value).code,
+            "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+        )
 
     def test_exact_actor_key_payload_replays_one_request_without_reenqueue(self) -> None:
         self.repository = self.new_repository(self.synthetic_profile())

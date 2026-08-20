@@ -63,6 +63,8 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.users = {
             "item-worker@example.invalid": (1, "System User"),
         }
+        self.fail_mapping_head_once = False
+        self.fail_mapping_observation_once = False
         self.harness.frappe.db = WorkerDatabase(self)
         self.harness.frappe.get_roles = lambda actor: (
             ["NPI API User"] if actor in self.users else []
@@ -106,6 +108,22 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
             owner.frappe.flags, required_flag, False
         ):
             raise AssertionError(f"missing controlled write flag {required_flag}")
+        worker_owner = getattr(owner.frappe.db, "worker_owner", owner)
+        if (
+            doctype == "NPI Item Mapping Observation"
+            and worker_owner.fail_mapping_observation_once
+        ):
+            worker_owner.fail_mapping_observation_once = False
+            raise owner.frappe.DuplicateEntryError()
+        if doctype == "NPI Item Mapping Head" and worker_owner.fail_mapping_head_once:
+            worker_owner.fail_mapping_head_once = False
+            # Model a concurrent winner that committed outside this local
+            # savepoint.  The worker must retain its Result and record an
+            # observed conflict against this same-stream head.
+            identity = "global_id"
+            document.name = str(document[identity])
+            owner.documents.setdefault(doctype, {})[document.name] = document
+            raise owner.frappe.DuplicateEntryError()
         identity = {
             "NPI Item Publish Request": "global_id",
             "NPI Item Publish Command Idempotency": "scope_key_hash",
@@ -224,6 +242,65 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(old.state, "observed_failure")
         self.assertFalse(bool(old.adapter_boundary_crossed))
 
+    def test_result_identity_is_deterministic_and_attempt_scoped(self) -> None:
+        first = UUID("00000000-0000-4000-8000-000000008371")
+        second = UUID("00000000-0000-4000-8000-000000008372")
+        deterministic = self.module.deterministic_item_result_id
+        self.assertEqual(deterministic(first), deterministic(first))
+        self.assertNotEqual(deterministic(first), deterministic(second))
+        self.assertEqual(self.module._deterministic_result_id(first), deterministic(first))
+
+    def test_worker_guard_route_is_scoped_to_each_source_stream(self) -> None:
+        stream_a = "a" * 64
+        stream_b = "b" * 64
+        guard_a = command_test.AttrDict(
+            name=stream_a,
+            source_stream_key_hash=stream_a,
+            tenant_id="TENANT-A",
+            project_global_id=str(command_test.PROJECT_ID),
+        )
+        guard_b = command_test.AttrDict(
+            name=stream_b,
+            source_stream_key_hash=stream_b,
+            tenant_id="TENANT-A",
+            project_global_id=str(command_test.PROJECT_ID),
+        )
+        self.harness.documents["NPI Item Publish Stream Guard"] = {
+            stream_a: guard_a,
+            stream_b: guard_b,
+        }
+        original_get_value = self.harness.frappe.db.get_value
+        original_support = self.module._stream_guard_supported
+
+        def get_value(doctype, filters, fieldname, **kwargs):
+            if doctype == "NPI Item Publish Stream Guard":
+                for row in self.harness.documents[doctype].values():
+                    if all(row.get(key) == value for key, value in dict(filters).items()):
+                        return row.name
+                return None
+            return original_get_value(doctype, filters, fieldname, **kwargs)
+
+        self.harness.frappe.db.get_value = get_value
+        self.module._stream_guard_supported = lambda: True
+        try:
+            route = {
+                "source_stream_key_hash": stream_a,
+                "tenant_id": "TENANT-A",
+                "project_global_id": str(command_test.PROJECT_ID),
+            }
+            other_route = {**route, "source_stream_key_hash": stream_b}
+            self.assertIs(
+                self.module._locked_guard_for_route(route),
+                guard_a,
+            )
+            self.assertIs(
+                self.module._locked_guard_for_route(other_route),
+                guard_b,
+            )
+        finally:
+            self.harness.frappe.db.get_value = original_get_value
+            self.module._stream_guard_supported = original_support
+
     def test_worker_write_scopes_use_service_user_and_restore_caller(self) -> None:
         validation = importlib.import_module(
             "npi_integration.item_publish.frappe_validation"
@@ -273,6 +350,76 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         )
         self.assertEqual(recovered.command.attempt_number, 1)
         self.assertEqual(self.count("NPI Item Publish Attempt"), 1)
+
+    def test_legacy_duplicate_boundary_claims_retain_two_results_with_one_mapping_advance(self) -> None:
+        sandbox = self.sandbox_profile()
+        self.harness.documents.clear()
+        self.harness.pending.clear()
+        self.harness.repository = self.harness.new_repository(sandbox)
+        created = self.harness.create()
+        assert created.outbox_event_id is not None
+        self.outbox_id = created.outbox_event_id
+        first = self.repository.claim(self.outbox_id, now=NOW)
+        assert first is not None
+        self.repository.mark_adapter_boundary(
+            first,
+            profile=sandbox,
+            now=NOW + timedelta(seconds=1),
+        )
+
+        request = self.request()
+        value = self.module._request_value(request)
+        outbox = self.outbox()
+        second_attempt_id = UUID("00000000-0000-4000-8000-000000008373")
+        second_token = UUID("00000000-0000-4000-8000-000000008374")
+        second_command = self.module._command(value, second_attempt_id, 2)
+        outbox.claim_token = str(second_token)
+        outbox.last_attempt_global_id = str(second_attempt_id)
+        outbox.attempt_count = 2
+        outbox.adapter_boundary_crossed = 1
+        with self.module.item_claim_write():
+            self.module._insert_attempt(outbox, value, second_command, NOW)
+            second_attempt = self.attempt(second_attempt_id)
+            second_attempt.adapter_boundary_crossed = 1
+            second_attempt.transport_disposition = "adapter_boundary_crossed"
+            self.module._set_attempt_snapshot(second_attempt)
+            second_attempt.save()
+            outbox.save()
+
+        first_result = self.classify(
+            first,
+            sandbox,
+            http_status=200,
+            response_authenticated=True,
+            formal_item_code="ITEM-SANDBOX-001",
+            target_version="1",
+        )
+        historical = self.repository.seal_result(
+            first,
+            profile=sandbox,
+            result=first_result,
+            now=NOW + timedelta(seconds=4),
+        )
+        self.assertTrue(historical.mapping_advanced)
+
+        second = replace(first, claim_token=second_token, command=second_command)
+        second_result = self.classify(
+            second,
+            sandbox,
+            http_status=200,
+            response_authenticated=True,
+            formal_item_code="ITEM-SANDBOX-001",
+            target_version="2",
+        )
+        retained = self.repository.seal_result(
+            second,
+            profile=sandbox,
+            result=second_result,
+            now=NOW + timedelta(seconds=5),
+        )
+        self.assertFalse(retained.mapping_advanced)
+        self.assertEqual(self.count("NPI Item Publish Result"), 2)
+        self.assertEqual(self.count("NPI Item Mapping Observation"), 2)
 
     def test_synthetic_result_is_atomic_terminal_truth_without_mapping(self) -> None:
         claim = self.repository.claim(self.outbox_id, now=NOW)
@@ -341,6 +488,78 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(head.mapping_version, 1)
         self.assertEqual(head.formal_item_code, "ITEM-SANDBOX-001")
         self.assertEqual(head.target_version, "1")
+
+    def test_first_head_unique_race_retains_result_and_records_observed_conflict(self) -> None:
+        sandbox = self.sandbox_profile()
+        self.harness.documents.clear()
+        self.harness.pending.clear()
+        self.harness.repository = self.harness.new_repository(sandbox)
+        created = self.harness.create()
+        assert created.outbox_event_id is not None
+        self.outbox_id = created.outbox_event_id
+        claim = self.repository.claim(self.outbox_id, now=NOW)
+        assert claim is not None
+        self.repository.mark_adapter_boundary(
+            claim,
+            profile=sandbox,
+            now=NOW + timedelta(seconds=1),
+        )
+        self.fail_mapping_head_once = True
+        classified = self.classify(
+            claim,
+            sandbox,
+            http_status=200,
+            response_authenticated=True,
+            formal_item_code="ITEM-SANDBOX-001",
+            target_version="1",
+        )
+        outcome = self.repository.seal_result(
+            claim,
+            profile=sandbox,
+            result=classified,
+            now=NOW + timedelta(seconds=4),
+        )
+        self.assertEqual(outcome.state, "mapping_conflict")
+        self.assertFalse(outcome.mapping_advanced)
+        self.assertEqual(self.count("NPI Item Publish Result"), 1)
+        self.assertEqual(self.count("NPI Item Mapping Observation"), 1)
+        self.assertEqual(self.count("NPI Item Mapping Head"), 1)
+        observation = next(
+            iter(self.harness.documents["NPI Item Mapping Observation"].values())
+        )
+        self.assertEqual(observation.disposition, "observed_conflict")
+
+    def test_unrelated_mapping_observation_unique_error_is_not_reclassified_as_cas(self) -> None:
+        sandbox = self.sandbox_profile()
+        self.harness.documents.clear()
+        self.harness.pending.clear()
+        self.harness.repository = self.harness.new_repository(sandbox)
+        created = self.harness.create()
+        assert created.outbox_event_id is not None
+        self.outbox_id = created.outbox_event_id
+        claim = self.repository.claim(self.outbox_id, now=NOW)
+        assert claim is not None
+        self.repository.mark_adapter_boundary(
+            claim,
+            profile=sandbox,
+            now=NOW + timedelta(seconds=1),
+        )
+        self.fail_mapping_observation_once = True
+        classified = self.classify(
+            claim,
+            sandbox,
+            http_status=200,
+            response_authenticated=True,
+            formal_item_code="ITEM-SANDBOX-001",
+            target_version="1",
+        )
+        with self.assertRaises(self.harness.frappe.DuplicateEntryError):
+            self.repository.seal_result(
+                claim,
+                profile=sandbox,
+                result=classified,
+                now=NOW + timedelta(seconds=4),
+            )
 
     def test_late_authoritative_result_records_conflict_without_overwriting_head(self) -> None:
         sandbox = self.sandbox_profile()
