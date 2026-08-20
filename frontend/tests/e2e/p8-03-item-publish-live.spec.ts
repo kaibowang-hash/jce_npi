@@ -278,6 +278,7 @@ async function openItemInspector(
     ),
   ).toBeVisible();
   await expect(inspector.locator(".item-publish__status-strip")).toBeVisible();
+  await expect(inspector.locator(".item-publish__attempts")).toBeVisible();
 }
 
 async function expectAxeClean(page: Page): Promise<void> {
