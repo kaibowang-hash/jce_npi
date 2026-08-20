@@ -167,9 +167,20 @@ async function installApi(
         : null;
   const itemList =
     options.list ?? exactItemList(itemDetail, { profileMode: "synthetic" });
+  const defaultCommandResponse = itemPublishDetailFixture({
+    state: "queued",
+    targetMode: "synthetic",
+  });
   const commandResponse = exactItemDetail(
-    options.commandResponse ??
-      itemPublishDetailFixture({ state: "queued", targetMode: "synthetic" }),
+    options.commandResponse ?? {
+      ...defaultCommandResponse,
+      request: {
+        ...defaultCommandResponse.request,
+        mappingExpectation:
+          itemList.mappingExpectation ??
+          defaultCommandResponse.request.mappingExpectation,
+      },
+    },
   );
 
   await page.route(projectApiEndpoint, async (route) => {
