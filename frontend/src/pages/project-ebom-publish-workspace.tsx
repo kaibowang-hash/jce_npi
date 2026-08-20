@@ -593,6 +593,7 @@ function ItemPublishExecutionInspector({
               >
                 <td>
                   <button
+                    autoFocus={node.globalId === initialNodeId}
                     className="table-link"
                     data-language-exempt="identifier"
                     onClick={() => {
