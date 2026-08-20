@@ -63,6 +63,7 @@ _V1_FIELDS = (
     "request_id",
     "idempotency_key_hash",
     "target_idempotency_key_hash",
+    "semantic_source_effect_hash",
     "semantic_effect_hash",
     "event_snapshot_hash",
 )
@@ -96,6 +97,8 @@ class NPIOutboxMessage(Document):
             deny_legacy_outbox_promotion()
         if self._is_item_v1() or (previous is not None and self._was_item_v1(previous)):
             require_item_outbox_write()
+        if previous is not None and self._was_item_v1(previous) and _is_legacy_item_v1(previous):
+            deny_item_history_update()
         if previous is not None and self._was_item_v1(previous):
             if previous.state in _ITEM_TERMINAL_STATES:
                 deny_item_history_update()
@@ -191,11 +194,16 @@ class NPIOutboxMessage(Document):
             setattr(self, fieldname, lowercase_sha256(getattr(self, fieldname), label))
         for fieldname, label in (
             ("target_idempotency_key_hash", _("Target Idempotency Key Hash")),
+            ("semantic_source_effect_hash", _("Semantic Source Effect Hash")),
             ("semantic_effect_hash", _("Semantic Target Effect Hash")),
         ):
             if getattr(self, fieldname, None):
                 setattr(self, fieldname, lowercase_sha256(getattr(self, fieldname), label))
-        if not self.target_idempotency_key_hash or not self.service_actor_user_id:
+        if (
+            not self.target_idempotency_key_hash
+            or not self.service_actor_user_id
+            or not self.semantic_source_effect_hash
+        ):
             frappe.throw(
                 _("Executable Item Outbox messages require the exact target key and service actor."),
                 frappe.ValidationError,
@@ -230,6 +238,7 @@ class NPIOutboxMessage(Document):
                 "traceId": self.trace_id,
                 "idempotencyKeyHash": self.idempotency_key_hash,
                 "targetIdempotencyKeyHash": self.target_idempotency_key_hash,
+                "semanticSourceEffectHash": self.semantic_source_effect_hash,
                 "semanticEffectHash": self.semantic_effect_hash or None,
                 "payloadHash": self.payload_hash,
             }
@@ -316,3 +325,17 @@ class NPIOutboxMessage(Document):
                 utc_datetime_text(self.last_error_at, _("Last Error At")),
                 _("Last Error At"),
             )
+
+
+def _is_legacy_item_v1(value: object) -> bool:
+    """Return true when an existing 8dd Item Outbox row is not executable."""
+
+    return any(
+        not getattr(value, fieldname, None)
+        for fieldname in (
+            "target_idempotency_key_hash",
+            "service_actor_user_id",
+            "semantic_source_effect_hash",
+            "semantic_effect_hash",
+        )
+    )

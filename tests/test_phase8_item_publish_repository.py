@@ -22,6 +22,7 @@ from npi_integration.item_publish.domain import (
     ITEM_PUBLISH_OPERATION,
     CurrentItemMapping,
     ItemTargetMode,
+    canonical_hash,
 )
 from npi_integration.publish_request.domain import (
     PublishLineInput,
@@ -591,6 +592,167 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
         )
 
+    def test_missing_guard_scans_zero_one_or_two_rows_without_fabrication(self) -> None:
+        self.repository = self.new_repository(self.synthetic_profile())
+        source = self.repository._item_source(self.project, self.phase5, self.phase5.nodes[0].global_id)
+        original_get_all = getattr(self.frappe, "get_all", None)
+        original_get_doc = self.frappe.get_doc
+        try:
+            calls: list[dict[str, object]] = []
+
+            def get_all(_doctype, **kwargs):
+                calls.append(kwargs)
+                return []
+
+            self.frappe.get_all = get_all
+            empty = self.module._legacy_stream_guard_adoption(source)
+            self.assertIsNone(empty["blocked_reason_code"])
+            self.assertIsNone(empty["active_request_global_id"])
+
+            legacy = AttrDict(
+                name="legacy-request",
+                global_id="00000000-0000-4000-8000-000000008399",
+                source_stream_key_hash=source.stream_key_hash,
+                target_mode="sandbox",
+                dispatch_allowed=1,
+                state="queued",
+                target_idempotency_key_hash=None,
+                service_actor_user_id=None,
+                semantic_source_effect_hash=None,
+                semantic_effect_hash=None,
+            )
+            self.frappe.get_all = lambda _doctype, **kwargs: [{"name": legacy.name}]
+            self.documents["NPI Item Publish Request"] = {legacy.name: legacy}
+            blocked = self.module._legacy_stream_guard_adoption(source)
+            self.assertEqual(
+                blocked["blocked_reason_code"],
+                "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+            )
+            self.assertIsNone(blocked["active_target_idempotency_key_hash"])
+            self.assertIsNone(blocked["last_target_idempotency_key_hash"])
+
+            complete = AttrDict(
+                legacy,
+                global_id="00000000-0000-4000-8000-000000008400",
+                name="new-request",
+                tenant_id=source.tenant_id,
+                project_global_id=str(source.project_global_id),
+                engineering_item_id=source.engineering_item_id,
+                target_idempotency_key_hash="a" * 64,
+                service_actor_user_id="item-worker@example.invalid",
+                semantic_source_effect_hash=source.semantic_source_effect_hash,
+                semantic_effect_hash="a" * 64,
+                state="processing",
+            )
+            self.frappe.get_all = lambda _doctype, **kwargs: [{"name": complete.name}]
+            self.documents["NPI Item Publish Request"] = {complete.name: complete}
+            adopted = self.module._legacy_stream_guard_adoption(source)
+            self.assertEqual(adopted["active_request_global_id"], complete.global_id)
+            self.assertEqual(adopted["active_state"], "processing")
+            self.assertEqual(
+                adopted["active_target_idempotency_key_hash"],
+                complete.target_idempotency_key_hash,
+            )
+            self.assertIsNone(adopted["blocked_reason_code"])
+
+            self.frappe.get_all = lambda _doctype, **kwargs: [
+                {"name": complete.name},
+                {"name": legacy.name},
+            ]
+            ambiguous = self.module._legacy_stream_guard_adoption(source)
+            self.assertEqual(
+                ambiguous["blocked_reason_code"],
+                "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+            )
+            self.assertEqual(calls, [{
+                "filters": {"source_stream_key_hash": source.stream_key_hash},
+                "fields": ["name"],
+                "order_by": "created_at asc, name asc",
+                "limit_page_length": 2,
+            }])
+        finally:
+            if original_get_all is None:
+                try:
+                    del self.frappe.get_all
+                except AttributeError:
+                    pass
+            else:
+                self.frappe.get_all = original_get_all
+            self.frappe.get_doc = original_get_doc
+
+    def test_legacy_nonmock_list_and_detail_are_read_only_projection(self) -> None:
+        self.repository = self.new_repository(self.synthetic_profile())
+        source = self.repository._item_source(self.project, self.phase5, self.phase5.nodes[0].global_id)
+        evidence = self.repository._item_released_evidence(self.phase5)
+        old = AttrDict(
+            doctype="NPI Item Publish Request",
+            name=str(PHASE5_REQUEST_ID),
+            global_id=str(PHASE5_REQUEST_ID),
+            schema_version=1,
+            api_version="npi.erp-item-publish.v1",
+            operation="publish_released_item",
+            tenant_id="TENANT-A",
+            project_global_id=str(PROJECT_ID),
+            source_stream_key_hash=source.stream_key_hash,
+            engineering_item_id=source.engineering_item_id,
+            selected_publish_node_global_id=str(source.selected_publish_node_global_id),
+            source_snapshot=source.canonical_mapping(),
+            source_hash=source.source_hash,
+            released_evidence_snapshot=evidence.canonical_mapping(),
+            released_evidence_hash=canonical_hash(evidence.canonical_mapping()),
+            profile_id="item-sandbox-v1",
+            profile_version=1,
+            profile_snapshot_hash=HASH_C,
+            target_mode="sandbox",
+            environment_code="sandbox",
+            intent="create_item",
+            expected_mapping_version=0,
+            expected_formal_item_code=None,
+            expected_target_version=None,
+            expected_mapping_observation_hash=None,
+            state="queued",
+            dispatch_allowed=1,
+            outbox_event_id="old-outbox",
+            result_global_id=None,
+            actor_user_id="publisher@example.invalid",
+            request_id=str(REQUEST_ID),
+            trace_id="trace-legacy-item",
+            idempotency_key_hash=HASH_A,
+            payload_hash=HASH_B,
+            optimistic_version=1,
+            created_at=NOW,
+            updated_at=NOW,
+            target_idempotency_key_hash=None,
+            service_actor_user_id=None,
+            semantic_source_effect_hash=None,
+            semantic_effect_hash=None,
+        )
+        self.documents["NPI Item Publish Request"] = {old.name: old}
+        original_value = self.module.ItemPublishRequest
+        self.module.ItemPublishRequest = lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("legacy projection constructed executable request")
+        )
+        try:
+            listed = self.repository.list_item_publish_requests(
+                PROJECT_ID,
+                selected_publish_node_id=self.phase5.nodes[1].global_id,
+            )
+            self.assertEqual(len(listed["items"]), 1)
+            self.assertFalse(listed["items"][0]["dispatchAllowed"])
+            self.assertNotIn("targetIdempotencyKeyHash", repr(listed["items"][0]))
+            detail = self.repository.item_publish_request_detail(
+                PROJECT_ID,
+                PHASE5_REQUEST_ID,
+            )
+            self.assertFalse(detail["permissions"]["canExecute"])
+            self.assertIsNone(detail["currentMapping"])
+            self.assertEqual(detail["attempts"], [])
+            self.assertIsNone(detail["result"])
+            self.assertIsNone(old.target_idempotency_key_hash)
+            self.assertIsNone(old.service_actor_user_id)
+        finally:
+            self.module.ItemPublishRequest = original_value
+
     def test_exact_actor_key_payload_replays_one_request_without_reenqueue(self) -> None:
         self.repository = self.new_repository(self.synthetic_profile())
         first = self.create()
@@ -1135,6 +1297,38 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             "ignore_" + "permissions",
         ):
             self.assertNotIn(forbidden, lowered)
+
+    def test_guard_active_link_is_saved_only_after_request_and_outbox_inserts(self) -> None:
+        self.repository = self.new_repository(self.synthetic_profile())
+        original_guard = self.module._locked_stream_guard
+        original_set_active = self.module._set_stream_guard_active
+        guard = AttrDict(
+            active_request_global_id=None,
+            active_target_idempotency_key_hash=None,
+            active_state=None,
+            last_request_global_id=None,
+            last_target_idempotency_key_hash=None,
+            last_state=None,
+            blocked_reason_code=None,
+            optimistic_version=1,
+        )
+        try:
+            self.module._locked_stream_guard = lambda *args, **kwargs: guard
+
+            def set_active(*args, **kwargs):
+                self.events.append("guard-active")
+
+            self.module._set_stream_guard_active = set_active
+            outcome = self.create()
+            self.assertIsNone(outcome.problem)
+            request_position = self.events.index("insert:NPI Item Publish Request")
+            outbox_position = self.events.index("insert:NPI Outbox Message")
+            active_position = self.events.index("guard-active")
+            self.assertLess(request_position, outbox_position)
+            self.assertLess(outbox_position, active_position)
+        finally:
+            self.module._locked_stream_guard = original_guard
+            self.module._set_stream_guard_active = original_set_active
 
 
 if __name__ == "__main__":

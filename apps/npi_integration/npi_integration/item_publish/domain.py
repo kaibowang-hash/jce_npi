@@ -279,6 +279,7 @@ class ItemSourceSnapshot:
     occurrences: tuple[ItemOccurrence, ...]
     stream_key_hash: str = ""
     source_hash: str = ""
+    semantic_source_effect_hash: str = ""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "tenant_id", _tenant(self.tenant_id, "source.tenantId"))
@@ -352,6 +353,15 @@ class ItemSourceSnapshot:
         if self.source_hash and _hash(self.source_hash, "source.sourceHash") != expected_source_hash:
             raise ItemPublishContractError("source hash does not match its exact occurrences.")
         object.__setattr__(self, "source_hash", expected_source_hash)
+        expected_semantic_hash = semantic_source_effect_hash(self)
+        if self.semantic_source_effect_hash and _hash(
+            self.semantic_source_effect_hash,
+            "source.semanticSourceEffectHash",
+        ) != expected_semantic_hash:
+            raise ItemPublishContractError(
+                "source semantic effect hash does not match its exact occurrences."
+            )
+        object.__setattr__(self, "semantic_source_effect_hash", expected_semantic_hash)
 
     def source_payload(self) -> dict[str, object]:
         return {
@@ -408,6 +418,56 @@ def group_item_source(
         attributes=chosen.attributes,
         occurrences=grouped,
     )
+
+
+def semantic_source_effect_payload(
+    source: ItemSourceSnapshot | Mapping[str, object],
+) -> dict[str, object]:
+    """Return the complete source truth used by target-effect identity.
+
+    ``sourceHash`` intentionally remains the exact request snapshot hash and
+    therefore includes the caller's selected occurrence.  The target effect
+    must not change when a sibling occurrence is selected, so this separate
+    payload excludes only ``selectedPublishNodeGlobalId`` while retaining the
+    complete, deterministically sorted occurrence and Item-master truth.
+    """
+
+    if isinstance(source, ItemSourceSnapshot):
+        source_mapping = source.source_payload()
+    else:
+        source_mapping = dict(source)
+    occurrences = source_mapping.get("occurrences")
+    if not isinstance(occurrences, Sequence) or isinstance(occurrences, (str, bytes)):
+        raise ItemPublishContractError("source.occurrences is invalid.")
+    normalized_occurrences = [
+        dict(item)
+        for item in occurrences
+        if isinstance(item, Mapping)
+    ]
+    if len(normalized_occurrences) != len(occurrences):
+        raise ItemPublishContractError("source.occurrences is invalid.")
+    normalized_occurrences.sort(
+        key=lambda item: (
+            str(item.get("publishNodeGlobalId", "")),
+            str(item.get("lineGlobalId", "")),
+        )
+    )
+    return {
+        "schemaVersion": source_mapping.get("schemaVersion", ITEM_PUBLISH_SCHEMA_VERSION),
+        "tenantId": source_mapping.get("tenantId"),
+        "projectGlobalId": source_mapping.get("projectGlobalId"),
+        "engineeringItemId": source_mapping.get("engineeringItemId"),
+        "itemMaster": source_mapping.get("itemMaster"),
+        "occurrences": normalized_occurrences,
+    }
+
+
+def semantic_source_effect_hash(
+    source: ItemSourceSnapshot | Mapping[str, object],
+) -> str:
+    """Hash complete source/Item truth while excluding only selection."""
+
+    return canonical_hash(semantic_source_effect_payload(source))
 
 
 @dataclass(frozen=True, slots=True)
@@ -546,7 +606,7 @@ def semantic_target_effect_payload(
         ),
         "source": {
             "streamKeyHash": source_mapping.get("streamKeyHash"),
-            "sourceHash": source_mapping.get("sourceHash"),
+            "semanticSourceEffectHash": semantic_source_effect_hash(source),
             "engineeringItemId": source_mapping.get("engineeringItemId"),
         },
         "releasedEvidence": evidence,
@@ -596,6 +656,7 @@ class ItemPublishRequest:
     target_idempotency_key_hash: str | None = None
     service_actor_user_id: str | None = None
     semantic_effect_hash: str = ""
+    semantic_source_effect_hash: str = ""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "global_id", _uuid(self.global_id, "request.globalId"))
@@ -667,6 +728,12 @@ class ItemPublishRequest:
             profile=self.profile,
             mapping_expectation=self.mapping_expectation,
         )
+        expected_source_effect = semantic_source_effect_hash(self.source)
+        if self.semantic_source_effect_hash and self.semantic_source_effect_hash != expected_source_effect:
+            raise ItemPublishContractError(
+                "request semantic source effect hash does not match its source."
+            )
+        object.__setattr__(self, "semantic_source_effect_hash", expected_source_effect)
         # The dataclass is also used to rehydrate legacy/in-memory rows.  The
         # persistence controllers perform the strict immutable-hash check; a
         # reconstructed value always carries the effect recalculated here.
@@ -722,6 +789,7 @@ class ItemPublishRequest:
             "profile_snapshot_hash": self.profile.snapshot_hash,
             "idempotency_key_hash": self.idempotency_key_hash,
             "target_idempotency_key_hash": self.target_idempotency_key_hash,
+            "semantic_source_effect_hash": self.semantic_source_effect_hash,
             "semantic_effect_hash": self.semantic_effect_hash,
         }
 
@@ -774,6 +842,7 @@ def create_item_publish_request(
             else service_actor_user_id
         ),
         semantic_effect_hash=effect_hash,
+        semantic_source_effect_hash=semantic_source_effect_hash(source),
     )
 
 

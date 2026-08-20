@@ -99,6 +99,34 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
         ):
             self.assertIn(marker, controller)
 
+    def test_semantic_source_effect_binding_is_additive_and_legacy_rows_stay_read_only(self) -> None:
+        request = self.load("npi_item_publish_request")
+        outbox = self.load("npi_outbox_message")
+        for metadata in (request, outbox):
+            fields = {field["fieldname"]: field for field in metadata["fields"]}
+            self.assertIn("semantic_source_effect_hash", fields)
+            self.assertEqual(fields["semantic_source_effect_hash"].get("read_only"), 1)
+        request_controller = (
+            DOCTYPE_ROOT
+            / "npi_item_publish_request/npi_item_publish_request.py"
+        ).read_text(encoding="utf-8")
+        outbox_controller = (
+            DOCTYPE_ROOT / "npi_outbox_message/npi_outbox_message.py"
+        ).read_text(encoding="utf-8")
+        for marker in (
+            "semantic_source_effect_hash",
+            "compute_semantic_source_effect_hash",
+            "_is_legacy_request_row",
+            "deny_item_history_update()",
+        ):
+            self.assertIn(marker, request_controller)
+        for marker in (
+            "semantic_source_effect_hash",
+            "_is_legacy_item_v1",
+            "deny_legacy_outbox_promotion()",
+        ):
+            self.assertIn(marker, outbox_controller)
+
     def test_controllers_use_narrow_internal_write_guards_and_immutable_history(self) -> None:
         guards = (ITEM_ROOT / "frappe_validation.py").read_text(encoding="utf-8")
         for marker in (

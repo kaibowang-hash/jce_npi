@@ -533,7 +533,10 @@ class FrappeItemPublishWorkerRepository:
     ) -> ItemPublishWorkerOutcome:
         outbox, request, attempt, guard, historical = _required_claim_for_seal(claim)
         value = _request_value(request)
-        _require_guard_active_binding(guard, value)
+        # `_required_claim_for_seal` is the sole active-or-retained guard
+        # validation point.  Historical crossed-boundary evidence is allowed
+        # after the current attempt has reached a terminal state; rechecking
+        # only the active binding here would reject that late immutable result.
         observation = result.observation
         if profile is None:
             if observation.authority is not ItemResultAuthority.NONE or observation.state in {
@@ -823,6 +826,11 @@ def _request_value(row: Any) -> ItemPublishRequest:
             if getattr(row, "target_idempotency_key_hash", None)
             else None
         ),
+        semantic_source_effect_hash=(
+            str(row.semantic_source_effect_hash)
+            if getattr(row, "semantic_source_effect_hash", None)
+            else ""
+        ),
         service_actor_user_id=(
             str(row.service_actor_user_id)
             if getattr(row, "service_actor_user_id", None)
@@ -847,6 +855,9 @@ def _request_value(row: Any) -> ItemPublishRequest:
         != canonical_hash(evidence.canonical_mapping())
         or not bool(row.dispatch_allowed)
         or not row.outbox_event_id
+        or not getattr(row, "semantic_source_effect_hash", None)
+        or str(getattr(row, "semantic_source_effect_hash", ""))
+        != value.semantic_source_effect_hash
         or int(row.optimistic_version) < 1
     ):
         raise RuntimeError("Persisted Item publish request is invalid.")
@@ -881,6 +892,8 @@ def _require_outbox_binding(
         or str(outbox.idempotency_key_hash) != value.idempotency_key_hash
         or str(getattr(outbox, "target_idempotency_key_hash", ""))
         != str(value.target_idempotency_key_hash)
+        or str(getattr(outbox, "semantic_source_effect_hash", ""))
+        != value.semantic_source_effect_hash
         or str(getattr(outbox, "service_actor_user_id", ""))
         != str(value.service_actor_user_id)
         or str(getattr(outbox, "semantic_effect_hash", ""))
@@ -1237,13 +1250,13 @@ def _record_authoritative_mapping(
     now: datetime,
     capability: object,
 ) -> ItemMappingDisposition:
-    """Append one observation and CAS the authoritative mapping head.
+    """Append evidence first, then CAS the authoritative mapping head.
 
-    A unique conflict from the head write is the sole recoverable race.  The
-    observation is rebuilt as ``observed_conflict`` after the local savepoint
-    rollback, preserving the Result inserted by the outer terminal
-    transaction.  A unique failure while appending the observation itself is
-    unrelated and is deliberately re-raised.
+    The Result is inserted by the outer terminal transaction.  Only a unique
+    conflict from a *first-head insert* is recoverable here: the local mapping
+    savepoint removes the provisional Observation, the winner Head is locked,
+    and a new observed-conflict Observation is appended.  Observation errors
+    and all existing-head save errors are deliberately allowed to propagate.
     """
 
     def append_observation(
@@ -1316,121 +1329,87 @@ def _record_authoritative_mapping(
     previous_hash = None if current is None else current.observation_hash
     observation_id = uuid4()
     mapping_version = previous_version + 1
-    disposition = (
-        "advanced"
-        if mapping_disposition is ItemMappingDisposition.ADVANCE
-        else "observed_conflict"
-    )
     if mapping_disposition is not ItemMappingDisposition.ADVANCE:
         append_observation(
             observation_id=observation_id,
             mapping_version=mapping_version,
             previous_hash=previous_hash,
-            disposition=disposition,
+            disposition="observed_conflict",
         )
         return mapping_disposition
 
-    head = current_row
-    head_id = UUID(str(head.global_id)) if head is not None else uuid4()
     cas_savepoint = "item_publish_mapping_cas"
     use_savepoint = callable(getattr(frappe.db, "savepoint", None))
     if use_savepoint:
         frappe.db.savepoint(cas_savepoint)
-    head_write_started = False
-    head_write_finished = False
-    try:
-        head_snapshot = {
-            "schemaVersion": 1,
-            "globalId": str(head_id),
-            "tenantId": value.source.tenant_id,
-            "projectGlobalId": str(value.source.project_global_id),
-            "sourceStreamKeyHash": value.source.stream_key_hash,
-            "engineeringItemId": value.source.engineering_item_id,
-            "mappingVersion": mapping_version,
-            "formalItemCode": observation.formal_item_code,
-            "targetVersion": observation.target_version,
-            "currentObservationGlobalId": str(observation_id),
-            "currentObservationHash": "pending",
-            "updatedAt": _utc_text(now),
-        }
-        # The hash is finalized after the observation snapshot is built.  The
-        # CAS itself still uses the exact immutable stream/head identities.
-        observation_hash = canonical_hash(
-            {
-                "schemaVersion": 1,
-                "globalId": str(observation_id),
-                "tenantId": value.source.tenant_id,
-                "projectGlobalId": str(value.source.project_global_id),
-                "sourceStreamKeyHash": value.source.stream_key_hash,
-                "engineeringItemId": value.source.engineering_item_id,
-                "mappingVersion": mapping_version,
-                "formalItemCode": observation.formal_item_code,
-                "targetVersion": observation.target_version,
-                "requestGlobalId": str(claim.request_global_id),
-                "outboxEventId": str(claim.outbox_event_id),
-                "attemptGlobalId": str(observation.attempt_global_id),
-                "resultGlobalId": str(result_id),
-                "profileId": profile.profile_id,
-                "profileVersion": profile.profile_version,
-                "environmentCode": profile.environment_code,
-                "authority": ItemResultAuthority.AUTHORITATIVE_SANDBOX.value,
-                "disposition": "advanced",
-                "previousMappingVersion": previous_version,
-                "previousObservationHash": previous_hash,
-                "targetResultHash": result_hash,
-                "observedAt": _utc_text(now),
-            }
-        )
-        head_snapshot["currentObservationHash"] = observation_hash
-        values = {
-            "global_id": str(head_id),
-            "tenant_id": value.source.tenant_id,
-            "project_global_id": str(value.source.project_global_id),
-            "source_stream_key_hash": value.source.stream_key_hash,
-            "engineering_item_id": value.source.engineering_item_id,
-            "mapping_version": mapping_version,
-            "formal_item_code": observation.formal_item_code,
-            "target_version": observation.target_version,
-            "current_observation": str(observation_id),
-            "current_observation_hash": observation_hash,
-            "head_snapshot": head_snapshot,
-            "head_hash": canonical_hash(head_snapshot),
-            "updated_at": _database_datetime(now),
-        }
-        head_write_started = True
-        if head is None:
-            insert_item_support_document(
-                frappe.get_doc({"doctype": "NPI Item Mapping Head", **values}),
-                capability=capability,
-            )
-        else:
-            for key, item in values.items():
-                setattr(head, key, item)
-            save_item_support_document(head, capability=capability)
-        head_write_finished = True
-        append_observation(
-            observation_id=observation_id,
-            mapping_version=mapping_version,
-            previous_hash=previous_hash,
-            disposition="advanced",
-        )
+
+    # Observation is the first mapping write.  Its unique/controller/link
+    # failures are not head races and must remain visible to the caller.
+    observation_hash = append_observation(
+        observation_id=observation_id,
+        mapping_version=mapping_version,
+        previous_hash=previous_hash,
+        disposition="advanced",
+    )
+    head = current_row
+    head_id = UUID(str(head.global_id)) if head is not None else uuid4()
+    head_snapshot = {
+        "schemaVersion": 1,
+        "globalId": str(head_id),
+        "tenantId": value.source.tenant_id,
+        "projectGlobalId": str(value.source.project_global_id),
+        "sourceStreamKeyHash": value.source.stream_key_hash,
+        "engineeringItemId": value.source.engineering_item_id,
+        "mappingVersion": mapping_version,
+        "formalItemCode": observation.formal_item_code,
+        "targetVersion": observation.target_version,
+        "currentObservationGlobalId": str(observation_id),
+        "currentObservationHash": observation_hash,
+        "updatedAt": _utc_text(now),
+    }
+    values = {
+        "global_id": str(head_id),
+        "tenant_id": value.source.tenant_id,
+        "project_global_id": str(value.source.project_global_id),
+        "source_stream_key_hash": value.source.stream_key_hash,
+        "engineering_item_id": value.source.engineering_item_id,
+        "mapping_version": mapping_version,
+        "formal_item_code": observation.formal_item_code,
+        "target_version": observation.target_version,
+        "current_observation": str(observation_id),
+        "current_observation_hash": observation_hash,
+        "head_snapshot": head_snapshot,
+        "head_hash": canonical_hash(head_snapshot),
+        "updated_at": _database_datetime(now),
+    }
+    if head is not None:
+        # A unique failure on an existing Head save is unrelated to first-head
+        # creation and therefore intentionally re-raises unchanged.
+        for key, item in values.items():
+            setattr(head, key, item)
+        save_item_support_document(head, capability=capability)
         return ItemMappingDisposition.ADVANCE
+
+    try:
+        insert_item_support_document(
+            frappe.get_doc({"doctype": "NPI Item Mapping Head", **values}),
+            capability=capability,
+        )
     except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
-        if head_write_finished or not head_write_started or not use_savepoint:
+        if not use_savepoint:
             raise
         frappe.db.rollback(save_point=cas_savepoint)
         latest_row, latest = _locked_current_mapping(value)
         if latest is None or latest_row is None:
             raise RuntimeError("Mapping head race left no legal source-stream head.")
-        latest_previous_hash = latest.observation_hash
-        latest_version = latest.mapping_version + 1
         append_observation(
-            observation_id=observation_id,
-            mapping_version=latest_version,
-            previous_hash=latest_previous_hash,
+            observation_id=uuid4(),
+            mapping_version=latest.mapping_version + 1,
+            previous_hash=latest.observation_hash,
             disposition="observed_conflict",
         )
         return ItemMappingDisposition.EXPECTATION_CONFLICT
+    return ItemMappingDisposition.ADVANCE
 
 
 def _required_current_claim(

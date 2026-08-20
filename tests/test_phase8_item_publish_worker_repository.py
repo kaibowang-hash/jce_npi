@@ -591,6 +591,85 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(self.count("NPI Item Publish Result"), 2)
         self.assertEqual(self.count("NPI Item Mapping Observation"), 2)
 
+    def test_terminal_current_attempt_allows_late_older_boundary_evidence(self) -> None:
+        sandbox = self.sandbox_profile()
+        self.harness.documents.clear()
+        self.harness.pending.clear()
+        self.harness.repository = self.harness.new_repository(sandbox)
+        created = self.harness.create()
+        assert created.outbox_event_id is not None
+        self.outbox_id = created.outbox_event_id
+        first = self.repository.claim(self.outbox_id, now=NOW)
+        assert first is not None
+        self.repository.mark_adapter_boundary(
+            first,
+            profile=sandbox,
+            now=NOW + timedelta(seconds=1),
+        )
+        request = self.request()
+        value = self.module._request_value(request)
+        outbox = self.outbox()
+        second_attempt_id = UUID("00000000-0000-4000-8000-000000008375")
+        second_token = UUID("00000000-0000-4000-8000-000000008376")
+        second_command = self.module._command(value, second_attempt_id, 2)
+        outbox.claim_token = str(second_token)
+        outbox.last_attempt_global_id = str(second_attempt_id)
+        outbox.attempt_count = 2
+        outbox.adapter_boundary_crossed = 1
+        with self.module.item_claim_write(self.profile.service_actor_user_id) as capability:
+            self.module._insert_attempt(
+                outbox,
+                value,
+                second_command,
+                NOW,
+                capability=capability,
+            )
+            second_attempt = self.attempt(second_attempt_id)
+            second_attempt.adapter_boundary_crossed = 1
+            second_attempt.transport_disposition = "adapter_boundary_crossed"
+            self.module._set_attempt_snapshot(second_attempt)
+            second_attempt.save()
+            outbox.save()
+
+        second = replace(first, claim_token=second_token, command=second_command)
+        second_result = self.classify(
+            second,
+            sandbox,
+            http_status=200,
+            response_authenticated=True,
+            formal_item_code="ITEM-SANDBOX-001",
+            target_version="2",
+        )
+        current = self.repository.seal_result(
+            second,
+            profile=sandbox,
+            result=second_result,
+            now=NOW + timedelta(seconds=4),
+        )
+        self.assertTrue(current.mapping_advanced)
+        self.assertEqual(self.request().state, "succeeded")
+
+        late_result = self.classify(
+            first,
+            sandbox,
+            http_status=200,
+            response_authenticated=True,
+            formal_item_code="ITEM-SANDBOX-001",
+            target_version="1",
+        )
+        late = self.repository.seal_result(
+            first,
+            profile=sandbox,
+            result=late_result,
+            now=NOW + timedelta(seconds=5),
+        )
+        self.assertEqual(late.state, "mapping_conflict")
+        self.assertFalse(late.mapping_advanced)
+        self.assertEqual(self.count("NPI Item Publish Result"), 2)
+        self.assertEqual(self.count("NPI Item Mapping Observation"), 2)
+        self.assertEqual(self.request().state, "succeeded")
+        self.assertEqual(self.outbox().result_global_id, str(current.result_global_id))
+
     def test_synthetic_result_is_atomic_terminal_truth_without_mapping(self) -> None:
         claim = self.repository.claim(self.outbox_id, now=NOW)
         assert claim is not None
@@ -681,6 +760,12 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertTrue(outcome.mapping_advanced)
         self.assertEqual(self.count("NPI Item Mapping Observation"), 1)
         self.assertEqual(self.count("NPI Item Mapping Head"), 1)
+        observation_insert = self.harness.events.index(
+            "insert:NPI Item Mapping Observation"
+        )
+        head_insert = self.harness.events.index("insert:NPI Item Mapping Head")
+        self.assertLess(observation_insert, head_insert)
+        self.assertIn("savepoint:item_publish_mapping_cas", self.harness.events)
         head = next(iter(self.harness.documents["NPI Item Mapping Head"].values()))
         self.assertEqual(head.mapping_version, 1)
         self.assertEqual(head.formal_item_code, "ITEM-SANDBOX-001")

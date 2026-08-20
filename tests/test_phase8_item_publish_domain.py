@@ -36,6 +36,7 @@ from npi_integration.item_publish.domain import (
     issue_item_claim,
     semantic_target_effect_hash,
     semantic_target_effect_payload,
+    semantic_source_effect_hash,
 )
 
 
@@ -139,6 +140,79 @@ class Phase8ItemPublishDomainTest(unittest.TestCase):
                 mapping_expectation=expectation,
             ),
             canonical_hash(payload),
+        )
+
+    def test_semantic_source_effect_is_sibling_stable_but_changes_for_occurrence_truth(self) -> None:
+        first_selected = group_item_source(
+            tenant_id="tenant-synthetic",
+            project_global_id=uid(1),
+            selected_publish_node_global_id=uid(2),
+            occurrences=(occurrence(2), occurrence(3)),
+        )
+        sibling_selected = group_item_source(
+            tenant_id="tenant-synthetic",
+            project_global_id=uid(1),
+            selected_publish_node_global_id=uid(3),
+            occurrences=(occurrence(2), occurrence(3)),
+        )
+        self.assertNotEqual(first_selected.source_hash, sibling_selected.source_hash)
+        self.assertEqual(
+            first_selected.semantic_source_effect_hash,
+            sibling_selected.semantic_source_effect_hash,
+        )
+        self.assertEqual(
+            semantic_source_effect_hash(first_selected),
+            semantic_source_effect_hash(sibling_selected),
+        )
+        changed_occurrence = replace(occurrence(3), line_hash="f" * 64)
+        changed_source = replace(
+            first_selected,
+            occurrences=(occurrence(2), changed_occurrence),
+            source_hash="",
+            semantic_source_effect_hash="",
+        )
+        self.assertNotEqual(
+            first_selected.semantic_source_effect_hash,
+            changed_source.semantic_source_effect_hash,
+        )
+        target_payload = semantic_target_effect_payload(
+            source=first_selected,
+            released_evidence=evidence(),
+            profile=profile(ItemTargetMode.SYNTHETIC),
+            mapping_expectation=ItemMappingExpectation(0),
+        )
+        self.assertEqual(
+            target_payload["source"]["semanticSourceEffectHash"],
+            first_selected.semantic_source_effect_hash,
+        )
+        self.assertNotIn("sourceHash", target_payload["source"])
+        self.assertEqual(
+            semantic_target_effect_hash(
+                source=first_selected,
+                released_evidence=evidence(),
+                profile=profile(ItemTargetMode.SYNTHETIC),
+                mapping_expectation=ItemMappingExpectation(0),
+            ),
+            semantic_target_effect_hash(
+                source=sibling_selected,
+                released_evidence=evidence(),
+                profile=profile(ItemTargetMode.SYNTHETIC),
+                mapping_expectation=ItemMappingExpectation(0),
+            ),
+        )
+        self.assertNotEqual(
+            semantic_target_effect_hash(
+                source=first_selected,
+                released_evidence=evidence(),
+                profile=profile(ItemTargetMode.SYNTHETIC),
+                mapping_expectation=ItemMappingExpectation(0),
+            ),
+            semantic_target_effect_hash(
+                source=changed_source,
+                released_evidence=evidence(),
+                profile=profile(ItemTargetMode.SYNTHETIC),
+                mapping_expectation=ItemMappingExpectation(0),
+            ),
         )
 
     def test_grouping_uses_project_scoped_engineering_identity_and_all_occurrences(self) -> None:

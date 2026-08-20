@@ -7965,11 +7965,14 @@ The Item source stream guard version must advance by one.,物料来源串流守�
 {label} contains an invalid state.,{label}包含无效状态。
 Item publish stream guards can only be changed by the controlled Item execution service.,物料发布串流守卫只能由受控物料执行服务更改。
 Executable Item publish requests require a target key and service actor.,可执行物料发布请求需要目标键和服务主体。
+Executable Item publish requests require the semantic source effect hash.,可执行物料发布请求需要语义来源效果哈希。
+The semantic source effect hash does not match its exact source.,语义来源效果哈希与其准确来源不匹配。
 Mock Item publish requests cannot freeze a target key or service actor.,模拟物料发布请求不能冻结目标键或服务主体。
 The target idempotency key must match the semantic target effect.,目标幂等键必须匹配语义目标效果。
 The semantic target effect hash does not match its immutable request.,语义目标效果哈希与其不可变请求不匹配。
 Executable Item Outbox messages require the exact target key and service actor.,可执行物料发件箱消息需要精确目标键和服务主体。
 Service Actor User ID,服务主体用户标识
+Semantic Source Effect Hash,语义来源效果哈希
 Semantic Target Effect Hash,语义目标效果哈希
 Another Item publish request is active for this source stream.,此来源串流已有其他物料发布请求处于活动状态。
 This exact Item publish effect was already retained and cannot be replayed.,此精确物料发布效果已保留，不能重放。

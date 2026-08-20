@@ -42,6 +42,7 @@
     {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
     {"fieldname": "idempotency_key_hash", "fieldtype": "Data", "label": "Idempotency Key Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "target_idempotency_key_hash", "fieldtype": "Data", "label": "Target Idempotency Key Hash", "unique": 1, "read_only": 1},
+    {"fieldname": "semantic_source_effect_hash", "fieldtype": "Data", "label": "Semantic Source Effect Hash", "read_only": 1},
     {"fieldname": "semantic_effect_hash", "fieldtype": "Data", "label": "Semantic Target Effect Hash", "read_only": 1},
     {"fieldname": "payload_hash", "fieldtype": "Data", "label": "Item Publish Request Payload Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "read_only": 1},

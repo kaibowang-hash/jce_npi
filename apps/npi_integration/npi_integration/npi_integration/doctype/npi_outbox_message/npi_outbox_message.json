@@ -36,6 +36,7 @@
     {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "read_only": 1},
     {"fieldname": "idempotency_key_hash", "fieldtype": "Data", "label": "Idempotency Key Hash", "read_only": 1},
     {"fieldname": "target_idempotency_key_hash", "fieldtype": "Data", "label": "Target Idempotency Key Hash", "read_only": 1},
+    {"fieldname": "semantic_source_effect_hash", "fieldtype": "Data", "label": "Semantic Source Effect Hash", "read_only": 1},
     {"fieldname": "semantic_effect_hash", "fieldtype": "Data", "label": "Semantic Target Effect Hash", "read_only": 1},
     {"fieldname": "event_snapshot_hash", "fieldtype": "Data", "label": "Item Outbox Event Snapshot Hash", "read_only": 1},
     {"fieldname": "claim_token", "fieldtype": "Data", "label": "Item Outbox Claim Token", "read_only": 1},

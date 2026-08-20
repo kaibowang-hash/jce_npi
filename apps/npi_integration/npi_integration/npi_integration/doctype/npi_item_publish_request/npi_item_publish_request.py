@@ -27,9 +27,11 @@ from npi_integration.item_publish.domain import (
     ItemTargetMode,
     canonical_hash,
     semantic_target_effect_hash,
+    semantic_source_effect_hash as compute_semantic_source_effect_hash,
 )
 from npi_integration.item_publish.frappe_validation import (
     deny_item_history_delete,
+    deny_item_history_update,
     require_item_request_write,
     validate_one_way_transition,
 )
@@ -86,6 +88,7 @@ _IMMUTABLE_FIELDS = (
     "trace_id",
     "idempotency_key_hash",
     "target_idempotency_key_hash",
+    "semantic_source_effect_hash",
     "semantic_effect_hash",
     "payload_hash",
     "created_at",
@@ -102,6 +105,12 @@ class NPIItemPublishRequest(Document):
 
     def before_save(self) -> None:
         require_item_request_write()
+        previous = self.get_doc_before_save()
+        if previous is not None and _is_legacy_request_row(previous):
+            # Historical 8dd rows remain readable evidence only.  A normal
+            # maintenance save must never promote or backfill their new
+            # execution bindings.
+            deny_item_history_update()
 
     def before_validate(self) -> None:
         for fieldname, label in (
@@ -200,6 +209,11 @@ class NPIItemPublishRequest(Document):
                 self.semantic_effect_hash,
                 _("Semantic Target Effect Hash"),
             )
+        if self.semantic_source_effect_hash:
+            self.semantic_source_effect_hash = lowercase_sha256(
+                self.semantic_source_effect_hash,
+                _("Semantic Source Effect Hash"),
+            )
         source = json_object(self.source_snapshot, _("Exact Item Source Snapshot"))
         evidence = json_object(
             self.released_evidence_snapshot, _("Exact Released Item Evidence")
@@ -207,6 +221,7 @@ class NPIItemPublishRequest(Document):
         source_payload = dict(source)
         source_payload.pop("streamKeyHash", None)
         source_payload.pop("sourceHash", None)
+        source_payload.pop("semanticSourceEffectHash", None)
         if canonical_hash(source_payload) != self.source_hash:
             frappe.throw(
                 _("The exact Item source snapshot hash does not match its fields."),
@@ -228,6 +243,17 @@ class NPIItemPublishRequest(Document):
         if any(source.get(key) != value for key, value in exact_source.items()):
             frappe.throw(
                 _("The exact Item source snapshot does not match its identities."),
+                frappe.ValidationError,
+            )
+        expected_source_effect_hash = compute_semantic_source_effect_hash(source)
+        if not self.semantic_source_effect_hash:
+            frappe.throw(
+                _("Executable Item publish requests require the semantic source effect hash."),
+                frappe.ValidationError,
+            )
+        if self.semantic_source_effect_hash != expected_source_effect_hash:
+            frappe.throw(
+                _("The semantic source effect hash does not match its exact source."),
                 frappe.ValidationError,
             )
         forbidden = {
@@ -379,3 +405,17 @@ def _contains_forbidden_key(value: object, forbidden: set[str]) -> bool:
     if isinstance(value, list):
         return any(_contains_forbidden_key(item, forbidden) for item in value)
     return False
+
+
+def _is_legacy_request_row(value: object) -> bool:
+    """Return true when an old Item row lacks the new executable bindings."""
+
+    return any(
+        not getattr(value, fieldname, None)
+        for fieldname in (
+            "target_idempotency_key_hash",
+            "service_actor_user_id",
+            "semantic_source_effect_hash",
+            "semantic_effect_hash",
+        )
+    )
