@@ -1,9 +1,12 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { EngineeringBomPublishRequestDataSource } from "../../src/api/publish-request-data-source";
-import type { ItemPublishDataSource } from "../../src/api/item-publish-data-source";
+import type {
+  ItemPublishDataSource,
+  ItemPublishRequestListViewModel,
+} from "../../src/api/item-publish-data-source";
 import { NpiApiError } from "../../src/api/http";
 import { EngineeringBomPublishRequestWorkspace } from "../../src/pages/project-ebom-publish-workspace";
 import {
@@ -14,6 +17,7 @@ import {
 import {
   publishPolicyId,
   publishRequestFixture,
+  publishRequestId,
   publishRequestListFixture,
 } from "../support/publish-request-fixture";
 import {
@@ -95,14 +99,18 @@ function renderWorkspace(
 
 async function activateItemInspector(
   user: ReturnType<typeof userEvent.setup>,
+  locale: "en" | "zh" | "zh-TW" = "en",
 ): Promise<void> {
   await user.click(await screen.findByRole("button", { name: "ENG-SYN-001" }));
-  const inspector = await screen.findByRole("region", {
-    name: "Item execution inspector",
+  const inspectorName =
+    locale === "zh"
+      ? "物料执行检查器"
+      : locale === "zh-TW"
+        ? "物料執行檢查器"
+        : "Item execution inspector";
+  await screen.findByRole("region", {
+    name: inspectorName,
   });
-  await user.click(
-    await within(inspector).findByRole("button", { name: "ENG-SYN-001" }),
-  );
 }
 
 afterEach(() => {
@@ -299,6 +307,290 @@ describe("EBOM publish-request workspace", () => {
       screen.queryByRole("button", { name: /reconcile/iu }),
     ).not.toBeInTheDocument();
   });
+
+  it("keeps the inactive Item inspector out of the DOM and does not query its source", async () => {
+    const loadRequests = vi.fn<ItemPublishDataSource["loadRequests"]>();
+    const loadRequest = vi.fn<ItemPublishDataSource["loadRequest"]>();
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      itemDataSource(undefined, { loadRequests, loadRequest }),
+    );
+
+    await screen.findByRole("button", { name: "ENG-SYN-001" });
+    expect(
+      screen.queryByRole("region", { name: "Item execution inspector" }),
+    ).not.toBeInTheDocument();
+    expect(loadRequests).not.toHaveBeenCalled();
+    expect(loadRequest).not.toHaveBeenCalled();
+  });
+
+  it.each(["Enter", "Space"] as const)(
+    "activates the Item inspector exactly once with %s",
+    async (key) => {
+      const user = userEvent.setup();
+      const loadRequests = vi.fn<ItemPublishDataSource["loadRequests"]>(() =>
+        Promise.resolve(itemPublishListFixture(itemPublishDetailFixture())),
+      );
+      renderWorkspace(
+        dataSource(),
+        undefined,
+        undefined,
+        itemDataSource(undefined, { loadRequests }),
+      );
+      const trigger = await screen.findByRole("button", {
+        name: "ENG-SYN-001",
+      });
+      trigger.focus();
+      await user.keyboard(key === "Enter" ? "{Enter}" : "{Space}");
+      if (key === "Space") trigger.click();
+
+      await screen.findByRole("region", {
+        name: "Item execution inspector",
+      });
+      expect(loadRequests).toHaveBeenCalledOnce();
+      expect(trigger).toHaveAttribute(
+        "aria-controls",
+        "item-publish-execution-inspector",
+      );
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      expect(trigger).toHaveFocus();
+    },
+  );
+
+  it("shows an unavailable inspector after the first click when its source is absent", async () => {
+    const user = userEvent.setup();
+    renderWorkspace(dataSource(), undefined, undefined, undefined);
+
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "The Item execution data source is not configured. No target system was contacted.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("region", { name: "Item execution inspector" }),
+    ).toBeVisible();
+  });
+
+  it("aborts stale Item reads and clears A truth before selecting sibling B", async () => {
+    const user = userEvent.setup();
+    const phase5 = publishRequestFixture();
+    const firstNode = phase5.nodes[0];
+    if (!firstNode) throw new Error("The publish fixture requires one node.");
+    const secondNode = {
+      ...firstNode,
+      globalId: "75000000-0000-4000-8000-000000000026",
+      line: {
+        ...firstNode.line,
+        engineeringItemId: "ENG-SYN-002",
+        globalId: "75000000-0000-4000-8000-000000000027",
+      },
+    };
+    const twoNodeRequest = { ...phase5, nodes: [firstNode, secondNode] };
+    const firstAbort = vi.fn();
+    let firstSignal: AbortSignal | undefined;
+    let resolveFirst:
+      | ((value: ItemPublishRequestListViewModel) => void)
+      | null = null;
+    const firstPending = new Promise<ItemPublishRequestListViewModel>(
+      (resolve) => {
+        resolveFirst = resolve;
+      },
+    );
+    const detail = itemPublishDetailFixture();
+    const loadRequests = vi.fn<ItemPublishDataSource["loadRequests"]>(
+      (_projectId, _requestId, nodeId, signal) => {
+        if (nodeId === firstNode.globalId) {
+          firstSignal = signal;
+          signal.addEventListener("abort", firstAbort, { once: true });
+          return firstPending;
+        }
+        return Promise.resolve(itemPublishListFixture(detail));
+      },
+    );
+    renderWorkspace(
+      dataSource({
+        loadRequest: () => Promise.resolve(twoNodeRequest),
+        loadRequests: () =>
+          Promise.resolve(publishRequestListFixture(twoNodeRequest)),
+      }),
+      undefined,
+      undefined,
+      itemDataSource(detail, { loadRequests }),
+    );
+
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+    const inspector = await screen.findByRole("region", {
+      name: "Item execution inspector",
+    });
+    await waitFor(() => {
+      expect(loadRequests).toHaveBeenCalledWith(
+        ebomProjectId,
+        publishRequestId,
+        firstNode.globalId,
+        expect.any(AbortSignal),
+      );
+    });
+    await user.click(
+      within(inspector).getByRole("button", { name: "ENG-SYN-002" }),
+    );
+
+    await waitFor(() => {
+      expect(firstSignal?.aborted).toBe(true);
+      expect(firstAbort).toHaveBeenCalledOnce();
+      expect(loadRequests).toHaveBeenCalledWith(
+        ebomProjectId,
+        publishRequestId,
+        secondNode.globalId,
+        expect.any(AbortSignal),
+      );
+    });
+    expect(resolveFirst).not.toBeNull();
+    const activeTriggers = screen.getAllByRole("button", {
+      name: "ENG-SYN-002",
+    });
+    expect(
+      activeTriggers.some(
+        (trigger) => trigger.getAttribute("aria-expanded") === "true",
+      ),
+    ).toBe(true);
+  });
+
+  it("fails closed for Item list and detail transport failures", async () => {
+    const user = userEvent.setup();
+    const listFailure = new NpiApiError({
+      type: "https://example.invalid/problems/item-list",
+      title: "Item list unavailable",
+      status: 503,
+      code: "ITEM_PUBLISH_REQUEST_UNAVAILABLE",
+      traceId: "trace-item-list-failure",
+      retryable: false,
+    });
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      itemDataSource(undefined, {
+        loadRequests: () => Promise.reject(listFailure),
+      }),
+    );
+    await activateItemInspector(user);
+    expect(await screen.findByText("trace-item-list-failure")).toBeVisible();
+    cleanup();
+
+    const detailFailure = new NpiApiError({
+      type: "https://example.invalid/problems/item-detail",
+      title: "Item detail unavailable",
+      status: 500,
+      code: "ITEM_PUBLISH_REQUEST_UNAVAILABLE",
+      traceId: "trace-item-detail-failure",
+      retryable: false,
+    });
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      itemDataSource(itemPublishDetailFixture(), {
+        loadRequest: () => Promise.reject(detailFailure),
+      }),
+    );
+    await activateItemInspector(user);
+    expect(await screen.findByText("trace-item-detail-failure")).toBeVisible();
+  });
+
+  it("uses the historical request profile instead of the prospective list profile", async () => {
+    const user = userEvent.setup();
+    const detail = itemPublishDetailFixture({
+      state: "succeeded",
+      targetMode: "sandbox",
+      authoritativeMapping: true,
+    });
+    const loadRequests = vi.fn<ItemPublishDataSource["loadRequests"]>(() =>
+      Promise.resolve(
+        itemPublishListFixture(detail, { profileMode: "synthetic" }),
+      ),
+    );
+    const loadRequest = vi.fn<ItemPublishDataSource["loadRequest"]>(() =>
+      Promise.resolve(detail),
+    );
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      itemDataSource(detail, {
+        loadRequests,
+        loadRequest,
+      }),
+    );
+    await activateItemInspector(user);
+    await waitFor(() => {
+      expect(loadRequests).toHaveBeenCalledOnce();
+      expect(loadRequest).toHaveBeenCalledOnce();
+    });
+    expect(
+      await screen.findByText(/Execution profile: Sandbox execution/u),
+    ).toBeVisible();
+    expect(screen.getByText("item-sandbox-v1")).toBeVisible();
+    expect(
+      screen.queryByText(/Execution profile: Disposable synthetic runtime/u),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps mapping-conflict identity on the old current head", async () => {
+    const user = userEvent.setup();
+    const conflict = itemPublishDetailFixture({ state: "mapping_conflict" });
+    if (!conflict.result)
+      throw new Error("The conflict fixture requires a result.");
+    const detail = {
+      ...conflict,
+      result: {
+        ...conflict.result,
+        formalItemCode: "ITEM-CONFLICT-NEW",
+        targetVersion: "2",
+      },
+    };
+    renderWorkspace(dataSource(), undefined, undefined, itemDataSource(detail));
+    await activateItemInspector(user);
+    expect(await screen.findByText("ITEM-SANDBOX-0001")).toBeVisible();
+    expect(screen.queryByText("ITEM-CONFLICT-NEW")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["zh", "已启动", "开始时间"],
+    ["zh-TW", "已啟動", "開始時間"],
+  ] as const)(
+    "keeps Started state distinct from Started at in %s",
+    async (locale, started, startedAt) => {
+      const detail = itemPublishDetailFixture({
+        state: "processing",
+        targetMode: "sandbox",
+      });
+      renderWithLocale(
+        <EngineeringBomPublishRequestWorkspace
+          dataSource={dataSource()}
+          ebom={engineeringBomDetailFixture().ebom}
+          itemPublishDataSource={itemDataSource(detail)}
+          projectId={ebomProjectId}
+          revision={releasedEngineeringBomRevisionFixture()}
+        />,
+        locale,
+        `/projects/${ebomProjectId}?tab=ebom`,
+      );
+      const user = userEvent.setup();
+      await activateItemInspector(user, locale);
+      expect(
+        screen.getByRole("columnheader", { name: startedAt }),
+      ).toBeVisible();
+      expect(screen.getByText(started)).toBeVisible();
+    },
+  );
 
   it("renders closed attempt state and fault labels instead of wire literals", async () => {
     const user = userEvent.setup();

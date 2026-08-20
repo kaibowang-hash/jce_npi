@@ -231,12 +231,17 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             value.source,
             lock=False,
         )
+        current_public = self._current_mapping_public_dict(
+            project,
+            value,
+            current,
+        )
         attempts = self._item_attempts(row, value)
         result = self._item_result(row, value)
         return self._detail_response(
             row,
             value,
-            current=current,
+            current=current_public,
             can_execute=self._permissions(
                 project,
                 self._read_profile(project),
@@ -435,7 +440,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         response = self._detail_response_from_value(
             value,
             outbox_event_id=outbox_event_id,
-            current=current,
+            current=self._current_mapping_public_dict(project, value, current),
             can_execute=True,
             updated_at=now,
         )
@@ -884,6 +889,241 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             observation_hash=str(row.current_observation_hash),
         )
 
+    def _current_mapping_public_dict(
+        self,
+        project: object,
+        value: ItemPublishRequest,
+        current: CurrentItemMapping | None,
+    ) -> dict[str, object] | None:
+        """Project one verified mapping head together with its evidence chain.
+
+        ``CurrentItemMapping`` is deliberately small because command locking
+        only needs the version/code/target tuple.  The detail API must expose
+        the complete read-only provenance, however, and must never synthesize
+        it from that tuple.  Re-read the persisted head, observation, result,
+        request and attempt and fail closed if any immutable snapshot/hash or
+        binding is inconsistent.
+        """
+
+        if current is None:
+            return None
+        name = frappe.db.get_value(
+            "NPI Item Mapping Head",
+            {"source_stream_key_hash": value.source.stream_key_hash},
+            "name",
+        )
+        if not name:
+            raise RuntimeError("Persisted Item mapping head is unavailable.")
+        try:
+            head = frappe.get_doc("NPI Item Mapping Head", str(name))
+            observation = frappe.get_doc(
+                "NPI Item Mapping Observation",
+                str(head.current_observation),
+            )
+            result = frappe.get_doc(
+                "NPI Item Publish Result",
+                str(observation.result_global_id),
+            )
+            request_row = frappe.get_doc(
+                "NPI Item Publish Request",
+                str(observation.request_global_id),
+            )
+            attempt = frappe.get_doc(
+                "NPI Item Publish Attempt",
+                str(observation.attempt_global_id),
+            )
+        except frappe.DoesNotExistError as error:
+            raise RuntimeError(
+                "Persisted Item mapping provenance is unavailable."
+            ) from error
+
+        head_snapshot = _json_object(head.head_snapshot)
+        head_expected = {
+            "schemaVersion": 1,
+            "globalId": str(head.global_id),
+            "tenantId": str(head.tenant_id),
+            "projectGlobalId": str(head.project_global_id),
+            "sourceStreamKeyHash": str(head.source_stream_key_hash),
+            "engineeringItemId": str(head.engineering_item_id),
+            "mappingVersion": int(head.mapping_version),
+            "formalItemCode": str(head.formal_item_code),
+            "targetVersion": str(head.target_version),
+            "currentObservationGlobalId": str(head.current_observation),
+            "currentObservationHash": str(head.current_observation_hash),
+            "updatedAt": _utc_text(_datetime_value(head.updated_at)),
+        }
+        if (
+            head_snapshot != head_expected
+            or canonical_hash(head_expected) != str(head.head_hash)
+            or str(head.tenant_id) != str(project.tenant_id)
+            or str(head.project_global_id) != str(project.global_id)
+            or str(head.source_stream_key_hash) != value.source.stream_key_hash
+            or str(head.engineering_item_id) != value.source.engineering_item_id
+            or int(head.mapping_version) != current.mapping_version
+            or str(head.formal_item_code) != current.formal_item_code
+            or str(head.target_version) != current.target_version
+            or str(head.current_observation_hash) != current.observation_hash
+        ):
+            raise RuntimeError("Persisted Item mapping head is invalid.")
+
+        observation_snapshot = _json_object(observation.observation_snapshot)
+        observation_expected = {
+            "schemaVersion": 1,
+            "globalId": str(observation.global_id),
+            "tenantId": str(observation.tenant_id),
+            "projectGlobalId": str(observation.project_global_id),
+            "sourceStreamKeyHash": str(observation.source_stream_key_hash),
+            "engineeringItemId": str(observation.engineering_item_id),
+            "mappingVersion": (
+                int(observation.mapping_version)
+                if observation.mapping_version not in (None, "", 0)
+                else None
+            ),
+            "formalItemCode": observation.formal_item_code or None,
+            "targetVersion": observation.target_version or None,
+            "requestGlobalId": str(observation.request_global_id),
+            "outboxEventId": str(observation.outbox_event_id),
+            "attemptGlobalId": str(observation.attempt_global_id),
+            "resultGlobalId": str(observation.result_global_id),
+            "profileId": str(observation.profile_id),
+            "profileVersion": int(observation.profile_version),
+            "environmentCode": str(observation.environment_code),
+            "authority": str(observation.authority),
+            "disposition": str(observation.disposition),
+            "previousMappingVersion": int(observation.previous_mapping_version),
+            "previousObservationHash": observation.previous_observation_hash or None,
+            "targetResultHash": str(observation.target_result_hash),
+            "observedAt": _utc_text(_datetime_value(observation.observed_at)),
+        }
+        if (
+            observation_snapshot != observation_expected
+            or canonical_hash(observation_expected) != str(observation.observation_hash)
+            or str(observation.tenant_id) != str(project.tenant_id)
+            or str(observation.project_global_id) != str(project.global_id)
+            or str(observation.source_stream_key_hash)
+            != value.source.stream_key_hash
+            or str(observation.engineering_item_id)
+            != value.source.engineering_item_id
+            or int(observation.mapping_version) != int(head.mapping_version)
+            or str(observation.formal_item_code) != str(head.formal_item_code)
+            or str(observation.target_version) != str(head.target_version)
+            or str(observation.global_id) != str(head.current_observation)
+            or str(observation.observation_hash)
+            != str(head.current_observation_hash)
+            or str(observation.authority) != "authoritative_sandbox"
+            or str(observation.disposition) != "advanced"
+        ):
+            raise RuntimeError("Persisted Item mapping observation is invalid.")
+
+        result_snapshot = _json_object(result.result_snapshot)
+        if (
+            canonical_hash(result_snapshot) != str(result.result_hash)
+            or str(result.global_id) != str(observation.result_global_id)
+            or result_snapshot.get("globalId") != str(result.global_id)
+            or result_snapshot.get("requestGlobalId")
+            != str(observation.request_global_id)
+            or result_snapshot.get("outboxEventId")
+            != str(observation.outbox_event_id)
+            or result_snapshot.get("attemptGlobalId")
+            != str(observation.attempt_global_id)
+            or result_snapshot.get("sourceHash") != str(request_row.source_hash)
+            or result_snapshot.get("state") != "succeeded"
+            or result_snapshot.get("authority") != "authoritative_sandbox"
+            or result_snapshot.get("responseAuthenticated") is not True
+            or result_snapshot.get("faultKind") != "none"
+            or result_snapshot.get("formalItemCode") != str(observation.formal_item_code)
+            or result_snapshot.get("targetVersion") != str(observation.target_version)
+            or result_snapshot.get("observedAt")
+            != _utc_text(_datetime_value(result.observed_at))
+            or _json_object(observation.target_result_snapshot) != result_snapshot
+            or str(observation.target_result_hash) != str(result.result_hash)
+        ):
+            raise RuntimeError("Persisted Item mapping result evidence is invalid.")
+
+        request_value = self._item_request_value(project, request_row)
+        if (
+            str(request_row.outbox_event_id or "")
+            != str(observation.outbox_event_id)
+            or str(request_row.result_global_id or "")
+            != str(observation.result_global_id)
+            or request_value.source.stream_key_hash
+            != value.source.stream_key_hash
+            or request_value.source.engineering_item_id
+            != value.source.engineering_item_id
+            or request_value.profile.profile_id != str(observation.profile_id)
+            or request_value.profile.profile_version != int(observation.profile_version)
+            or request_value.profile.environment_code
+            != str(observation.environment_code)
+            or request_value.target_idempotency_key_hash
+            != result_snapshot.get("idempotencyKeyHash")
+            or request_value.mapping_expectation.target_version
+            != result_snapshot.get("expectedTargetVersion")
+            or request_value.state is ItemPublishRequestState.MAPPING_CONFLICT
+        ):
+            raise RuntimeError("Persisted Item mapping request binding is invalid.")
+        attempt_snapshot = _json_object(attempt.attempt_snapshot)
+        if (
+            canonical_hash(attempt_snapshot) != str(attempt.attempt_hash)
+            or str(attempt.global_id) != str(observation.attempt_global_id)
+            or str(attempt.request_global_id) != str(observation.request_global_id)
+            or str(attempt.outbox_event_id) != str(observation.outbox_event_id)
+            or int(attempt.attempt_number) != int(result.attempt_number)
+            or str(attempt.source_hash) != str(request_row.source_hash)
+            or str(attempt.profile_id) != str(observation.profile_id)
+            or int(attempt.profile_version) != int(observation.profile_version)
+            or str(attempt.target_idempotency_key_hash)
+            != result_snapshot.get("idempotencyKeyHash")
+            or str(attempt.state) != "observed_success"
+            or not bool(attempt.adapter_boundary_crossed)
+            or not attempt.finished_at
+        ):
+            raise RuntimeError("Persisted Item mapping attempt binding is invalid.")
+
+        return {
+            "head": {
+                "globalId": head_expected["globalId"],
+                "sourceStreamKeyHash": head_expected["sourceStreamKeyHash"],
+                "engineeringItemId": head_expected["engineeringItemId"],
+                "mappingVersion": head_expected["mappingVersion"],
+                "formalItemCode": head_expected["formalItemCode"],
+                "targetVersion": head_expected["targetVersion"],
+                "currentObservationGlobalId": head_expected[
+                    "currentObservationGlobalId"
+                ],
+                "currentObservationHash": head_expected["currentObservationHash"],
+                "headHash": str(head.head_hash),
+                "updatedAt": head_expected["updatedAt"],
+            },
+            "observation": {
+                "globalId": observation_expected["globalId"],
+                "sourceStreamKeyHash": observation_expected[
+                    "sourceStreamKeyHash"
+                ],
+                "engineeringItemId": observation_expected["engineeringItemId"],
+                "mappingVersion": observation_expected["mappingVersion"],
+                "formalItemCode": observation_expected["formalItemCode"],
+                "targetVersion": observation_expected["targetVersion"],
+                "requestGlobalId": observation_expected["requestGlobalId"],
+                "outboxEventId": observation_expected["outboxEventId"],
+                "attemptGlobalId": observation_expected["attemptGlobalId"],
+                "resultGlobalId": observation_expected["resultGlobalId"],
+                "profileId": observation_expected["profileId"],
+                "profileVersion": observation_expected["profileVersion"],
+                "environmentCode": observation_expected["environmentCode"],
+                "authority": observation_expected["authority"],
+                "disposition": observation_expected["disposition"],
+                "previousMappingVersion": observation_expected[
+                    "previousMappingVersion"
+                ],
+                "previousObservationHash": observation_expected[
+                    "previousObservationHash"
+                ],
+                "targetResultHash": observation_expected["targetResultHash"],
+                "observationHash": str(observation.observation_hash),
+                "observedAt": observation_expected["observedAt"],
+            },
+        }
+
     @staticmethod
     def _mapping_expectation(
         current: CurrentItemMapping | None,
@@ -1277,7 +1517,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         row: object,
         value: ItemPublishRequest,
         *,
-        current: CurrentItemMapping | None,
+        current: dict[str, object] | None,
         can_execute: bool,
         attempts: tuple[dict[str, Any], ...],
         result: dict[str, Any] | None,
@@ -1285,7 +1525,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         return {
             "requestGlobalId": str(value.global_id),
             "request": self._request_public_dict(row, value),
-            "currentMapping": _mapping_public_dict(current),
+            "currentMapping": current,
             "attempts": list(attempts),
             "result": result,
             "permissions": {"canView": True, "canExecute": can_execute},
@@ -1329,6 +1569,9 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                     "requestGlobalId": snapshot["requestGlobalId"],
                     "outboxEventId": snapshot["outboxEventId"],
                     "attemptNumber": snapshot["attemptNumber"],
+                    "sourceHash": snapshot["sourceHash"],
+                    "profileId": snapshot["profileId"],
+                    "profileVersion": snapshot["profileVersion"],
                     "state": snapshot["state"],
                     "adapterBoundaryCrossed": snapshot[
                         "adapterBoundaryCrossed"
@@ -1378,8 +1621,13 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             or str(row.outbox_event_id) != str(request_row.outbox_event_id or "")
             or snapshot.get("attemptGlobalId") != str(row.attempt_global_id)
             or snapshot.get("attemptNumber") != int(row.attempt_number)
+            or snapshot.get("idempotencyKeyHash")
+            != str(row.idempotency_key_hash)
+            or snapshot.get("idempotencyKeyHash") != value.target_idempotency_key_hash
             or snapshot.get("sourceHash") != value.source.source_hash
             or str(row.source_hash) != value.source.source_hash
+            or snapshot.get("expectedTargetVersion")
+            != (value.mapping_expectation.target_version or None)
         ):
             raise RuntimeError("Persisted Item publish result is invalid.")
         if str(request_row.state) == ItemPublishRequestState.MAPPING_CONFLICT.value:
@@ -1397,7 +1645,9 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             "outboxEventId": snapshot["outboxEventId"],
             "attemptGlobalId": snapshot["attemptGlobalId"],
             "attemptNumber": snapshot["attemptNumber"],
+            "idempotencyKeyHash": snapshot["idempotencyKeyHash"],
             "sourceHash": snapshot["sourceHash"],
+            "expectedTargetVersion": snapshot.get("expectedTargetVersion"),
             "state": snapshot["state"],
             "authority": snapshot["authority"],
             "responseAuthenticated": snapshot["responseAuthenticated"],
@@ -1409,12 +1659,12 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             "observedAt": snapshot["observedAt"],
         }
 
-    @staticmethod
     def _detail_response_from_value(
+        self,
         value: ItemPublishRequest,
         *,
         outbox_event_id: UUID | None,
-        current: CurrentItemMapping | None,
+        current: dict[str, object] | None,
         can_execute: bool,
         updated_at: datetime,
     ) -> dict[str, Any]:
@@ -1446,7 +1696,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         return {
             "requestGlobalId": str(value.global_id),
             "request": request,
-            "currentMapping": _mapping_public_dict(current),
+            "currentMapping": current,
             "attempts": [],
             "result": None,
             "permissions": {"canView": True, "canExecute": can_execute},
@@ -1703,19 +1953,6 @@ def _evidence_value(value: Mapping[str, object]) -> ReleasedItemSourceEvidence:
         ),
         released_at=_datetime_value(value["releasedAt"]),
     )
-
-
-def _mapping_public_dict(
-    value: CurrentItemMapping | None,
-) -> dict[str, object] | None:
-    if value is None:
-        return None
-    return {
-        "mappingVersion": value.mapping_version,
-        "formalItemCode": value.formal_item_code,
-        "targetVersion": value.target_version,
-        "observationHash": value.observation_hash,
-    }
 
 
 def _datetime_value(value: object) -> datetime:

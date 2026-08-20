@@ -1698,6 +1698,7 @@ Cycle global ID,周期全局标识符
 Policy global ID,策略全局标识符
 Policy snapshot hash,策略快照哈希
 Started,已启动
+Started at,开始时间
 Started by,启动人
 Latest decision hash,最新决策哈希
 Cycle history is unavailable until review starts.,评审开始前无法查看周期历史。
@@ -7948,7 +7949,7 @@ Response contract invalid,响应契约无效
 Response authentication invalid,响应身份验证无效
 Unknown execution fault,未知的执行故障
 The current Item mapping expectation is unavailable.,当前物料映射预期不可用。
-NPI Item Publish Stream Guard,物料发布串流守卫
+NPI Item Publish Stream Guard,NPI 物料发布串流守卫
 Active Item Publish Request,活动物料发布请求
 Active Target Idempotency Key Hash,活动目标幂等键哈希
 Active Item Publish State,活动物料发布状态
@@ -7964,11 +7965,11 @@ The Item source stream guard version must advance by one.,物料来源串流守�
 {label} contains an invalid state.,{label}包含无效状态。
 Item publish stream guards can only be changed by the controlled Item execution service.,物料发布串流守卫只能由受控物料执行服务更改。
 Executable Item publish requests require a target key and service actor.,可执行物料发布请求需要目标键和服务主体。
-Mock Item publish requests cannot freeze a target key or service actor.,Mock物料发布请求不能冻结目标键或服务主体。
+Mock Item publish requests cannot freeze a target key or service actor.,模拟物料发布请求不能冻结目标键或服务主体。
 The target idempotency key must match the semantic target effect.,目标幂等键必须匹配语义目标效果。
 The semantic target effect hash does not match its immutable request.,语义目标效果哈希与其不可变请求不匹配。
 Executable Item Outbox messages require the exact target key and service actor.,可执行物料发件箱消息需要精确目标键和服务主体。
-Service Actor User ID,服务主体用户 ID
+Service Actor User ID,服务主体用户标识
 Semantic Target Effect Hash,语义目标效果哈希
 Another Item publish request is active for this source stream.,此来源串流已有其他物料发布请求处于活动状态。
 This exact Item publish effect was already retained and cannot be replayed.,此精确物料发布效果已保留，不能重放。

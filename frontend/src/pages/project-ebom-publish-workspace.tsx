@@ -328,6 +328,58 @@ function targetModeLabel(
   return t("Sandbox execution");
 }
 
+const ITEM_PUBLISH_INSPECTOR_ID = "item-publish-execution-inspector";
+
+function hasAuthoritativeCurrentItemMapping(
+  detail: ItemPublishRequestDetailViewModel,
+): boolean {
+  const current = detail.currentMapping;
+  const result = detail.result;
+  const lastAttempt = detail.attempts[detail.attempts.length - 1];
+  if (!current || !result || !lastAttempt) return false;
+  const { head, observation } = current;
+  const currentObservationIsBound =
+    head.currentObservationGlobalId === observation.globalId &&
+    head.currentObservationHash === observation.observationHash &&
+    head.sourceStreamKeyHash === detail.request.source.streamKeyHash &&
+    observation.sourceStreamKeyHash === detail.request.source.streamKeyHash &&
+    head.engineeringItemId === detail.request.source.engineeringItemId &&
+    observation.engineeringItemId === detail.request.source.engineeringItemId &&
+    head.mappingVersion === observation.mappingVersion &&
+    head.formalItemCode === observation.formalItemCode &&
+    head.targetVersion === observation.targetVersion &&
+    observation.authority === "authoritative_sandbox" &&
+    observation.disposition === "advanced";
+  const successfulSandboxEvidence =
+    detail.request.profile.targetMode === "sandbox" &&
+    result.state === "succeeded" &&
+    result.authority === "authoritative_sandbox" &&
+    result.responseAuthenticated &&
+    result.formalItemCode !== null &&
+    result.targetVersion !== null &&
+    result.faultKind === "none" &&
+    lastAttempt.state === "observed_success" &&
+    lastAttempt.adapterBoundaryCrossed &&
+    lastAttempt.finishedAt !== null &&
+    result.attemptGlobalId === lastAttempt.globalId &&
+    result.attemptNumber === lastAttempt.attemptNumber &&
+    result.idempotencyKeyHash === lastAttempt.targetIdempotencyKeyHash &&
+    result.sourceHash === detail.request.source.sourceHash;
+  if (!currentObservationIsBound || !successfulSandboxEvidence) return false;
+  if (detail.request.state === "succeeded") {
+    return (
+      observation.requestGlobalId === detail.request.globalId &&
+      observation.outboxEventId === detail.request.outboxEventId &&
+      observation.attemptGlobalId === result.attemptGlobalId &&
+      observation.resultGlobalId === result.globalId
+    );
+  }
+  return (
+    detail.request.state === "mapping_conflict" &&
+    observation.resultGlobalId !== result.globalId
+  );
+}
+
 function itemActionBlockReason(
   t: ReturnType<typeof useI18n>["t"],
   list: ItemPublishRequestListViewModel,
@@ -362,27 +414,27 @@ function itemActionBlockReason(
 }
 
 function ItemPublishExecutionInspector({
-  active,
   dataSource,
   disabled,
   onDirtyChange,
+  onSelectedNodeChange,
   projectId,
   publishRequest,
+  selectedNodeId,
 }: {
-  active: boolean;
   dataSource?: ItemPublishDataSource | undefined;
   disabled: boolean;
   onDirtyChange: (dirty: boolean) => void;
+  onSelectedNodeChange: (nodeId: string | null) => void;
   projectId: string;
   publishRequest: EngineeringBomPublishRequestViewModel;
+  selectedNodeId: string | null;
 }): React.JSX.Element {
   const { locale, sessionCommandContext, t } = useI18n();
-  const inspectorRef = useRef<HTMLElement | null>(null);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [reloadAttempt, setReloadAttempt] = useState(0);
   const [listState, setItemListState] = useState<
     ResourceState<ItemPublishRequestListViewModel>
-  >({ kind: "idle" });
+  >({ kind: "loading" });
   const [detailState, setItemDetailState] = useState<
     ResourceState<ItemPublishRequestDetailViewModel>
   >({ kind: "idle" });
@@ -397,16 +449,16 @@ function ItemPublishExecutionInspector({
     null;
   const list = listState.kind === "loaded" ? listState.value : null;
   const detail = detailState.kind === "loaded" ? detailState.value : null;
+  const displayProfile =
+    detail?.request.profile ?? list?.executionProfile ?? null;
   const effectiveMappingExpectation =
     detail?.request.mappingExpectation ?? list?.mappingExpectation ?? null;
+  const authoritativeCurrentMapping = detail
+    ? hasAuthoritativeCurrentItemMapping(detail)
+    : false;
   const actionBlockReason = list
     ? itemActionBlockReason(t, list, sessionCommandContext !== null, disabled)
     : t("Load the exact Item execution context before requesting execution.");
-
-  useEffect(() => {
-    const root = inspectorRef.current;
-    if (root) (root as HTMLElement & { inert: boolean }).inert = !active;
-  }, [active]);
 
   useEffect(() => {
     onDirtyChange(acknowledged);
@@ -416,7 +468,7 @@ function ItemPublishExecutionInspector({
   }, [acknowledged, onDirtyChange]);
 
   useEffect(() => {
-    if (!dataSource || !selectedNode) return undefined;
+    if (!dataSource || !selectedNodeId) return undefined;
     const controller = new AbortController();
     const timer = globalThis.setTimeout(() => {
       if (controller.signal.aborted) return;
@@ -424,7 +476,7 @@ function ItemPublishExecutionInspector({
         .loadRequests(
           projectId,
           publishRequest.globalId,
-          selectedNode.globalId,
+          selectedNodeId,
           controller.signal,
         )
         .then((value) => {
@@ -468,7 +520,7 @@ function ItemPublishExecutionInspector({
     projectId,
     publishRequest.globalId,
     reloadAttempt,
-    selectedNode,
+    selectedNodeId,
   ]);
 
   const reload = (): void => {
@@ -486,7 +538,7 @@ function ItemPublishExecutionInspector({
     setItemCommandState({ kind: "idle" });
     setAcknowledged(false);
     idempotencyKey.current = null;
-    setSelectedNodeId(nodeId);
+    onSelectedNodeChange(nodeId);
   };
 
   const submit = (): void => {
@@ -547,13 +599,13 @@ function ItemPublishExecutionInspector({
       });
   };
 
+  if (!selectedNode) return <></>;
+
   return (
     <section
-      aria-hidden={!active}
       aria-label={t("Item execution inspector")}
       className="item-publish"
-      ref={inspectorRef}
-      style={active ? undefined : { opacity: 0, pointerEvents: "none" }}
+      id={ITEM_PUBLISH_INSPECTOR_ID}
     >
       <div className="item-publish__header">
         <div className="item-publish__heading-copy">
@@ -590,9 +642,9 @@ function ItemPublishExecutionInspector({
           <tbody>
             {publishRequest.nodes.map((node) => (
               <tr
-                aria-selected={node.globalId === selectedNode?.globalId}
+                aria-selected={node.globalId === selectedNode.globalId}
                 className={
-                  node.globalId === selectedNode?.globalId
+                  node.globalId === selectedNode.globalId
                     ? "is-selected"
                     : undefined
                 }
@@ -605,6 +657,8 @@ function ItemPublishExecutionInspector({
                     onClick={() => {
                       selectSourceNode(node.globalId);
                     }}
+                    aria-controls={ITEM_PUBLISH_INSPECTOR_ID}
+                    aria-expanded={node.globalId === selectedNodeId}
                     type="button"
                   >
                     {node.line.engineeringItemId}
@@ -666,11 +720,8 @@ function ItemPublishExecutionInspector({
             </span>
             <span>
               {t("Execution profile")}:{" "}
-              {listState.value.executionProfile
-                ? targetModeLabel(
-                    t,
-                    listState.value.executionProfile.targetMode,
-                  )
+              {displayProfile
+                ? targetModeLabel(t, displayProfile.targetMode)
                 : t("Unavailable")}
             </span>
           </div>
@@ -694,22 +745,22 @@ function ItemPublishExecutionInspector({
                 rows={[
                   {
                     label: t("Engineering item"),
-                    value:
-                      detail?.request.source.engineeringItemId ??
-                      selectedNode?.line.engineeringItemId ??
-                      t("Unavailable"),
+                    value: detail
+                      ? detail.request.source.engineeringItemId
+                      : selectedNode.line.engineeringItemId,
                     exempt: "identifier",
                   },
                   {
                     label: t("Source occurrences"),
                     value: formatNumber(
                       locale,
-                      detail?.request.source.occurrences.length ??
-                        publishRequest.nodes.filter(
-                          (node) =>
-                            node.line.engineeringItemId ===
-                            selectedNode?.line.engineeringItemId,
-                        ).length,
+                      detail
+                        ? detail.request.source.occurrences.length
+                        : publishRequest.nodes.filter(
+                            (node) =>
+                              node.line.engineeringItemId ===
+                              selectedNode.line.engineeringItemId,
+                          ).length,
                       0,
                     ),
                   },
@@ -742,10 +793,9 @@ function ItemPublishExecutionInspector({
                   },
                   {
                     label: t("Source hash"),
-                    value:
-                      detail?.request.source.sourceHash ??
-                      selectedNode?.inputHash ??
-                      t("Unavailable"),
+                    value: detail
+                      ? detail.request.source.sourceHash
+                      : selectedNode.inputHash,
                     exempt: "identifier",
                   },
                   {
@@ -762,36 +812,25 @@ function ItemPublishExecutionInspector({
                 rows={[
                   {
                     label: t("Profile"),
-                    value:
-                      detail?.request.profile.profileId ??
-                      listState.value.executionProfile?.profileId ??
-                      t("Unavailable"),
-                    ...(detail?.request.profile.profileId ||
-                    listState.value.executionProfile?.profileId
+                    value: displayProfile?.profileId ?? t("Unavailable"),
+                    ...(displayProfile?.profileId
                       ? ({ exempt: "identifier" } as const)
                       : {}),
                   },
                   {
                     label: t("Profile version"),
-                    value: listState.value.executionProfile
-                      ? formatNumber(
-                          locale,
-                          listState.value.executionProfile.profileVersion,
-                          0,
-                        )
+                    value: displayProfile
+                      ? formatNumber(locale, displayProfile.profileVersion, 0)
                       : t("Unavailable"),
                   },
                   {
                     label: t("Environment"),
-                    value:
-                      detail?.request.profile.environmentCode ??
-                      listState.value.executionProfile?.environmentCode ??
-                      t("Unavailable"),
+                    value: displayProfile?.environmentCode ?? t("Unavailable"),
                     exempt: "identifier",
                   },
                   {
                     label: t("Current mapping authority"),
-                    value: detail?.currentMapping
+                    value: authoritativeCurrentMapping
                       ? t("Authoritative Sandbox observation")
                       : t("No authoritative mapping"),
                   },
@@ -799,7 +838,7 @@ function ItemPublishExecutionInspector({
                     label: t("Formal Item Code"),
                     value:
                       detail?.permissions.canView && detail.currentMapping
-                        ? detail.currentMapping.formalItemCode
+                        ? detail.currentMapping.head.formalItemCode
                         : t("Not assigned"),
                     ...(detail?.permissions.canView && detail.currentMapping
                       ? ({ exempt: "identifier" } as const)
@@ -809,7 +848,7 @@ function ItemPublishExecutionInspector({
                     label: t("Target version"),
                     value:
                       detail?.permissions.canView && detail.currentMapping
-                        ? detail.currentMapping.targetVersion
+                        ? detail.currentMapping.head.targetVersion
                         : t("Not assigned"),
                     ...(detail?.permissions.canView && detail.currentMapping
                       ? ({ exempt: "identifier" } as const)
@@ -820,7 +859,7 @@ function ItemPublishExecutionInspector({
                     value: detail?.currentMapping
                       ? formatNumber(
                           locale,
-                          detail.currentMapping.mappingVersion,
+                          detail.currentMapping.head.mappingVersion,
                           0,
                         )
                       : t("Not assigned"),
@@ -856,7 +895,7 @@ function ItemPublishExecutionInspector({
                         <th>{t("Attempt")}</th>
                         <th>{t("State")}</th>
                         <th>{t("Adapter boundary")}</th>
-                        <th>{t("Started")}</th>
+                        <th>{t("Started at")}</th>
                         <th>{t("Finished")}</th>
                         <th>{t("Fault")}</th>
                         <th>{t("Reconciliation")}</th>
@@ -1683,29 +1722,22 @@ export function EngineeringBomPublishRequestWorkspace({
                                   {node.line.lineKey}
                                 </td>
                                 <td>
-                                  <span
-                                    className="publish-request__node-meta"
+                                  <button
+                                    className="table-link publish-request__node-meta"
                                     data-language-exempt="identifier"
                                     data-item-inspector-trigger="true"
-                                    role="button"
-                                    tabIndex={0}
+                                    aria-controls={ITEM_PUBLISH_INSPECTOR_ID}
+                                    aria-expanded={
+                                      itemInspectorNodeId === node.globalId
+                                    }
                                     onClick={() => {
                                       setItemInspectorNodeId(node.globalId);
                                       setItemDirty(false);
                                     }}
-                                    onKeyDown={(event) => {
-                                      if (
-                                        event.key === "Enter" ||
-                                        event.key === " "
-                                      ) {
-                                        event.preventDefault();
-                                        setItemInspectorNodeId(node.globalId);
-                                        setItemDirty(false);
-                                      }
-                                    }}
+                                    type="button"
                                   >
                                     {node.line.engineeringItemId}
-                                  </span>
+                                  </button>
                                   <small
                                     className="publish-request__node-meta"
                                     data-language-exempt="business-data"
@@ -1769,14 +1801,23 @@ export function EngineeringBomPublishRequestWorkspace({
                         </tbody>
                       </table>
                     </div>
-                    <ItemPublishExecutionInspector
-                      active={Boolean(itemInspectorNodeId)}
-                      dataSource={itemPublishDataSource}
-                      disabled={disabled || commandState.kind === "processing"}
-                      onDirtyChange={setItemDirty}
-                      projectId={projectId}
-                      publishRequest={detail}
-                    />
+                    {itemInspectorNodeId !== null ? (
+                      <ItemPublishExecutionInspector
+                        key={itemInspectorNodeId}
+                        dataSource={itemPublishDataSource}
+                        disabled={
+                          disabled || commandState.kind === "processing"
+                        }
+                        onDirtyChange={setItemDirty}
+                        onSelectedNodeChange={(nodeId) => {
+                          setItemInspectorNodeId(nodeId);
+                          setItemDirty(false);
+                        }}
+                        projectId={projectId}
+                        publishRequest={detail}
+                        selectedNodeId={itemInspectorNodeId}
+                      />
+                    ) : null}
                   </div>
                 ) : selectedSummary ? null : (
                   <div className="publish-request__empty" role="status">

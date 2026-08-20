@@ -114,6 +114,13 @@ async function fulfillJson(
   body: unknown,
   status = 200,
 ): Promise<void> {
+  const responseTraceId =
+    typeof body === "object" &&
+    body !== null &&
+    "traceId" in body &&
+    typeof body.traceId === "string"
+      ? body.traceId
+      : "trace-p8-03-item-publish-browser";
   await route.fulfill({
     body: JSON.stringify(body),
     headers: {
@@ -123,10 +130,21 @@ async function fulfillJson(
         ? { "Idempotency-Replayed": "false" }
         : {}),
       "X-Request-ID": requestIdentity(route),
-      "X-Trace-ID": "trace-p8-03-item-publish-browser",
+      "X-Trace-ID": responseTraceId,
     },
     status,
   });
+}
+
+function problemDetails(code: string, title: string, status: number): object {
+  return {
+    type: `https://example.invalid/problems/${code.toLowerCase()}`,
+    title,
+    status,
+    code,
+    traceId: `trace-${code.toLowerCase()}`,
+    retryable: false,
+  };
 }
 
 async function installSession(page: Page, locale: TestLocale): Promise<void> {
@@ -152,6 +170,9 @@ async function installApi(
     detail?: ItemPublishRequestDetailViewModel | null;
     list?: ItemPublishRequestListViewModel;
     commandResponse?: ItemPublishRequestDetailViewModel;
+    itemListFailure?: number;
+    itemDetailFailure?: number;
+    commandFailure?: number;
   } = {},
 ): Promise<ObservedRequest[]> {
   const observed: ObservedRequest[] = [];
@@ -171,14 +192,19 @@ async function installApi(
     state: "queued",
     targetMode: "synthetic",
   });
+  const commandMappingExpectation =
+    itemList.mappingExpectation ??
+    defaultCommandResponse.request.mappingExpectation;
   const commandResponse = exactItemDetail(
     options.commandResponse ?? {
       ...defaultCommandResponse,
       request: {
         ...defaultCommandResponse.request,
-        mappingExpectation:
-          itemList.mappingExpectation ??
-          defaultCommandResponse.request.mappingExpectation,
+        intent:
+          commandMappingExpectation.mappingVersion > 0
+            ? "update_item_engineering_fields"
+            : "create_item",
+        mappingExpectation: commandMappingExpectation,
       },
     },
   );
@@ -224,6 +250,18 @@ async function installApi(
       expect(url.searchParams.get("selectedPublishNodeGlobalId")).toBe(
         publishNodeId,
       );
+      if (options.itemListFailure) {
+        await fulfillJson(
+          route,
+          problemDetails(
+            "ITEM_PUBLISH_LIST_UNAVAILABLE",
+            "Item list unavailable",
+            options.itemListFailure,
+          ),
+          options.itemListFailure,
+        );
+        return;
+      }
       await fulfillJson(route, itemList);
       return;
     }
@@ -232,6 +270,18 @@ async function installApi(
       request.method() === "GET" &&
       itemDetail
     ) {
+      if (options.itemDetailFailure) {
+        await fulfillJson(
+          route,
+          problemDetails(
+            "ITEM_PUBLISH_DETAIL_UNAVAILABLE",
+            "Item detail unavailable",
+            options.itemDetailFailure,
+          ),
+          options.itemDetailFailure,
+        );
+        return;
+      }
       await fulfillJson(route, itemDetail);
       return;
     }
@@ -245,6 +295,18 @@ async function installApi(
         publishRequestGlobalId: publishRequestId,
         selectedPublishNodeGlobalId: publishNodeId,
       });
+      if (options.commandFailure) {
+        await fulfillJson(
+          route,
+          problemDetails(
+            "ITEM_PUBLISH_COMMAND_FAILED",
+            "Item command failed",
+            options.commandFailure,
+          ),
+          options.commandFailure,
+        );
+        return;
+      }
       await fulfillJson(route, commandResponse, 201);
       return;
     }
@@ -258,7 +320,11 @@ async function installApi(
 async function openItemInspector(
   page: Page,
   locale: TestLocale,
-  options: { expectAttemptHistory?: boolean } = {},
+  options: {
+    expectAttemptHistory?: boolean;
+    expectStatusStrip?: boolean;
+    expectSourceEvidence?: boolean;
+  } = {},
 ): Promise<void> {
   await page.goto(`/projects/${projectId}?lang=${locale}&tab=ebom`, {
     waitUntil: "domcontentloaded",
@@ -267,18 +333,25 @@ async function openItemInspector(
   await expect(page.locator("html")).toHaveAttribute("lang", locale);
   await expect(page.locator(".route-loading")).toHaveCount(0);
   await page.getByRole("button", { name: "R1", exact: true }).click();
-  await page.locator('[data-item-inspector-trigger="true"]').first().click();
+  const trigger = page.locator('[data-item-inspector-trigger="true"]').first();
+  await trigger.click();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
   const inspector = page.getByRole("region", {
     name: translate(locale, "Item execution inspector"),
   });
   await expect(inspector).toBeVisible();
-  await inspector.getByRole("button", { name: "ENG-SYN-001" }).click();
-  await expect(
-    inspector.getByText(
-      translate(locale, "Exact source and execution expectation"),
-    ),
-  ).toBeVisible();
-  await expect(inspector.locator(".item-publish__status-strip")).toBeVisible();
+  if (options.expectSourceEvidence ?? true) {
+    await expect(
+      inspector.getByText(
+        translate(locale, "Exact source and execution expectation"),
+      ),
+    ).toBeVisible();
+  }
+  if (options.expectStatusStrip ?? true) {
+    await expect(
+      inspector.locator(".item-publish__status-strip"),
+    ).toBeVisible();
+  }
   if (options.expectAttemptHistory ?? true) {
     await expect(inspector.locator(".item-publish__attempts")).toBeVisible();
   }
@@ -368,13 +441,24 @@ test.describe("P8-03 live Item execution inspector", () => {
       (item) =>
         item.method === "POST" && item.path.endsWith("/item-publish-requests"),
     );
+    const commands = observed.filter(
+      (item) =>
+        item.method === "POST" && item.path.endsWith("/item-publish-requests"),
+    );
+    expect(commands).toHaveLength(1);
+    expect(command?.path).toBe(
+      `/api/npi/v1/projects/${projectId}/item-publish-requests`,
+    );
+    expect(command?.query).toBe("");
     expect(command?.csrfToken).toBe(csrfToken);
     expect(command?.idempotencyKey).toMatch(/^item-publish-/u);
-    expect(command?.payload).not.toHaveProperty("actorUserId");
-    expect(command?.payload).not.toHaveProperty("targetMode");
-    expect(command?.payload).not.toHaveProperty("formalItemCode");
-    expect(command?.payload).not.toHaveProperty("targetVersion");
-    expect(command?.payload).not.toHaveProperty("operation");
+    expect(command?.payload).toEqual({
+      acknowledgement:
+        "I confirm this request uses the exact released Item source and current execution profile.",
+      expectedMappingVersion: 3,
+      publishRequestGlobalId: publishRequestId,
+      selectedPublishNodeGlobalId: publishNodeId,
+    });
   });
 
   test("blocks uncertain execution and shows an authoritative mapping only when supplied", async ({
@@ -401,6 +485,124 @@ test.describe("P8-03 live Item execution inspector", () => {
     await expect(
       page.getByRole("button", { name: /retry|reconcile/iu }),
     ).toHaveCount(0);
+  });
+
+  test("keeps the inactive inspector absent and activates on Space once", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page);
+    await page.goto(`/projects/${projectId}?lang=en&tab=ebom`, {
+      waitUntil: "domcontentloaded",
+    });
+    await page.getByRole("button", { name: "R1", exact: true }).click();
+    await expect(
+      page.getByRole("region", { name: "Item execution inspector" }),
+    ).toHaveCount(0);
+    expect(
+      observed.filter((item) => item.path.includes("/item-publish-requests")),
+    ).toHaveLength(0);
+
+    const trigger = page
+      .locator('[data-item-inspector-trigger="true"]')
+      .first();
+    await trigger.focus();
+    await page.keyboard.press("Space");
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await expect(
+      page.getByRole("region", { name: "Item execution inspector" }),
+    ).toBeVisible();
+  });
+
+  test("fails closed for Item list transport failure", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    await installApi(page, { itemListFailure: 503 });
+    await openItemInspector(page, "en", {
+      expectAttemptHistory: false,
+      expectStatusStrip: false,
+      expectSourceEvidence: false,
+    });
+    await expect(page.getByText("Item execution unavailable")).toBeVisible();
+    await expect(
+      page.getByText("trace-item_publish_list_unavailable"),
+    ).toBeVisible();
+  });
+
+  test("fails closed for Item detail transport failure", async ({ page }) => {
+    await installSession(page, "en");
+    await installApi(page, { itemDetailFailure: 500 });
+    await openItemInspector(page, "en", {
+      expectAttemptHistory: false,
+    });
+    await expect(
+      page.getByRole("heading", { name: "Item detail unavailable" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("trace-item_publish_detail_unavailable"),
+    ).toBeVisible();
+  });
+
+  test("keeps local POST pending truth on a server command failure", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page, {
+      detail: null,
+      list: exactItemList(null, {
+        mappingExpectation: {
+          mappingVersion: 3,
+          formalItemCode: "ITEM-SANDBOX-0001",
+          targetVersion: "7",
+          observationHash: "c".repeat(64),
+        },
+        profileMode: "synthetic",
+      }),
+      commandFailure: 409,
+    });
+    await openItemInspector(page, "en", { expectAttemptHistory: false });
+    await page
+      .getByRole("checkbox", {
+        name: "I confirm this request uses the exact released Item source and current execution profile.",
+      })
+      .check();
+    await page.getByRole("button", { name: "Request Item execution" }).click();
+    await expect(page.getByText("Item command failed")).toBeVisible();
+    await expect(
+      page.getByText("trace-item_publish_command_failed"),
+    ).toBeVisible();
+    expect(
+      observed.filter(
+        (item) =>
+          item.method === "POST" &&
+          item.path.endsWith("/item-publish-requests"),
+      ),
+    ).toHaveLength(1);
+    await expect(page.getByText("Queued; target result pending")).toHaveCount(
+      0,
+    );
+  });
+
+  test("keeps server processing truth without presenting a fake success", async ({
+    page,
+  }) => {
+    const processing = itemPublishDetailFixture({
+      state: "processing",
+      targetMode: "sandbox",
+    });
+    await installSession(page, "en");
+    await installApi(page, { detail: processing });
+    await openItemInspector(page, "en");
+    await expect(
+      page.getByText("Processing; target result pending"),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Authoritative Sandbox result observed"),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Request Item execution" }),
+    ).toBeDisabled();
   });
 
   test("keeps mapping conflict request and result states distinct", async ({
@@ -501,4 +703,39 @@ test.describe("@visual P8-03 Item execution truth", () => {
       });
     });
   }
+
+  test("p8-03-item-inactive-en-1366x768-100", async ({ page }) => {
+    await installSession(page, "en");
+    await installApi(page);
+    await page.setViewportSize(
+      effectiveViewport({ height: 768, width: 1366 }, 1),
+    );
+    await page.emulateMedia({
+      colorScheme: "light",
+      reducedMotion: "reduce",
+    });
+    await page.goto(`/projects/${projectId}?lang=en&tab=ebom`, {
+      waitUntil: "domcontentloaded",
+    });
+    await expect(page.locator("#main-content")).toBeVisible();
+    await expect(page.locator(".route-loading")).toHaveCount(0);
+    await page.getByRole("button", { name: "R1", exact: true }).click();
+    await expect(
+      page.getByRole("region", { name: "Item execution inspector" }),
+    ).toHaveCount(0);
+    await expectNoMixedLanguage(page, "en");
+    await expectNoDocumentOverflow(page);
+    await expectIndustrialComputedStyles(page);
+    await expectSinglePrimaryAction(page);
+    await expectAxeClean(page);
+    await page.addStyleTag({
+      content:
+        "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
+    });
+    await page.evaluate(async () => document.fonts.ready);
+    await expect(page).toHaveScreenshot(
+      "p8-03-item-inactive-en-1366x768-100.png",
+      { fullPage: true },
+    );
+  });
 });

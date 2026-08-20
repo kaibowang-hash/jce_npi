@@ -114,6 +114,9 @@ export interface ItemPublishAttemptViewModel {
   requestGlobalId: string;
   outboxEventId: string;
   attemptNumber: number;
+  sourceHash: string;
+  profileId: string;
+  profileVersion: number;
   state: ItemPublishAttemptState;
   adapterBoundaryCrossed: boolean;
   targetIdempotencyKeyHash: string;
@@ -134,7 +137,9 @@ export interface ItemPublishResultViewModel {
   outboxEventId: string;
   attemptGlobalId: string;
   attemptNumber: number;
+  idempotencyKeyHash: string;
   sourceHash: string;
+  expectedTargetVersion: string | null;
   state: Exclude<
     ItemPublishRequestState,
     "validated_mock" | "queued" | "processing" | "mapping_conflict"
@@ -149,11 +154,45 @@ export interface ItemPublishResultViewModel {
   observedAt: string;
 }
 
-export interface ItemPublishCurrentMappingViewModel {
+export interface ItemMappingObservationViewModel {
+  globalId: string;
+  sourceStreamKeyHash: string;
+  engineeringItemId: string;
   mappingVersion: number;
   formalItemCode: string;
   targetVersion: string;
+  requestGlobalId: string;
+  outboxEventId: string;
+  attemptGlobalId: string;
+  resultGlobalId: string;
+  profileId: string;
+  profileVersion: number;
+  environmentCode: string;
+  authority: "synthetic" | "authoritative_sandbox";
+  disposition: "advanced" | "non_authoritative" | "observed_conflict";
+  previousMappingVersion: number;
+  previousObservationHash: string | null;
+  targetResultHash: string;
   observationHash: string;
+  observedAt: string;
+}
+
+export interface ItemMappingHeadViewModel {
+  globalId: string;
+  sourceStreamKeyHash: string;
+  engineeringItemId: string;
+  mappingVersion: number;
+  formalItemCode: string;
+  targetVersion: string;
+  currentObservationGlobalId: string;
+  currentObservationHash: string;
+  headHash: string;
+  updatedAt: string;
+}
+
+export interface ItemPublishCurrentMappingViewModel {
+  head: ItemMappingHeadViewModel;
+  observation: ItemMappingObservationViewModel;
 }
 
 export interface ItemPublishPermissionsViewModel {
@@ -252,6 +291,12 @@ const resultStates = new Set([
   "uncertain_after_timeout",
 ]);
 const authorities = new Set(["none", "synthetic", "authoritative_sandbox"]);
+const mappingAuthorities = new Set(["synthetic", "authoritative_sandbox"]);
+const mappingDispositions = new Set([
+  "advanced",
+  "non_authoritative",
+  "observed_conflict",
+]);
 
 function record(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -311,6 +356,20 @@ function attributes(value: unknown): value is Readonly<Record<string, string>> {
     record(value) &&
     Object.keys(value).length <= 50 &&
     Object.values(value).every((item) => boundedString(item, 1, 280))
+  );
+}
+
+function sameAttributes(
+  left: Readonly<Record<string, string>>,
+  right: Readonly<Record<string, string>>,
+): boolean {
+  const leftKeys = Object.keys(left).sort();
+  const rightKeys = Object.keys(right).sort();
+  return (
+    leftKeys.length === rightKeys.length &&
+    leftKeys.every(
+      (key, index) => key === rightKeys[index] && left[key] === right[key],
+    )
   );
 }
 
@@ -388,8 +447,25 @@ function source(value: unknown): value is ItemPublishSourceViewModel {
     !hash(value.sourceHash)
   )
     return false;
-  return value.occurrences.every(
-    (item) => item.engineeringItemId === value.engineeringItemId,
+  const itemMaster = value.itemMaster;
+  const nodeIds = new Set(
+    value.occurrences.map((item) => item.publishNodeGlobalId),
+  );
+  const lineIds = new Set(value.occurrences.map((item) => item.lineGlobalId));
+  return (
+    nodeIds.size === value.occurrences.length &&
+    lineIds.size === value.occurrences.length &&
+    nodeIds.has(value.selectedPublishNodeGlobalId) &&
+    value.occurrences.every(
+      (item) =>
+        item.engineeringItemId === value.engineeringItemId &&
+        item.description === itemMaster.description &&
+        item.engineeringUom === itemMaster.engineeringUom &&
+        sameAttributes(
+          item.attributes,
+          itemMaster.attributes as Readonly<Record<string, string>>,
+        ),
+    )
   );
 }
 
@@ -522,12 +598,21 @@ export function isItemPublishRequest(
   if (value.profile.targetMode === "mock") {
     return (
       value.state === "validated_mock" &&
+      value.intent === "create_item" &&
+      value.mappingExpectation.mappingVersion === 0 &&
       !value.dispatchAllowed &&
       value.outboxEventId === null &&
       value.resultGlobalId === null
     );
   }
-  return value.dispatchAllowed && value.outboxEventId !== null;
+  return (
+    value.dispatchAllowed &&
+    value.outboxEventId !== null &&
+    ((value.mappingExpectation.mappingVersion === 0 &&
+      value.intent === "create_item") ||
+      (value.mappingExpectation.mappingVersion > 0 &&
+        value.intent === "update_item_engineering_fields"))
+  );
 }
 
 function permissions(value: unknown): value is ItemPublishPermissionsViewModel {
@@ -547,6 +632,9 @@ function attempt(value: unknown): value is ItemPublishAttemptViewModel {
       "requestGlobalId",
       "outboxEventId",
       "attemptNumber",
+      "sourceHash",
+      "profileId",
+      "profileVersion",
       "state",
       "adapterBoundaryCrossed",
       "targetIdempotencyKeyHash",
@@ -564,6 +652,9 @@ function attempt(value: unknown): value is ItemPublishAttemptViewModel {
     uuid(value.requestGlobalId) &&
     uuid(value.outboxEventId) &&
     positive(value.attemptNumber) &&
+    hash(value.sourceHash) &&
+    boundedString(value.profileId, 1, 128) &&
+    positive(value.profileVersion) &&
     attemptStates.has(value.state as ItemPublishAttemptState) &&
     typeof value.adapterBoundaryCrossed === "boolean" &&
     hash(value.targetIdempotencyKeyHash) &&
@@ -586,7 +677,10 @@ function attempt(value: unknown): value is ItemPublishAttemptViewModel {
     nullable(value.safeErrorCode, (item): item is string =>
       boundedString(item, 1, 100),
     ) &&
-    hash(value.attemptHash)
+    hash(value.attemptHash) &&
+    (value.state === "started"
+      ? value.finishedAt === null
+      : value.finishedAt !== null)
   );
 }
 
@@ -599,7 +693,9 @@ function result(value: unknown): value is ItemPublishResultViewModel {
       "outboxEventId",
       "attemptGlobalId",
       "attemptNumber",
+      "idempotencyKeyHash",
       "sourceHash",
+      "expectedTargetVersion",
       "state",
       "authority",
       "responseAuthenticated",
@@ -615,7 +711,11 @@ function result(value: unknown): value is ItemPublishResultViewModel {
     !uuid(value.outboxEventId) ||
     !uuid(value.attemptGlobalId) ||
     !positive(value.attemptNumber) ||
+    !hash(value.idempotencyKeyHash) ||
     !hash(value.sourceHash) ||
+    !nullable(value.expectedTargetVersion, (item): item is string =>
+      boundedString(item, 1, 140),
+    ) ||
     !resultStates.has(value.state as string) ||
     !authorities.has(value.authority as string) ||
     typeof value.responseAuthenticated !== "boolean" ||
@@ -631,13 +731,109 @@ function result(value: unknown): value is ItemPublishResultViewModel {
     !timestamp(value.observedAt)
   )
     return false;
-  const authoritative =
-    value.state === "succeeded" &&
-    value.authority === "authoritative_sandbox" &&
-    value.responseAuthenticated;
-  return authoritative
-    ? value.formalItemCode !== null && value.targetVersion !== null
-    : value.formalItemCode === null && value.targetVersion === null;
+  if (value.state === "synthetic_verified") {
+    return (
+      value.authority === "synthetic" &&
+      !value.responseAuthenticated &&
+      value.formalItemCode === null &&
+      value.targetVersion === null &&
+      value.faultKind === "none"
+    );
+  }
+  if (value.state === "succeeded") {
+    return (
+      value.authority === "authoritative_sandbox" &&
+      value.responseAuthenticated &&
+      value.formalItemCode !== null &&
+      value.targetVersion !== null &&
+      value.faultKind === "none"
+    );
+  }
+  return (
+    value.authority === "none" &&
+    !value.responseAuthenticated &&
+    value.formalItemCode === null &&
+    value.targetVersion === null &&
+    value.faultKind !== "none"
+  );
+}
+
+function mappingHead(value: unknown): value is ItemMappingHeadViewModel {
+  return (
+    record(value) &&
+    exact(value, [
+      "globalId",
+      "sourceStreamKeyHash",
+      "engineeringItemId",
+      "mappingVersion",
+      "formalItemCode",
+      "targetVersion",
+      "currentObservationGlobalId",
+      "currentObservationHash",
+      "headHash",
+      "updatedAt",
+    ]) &&
+    uuid(value.globalId) &&
+    hash(value.sourceStreamKeyHash) &&
+    boundedString(value.engineeringItemId, 1, 128) &&
+    positive(value.mappingVersion) &&
+    boundedString(value.formalItemCode, 1, 140) &&
+    boundedString(value.targetVersion, 1, 140) &&
+    uuid(value.currentObservationGlobalId) &&
+    hash(value.currentObservationHash) &&
+    hash(value.headHash) &&
+    timestamp(value.updatedAt)
+  );
+}
+
+function mappingObservation(
+  value: unknown,
+): value is ItemMappingObservationViewModel {
+  return (
+    record(value) &&
+    exact(value, [
+      "globalId",
+      "sourceStreamKeyHash",
+      "engineeringItemId",
+      "mappingVersion",
+      "formalItemCode",
+      "targetVersion",
+      "requestGlobalId",
+      "outboxEventId",
+      "attemptGlobalId",
+      "resultGlobalId",
+      "profileId",
+      "profileVersion",
+      "environmentCode",
+      "authority",
+      "disposition",
+      "previousMappingVersion",
+      "previousObservationHash",
+      "targetResultHash",
+      "observationHash",
+      "observedAt",
+    ]) &&
+    uuid(value.globalId) &&
+    hash(value.sourceStreamKeyHash) &&
+    boundedString(value.engineeringItemId, 1, 128) &&
+    positive(value.mappingVersion) &&
+    boundedString(value.formalItemCode, 1, 140) &&
+    boundedString(value.targetVersion, 1, 140) &&
+    uuid(value.requestGlobalId) &&
+    uuid(value.outboxEventId) &&
+    uuid(value.attemptGlobalId) &&
+    uuid(value.resultGlobalId) &&
+    boundedString(value.profileId, 1, 128) &&
+    positive(value.profileVersion) &&
+    boundedString(value.environmentCode, 1, 64) &&
+    mappingAuthorities.has(value.authority as string) &&
+    mappingDispositions.has(value.disposition as string) &&
+    nonNegative(value.previousMappingVersion) &&
+    nullable(value.previousObservationHash, hash) &&
+    hash(value.targetResultHash) &&
+    hash(value.observationHash) &&
+    timestamp(value.observedAt)
+  );
 }
 
 function currentMapping(
@@ -645,16 +841,9 @@ function currentMapping(
 ): value is ItemPublishCurrentMappingViewModel {
   return (
     record(value) &&
-    exact(value, [
-      "mappingVersion",
-      "formalItemCode",
-      "targetVersion",
-      "observationHash",
-    ]) &&
-    positive(value.mappingVersion) &&
-    boundedString(value.formalItemCode, 1, 140) &&
-    boundedString(value.targetVersion, 1, 140) &&
-    hash(value.observationHash)
+    exact(value, ["head", "observation"]) &&
+    mappingHead(value.head) &&
+    mappingObservation(value.observation)
   );
 }
 
@@ -700,8 +889,11 @@ export function isItemPublishRequestList(
           item.releasedEvidence.publishRequestGlobalId ===
             candidate.sourceFilters.publishRequestGlobalId) &&
         (candidate.sourceFilters.selectedPublishNodeGlobalId === null ||
-          item.source.selectedPublishNodeGlobalId ===
-            candidate.sourceFilters.selectedPublishNodeGlobalId),
+          item.source.occurrences.some(
+            (occurrence) =>
+              occurrence.publishNodeGlobalId ===
+              candidate.sourceFilters.selectedPublishNodeGlobalId,
+          )),
     )
   );
 }
@@ -732,12 +924,23 @@ export function isItemPublishRequestDetail(
     return false;
   const candidate = value as unknown as ItemPublishRequestDetailViewModel;
   const request = candidate.request;
-  const attemptsAreBound = candidate.attempts.every(
-    (item, index) =>
-      item.requestGlobalId === request.globalId &&
-      item.outboxEventId === request.outboxEventId &&
-      item.attemptNumber === index + 1,
-  );
+  const attemptsAreBound =
+    (request.profile.targetMode === "mock"
+      ? candidate.attempts.length === 0
+      : candidate.attempts.every(
+          (item, index) =>
+            item.requestGlobalId === request.globalId &&
+            item.outboxEventId === request.outboxEventId &&
+            item.attemptNumber === index + 1 &&
+            item.sourceHash === request.source.sourceHash &&
+            item.profileId === request.profile.profileId &&
+            item.profileVersion === request.profile.profileVersion,
+        )) &&
+    new Set(candidate.attempts.map((item) => item.globalId)).size ===
+      candidate.attempts.length &&
+    (candidate.attempts.length === 0 ||
+      new Set(candidate.attempts.map((item) => item.targetIdempotencyKeyHash))
+        .size === 1);
   const observedResult = candidate.result;
   const resultIsBound =
     observedResult === null
@@ -746,19 +949,170 @@ export function isItemPublishRequestDetail(
         observedResult.requestGlobalId === request.globalId &&
         observedResult.outboxEventId === request.outboxEventId &&
         observedResult.sourceHash === request.source.sourceHash &&
-        candidate.attempts.some(
-          (item) =>
-            item.globalId === observedResult.attemptGlobalId &&
-            item.attemptNumber === observedResult.attemptNumber,
-        );
-  const mappingConflictTruth =
-    request.state !== "mapping_conflict" ||
-    (observedResult !== null &&
-      observedResult.state === "succeeded" &&
-      observedResult.authority === "authoritative_sandbox" &&
-      observedResult.responseAuthenticated &&
-      candidate.currentMapping !== null);
-  return attemptsAreBound && resultIsBound && mappingConflictTruth;
+        candidate.attempts.length > 0 &&
+        observedResult.attemptGlobalId ===
+          candidate.attempts[candidate.attempts.length - 1]?.globalId &&
+        observedResult.attemptNumber ===
+          candidate.attempts[candidate.attempts.length - 1]?.attemptNumber &&
+        observedResult.idempotencyKeyHash ===
+          candidate.attempts[candidate.attempts.length - 1]
+            ?.targetIdempotencyKeyHash &&
+        observedResult.expectedTargetVersion ===
+          request.mappingExpectation.targetVersion &&
+        observedResult.responseHash ===
+          candidate.attempts[candidate.attempts.length - 1]?.responseHash &&
+        observedResult.faultKind ===
+          candidate.attempts[candidate.attempts.length - 1]?.faultKind;
+  const mappingIsBound =
+    candidate.currentMapping === null
+      ? true
+      : (() => {
+          const { head, observation } = candidate.currentMapping;
+          const selectedRequestObservation =
+            observation.requestGlobalId === request.globalId;
+          return (
+            head.sourceStreamKeyHash === request.source.streamKeyHash &&
+            head.engineeringItemId === request.source.engineeringItemId &&
+            head.mappingVersion === observation.mappingVersion &&
+            head.formalItemCode === observation.formalItemCode &&
+            head.targetVersion === observation.targetVersion &&
+            head.currentObservationGlobalId === observation.globalId &&
+            head.currentObservationHash === observation.observationHash &&
+            observation.sourceStreamKeyHash === request.source.streamKeyHash &&
+            observation.engineeringItemId ===
+              request.source.engineeringItemId &&
+            observation.authority === "authoritative_sandbox" &&
+            observation.disposition === "advanced" &&
+            observation.previousMappingVersion < observation.mappingVersion &&
+            (observation.previousMappingVersion > 0
+              ? observation.previousObservationHash !== null
+              : observation.previousObservationHash === null) &&
+            (!selectedRequestObservation ||
+              (observedResult !== null &&
+                observation.requestGlobalId ===
+                  observedResult.requestGlobalId &&
+                observation.outboxEventId === observedResult.outboxEventId &&
+                observation.attemptGlobalId ===
+                  observedResult.attemptGlobalId &&
+                observation.resultGlobalId === observedResult.globalId &&
+                observation.profileId === request.profile.profileId &&
+                observation.profileVersion === request.profile.profileVersion &&
+                observation.environmentCode ===
+                  request.profile.environmentCode &&
+                observation.mappingVersion ===
+                  request.mappingExpectation.mappingVersion + 1 &&
+                observation.previousMappingVersion ===
+                  request.mappingExpectation.mappingVersion &&
+                observation.previousObservationHash ===
+                  request.mappingExpectation.observationHash &&
+                observation.formalItemCode === observedResult.formalItemCode &&
+                observation.targetVersion === observedResult.targetVersion &&
+                observation.targetResultHash === observedResult.resultHash))
+          );
+        })();
+  const lastAttempt = candidate.attempts[candidate.attempts.length - 1];
+  const allAttemptsTerminal = candidate.attempts.every(
+    (item) => item.state !== "started" && item.finishedAt !== null,
+  );
+  let stateMatrix = false;
+  switch (request.state) {
+    case "validated_mock":
+      stateMatrix =
+        request.profile.targetMode === "mock" &&
+        candidate.attempts.length === 0 &&
+        observedResult === null &&
+        candidate.currentMapping === null;
+      break;
+    case "queued":
+      stateMatrix =
+        request.profile.targetMode !== "mock" &&
+        candidate.attempts.length === 0 &&
+        observedResult === null &&
+        candidate.currentMapping === null;
+      break;
+    case "processing":
+      stateMatrix =
+        request.profile.targetMode !== "mock" &&
+        candidate.attempts.length > 0 &&
+        observedResult === null &&
+        candidate.currentMapping === null &&
+        lastAttempt?.state === "started" &&
+        lastAttempt.finishedAt === null &&
+        candidate.attempts
+          .slice(0, -1)
+          .every(
+            (item) => item.state !== "started" && item.finishedAt !== null,
+          );
+      break;
+    case "synthetic_verified":
+      stateMatrix =
+        request.profile.targetMode === "synthetic" &&
+        candidate.attempts.length > 0 &&
+        allAttemptsTerminal &&
+        lastAttempt?.state === "synthetic_verified" &&
+        !lastAttempt.adapterBoundaryCrossed &&
+        observedResult?.state === "synthetic_verified" &&
+        observedResult.authority === "synthetic" &&
+        !observedResult.responseAuthenticated &&
+        candidate.currentMapping === null;
+      break;
+    case "succeeded":
+      stateMatrix =
+        request.profile.targetMode === "sandbox" &&
+        candidate.attempts.length > 0 &&
+        allAttemptsTerminal &&
+        lastAttempt?.state === "observed_success" &&
+        lastAttempt.adapterBoundaryCrossed &&
+        observedResult?.state === "succeeded" &&
+        observedResult.authority === "authoritative_sandbox" &&
+        observedResult.responseAuthenticated &&
+        candidate.currentMapping !== null;
+      break;
+    case "failed_retryable":
+    case "failed_final":
+      stateMatrix =
+        request.profile.targetMode !== "mock" &&
+        candidate.attempts.length > 0 &&
+        allAttemptsTerminal &&
+        lastAttempt?.state === "observed_failure" &&
+        observedResult?.state === request.state &&
+        observedResult.authority === "none" &&
+        !observedResult.responseAuthenticated &&
+        observedResult.faultKind !== "none" &&
+        observedResult.formalItemCode === null &&
+        observedResult.targetVersion === null &&
+        candidate.currentMapping === null;
+      break;
+    case "uncertain_after_timeout":
+      stateMatrix =
+        request.profile.targetMode === "sandbox" &&
+        candidate.attempts.length > 0 &&
+        allAttemptsTerminal &&
+        lastAttempt?.state === "uncertain" &&
+        lastAttempt.adapterBoundaryCrossed &&
+        lastAttempt.reconciliationRequired &&
+        observedResult?.state === "uncertain_after_timeout" &&
+        observedResult.authority === "none" &&
+        !observedResult.responseAuthenticated &&
+        observedResult.faultKind === "timeout_after_possible_commit" &&
+        candidate.currentMapping === null;
+      break;
+    case "mapping_conflict":
+      stateMatrix =
+        request.profile.targetMode === "sandbox" &&
+        candidate.attempts.length > 0 &&
+        allAttemptsTerminal &&
+        lastAttempt?.state === "observed_success" &&
+        lastAttempt.adapterBoundaryCrossed &&
+        observedResult?.state === "succeeded" &&
+        observedResult.authority === "authoritative_sandbox" &&
+        observedResult.responseAuthenticated &&
+        candidate.currentMapping !== null &&
+        candidate.currentMapping.observation.resultGlobalId !==
+          observedResult.globalId;
+      break;
+  }
+  return attemptsAreBound && resultIsBound && mappingIsBound && stateMatrix;
 }
 
 function requestNotReady(): NpiTransportError {

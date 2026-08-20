@@ -330,6 +330,28 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             disposable_runtime_marker=True,
         )
 
+    @staticmethod
+    def sandbox_profile() -> ItemExecutionProfile:
+        return ItemExecutionProfile(
+            profile_id="item-sandbox-v1",
+            profile_version=1,
+            tenant_id="TENANT-A",
+            project_global_id=str(PROJECT_ID),
+            target_mode=ItemTargetMode.SANDBOX,
+            environment_code="sandbox",
+            requester_user_ids=("publisher@example.invalid",),
+            service_actor_user_id="item-worker@example.invalid",
+            allowed_operations=(ITEM_PUBLISH_OPERATION,),
+            adapter_resolver="npi_integration.item_publish.runtime_fixture.synthetic_adapter",
+            base_url="https://sandbox.invalid",
+            allowed_hostnames=("sandbox.invalid",),
+            secret_reference="secret/item-sandbox",
+            response_authentication="hmac-sha256-v1",
+            connect_timeout_seconds=5,
+            read_timeout_seconds=5,
+            non_production_attested=True,
+        )
+
     def new_repository(
         self,
         profile: ItemExecutionProfile | None,
@@ -774,7 +796,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             "outboxEventId": str(request.outbox_event_id),
             "attemptNumber": 1,
             "claimToken": "private-claim-token",
-            "targetIdempotencyKeyHash": HASH_B,
+            "targetIdempotencyKeyHash": str(request.target_idempotency_key_hash),
             "sourceHash": str(request.source_hash),
             "profileId": str(request.profile_id),
             "profileVersion": int(request.profile_version),
@@ -810,7 +832,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             "outboxEventId": str(request.outbox_event_id),
             "attemptGlobalId": str(attempt_id),
             "attemptNumber": 1,
-            "idempotencyKeyHash": HASH_B,
+            "idempotencyKeyHash": str(request.target_idempotency_key_hash),
             "sourceHash": str(request.source_hash),
             "expectedTargetVersion": None,
             "state": "synthetic_verified",
@@ -829,6 +851,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
                 outbox_event_id=str(request.outbox_event_id),
                 attempt_global_id=str(attempt_id),
                 attempt_number=1,
+                idempotency_key_hash=str(request.target_idempotency_key_hash),
                 source_hash=str(request.source_hash),
                 result_snapshot=result_snapshot,
                 result_hash=self.module.canonical_hash(result_snapshot),
@@ -853,6 +876,202 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
                 PROJECT_ID,
                 UUID(outcome.response["requestGlobalId"]),
             )
+
+    def test_detail_projects_verified_mapping_head_and_observation_provenance(self) -> None:
+        self.repository = self.new_repository(self.sandbox_profile())
+        outcome = self.create()
+        self.frappe.db.commit()
+        request = self.only("NPI Item Publish Request")
+        request.state = "succeeded"
+        request.result_global_id = str(UUID("00000000-0000-4000-8000-000000008323"))
+        request.expected_mapping_version = 0
+        request.expected_formal_item_code = None
+        request.expected_target_version = None
+        request.expected_mapping_observation_hash = None
+        attempt_id = UUID("00000000-0000-4000-8000-000000008324")
+        result_id = UUID(str(request.result_global_id))
+        observed_at = "2026-08-16T14:00:02Z"
+        result_snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(result_id),
+            "requestGlobalId": str(request.global_id),
+            "outboxEventId": str(request.outbox_event_id),
+            "attemptGlobalId": str(attempt_id),
+            "attemptNumber": 1,
+            "idempotencyKeyHash": str(request.target_idempotency_key_hash),
+            "sourceHash": str(request.source_hash),
+            "expectedTargetVersion": None,
+            "state": "succeeded",
+            "authority": "authoritative_sandbox",
+            "responseAuthenticated": True,
+            "responseHash": HASH_D,
+            "formalItemCode": "ITEM-SANDBOX-0001",
+            "targetVersion": "7",
+            "faultKind": "none",
+            "observedAt": observed_at,
+        }
+        result_hash = self.module.canonical_hash(result_snapshot)
+        attempt_snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(attempt_id),
+            "requestGlobalId": str(request.global_id),
+            "outboxEventId": str(request.outbox_event_id),
+            "attemptNumber": 1,
+            "claimToken": "00000000-0000-4000-8000-000000008325",
+            "targetIdempotencyKeyHash": str(request.target_idempotency_key_hash),
+            "sourceHash": str(request.source_hash),
+            "profileId": str(request.profile_id),
+            "profileVersion": int(request.profile_version),
+            "state": "observed_success",
+            "adapterBoundaryCrossed": True,
+            "connectTimeoutSeconds": 5,
+            "readTimeoutSeconds": 5,
+            "requestSnapshotHash": HASH_C,
+            "transportDisposition": "observed_success",
+            "targetStatusCode": 201,
+            "responseHash": HASH_D,
+            "faultKind": "none",
+            "reconciliationRequired": False,
+            "safeErrorCode": None,
+            "startedAt": "2026-08-16T14:00:01Z",
+            "finishedAt": observed_at,
+        }
+        self.documents["NPI Item Publish Attempt"] = {
+            str(attempt_id): AttrDict(
+                global_id=str(attempt_id),
+                request_global_id=str(request.global_id),
+                outbox_event_id=str(request.outbox_event_id),
+                attempt_number=1,
+                source_hash=str(request.source_hash),
+                profile_id=str(request.profile_id),
+                profile_version=int(request.profile_version),
+                target_idempotency_key_hash=str(request.target_idempotency_key_hash),
+                state="observed_success",
+                adapter_boundary_crossed=True,
+                finished_at=observed_at,
+                attempt_snapshot=attempt_snapshot,
+                attempt_hash=self.module.canonical_hash(attempt_snapshot),
+            )
+        }
+        self.documents["NPI Item Publish Result"] = {
+            str(result_id): AttrDict(
+                global_id=str(result_id),
+                request_global_id=str(request.global_id),
+                outbox_event_id=str(request.outbox_event_id),
+                attempt_global_id=str(attempt_id),
+                attempt_number=1,
+                idempotency_key_hash=str(request.target_idempotency_key_hash),
+                source_hash=str(request.source_hash),
+                expected_target_version=None,
+                observed_at=observed_at,
+                result_snapshot=result_snapshot,
+                result_hash=result_hash,
+            )
+        }
+        observation_id = UUID("00000000-0000-4000-8000-000000008326")
+        observation_snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(observation_id),
+            "tenantId": "TENANT-A",
+            "projectGlobalId": str(PROJECT_ID),
+            "sourceStreamKeyHash": str(request.source_stream_key_hash),
+            "engineeringItemId": str(request.engineering_item_id),
+            "mappingVersion": 1,
+            "formalItemCode": "ITEM-SANDBOX-0001",
+            "targetVersion": "7",
+            "requestGlobalId": str(request.global_id),
+            "outboxEventId": str(request.outbox_event_id),
+            "attemptGlobalId": str(attempt_id),
+            "resultGlobalId": str(result_id),
+            "profileId": str(request.profile_id),
+            "profileVersion": int(request.profile_version),
+            "environmentCode": str(request.environment_code),
+            "authority": "authoritative_sandbox",
+            "disposition": "advanced",
+            "previousMappingVersion": 0,
+            "previousObservationHash": None,
+            "targetResultHash": result_hash,
+            "observedAt": observed_at,
+        }
+        observation_hash = self.module.canonical_hash(observation_snapshot)
+        self.documents["NPI Item Mapping Observation"] = {
+            str(observation_id): AttrDict(
+                global_id=str(observation_id),
+                tenant_id="TENANT-A",
+                project_global_id=str(PROJECT_ID),
+                source_stream_key_hash=str(request.source_stream_key_hash),
+                engineering_item_id=str(request.engineering_item_id),
+                mapping_version=1,
+                formal_item_code="ITEM-SANDBOX-0001",
+                target_version="7",
+                request_global_id=str(request.global_id),
+                outbox_event_id=str(request.outbox_event_id),
+                attempt_global_id=str(attempt_id),
+                result_global_id=str(result_id),
+                profile_id=str(request.profile_id),
+                profile_version=int(request.profile_version),
+                environment_code=str(request.environment_code),
+                authority="authoritative_sandbox",
+                disposition="advanced",
+                previous_mapping_version=0,
+                previous_observation_hash=None,
+                target_result_snapshot=result_snapshot,
+                target_result_hash=result_hash,
+                observation_snapshot=observation_snapshot,
+                observation_hash=observation_hash,
+                observed_at=observed_at,
+            )
+        }
+        head_id = UUID("00000000-0000-4000-8000-000000008327")
+        head_snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(head_id),
+            "tenantId": "TENANT-A",
+            "projectGlobalId": str(PROJECT_ID),
+            "sourceStreamKeyHash": str(request.source_stream_key_hash),
+            "engineeringItemId": str(request.engineering_item_id),
+            "mappingVersion": 1,
+            "formalItemCode": "ITEM-SANDBOX-0001",
+            "targetVersion": "7",
+            "currentObservationGlobalId": str(observation_id),
+            "currentObservationHash": observation_hash,
+            "updatedAt": observed_at,
+        }
+        self.documents["NPI Item Mapping Head"] = {
+            str(head_id): AttrDict(
+                name=str(head_id),
+                global_id=str(head_id),
+                tenant_id="TENANT-A",
+                project_global_id=str(PROJECT_ID),
+                source_stream_key_hash=str(request.source_stream_key_hash),
+                engineering_item_id=str(request.engineering_item_id),
+                mapping_version=1,
+                formal_item_code="ITEM-SANDBOX-0001",
+                target_version="7",
+                current_observation=str(observation_id),
+                current_observation_hash=observation_hash,
+                head_snapshot=head_snapshot,
+                head_hash=self.module.canonical_hash(head_snapshot),
+                updated_at=observed_at,
+            )
+        }
+        self.repository._current_mapping_for_source = (
+            self.module.FrappeItemPublishRepository._current_mapping_for_source.__get__(
+                self.repository
+            )
+        )
+        detail = self.repository.item_publish_request_detail(
+            PROJECT_ID,
+            UUID(outcome.response["requestGlobalId"]),
+        )
+        self.assertIsNotNone(detail)
+        assert detail is not None
+        self.assertEqual(detail["currentMapping"]["head"]["mappingVersion"], 1)
+        self.assertEqual(
+            detail["currentMapping"]["observation"]["resultGlobalId"],
+            str(result_id),
+        )
+        self.assertNotIn("serviceActorUserId", repr(detail))
 
     def test_source_revalidation_and_atomic_write_order_are_explicit(self) -> None:
         path = (

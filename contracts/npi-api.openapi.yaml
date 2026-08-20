@@ -20996,12 +20996,15 @@ components:
     ItemPublishAttempt:
       type: object
       additionalProperties: false
-      required: [globalId, requestGlobalId, outboxEventId, attemptNumber, state, adapterBoundaryCrossed, targetIdempotencyKeyHash, requestSnapshotHash, startedAt, finishedAt, reconciliationRequired, attemptHash]
+      required: [globalId, requestGlobalId, outboxEventId, attemptNumber, sourceHash, profileId, profileVersion, state, adapterBoundaryCrossed, targetIdempotencyKeyHash, requestSnapshotHash, startedAt, finishedAt, reconciliationRequired, attemptHash]
       properties:
         globalId: { type: string, format: uuid }
         requestGlobalId: { type: string, format: uuid }
         outboxEventId: { type: string, format: uuid }
         attemptNumber: { type: integer, minimum: 1 }
+        sourceHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        profileId: { type: string, minLength: 1, maxLength: 128 }
+        profileVersion: { type: integer, minimum: 1 }
         state: { type: string, enum: [started, synthetic_verified, observed_success, observed_failure, uncertain] }
         adapterBoundaryCrossed: { type: boolean }
         targetIdempotencyKeyHash: { $ref: "#/components/schemas/ItemPublishSha256" }
@@ -21018,14 +21021,16 @@ components:
       type: object
       additionalProperties: false
       description: Formal Item identity appears only on authenticated authoritative Sandbox success.
-      required: [globalId, requestGlobalId, outboxEventId, attemptGlobalId, attemptNumber, sourceHash, state, authority, responseAuthenticated, responseHash, formalItemCode, targetVersion, faultKind, resultHash, observedAt]
+      required: [globalId, requestGlobalId, outboxEventId, attemptGlobalId, attemptNumber, idempotencyKeyHash, sourceHash, expectedTargetVersion, state, authority, responseAuthenticated, responseHash, formalItemCode, targetVersion, faultKind, resultHash, observedAt]
       properties:
         globalId: { type: string, format: uuid }
         requestGlobalId: { type: string, format: uuid }
         outboxEventId: { type: string, format: uuid }
         attemptGlobalId: { type: string, format: uuid }
         attemptNumber: { type: integer, minimum: 1 }
+        idempotencyKeyHash: { $ref: "#/components/schemas/ItemPublishSha256" }
         sourceHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        expectedTargetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
         state: { type: string, enum: [synthetic_verified, succeeded, failed_retryable, failed_final, uncertain_after_timeout] }
         authority: { type: string, enum: [none, synthetic, authoritative_sandbox] }
         responseAuthenticated: { type: boolean }
@@ -21038,7 +21043,7 @@ components:
     ItemMappingObservation:
       type: object
       additionalProperties: false
-      required: [globalId, sourceStreamKeyHash, engineeringItemId, mappingVersion, formalItemCode, targetVersion, requestGlobalId, attemptGlobalId, resultGlobalId, authority, disposition, previousMappingVersion, previousObservationHash, targetResultHash, observationHash, observedAt]
+      required: [globalId, sourceStreamKeyHash, engineeringItemId, mappingVersion, formalItemCode, targetVersion, requestGlobalId, outboxEventId, attemptGlobalId, resultGlobalId, profileId, profileVersion, environmentCode, authority, disposition, previousMappingVersion, previousObservationHash, targetResultHash, observationHash, observedAt]
       properties:
         globalId: { type: string, format: uuid }
         sourceStreamKeyHash: { $ref: "#/components/schemas/ItemPublishSha256" }
@@ -21047,8 +21052,12 @@ components:
         formalItemCode: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
         targetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
         requestGlobalId: { type: string, format: uuid }
+        outboxEventId: { type: string, format: uuid }
         attemptGlobalId: { type: string, format: uuid }
         resultGlobalId: { type: string, format: uuid }
+        profileId: { type: string, minLength: 1, maxLength: 128 }
+        profileVersion: { type: integer, minimum: 1 }
+        environmentCode: { type: string, minLength: 1, maxLength: 64 }
         authority: { type: string, enum: [synthetic, authoritative_sandbox] }
         disposition: { type: string, enum: [advanced, non_authoritative, observed_conflict] }
         previousMappingVersion: { type: integer, minimum: 0 }
@@ -21106,12 +21115,10 @@ components:
     ItemPublishCurrentMapping:
       type: object
       additionalProperties: false
-      required: [mappingVersion, formalItemCode, targetVersion, observationHash]
+      required: [head, observation]
       properties:
-        mappingVersion: { type: integer, minimum: 1 }
-        formalItemCode: { type: string, minLength: 1, maxLength: 140, readOnly: true }
-        targetVersion: { type: string, minLength: 1, maxLength: 140, readOnly: true }
-        observationHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        head: { $ref: "#/components/schemas/ItemMappingHead" }
+        observation: { $ref: "#/components/schemas/ItemMappingObservation" }
     ItemPublishRequestList:
       type: object
       additionalProperties: false

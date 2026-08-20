@@ -14,6 +14,7 @@ import {
   itemPublishDetailFixture,
   itemPublishListFixture,
   itemPublishRequestId,
+  itemPublishSiblingNodeId,
 } from "../support/item-publish-fixture";
 import {
   publishNodeId,
@@ -65,7 +66,10 @@ describe("Item publish response validation", () => {
     expect(conflict.result?.state).toBe("succeeded");
     expect(conflict.result?.authority).toBe("authoritative_sandbox");
     expect(conflict.result?.responseAuthenticated).toBe(true);
-    expect(conflict.currentMapping?.mappingVersion).toBe(1);
+    expect(conflict.currentMapping?.head.mappingVersion).toBe(1);
+    expect(conflict.currentMapping?.observation.resultGlobalId).not.toBe(
+      conflict.result?.globalId,
+    );
     expect(isItemPublishRequestDetail(conflict)).toBe(true);
     if (!conflict.result)
       throw new Error("The conflict fixture requires a result.");
@@ -75,6 +79,34 @@ describe("Item publish response validation", () => {
         result: { ...conflict.result, state: "synthetic_verified" },
       }),
     ).toBe(false);
+  });
+
+  it.each([
+    "validated_mock",
+    "queued",
+    "processing",
+    "synthetic_verified",
+    "succeeded",
+    "failed_retryable",
+    "failed_final",
+    "uncertain_after_timeout",
+    "mapping_conflict",
+  ] as const)("accepts the closed %s state matrix", (state) => {
+    const detail = itemPublishDetailFixture({ state });
+    expect(isItemPublishRequestDetail(detail)).toBe(true);
+  });
+
+  it("matches a selected sibling through occurrences rather than the selected occurrence field", () => {
+    const detail = itemPublishDetailFixture();
+    const list = itemPublishListFixture(detail);
+    const siblingList = {
+      ...list,
+      sourceFilters: {
+        ...list.sourceFilters,
+        selectedPublishNodeGlobalId: itemPublishSiblingNodeId,
+      },
+    };
+    expect(isItemPublishRequestList(siblingList)).toBe(true);
   });
 
   it("requires a server mapping expectation for exact-source list responses", () => {
@@ -124,6 +156,315 @@ describe("Item publish response validation", () => {
           request: {
             ...detail.request,
             outboxEventId: "76000000-0000-4000-8000-000000000004",
+          },
+        };
+      },
+    ],
+    [
+      "a fake succeeded result",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.result) throw new Error("The fixture requires a result.");
+        return {
+          ...detail,
+          result: {
+            ...detail.result,
+            authority: "none" as const,
+            responseAuthenticated: false,
+          },
+        };
+      },
+    ],
+    [
+      "a profile and state mismatch",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        return {
+          ...detail,
+          request: {
+            ...detail.request,
+            profile: {
+              ...detail.request.profile,
+              targetMode: "synthetic" as const,
+            },
+          },
+        };
+      },
+    ],
+    [
+      "a queued attempt",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "queued" });
+        const processing = itemPublishDetailFixture({ state: "processing" });
+        return { ...detail, attempts: processing.attempts };
+      },
+    ],
+    [
+      "a terminal processing attempt",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "processing" });
+        const attempt = detail.attempts[0];
+        if (!attempt) throw new Error("The fixture requires an attempt.");
+        return {
+          ...detail,
+          attempts: [{ ...attempt, finishedAt: "2026-08-16T08:00:02Z" }],
+        };
+      },
+    ],
+    [
+      "a terminal response without a result",
+      () => {
+        const detail = itemPublishDetailFixture({
+          state: "failed_final",
+        });
+        return {
+          ...detail,
+          request: { ...detail.request, resultGlobalId: null },
+          result: null,
+        };
+      },
+    ],
+    [
+      "a result bound to a non-last attempt",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        const attempt = detail.attempts[0];
+        if (!attempt) throw new Error("The fixture requires an attempt.");
+        return {
+          ...detail,
+          attempts: [{ ...attempt, attemptNumber: 2 }],
+        };
+      },
+    ],
+    [
+      "attempt outbox binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        const attempt = detail.attempts[0];
+        if (!attempt) throw new Error("The fixture requires an attempt.");
+        return {
+          ...detail,
+          attempts: [
+            {
+              ...attempt,
+              outboxEventId: "76000000-0000-4000-8000-000000000099",
+            },
+          ],
+        };
+      },
+    ],
+    [
+      "attempt source binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        const attempt = detail.attempts[0];
+        if (!attempt) throw new Error("The fixture requires an attempt.");
+        return {
+          ...detail,
+          attempts: [{ ...attempt, sourceHash: "e".repeat(64) }],
+        };
+      },
+    ],
+    [
+      "attempt target binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        const attempt = detail.attempts[0];
+        if (!attempt) throw new Error("The fixture requires an attempt.");
+        return {
+          ...detail,
+          attempts: [{ ...attempt, targetIdempotencyKeyHash: "e".repeat(64) }],
+        };
+      },
+    ],
+    [
+      "attempt profile binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        const attempt = detail.attempts[0];
+        if (!attempt) throw new Error("The fixture requires an attempt.");
+        return {
+          ...detail,
+          attempts: [{ ...attempt, profileVersion: 2 }],
+        };
+      },
+    ],
+    [
+      "result request binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.result) throw new Error("The fixture requires a result.");
+        return {
+          ...detail,
+          result: {
+            ...detail.result,
+            requestGlobalId: "76000000-0000-4000-8000-000000000099",
+          },
+        };
+      },
+    ],
+    [
+      "result outbox binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.result) throw new Error("The fixture requires a result.");
+        return {
+          ...detail,
+          result: {
+            ...detail.result,
+            outboxEventId: "76000000-0000-4000-8000-000000000099",
+          },
+        };
+      },
+    ],
+    [
+      "result source binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.result) throw new Error("The fixture requires a result.");
+        return {
+          ...detail,
+          result: { ...detail.result, sourceHash: "e".repeat(64) },
+        };
+      },
+    ],
+    [
+      "result idempotency binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.result) throw new Error("The fixture requires a result.");
+        return {
+          ...detail,
+          result: {
+            ...detail.result,
+            idempotencyKeyHash: "e".repeat(64),
+          },
+        };
+      },
+    ],
+    [
+      "result response binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.result) throw new Error("The fixture requires a result.");
+        return {
+          ...detail,
+          result: { ...detail.result, responseHash: "e".repeat(64) },
+        };
+      },
+    ],
+    [
+      "result fault binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.result) throw new Error("The fixture requires a result.");
+        return {
+          ...detail,
+          result: { ...detail.result, faultKind: "target_unavailable" },
+        };
+      },
+    ],
+    [
+      "result target binding drift",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.result) throw new Error("The fixture requires a result.");
+        return {
+          ...detail,
+          result: {
+            ...detail.result,
+            expectedTargetVersion: "8",
+          },
+        };
+      },
+    ],
+    [
+      "an invalid mapping head binding",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.currentMapping)
+          throw new Error("The fixture requires a head.");
+        return {
+          ...detail,
+          currentMapping: {
+            ...detail.currentMapping,
+            head: {
+              ...detail.currentMapping.head,
+              currentObservationHash: "e".repeat(64),
+            },
+          },
+        };
+      },
+    ],
+    [
+      "an invalid mapping head identity binding",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.currentMapping)
+          throw new Error("The fixture requires a head.");
+        return {
+          ...detail,
+          currentMapping: {
+            ...detail.currentMapping,
+            head: {
+              ...detail.currentMapping.head,
+              currentObservationGlobalId:
+                "76000000-0000-4000-8000-000000000099",
+            },
+          },
+        };
+      },
+    ],
+    [
+      "an invalid mapping observation binding",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.currentMapping)
+          throw new Error("The fixture requires an observation.");
+        return {
+          ...detail,
+          currentMapping: {
+            ...detail.currentMapping,
+            observation: {
+              ...detail.currentMapping.observation,
+              sourceStreamKeyHash: "e".repeat(64),
+            },
+          },
+        };
+      },
+    ],
+    [
+      "an invalid mapping provenance binding",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "succeeded" });
+        if (!detail.currentMapping)
+          throw new Error("The fixture requires an observation.");
+        return {
+          ...detail,
+          currentMapping: {
+            ...detail.currentMapping,
+            observation: {
+              ...detail.currentMapping.observation,
+              resultGlobalId: "76000000-0000-4000-8000-000000000099",
+            },
+          },
+        };
+      },
+    ],
+    [
+      "a mapping conflict pointing to its observed result",
+      () => {
+        const detail = itemPublishDetailFixture({ state: "mapping_conflict" });
+        if (!detail.currentMapping || !detail.result)
+          throw new Error("The fixture requires conflict evidence.");
+        return {
+          ...detail,
+          currentMapping: {
+            ...detail.currentMapping,
+            observation: {
+              ...detail.currentMapping.observation,
+              resultGlobalId: detail.result.globalId,
+            },
           },
         };
       },
