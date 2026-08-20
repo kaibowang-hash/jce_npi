@@ -84,9 +84,62 @@ def deny_legacy_outbox_promotion() -> None:
 def item_request_transaction_write() -> Iterator[None]:
     """Authorize one command/idempotency/request/Outbox/audit transaction."""
 
+    with _service_user_write_scope():
+        with (
+            _flag_scope(ITEM_REQUEST_WRITE_FLAG),
+            _flag_scope(ITEM_IDEMPOTENCY_WRITE_FLAG),
+            _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+            _flag_scope(AUDIT_APPEND_FLAG),
+        ):
+            yield
+
+
+@contextmanager
+def item_claim_write() -> Iterator[None]:
+    """Authorize one worker claim transaction in the service-user scope."""
+
+    with _service_user_write_scope():
+        with (
+            _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+            _flag_scope(ITEM_REQUEST_WRITE_FLAG),
+            _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
+            _flag_scope(AUDIT_APPEND_FLAG),
+        ):
+            yield
+
+
+@contextmanager
+def item_result_transaction_write() -> Iterator[None]:
+    """Authorize one worker result transaction in the service-user scope."""
+
+    with _service_user_write_scope():
+        with (
+            _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+            _flag_scope(ITEM_REQUEST_WRITE_FLAG),
+            _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
+            _flag_scope(ITEM_RESULT_WRITE_FLAG),
+            _flag_scope(ITEM_MAPPING_WRITE_FLAG),
+            _flag_scope(AUDIT_APPEND_FLAG),
+        ):
+            yield
+
+
+@contextmanager
+def item_mapping_write() -> Iterator[None]:
+    """Authorize one controlled mapping append in the service-user scope."""
+
+    with _service_user_write_scope():
+        with _flag_scope(ITEM_MAPPING_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
+            yield
+
+
+@contextmanager
+def _service_user_write_scope() -> Iterator[None]:
+    """Use the built-in service user only for guarded support-DocType writes."""
+
     # These support-only DocTypes intentionally grant no business CRUD.  The
-    # authorized command adapter keeps the caller identity for domain checks,
-    # enters the built-in service user only for this append-only transaction,
+    # authorized command/worker adapter keeps the caller identity for domain
+    # checks, enters the built-in service user only for this guarded write,
     # and restores the caller on every exit path.
     session = getattr(frappe, "session", None)
     previous_user = getattr(session, "user", None)
@@ -101,48 +154,10 @@ def item_request_transaction_write() -> Iterator[None]:
     if switched_user:
         set_user(SYSTEM_SERVICE_USER)
     try:
-        with (
-            _flag_scope(ITEM_REQUEST_WRITE_FLAG),
-            _flag_scope(ITEM_IDEMPOTENCY_WRITE_FLAG),
-            _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
-            _flag_scope(AUDIT_APPEND_FLAG),
-        ):
-            yield
+        yield
     finally:
         if switched_user:
             set_user(previous_user)
-
-
-@contextmanager
-def item_claim_write() -> Iterator[None]:
-    with (
-        _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
-        _flag_scope(ITEM_REQUEST_WRITE_FLAG),
-        _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
-        _flag_scope(AUDIT_APPEND_FLAG),
-    ):
-        yield
-
-
-@contextmanager
-def item_result_transaction_write() -> Iterator[None]:
-    """Authorize one result, mapping, terminal-state and audit transaction."""
-
-    with (
-        _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
-        _flag_scope(ITEM_REQUEST_WRITE_FLAG),
-        _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
-        _flag_scope(ITEM_RESULT_WRITE_FLAG),
-        _flag_scope(ITEM_MAPPING_WRITE_FLAG),
-        _flag_scope(AUDIT_APPEND_FLAG),
-    ):
-        yield
-
-
-@contextmanager
-def item_mapping_write() -> Iterator[None]:
-    with _flag_scope(ITEM_MAPPING_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
-        yield
 
 
 def validate_one_way_transition(

@@ -224,6 +224,26 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(old.state, "observed_failure")
         self.assertFalse(bool(old.adapter_boundary_crossed))
 
+    def test_worker_write_scopes_use_service_user_and_restore_caller(self) -> None:
+        validation = importlib.import_module(
+            "npi_integration.item_publish.frappe_validation"
+        )
+        for scope_factory in (
+            validation.item_claim_write,
+            validation.item_result_transaction_write,
+            validation.item_mapping_write,
+        ):
+            with self.subTest(scope=scope_factory.__name__):
+                with scope_factory():
+                    self.assertEqual(
+                        self.harness.frappe.session.user,
+                        "Administrator",
+                    )
+                self.assertEqual(
+                    self.harness.frappe.session.user,
+                    "publisher@example.invalid",
+                )
+
     def test_claim_rejects_request_and_outbox_state_drift(self) -> None:
         self.request().state = "synthetic_verified"
         with self.assertRaisesRegex(RuntimeError, "states are inconsistent"):
