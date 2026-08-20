@@ -14,6 +14,7 @@ ITEM_ATTEMPT_WRITE_FLAG = "npi_item_publish_attempt_write"
 ITEM_RESULT_WRITE_FLAG = "npi_item_publish_result_write"
 ITEM_MAPPING_WRITE_FLAG = "npi_item_mapping_write"
 AUDIT_APPEND_FLAG = "npi_audit_append"
+SYSTEM_SERVICE_USER = "Administrator"
 
 
 def require_item_outbox_write() -> None:
@@ -83,13 +84,33 @@ def deny_legacy_outbox_promotion() -> None:
 def item_request_transaction_write() -> Iterator[None]:
     """Authorize one command/idempotency/request/Outbox/audit transaction."""
 
-    with (
-        _flag_scope(ITEM_REQUEST_WRITE_FLAG),
-        _flag_scope(ITEM_IDEMPOTENCY_WRITE_FLAG),
-        _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
-        _flag_scope(AUDIT_APPEND_FLAG),
+    # These support-only DocTypes intentionally grant no business CRUD.  The
+    # authorized command adapter keeps the caller identity for domain checks,
+    # enters the built-in service user only for this append-only transaction,
+    # and restores the caller on every exit path.
+    session = getattr(frappe, "session", None)
+    previous_user = getattr(session, "user", None)
+    set_user = getattr(frappe, "set_user", None)
+    if (
+        not isinstance(previous_user, str)
+        or not previous_user
+        or not callable(set_user)
     ):
-        yield
+        raise RuntimeError("Item publish repository user context is unavailable.")
+    switched_user = previous_user != SYSTEM_SERVICE_USER
+    if switched_user:
+        set_user(SYSTEM_SERVICE_USER)
+    try:
+        with (
+            _flag_scope(ITEM_REQUEST_WRITE_FLAG),
+            _flag_scope(ITEM_IDEMPOTENCY_WRITE_FLAG),
+            _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+            _flag_scope(AUDIT_APPEND_FLAG),
+        ):
+            yield
+    finally:
+        if switched_user:
+            set_user(previous_user)
 
 
 @contextmanager

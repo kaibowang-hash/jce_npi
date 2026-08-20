@@ -147,6 +147,12 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
         self.frappe.__path__ = []
         self.frappe._ = lambda source: source
         self.frappe.flags = types.SimpleNamespace()
+        self.frappe.session = types.SimpleNamespace(
+            user="publisher@example.invalid"
+        )
+        self.frappe.set_user = lambda user: setattr(
+            self.frappe.session, "user", user
+        )
         self.frappe.DoesNotExistError = type(
             "DoesNotExistError", (Exception,), {}
         )
@@ -420,6 +426,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
     def test_synthetic_adds_one_versioned_outbox_in_the_same_write_scope(self) -> None:
         self.repository = self.new_repository(self.synthetic_profile())
         outcome = self.create()
+        self.assertEqual(self.frappe.session.user, "publisher@example.invalid")
         self.assertIsNone(outcome.problem)
         self.assertTrue(outcome.should_enqueue)
         self.assertIsNotNone(outcome.outbox_event_id)
