@@ -364,12 +364,14 @@ function itemActionBlockReason(
 function ItemPublishExecutionInspector({
   dataSource,
   disabled,
+  hidden = false,
   onDirtyChange,
   projectId,
   publishRequest,
 }: {
   dataSource?: ItemPublishDataSource | undefined;
   disabled: boolean;
+  hidden?: boolean | undefined;
   onDirtyChange: (dirty: boolean) => void;
   projectId: string;
   publishRequest: EngineeringBomPublishRequestViewModel;
@@ -543,6 +545,7 @@ function ItemPublishExecutionInspector({
     <section
       aria-label={t("Item execution inspector")}
       className="item-publish"
+      hidden={hidden}
     >
       <div className="item-publish__header">
         <div className="item-publish__heading-copy">
@@ -1758,13 +1761,13 @@ export function EngineeringBomPublishRequestWorkspace({
                         </tbody>
                       </table>
                     </div>
-                    {itemInspectorNodeId ? (
+                    {itemPublishDataSource ? (
                       <ItemPublishExecutionInspector
                         dataSource={itemPublishDataSource}
                         disabled={
                           disabled || commandState.kind === "processing"
                         }
-                        key={itemInspectorNodeId}
+                        hidden={!itemInspectorNodeId}
                         onDirtyChange={setItemDirty}
                         projectId={projectId}
                         publishRequest={detail}
