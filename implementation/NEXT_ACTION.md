@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P8-03`
+`IN_PROGRESS_FINAL_LEVEL_3 — P8-03`
 
-Recovery time: `2026-08-16T16:07:13Z`
+Recovery time: `2026-08-20T14:06:43Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -194,6 +194,14 @@ P8-03 checkpoint 3 product checkpoint:
 P8-03 checkpoint 3 ordinary CI:
 `31956908978`
 
+P8-03 checkpoint 4 product checkpoint:
+`5dbce209ea818a3ae929feb6decd40491175df5a`
+
+P8-03 checkpoint 4 ordinary CI:
+`32376188274` (`PASS`): repository `96448042317`, frontend `96448041734`,
+secret/Gitleaks `96448041487`, visual `96448041169` (`122/122`); controlled
+lanes correctly skipped.
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -317,14 +325,14 @@ Checkpoint 3 passes at exact product SHA `1a2c5be` and ordinary CI
 `31956908978`; complete evidence is
 `implementation/evidence/phase-8/p8-03-worker-adapter-result-checkpoint.md`.
 
-Execute checkpoint 4: extend only the existing Phase 5 EBOM workspace and the
-fixed P8-03 data source with a dense trilingual Item execution inspector,
-truthful Mock/queued/processing/failed/uncertain/synthetic/authoritative-
-mapping states, exact source/profile/expected-version impact and one guarded
-primary request action. Include direct English/`zh`/`zh-TW` translations,
-accessibility, focused unit/E2E and the three fixed visual cases. Do not add a
-retry/reconcile control, browser target access, default profile, networked
-Sandbox, production contact or MBOM behavior.
+Execute only the final P8-03 Level 3 Gate against unchanged product checkpoint
+`5dbce209ea818a3ae929feb6decd40491175df5a`. First retain the exact ordinary CI
+attestation above, then (in the next authorized execution step) dispatch the
+complete Level 3 repository/frontend/full-history-secret/visual and cumulative
+disposable-Site runtime proof, migrations twice, route recovery, no target
+write/production traffic and cleanup, followed by the required `release-gate`
+review. This transition itself does not dispatch Level 3. P8-03 remains
+`IN_PROGRESS_FINAL_LEVEL_3` and P8-04 is not activated until that Gate passes.
 
 Do not contact production ERPNext/JCE, infer current custom Item fields,
 naming/UOM rules or service scopes, invent a cross-Project part identity, let

@@ -2,11 +2,18 @@
 
 Recorded: `2026-08-20`
 
-Decision: `CHECKPOINT 4 PRODUCT READY; ORDINARY CI PENDING`
+Decision: `PASS — CHECKPOINT 4; FINAL LEVEL 3 ACTIVE`
 
-Product commit: the exact SHA containing this evidence is reported with the
-handoff after commit. This checkpoint does not advance the controller or enter
-Level 3.
+Product checkpoint:
+`5dbce209ea818a3ae929feb6decd40491175df5a`
+
+Final ordinary pull-request CI:
+`32376188274` (`PASS`)
+
+Final ordinary CI jobs: repository `96448042317`, frontend `96448041734`,
+secret/Gitleaks `96448041487`, visual `96448041169` (`122/122 PASS`).
+Controlled lanes correctly skipped. This seals checkpoint 4 and activates the
+final Level 3 boundary; it does not mark the overall P8-03 task complete.
 
 ## 1. Scope delivered
 
@@ -105,8 +112,10 @@ redispatched or rewritten to success. No production ERPNext/JCE traffic is
 authorized.
 
 This evidence closes only P8-03 checkpoint 4 after exact-SHA ordinary CI PASS.
-It does not perform the final Level 3 gate, controller transition or P8-04
-activation.
+The controller now records `P8-03 checkpoint 4 PASS; final Level 3 active`.
+The final Level 3 gate is not dispatched in this transition, and P8-04 is not
+activated. `INT-003` and the Item portion of `FR-DS-013` remain technical
+foundation/target-mapping holds; neither is marked finally complete.
 
 ## 6. C4 CI repair evidence (2026-08-20)
 
@@ -165,3 +174,47 @@ Changed-files to affected-tests map:
 | C4 workspace and P8-03 E2E/unit tests | TypeScript, focused workspace unit tests, P8-03 non-visual/visual E2E, P5-05 regression visual and primary-action/a11y checks |
 | Exact gitleaks fingerprint and verifier tests | devcontainer verifier unit tests, current-tree/history gitleaks lanes, exact positive/negative fingerprint validation |
 | `CURRENT_TASK.json` and this evidence | current-task verifier, diff check and task evidence review |
+
+## 7. Final ordinary CI and checkpoint sealing evidence (2026-08-20)
+
+The exact final product checkpoint is
+`5dbce209ea818a3ae929feb6decd40491175df5a`. Ordinary pull-request run
+`32376188274` passed all required non-controlled lanes: repository job
+`96448042317`, frontend job `96448041734`, secret/Gitleaks job `96448041487`,
+and visual job `96448041169` at `122/122`. Controlled jobs were correctly
+skipped because this is the checkpoint ordinary CI boundary, not the final
+Level 3 disposable-Site dispatch.
+
+The local Level 2 evidence remains truthful and is retained here: the focused
+P8-03 Python suite passed `75/75`; the domain/configuration/metadata/contract
+matrix passed `27/27`; the focused API/repository tests passed; focused
+frontend tests passed `28/28`; TypeScript, targeted ESLint, Prettier,
+Stylelint, catalog generation and i18n lint passed; direct English/
+Simplified-Chinese/Traditional-Chinese coverage was `7,950` sources at
+`100%`; current-task/reconciliation/runtime-verifier/shell/diff checks passed.
+The managed host limitation remains recorded: `scripts/verify.sh` could not
+start its full path with Node `v24.2.0`/npm `11.3.0` instead of the pinned
+versions, and local Playwright/Vite plus the registry-backed devcontainer
+check were unavailable. These limitations are not converted into product
+PASS claims; ordinary CI is authoritative for the complete checkpoint matrix.
+This fresh Luna clone was not bootstrapped with npm dependencies; a focused
+frontend rerun therefore reported `vitest: command not found`, and no new
+local frontend PASS is claimed here. The retained `28/28` result is the local
+Level 2 evidence from the exact product checkpoint before this control-plane
+transition.
+
+The final visual result retains all reviewed legacy P5-05 baselines without
+replacement or mutation. The final visual job includes the three P8-03
+fixed-Linux cases and passed the complete `122/122` matrix. The failed
+run/repair chain (`32351005738` and its exact failure/repair evidence above)
+remains append-only diagnostic history. Gitleaks history finding
+`bfa9c9bb4fa70d0c66938b940b286c7f9bbb3d47:frontend/tests/unit/item-publish-data-source.test.ts:generic-api-key:26`
+remains retained as the exact synthetic-fixture review tuple; the final
+secret job is green and no credential was introduced.
+
+Checkpoint 4 is therefore `PASS`; P8-03 as a whole remains
+`IN_PROGRESS_FINAL_LEVEL_3` until the unchanged final Level 3 Gate and its
+release review pass. No production ERPNext/JCE endpoint, credential, data,
+network traffic, target write, default profile, formal mapping from Mock or
+synthetic proof, generic retry/replay/reconciliation, or P8-04 behavior is
+activated by this evidence.

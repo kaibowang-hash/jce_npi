@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-16T16:07:13Z`
+Updated: `2026-08-20T14:06:43Z`
 
 ## Authority and operating mode
 
@@ -4156,3 +4156,28 @@ repeat or rewrite it merely to restore context. See
   profiles, production ERPNext/JCE, MBOM/P8-04 through P8-09 and generic P8-07
   operations remain inactive. There is no Hard Blocker and no user action is
   required.
+
+## 2026-08-20 P8-03 checkpoint 4 PASS; final Level 3 active
+
+- Exact product checkpoint
+  `5dbce209ea818a3ae929feb6decd40491175df5a` passes ordinary pull-request CI
+  `32376188274`: repository `96448042317`, frontend `96448041734`,
+  secret/Gitleaks `96448041487` and visual `96448041169` (`122/122`) all pass;
+  controlled lanes correctly skip. This seals checkpoint 4 only.
+- The dense direct-trilingual EBOM Item execution inspector now presents exact
+  source/profile/expected-version impact, truthful Mock/queued/processing/
+  failed/uncertain/synthetic/authoritative-mapping states and one guarded
+  primary request action. The explicit source activation preserves the legacy
+  P5-05 surface; reviewed P5 baselines remain unchanged. Focused Level 2
+  evidence, the exact failed-run/repair chain and the synthetic-fixture
+  Gitleaks fingerprint are retained in
+  `implementation/evidence/phase-8/p8-03-item-inspector-checkpoint.md`.
+- The controller marker is: `P8-03 checkpoint 4 PASS; final Level 3 active`.
+  The final Level 3 Gate is the only active scope. It is not dispatched by this
+  transition. P8-03 remains `IN_PROGRESS_FINAL_LEVEL_3`; `INT-003` and the Item
+  portion of `FR-DS-013` remain foundation/target-mapping holds and are not
+  marked finally complete.
+- Production ERPNext/JCE endpoint, credential, data and traffic; formal Item
+  mapping from Mock or synthetic proof; default/networked profiles; generic
+  retry/replay/reconciliation; MBOM/P8-04 through P8-09; and any target write
+  remain inactive. No Hard Blocker or user action is required.

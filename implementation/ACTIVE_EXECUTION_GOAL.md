@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T16:07:13Z`
+Updated: `2026-08-20T14:06:43Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4 — P8-03`
+- Mode: `IN_PROGRESS_FINAL_LEVEL_3 — P8-03`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `1a2c5bebdf5288d6c6570c87eb2753908867bea8` (pushed; P8-03
-  `CHECKPOINT_3_PASS`)
+  `5dbce209ea818a3ae929feb6decd40491175df5a` (pushed; P8-03
+  `CHECKPOINT_4_PASS`; final Level 3 active)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
@@ -18,8 +18,8 @@ Updated: `2026-08-16T16:07:13Z`
   `31944941030` (`PASS — LEVEL 3` at `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `31956908978` (`PASS` at
-  `1a2c5bebdf5288d6c6570c87eb2753908867bea8`; P8-03 checkpoint 3)
+  `32376188274` (`PASS` at
+  `5dbce209ea818a3ae929feb6decd40491175df5a`; P8-03 checkpoint 4)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -89,18 +89,23 @@ Updated: `2026-08-16T16:07:13Z`
 - P8-03 checkpoint 3 product checkpoint:
   `1a2c5bebdf5288d6c6570c87eb2753908867bea8` (`CHECKPOINT 3 PASS`;
   ordinary CI `31956908978` exact-SHA PASS; controlled lanes expected skipped)
+- P8-03 checkpoint 4 product checkpoint:
+  `5dbce209ea818a3ae929feb6decd40491175df5a` (`CHECKPOINT 4 PASS`;
+  ordinary CI `32376188274` exact-SHA PASS; repository `96448042317`, frontend
+  `96448041734`, secret/Gitleaks `96448041487`, visual `96448041169`
+  `122/122`; controlled lanes correctly skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-03 — Item publish execution`
-  (`IN_PROGRESS_CHECKPOINT_4`)
-- Resumed product task: `P8-03` (`ACTIVE_CHECKPOINT_4_AFTER_CHECKPOINT_3_CI`)
+  (`IN_PROGRESS_FINAL_LEVEL_3`)
+- Resumed product task: `P8-03` (`ACTIVE_FINAL_LEVEL_3`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-03 CHECKPOINT 4`)
+  (`IN_PROGRESS — P8-03 FINAL LEVEL 3`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -233,11 +238,16 @@ CI `31947838578`. Checkpoints 1 and 2 pass at `1c1faa7` / `31950411271` and
 and ordinary CI `31956908978`: bounded lease recovery, immutable pre-call
 attempts, a closed default-disabled adapter registry, network-free synthetic
 proof, closed result classification, no post-boundary redispatch and atomic
-authoritative mapping compare-and-set are proven. Checkpoint 4 is active only
-for the dense trilingual EBOM Item execution workspace and one guarded primary
-request action. Mock/synthetic cannot report a formal Item code or mapping.
-Production ERPNext/JCE contact and P8-04 through P8-09 remain inactive. There
-is no Hard Blocker.
+authoritative mapping compare-and-set are proven. The exact checkpoint 4
+product SHA `5dbce209ea818a3ae929feb6decd40491175df5a` passes ordinary CI
+`32376188274`: repository `96448042317`, frontend `96448041734`,
+secret/Gitleaks `96448041487` and visual `96448041169` (`122/122`) all pass;
+controlled lanes correctly skip. The dense trilingual EBOM Item execution
+inspector, truthful status/impact/result/mapping states and one guarded primary
+request action are sealed. The final Level 3 Gate is now the only active
+scope. Mock/synthetic cannot report a formal Item code or mapping. Production
+ERPNext/JCE contact and P8-04 through P8-09 remain inactive. There is no Hard
+Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

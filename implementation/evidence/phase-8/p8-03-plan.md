@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-16`
 
-Status: `FROZEN — CHECKPOINT 3 PASS; CHECKPOINT 4 ACTIVE`
+Status: `FROZEN — CHECKPOINT 4 PASS; FINAL LEVEL 3 ACTIVE`
 
 Starting audit/controller checkpoint:
 `97cba0924a98c36d7302d863a8e88733926df167`
@@ -30,6 +30,17 @@ Checkpoint 3 product checkpoint:
 
 Checkpoint 3 ordinary pull-request CI:
 `31956908978` (`PASS`)
+
+Checkpoint 4 product checkpoint:
+`5dbce209ea818a3ae929feb6decd40491175df5a`
+
+Checkpoint 4 ordinary pull-request CI:
+`32376188274` (`PASS`)
+
+Checkpoint 4 ordinary CI jobs:
+repository `96448042317`, frontend `96448041734`, secret/Gitleaks
+`96448041487`, visual `96448041169` (`122/122 PASS`); controlled lanes
+correctly skipped.
 
 Retained predecessor product checkpoint:
 `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`
@@ -576,10 +587,15 @@ Standing continuous-delivery authority permits automatic progression after
 each exact-SHA ordinary CI and affected Gate passes. Checkpoint 1 product SHA
 `1c1faa7` passes ordinary CI `31950411271`; checkpoint 2 final product SHA
 `6e11a86` passes ordinary CI `31953799677`; checkpoint 3 product SHA
-`1a2c5be` passes ordinary CI `31956908978`; checkpoint 4 is now the only active
-product scope. Complete checkpoint evidence is
-`implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md` and
-`implementation/evidence/phase-8/p8-03-command-outbox-checkpoint.md` and
-`implementation/evidence/phase-8/p8-03-worker-adapter-result-checkpoint.md`. No
-checkpoint authorizes production ERPNext/JCE contact. P8-03 completes only
-after its final Level 3 Gate; only then may the controller activate P8-04.
+`1a2c5be` passes ordinary CI `31956908978`; checkpoint 4 product SHA
+`5dbce209ea818a3ae929feb6decd40491175df5a` passes ordinary CI
+`32376188274` with repository, frontend, secret/Gitleaks and `122/122` visual
+lanes green; controlled lanes correctly skip. Checkpoint 4 is sealed and the
+final Level 3 Gate is now the only active scope. Complete checkpoint evidence
+is `implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md`,
+`implementation/evidence/phase-8/p8-03-command-outbox-checkpoint.md`,
+`implementation/evidence/phase-8/p8-03-worker-adapter-result-checkpoint.md`
+and `implementation/evidence/phase-8/p8-03-item-inspector-checkpoint.md`.
+No checkpoint authorizes production ERPNext/JCE contact. P8-03 remains
+in-progress until its final Level 3 Gate passes; only then may the controller
+activate P8-04.

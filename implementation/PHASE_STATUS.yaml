@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-16T16:07:13Z'
+updated_at: '2026-08-20T14:06:43Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-03
-current_task_status: IN_PROGRESS_CHECKPOINT_4
-current_task_completed_stage: P8_03_CHECKPOINT_3_WORKER_ADAPTER_RESULT_MAPPING_PASS
-current_task_next_stage: P8_03_CHECKPOINT_4_TRILINGUAL_WORKSPACE
+current_task_status: IN_PROGRESS_FINAL_LEVEL_3
+current_task_completed_stage: P8_03_CHECKPOINT_4_TRILINGUAL_WORKSPACE_PASS
+current_task_next_stage: P8_03_FINAL_LEVEL_3_GATE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P8-03
-resumed_product_task_status: ACTIVE_CHECKPOINT_4_AFTER_CHECKPOINT_3_CI
+resumed_product_task_status: ACTIVE_FINAL_LEVEL_3
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -2227,7 +2227,7 @@ p8_02:
 p8_03:
   task: P8-03
   controller_task: P8-03_ITEM_PUBLISH_EXECUTION
-  status: IN_PROGRESS_CHECKPOINT_4
+  status: IN_PROGRESS_FINAL_LEVEL_3
   phase: 8
   milestone: M7-03
   requirements:
@@ -2267,7 +2267,15 @@ p8_03:
   checkpoint_3_gitleaks_artifact: 9266184668
   checkpoint_3_gitleaks_digest: sha256:ea0c476ad0e0a2a9de807db0eee93a0f43ef87fb03e020e868600ae62ecd2472
   checkpoint_3_status: PASS
-  current_stage: CHECKPOINT_4_TRILINGUAL_WORKSPACE_IN_PROGRESS
+  checkpoint_4_product_checkpoint: 5dbce209ea818a3ae929feb6decd40491175df5a
+  checkpoint_4_ordinary_ci: 32376188274
+  checkpoint_4_repository_job: 96448042317
+  checkpoint_4_frontend_job: 96448041734
+  checkpoint_4_secret_job: 96448041487
+  checkpoint_4_visual_job: 96448041169
+  checkpoint_4_visual_result: 122_OF_122_PASS
+  checkpoint_4_status: PASS
+  current_stage: FINAL_LEVEL_3_GATE
   next_stage_after_pass: P8_03_LEVEL_3_GATE
   product_code_changed: true
   external_holds:
@@ -2286,6 +2294,7 @@ p8_03:
     - implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md
     - implementation/evidence/phase-8/p8-03-command-outbox-checkpoint.md
     - implementation/evidence/phase-8/p8-03-worker-adapter-result-checkpoint.md
+    - implementation/evidence/phase-8/p8-03-item-inspector-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
