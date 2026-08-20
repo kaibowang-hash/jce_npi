@@ -362,21 +362,22 @@ function itemActionBlockReason(
 }
 
 function ItemPublishExecutionInspector({
+  active,
   dataSource,
   disabled,
-  hidden = false,
   onDirtyChange,
   projectId,
   publishRequest,
 }: {
+  active: boolean;
   dataSource?: ItemPublishDataSource | undefined;
   disabled: boolean;
-  hidden?: boolean | undefined;
   onDirtyChange: (dirty: boolean) => void;
   projectId: string;
   publishRequest: EngineeringBomPublishRequestViewModel;
 }): React.JSX.Element {
   const { locale, sessionCommandContext, t } = useI18n();
+  const inspectorRef = useRef<HTMLElement | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [reloadAttempt, setReloadAttempt] = useState(0);
   const [listState, setItemListState] = useState<
@@ -401,6 +402,11 @@ function ItemPublishExecutionInspector({
   const actionBlockReason = list
     ? itemActionBlockReason(t, list, sessionCommandContext !== null, disabled)
     : t("Load the exact Item execution context before requesting execution.");
+
+  useEffect(() => {
+    const root = inspectorRef.current;
+    if (root) (root as HTMLElement & { inert: boolean }).inert = !active;
+  }, [active]);
 
   useEffect(() => {
     onDirtyChange(acknowledged);
@@ -543,9 +549,11 @@ function ItemPublishExecutionInspector({
 
   return (
     <section
+      aria-hidden={!active}
       aria-label={t("Item execution inspector")}
       className="item-publish"
-      hidden={hidden}
+      ref={inspectorRef}
+      style={active ? undefined : { opacity: 0, pointerEvents: "none" }}
     >
       <div className="item-publish__header">
         <div className="item-publish__heading-copy">
@@ -1761,18 +1769,14 @@ export function EngineeringBomPublishRequestWorkspace({
                         </tbody>
                       </table>
                     </div>
-                    {itemPublishDataSource ? (
-                      <ItemPublishExecutionInspector
-                        dataSource={itemPublishDataSource}
-                        disabled={
-                          disabled || commandState.kind === "processing"
-                        }
-                        hidden={!itemInspectorNodeId}
-                        onDirtyChange={setItemDirty}
-                        projectId={projectId}
-                        publishRequest={detail}
-                      />
-                    ) : null}
+                    <ItemPublishExecutionInspector
+                      active={Boolean(itemInspectorNodeId)}
+                      dataSource={itemPublishDataSource}
+                      disabled={disabled || commandState.kind === "processing"}
+                      onDirtyChange={setItemDirty}
+                      projectId={projectId}
+                      publishRequest={detail}
+                    />
                   </div>
                 ) : selectedSummary ? null : (
                   <div className="publish-request__empty" role="status">
