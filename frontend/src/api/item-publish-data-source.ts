@@ -598,8 +598,10 @@ export function isItemPublishRequest(
   if (value.profile.targetMode === "mock") {
     return (
       value.state === "validated_mock" &&
-      value.intent === "create_item" &&
-      value.mappingExpectation.mappingVersion === 0 &&
+      ((value.mappingExpectation.mappingVersion === 0 &&
+        value.intent === "create_item") ||
+        (value.mappingExpectation.mappingVersion > 0 &&
+          value.intent === "update_item_engineering_fields")) &&
       !value.dispatchAllowed &&
       value.outboxEventId === null &&
       value.resultGlobalId === null
@@ -738,6 +740,15 @@ function result(value: unknown): value is ItemPublishResultViewModel {
       value.formalItemCode === null &&
       value.targetVersion === null &&
       value.faultKind === "none"
+    );
+  }
+  if (value.state === "uncertain_after_timeout") {
+    return (
+      value.authority === "none" &&
+      !value.responseAuthenticated &&
+      value.formalItemCode === null &&
+      value.targetVersion === null &&
+      value.faultKind === "timeout_after_possible_commit"
     );
   }
   if (value.state === "succeeded") {
@@ -1010,6 +1021,10 @@ export function isItemPublishRequestDetail(
                 observation.targetResultHash === observedResult.resultHash))
           );
         })();
+  const intentMatchesExpectation =
+    request.mappingExpectation.mappingVersion === 0
+      ? request.intent === "create_item"
+      : request.intent === "update_item_engineering_fields";
   const lastAttempt = candidate.attempts[candidate.attempts.length - 1];
   const allAttemptsTerminal = candidate.attempts.every(
     (item) => item.state !== "started" && item.finishedAt !== null,
@@ -1020,22 +1035,19 @@ export function isItemPublishRequestDetail(
       stateMatrix =
         request.profile.targetMode === "mock" &&
         candidate.attempts.length === 0 &&
-        observedResult === null &&
-        candidate.currentMapping === null;
+        observedResult === null;
       break;
     case "queued":
       stateMatrix =
         request.profile.targetMode !== "mock" &&
         candidate.attempts.length === 0 &&
-        observedResult === null &&
-        candidate.currentMapping === null;
+        observedResult === null;
       break;
     case "processing":
       stateMatrix =
         request.profile.targetMode !== "mock" &&
         candidate.attempts.length > 0 &&
         observedResult === null &&
-        candidate.currentMapping === null &&
         lastAttempt?.state === "started" &&
         lastAttempt.finishedAt === null &&
         candidate.attempts
@@ -1050,11 +1062,10 @@ export function isItemPublishRequestDetail(
         candidate.attempts.length > 0 &&
         allAttemptsTerminal &&
         lastAttempt?.state === "synthetic_verified" &&
-        !lastAttempt.adapterBoundaryCrossed &&
+        lastAttempt.adapterBoundaryCrossed &&
         observedResult?.state === "synthetic_verified" &&
         observedResult.authority === "synthetic" &&
-        !observedResult.responseAuthenticated &&
-        candidate.currentMapping === null;
+        !observedResult.responseAuthenticated;
       break;
     case "succeeded":
       stateMatrix =
@@ -1066,7 +1077,9 @@ export function isItemPublishRequestDetail(
         observedResult?.state === "succeeded" &&
         observedResult.authority === "authoritative_sandbox" &&
         observedResult.responseAuthenticated &&
-        candidate.currentMapping !== null;
+        candidate.currentMapping !== null &&
+        candidate.currentMapping.observation.requestGlobalId ===
+          request.globalId;
       break;
     case "failed_retryable":
     case "failed_final":
@@ -1080,12 +1093,12 @@ export function isItemPublishRequestDetail(
         !observedResult.responseAuthenticated &&
         observedResult.faultKind !== "none" &&
         observedResult.formalItemCode === null &&
-        observedResult.targetVersion === null &&
-        candidate.currentMapping === null;
+        observedResult.targetVersion === null;
       break;
     case "uncertain_after_timeout":
       stateMatrix =
-        request.profile.targetMode === "sandbox" &&
+        (request.profile.targetMode === "sandbox" ||
+          request.profile.targetMode === "synthetic") &&
         candidate.attempts.length > 0 &&
         allAttemptsTerminal &&
         lastAttempt?.state === "uncertain" &&
@@ -1095,7 +1108,8 @@ export function isItemPublishRequestDetail(
         observedResult.authority === "none" &&
         !observedResult.responseAuthenticated &&
         observedResult.faultKind === "timeout_after_possible_commit" &&
-        candidate.currentMapping === null;
+        observedResult.formalItemCode === null &&
+        observedResult.targetVersion === null;
       break;
     case "mapping_conflict":
       stateMatrix =
@@ -1112,7 +1126,13 @@ export function isItemPublishRequestDetail(
           observedResult.globalId;
       break;
   }
-  return attemptsAreBound && resultIsBound && mappingIsBound && stateMatrix;
+  return (
+    intentMatchesExpectation &&
+    attemptsAreBound &&
+    resultIsBound &&
+    mappingIsBound &&
+    stateMatrix
+  );
 }
 
 function requestNotReady(): NpiTransportError {

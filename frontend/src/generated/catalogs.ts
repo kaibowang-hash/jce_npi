@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '3c96fd5c33a5a401';
+export const catalogVersion = 'e9a4af3fb67b2ed3';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -2288,6 +2288,7 @@ export const catalogs = {
     "Executable Item Outbox messages require the exact target key and service actor.": "可执行物料发件箱消息需要精确目标键和服务主体。",
     "Executable Item publish requests must retain dispatch authority.": "可执行物料发布请求必须保留分派权限。",
     "Executable Item publish requests require a target key and service actor.": "可执行物料发布请求需要目标键和服务主体。",
+    "Executable Item publish requests require the semantic source effect hash.": "可执行物料发布请求需要语义来源效果哈希。",
     "Execute": "执行",
     "Execute exact preview": "执行精确预览",
     "Execute lifecycle action": "执行生命周期操作",
@@ -5835,6 +5836,7 @@ export const catalogs = {
     "selection": "选择项",
     "Selection": "选择",
     "Selection and Tooling identity stay fixed. Selection, Tooling and Action columns cannot be hidden.": "选择列和模具标识列保持固定。选择、模具和操作列不可隐藏。",
+    "Semantic Source Effect Hash": "语义来源效果哈希",
     "Semantic Target Effect Hash": "语义目标效果哈希",
     "Sender": "移交方",
     "Sensitive field classes excluded": "已排除敏感字段类别",
@@ -6935,6 +6937,7 @@ export const catalogs = {
     "The selected revision is eligible for this baseline.": "所选修订版符合此基线的条件。",
     "The selected template does not apply to this industry key.": "所选模板不适用于此行业键。",
     "The selected Trial quality reference is unavailable.": "所选试模质量引用不可用。",
+    "The semantic source effect hash does not match its exact source.": "语义来源效果哈希与其准确来源不匹配。",
     "The semantic target effect hash does not match its immutable request.": "语义目标效果哈希与其不可变请求不匹配。",
     "The server accepted the command. Do not submit it again.": "服务器已接受该命令。请勿再次提交。",
     "The server confirmed the review workspace update.": "服务器已确认评审工作区更新。",
@@ -10266,6 +10269,7 @@ export const catalogs = {
     "Executable Item Outbox messages require the exact target key and service actor.": "可執行物料寄件匣訊息需要精確目標鍵與服務主體。",
     "Executable Item publish requests must retain dispatch authority.": "可執行物料發佈請求必須保留分派權限。",
     "Executable Item publish requests require a target key and service actor.": "可執行物料發佈請求需要目標鍵與服務主體。",
+    "Executable Item publish requests require the semantic source effect hash.": "可執行物料發佈請求需要語意來源效果雜湊。",
     "Execute": "執行",
     "Execute exact preview": "執行精確預覽",
     "Execute lifecycle action": "執行生命週期操作",
@@ -13813,6 +13817,7 @@ export const catalogs = {
     "selection": "選擇項目",
     "Selection": "選擇",
     "Selection and Tooling identity stay fixed. Selection, Tooling and Action columns cannot be hidden.": "選擇欄和模具識別欄保持固定。選擇、模具和操作欄不可隱藏。",
+    "Semantic Source Effect Hash": "語意來源效果雜湊",
     "Semantic Target Effect Hash": "語意目標效果雜湊",
     "Sender": "移交方",
     "Sensitive field classes excluded": "已排除敏感欄位類別",
@@ -14913,6 +14918,7 @@ export const catalogs = {
     "The selected revision is eligible for this baseline.": "所選修訂版符合此基線的條件。",
     "The selected template does not apply to this industry key.": "所選範本不適用於此產業鍵。",
     "The selected Trial quality reference is unavailable.": "所選試模品質引用無法使用。",
+    "The semantic source effect hash does not match its exact source.": "語意來源效果雜湊與其準確來源不符。",
     "The semantic target effect hash does not match its immutable request.": "語意目標效果雜湊與其不可變請求不符。",
     "The server accepted the command. Do not submit it again.": "伺服器已接受該命令。請勿再次提交。",
     "The server confirmed the review workspace update.": "伺服器已確認評審工作區更新。",

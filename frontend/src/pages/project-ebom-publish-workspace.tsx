@@ -333,51 +333,10 @@ const ITEM_PUBLISH_INSPECTOR_ID = "item-publish-execution-inspector";
 function hasAuthoritativeCurrentItemMapping(
   detail: ItemPublishRequestDetailViewModel,
 ): boolean {
-  const current = detail.currentMapping;
-  const result = detail.result;
-  const lastAttempt = detail.attempts[detail.attempts.length - 1];
-  if (!current || !result || !lastAttempt) return false;
-  const { head, observation } = current;
-  const currentObservationIsBound =
-    head.currentObservationGlobalId === observation.globalId &&
-    head.currentObservationHash === observation.observationHash &&
-    head.sourceStreamKeyHash === detail.request.source.streamKeyHash &&
-    observation.sourceStreamKeyHash === detail.request.source.streamKeyHash &&
-    head.engineeringItemId === detail.request.source.engineeringItemId &&
-    observation.engineeringItemId === detail.request.source.engineeringItemId &&
-    head.mappingVersion === observation.mappingVersion &&
-    head.formalItemCode === observation.formalItemCode &&
-    head.targetVersion === observation.targetVersion &&
-    observation.authority === "authoritative_sandbox" &&
-    observation.disposition === "advanced";
-  const successfulSandboxEvidence =
-    detail.request.profile.targetMode === "sandbox" &&
-    result.state === "succeeded" &&
-    result.authority === "authoritative_sandbox" &&
-    result.responseAuthenticated &&
-    result.formalItemCode !== null &&
-    result.targetVersion !== null &&
-    result.faultKind === "none" &&
-    lastAttempt.state === "observed_success" &&
-    lastAttempt.adapterBoundaryCrossed &&
-    lastAttempt.finishedAt !== null &&
-    result.attemptGlobalId === lastAttempt.globalId &&
-    result.attemptNumber === lastAttempt.attemptNumber &&
-    result.idempotencyKeyHash === lastAttempt.targetIdempotencyKeyHash &&
-    result.sourceHash === detail.request.source.sourceHash;
-  if (!currentObservationIsBound || !successfulSandboxEvidence) return false;
-  if (detail.request.state === "succeeded") {
-    return (
-      observation.requestGlobalId === detail.request.globalId &&
-      observation.outboxEventId === detail.request.outboxEventId &&
-      observation.attemptGlobalId === result.attemptGlobalId &&
-      observation.resultGlobalId === result.globalId
-    );
-  }
-  return (
-    detail.request.state === "mapping_conflict" &&
-    observation.resultGlobalId !== result.globalId
-  );
+  // The parser has already validated the complete head/observation
+  // provenance. Current mapping authority is a stream fact, independent of
+  // whether the selected request has produced a result or advanced this head.
+  return detail.currentMapping !== null;
 }
 
 function itemActionBlockReason(

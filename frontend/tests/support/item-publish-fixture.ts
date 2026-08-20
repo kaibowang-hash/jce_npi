@@ -25,6 +25,12 @@ export const itemPublishPriorObservationId =
   "76000000-0000-4000-8000-00000000000c";
 export const itemPublishSiblingNodeId = "76000000-0000-4000-8000-00000000000d";
 export const itemPublishSiblingLineId = "76000000-0000-4000-8000-00000000000e";
+export const itemPublishLaterRequestId = "76000000-0000-4000-8000-00000000000f";
+export const itemPublishLaterOutboxId = "76000000-0000-4000-8000-000000000010";
+export const itemPublishLaterAttemptId = "76000000-0000-4000-8000-000000000011";
+export const itemPublishLaterResultId = "76000000-0000-4000-8000-000000000012";
+export const itemPublishLaterObservationId =
+  "76000000-0000-4000-8000-000000000013";
 
 const hash = (character: string): string => character.repeat(64);
 
@@ -33,6 +39,8 @@ export function itemPublishDetailFixture(
     state?: ItemPublishRequestState;
     targetMode?: ItemPublishTargetMode;
     authoritativeMapping?: boolean;
+    mapped?: boolean;
+    mappingOrigin?: "selected" | "prior" | "later";
   } = {},
 ): ItemPublishRequestDetailViewModel {
   const phase5 = publishRequestFixture();
@@ -57,8 +65,16 @@ export function itemPublishDetailFixture(
         : "synthetic");
   const mock = targetMode === "mock";
   const hasResult = !["validated_mock", "queued", "processing"].includes(state);
+  const mappingOrigin =
+    options.mappingOrigin ??
+    (succeeded
+      ? "selected"
+      : mappingConflict || options.mapped || options.authoritativeMapping
+        ? "prior"
+        : undefined);
+  const mapped = mappingOrigin !== undefined;
   const authoritative =
-    Boolean(options.authoritativeMapping) || succeeded || mappingConflict;
+    targetMode === "sandbox" && (succeeded || mappingConflict);
   const resultState =
     state === "synthetic_verified" ||
     state === "succeeded" ||
@@ -68,7 +84,10 @@ export function itemPublishDetailFixture(
       ? state
       : "succeeded";
   const outboxEventId = mock ? null : itemPublishOutboxId;
-  const expectationVersion = succeeded ? 1 : 0;
+  const expectationVersion = succeeded || (mapped && !mappingConflict) ? 1 : 0;
+  const expectationCode = expectationVersion > 0 ? "ITEM-SANDBOX-0001" : null;
+  const expectationTarget = expectationVersion > 0 ? "1" : null;
+  const expectationObservationHash = expectationVersion > 0 ? hash("e") : null;
   const request = {
     schemaVersion: 1 as const,
     globalId: itemPublishRequestId,
@@ -125,9 +144,9 @@ export function itemPublishDetailFixture(
     },
     mappingExpectation: {
       mappingVersion: expectationVersion,
-      formalItemCode: expectationVersion > 0 ? "ITEM-SANDBOX-0001" : null,
-      targetVersion: expectationVersion > 0 ? "7" : null,
-      observationHash: expectationVersion > 0 ? hash("4") : null,
+      formalItemCode: succeeded ? "ITEM-SANDBOX-0001" : expectationCode,
+      targetVersion: succeeded ? "7" : expectationTarget,
+      observationHash: succeeded ? hash("4") : expectationObservationHash,
     },
     intent:
       expectationVersion > 0
@@ -175,13 +194,13 @@ export function itemPublishDetailFixture(
           profileId: `item-${targetMode}-v1`,
           profileVersion: 1,
           state: attemptState,
-          adapterBoundaryCrossed:
-            targetMode === "sandbox" && state !== "processing",
+          adapterBoundaryCrossed: state !== "processing",
           targetIdempotencyKeyHash: hash("7"),
           requestSnapshotHash: hash("8"),
           startedAt: "2026-08-16T08:00:01Z",
           finishedAt: state === "processing" ? null : "2026-08-16T08:00:02Z",
-          targetStatusCode: state === "succeeded" ? 201 : null,
+          targetStatusCode:
+            state === "succeeded" || state === "mapping_conflict" ? 201 : null,
           responseHash: hasResult ? hash("9") : null,
           faultKind,
           reconciliationRequired: state === "uncertain_after_timeout",
@@ -203,7 +222,11 @@ export function itemPublishDetailFixture(
         attemptNumber: 1,
         idempotencyKeyHash: hash("7"),
         sourceHash: hash("2"),
-        expectedTargetVersion: expectationVersion > 0 ? "7" : null,
+        expectedTargetVersion: succeeded
+          ? "7"
+          : expectationVersion > 0
+            ? expectationTarget
+            : null,
         state: resultState,
         authority: authoritative
           ? ("authoritative_sandbox" as const)
@@ -220,81 +243,122 @@ export function itemPublishDetailFixture(
       }
     : null;
 
-  const currentMapping = succeeded
-    ? {
-        head: {
-          globalId: itemPublishHeadId,
-          sourceStreamKeyHash: hash("1"),
-          engineeringItemId: node.line.engineeringItemId,
-          mappingVersion: 2,
-          formalItemCode: "ITEM-SANDBOX-0001",
-          targetVersion: "7",
-          currentObservationGlobalId: itemPublishObservationId,
-          currentObservationHash: hash("c"),
-          headHash: hash("d"),
-          updatedAt: "2026-08-16T08:00:02Z",
-        },
-        observation: {
-          globalId: itemPublishObservationId,
-          sourceStreamKeyHash: hash("1"),
-          engineeringItemId: node.line.engineeringItemId,
-          mappingVersion: 2,
-          formalItemCode: "ITEM-SANDBOX-0001",
-          targetVersion: "7",
-          requestGlobalId: itemPublishRequestId,
-          outboxEventId: itemPublishOutboxId,
-          attemptGlobalId: itemPublishAttemptId,
-          resultGlobalId: itemPublishResultId,
-          profileId: `item-${targetMode}-v1`,
-          profileVersion: 1,
-          environmentCode: "sandbox",
-          authority: "authoritative_sandbox" as const,
-          disposition: "advanced" as const,
-          previousMappingVersion: 1,
-          previousObservationHash: hash("4"),
-          targetResultHash: hash("b"),
-          observationHash: hash("c"),
-          observedAt: "2026-08-16T08:00:02Z",
-        },
-      }
-    : mappingConflict
-      ? {
-          head: {
-            globalId: itemPublishHeadId,
-            sourceStreamKeyHash: hash("1"),
-            engineeringItemId: node.line.engineeringItemId,
-            mappingVersion: 1,
-            formalItemCode: "ITEM-SANDBOX-0001",
-            targetVersion: "1",
-            currentObservationGlobalId: itemPublishPriorObservationId,
-            currentObservationHash: hash("c"),
-            headHash: hash("d"),
-            updatedAt: "2026-08-16T08:00:02Z",
-          },
-          observation: {
-            globalId: itemPublishPriorObservationId,
-            sourceStreamKeyHash: hash("1"),
-            engineeringItemId: node.line.engineeringItemId,
-            mappingVersion: 1,
-            formalItemCode: "ITEM-SANDBOX-0001",
-            targetVersion: "1",
-            requestGlobalId: itemPublishPriorRequestId,
-            outboxEventId: itemPublishPriorOutboxId,
-            attemptGlobalId: itemPublishPriorAttemptId,
-            resultGlobalId: itemPublishPriorResultId,
-            profileId: `item-${targetMode}-v1`,
-            profileVersion: 1,
-            environmentCode: "sandbox",
-            authority: "authoritative_sandbox" as const,
-            disposition: "advanced" as const,
-            previousMappingVersion: 0,
-            previousObservationHash: null,
-            targetResultHash: hash("e"),
-            observationHash: hash("c"),
-            observedAt: "2026-08-16T07:59:02Z",
-          },
-        }
-      : null;
+  const priorMapping = {
+    head: {
+      globalId: itemPublishHeadId,
+      sourceStreamKeyHash: hash("1"),
+      engineeringItemId: node.line.engineeringItemId,
+      mappingVersion: 1,
+      formalItemCode: "ITEM-SANDBOX-0001",
+      targetVersion: "1",
+      currentObservationGlobalId: itemPublishPriorObservationId,
+      currentObservationHash: hash("c"),
+      headHash: hash("d"),
+      updatedAt: "2026-08-16T07:59:02Z",
+    },
+    observation: {
+      globalId: itemPublishPriorObservationId,
+      sourceStreamKeyHash: hash("1"),
+      engineeringItemId: node.line.engineeringItemId,
+      mappingVersion: 1,
+      formalItemCode: "ITEM-SANDBOX-0001",
+      targetVersion: "1",
+      requestGlobalId: itemPublishPriorRequestId,
+      outboxEventId: itemPublishPriorOutboxId,
+      attemptGlobalId: itemPublishPriorAttemptId,
+      resultGlobalId: itemPublishPriorResultId,
+      profileId: "item-sandbox-v1",
+      profileVersion: 1,
+      environmentCode: "sandbox",
+      authority: "authoritative_sandbox" as const,
+      disposition: "advanced" as const,
+      previousMappingVersion: 0,
+      previousObservationHash: null,
+      targetResultHash: hash("e"),
+      observationHash: hash("c"),
+      observedAt: "2026-08-16T07:59:02Z",
+    },
+  };
+  const selectedMapping = {
+    head: {
+      globalId: itemPublishHeadId,
+      sourceStreamKeyHash: hash("1"),
+      engineeringItemId: node.line.engineeringItemId,
+      mappingVersion: 2,
+      formalItemCode: "ITEM-SANDBOX-0001",
+      targetVersion: "7",
+      currentObservationGlobalId: itemPublishObservationId,
+      currentObservationHash: hash("c"),
+      headHash: hash("d"),
+      updatedAt: "2026-08-16T08:00:02Z",
+    },
+    observation: {
+      globalId: itemPublishObservationId,
+      sourceStreamKeyHash: hash("1"),
+      engineeringItemId: node.line.engineeringItemId,
+      mappingVersion: 2,
+      formalItemCode: "ITEM-SANDBOX-0001",
+      targetVersion: "7",
+      requestGlobalId: itemPublishRequestId,
+      outboxEventId: itemPublishOutboxId,
+      attemptGlobalId: itemPublishAttemptId,
+      resultGlobalId: itemPublishResultId,
+      profileId: "item-sandbox-v1",
+      profileVersion: 1,
+      environmentCode: "sandbox",
+      authority: "authoritative_sandbox" as const,
+      disposition: "advanced" as const,
+      previousMappingVersion: 1,
+      previousObservationHash: hash("4"),
+      targetResultHash: hash("b"),
+      observationHash: hash("c"),
+      observedAt: "2026-08-16T08:00:02Z",
+    },
+  };
+  const laterMapping = {
+    head: {
+      globalId: itemPublishHeadId,
+      sourceStreamKeyHash: hash("1"),
+      engineeringItemId: node.line.engineeringItemId,
+      mappingVersion: 2,
+      formalItemCode: "ITEM-SANDBOX-0002",
+      targetVersion: "2",
+      currentObservationGlobalId: itemPublishLaterObservationId,
+      currentObservationHash: hash("f"),
+      headHash: hash("0"),
+      updatedAt: "2026-08-16T08:01:02Z",
+    },
+    observation: {
+      globalId: itemPublishLaterObservationId,
+      sourceStreamKeyHash: hash("1"),
+      engineeringItemId: node.line.engineeringItemId,
+      mappingVersion: 2,
+      formalItemCode: "ITEM-SANDBOX-0002",
+      targetVersion: "2",
+      requestGlobalId: itemPublishLaterRequestId,
+      outboxEventId: itemPublishLaterOutboxId,
+      attemptGlobalId: itemPublishLaterAttemptId,
+      resultGlobalId: itemPublishLaterResultId,
+      profileId: "item-sandbox-v1",
+      profileVersion: 1,
+      environmentCode: "sandbox",
+      authority: "authoritative_sandbox" as const,
+      disposition: "advanced" as const,
+      previousMappingVersion: 1,
+      previousObservationHash: hash("c"),
+      targetResultHash: hash("0"),
+      observationHash: hash("f"),
+      observedAt: "2026-08-16T08:01:02Z",
+    },
+  };
+  const currentMapping =
+    mappingOrigin === "selected"
+      ? selectedMapping
+      : mappingOrigin === "later"
+        ? laterMapping
+        : mappingOrigin === "prior"
+          ? priorMapping
+          : null;
 
   return {
     requestGlobalId: itemPublishRequestId,

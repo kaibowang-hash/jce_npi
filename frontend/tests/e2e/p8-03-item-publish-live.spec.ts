@@ -514,9 +514,7 @@ test.describe("P8-03 live Item execution inspector", () => {
     ).toBeVisible();
   });
 
-  test("fails closed for Item list transport failure", async ({
-    page,
-  }) => {
+  test("fails closed for Item list transport failure", async ({ page }) => {
     await installSession(page, "en");
     await installApi(page, { itemListFailure: 503 });
     await openItemInspector(page, "en", {
@@ -603,6 +601,103 @@ test.describe("P8-03 live Item execution inspector", () => {
     await expect(
       page.getByRole("button", { name: "Request Item execution" }),
     ).toBeDisabled();
+  });
+
+  test("renders a mapped Mock request without dispatch or selected success", async ({
+    page,
+  }) => {
+    const mock = itemPublishDetailFixture({
+      state: "validated_mock",
+      targetMode: "mock",
+      mapped: true,
+    });
+    await installSession(page, "en");
+    await installApi(page, { detail: mock });
+    await openItemInspector(page, "en");
+
+    await expect(
+      page.getByText("Validated in Mock; not dispatched"),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Authoritative Sandbox observation"),
+    ).toBeVisible();
+    await expect(page.getByText("ITEM-SANDBOX-0001")).toBeVisible();
+    await expect(
+      page.getByText("No adapter attempt was recorded for this request."),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Authoritative Sandbox result observed"),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Request Item execution" }),
+    ).toBeDisabled();
+  });
+
+  test("renders mapped Synthetic uncertainty with an existing current head", async ({
+    page,
+  }) => {
+    const uncertain = itemPublishDetailFixture({
+      state: "uncertain_after_timeout",
+      targetMode: "synthetic",
+      mapped: true,
+    });
+    await installSession(page, "en");
+    await installApi(page, { detail: uncertain });
+    await openItemInspector(page, "en");
+
+    await expect(
+      page.getByText("Uncertain after timeout; reconciliation required"),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Authoritative Sandbox observation"),
+    ).toBeVisible();
+    await expect(page.getByText("ITEM-SANDBOX-0001")).toBeVisible();
+    await expect(
+      page.getByText("Authoritative Sandbox result observed"),
+    ).toHaveCount(0);
+    await expect(
+      page.getByText(
+        "The outcome is uncertain. Reconciliation is required before any new request.",
+      ),
+    ).toBeVisible();
+  });
+
+  test("keeps the prior current head separate from queued and failed request outcomes", async ({
+    page,
+  }) => {
+    const queued = itemPublishDetailFixture({
+      state: "queued",
+      targetMode: "synthetic",
+      mappingOrigin: "prior",
+    });
+    await installSession(page, "en");
+    await installApi(page, { detail: queued });
+    await openItemInspector(page, "en");
+    await expect(page.getByText("Queued; target result pending")).toBeVisible();
+    await expect(page.getByText("ITEM-SANDBOX-0001")).toBeVisible();
+    await expect(
+      page.getByText("Authoritative Sandbox result observed"),
+    ).toHaveCount(0);
+  });
+
+  test("keeps the prior current head separate from a failed request outcome", async ({
+    page,
+  }) => {
+    const failed = itemPublishDetailFixture({
+      state: "failed_final",
+      targetMode: "sandbox",
+      mappingOrigin: "prior",
+    });
+    await installSession(page, "en");
+    await installApi(page, { detail: failed });
+    await openItemInspector(page, "en");
+    await expect(
+      page.getByText("Final failure; no success recorded"),
+    ).toBeVisible();
+    await expect(page.getByText("ITEM-SANDBOX-0001")).toBeVisible();
+    await expect(
+      page.getByText("Authoritative Sandbox result observed"),
+    ).toHaveCount(0);
   });
 
   test("keeps mapping conflict request and result states distinct", async ({

@@ -96,6 +96,66 @@ describe("Item publish response validation", () => {
     expect(isItemPublishRequestDetail(detail)).toBe(true);
   });
 
+  it.each([
+    ["validated_mock", "mock"],
+    ["queued", "synthetic"],
+    ["processing", "synthetic"],
+    ["synthetic_verified", "synthetic"],
+    ["failed_retryable", "sandbox"],
+    ["failed_final", "sandbox"],
+    ["uncertain_after_timeout", "synthetic"],
+    ["uncertain_after_timeout", "sandbox"],
+    ["mapping_conflict", "sandbox"],
+  ] as const)(
+    "accepts a validated current mapping for %s/%s",
+    (state, targetMode) => {
+      const detail = itemPublishDetailFixture({
+        state,
+        targetMode,
+        mapped: true,
+      });
+      expect(detail.currentMapping).not.toBeNull();
+      expect(isItemPublishRequestDetail(detail)).toBe(true);
+    },
+  );
+
+  it("accepts a mapped Mock update expectation without dispatch evidence", () => {
+    const detail = itemPublishDetailFixture({
+      state: "validated_mock",
+      targetMode: "mock",
+      mapped: true,
+    });
+    expect(detail.request.intent).toBe("update_item_engineering_fields");
+    expect(detail.request.mappingExpectation.mappingVersion).toBeGreaterThan(0);
+    expect(detail.request.dispatchAllowed).toBe(false);
+    expect(detail.attempts).toHaveLength(0);
+    expect(detail.result).toBeNull();
+    expect(isItemPublishRequestDetail(detail)).toBe(true);
+  });
+
+  it("keeps prior and later current mapping evidence separate from a queued request", () => {
+    const prior = itemPublishDetailFixture({
+      state: "queued",
+      targetMode: "synthetic",
+      mappingOrigin: "prior",
+    });
+    const later = itemPublishDetailFixture({
+      state: "queued",
+      targetMode: "synthetic",
+      mappingOrigin: "later",
+    });
+    expect(prior.currentMapping?.observation.requestGlobalId).not.toBe(
+      prior.request.globalId,
+    );
+    expect(later.currentMapping?.observation.requestGlobalId).not.toBe(
+      later.request.globalId,
+    );
+    expect(prior.currentMapping?.head.formalItemCode).toBe("ITEM-SANDBOX-0001");
+    expect(later.currentMapping?.head.formalItemCode).toBe("ITEM-SANDBOX-0002");
+    expect(isItemPublishRequestDetail(prior)).toBe(true);
+    expect(isItemPublishRequestDetail(later)).toBe(true);
+  });
+
   it("matches a selected sibling through occurrences rather than the selected occurrence field", () => {
     const detail = itemPublishDetailFixture();
     const list = itemPublishListFixture(detail);
@@ -464,6 +524,50 @@ describe("Item publish response validation", () => {
             observation: {
               ...detail.currentMapping.observation,
               resultGlobalId: detail.result.globalId,
+            },
+          },
+        };
+      },
+    ],
+    [
+      "a selected observation without its selected result",
+      () => {
+        const detail = itemPublishDetailFixture({
+          state: "queued",
+          targetMode: "sandbox",
+          mapped: true,
+        });
+        if (!detail.currentMapping)
+          throw new Error("The fixture requires an observation.");
+        return {
+          ...detail,
+          currentMapping: {
+            ...detail.currentMapping,
+            observation: {
+              ...detail.currentMapping.observation,
+              requestGlobalId: detail.request.globalId,
+            },
+          },
+        };
+      },
+    ],
+    [
+      "a synthetic current mapping authority",
+      () => {
+        const detail = itemPublishDetailFixture({
+          state: "queued",
+          targetMode: "synthetic",
+          mapped: true,
+        });
+        if (!detail.currentMapping)
+          throw new Error("The fixture requires an observation.");
+        return {
+          ...detail,
+          currentMapping: {
+            ...detail.currentMapping,
+            observation: {
+              ...detail.currentMapping.observation,
+              authority: "synthetic" as const,
             },
           },
         };

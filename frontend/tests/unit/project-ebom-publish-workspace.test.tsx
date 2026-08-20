@@ -640,6 +640,69 @@ describe("EBOM publish-request workspace", () => {
     expect(screen.getByText("ITEM-SANDBOX-0001")).toBeVisible();
   });
 
+  it.each([
+    ["validated_mock", "mock", "Validated in Mock; not dispatched"],
+    ["queued", "synthetic", "Queued; target result pending"],
+    ["processing", "synthetic", "Processing; target result pending"],
+    [
+      "synthetic_verified",
+      "synthetic",
+      "Synthetic verification; not authoritative",
+    ],
+    ["failed_final", "sandbox", "Final failure; no success recorded"],
+    [
+      "uncertain_after_timeout",
+      "synthetic",
+      "Uncertain after timeout; reconciliation required",
+    ],
+  ] as const)(
+    "shows validated current truth for mapped %s without claiming selected success",
+    async (state, targetMode, requestOutcome) => {
+      const detail = itemPublishDetailFixture({
+        state,
+        targetMode,
+        mapped: true,
+      });
+      renderWorkspace(
+        dataSource(),
+        undefined,
+        undefined,
+        itemDataSource(detail),
+      );
+      const user = userEvent.setup();
+      await activateItemInspector(user);
+
+      expect(
+        await screen.findByText("Authoritative Sandbox observation"),
+      ).toBeVisible();
+      expect(screen.getByText("ITEM-SANDBOX-0001")).toBeVisible();
+      expect(screen.getByText(requestOutcome)).toBeVisible();
+      expect(
+        screen.queryByText("Authoritative Sandbox result observed"),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it("keeps a later current head visible while the selected request remains queued", async () => {
+    const detail = itemPublishDetailFixture({
+      state: "queued",
+      targetMode: "synthetic",
+      mappingOrigin: "later",
+    });
+    renderWorkspace(dataSource(), undefined, undefined, itemDataSource(detail));
+    const user = userEvent.setup();
+    await activateItemInspector(user);
+
+    expect(await screen.findByText("ITEM-SANDBOX-0002")).toBeVisible();
+    expect(screen.getByText("Queued; target result pending")).toBeVisible();
+    expect(
+      screen.queryByText("No authoritative mapping"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Authoritative Sandbox result observed"),
+    ).not.toBeInTheDocument();
+  });
+
   it("guards one Item request, commits locally and reports no target success", async () => {
     enableCommandSession();
     const user = userEvent.setup();
