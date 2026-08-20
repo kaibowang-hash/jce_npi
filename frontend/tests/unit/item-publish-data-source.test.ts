@@ -23,7 +23,7 @@ import {
 function context(signal = new AbortController().signal) {
   return {
     csrfToken: "csrf-item-publish-fixture",
-    idempotencyKey: "item-publish-fixture-0001",
+    idempotencyKey: "fixture-key",
     signal,
   };
 }
