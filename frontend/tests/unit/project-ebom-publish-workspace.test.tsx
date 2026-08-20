@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { EngineeringBomPublishRequestDataSource } from "../../src/api/publish-request-data-source";
+import type { ItemPublishDataSource } from "../../src/api/item-publish-data-source";
 import { NpiApiError } from "../../src/api/http";
 import { EngineeringBomPublishRequestWorkspace } from "../../src/pages/project-ebom-publish-workspace";
 import {
@@ -15,6 +16,10 @@ import {
   publishRequestFixture,
   publishRequestListFixture,
 } from "../support/publish-request-fixture";
+import {
+  itemPublishDetailFixture,
+  itemPublishListFixture,
+} from "../support/item-publish-fixture";
 import { renderWithLocale } from "../support/render";
 
 const csrfToken = "publish-workspace-csrf-token-fixture";
@@ -55,16 +60,30 @@ function dataSource(
   };
 }
 
+function itemDataSource(
+  detail = itemPublishDetailFixture(),
+  overrides: Partial<ItemPublishDataSource> = {},
+): ItemPublishDataSource {
+  return {
+    createRequest: () => Promise.resolve(detail),
+    loadRequest: () => Promise.resolve(detail),
+    loadRequests: () => Promise.resolve(itemPublishListFixture(detail)),
+    ...overrides,
+  };
+}
+
 function renderWorkspace(
   source: EngineeringBomPublishRequestDataSource | undefined = dataSource(),
   revision = releasedEngineeringBomRevisionFixture(),
   onDirtyChange?: (dirty: boolean) => void,
+  itemSource?: ItemPublishDataSource,
 ): void {
   const detail = engineeringBomDetailFixture();
   renderWithLocale(
     <EngineeringBomPublishRequestWorkspace
       dataSource={source}
       ebom={detail.ebom}
+      itemPublishDataSource={itemSource}
       onDirtyChange={onDirtyChange}
       projectId={ebomProjectId}
       revision={revision}
@@ -245,6 +264,282 @@ describe("EBOM publish-request workspace", () => {
     expect(
       screen.queryByRole("button", { name: "Retry failed nodes only" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("renders synthetic Item history without inventing formal success or mapping", async () => {
+    const user = userEvent.setup();
+    renderWorkspace(dataSource(), undefined, undefined, itemDataSource());
+
+    expect(
+      await screen.findByRole("heading", { name: "Item execution inspector" }),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "ENG-SYN-001" }));
+    expect(
+      await screen.findByText("Synthetic verification; not authoritative"),
+    ).toBeVisible();
+    expect(
+      document.querySelector(".item-publish__status-strip"),
+    ).toHaveTextContent("Disposable synthetic runtime");
+    expect(screen.getByText("No authoritative mapping")).toBeVisible();
+    expect(screen.getAllByText("Not assigned").length).toBeGreaterThan(0);
+    expect(screen.queryByText("ITEM-SANDBOX-0001")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /reconcile/iu }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders closed attempt state and fault labels instead of wire literals", async () => {
+    const user = userEvent.setup();
+    const detail = itemPublishDetailFixture({ state: "failed_final" });
+    const attempt = detail.attempts[0];
+    if (!attempt) throw new Error("The Item fixture requires an attempt.");
+    const localizedDetail = {
+      ...detail,
+      attempts: [
+        {
+          ...attempt,
+          state: "observed_failure" as const,
+          faultKind: "response_contract_invalid",
+        },
+      ],
+    };
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      itemDataSource(localizedDetail),
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+
+    expect(await screen.findByText("Observed failure")).toBeVisible();
+    expect(screen.getByText("Response contract invalid")).toBeVisible();
+    expect(screen.queryByText("observed_failure")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("response_contract_invalid"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows formal Item identity only from the authoritative current mapping", async () => {
+    const user = userEvent.setup();
+    const detail = itemPublishDetailFixture({
+      authoritativeMapping: true,
+      state: "succeeded",
+      targetMode: "sandbox",
+    });
+    renderWorkspace(dataSource(), undefined, undefined, itemDataSource(detail));
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+
+    expect(
+      await screen.findByText("Authoritative Sandbox result observed"),
+    ).toBeVisible();
+    expect(screen.getByText("Authoritative Sandbox observation")).toBeVisible();
+    expect(screen.getByText("ITEM-SANDBOX-0001")).toBeVisible();
+  });
+
+  it("guards one Item request, commits locally and reports no target success", async () => {
+    enableCommandSession();
+    const user = userEvent.setup();
+    const queued = itemPublishDetailFixture({ state: "queued" });
+    const createRequest = vi.fn<ItemPublishDataSource["createRequest"]>(() =>
+      Promise.resolve(queued),
+    );
+    const source = itemDataSource(queued, {
+      createRequest,
+      loadRequests: () =>
+        Promise.resolve(
+          itemPublishListFixture(null, {
+            mappingExpectation: {
+              mappingVersion: 3,
+              formalItemCode: "ITEM-SANDBOX-0001",
+              targetVersion: "7",
+              observationHash: "c".repeat(64),
+            },
+          }),
+        ),
+    });
+    renderWorkspace(dataSource(), undefined, undefined, source);
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+
+    const requestButton = await screen.findByRole("button", {
+      name: "Request Item execution",
+    });
+    await waitFor(() => {
+      expect(requestButton).toBeDisabled();
+    });
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: "I confirm this request uses the exact released Item source and current execution profile.",
+      }),
+    );
+    expect(requestButton).toBeEnabled();
+    expect(
+      document.querySelectorAll('[data-visual-primary="true"]'),
+    ).toHaveLength(1);
+    await user.click(requestButton);
+
+    await waitFor(() => {
+      expect(createRequest).toHaveBeenCalledOnce();
+    });
+    expect(createRequest.mock.calls[0]?.[1]).toEqual({
+      acknowledgement:
+        "I confirm this request uses the exact released Item source and current execution profile.",
+      expectedMappingVersion: 3,
+      publishRequestGlobalId: publishRequestFixture().globalId,
+      selectedPublishNodeGlobalId: publishRequestFixture().nodes[0]?.globalId,
+    });
+    expect(createRequest.mock.calls[0]?.[2].idempotencyKey).toMatch(
+      /^item-publish-/u,
+    );
+    expect(
+      await screen.findByText(
+        "The immutable request was committed locally. This is not target success.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getAllByText("Queued; target result pending").length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("blocks Mock, unavailable-profile, read-only and uncertain Item states", async () => {
+    const user = userEvent.setup();
+    const mock = itemPublishDetailFixture({ targetMode: "mock" });
+    const { unmount } = renderWithLocale(
+      <EngineeringBomPublishRequestWorkspace
+        dataSource={dataSource()}
+        ebom={engineeringBomDetailFixture().ebom}
+        itemPublishDataSource={itemDataSource(mock, {
+          loadRequests: () =>
+            Promise.resolve(
+              itemPublishListFixture(mock, { profileMode: "mock" }),
+            ),
+        })}
+        projectId={ebomProjectId}
+        revision={releasedEngineeringBomRevisionFixture()}
+      />,
+      "en",
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+    expect(
+      await screen.findByText(
+        "Mock validates the request locally and cannot execute an Item.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Request Item execution" }),
+    ).toBeDisabled();
+    unmount();
+
+    const missingProfileRender = renderWithLocale(
+      <EngineeringBomPublishRequestWorkspace
+        dataSource={dataSource()}
+        ebom={engineeringBomDetailFixture().ebom}
+        itemPublishDataSource={itemDataSource(undefined, {
+          loadRequests: () =>
+            Promise.resolve(
+              itemPublishListFixture(null, { profileUnavailable: true }),
+            ),
+        })}
+        projectId={ebomProjectId}
+        revision={releasedEngineeringBomRevisionFixture()}
+      />,
+      "en",
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+    expect(
+      await screen.findByText(
+        "The exact Item execution profile is unavailable.",
+      ),
+    ).toBeVisible();
+    missingProfileRender.unmount();
+
+    const uncertain = itemPublishDetailFixture({
+      state: "uncertain_after_timeout",
+      targetMode: "sandbox",
+    });
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      itemDataSource(uncertain, {
+        loadRequests: () =>
+          Promise.resolve(
+            itemPublishListFixture(uncertain, { canExecute: false }),
+          ),
+      }),
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+    expect(
+      await screen.findByText(
+        "Uncertain after timeout; reconciliation required",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByText("You can inspect Item execution but cannot request it."),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: /retry|reconcile/iu }),
+    ).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["queued", "Queued; target result pending"],
+    ["processing", "Processing; target result pending"],
+    ["failed_retryable", "Retryable failure; no success recorded"],
+    ["failed_final", "Final failure; no success recorded"],
+    ["mapping_conflict", "Mapping conflict; no mapping changed"],
+  ] as const)("renders guarded %s Item truth", async (state, label) => {
+    const user = userEvent.setup();
+    const detail = itemPublishDetailFixture({ state });
+    renderWorkspace(dataSource(), undefined, undefined, itemDataSource(detail));
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+    expect(await screen.findByText(label)).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Request Item execution" }),
+    ).toBeDisabled();
+  });
+
+  it("fails closed when Item history view permission is denied", async () => {
+    const user = userEvent.setup();
+    const detail = itemPublishDetailFixture();
+    const loadRequest = vi.fn<ItemPublishDataSource["loadRequest"]>();
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      itemDataSource(detail, {
+        loadRequest,
+        loadRequests: () =>
+          Promise.resolve({
+            ...itemPublishListFixture(detail),
+            permissions: { canExecute: false, canView: false },
+          }),
+      }),
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
+    expect(
+      (
+        await screen.findAllByText(
+          "You cannot view Item execution history for this Project.",
+        )
+      ).length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(loadRequest).not.toHaveBeenCalled();
   });
 
   it("does not query unreleased revisions", async () => {

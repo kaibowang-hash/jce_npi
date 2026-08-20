@@ -1697,7 +1697,7 @@ Cycle and immutable history,周期与不可变历史
 Cycle global ID,周期全局标识符
 Policy global ID,策略全局标识符
 Policy snapshot hash,策略快照哈希
-Started,启动时间
+Started,已启动
 Started by,启动人
 Latest decision hash,最新决策哈希
 Cycle history is unavailable until review starts.,评审开始前无法查看周期历史。
@@ -7877,3 +7877,74 @@ uncertain,不确定
 uncertain_after_timeout,超时后不确定
 update_item_engineering_fields,更新物料工程字段
 {record} state transition is invalid.,{record} 状态转换无效。
+Validated in Mock; not dispatched,已在模拟模式验证；未分派
+Queued; target result pending,已排队；等待目标结果
+Processing; target result pending,处理中；等待目标结果
+Synthetic verification; not authoritative,合成验证；不具权威性
+Authoritative Sandbox result observed,已观察到权威沙箱结果
+Retryable failure; no success recorded,可重试失败；未记录成功
+Final failure; no success recorded,最终失败；未记录成功
+Uncertain after timeout; reconciliation required,超时后结果不确定；需要对账
+Mapping conflict; no mapping changed,映射冲突；映射未变更
+Mock validation,模拟验证
+Disposable synthetic runtime,一次性合成运行环境
+Sandbox execution,沙箱执行
+Another EBOM command is in progress.,另一项 EBOM 命令正在处理中。
+You can inspect Item execution but cannot request it.,您可以查看物料执行，但不能发起请求。
+The secure command session is unavailable.,安全命令会话不可用。
+Mock validates the request locally and cannot execute an Item.,模拟模式仅在本地验证请求，不能执行物料。
+The outcome is uncertain. Reconciliation is required before any new request.,结果尚不确定。发起任何新请求前必须先对账。
+Resolve the mapping conflict before any new request.,发起任何新请求前请先解决映射冲突。
+The existing Item request is still in flight.,现有物料请求仍在处理中。
+An immutable Item request already exists for this exact source.,此准确来源已存在不可变物料请求。
+Load the exact Item execution context before requesting execution.,发起执行请求前请先加载准确的物料执行上下文。
+Item execution inspector,物料执行检查器
+Request and result history is bound to the selected immutable Phase 5 node. Formal Item identity is shown only from the current authoritative mapping.,请求与结果历史绑定到所选不可变第 5 阶段节点。正式物料标识仅来自当前权威映射。
+Select exact Item source,选择准确物料来源
+Source node,来源节点
+The Item execution data source is not configured. No target system was contacted.,物料执行数据源未配置。未联系任何目标系统。
+Loading Item execution context,正在加载物料执行上下文
+Item execution unavailable,物料执行不可用
+No Item execution request,无物料执行请求
+Execution profile,执行配置
+You cannot view Item execution history for this Project.,您无权查看此项目的物料执行历史。
+Exact source and execution expectation,准确来源与执行预期
+Source occurrences,来源出现次数
+Item intent,物料意图
+Expected mapping version,预期映射版本
+Expected target version,预期目标版本
+Phase 5 request hash,第 5 阶段请求哈希
+Profile and mapping authority,配置与映射权威性
+Profile,配置
+Profile version,配置版本
+Environment,环境
+Current mapping authority,当前映射权威性
+Authoritative Sandbox observation,权威沙箱观察
+No authoritative mapping,无权威映射
+Loading Item attempt history,正在加载物料尝试历史
+Item detail unavailable,物料详情不可用
+Immutable attempt history,不可变尝试历史
+No adapter attempt was recorded for this request.,此请求未记录适配器尝试。
+Adapter boundary,适配器边界
+Finished,完成时间
+Crossed,已跨越
+Not crossed,未跨越
+Not required,不需要
+Creating local execution request,正在创建本地执行请求
+No target success is reported while the request is being committed.,提交请求期间不会报告目标成功。
+Item request failed,物料请求失败
+The immutable request was committed locally. This is not target success.,不可变请求已在本地提交。这不代表目标成功。
+Request exact Item execution,请求准确物料执行
+"Impact: the server freezes this released source, current profile and mapping expectation, then commits an auditable request before any worker may cross an adapter boundary.",影响：服务器会冻结此已发布来源、当前配置和映射预期，并在任何工作器跨越适配器边界前提交可审计请求。
+I confirm this request uses the exact released Item source and current execution profile.,我确认此请求使用准确的已发布物料来源和当前执行配置。
+Request Item execution,请求物料执行
+Synthetic verification,合成验证
+Observed success,已观察到成功
+Observed failure,已观察到失败
+Uncertain,不确定
+Unknown attempt state,未知的尝试状态
+Source engineering Item conflict,来源工程物料冲突
+Response contract invalid,响应契约无效
+Response authentication invalid,响应身份验证无效
+Unknown execution fault,未知的执行故障
+The current Item mapping expectation is unavailable.,当前物料映射预期不可用。

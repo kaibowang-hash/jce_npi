@@ -24,6 +24,7 @@ import {
 import { LiveDocumentDataSource } from "../api/document-data-source";
 import { LiveEngineeringBomDataSource } from "../api/ebom-data-source";
 import { LiveEngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
+import { LiveItemPublishDataSource } from "../api/item-publish-data-source";
 import { LiveControlledPrintDataSource } from "../api/controlled-print-data-source";
 import { LiveToolingDataSource } from "../api/tooling-data-source";
 import { LiveToolingImportDataSource } from "../api/tooling-import-data-source";
@@ -59,6 +60,7 @@ const liveDocumentDataSource = new LiveDocumentDataSource();
 const liveEngineeringBomDataSource = new LiveEngineeringBomDataSource();
 const liveEngineeringBomPublishRequestDataSource =
   new LiveEngineeringBomPublishRequestDataSource();
+const liveItemPublishDataSource = new LiveItemPublishDataSource();
 const liveControlledPrintDataSource = new LiveControlledPrintDataSource();
 const liveGateReviewDataSource = new LiveGateReviewDataSource();
 const liveMyWorkDataSource = new LiveMyWorkDataSource();
@@ -181,6 +183,7 @@ export function App(): React.JSX.Element {
         documentDataSource={liveDocumentDataSource}
         domainWorkItemsDataSource={liveProjectDomainWorkItemsDataSource}
         engineeringBomDataSource={liveEngineeringBomDataSource}
+        itemPublishDataSource={liveItemPublishDataSource}
         publishRequestDataSource={liveEngineeringBomPublishRequestDataSource}
         productionTransitionDataSource={liveProductionTransitionDataSource}
         readinessDataSource={liveReadinessDataSource}

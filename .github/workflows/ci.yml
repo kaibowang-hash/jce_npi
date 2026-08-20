@@ -118,6 +118,7 @@ jobs:
           tests/e2e/p5-01-documents-live.spec.ts
           tests/e2e/p5-04-ebom-live.spec.ts
           tests/e2e/p5-05-publish-request-live.spec.ts
+          tests/e2e/p8-03-item-publish-live.spec.ts
           tests/e2e/p5-06-controlled-print-live.spec.ts
           tests/e2e/p6-01-tooling-live.spec.ts
           tests/e2e/p6-02-tooling-set-live.spec.ts
@@ -146,6 +147,7 @@ jobs:
             frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-0*-linux.png
             frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-*-linux.png
             frontend/tests/e2e/p5-05-publish-request-live.spec.ts-snapshots/p5-05-*-linux.png
+            frontend/tests/e2e/p8-03-item-publish-live.spec.ts-snapshots/p8-03-*-linux.png
             frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-*-linux.png
             frontend/tests/e2e/p6-01-tooling-live.spec.ts-snapshots/p6-01-*-linux.png
             frontend/tests/e2e/p6-02-tooling-set-live.spec.ts-snapshots/p6-02-*-linux.png

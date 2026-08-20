@@ -21115,13 +21115,16 @@ components:
     ItemPublishRequestList:
       type: object
       additionalProperties: false
-      required: [projectGlobalId, sourceFilters, permissions, executionProfile, items]
+      required: [projectGlobalId, sourceFilters, permissions, executionProfile, mappingExpectation, items]
       properties:
         projectGlobalId: { type: string, format: uuid }
         sourceFilters: { $ref: "#/components/schemas/ItemPublishSourceFilters" }
         permissions: { $ref: "#/components/schemas/ItemPublishPermissions" }
         executionProfile:
           oneOf: [{ $ref: "#/components/schemas/ItemPublishProfileReference" }, { type: "null" }]
+        mappingExpectation:
+          description: Server-parsed current mapping expectation for the exact source filters; the browser must not infer a default.
+          oneOf: [{ $ref: "#/components/schemas/ItemPublishMappingExpectation" }, { type: "null" }]
         items:
           type: array
           maxItems: 200
@@ -21129,12 +21132,18 @@ components:
     ItemPublishRequestDetail:
       type: object
       additionalProperties: false
-      required: [requestGlobalId, request, currentMapping, permissions]
+      required: [requestGlobalId, request, currentMapping, attempts, result, permissions]
       properties:
         requestGlobalId: { type: string, format: uuid }
         request: { $ref: "#/components/schemas/ItemPublishRequest" }
         currentMapping:
           oneOf: [{ $ref: "#/components/schemas/ItemPublishCurrentMapping" }, { type: "null" }]
+        attempts:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ItemPublishAttempt" }
+        result:
+          oneOf: [{ $ref: "#/components/schemas/ItemPublishResult" }, { type: "null" }]
         permissions: { $ref: "#/components/schemas/ItemPublishPermissions" }
     ProblemDetails:
       type: object

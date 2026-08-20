@@ -319,6 +319,44 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             lambda _project, _source, lock: self.current_mapping
         )
 
+        def bounded_documents(
+            doctype: str,
+            filters: dict[str, object],
+            *,
+            order_by: str,
+            maximum: int,
+        ):
+            rows = [
+                row
+                for row in self.documents.get(doctype, {}).values()
+                if all(
+                    str(row.get(key)) == str(value)
+                    for key, value in filters.items()
+                )
+            ]
+            if doctype == "NPI Item Publish Attempt":
+                rows.sort(
+                    key=lambda row: (
+                        int(row.attempt_number),
+                        str(row.global_id),
+                    )
+                )
+            else:
+                rows.sort(
+                    key=lambda row: (
+                        str(row.get("created_at") or ""),
+                        str(row.global_id),
+                    ),
+                    reverse=True,
+                )
+            if len(rows) > maximum:
+                raise RuntimeError(
+                    f"Persisted {doctype} collection exceeds its safe bound."
+                )
+            return tuple(rows)
+
+        repository._bounded_documents = bounded_documents
+
         def append_audit(**values: object) -> None:
             self.frappe.get_doc(
                 {
@@ -526,10 +564,6 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
     def test_list_and_detail_are_project_contained_and_exactly_filterable(self) -> None:
         outcome = self.create()
         self.frappe.db.commit()
-        rows = list(self.documents["NPI Item Publish Request"].values())
-        self.repository._bounded_documents = (
-            lambda doctype, filters, order_by, maximum: rows
-        )
         listed = self.repository.list_item_publish_requests(
             PROJECT_ID,
             publish_request_id=PHASE5_REQUEST_ID,
@@ -537,6 +571,24 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
         )
         self.assertEqual(len(listed["items"]), 1)
         self.assertEqual(listed["items"][0]["globalId"], outcome.response["requestGlobalId"])
+        self.assertEqual(
+            listed["mappingExpectation"],
+            {
+                "mappingVersion": 0,
+                "formalItemCode": None,
+                "targetVersion": None,
+                "observationHash": None,
+            },
+        )
+        self.current_mapping = CurrentItemMapping(2, "ITEM-SANDBOX-0001", "7", HASH_B)
+        preview = self.repository.list_item_publish_requests(
+            PROJECT_ID,
+            publish_request_id=PHASE5_REQUEST_ID,
+            selected_publish_node_id=self.phase5.nodes[0].global_id,
+        )
+        self.assertEqual(preview["mappingExpectation"]["mappingVersion"], 2)
+        self.assertEqual(preview["mappingExpectation"]["formalItemCode"], "ITEM-SANDBOX-0001")
+        self.current_mapping = None
         detail = self.repository.item_publish_request_detail(
             PROJECT_ID,
             UUID(outcome.response["requestGlobalId"]),
@@ -555,10 +607,6 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
     def test_invalid_current_profile_does_not_hide_retained_request_history(self) -> None:
         outcome = self.create()
         self.frappe.db.commit()
-        rows = list(self.documents["NPI Item Publish Request"].values())
-        self.repository._bounded_documents = (
-            lambda doctype, filters, order_by, maximum: rows
-        )
 
         def invalid_profile(_tenant: str, _project: UUID):
             raise RuntimeError("invalid current profile")
@@ -577,6 +625,100 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             outcome.response["requestGlobalId"],
         )
         self.assertFalse(detail["permissions"]["canExecute"])
+
+    def test_detail_exposes_only_verified_attempt_and_result_history(self) -> None:
+        self.repository = self.new_repository(self.synthetic_profile())
+        outcome = self.create()
+        self.frappe.db.commit()
+        request = self.only("NPI Item Publish Request")
+        attempt_id = UUID("00000000-0000-4000-8000-000000008321")
+        result_id = UUID("00000000-0000-4000-8000-000000008322")
+        attempt_snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(attempt_id),
+            "requestGlobalId": str(request.global_id),
+            "outboxEventId": str(request.outbox_event_id),
+            "attemptNumber": 1,
+            "claimToken": "private-claim-token",
+            "targetIdempotencyKeyHash": HASH_B,
+            "sourceHash": str(request.source_hash),
+            "profileId": str(request.profile_id),
+            "profileVersion": int(request.profile_version),
+            "state": "synthetic_verified",
+            "adapterBoundaryCrossed": False,
+            "connectTimeoutSeconds": None,
+            "readTimeoutSeconds": None,
+            "requestSnapshotHash": HASH_C,
+            "transportDisposition": "synthetic_verified",
+            "targetStatusCode": None,
+            "responseHash": HASH_D,
+            "faultKind": "none",
+            "reconciliationRequired": False,
+            "safeErrorCode": None,
+            "startedAt": "2026-08-16T14:00:00Z",
+            "finishedAt": "2026-08-16T14:00:01Z",
+        }
+        self.documents["NPI Item Publish Attempt"] = {
+            str(attempt_id): AttrDict(
+                global_id=str(attempt_id),
+                request_global_id=str(request.global_id),
+                outbox_event_id=str(request.outbox_event_id),
+                attempt_number=1,
+                source_hash=str(request.source_hash),
+                attempt_snapshot=attempt_snapshot,
+                attempt_hash=self.module.canonical_hash(attempt_snapshot),
+            )
+        }
+        result_snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(result_id),
+            "requestGlobalId": str(request.global_id),
+            "outboxEventId": str(request.outbox_event_id),
+            "attemptGlobalId": str(attempt_id),
+            "attemptNumber": 1,
+            "idempotencyKeyHash": HASH_B,
+            "sourceHash": str(request.source_hash),
+            "expectedTargetVersion": None,
+            "state": "synthetic_verified",
+            "authority": "synthetic",
+            "responseAuthenticated": False,
+            "responseHash": HASH_D,
+            "formalItemCode": None,
+            "targetVersion": None,
+            "faultKind": "none",
+            "observedAt": "2026-08-16T14:00:01Z",
+        }
+        self.documents["NPI Item Publish Result"] = {
+            str(result_id): AttrDict(
+                global_id=str(result_id),
+                request_global_id=str(request.global_id),
+                outbox_event_id=str(request.outbox_event_id),
+                attempt_global_id=str(attempt_id),
+                attempt_number=1,
+                source_hash=str(request.source_hash),
+                result_snapshot=result_snapshot,
+                result_hash=self.module.canonical_hash(result_snapshot),
+            )
+        }
+        request.result_global_id = str(result_id)
+        request.state = "synthetic_verified"
+
+        detail = self.repository.item_publish_request_detail(
+            PROJECT_ID,
+            UUID(outcome.response["requestGlobalId"]),
+        )
+
+        self.assertEqual(detail["attempts"][0]["attemptNumber"], 1)
+        self.assertNotIn("claimToken", detail["attempts"][0])
+        self.assertEqual(detail["result"]["authority"], "synthetic")
+        self.assertIsNone(detail["result"]["formalItemCode"])
+
+        self.only("NPI Item Publish Attempt").attempt_hash = HASH_A
+        with self.assertRaisesRegex(RuntimeError, "attempt is invalid"):
+            self.repository.item_publish_request_detail(
+                PROJECT_ID,
+                UUID(outcome.response["requestGlobalId"]),
+            )
 
     def test_source_revalidation_and_atomic_write_order_are_explicit(self) -> None:
         path = (

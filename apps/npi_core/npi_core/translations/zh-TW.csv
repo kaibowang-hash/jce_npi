@@ -7877,3 +7877,74 @@ uncertain,不確定
 uncertain_after_timeout,逾時後不確定
 update_item_engineering_fields,更新物料工程欄位
 {record} state transition is invalid.,{record} 狀態轉換無效。
+Validated in Mock; not dispatched,已在模擬模式驗證；未分派
+Queued; target result pending,已排隊；等待目標結果
+Processing; target result pending,處理中；等待目標結果
+Synthetic verification; not authoritative,合成驗證；不具權威性
+Authoritative Sandbox result observed,已觀察到權威沙箱結果
+Retryable failure; no success recorded,可重試失敗；未記錄成功
+Final failure; no success recorded,最終失敗；未記錄成功
+Uncertain after timeout; reconciliation required,逾時後結果不確定；需要對帳
+Mapping conflict; no mapping changed,映射衝突；映射未變更
+Mock validation,模擬驗證
+Disposable synthetic runtime,一次性合成執行環境
+Sandbox execution,沙箱執行
+Another EBOM command is in progress.,另一項 EBOM 命令正在處理中。
+You can inspect Item execution but cannot request it.,您可以查看物料執行，但不能發起請求。
+The secure command session is unavailable.,安全命令工作階段無法使用。
+Mock validates the request locally and cannot execute an Item.,模擬模式僅在本機驗證請求，不能執行物料。
+The outcome is uncertain. Reconciliation is required before any new request.,結果尚不確定。發起任何新請求前必須先對帳。
+Resolve the mapping conflict before any new request.,發起任何新請求前請先解決映射衝突。
+The existing Item request is still in flight.,現有物料請求仍在處理中。
+An immutable Item request already exists for this exact source.,此準確來源已存在不可變物料請求。
+Load the exact Item execution context before requesting execution.,發起執行請求前請先載入準確的物料執行上下文。
+Item execution inspector,物料執行檢查器
+Request and result history is bound to the selected immutable Phase 5 node. Formal Item identity is shown only from the current authoritative mapping.,請求與結果歷史繫結至所選不可變第 5 階段節點。正式物料識別僅來自目前權威映射。
+Select exact Item source,選擇準確物料來源
+Source node,來源節點
+The Item execution data source is not configured. No target system was contacted.,物料執行資料來源未設定。未連絡任何目標系統。
+Loading Item execution context,正在載入物料執行上下文
+Item execution unavailable,物料執行無法使用
+No Item execution request,無物料執行請求
+Execution profile,執行設定檔
+You cannot view Item execution history for this Project.,您無權查看此專案的物料執行歷史。
+Exact source and execution expectation,準確來源與執行預期
+Source occurrences,來源出現次數
+Item intent,物料意圖
+Expected mapping version,預期映射版本
+Expected target version,預期目標版本
+Phase 5 request hash,第 5 階段請求雜湊
+Profile and mapping authority,設定檔與映射權威性
+Profile,設定檔
+Profile version,設定檔版本
+Environment,環境
+Current mapping authority,目前映射權威性
+Authoritative Sandbox observation,權威沙箱觀察
+No authoritative mapping,無權威映射
+Loading Item attempt history,正在載入物料嘗試歷史
+Item detail unavailable,物料詳細資料無法使用
+Immutable attempt history,不可變嘗試歷史
+No adapter attempt was recorded for this request.,此請求未記錄適配器嘗試。
+Adapter boundary,適配器邊界
+Finished,完成時間
+Crossed,已跨越
+Not crossed,未跨越
+Not required,不需要
+Creating local execution request,正在建立本機執行請求
+No target success is reported while the request is being committed.,提交請求期間不會報告目標成功。
+Item request failed,物料請求失敗
+The immutable request was committed locally. This is not target success.,不可變請求已在本機提交。這不代表目標成功。
+Request exact Item execution,請求準確物料執行
+"Impact: the server freezes this released source, current profile and mapping expectation, then commits an auditable request before any worker may cross an adapter boundary.",影響：伺服器會凍結此已發佈來源、目前設定檔和映射預期，並在任何工作器跨越適配器邊界前提交可稽核請求。
+I confirm this request uses the exact released Item source and current execution profile.,我確認此請求使用準確的已發佈物料來源和目前執行設定檔。
+Request Item execution,請求物料執行
+Synthetic verification,合成驗證
+Observed success,已觀察到成功
+Observed failure,已觀察到失敗
+Uncertain,不確定
+Unknown attempt state,未知的嘗試狀態
+Source engineering Item conflict,來源工程物料衝突
+Response contract invalid,回應契約無效
+Response authentication invalid,回應身分驗證無效
+Unknown execution fault,未知的執行故障
+The current Item mapping expectation is unavailable.,目前物料映射預期無法使用。

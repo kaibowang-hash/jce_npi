@@ -54,6 +54,7 @@ from npi_integration.publish_request.frappe_repository import (
 
 
 _MAX_ITEM_REQUESTS = 200
+_MAX_ITEM_ATTEMPTS = 100
 
 ProfileResolver = Callable[[str, UUID], ItemExecutionProfile | None]
 
@@ -121,6 +122,11 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             ):
                 continue
             items.append(self._request_public_dict(row, value))
+        mapping_expectation = self._preview_mapping_expectation(
+            project,
+            publish_request_id=publish_request_id,
+            selected_publish_node_id=selected_publish_node_id,
+        )
         return {
             "projectGlobalId": str(project.global_id),
             "sourceFilters": {
@@ -137,8 +143,51 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             "executionProfile": (
                 profile.reference.canonical_mapping() if profile else None
             ),
+            "mappingExpectation": mapping_expectation,
             "items": items,
         }
+
+    def _preview_mapping_expectation(
+        self,
+        project: object,
+        *,
+        publish_request_id: UUID | None,
+        selected_publish_node_id: UUID | None,
+    ) -> dict[str, object] | None:
+        """Resolve the exact source head used by the next create command.
+
+        The browser is allowed to display this parsed server fact, but never to
+        derive a mapping version from a missing detail row or a local default.
+        An unfiltered list has no single source stream and therefore has no
+        command expectation.
+        """
+        if publish_request_id is None or selected_publish_node_id is None:
+            return None
+        phase5_row = self._phase5_request_for_project(
+            project,
+            publish_request_id,
+            lock=False,
+        )
+        if phase5_row is None:
+            raise ItemPublishUnavailable()
+        try:
+            phase5_request = self._exact_released_phase5_request(
+                project,
+                phase5_row,
+            )
+            source = self._item_source(
+                project,
+                phase5_request,
+                selected_publish_node_id,
+            )
+        except ItemPublishContractError as error:
+            raise ItemPublishSourceConflict() from error
+        except NpiProblem:
+            raise
+        except RuntimeError as error:
+            raise ItemPublishStateConflict() from error
+        current = self._current_mapping_for_source(project, source, lock=False)
+        return self._mapping_expectation(current).canonical_mapping()
 
     def item_publish_request_detail(
         self,
@@ -157,6 +206,8 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             value.source,
             lock=False,
         )
+        attempts = self._item_attempts(row, value)
+        result = self._item_result(row, value)
         return self._detail_response(
             row,
             value,
@@ -165,6 +216,8 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 project,
                 self._read_profile(project),
             )["canExecute"],
+            attempts=attempts,
+            result=result,
         )
 
     def create_item_publish_request(
@@ -1029,12 +1082,133 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         *,
         current: CurrentItemMapping | None,
         can_execute: bool,
+        attempts: tuple[dict[str, Any], ...],
+        result: dict[str, Any] | None,
     ) -> dict[str, Any]:
         return {
             "requestGlobalId": str(value.global_id),
             "request": self._request_public_dict(row, value),
             "currentMapping": _mapping_public_dict(current),
+            "attempts": list(attempts),
+            "result": result,
             "permissions": {"canView": True, "canExecute": can_execute},
+        }
+
+    def _item_attempts(
+        self,
+        request_row: object,
+        value: ItemPublishRequest,
+    ) -> tuple[dict[str, Any], ...]:
+        rows = self._bounded_documents(
+            "NPI Item Publish Attempt",
+            {"request_global_id": str(value.global_id)},
+            order_by="attempt_number asc, global_id asc",
+            maximum=_MAX_ITEM_ATTEMPTS,
+        )
+        attempts: list[dict[str, Any]] = []
+        for row in rows:
+            snapshot = _json_object(row.attempt_snapshot)
+            if (
+                canonical_hash(snapshot) != str(row.attempt_hash)
+                or snapshot.get("globalId") != str(row.global_id)
+                or snapshot.get("requestGlobalId") != str(value.global_id)
+                or str(row.request_global_id) != str(value.global_id)
+                or snapshot.get("outboxEventId") != str(row.outbox_event_id)
+                or (
+                    str(row.outbox_event_id)
+                    != str(request_row.outbox_event_id or "")
+                )
+                or snapshot.get("attemptNumber") != int(row.attempt_number)
+                or snapshot.get("sourceHash") != value.source.source_hash
+                or str(row.source_hash) != value.source.source_hash
+                or snapshot.get("profileId") != value.profile.profile_id
+                or snapshot.get("profileVersion") != value.profile.profile_version
+            ):
+                raise RuntimeError("Persisted Item publish attempt is invalid.")
+            attempts.append(
+                {
+                    "globalId": snapshot["globalId"],
+                    "requestGlobalId": snapshot["requestGlobalId"],
+                    "outboxEventId": snapshot["outboxEventId"],
+                    "attemptNumber": snapshot["attemptNumber"],
+                    "state": snapshot["state"],
+                    "adapterBoundaryCrossed": snapshot[
+                        "adapterBoundaryCrossed"
+                    ],
+                    "targetIdempotencyKeyHash": snapshot[
+                        "targetIdempotencyKeyHash"
+                    ],
+                    "requestSnapshotHash": snapshot["requestSnapshotHash"],
+                    "startedAt": snapshot["startedAt"],
+                    "finishedAt": snapshot.get("finishedAt"),
+                    "targetStatusCode": snapshot.get("targetStatusCode"),
+                    "responseHash": snapshot.get("responseHash"),
+                    "faultKind": snapshot.get("faultKind"),
+                    "reconciliationRequired": snapshot[
+                        "reconciliationRequired"
+                    ],
+                    "safeErrorCode": snapshot.get("safeErrorCode"),
+                    "attemptHash": str(row.attempt_hash),
+                }
+            )
+        return tuple(attempts)
+
+    @staticmethod
+    def _item_result(
+        request_row: object,
+        value: ItemPublishRequest,
+    ) -> dict[str, Any] | None:
+        if not request_row.result_global_id:
+            return None
+        try:
+            row = frappe.get_doc(
+                "NPI Item Publish Result",
+                str(request_row.result_global_id),
+            )
+        except frappe.DoesNotExistError as error:
+            raise RuntimeError(
+                "Persisted Item publish result is unavailable."
+            ) from error
+        snapshot = _json_object(row.result_snapshot)
+        if (
+            canonical_hash(snapshot) != str(row.result_hash)
+            or snapshot.get("globalId") != str(row.global_id)
+            or str(row.global_id) != str(request_row.result_global_id)
+            or snapshot.get("requestGlobalId") != str(value.global_id)
+            or str(row.request_global_id) != str(value.global_id)
+            or snapshot.get("outboxEventId") != str(row.outbox_event_id)
+            or str(row.outbox_event_id) != str(request_row.outbox_event_id or "")
+            or snapshot.get("attemptGlobalId") != str(row.attempt_global_id)
+            or snapshot.get("attemptNumber") != int(row.attempt_number)
+            or snapshot.get("sourceHash") != value.source.source_hash
+            or str(row.source_hash) != value.source.source_hash
+        ):
+            raise RuntimeError("Persisted Item publish result is invalid.")
+        if str(request_row.state) == ItemPublishRequestState.MAPPING_CONFLICT.value:
+            if not (
+                snapshot.get("state") == "succeeded"
+                and snapshot.get("authority") == "authoritative_sandbox"
+                and snapshot.get("responseAuthenticated") is True
+            ):
+                raise RuntimeError(
+                    "A mapping-conflict Item request must retain an authenticated authoritative success result."
+                )
+        return {
+            "globalId": snapshot["globalId"],
+            "requestGlobalId": snapshot["requestGlobalId"],
+            "outboxEventId": snapshot["outboxEventId"],
+            "attemptGlobalId": snapshot["attemptGlobalId"],
+            "attemptNumber": snapshot["attemptNumber"],
+            "sourceHash": snapshot["sourceHash"],
+            "state": snapshot["state"],
+            "authority": snapshot["authority"],
+            "responseAuthenticated": snapshot["responseAuthenticated"],
+            "responseHash": snapshot["responseHash"],
+            "formalItemCode": snapshot.get("formalItemCode"),
+            "targetVersion": snapshot.get("targetVersion"),
+            "faultKind": snapshot["faultKind"],
+            "resultHash": str(row.result_hash),
+            "observedAt": snapshot["observedAt"],
         }
 
     @staticmethod
@@ -1075,6 +1249,8 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             "requestGlobalId": str(value.global_id),
             "request": request,
             "currentMapping": _mapping_public_dict(current),
+            "attempts": [],
+            "result": None,
             "permissions": {"canView": True, "canExecute": can_execute},
         }
 

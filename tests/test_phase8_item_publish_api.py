@@ -182,6 +182,8 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
                 "dispatchAllowed": True,
             },
             "currentMapping": None,
+            "attempts": [],
+            "result": None,
             "permissions": {"canView": True, "canExecute": True},
         }
         self.list_response = {
@@ -192,6 +194,7 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
             },
             "permissions": {"canView": True, "canExecute": True},
             "executionProfile": None,
+            "mappingExpectation": None,
             "items": [],
         }
         self.repository = MockRepository(self)
@@ -258,6 +261,32 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
         self.assertEqual(result, self.detail_response)
         self.assertEqual(self.events, ["authorize", "detail"])
         self.assertEqual(str(self.repository.calls[-1][1][1]), ITEM_REQUEST_ID)
+
+    def test_detail_preserves_mapping_conflict_request_and_success_result_states(self) -> None:
+        self.detail_response = {
+            **self.detail_response,
+            "request": {
+                **self.detail_response["request"],
+                "state": "mapping_conflict",
+            },
+            "currentMapping": {
+                "mappingVersion": 1,
+                "formalItemCode": "ITEM-SANDBOX-0001",
+                "targetVersion": "1",
+                "observationHash": "a" * 64,
+            },
+            "result": {
+                "state": "succeeded",
+                "authority": "authoritative_sandbox",
+                "responseAuthenticated": True,
+            },
+        }
+        result = self.call(self.api.get_item_publish_request)
+        self.assertEqual(result["request"]["state"], "mapping_conflict")
+        self.assertEqual(result["result"]["state"], "succeeded")
+        self.assertEqual(result["result"]["authority"], "authoritative_sandbox")
+        self.assertTrue(result["result"]["responseAuthenticated"])
+        self.assertEqual(result["currentMapping"]["mappingVersion"], 1)
 
     def test_new_command_commits_before_enqueue_and_returns_only_local_acceptance(self) -> None:
         result = self.call(self.api.create_item_publish_request, self.payload())

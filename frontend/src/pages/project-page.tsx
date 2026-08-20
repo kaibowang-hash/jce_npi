@@ -12,6 +12,7 @@ import type { ProjectControlsDataSource } from "../api/project-controls-data-sou
 import type { DocumentDataSource } from "../api/document-data-source";
 import type { EngineeringBomDataSource } from "../api/ebom-data-source";
 import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
+import type { ItemPublishDataSource } from "../api/item-publish-data-source";
 import type { ControlledPrintDataSource } from "../api/controlled-print-data-source";
 import type { ReadinessDataSource } from "../api/readiness-data-source";
 import type { ProductionTransitionDataSource } from "../api/production-transition-data-source";
@@ -233,6 +234,7 @@ function ProjectCockpit({
   documentDataSource,
   domainWorkItemsDataSource,
   engineeringBomDataSource,
+  itemPublishDataSource,
   publishRequestDataSource,
   productionTransitionDataSource,
   readinessDataSource,
@@ -247,6 +249,7 @@ function ProjectCockpit({
   documentDataSource?: DocumentDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   engineeringBomDataSource?: EngineeringBomDataSource | undefined;
+  itemPublishDataSource?: ItemPublishDataSource | undefined;
   publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   productionTransitionDataSource?: ProductionTransitionDataSource | undefined;
   readinessDataSource?: ReadinessDataSource | undefined;
@@ -368,6 +371,7 @@ function ProjectCockpit({
         documentDataSource={documentDataSource}
         domainWorkItemsDataSource={domainWorkItemsDataSource}
         engineeringBomDataSource={engineeringBomDataSource}
+        itemPublishDataSource={itemPublishDataSource}
         publishRequestDataSource={publishRequestDataSource}
         productionTransitionDataSource={productionTransitionDataSource}
         readinessDataSource={readinessDataSource}
@@ -565,6 +569,7 @@ export default function ProjectPage({
   domainWorkItemsDataSource,
   documentDataSource,
   engineeringBomDataSource,
+  itemPublishDataSource,
   publishRequestDataSource,
   productionTransitionDataSource,
   readinessDataSource,
@@ -580,6 +585,7 @@ export default function ProjectPage({
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   documentDataSource?: DocumentDataSource | undefined;
   engineeringBomDataSource?: EngineeringBomDataSource | undefined;
+  itemPublishDataSource?: ItemPublishDataSource | undefined;
   publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   productionTransitionDataSource?: ProductionTransitionDataSource | undefined;
   readinessDataSource?: ReadinessDataSource | undefined;
@@ -668,6 +674,7 @@ export default function ProjectPage({
       documentDataSource={documentDataSource}
       domainWorkItemsDataSource={domainWorkItemsDataSource}
       engineeringBomDataSource={engineeringBomDataSource}
+      itemPublishDataSource={itemPublishDataSource}
       publishRequestDataSource={publishRequestDataSource}
       productionTransitionDataSource={productionTransitionDataSource}
       readinessDataSource={readinessDataSource}

@@ -18,6 +18,17 @@ import type {
   PublishRetryDirective,
 } from "../api/publish-request-data-source";
 import { PublishRequestCancelledError } from "../api/publish-request-data-source";
+import type {
+  ItemPublishDataSource,
+  ItemPublishRequestDetailViewModel,
+  ItemPublishRequestListViewModel,
+  ItemPublishRequestState,
+  ItemPublishTargetMode,
+} from "../api/item-publish-data-source";
+import {
+  ITEM_PUBLISH_ACKNOWLEDGEMENT,
+  ItemPublishCancelledError,
+} from "../api/item-publish-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import { RequestFailurePanel } from "../components/problem-details-panel";
 import {
@@ -31,7 +42,12 @@ import {
   formatNumber,
 } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
-import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import {
+  Button,
+  CompactAction,
+  Select,
+  TextInput,
+} from "../ui-adapters/npi-ui";
 
 type ResourceState<T> =
   | { kind: "idle" }
@@ -209,10 +225,757 @@ function Failure({
   );
 }
 
+type ItemCommandState =
+  | { kind: "idle" }
+  | { kind: "processing" }
+  | { kind: "accepted"; detail: ItemPublishRequestDetailViewModel }
+  | { kind: "failed"; failure: RequestFailure };
+
+function itemStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: ItemPublishRequestState,
+): string {
+  const labels: Record<ItemPublishRequestState, string> = {
+    validated_mock: t("Validated in Mock; not dispatched"),
+    queued: t("Queued; target result pending"),
+    processing: t("Processing; target result pending"),
+    synthetic_verified: t("Synthetic verification; not authoritative"),
+    succeeded: t("Authoritative Sandbox result observed"),
+    failed_retryable: t("Retryable failure; no success recorded"),
+    failed_final: t("Final failure; no success recorded"),
+    uncertain_after_timeout: t(
+      "Uncertain after timeout; reconciliation required",
+    ),
+    mapping_conflict: t("Mapping conflict; no mapping changed"),
+  };
+  return labels[state];
+}
+
+function itemAttemptStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: string,
+): string {
+  switch (state) {
+    case "started":
+      return t("Started");
+    case "synthetic_verified":
+      return t("Synthetic verification");
+    case "observed_success":
+      return t("Observed success");
+    case "observed_failure":
+      return t("Observed failure");
+    case "uncertain":
+      return t("Uncertain");
+    default:
+      return t("Unknown attempt state");
+  }
+}
+
+function itemFaultKindLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  fault: string | null,
+): string {
+  switch (fault) {
+    case null:
+      return t("None");
+    case "none":
+      return t("None");
+    case "payload_conflict":
+      return t("Payload conflict");
+    case "source_engineering_item_conflict":
+      return t("Source engineering Item conflict");
+    case "stale_mapping":
+      return t("Stale mapping");
+    case "timeout_after_possible_commit":
+      return t("Timeout after possible commit");
+    case "rate_limited":
+      return t("Rate limited");
+    case "target_server_error":
+      return t("Target server error");
+    case "business_validation":
+      return t("Business validation failure");
+    case "response_contract_invalid":
+      return t("Response contract invalid");
+    case "response_authentication_invalid":
+      return t("Response authentication invalid");
+    case "target_unavailable":
+      return t("Target unavailable");
+    default:
+      return t("Unknown execution fault");
+  }
+}
+
+function itemStateTone(
+  state: ItemPublishRequestState,
+): "danger" | "info" | "success" | "warning" {
+  if (state === "succeeded") return "success";
+  if (state === "failed_final") return "danger";
+  if (
+    state === "failed_retryable" ||
+    state === "uncertain_after_timeout" ||
+    state === "mapping_conflict"
+  )
+    return "warning";
+  return "info";
+}
+
+function targetModeLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  mode: ItemPublishTargetMode,
+): string {
+  if (mode === "mock") return t("Mock validation");
+  if (mode === "synthetic") return t("Disposable synthetic runtime");
+  return t("Sandbox execution");
+}
+
+function itemActionBlockReason(
+  t: ReturnType<typeof useI18n>["t"],
+  list: ItemPublishRequestListViewModel,
+  sessionAvailable: boolean,
+  disabled: boolean,
+): string | null {
+  if (disabled) return t("Another EBOM command is in progress.");
+  if (!list.permissions.canView)
+    return t("You cannot view Item execution history for this Project.");
+  if (!list.permissions.canExecute)
+    return t("You can inspect Item execution but cannot request it.");
+  if (!list.executionProfile)
+    return t("The exact Item execution profile is unavailable.");
+  if (!list.mappingExpectation)
+    return t("The current Item mapping expectation is unavailable.");
+  if (list.executionProfile.targetMode === "mock")
+    return t("Mock validates the request locally and cannot execute an Item.");
+  const existing = list.items[0];
+  if (existing) {
+    if (existing.state === "uncertain_after_timeout")
+      return t(
+        "The outcome is uncertain. Reconciliation is required before any new request.",
+      );
+    if (existing.state === "mapping_conflict")
+      return t("Resolve the mapping conflict before any new request.");
+    if (existing.state === "queued" || existing.state === "processing")
+      return t("The existing Item request is still in flight.");
+    return t("An immutable Item request already exists for this exact source.");
+  }
+  if (!sessionAvailable) return t("The secure command session is unavailable.");
+  return null;
+}
+
+function ItemPublishExecutionInspector({
+  dataSource,
+  disabled,
+  onDirtyChange,
+  projectId,
+  publishRequest,
+}: {
+  dataSource?: ItemPublishDataSource | undefined;
+  disabled: boolean;
+  onDirtyChange: (dirty: boolean) => void;
+  projectId: string;
+  publishRequest: EngineeringBomPublishRequestViewModel;
+}): React.JSX.Element {
+  const { locale, sessionCommandContext, t } = useI18n();
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [reloadAttempt, setReloadAttempt] = useState(0);
+  const [listState, setItemListState] = useState<
+    ResourceState<ItemPublishRequestListViewModel>
+  >({ kind: "idle" });
+  const [detailState, setItemDetailState] = useState<
+    ResourceState<ItemPublishRequestDetailViewModel>
+  >({ kind: "idle" });
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [commandState, setItemCommandState] = useState<ItemCommandState>({
+    kind: "idle",
+  });
+  const idempotencyKey = useRef<string | null>(null);
+
+  const selectedNode =
+    publishRequest.nodes.find((node) => node.globalId === selectedNodeId) ??
+    null;
+  const list = listState.kind === "loaded" ? listState.value : null;
+  const detail = detailState.kind === "loaded" ? detailState.value : null;
+  const effectiveMappingExpectation =
+    detail?.request.mappingExpectation ?? list?.mappingExpectation ?? null;
+  const actionBlockReason = list
+    ? itemActionBlockReason(t, list, sessionCommandContext !== null, disabled)
+    : t("Load the exact Item execution context before requesting execution.");
+
+  useEffect(() => {
+    onDirtyChange(acknowledged);
+    return () => {
+      onDirtyChange(false);
+    };
+  }, [acknowledged, onDirtyChange]);
+
+  useEffect(() => {
+    if (!dataSource || !selectedNode) return undefined;
+    const controller = new AbortController();
+    const timer = globalThis.setTimeout(() => {
+      if (controller.signal.aborted) return;
+      void dataSource
+        .loadRequests(
+          projectId,
+          publishRequest.globalId,
+          selectedNode.globalId,
+          controller.signal,
+        )
+        .then((value) => {
+          if (controller.signal.aborted) return;
+          setItemListState({ kind: "loaded", value });
+          if (!value.permissions.canView) return;
+          const requestId = value.items[0]?.globalId;
+          if (!requestId) return;
+          setItemDetailState({ kind: "loading" });
+          return dataSource.loadRequest(
+            projectId,
+            requestId,
+            controller.signal,
+          );
+        })
+        .then((value) => {
+          if (value && !controller.signal.aborted)
+            setItemDetailState({ kind: "loaded", value });
+        })
+        .catch((error: unknown) => {
+          if (
+            controller.signal.aborted ||
+            error instanceof ItemPublishCancelledError
+          )
+            return;
+          const failure = toRequestFailure(error);
+          setItemListState((current) =>
+            current.kind === "loading" ? { kind: "failed", failure } : current,
+          );
+          setItemDetailState((current) =>
+            current.kind === "loading" ? { kind: "failed", failure } : current,
+          );
+        });
+    }, 0);
+    return () => {
+      globalThis.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [
+    dataSource,
+    projectId,
+    publishRequest.globalId,
+    reloadAttempt,
+    selectedNode,
+  ]);
+
+  const reload = (): void => {
+    setItemListState({ kind: "loading" });
+    setItemDetailState({ kind: "idle" });
+    setItemCommandState({ kind: "idle" });
+    setAcknowledged(false);
+    idempotencyKey.current = null;
+    setReloadAttempt((current) => current + 1);
+  };
+
+  const selectSourceNode = (nodeId: string): void => {
+    setItemListState({ kind: "loading" });
+    setItemDetailState({ kind: "idle" });
+    setItemCommandState({ kind: "idle" });
+    setAcknowledged(false);
+    idempotencyKey.current = null;
+    setSelectedNodeId(nodeId);
+  };
+
+  const submit = (): void => {
+    if (
+      !dataSource ||
+      !selectedNode ||
+      !list ||
+      !sessionCommandContext ||
+      actionBlockReason ||
+      !acknowledged
+    )
+      return;
+    const mappingExpectation = list.mappingExpectation;
+    if (!mappingExpectation) return;
+    const key =
+      idempotencyKey.current ??
+      `item-publish-${globalThis.crypto.randomUUID()}`;
+    idempotencyKey.current = key;
+    const controller = new AbortController();
+    setItemCommandState({ kind: "processing" });
+    void dataSource
+      .createRequest(
+        projectId,
+        {
+          publishRequestGlobalId: publishRequest.globalId,
+          selectedPublishNodeGlobalId: selectedNode.globalId,
+          expectedMappingVersion: mappingExpectation.mappingVersion,
+          acknowledgement: ITEM_PUBLISH_ACKNOWLEDGEMENT,
+        },
+        {
+          ...sessionCommandContext,
+          idempotencyKey: key,
+          signal: controller.signal,
+        },
+      )
+      .then((value) => {
+        setItemCommandState({ detail: value, kind: "accepted" });
+        setItemDetailState({ kind: "loaded", value });
+        setItemListState((current) =>
+          current.kind === "loaded"
+            ? {
+                kind: "loaded",
+                value: {
+                  ...current.value,
+                  items: [value.request, ...current.value.items],
+                },
+              }
+            : current,
+        );
+        setAcknowledged(false);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof ItemPublishCancelledError) return;
+        setItemCommandState({
+          failure: toRequestFailure(error),
+          kind: "failed",
+        });
+      });
+  };
+
+  return (
+    <section
+      aria-label={t("Item execution inspector")}
+      className="item-publish"
+    >
+      <div className="item-publish__header">
+        <div className="item-publish__heading-copy">
+          <h3>{t("Item execution inspector")}</h3>
+          <p>
+            {t(
+              "Request and result history is bound to the selected immutable Phase 5 node. Formal Item identity is shown only from the current authoritative mapping.",
+            )}
+          </p>
+        </div>
+        <CompactAction
+          disabled={commandState.kind === "processing"}
+          icon="refresh"
+          intent="familiar-low-risk"
+          label={t("Reload")}
+          onClick={reload}
+        />
+      </div>
+
+      <div
+        aria-label={t("Select exact Item source")}
+        className="item-publish__source-list"
+        tabIndex={0}
+      >
+        <table className="data-table data-table--compact">
+          <thead>
+            <tr>
+              <th>{t("Engineering item")}</th>
+              <th>{t("Description")}</th>
+              <th>{t("Source node")}</th>
+              <th>{t("Input hash")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {publishRequest.nodes.map((node) => (
+              <tr
+                aria-selected={node.globalId === selectedNode?.globalId}
+                className={
+                  node.globalId === selectedNode?.globalId
+                    ? "is-selected"
+                    : undefined
+                }
+                key={node.globalId}
+              >
+                <td>
+                  <button
+                    className="table-link"
+                    data-language-exempt="identifier"
+                    onClick={() => {
+                      selectSourceNode(node.globalId);
+                    }}
+                    type="button"
+                  >
+                    {node.line.engineeringItemId}
+                  </button>
+                </td>
+                <td data-language-exempt="business-data">
+                  {node.line.description}
+                </td>
+                <td data-language-exempt="identifier">{node.globalId}</td>
+                <td data-language-exempt="identifier">{node.inputHash}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {!dataSource ? (
+        <div className="scenario-banner scenario-banner--partial" role="status">
+          <SemanticStatus label={t("Unavailable")} tone="warning" />
+          <span>
+            {t(
+              "The Item execution data source is not configured. No target system was contacted.",
+            )}
+          </span>
+        </div>
+      ) : listState.kind === "loading" || listState.kind === "idle" ? (
+        <Loading label={t("Loading Item execution context")} />
+      ) : listState.kind === "failed" ? (
+        <div className="item-publish__resource" role="alert">
+          <SemanticStatus
+            label={
+              listState.failure.problem?.status === 403
+                ? t("No permission")
+                : t("Item execution unavailable")
+            }
+            tone="danger"
+          />
+          <RequestFailurePanel failure={listState.failure} />
+          {retryable(listState.failure) ? (
+            <Button icon="refresh" onClick={reload}>
+              {t("Reload")}
+            </Button>
+          ) : null}
+        </div>
+      ) : (
+        <>
+          <div className="item-publish__status-strip">
+            <SemanticStatus
+              label={
+                detail
+                  ? itemStateLabel(t, detail.request.state)
+                  : t("No Item execution request")
+              }
+              tone={detail ? itemStateTone(detail.request.state) : "info"}
+            />
+            <span>
+              {t("Requests")}:{" "}
+              {formatNumber(locale, listState.value.items.length, 0)}
+            </span>
+            <span>
+              {t("Execution profile")}:{" "}
+              {listState.value.executionProfile
+                ? targetModeLabel(
+                    t,
+                    listState.value.executionProfile.targetMode,
+                  )
+                : t("Unavailable")}
+            </span>
+          </div>
+
+          {!listState.value.permissions.canView ? (
+            <div
+              className="scenario-banner scenario-banner--read_only"
+              role="status"
+            >
+              <SemanticStatus label={t("No permission")} tone="warning" />
+              <span>
+                {t("You cannot view Item execution history for this Project.")}
+              </span>
+            </div>
+          ) : null}
+
+          <div className="item-publish__grid">
+            <div className="item-publish__evidence">
+              <h4>{t("Exact source and execution expectation")}</h4>
+              <DefinitionList
+                rows={[
+                  {
+                    label: t("Engineering item"),
+                    value:
+                      detail?.request.source.engineeringItemId ??
+                      selectedNode?.line.engineeringItemId ??
+                      t("Unavailable"),
+                    exempt: "identifier",
+                  },
+                  {
+                    label: t("Source occurrences"),
+                    value: formatNumber(
+                      locale,
+                      detail?.request.source.occurrences.length ??
+                        publishRequest.nodes.filter(
+                          (node) =>
+                            node.line.engineeringItemId ===
+                            selectedNode?.line.engineeringItemId,
+                        ).length,
+                      0,
+                    ),
+                  },
+                  {
+                    label: t("Item intent"),
+                    value:
+                      detail?.request.intent ===
+                      "update_item_engineering_fields"
+                        ? t("Update engineering fields intent")
+                        : t("Create Item intent"),
+                  },
+                  {
+                    label: t("Expected mapping version"),
+                    value: effectiveMappingExpectation
+                      ? formatNumber(
+                          locale,
+                          effectiveMappingExpectation.mappingVersion,
+                          0,
+                        )
+                      : t("Unavailable"),
+                  },
+                  {
+                    label: t("Expected target version"),
+                    value:
+                      effectiveMappingExpectation?.targetVersion ??
+                      t("Not assigned"),
+                    ...(effectiveMappingExpectation?.targetVersion
+                      ? ({ exempt: "identifier" } as const)
+                      : {}),
+                  },
+                  {
+                    label: t("Source hash"),
+                    value:
+                      detail?.request.source.sourceHash ??
+                      selectedNode?.inputHash ??
+                      t("Unavailable"),
+                    exempt: "identifier",
+                  },
+                  {
+                    label: t("Phase 5 request hash"),
+                    value: publishRequest.payloadHash,
+                    exempt: "identifier",
+                  },
+                ]}
+              />
+            </div>
+            <div className="item-publish__evidence">
+              <h4>{t("Profile and mapping authority")}</h4>
+              <DefinitionList
+                rows={[
+                  {
+                    label: t("Profile"),
+                    value:
+                      detail?.request.profile.profileId ??
+                      listState.value.executionProfile?.profileId ??
+                      t("Unavailable"),
+                    ...(detail?.request.profile.profileId ||
+                    listState.value.executionProfile?.profileId
+                      ? ({ exempt: "identifier" } as const)
+                      : {}),
+                  },
+                  {
+                    label: t("Profile version"),
+                    value: listState.value.executionProfile
+                      ? formatNumber(
+                          locale,
+                          listState.value.executionProfile.profileVersion,
+                          0,
+                        )
+                      : t("Unavailable"),
+                  },
+                  {
+                    label: t("Environment"),
+                    value:
+                      detail?.request.profile.environmentCode ??
+                      listState.value.executionProfile?.environmentCode ??
+                      t("Unavailable"),
+                    exempt: "identifier",
+                  },
+                  {
+                    label: t("Current mapping authority"),
+                    value: detail?.currentMapping
+                      ? t("Authoritative Sandbox observation")
+                      : t("No authoritative mapping"),
+                  },
+                  {
+                    label: t("Formal Item Code"),
+                    value:
+                      detail?.permissions.canView && detail.currentMapping
+                        ? detail.currentMapping.formalItemCode
+                        : t("Not assigned"),
+                    ...(detail?.permissions.canView && detail.currentMapping
+                      ? ({ exempt: "identifier" } as const)
+                      : {}),
+                  },
+                  {
+                    label: t("Target version"),
+                    value:
+                      detail?.permissions.canView && detail.currentMapping
+                        ? detail.currentMapping.targetVersion
+                        : t("Not assigned"),
+                    ...(detail?.permissions.canView && detail.currentMapping
+                      ? ({ exempt: "identifier" } as const)
+                      : {}),
+                  },
+                  {
+                    label: t("Mapping version"),
+                    value: detail?.currentMapping
+                      ? formatNumber(
+                          locale,
+                          detail.currentMapping.mappingVersion,
+                          0,
+                        )
+                      : t("Not assigned"),
+                  },
+                ]}
+              />
+            </div>
+          </div>
+
+          {detailState.kind === "loading" ? (
+            <Loading label={t("Loading Item attempt history")} />
+          ) : detailState.kind === "failed" ? (
+            <div className="item-publish__resource" role="alert">
+              <SemanticStatus
+                label={t("Item detail unavailable")}
+                tone="danger"
+              />
+              <RequestFailurePanel failure={detailState.failure} />
+              <Button icon="refresh" onClick={reload}>
+                {t("Reload")}
+              </Button>
+            </div>
+          ) : detail ? (
+            <div className="item-publish__attempts">
+              <h4>{t("Immutable attempt history")}</h4>
+              {detail.attempts.length === 0 ? (
+                <p>{t("No adapter attempt was recorded for this request.")}</p>
+              ) : (
+                <div className="item-publish__attempt-table" tabIndex={0}>
+                  <table className="data-table data-table--compact">
+                    <thead>
+                      <tr>
+                        <th>{t("Attempt")}</th>
+                        <th>{t("State")}</th>
+                        <th>{t("Adapter boundary")}</th>
+                        <th>{t("Started")}</th>
+                        <th>{t("Finished")}</th>
+                        <th>{t("Fault")}</th>
+                        <th>{t("Reconciliation")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.attempts.map((attempt) => (
+                        <tr key={attempt.globalId}>
+                          <td>
+                            {formatNumber(locale, attempt.attemptNumber, 0)}
+                          </td>
+                          <td>{itemAttemptStateLabel(t, attempt.state)}</td>
+                          <td>
+                            {attempt.adapterBoundaryCrossed
+                              ? t("Crossed")
+                              : t("Not crossed")}
+                          </td>
+                          <td>{formatDateTime(locale, attempt.startedAt)}</td>
+                          <td>
+                            {attempt.finishedAt
+                              ? formatDateTime(locale, attempt.finishedAt)
+                              : t("Pending")}
+                          </td>
+                          <td>{itemFaultKindLabel(t, attempt.faultKind)}</td>
+                          <td>
+                            {attempt.reconciliationRequired
+                              ? t("Required")
+                              : t("Not required")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          {commandState.kind === "processing" ? (
+            <div className="item-publish__command" role="status">
+              <SemanticStatus
+                label={t("Creating local execution request")}
+                tone="info"
+              />
+              <span>
+                {t(
+                  "No target success is reported while the request is being committed.",
+                )}
+              </span>
+            </div>
+          ) : commandState.kind === "failed" ? (
+            <div className="item-publish__command" role="alert">
+              <SemanticStatus label={t("Item request failed")} tone="danger" />
+              <RequestFailurePanel failure={commandState.failure} />
+            </div>
+          ) : commandState.kind === "accepted" ? (
+            <div className="item-publish__command" role="status">
+              <SemanticStatus
+                label={itemStateLabel(t, commandState.detail.request.state)}
+                tone={itemStateTone(commandState.detail.request.state)}
+              />
+              <span>
+                {t(
+                  "The immutable request was committed locally. This is not target success.",
+                )}
+              </span>
+            </div>
+          ) : null}
+
+          <form
+            className="item-publish__request-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submit();
+            }}
+          >
+            <div className="item-publish__request-copy">
+              <h4>{t("Request exact Item execution")}</h4>
+              <p>
+                {t(
+                  "Impact: the server freezes this released source, current profile and mapping expectation, then commits an auditable request before any worker may cross an adapter boundary.",
+                )}
+              </p>
+              {actionBlockReason ? (
+                <p className="form-error" role="status">
+                  {actionBlockReason}
+                </p>
+              ) : null}
+            </div>
+            <label className="confirmation-check">
+              <input
+                checked={acknowledged}
+                disabled={
+                  Boolean(actionBlockReason) ||
+                  commandState.kind === "processing"
+                }
+                onChange={(event) => {
+                  setAcknowledged(event.currentTarget.checked);
+                }}
+                type="checkbox"
+              />
+              <span>
+                {t(
+                  "I confirm this request uses the exact released Item source and current execution profile.",
+                )}
+              </span>
+            </label>
+            <Button
+              disabled={
+                Boolean(actionBlockReason) ||
+                !acknowledged ||
+                commandState.kind === "processing"
+              }
+              type="submit"
+              visual="primary"
+            >
+              {t("Request Item execution")}
+            </Button>
+          </form>
+        </>
+      )}
+    </section>
+  );
+}
+
 export function EngineeringBomPublishRequestWorkspace({
   dataSource,
   disabled = false,
   ebom,
+  itemPublishDataSource,
   onDirtyChange,
   projectId,
   revision,
@@ -220,6 +983,7 @@ export function EngineeringBomPublishRequestWorkspace({
   dataSource?: EngineeringBomPublishRequestDataSource | undefined;
   disabled?: boolean | undefined;
   ebom: EngineeringBomSummaryViewModel;
+  itemPublishDataSource?: ItemPublishDataSource | undefined;
   onDirtyChange?: ((dirty: boolean) => void) | undefined;
   projectId: string;
   revision: EngineeringBomRevisionViewModel;
@@ -247,6 +1011,7 @@ export function EngineeringBomPublishRequestWorkspace({
   const [policyRef, setPolicyRef] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [itemDirty, setItemDirty] = useState(false);
   const [commandState, setCommandState] = useState<CommandState>({
     kind: "idle",
   });
@@ -263,11 +1028,11 @@ export function EngineeringBomPublishRequestWorkspace({
   );
 
   useEffect(() => {
-    onDirtyChange?.(dirty);
+    onDirtyChange?.(dirty || itemDirty);
     return () => {
       onDirtyChange?.(false);
     };
-  }, [dirty, onDirtyChange]);
+  }, [dirty, itemDirty, onDirtyChange]);
 
   const closeForm = useCallback((): void => {
     setFormOpen(false);
@@ -523,7 +1288,9 @@ export function EngineeringBomPublishRequestWorkspace({
                   onClick={(event) => {
                     openForm(event.currentTarget);
                   }}
-                  visual={formOpen ? "secondary" : "primary"}
+                  visual={
+                    formOpen || itemPublishDataSource ? "secondary" : "primary"
+                  }
                 >
                   {t("Prepare publish request")}
                 </Button>
@@ -709,7 +1476,7 @@ export function EngineeringBomPublishRequestWorkspace({
                   <Button
                     disabled={commandState.kind === "processing"}
                     type="submit"
-                    visual="primary"
+                    visual={itemPublishDataSource ? "secondary" : "primary"}
                   >
                     {t("Validate exact released EBOM")}
                   </Button>
@@ -956,6 +1723,13 @@ export function EngineeringBomPublishRequestWorkspace({
                         </tbody>
                       </table>
                     </div>
+                    <ItemPublishExecutionInspector
+                      dataSource={itemPublishDataSource}
+                      disabled={disabled || commandState.kind === "processing"}
+                      onDirtyChange={setItemDirty}
+                      projectId={projectId}
+                      publishRequest={detail}
+                    />
                   </div>
                 ) : selectedSummary ? null : (
                   <div className="publish-request__empty" role="status">

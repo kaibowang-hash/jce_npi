@@ -390,6 +390,15 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(late.state, "mapping_conflict")
         self.assertFalse(late.mapping_advanced)
         self.assertEqual(self.count("NPI Item Mapping Observation"), 2)
+        second_result = next(
+            row
+            for row in self.harness.documents["NPI Item Publish Result"].values()
+            if row.request_global_id == str(second.request_global_id)
+        )
+        self.assertEqual(second_result.state, "succeeded")
+        self.assertEqual(second_result.authority, "authoritative_sandbox")
+        self.assertTrue(bool(second_result.response_authenticated))
+        self.assertEqual(second_result.result_snapshot["state"], "succeeded")
         self.assertEqual(self.count("NPI Item Mapping Head"), 1)
         self.assertEqual(head.mapping_version, 1)
         self.assertEqual(head.target_version, "1")

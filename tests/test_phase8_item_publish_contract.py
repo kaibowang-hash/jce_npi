@@ -158,6 +158,13 @@ class Phase8ItemPublishContractTest(unittest.TestCase):
             "payloadhash",
         ):
             self.assertNotIn(forbidden, create)
+        item_list = item[
+            item.index("    itempublishrequestlist:\n") : item.index(
+                "    itempublishrequestdetail:\n"
+            )
+        ]
+        self.assertIn("mappingexpectation", item_list)
+        self.assertIn("mapping expectation", item_list)
 
     def test_ownership_separates_npi_execution_truth_from_erp_item_master_truth(self) -> None:
         for marker in (
