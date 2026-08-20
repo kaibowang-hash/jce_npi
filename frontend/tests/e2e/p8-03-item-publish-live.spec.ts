@@ -271,6 +271,9 @@ async function openItemInspector(
     name: translate(locale, "Item execution inspector"),
   });
   await expect(inspector).toBeVisible();
+  await inspector
+    .getByRole("button", { name: translate(locale, "ENG-SYN-001") })
+    .click();
   await expect(
     inspector.getByText(
       translate(locale, "Exact source and execution expectation"),

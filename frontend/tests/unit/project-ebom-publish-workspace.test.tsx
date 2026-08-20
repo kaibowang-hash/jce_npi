@@ -93,6 +93,18 @@ function renderWorkspace(
   );
 }
 
+async function activateItemInspector(
+  user: ReturnType<typeof userEvent.setup>,
+): Promise<void> {
+  await user.click(await screen.findByRole("button", { name: "ENG-SYN-001" }));
+  const inspector = await screen.findByRole("region", {
+    name: "Item execution inspector",
+  });
+  await user.click(
+    await within(inspector).findByRole("button", { name: "ENG-SYN-001" }),
+  );
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -270,9 +282,7 @@ describe("EBOM publish-request workspace", () => {
     const user = userEvent.setup();
     renderWorkspace(dataSource(), undefined, undefined, itemDataSource());
 
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
     expect(
       await screen.findByRole("heading", { name: "Item execution inspector" }),
     ).toBeVisible();
@@ -311,9 +321,7 @@ describe("EBOM publish-request workspace", () => {
       undefined,
       itemDataSource(localizedDetail),
     );
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
 
     expect(await screen.findByText("Observed failure")).toBeVisible();
     expect(screen.getByText("Response contract invalid")).toBeVisible();
@@ -331,9 +339,7 @@ describe("EBOM publish-request workspace", () => {
       targetMode: "sandbox",
     });
     renderWorkspace(dataSource(), undefined, undefined, itemDataSource(detail));
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
 
     expect(
       await screen.findByText("Authoritative Sandbox result observed"),
@@ -364,9 +370,7 @@ describe("EBOM publish-request workspace", () => {
         ),
     });
     renderWorkspace(dataSource(), undefined, undefined, source);
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
 
     const requestButton = await screen.findByRole("button", {
       name: "Request Item execution",
@@ -426,9 +430,7 @@ describe("EBOM publish-request workspace", () => {
       />,
       "en",
     );
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
     expect(
       await screen.findByText(
         "Mock validates the request locally and cannot execute an Item.",
@@ -454,9 +456,7 @@ describe("EBOM publish-request workspace", () => {
       />,
       "en",
     );
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
     expect(
       await screen.findByText(
         "The exact Item execution profile is unavailable.",
@@ -479,9 +479,7 @@ describe("EBOM publish-request workspace", () => {
           ),
       }),
     );
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
     expect(
       await screen.findByText(
         "Uncertain after timeout; reconciliation required",
@@ -505,9 +503,7 @@ describe("EBOM publish-request workspace", () => {
     const user = userEvent.setup();
     const detail = itemPublishDetailFixture({ state });
     renderWorkspace(dataSource(), undefined, undefined, itemDataSource(detail));
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
     expect(await screen.findByText(label)).toBeVisible();
     expect(
       screen.getByRole("button", { name: "Request Item execution" }),
@@ -531,9 +527,7 @@ describe("EBOM publish-request workspace", () => {
           }),
       }),
     );
-    await user.click(
-      await screen.findByRole("button", { name: "ENG-SYN-001" }),
-    );
+    await activateItemInspector(user);
     expect(
       (
         await screen.findAllByText(

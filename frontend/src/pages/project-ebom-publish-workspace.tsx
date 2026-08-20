@@ -364,22 +364,18 @@ function itemActionBlockReason(
 function ItemPublishExecutionInspector({
   dataSource,
   disabled,
-  initialNodeId,
   onDirtyChange,
   projectId,
   publishRequest,
 }: {
   dataSource?: ItemPublishDataSource | undefined;
   disabled: boolean;
-  initialNodeId: string;
   onDirtyChange: (dirty: boolean) => void;
   projectId: string;
   publishRequest: EngineeringBomPublishRequestViewModel;
 }): React.JSX.Element {
   const { locale, sessionCommandContext, t } = useI18n();
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
-    initialNodeId,
-  );
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [reloadAttempt, setReloadAttempt] = useState(0);
   const [listState, setItemListState] = useState<
     ResourceState<ItemPublishRequestListViewModel>
@@ -593,7 +589,6 @@ function ItemPublishExecutionInspector({
               >
                 <td>
                   <button
-                    autoFocus={node.globalId === initialNodeId}
                     className="table-link"
                     data-language-exempt="identifier"
                     onClick={() => {
@@ -1769,7 +1764,6 @@ export function EngineeringBomPublishRequestWorkspace({
                         disabled={
                           disabled || commandState.kind === "processing"
                         }
-                        initialNodeId={itemInspectorNodeId}
                         key={itemInspectorNodeId}
                         onDirtyChange={setItemDirty}
                         projectId={projectId}
