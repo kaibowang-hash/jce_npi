@@ -715,6 +715,7 @@ def _result_snapshot(
     *,
     result_id: UUID,
 ) -> dict[str, object]:
+    observed_at = _aware_utc(observation.observed_at).replace(microsecond=0)
     return {
         "schemaVersion": 1,
         "globalId": str(result_id),
@@ -732,7 +733,7 @@ def _result_snapshot(
         "formalItemCode": observation.formal_item_code,
         "targetVersion": observation.target_version,
         "faultKind": observation.fault_kind.value,
-        "observedAt": _utc_text(observation.observed_at),
+        "observedAt": _utc_text(observed_at),
     }
 
 
@@ -744,6 +745,10 @@ def _insert_result(
     result_snapshot: dict[str, object],
     result_hash: str,
 ) -> None:
+    # Result snapshots use second precision, so persist the exact same
+    # canonical instant in Frappe instead of retaining adapter microseconds
+    # that would make the reloaded snapshot fail validation.
+    observed_at = _aware_utc(observation.observed_at).replace(microsecond=0)
     frappe.get_doc(
         {
             "doctype": "NPI Item Publish Result",
@@ -764,7 +769,7 @@ def _insert_result(
             "fault_kind": observation.fault_kind.value,
             "result_snapshot": result_snapshot,
             "result_hash": result_hash,
-            "observed_at": _database_datetime(observation.observed_at),
+            "observed_at": _database_datetime(observed_at),
         }
     ).insert()
 

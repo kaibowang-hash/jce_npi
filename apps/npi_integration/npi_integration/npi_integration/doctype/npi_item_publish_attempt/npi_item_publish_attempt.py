@@ -44,8 +44,6 @@ _IMMUTABLE_FIELDS = (
     "source_hash",
     "profile_id",
     "profile_version",
-    "connect_timeout_seconds",
-    "read_timeout_seconds",
     "request_snapshot",
     "request_snapshot_hash",
     "started_at",
@@ -81,6 +79,19 @@ class NPIItemPublishAttempt(Document):
             if previous.state != ItemPublishAttemptState.STARTED.value:
                 deny_item_history_update()
             assert_immutable_fields(self, previous, _IMMUTABLE_FIELDS)
+            # Frappe represents an unset Int as zero.  A claim starts without
+            # adapter timeout evidence; the boundary seal is the one guarded
+            # transition that records the profile timeouts.  Once populated,
+            # those values remain immutable like the other attempt inputs.
+            for fieldname in (
+                "connect_timeout_seconds",
+                "read_timeout_seconds",
+            ):
+                previous_value = getattr(previous, fieldname)
+                if previous_value not in (None, "", 0) and getattr(
+                    self, fieldname
+                ) != previous_value:
+                    deny_item_history_update()
             validate_one_way_transition(
                 previous.state,
                 self.state,
@@ -141,7 +152,10 @@ class NPIItemPublishAttempt(Document):
             ("read_timeout_seconds", _("Read Timeout Seconds")),
         ):
             value = getattr(self, fieldname)
-            if value not in (None, ""):
+            # Frappe persists an unset Int field as zero.  Adapter timeouts
+            # are intentionally absent until the durable boundary is crossed,
+            # so the stored zero must retain the same unset semantics as None.
+            if value not in (None, "", 0):
                 value = positive_integer(value, label)
                 if value > 120:
                     frappe.throw(
@@ -167,7 +181,9 @@ class NPIItemPublishAttempt(Document):
                 _("Observed Item success requires a crossed adapter boundary."),
                 frappe.ValidationError,
             )
-        if self.target_status_code not in (None, ""):
+        # ``target_status_code`` is also an optional Int and therefore loads as
+        # zero from MariaDB before an adapter response has been observed.
+        if self.target_status_code not in (None, "", 0):
             status = nonnegative_integer(
                 self.target_status_code, _("Target Status Code")
             )
