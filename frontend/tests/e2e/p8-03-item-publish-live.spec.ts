@@ -277,6 +277,7 @@ async function openItemInspector(
       translate(locale, "Exact source and execution expectation"),
     ),
   ).toBeVisible();
+  await expect(inspector.locator(".item-publish__status-strip")).toBeVisible();
 }
 
 async function expectAxeClean(page: Page): Promise<void> {
