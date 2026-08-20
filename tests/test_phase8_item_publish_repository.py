@@ -59,7 +59,7 @@ class FakeDocument(AttrDict):
         object.__setattr__(self, "_owner", owner)
         self.flags = SimpleNamespace()
 
-    def insert(self):
+    def insert(self, *, ignore_permissions: bool = False):
         doctype = str(self.doctype)
         required_flag = {
             "NPI Item Publish Request": "npi_item_publish_request_write",
@@ -87,6 +87,8 @@ class FakeDocument(AttrDict):
         bucket = self._owner.documents.setdefault(doctype, {})
         if self.name in bucket:
             raise self._owner.frappe.DuplicateEntryError()
+        self.owner = self._owner.frappe.session.user
+        self.modified_by = self._owner.frappe.session.user
         bucket[self.name] = self
         self._owner.pending.append((doctype, self.name))
         self._owner.events.append(f"insert:{doctype}")
@@ -105,6 +107,18 @@ class FakeDatabase:
         fieldname: str,
         **_kwargs: Any,
     ) -> object | None:
+        if doctype == "User" and isinstance(fieldname, list):
+            users = getattr(
+                self.owner,
+                "users",
+                {
+                    "publisher@example.invalid": (1, "System User"),
+                    "item-worker@example.invalid": (1, "System User"),
+                },
+            )
+            enabled, user_type = users.get(str(filters), (0, None))
+            value = {"enabled": enabled, "user_type": user_type}
+            return AttrDict(value) if _kwargs.get("as_dict") else value
         if doctype == "NPI Item Mapping Head" and fieldname == "name":
             for row in self.owner.documents.get(doctype, {}).values():
                 if all(row.get(key) == value for key, value in dict(filters).items()):
@@ -161,6 +175,13 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
         )
         self.frappe.set_user = lambda user: setattr(
             self.frappe.session, "user", user
+        )
+        self.users = {
+            "publisher@example.invalid": (1, "System User"),
+            "item-worker@example.invalid": (1, "System User"),
+        }
+        self.frappe.get_roles = lambda actor: (
+            ["NPI API User"] if actor in self.users else []
         )
         self.frappe.DoesNotExistError = type(
             "DoesNotExistError", (Exception,), {}
@@ -381,6 +402,8 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
                     "event_id": str(
                         UUID(int=9000 + len(self.documents.get("NPI Audit Event", {})))
                     ),
+                    "actor": repository.actor,
+                    "trace_id": repository.trace_id,
                     **values,
                 }
             ).insert()
@@ -446,13 +469,14 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
         request = self.only("NPI Item Publish Request")
         self.assertEqual(request.state, "queued")
         self.assertEqual(request.outbox_event_id, outbox.event_id)
-        self.assertTrue(request.flags.ignore_links)
+        self.assertFalse(request.flags.ignore_links)
         self.assertEqual(outbox.event_type, "npi.item_publish_request.ready")
         self.assertEqual(outbox.operation, "publish_released_item")
         self.assertEqual(outbox.state, "pending")
         self.assertFalse(bool(outbox.adapter_boundary_crossed))
         self.assertEqual(outbox.attempt_count, 0)
         self.assertNotIn("adapter_resolver", repr(outbox.payload))
+        self.assertNotIn("service_actor_user_id", repr(outbox.payload))
 
     def test_nonmock_rows_bind_one_semantic_target_effect_and_service_actor(self) -> None:
         self.repository = self.new_repository(self.synthetic_profile())
@@ -465,16 +489,26 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             request.semantic_effect_hash,
         )
         self.assertEqual(request.service_actor_user_id, "item-worker@example.invalid")
+        self.assertEqual(request.owner, "publisher@example.invalid")
+        self.assertEqual(request.modified_by, "publisher@example.invalid")
         self.assertEqual(
             outbox.target_idempotency_key_hash,
             request.target_idempotency_key_hash,
         )
         self.assertEqual(outbox.semantic_effect_hash, request.semantic_effect_hash)
         self.assertEqual(outbox.service_actor_user_id, request.service_actor_user_id)
+        self.assertEqual(outbox.owner, "publisher@example.invalid")
+        self.assertEqual(outbox.modified_by, "publisher@example.invalid")
         self.assertEqual(
             outbox.payload["target_idempotency_key_hash"],
             request.target_idempotency_key_hash,
         )
+        self.assertNotIn("service_actor_user_id", repr(outcome.response))
+        self.assertNotIn("serviceActorUserId", repr(outcome.response))
+        audit_rows = tuple(self.documents["NPI Audit Event"].values())
+        self.assertTrue(audit_rows)
+        self.assertTrue(all(row.actor == "publisher@example.invalid" for row in audit_rows))
+        self.assertTrue(all(row.owner == "publisher@example.invalid" for row in audit_rows))
 
     def test_selected_occurrence_filter_matches_any_sibling_occurrence(self) -> None:
         outcome = self.create()
@@ -863,7 +897,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             "self._current_mapping_for_source(project, source, lock=True)",
             "self._required_profile(project)",
             "value = create_item_publish_request(",
-            "with item_request_transaction_write()",
+            "with item_request_transaction_write(self.actor)",
             "self._insert_item_request(",
             "self._insert_outbox(",
             "self._append_audit(",

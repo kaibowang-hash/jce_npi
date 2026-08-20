@@ -61,13 +61,16 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         command_test.FakeDocument.insert = type(self)._insert  # type: ignore[method-assign]
         command_test.FakeDocument.save = type(self)._save  # type: ignore[attr-defined]
         self.users = {
+            "publisher@example.invalid": (1, "System User"),
             "item-worker@example.invalid": (1, "System User"),
         }
         self.fail_mapping_head_once = False
         self.fail_mapping_observation_once = False
         self.harness.frappe.db = WorkerDatabase(self)
         self.harness.frappe.get_roles = lambda actor: (
-            ["NPI API User"] if actor in self.users else []
+            ["NPI API User"]
+            if actor in {"publisher@example.invalid", "item-worker@example.invalid"}
+            else []
         )
         self.module = importlib.import_module(self.MODULE)
         self.repository = self.module.FrappeItemPublishWorkerRepository()
@@ -77,6 +80,18 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         assert outcome.outbox_event_id is not None
         self.outbox_id = outcome.outbox_event_id
         self.harness.frappe.db.commit()
+        self.harness.frappe.session.user = self.profile.service_actor_user_id
+        original_create = self.harness.create
+
+        def create_as_requester(*args, **kwargs):
+            previous = self.harness.frappe.session.user
+            self.harness.frappe.set_user("publisher@example.invalid")
+            try:
+                return original_create(*args, **kwargs)
+            finally:
+                self.harness.frappe.set_user(previous)
+
+        self.harness.create = create_as_requester
 
     def tearDown(self) -> None:
         command_test.FakeDocument.insert = self.original_insert
@@ -89,7 +104,7 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         if self.saved_module is not None:
             sys.modules[self.MODULE] = self.saved_module
 
-    def _insert(document):
+    def _insert(document, *, ignore_permissions: bool = False):
         owner = document._owner
         doctype = str(document.doctype)
         required_flag = {
@@ -138,12 +153,14 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         bucket = owner.documents.setdefault(doctype, {})
         if document.name in bucket:
             raise owner.frappe.DuplicateEntryError()
+        document.owner = owner.frappe.session.user
+        document.modified_by = owner.frappe.session.user
         bucket[document.name] = document
         owner.pending.append((doctype, document.name))
         owner.events.append(f"insert:{doctype}")
         return document
 
-    def _save(document):
+    def _save(document, *, ignore_permissions: bool = False):
         owner = document._owner
         required_flag = {
             "NPI Item Publish Request": "npi_item_publish_request_write",
@@ -156,6 +173,7 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         ):
             raise AssertionError(f"missing controlled write flag {required_flag}")
         owner.events.append(f"save:{document.doctype}")
+        document.modified_by = owner.frappe.session.user
         return document
 
     def outbox(self):
@@ -301,7 +319,7 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
             self.harness.frappe.db.get_value = original_get_value
             self.module._stream_guard_supported = original_support
 
-    def test_worker_write_scopes_use_service_user_and_restore_caller(self) -> None:
+    def test_worker_write_scopes_use_frozen_actor_and_restore_caller(self) -> None:
         validation = importlib.import_module(
             "npi_integration.item_publish.frappe_validation"
         )
@@ -311,15 +329,161 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
             validation.item_mapping_write,
         ):
             with self.subTest(scope=scope_factory.__name__):
-                with scope_factory():
+                with scope_factory(self.profile.service_actor_user_id):
                     self.assertEqual(
                         self.harness.frappe.session.user,
-                        "Administrator",
+                        self.profile.service_actor_user_id,
                     )
+                self.assertEqual(
+                    self.harness.frappe.session.user,
+                    self.profile.service_actor_user_id,
+                )
+
+    def test_service_actor_scope_restores_requester_and_rejects_invalid_users(self) -> None:
+        validation = importlib.import_module(
+            "npi_integration.item_publish.frappe_validation"
+        )
+        self.harness.frappe.set_user("publisher@example.invalid")
+        with validation.item_service_actor_scope(self.profile.service_actor_user_id):
+            self.assertEqual(
+                self.harness.frappe.session.user,
+                self.profile.service_actor_user_id,
+            )
+        self.assertEqual(self.harness.frappe.session.user, "publisher@example.invalid")
+        self.users.update(
+            {
+                "disabled@example.invalid": (0, "System User"),
+                "website@example.invalid": (1, "Website User"),
+                "no-role@example.invalid": (1, "System User"),
+            }
+        )
+        for actor in (
+            "disabled@example.invalid",
+            "website@example.invalid",
+            "no-role@example.invalid",
+            "Guest",
+            "Administrator",
+        ):
+            with self.subTest(actor=actor):
+                with self.assertRaises(validation.ItemServiceActorUnavailable):
+                    with validation.item_service_actor_scope(actor):
+                        self.fail("invalid service actor entered execution scope")
                 self.assertEqual(
                     self.harness.frappe.session.user,
                     "publisher@example.invalid",
                 )
+
+    def test_invalid_actor_write_scopes_are_rejected_before_persistence(self) -> None:
+        validation = importlib.import_module(
+            "npi_integration.item_publish.frappe_validation"
+        )
+        self.users["disabled@example.invalid"] = (0, "System User")
+        for scope_factory in (
+            validation.item_claim_write,
+            validation.item_result_transaction_write,
+            validation.item_mapping_write,
+        ):
+            with self.subTest(scope=scope_factory.__name__):
+                self.harness.frappe.set_user("disabled@example.invalid")
+                with self.assertRaises(validation.ItemServiceActorUnavailable):
+                    with scope_factory("disabled@example.invalid"):
+                        self.fail("invalid actor entered a persistence scope")
+                self.harness.frappe.set_user("publisher@example.invalid")
+
+    def test_support_write_capability_rejects_cross_scope_and_expired_tokens(self) -> None:
+        validation = importlib.import_module(
+            "npi_integration.item_publish.frappe_validation"
+        )
+        request_doc = command_test.AttrDict(
+            doctype="NPI Item Publish Request",
+            flags=types.SimpleNamespace(),
+        )
+        attempt_doc = command_test.AttrDict(
+            doctype="NPI Item Publish Attempt",
+            flags=types.SimpleNamespace(),
+        )
+        result_doc = command_test.AttrDict(
+            doctype="NPI Item Publish Result",
+            flags=types.SimpleNamespace(),
+        )
+        with validation.item_claim_write(self.profile.service_actor_user_id) as capability:
+            with self.assertRaisesRegex(RuntimeError, "capability scope"):
+                validation.insert_item_support_document(
+                    request_doc,
+                    capability=capability,
+                )
+            with self.assertRaisesRegex(RuntimeError, "capability scope"):
+                validation.save_item_support_document(
+                    result_doc,
+                    capability=capability,
+                )
+        with self.assertRaisesRegex(RuntimeError, "invalid or out of scope"):
+            validation.insert_item_support_document(
+                attempt_doc,
+                capability=capability,
+            )
+        with validation.item_claim_write(self.profile.service_actor_user_id) as capability:
+            self.harness.frappe.flags.npi_item_publish_attempt_write = False
+            with self.assertRaisesRegex(RuntimeError, "controller flag"):
+                validation.insert_item_support_document(
+                    attempt_doc,
+                    capability=capability,
+                )
+        self.assertFalse(hasattr(validation, "delete_item_support_document"))
+
+    def test_execution_route_is_read_only_and_binds_frozen_actor(self) -> None:
+        pending_before = list(self.harness.pending)
+        documents_before = {
+            doctype: tuple(rows)
+            for doctype, rows in self.harness.documents.items()
+        }
+        route = self.repository.execution_route(self.outbox_id)
+        self.assertIsNotNone(route)
+        assert route is not None
+        self.assertEqual(route.service_actor_user_id, self.profile.service_actor_user_id)
+        self.assertEqual(self.harness.pending, pending_before)
+        self.assertEqual(
+            {
+                doctype: tuple(rows)
+                for doctype, rows in self.harness.documents.items()
+            },
+            documents_before,
+        )
+
+    def test_legacy_missing_actor_is_not_claimable(self) -> None:
+        self.request().service_actor_user_id = None
+        self.outbox().service_actor_user_id = None
+        self.assertIsNone(self.repository.execution_route(self.outbox_id))
+        self.assertIsNone(self.repository.claim(self.outbox_id, now=NOW))
+        self.assertEqual(self.count("NPI Item Publish Attempt"), 0)
+
+    def test_route_toctou_rejects_changed_frozen_actor_before_claim(self) -> None:
+        self.users["item-worker-2@example.invalid"] = (1, "System User")
+        original_roles = self.harness.frappe.get_roles
+        self.harness.frappe.get_roles = lambda actor: (
+            ["NPI API User"]
+            if actor
+            in {
+                "publisher@example.invalid",
+                "item-worker@example.invalid",
+                "item-worker-2@example.invalid",
+            }
+            else []
+        )
+        try:
+            route = self.repository.execution_route(self.outbox_id)
+            assert route is not None
+            self.request().service_actor_user_id = "item-worker-2@example.invalid"
+            self.outbox().service_actor_user_id = "item-worker-2@example.invalid"
+            with self.assertRaisesRegex(RuntimeError, "route changed"):
+                self.repository.claim(
+                    self.outbox_id,
+                    now=NOW,
+                    expected_route=route,
+                )
+            self.assertEqual(self.count("NPI Item Publish Attempt"), 0)
+        finally:
+            self.harness.frappe.get_roles = original_roles
 
     def test_claim_rejects_request_and_outbox_state_drift(self) -> None:
         self.request().state = "synthetic_verified"
@@ -377,8 +541,14 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         outbox.last_attempt_global_id = str(second_attempt_id)
         outbox.attempt_count = 2
         outbox.adapter_boundary_crossed = 1
-        with self.module.item_claim_write():
-            self.module._insert_attempt(outbox, value, second_command, NOW)
+        with self.module.item_claim_write(self.profile.service_actor_user_id) as capability:
+            self.module._insert_attempt(
+                outbox,
+                value,
+                second_command,
+                NOW,
+                capability=capability,
+            )
             second_attempt = self.attempt(second_attempt_id)
             second_attempt.adapter_boundary_crossed = 1
             second_attempt.transport_disposition = "adapter_boundary_crossed"
@@ -447,6 +617,33 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(self.count("NPI Item Mapping Observation"), 0)
         self.assertEqual(self.count("NPI Item Mapping Head"), 0)
         self.assertNotIn("formal_item_code", repr(self.outbox()))
+        request = self.request()
+        outbox = self.outbox()
+        attempt = self.attempt(claim.command.attempt_global_id)
+        result = next(iter(self.harness.documents["NPI Item Publish Result"].values()))
+        self.assertEqual(request.owner, "publisher@example.invalid")
+        self.assertEqual(request.modified_by, self.profile.service_actor_user_id)
+        self.assertEqual(outbox.owner, "publisher@example.invalid")
+        self.assertEqual(outbox.modified_by, self.profile.service_actor_user_id)
+        self.assertEqual(attempt.owner, self.profile.service_actor_user_id)
+        self.assertEqual(attempt.modified_by, self.profile.service_actor_user_id)
+        self.assertEqual(result.owner, self.profile.service_actor_user_id)
+        self.assertEqual(result.modified_by, self.profile.service_actor_user_id)
+        worker_audits = tuple(
+            row
+            for row in self.harness.documents["NPI Audit Event"].values()
+            if row.operation != "item_publish.request.create"
+        )
+        self.assertTrue(worker_audits)
+        self.assertTrue(
+            all(row.actor == self.profile.service_actor_user_id for row in worker_audits)
+        )
+        self.assertTrue(
+            all(row.owner == self.profile.service_actor_user_id for row in worker_audits)
+        )
+        self.assertTrue(
+            all(row.modified_by == self.profile.service_actor_user_id for row in worker_audits)
+        )
 
     def test_authenticated_authoritative_result_advances_one_mapping_head(self) -> None:
         sandbox = self.sandbox_profile()
@@ -567,14 +764,19 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         self.harness.pending.clear()
         self.harness.repository = self.harness.new_repository(sandbox)
         first_created = self.harness.create()
-        second_created = self.harness.repository.create_item_publish_request(
-            command_test.PROJECT_ID,
-            publish_request_id=command_test.PHASE5_REQUEST_ID,
-            selected_publish_node_id=self.harness.phase5.nodes[0].global_id,
-            expected_mapping_version=0,
-            idempotency_key_hash=command_test.HASH_B,
-            acknowledgement=command_test.ITEM_PUBLISH_ACKNOWLEDGEMENT,
-        )
+        previous_user = self.harness.frappe.session.user
+        self.harness.frappe.set_user("publisher@example.invalid")
+        try:
+            second_created = self.harness.repository.create_item_publish_request(
+                command_test.PROJECT_ID,
+                publish_request_id=command_test.PHASE5_REQUEST_ID,
+                selected_publish_node_id=self.harness.phase5.nodes[0].global_id,
+                expected_mapping_version=0,
+                idempotency_key_hash=command_test.HASH_B,
+                acknowledgement=command_test.ITEM_PUBLISH_ACKNOWLEDGEMENT,
+            )
+        finally:
+            self.harness.frappe.set_user(previous_user)
         assert first_created.outbox_event_id is not None
         assert second_created.outbox_event_id is not None
 

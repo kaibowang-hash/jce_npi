@@ -40,7 +40,13 @@ from .frappe_repository import (
     _source_value,
     _stream_guard_supported,
 )
-from .frappe_validation import item_claim_write, item_result_transaction_write
+from .frappe_validation import (
+    insert_item_support_document,
+    item_claim_write,
+    item_result_transaction_write,
+    save_item_support_document,
+    validate_item_service_actor,
+)
 
 
 CLAIM_LEASE_SECONDS = 300
@@ -86,8 +92,24 @@ class ClaimedItemPublishMessage:
     lease_expires_at: datetime
     command: ItemAdapterCommand
     profile_reference: ItemExecutionProfileReference
+    service_actor_user_id: str
     expired_recovery: bool
     recovered_after_adapter_boundary: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ItemPublishExecutionRoute:
+    """Read-only, non-secret routing identity for one executable Outbox row."""
+
+    outbox_event_id: UUID
+    request_global_id: UUID
+    tenant_id: str
+    project_global_id: UUID
+    source_stream_key_hash: str
+    profile_reference: ItemExecutionProfileReference
+    service_actor_user_id: str
+    target_idempotency_key_hash: str
+    semantic_effect_hash: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,8 +132,10 @@ class _CurrentItemClaimNotCurrent(RuntimeError):
     pass
 
 
-def _read_execution_route(outbox_event_id: UUID) -> Any | None:
-    """Read only the route needed to acquire the stream lock first."""
+def _read_execution_route(
+    outbox_event_id: UUID,
+) -> ItemPublishExecutionRoute | None:
+    """Read and validate only immutable route identity; never write or execute."""
 
     try:
         outbox = frappe.get_doc("NPI Outbox Message", str(outbox_event_id))
@@ -119,11 +143,32 @@ def _read_execution_route(outbox_event_id: UUID) -> Any | None:
         return None
     if not _is_item_outbox(outbox):
         return None
-    return {
-        "source_stream_key_hash": str(_value(outbox, "source_stream_key_hash")),
-        "tenant_id": str(_value(outbox, "tenant_id")),
-        "project_global_id": str(_value(outbox, "project_global_id")),
-    }
+    request_id = _value(outbox, "request_global_id")
+    if not request_id:
+        return None
+    try:
+        request = frappe.get_doc("NPI Item Publish Request", str(request_id))
+        value = _request_value(request)
+        _require_outbox_binding(outbox, request, value)
+        actor = value.service_actor_user_id
+        if value.profile.target_mode is ItemTargetMode.MOCK or not actor:
+            return None
+        validate_item_service_actor(actor)
+        return ItemPublishExecutionRoute(
+            outbox_event_id=outbox_event_id,
+            request_global_id=value.global_id,
+            tenant_id=value.source.tenant_id,
+            project_global_id=value.source.project_global_id,
+            source_stream_key_hash=value.source.stream_key_hash,
+            profile_reference=value.profile,
+            service_actor_user_id=actor,
+            target_idempotency_key_hash=str(value.target_idempotency_key_hash),
+            semantic_effect_hash=value.semantic_effect_hash,
+        )
+    except (frappe.DoesNotExistError, RuntimeError, ValueError):
+        # A malformed or legacy route is not executable.  The worker boundary
+        # treats the absent route as a closed failure, never as a fallback.
+        return None
 
 
 def _locked_guard_for_route(route: Any | None) -> Any | None:
@@ -179,6 +224,7 @@ def _set_guard_active_state(
     target_idempotency_key_hash: str,
     state: str | None,
     now: datetime,
+    capability: object,
 ) -> None:
     if guard is None:
         return
@@ -192,7 +238,7 @@ def _set_guard_active_state(
         guard.active_state = state
     guard.optimistic_version = int(_value(guard, "optimistic_version") or 0) + 1
     guard.updated_at = _database_datetime(_aware_utc(now))
-    guard.save()
+    save_item_support_document(guard, capability=capability)
 
 
 def _set_guard_retained_state(
@@ -202,6 +248,7 @@ def _set_guard_retained_state(
     target_idempotency_key_hash: str,
     state: str,
     now: datetime,
+    capability: object,
 ) -> None:
     guard.active_request_global_id = None
     guard.active_target_idempotency_key_hash = None
@@ -211,7 +258,7 @@ def _set_guard_retained_state(
     guard.last_state = state
     guard.optimistic_version = int(_value(guard, "optimistic_version") or 0) + 1
     guard.updated_at = _database_datetime(_aware_utc(now))
-    guard.save()
+    save_item_support_document(guard, capability=capability)
 
 
 def _request_state_for_observation(state: ItemPublishResultState) -> str:
@@ -235,16 +282,30 @@ def _request_state_for_observation(state: ItemPublishResultState) -> str:
 class FrappeItemPublishWorkerRepository:
     """Persist one P8-03 attempt without granting generic replay authority."""
 
+    def execution_route(
+        self,
+        outbox_event_id: UUID,
+    ) -> ItemPublishExecutionRoute | None:
+        """Return immutable routing identity without claiming or writing work."""
+
+        return _read_execution_route(outbox_event_id)
+
     def claim(
         self,
         outbox_event_id: UUID,
         *,
         now: datetime,
         lease_seconds: int = CLAIM_LEASE_SECONDS,
+        expected_route: ItemPublishExecutionRoute | None = None,
     ) -> ClaimedItemPublishMessage | None:
-        # Resolve the immutable route without a lock, then acquire the
-        # source-stream guard before touching Outbox/Request/Attempt rows.
+        # Re-read the immutable route inside the frozen service-actor scope,
+        # then acquire the source-stream guard before touching Outbox/Request/
+        # Attempt rows.  A route TOCTOU never falls back to an unbound claim.
         route = _read_execution_route(outbox_event_id)
+        if route is None:
+            return None
+        if expected_route is not None and route != expected_route:
+            raise RuntimeError("Item execution route changed before claim.")
         guard = _locked_guard_for_route(route)
         outbox = _optional_locked_doc("NPI Outbox Message", str(outbox_event_id))
         if outbox is None or not _is_item_outbox(outbox):
@@ -253,6 +314,8 @@ class FrappeItemPublishWorkerRepository:
         value = _request_value(request)
         _require_outbox_binding(outbox, request, value)
         _require_guard_active_binding(guard, value)
+        if value.service_actor_user_id != route.service_actor_user_id:
+            raise RuntimeError("Item service actor binding changed before claim.")
         state = str(_value(outbox, "state"))
         if (
             state == "pending"
@@ -309,7 +372,7 @@ class FrappeItemPublishWorkerRepository:
             command = _command(value, attempt_id, lease.attempt_count)
             attempt = None
 
-        with item_claim_write():
+        with item_claim_write(value.service_actor_user_id) as capability:
             if guard is not None:
                 _set_guard_active_state(
                     guard,
@@ -321,9 +384,10 @@ class FrappeItemPublishWorkerRepository:
                         else "uncertain_after_timeout"
                     ),
                     now=claimed,
+                    capability=capability,
                 )
             if previous_attempt is not None and not recovered_after_boundary:
-                previous_attempt.save()
+                save_item_support_document(previous_attempt, capability=capability)
             outbox.state = "processing"
             outbox.disposition = (
                 "recover_uncertain"
@@ -337,18 +401,24 @@ class FrappeItemPublishWorkerRepository:
                 outbox.attempt_count = lease.attempt_count
                 outbox.last_attempt_global_id = str(command.attempt_global_id)
                 outbox.adapter_boundary_crossed = 0
-                _insert_attempt(outbox, value, command, claimed)
+                _insert_attempt(
+                    outbox,
+                    value,
+                    command,
+                    claimed,
+                    capability=capability,
+                )
             outbox.last_error_code = None
             outbox.last_error_at = None
             outbox.result_global_id = None
-            outbox.save()
+            save_item_support_document(outbox, capability=capability)
             if value.state is ItemPublishRequestState.QUEUED:
                 request.state = ItemPublishRequestState.PROCESSING.value
                 request.optimistic_version = int(request.optimistic_version) + 1
                 request.updated_at = _database_datetime(claimed)
-                request.save()
+                save_item_support_document(request, capability=capability)
             _append_audit(
-                actor="npi-item-publish-worker",
+                actor=value.service_actor_user_id,
                 trace_id=value.trace_id,
                 operation=(
                     "item_publish.claim_recovered_uncertain"
@@ -381,6 +451,7 @@ class FrappeItemPublishWorkerRepository:
             lease_expires_at=lease.expires_at,
             command=command,
             profile_reference=value.profile,
+            service_actor_user_id=str(value.service_actor_user_id),
             expired_recovery=expired_recovery,
             recovered_after_adapter_boundary=recovered_after_boundary,
         )
@@ -398,6 +469,7 @@ class FrappeItemPublishWorkerRepository:
             or profile.project_global_id != str(claim.project_global_id)
             or profile.target_mode is ItemTargetMode.MOCK
             or ITEM_PUBLISH_OPERATION not in profile.allowed_operations
+            or profile.service_actor_user_id != claim.service_actor_user_id
             or not _service_actor_available(profile.service_actor_user_id)
         ):
             raise ItemPublishWorkerFinalFailure(
@@ -421,18 +493,18 @@ class FrappeItemPublishWorkerRepository:
         ):
             return False
         crossed_at = _aware_utc(now)
-        with item_claim_write():
+        with item_claim_write(claim.service_actor_user_id) as capability:
             outbox.adapter_boundary_crossed = 1
             outbox.disposition = "adapter_boundary_crossed"
-            outbox.save()
+            save_item_support_document(outbox, capability=capability)
             attempt.adapter_boundary_crossed = 1
             attempt.connect_timeout_seconds = profile.connect_timeout_seconds
             attempt.read_timeout_seconds = profile.read_timeout_seconds
             attempt.transport_disposition = "adapter_boundary_crossed"
             _set_attempt_snapshot(attempt)
-            attempt.save()
+            save_item_support_document(attempt, capability=capability)
             _append_audit(
-                actor="npi-item-publish-worker",
+                actor=claim.service_actor_user_id,
                 trace_id=claim.trace_id,
                 operation="item_publish.adapter_boundary",
                 global_id=claim.request_global_id,
@@ -525,7 +597,7 @@ class FrappeItemPublishWorkerRepository:
             if not _allow_existing:
                 raise RuntimeError("An Item result already exists for this attempt.")
         completed_at = _aware_utc(now)
-        with item_result_transaction_write():
+        with item_result_transaction_write(claim.service_actor_user_id) as capability:
             if existing_result is None:
                 _insert_result(
                     claim,
@@ -533,6 +605,7 @@ class FrappeItemPublishWorkerRepository:
                     result_id=result_id,
                     result_snapshot=result_snapshot,
                     result_hash=result_hash,
+                    capability=capability,
                 )
             if observation.is_authoritative_success and existing_observation is None:
                 assert profile is not None
@@ -548,6 +621,7 @@ class FrappeItemPublishWorkerRepository:
                     current=current,
                     mapping_disposition=mapping_disposition,
                     now=completed_at,
+                    capability=capability,
                 )
             elif existing_observation is not None:
                 mapping_disposition = (
@@ -571,6 +645,7 @@ class FrappeItemPublishWorkerRepository:
                         target_idempotency_key_hash=claim.command.target_idempotency_key_hash,
                         state=guard_state,
                         now=completed_at,
+                        capability=capability,
                     )
                 else:
                     _set_guard_retained_state(
@@ -579,6 +654,7 @@ class FrappeItemPublishWorkerRepository:
                         target_idempotency_key_hash=claim.command.target_idempotency_key_hash,
                         state=guard_state,
                         now=completed_at,
+                        capability=capability,
                     )
             _finish_attempt(
                 attempt,
@@ -586,7 +662,7 @@ class FrappeItemPublishWorkerRepository:
                 classified=result,
                 finished_at=completed_at,
             )
-            attempt.save()
+            save_item_support_document(attempt, capability=capability)
             request_state = (
                 ItemPublishRequestState.MAPPING_CONFLICT
                 if mapping_conflict
@@ -597,7 +673,7 @@ class FrappeItemPublishWorkerRepository:
                 request.result_global_id = str(result_id)
                 request.optimistic_version = int(request.optimistic_version) + 1
                 request.updated_at = _database_datetime(completed_at)
-                request.save()
+                save_item_support_document(request, capability=capability)
                 outbox.state = _outbox_state(observation.state)
                 outbox.disposition = (
                     "mapping_conflict"
@@ -611,12 +687,12 @@ class FrappeItemPublishWorkerRepository:
                     if result.safe_error_code
                     else None
                 )
-                outbox.save()
+                save_item_support_document(outbox, capability=capability)
             _append_audit(
                 actor=(
                     profile.service_actor_user_id
                     if profile is not None
-                    else "npi-item-publish-worker"
+                    else claim.service_actor_user_id
                 ),
                 trace_id=claim.trace_id,
                 operation=(
@@ -854,6 +930,8 @@ def _insert_attempt(
     value: ItemPublishRequest,
     command: ItemAdapterCommand,
     now: datetime,
+    *,
+    capability: object,
 ) -> None:
     request_snapshot = command.snapshot()
     attempt_snapshot = {
@@ -881,29 +959,32 @@ def _insert_attempt(
         "startedAt": _utc_text(now),
         "finishedAt": None,
     }
-    frappe.get_doc(
-        {
-            "doctype": "NPI Item Publish Attempt",
-            "global_id": str(command.attempt_global_id),
-            "request_global_id": str(command.request_global_id),
-            "outbox_event_id": str(outbox.event_id),
-            "attempt_number": command.attempt_number,
-            "claim_token": str(outbox.claim_token),
-            "target_idempotency_key_hash": command.target_idempotency_key_hash,
-            "source_hash": command.source_hash,
-            "profile_id": value.profile.profile_id,
-            "profile_version": value.profile.profile_version,
-            "state": ItemPublishAttemptState.STARTED.value,
-            "adapter_boundary_crossed": 0,
-            "request_snapshot": request_snapshot,
-            "request_snapshot_hash": canonical_hash(request_snapshot),
-            "transport_disposition": "started",
-            "reconciliation_required": 0,
-            "started_at": _database_datetime(now),
-            "attempt_snapshot": attempt_snapshot,
-            "attempt_hash": canonical_hash(attempt_snapshot),
-        }
-    ).insert()
+    insert_item_support_document(
+        frappe.get_doc(
+            {
+                "doctype": "NPI Item Publish Attempt",
+                "global_id": str(command.attempt_global_id),
+                "request_global_id": str(command.request_global_id),
+                "outbox_event_id": str(outbox.event_id),
+                "attempt_number": command.attempt_number,
+                "claim_token": str(outbox.claim_token),
+                "target_idempotency_key_hash": command.target_idempotency_key_hash,
+                "source_hash": command.source_hash,
+                "profile_id": value.profile.profile_id,
+                "profile_version": value.profile.profile_version,
+                "state": ItemPublishAttemptState.STARTED.value,
+                "adapter_boundary_crossed": 0,
+                "request_snapshot": request_snapshot,
+                "request_snapshot_hash": canonical_hash(request_snapshot),
+                "transport_disposition": "started",
+                "reconciliation_required": 0,
+                "started_at": _database_datetime(now),
+                "attempt_snapshot": attempt_snapshot,
+                "attempt_hash": canonical_hash(attempt_snapshot),
+            }
+        ),
+        capability=capability,
+    )
 
 
 def _finish_expired_pre_boundary_attempt(attempt: Any, now: datetime) -> None:
@@ -1013,34 +1094,38 @@ def _insert_result(
     result_id: UUID,
     result_snapshot: dict[str, object],
     result_hash: str,
+    capability: object,
 ) -> None:
     # Result snapshots use second precision, so persist the exact same
     # canonical instant in Frappe instead of retaining adapter microseconds
     # that would make the reloaded snapshot fail validation.
     observed_at = _aware_utc(observation.observed_at).replace(microsecond=0)
-    frappe.get_doc(
-        {
-            "doctype": "NPI Item Publish Result",
-            "global_id": str(result_id),
-            "request_global_id": str(claim.request_global_id),
-            "outbox_event_id": str(claim.outbox_event_id),
-            "attempt_global_id": str(observation.attempt_global_id),
-            "attempt_number": observation.attempt_number,
-            "idempotency_key_hash": observation.idempotency_key_hash,
-            "source_hash": observation.source_hash,
-            "expected_target_version": observation.expected_target_version,
-            "state": observation.state.value,
-            "authority": observation.authority.value,
-            "response_authenticated": int(observation.response_authenticated),
-            "response_hash": observation.response_hash,
-            "formal_item_code": observation.formal_item_code,
-            "target_version": observation.target_version,
-            "fault_kind": observation.fault_kind.value,
-            "result_snapshot": result_snapshot,
-            "result_hash": result_hash,
-            "observed_at": _database_datetime(observed_at),
-        }
-    ).insert()
+    insert_item_support_document(
+        frappe.get_doc(
+            {
+                "doctype": "NPI Item Publish Result",
+                "global_id": str(result_id),
+                "request_global_id": str(claim.request_global_id),
+                "outbox_event_id": str(claim.outbox_event_id),
+                "attempt_global_id": str(observation.attempt_global_id),
+                "attempt_number": observation.attempt_number,
+                "idempotency_key_hash": observation.idempotency_key_hash,
+                "source_hash": observation.source_hash,
+                "expected_target_version": observation.expected_target_version,
+                "state": observation.state.value,
+                "authority": observation.authority.value,
+                "response_authenticated": int(observation.response_authenticated),
+                "response_hash": observation.response_hash,
+                "formal_item_code": observation.formal_item_code,
+                "target_version": observation.target_version,
+                "fault_kind": observation.fault_kind.value,
+                "result_snapshot": result_snapshot,
+                "result_hash": result_hash,
+                "observed_at": _database_datetime(observed_at),
+            }
+        ),
+        capability=capability,
+    )
 
 
 def _existing_result_for_attempt(attempt_global_id: UUID) -> Any | None:
@@ -1150,6 +1235,7 @@ def _record_authoritative_mapping(
     current: CurrentItemMapping | None,
     mapping_disposition: ItemMappingDisposition,
     now: datetime,
+    capability: object,
 ) -> ItemMappingDisposition:
     """Append one observation and CAS the authoritative mapping head.
 
@@ -1192,35 +1278,38 @@ def _record_authoritative_mapping(
             "observedAt": _utc_text(now),
         }
         observation_hash = canonical_hash(snapshot)
-        frappe.get_doc(
-            {
-                "doctype": "NPI Item Mapping Observation",
-                "global_id": str(observation_id),
-                "tenant_id": value.source.tenant_id,
-                "project_global_id": str(value.source.project_global_id),
-                "source_stream_key_hash": value.source.stream_key_hash,
-                "engineering_item_id": value.source.engineering_item_id,
-                "mapping_version": mapping_version,
-                "formal_item_code": observation.formal_item_code,
-                "target_version": observation.target_version,
-                "request_global_id": str(claim.request_global_id),
-                "outbox_event_id": str(claim.outbox_event_id),
-                "attempt_global_id": str(observation.attempt_global_id),
-                "result_global_id": str(result_id),
-                "profile_id": profile.profile_id,
-                "profile_version": profile.profile_version,
-                "environment_code": profile.environment_code,
-                "authority": ItemResultAuthority.AUTHORITATIVE_SANDBOX.value,
-                "disposition": disposition,
-                "previous_mapping_version": mapping_version - 1,
-                "previous_observation_hash": previous_hash,
-                "target_result_snapshot": result_snapshot,
-                "target_result_hash": result_hash,
-                "observation_snapshot": snapshot,
-                "observation_hash": observation_hash,
-                "observed_at": _database_datetime(now),
-            }
-        ).insert()
+        insert_item_support_document(
+            frappe.get_doc(
+                {
+                    "doctype": "NPI Item Mapping Observation",
+                    "global_id": str(observation_id),
+                    "tenant_id": value.source.tenant_id,
+                    "project_global_id": str(value.source.project_global_id),
+                    "source_stream_key_hash": value.source.stream_key_hash,
+                    "engineering_item_id": value.source.engineering_item_id,
+                    "mapping_version": mapping_version,
+                    "formal_item_code": observation.formal_item_code,
+                    "target_version": observation.target_version,
+                    "request_global_id": str(claim.request_global_id),
+                    "outbox_event_id": str(claim.outbox_event_id),
+                    "attempt_global_id": str(observation.attempt_global_id),
+                    "result_global_id": str(result_id),
+                    "profile_id": profile.profile_id,
+                    "profile_version": profile.profile_version,
+                    "environment_code": profile.environment_code,
+                    "authority": ItemResultAuthority.AUTHORITATIVE_SANDBOX.value,
+                    "disposition": disposition,
+                    "previous_mapping_version": mapping_version - 1,
+                    "previous_observation_hash": previous_hash,
+                    "target_result_snapshot": result_snapshot,
+                    "target_result_hash": result_hash,
+                    "observation_snapshot": snapshot,
+                    "observation_hash": observation_hash,
+                    "observed_at": _database_datetime(now),
+                }
+            ),
+            capability=capability,
+        )
         return observation_hash
 
     previous_version = 0 if current is None else current.mapping_version
@@ -1310,11 +1399,14 @@ def _record_authoritative_mapping(
         }
         head_write_started = True
         if head is None:
-            frappe.get_doc({"doctype": "NPI Item Mapping Head", **values}).insert()
+            insert_item_support_document(
+                frappe.get_doc({"doctype": "NPI Item Mapping Head", **values}),
+                capability=capability,
+            )
         else:
             for key, item in values.items():
                 setattr(head, key, item)
-            head.save()
+            save_item_support_document(head, capability=capability)
         head_write_finished = True
         append_observation(
             observation_id=observation_id,
@@ -1345,6 +1437,8 @@ def _required_current_claim(
     claim: ClaimedItemPublishMessage,
 ) -> tuple[Any, Any, Any, Any | None]:
     route = _read_execution_route(claim.outbox_event_id)
+    if route is None:
+        raise RuntimeError("Item execution route is unavailable for this claim.")
     guard = _locked_guard_for_route(route)
     outbox = _optional_locked_doc("NPI Outbox Message", str(claim.outbox_event_id))
     if (
@@ -1381,6 +1475,8 @@ def _required_claim_for_seal(
         return outbox, request, attempt, guard, False
     except _CurrentItemClaimNotCurrent as current_error:
         route = _read_execution_route(claim.outbox_event_id)
+        if route is None:
+            raise current_error
         guard = _locked_guard_for_route(route)
         outbox = _optional_locked_doc("NPI Outbox Message", str(claim.outbox_event_id))
         if outbox is None or not _is_item_outbox(outbox):
@@ -1479,17 +1575,11 @@ def _require_attempt_binding(
 
 
 def _service_actor_available(actor: str) -> bool:
-    user = frappe.db.get_value(
-        "User", actor, ["enabled", "user_type"], as_dict=True
-    )
-    roles = frozenset(frappe.get_roles(actor)) if user else frozenset()
-    return bool(
-        user
-        and int(_value(user, "enabled") or 0) == 1
-        and str(_value(user, "user_type")) == "System User"
-        and "NPI API User" in roles
-        and actor.casefold() not in {"guest", "administrator"}
-    )
+    try:
+        validate_item_service_actor(actor)
+    except (RuntimeError, ValueError):
+        return False
+    return True
 
 
 def _outbox_state(state: ItemPublishResultState) -> str:

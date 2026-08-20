@@ -253,6 +253,7 @@ class Phase8ItemPublishDomainTest(unittest.TestCase):
         self.assertEqual(event_payload["target_mode"], "synthetic")
         self.assertNotIn("formal_item_code", event_payload)
         self.assertNotIn("endpoint", event_payload)
+        self.assertNotIn("service_actor_user_id", event_payload)
         completed = replace(
             synthetic,
             state=ItemPublishRequestState.SYNTHETIC_VERIFIED,

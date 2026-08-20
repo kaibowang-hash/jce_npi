@@ -64,6 +64,7 @@ class Phase8ItemPublishContractTest(unittest.TestCase):
             "secret",
             "credential",
             "authorization",
+            "service_actor_user_id",
         ):
             self.assertNotIn(forbidden, serialized)
 

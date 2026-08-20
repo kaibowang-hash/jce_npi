@@ -246,8 +246,9 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     require(
         os.environ.get("NPI_P8_03_RUNTIME_PROJECT_ID") == project_id
         and os.environ.get("NPI_P8_03_RUNTIME_REQUESTER") == ACTOR_USER
-        and os.environ.get("NPI_P8_03_RUNTIME_WORKER") == ACTOR_USER,
-        "P8-03 runtime profile environment is not bound to the retained Project",
+        and isinstance(os.environ.get("NPI_P8_03_RUNTIME_WORKER"), str)
+        and os.environ.get("NPI_P8_03_RUNTIME_WORKER") not in {None, ACTOR_USER},
+        "P8-03 runtime profile environment is not bound to distinct retained actors",
     )
     path = item_publish_path(project_id)
     empty = item_publish_request(actor, base_url, path, query_key="enabled-empty")
@@ -503,8 +504,22 @@ def _validate_fixture(
         and os.environ.get("NPI_P8_03_RUNTIME_MARKER") == RUNTIME_MARKER
         and os.environ.get("NPI_P8_03_RUNTIME_PROJECT_ID") == project_id
         and os.environ.get("NPI_P8_03_RUNTIME_REQUESTER") == ACTOR_USER
-        and os.environ.get("NPI_P8_03_RUNTIME_WORKER") == ACTOR_USER,
+        and isinstance(os.environ.get("NPI_P8_03_RUNTIME_WORKER"), str)
+        and os.environ.get("NPI_P8_03_RUNTIME_WORKER") not in {None, ACTOR_USER},
         "P8-03 disposable execution binding drifted",
+    )
+    worker_user = os.environ.get("NPI_P8_03_RUNTIME_WORKER")
+    require(
+        isinstance(worker_user, str) and worker_user and worker_user != ACTOR_USER,
+        "P8-03 worker fixture actor is not distinct from requester",
+    )
+    worker_row = frappe.get_doc("User", worker_user)
+    worker_roles = frozenset(frappe.get_roles(worker_user))
+    require(
+        int(worker_row.enabled or 0) == 1
+        and str(worker_row.user_type) == "System User"
+        and "NPI API User" in worker_roles,
+        "P8-03 frozen worker actor is not an enabled internal NPI API User",
     )
     project = frappe.get_doc("NPI Engineering Project", project_id)
     require(
@@ -518,6 +533,11 @@ def _validate_fixture(
             and str(row.tenant_id) == TENANT_ID
             and str(row.actor_user_id) == ACTOR_USER,
             "P8-03 retained request scope drifted",
+        )
+        require(
+            str(row.service_actor_user_id)
+            == os.environ.get("NPI_P8_03_RUNTIME_WORKER"),
+            "P8-03 frozen service actor binding drifted",
         )
 
 
@@ -545,7 +565,7 @@ def exercise_worker(
         project_id=project_id,
         request_ids=(synthetic_request_id, uncertain_request_id),
     )
-    frappe.set_user(ACTOR_USER)
+    frappe.set_user(worker_user)
     repository = FrappeItemPublishWorkerRepository()
     anchor = datetime.now(UTC)
 

@@ -45,7 +45,10 @@ from npi_integration.item_publish.problems import (
     ItemPublishUnavailable,
 )
 from npi_integration.item_publish.frappe_validation import (
+    insert_item_support_document,
     item_request_transaction_write,
+    save_item_support_document,
+    validate_item_service_actor,
 )
 from npi_integration.publish_request.domain import (
     PublishRequest,
@@ -396,6 +399,22 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                     "errorCode": "ITEM_PUBLISH_AUTHORITY_UNAVAILABLE",
                 },
             )
+        if profile.target_mode is not ItemTargetMode.MOCK:
+            try:
+                validate_item_service_actor(profile.service_actor_user_id)
+            except RuntimeError:
+                return self._problem_outcome(
+                    project,
+                    global_id=publish_request_id,
+                    result="profile_unavailable",
+                    problem=ItemExecutionProfileUnavailable(),
+                    summary={
+                        "sourceStreamKeyHash": source.stream_key_hash,
+                        "profileId": profile.profile_id,
+                        "profileVersion": profile.profile_version,
+                        "errorCode": "ITEM_EXECUTION_PROFILE_UNAVAILABLE",
+                    },
+                )
 
         evidence = self._item_released_evidence(phase5_request)
         now = datetime.now(UTC)
@@ -420,10 +439,15 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             can_execute=True,
             updated_at=now,
         )
-        with item_request_transaction_write():
+        with item_request_transaction_write(self.actor) as capability:
             guard = None
             if value.profile.target_mode is not ItemTargetMode.MOCK:
-                guard = _locked_stream_guard(source, create=True, now=now)
+                guard = _locked_stream_guard(
+                    source,
+                    create=True,
+                    now=now,
+                    capability=capability,
+                )
                 guard_problem = _stream_guard_problem(guard, value)
                 if guard_problem is not None:
                     return self._problem_outcome(
@@ -465,6 +489,21 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                     raise RuntimeError(
                         "The Item execution profile changed during command locking."
                     )
+                try:
+                    validate_item_service_actor(locked_profile.service_actor_user_id)
+                except RuntimeError:
+                    return self._problem_outcome(
+                        project,
+                        global_id=publish_request_id,
+                        result="profile_unavailable",
+                        problem=ItemExecutionProfileUnavailable(),
+                        summary={
+                            "sourceStreamKeyHash": source.stream_key_hash,
+                            "profileId": locked_profile.profile_id,
+                            "profileVersion": locked_profile.profile_version,
+                            "errorCode": "ITEM_EXECUTION_PROFILE_UNAVAILABLE",
+                        },
+                    )
                 locked_effect = semantic_target_effect_hash(
                     source=source,
                     released_evidence=value.released_evidence,
@@ -491,18 +530,25 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                             "errorCode": "ITEM_PUBLISH_AUTHORITY_UNAVAILABLE",
                         },
                     )
-                _set_stream_guard_active(guard, value, now=now)
+                _set_stream_guard_active(
+                    guard,
+                    value,
+                    now=now,
+                    capability=capability,
+                )
             self._insert_item_request(
                 project,
                 value,
                 outbox_event_id=outbox_event_id,
                 now=now,
+                capability=capability,
             )
             if outbox_event_id is not None:
                 self._insert_outbox(
                     project,
                     value,
                     event_id=outbox_event_id,
+                    capability=capability,
                 )
             self._append_audit(
                 operation="item_publish.request.create",
@@ -532,6 +578,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 command_hash=command_hash,
                 response=response,
                 now=now,
+                capability=capability,
             )
         return ItemPublishCommandOutcome(
             response=response,
@@ -585,7 +632,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             if request_row.outbox_event_id
             else None
         )
-        with item_request_transaction_write():
+        with item_request_transaction_write(self.actor):
             self._append_audit(
                 operation="item_publish.request.replay",
                 global_id=UUID(str(receipt.request_global_id)),
@@ -613,7 +660,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         problem: NpiProblem,
         summary: Mapping[str, object],
     ) -> ItemPublishCommandOutcome:
-        with item_request_transaction_write():
+        with item_request_transaction_write(self.actor):
             self._append_audit(
                 operation="item_publish.request.conflict",
                 global_id=global_id,
@@ -934,6 +981,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         *,
         outbox_event_id: UUID | None,
         now: datetime,
+        capability: object,
     ) -> None:
         expectation = value.mapping_expectation
         document = frappe.get_doc(
@@ -987,16 +1035,15 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 "updated_at": _database_datetime(now),
             }
         )
-        if outbox_event_id is not None:
-            # The executable request and its Outbox row are one atomic write
-            # scope, but each row carries a Link to the other.  Defer only
-            # Frappe's existence check for this forward reference; the domain
-            # guards, controlled write flags, and transaction rollback still
-            # cover both rows before the command can return success.
-            flags = getattr(document, "flags", None)
-            if flags is not None:
-                flags.ignore_links = True
-        document.insert()
+        # The executable request and its Outbox row are one atomic write
+        # scope, but each row carries a Link to the other.  Defer only
+        # Frappe's existence check for this forward reference through the
+        # bounded support-write seam.
+        insert_item_support_document(
+            document,
+            capability=capability,
+            ignore_links=outbox_event_id is not None,
+        )
 
     @staticmethod
     def _insert_outbox(
@@ -1004,6 +1051,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         value: ItemPublishRequest,
         *,
         event_id: UUID,
+        capability: object,
     ) -> None:
         payload = value.event_payload()
         payload_hash = canonical_hash(payload)
@@ -1039,45 +1087,48 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 "payloadHash": payload_hash,
             }
         )
-        frappe.get_doc(
-            {
-                "doctype": "NPI Outbox Message",
-                "event_id": str(event_id),
-                "event_type": ITEM_REQUEST_EVENT_TYPE,
-                "global_id": str(value.global_id),
-                "object_version": 1,
-                "trace_id": value.trace_id,
-                "payload_hash": payload_hash,
-                "payload": payload,
-                "state": "pending",
-                "attempt_count": 0,
-                "schema_version": ITEM_PUBLISH_SCHEMA_VERSION,
-                "operation": ITEM_PUBLISH_OPERATION,
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-                "request_global_id": str(value.global_id),
-                "profile_id": value.profile.profile_id,
-                "profile_version": value.profile.profile_version,
-                "profile_snapshot_hash": value.profile.snapshot_hash,
-                "source_stream_key_hash": value.source.stream_key_hash,
-                "source_hash": value.source.source_hash,
-                "expected_mapping_version": (
-                    value.mapping_expectation.mapping_version
-                ),
-                "expected_target_version": (
-                    value.mapping_expectation.target_version
-                ),
-                "actor_user_id": value.actor_user_id,
-                "service_actor_user_id": value.service_actor_user_id,
-                "request_id": str(value.request_id),
-                "idempotency_key_hash": value.idempotency_key_hash,
-                "target_idempotency_key_hash": value.target_idempotency_key_hash,
-                "semantic_effect_hash": value.semantic_effect_hash,
-                "event_snapshot_hash": event_snapshot_hash,
-                "adapter_boundary_crossed": 0,
-                "disposition": "ready",
-            }
-        ).insert()
+        insert_item_support_document(
+            frappe.get_doc(
+                {
+                    "doctype": "NPI Outbox Message",
+                    "event_id": str(event_id),
+                    "event_type": ITEM_REQUEST_EVENT_TYPE,
+                    "global_id": str(value.global_id),
+                    "object_version": 1,
+                    "trace_id": value.trace_id,
+                    "payload_hash": payload_hash,
+                    "payload": payload,
+                    "state": "pending",
+                    "attempt_count": 0,
+                    "schema_version": ITEM_PUBLISH_SCHEMA_VERSION,
+                    "operation": ITEM_PUBLISH_OPERATION,
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                    "request_global_id": str(value.global_id),
+                    "profile_id": value.profile.profile_id,
+                    "profile_version": value.profile.profile_version,
+                    "profile_snapshot_hash": value.profile.snapshot_hash,
+                    "source_stream_key_hash": value.source.stream_key_hash,
+                    "source_hash": value.source.source_hash,
+                    "expected_mapping_version": (
+                        value.mapping_expectation.mapping_version
+                    ),
+                    "expected_target_version": (
+                        value.mapping_expectation.target_version
+                    ),
+                    "actor_user_id": value.actor_user_id,
+                    "service_actor_user_id": value.service_actor_user_id,
+                    "request_id": str(value.request_id),
+                    "idempotency_key_hash": value.idempotency_key_hash,
+                    "target_idempotency_key_hash": value.target_idempotency_key_hash,
+                    "semantic_effect_hash": value.semantic_effect_hash,
+                    "event_snapshot_hash": event_snapshot_hash,
+                    "adapter_boundary_crossed": 0,
+                    "disposition": "ready",
+                }
+            ),
+            capability=capability,
+        )
 
     def _insert_idempotency_receipt(
         self,
@@ -1088,23 +1139,27 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         command_hash: str,
         response: Mapping[str, object],
         now: datetime,
+        capability: object,
     ) -> None:
-        frappe.get_doc(
-            {
-                "doctype": "NPI Item Publish Command Idempotency",
-                "scope_key_hash": scope_key,
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-                "operation": ITEM_PUBLISH_OPERATION,
-                "actor_user_id": self.actor.casefold(),
-                "idempotency_key_hash": value.idempotency_key_hash,
-                "request_payload_hash": command_hash,
-                "request_global_id": str(value.global_id),
-                "response_snapshot": dict(response),
-                "response_hash": canonical_hash(response),
-                "created_at": _database_datetime(now),
-            }
-        ).insert()
+        insert_item_support_document(
+            frappe.get_doc(
+                {
+                    "doctype": "NPI Item Publish Command Idempotency",
+                    "scope_key_hash": scope_key,
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                    "operation": ITEM_PUBLISH_OPERATION,
+                    "actor_user_id": self.actor.casefold(),
+                    "idempotency_key_hash": value.idempotency_key_hash,
+                    "request_payload_hash": command_hash,
+                    "request_global_id": str(value.global_id),
+                    "response_snapshot": dict(response),
+                    "response_hash": canonical_hash(response),
+                    "created_at": _database_datetime(now),
+                }
+            ),
+            capability=capability,
+        )
 
     def _item_request_value(
         self,
@@ -1415,6 +1470,7 @@ def _locked_stream_guard(
     *,
     create: bool,
     now: datetime,
+    capability: object,
 ) -> Any | None:
     """Lock one source-stream guard, creating it through a narrow savepoint."""
 
@@ -1457,7 +1513,7 @@ def _locked_stream_guard(
                 "updated_at": _database_datetime(_aware_utc(now)),
             }
         )
-        guard.insert()
+        insert_item_support_document(guard, capability=capability)
         _validate_stream_guard_identity(guard, source)
         return guard
     except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
@@ -1542,6 +1598,7 @@ def _set_stream_guard_active(
     value: ItemPublishRequest,
     *,
     now: datetime,
+    capability: object,
 ) -> None:
     if guard is None:
         return
@@ -1551,7 +1608,7 @@ def _set_stream_guard_active(
     guard.blocked_reason_code = None
     guard.optimistic_version = int(_value(guard, "optimistic_version") or 0) + 1
     guard.updated_at = _database_datetime(_aware_utc(now))
-    guard.save()
+    save_item_support_document(guard, capability=capability)
 
 
 def _clear_stream_guard_active(
@@ -1562,6 +1619,7 @@ def _clear_stream_guard_active(
     state: str,
     now: datetime,
     blocked_reason_code: str | None = None,
+    capability: object,
 ) -> None:
     if guard is None:
         return
@@ -1574,7 +1632,7 @@ def _clear_stream_guard_active(
     guard.blocked_reason_code = blocked_reason_code
     guard.optimistic_version = int(_value(guard, "optimistic_version") or 0) + 1
     guard.updated_at = _database_datetime(_aware_utc(now))
-    guard.save()
+    save_item_support_document(guard, capability=capability)
 
 
 def _optional_text_value(value: Any, key: str) -> str | None:

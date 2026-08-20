@@ -20,6 +20,10 @@ from .worker_repository import (
     ItemPublishWorkerFinalFailure,
     ItemPublishWorkerOutcome,
 )
+from .frappe_validation import (
+    ItemServiceActorUnavailable,
+    item_service_actor_scope,
+)
 
 
 _PROFILE_RESOLVER_HOOK = "npi_item_publish_profile_resolver"
@@ -81,7 +85,70 @@ def _execute_worker(
     registry_resolver: Callable[[], ItemAdapterRegistry | None],
     clock: Callable[[], datetime],
 ) -> ItemPublishWorkerOutcome | None:
-    claim = repository.claim(outbox_event_id, now=clock())
+    """Resolve route first, then execute only inside its frozen actor scope."""
+
+    route_reader = getattr(repository, "execution_route", None)
+    if not callable(route_reader):
+        _rollback_safely()
+        _record_failure(
+            "ITEM_PUBLISH_EXECUTION_ROUTE_UNAVAILABLE",
+            RuntimeError("Item execution route reader is unavailable."),
+            str(outbox_event_id),
+        )
+        return None
+    try:
+        route = route_reader(outbox_event_id)
+    except Exception as error:
+        _rollback_safely()
+        _record_failure(
+            "ITEM_PUBLISH_EXECUTION_ROUTE_INVALID",
+            error,
+            str(outbox_event_id),
+        )
+        return None
+    service_actor = getattr(route, "service_actor_user_id", None)
+    if not isinstance(service_actor, str) or not service_actor:
+        _rollback_safely()
+        _record_failure(
+            "ITEM_PUBLISH_EXECUTION_ROUTE_INVALID",
+            RuntimeError("Item execution route has no frozen service actor."),
+            str(outbox_event_id),
+        )
+        return None
+    try:
+        with item_service_actor_scope(service_actor):
+            return _execute_worker_in_service_scope(
+                outbox_event_id=outbox_event_id,
+                repository=repository,
+                profile_resolver=profile_resolver,
+                registry_resolver=registry_resolver,
+                clock=clock,
+                expected_route=route,
+            )
+    except ItemServiceActorUnavailable as error:
+        _rollback_safely()
+        _record_failure(
+            "ITEM_PUBLISH_SERVICE_ACTOR_UNAVAILABLE",
+            error,
+            str(outbox_event_id),
+        )
+        return None
+
+
+def _execute_worker_in_service_scope(
+    *,
+    outbox_event_id: UUID,
+    repository: FrappeItemPublishWorkerRepository,
+    profile_resolver: Callable[[str, UUID], ItemExecutionProfile | None],
+    registry_resolver: Callable[[], ItemAdapterRegistry | None],
+    clock: Callable[[], datetime],
+    expected_route: object,
+) -> ItemPublishWorkerOutcome | None:
+    claim = repository.claim(
+        outbox_event_id,
+        now=clock(),
+        expected_route=expected_route,
+    )
     if claim is None:
         _rollback_safely()
         return None

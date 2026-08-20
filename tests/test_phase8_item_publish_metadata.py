@@ -108,9 +108,9 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
             'ITEM_ATTEMPT_WRITE_FLAG = "npi_item_publish_attempt_write"',
             'ITEM_RESULT_WRITE_FLAG = "npi_item_publish_result_write"',
             'ITEM_MAPPING_WRITE_FLAG = "npi_item_mapping_write"',
-            "item_request_transaction_write()",
-            "item_claim_write()",
-            "item_result_transaction_write()",
+            "item_request_transaction_write(",
+            "item_claim_write(",
+            "item_result_transaction_write(",
         ):
             self.assertIn(marker, guards)
         expected_guards = {
@@ -246,7 +246,7 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
             "self._exact_released_phase5_request(",
             "group_item_source(",
             "self._current_mapping_for_source(project, source, lock=True)",
-            "with item_request_transaction_write()",
+            "with item_request_transaction_write(self.actor)",
             "self._insert_item_request(",
             "self._insert_outbox(",
             "self._insert_idempotency_receipt(",
@@ -278,13 +278,14 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
         for marker in (
             "class FrappeItemPublishWorkerRepository",
             "recoverable_outbox_event_ids",
-            "item_claim_write()",
-            "item_result_transaction_write()",
+            "item_claim_write(",
+            "item_result_transaction_write(",
             "classify_mapping_observation(",
         ):
             self.assertIn(marker, worker_repository)
         self.assertIn("class ItemAdapterRegistry", adapters)
         self.assertIn("npi-one-item-publish-disposable-v1", runtime_fixture)
+        self.assertIn("or requester == worker", runtime_fixture)
         self.assertNotIn("https://", runtime_fixture)
         hooks = (
             ROOT / "apps/npi_integration/npi_integration/hooks.py"

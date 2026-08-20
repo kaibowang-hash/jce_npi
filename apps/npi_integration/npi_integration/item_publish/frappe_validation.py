@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import Iterator
+from contextvars import ContextVar
+from dataclasses import dataclass
+from typing import Any, Iterator
 
 import frappe
 from frappe import _
@@ -15,7 +17,71 @@ ITEM_RESULT_WRITE_FLAG = "npi_item_publish_result_write"
 ITEM_MAPPING_WRITE_FLAG = "npi_item_mapping_write"
 ITEM_STREAM_GUARD_WRITE_FLAG = "npi_item_publish_stream_guard_write"
 AUDIT_APPEND_FLAG = "npi_audit_append"
-SYSTEM_SERVICE_USER = "Administrator"
+
+
+@dataclass(frozen=True, slots=True)
+class ItemSupportWriteCapability:
+    """Opaque capability for one bounded support-DocType write scope."""
+
+    actor: str
+    scope: str
+    allowed: frozenset[tuple[str, str]]
+
+
+_CURRENT_SUPPORT_CAPABILITY: ContextVar[
+    ItemSupportWriteCapability | None
+] = ContextVar("npi_item_support_write_capability", default=None)
+_SUPPORT_WRITE_FLAGS = {
+    "NPI Item Publish Request": ITEM_REQUEST_WRITE_FLAG,
+    "NPI Item Publish Command Idempotency": ITEM_IDEMPOTENCY_WRITE_FLAG,
+    "NPI Outbox Message": ITEM_OUTBOX_WRITE_FLAG,
+    "NPI Item Publish Stream Guard": ITEM_STREAM_GUARD_WRITE_FLAG,
+    "NPI Item Publish Attempt": ITEM_ATTEMPT_WRITE_FLAG,
+    "NPI Item Publish Result": ITEM_RESULT_WRITE_FLAG,
+    "NPI Item Mapping Observation": ITEM_MAPPING_WRITE_FLAG,
+    "NPI Item Mapping Head": ITEM_MAPPING_WRITE_FLAG,
+}
+_REQUEST_SUPPORT_WRITES = frozenset(
+    {
+        ("NPI Item Publish Request", "insert"),
+        ("NPI Item Publish Command Idempotency", "insert"),
+        ("NPI Outbox Message", "insert"),
+        ("NPI Item Publish Stream Guard", "insert"),
+        ("NPI Item Publish Stream Guard", "save"),
+    }
+)
+_CLAIM_SUPPORT_WRITES = frozenset(
+    {
+        ("NPI Item Publish Attempt", "insert"),
+        ("NPI Item Publish Request", "save"),
+        ("NPI Outbox Message", "save"),
+        ("NPI Item Publish Attempt", "save"),
+        ("NPI Item Publish Stream Guard", "save"),
+    }
+)
+_RESULT_SUPPORT_WRITES = frozenset(
+    {
+        ("NPI Item Publish Result", "insert"),
+        ("NPI Item Mapping Observation", "insert"),
+        ("NPI Item Mapping Head", "insert"),
+        ("NPI Item Publish Request", "save"),
+        ("NPI Outbox Message", "save"),
+        ("NPI Item Publish Attempt", "save"),
+        ("NPI Item Mapping Head", "save"),
+        ("NPI Item Publish Stream Guard", "save"),
+    }
+)
+_MAPPING_SUPPORT_WRITES = frozenset(
+    {
+        ("NPI Item Mapping Observation", "insert"),
+        ("NPI Item Mapping Head", "insert"),
+        ("NPI Item Mapping Head", "save"),
+    }
+)
+
+
+class ItemServiceActorUnavailable(RuntimeError):
+    """Raised when a frozen worker actor cannot be used safely."""
 
 
 def require_item_outbox_write() -> None:
@@ -91,10 +157,18 @@ def deny_legacy_outbox_promotion() -> None:
 
 
 @contextmanager
-def item_request_transaction_write() -> Iterator[None]:
-    """Authorize one command/idempotency/request/Outbox/audit transaction."""
+def item_request_transaction_write(
+    requester_user_id: str,
+) -> Iterator[ItemSupportWriteCapability]:
+    """Authorize one requester-owned command/idempotency/Outbox transaction."""
 
-    with _service_user_write_scope():
+    _require_authenticated_requester(requester_user_id)
+    capability = ItemSupportWriteCapability(
+        actor=requester_user_id,
+        scope="request",
+        allowed=_REQUEST_SUPPORT_WRITES,
+    )
+    with _capability_scope(capability):
         with (
             _flag_scope(ITEM_REQUEST_WRITE_FLAG),
             _flag_scope(ITEM_IDEMPOTENCY_WRITE_FLAG),
@@ -102,14 +176,23 @@ def item_request_transaction_write() -> Iterator[None]:
             _flag_scope(ITEM_STREAM_GUARD_WRITE_FLAG),
             _flag_scope(AUDIT_APPEND_FLAG),
         ):
-            yield
+            yield capability
 
 
 @contextmanager
-def item_claim_write() -> Iterator[None]:
-    """Authorize one worker claim transaction in the service-user scope."""
+def item_claim_write(
+    service_actor_user_id: str,
+) -> Iterator[ItemSupportWriteCapability]:
+    """Authorize one frozen-service-actor claim transaction."""
 
-    with _service_user_write_scope():
+    _require_session_actor(service_actor_user_id)
+    _require_internal_npi_api_user(service_actor_user_id)
+    capability = ItemSupportWriteCapability(
+        actor=service_actor_user_id,
+        scope="claim",
+        allowed=_CLAIM_SUPPORT_WRITES,
+    )
+    with _capability_scope(capability):
         with (
             _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
             _flag_scope(ITEM_STREAM_GUARD_WRITE_FLAG),
@@ -117,14 +200,23 @@ def item_claim_write() -> Iterator[None]:
             _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
             _flag_scope(AUDIT_APPEND_FLAG),
         ):
-            yield
+            yield capability
 
 
 @contextmanager
-def item_result_transaction_write() -> Iterator[None]:
-    """Authorize one worker result transaction in the service-user scope."""
+def item_result_transaction_write(
+    service_actor_user_id: str,
+) -> Iterator[ItemSupportWriteCapability]:
+    """Authorize one frozen-service-actor result transaction."""
 
-    with _service_user_write_scope():
+    _require_session_actor(service_actor_user_id)
+    _require_internal_npi_api_user(service_actor_user_id)
+    capability = ItemSupportWriteCapability(
+        actor=service_actor_user_id,
+        scope="result",
+        allowed=_RESULT_SUPPORT_WRITES,
+    )
+    with _capability_scope(capability):
         with (
             _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
             _flag_scope(ITEM_STREAM_GUARD_WRITE_FLAG),
@@ -134,43 +226,166 @@ def item_result_transaction_write() -> Iterator[None]:
             _flag_scope(ITEM_MAPPING_WRITE_FLAG),
             _flag_scope(AUDIT_APPEND_FLAG),
         ):
-            yield
+            yield capability
 
 
 @contextmanager
-def item_mapping_write() -> Iterator[None]:
-    """Authorize one controlled mapping append in the service-user scope."""
+def item_mapping_write(
+    service_actor_user_id: str,
+) -> Iterator[ItemSupportWriteCapability]:
+    """Authorize one frozen-service-actor mapping append."""
 
-    with _service_user_write_scope():
+    _require_session_actor(service_actor_user_id)
+    _require_internal_npi_api_user(service_actor_user_id)
+    capability = ItemSupportWriteCapability(
+        actor=service_actor_user_id,
+        scope="mapping",
+        allowed=_MAPPING_SUPPORT_WRITES,
+    )
+    with _capability_scope(capability):
         with _flag_scope(ITEM_MAPPING_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
-            yield
+            yield capability
 
 
 @contextmanager
-def _service_user_write_scope() -> Iterator[None]:
-    """Use the built-in service user only for guarded support-DocType writes."""
+def item_service_actor_scope(service_actor_user_id: str) -> Iterator[None]:
+    """Run worker execution as the exact frozen service actor and restore user."""
 
-    # These support-only DocTypes intentionally grant no business CRUD.  The
-    # authorized command/worker adapter keeps the caller identity for domain
-    # checks, enters the built-in service user only for this guarded write,
-    # and restores the caller on every exit path.
+    _require_internal_npi_api_user(service_actor_user_id)
     session = getattr(frappe, "session", None)
     previous_user = getattr(session, "user", None)
     set_user = getattr(frappe, "set_user", None)
-    if (
-        not isinstance(previous_user, str)
-        or not previous_user
-        or not callable(set_user)
-    ):
-        raise RuntimeError("Item publish repository user context is unavailable.")
-    switched_user = previous_user != SYSTEM_SERVICE_USER
+    if not isinstance(previous_user, str) or not previous_user or not callable(set_user):
+        raise RuntimeError("Item publish worker user context is unavailable.")
+    switched_user = previous_user != service_actor_user_id
     if switched_user:
-        set_user(SYSTEM_SERVICE_USER)
+        set_user(service_actor_user_id)
     try:
         yield
     finally:
         if switched_user:
             set_user(previous_user)
+
+
+def insert_item_support_document(
+    document: Any,
+    *,
+    capability: ItemSupportWriteCapability,
+    ignore_links: bool = False,
+) -> Any:
+    """Insert one allowlisted support document under its exact capability."""
+
+    _authorize_support_write(document, action="insert", capability=capability)
+    if ignore_links and str(getattr(document, "doctype", "")) != "NPI Item Publish Request":
+        raise RuntimeError("Item support insert ignore_links is outside its exact scope.")
+    flags = getattr(document, "flags", None)
+    previous_ignore_links = getattr(flags, "ignore_links", False) if flags else False
+    if ignore_links and flags is None:
+        raise RuntimeError("Item support insert link scope is unavailable.")
+    if ignore_links:
+        flags.ignore_links = True
+    try:
+        return document.insert(ignore_permissions=True)
+    finally:
+        if ignore_links:
+            flags.ignore_links = previous_ignore_links
+
+
+def save_item_support_document(
+    document: Any,
+    *,
+    capability: ItemSupportWriteCapability,
+) -> Any:
+    """Save one allowlisted support document under its exact capability."""
+
+    _authorize_support_write(document, action="save", capability=capability)
+    return document.save(ignore_permissions=True)
+
+
+@contextmanager
+def _capability_scope(capability: ItemSupportWriteCapability) -> Iterator[None]:
+    token = _CURRENT_SUPPORT_CAPABILITY.set(capability)
+    try:
+        yield
+    finally:
+        _CURRENT_SUPPORT_CAPABILITY.reset(token)
+
+
+def _authorize_support_write(
+    document: Any,
+    *,
+    action: str,
+    capability: ItemSupportWriteCapability,
+) -> None:
+    current = _CURRENT_SUPPORT_CAPABILITY.get()
+    if current is not capability:
+        raise RuntimeError("Item support write capability is invalid or out of scope.")
+    doctype = str(getattr(document, "doctype", ""))
+    if (doctype, action) not in capability.allowed:
+        raise RuntimeError("Item support write is outside the exact capability scope.")
+    session_user = getattr(getattr(frappe, "session", None), "user", None)
+    if session_user != capability.actor:
+        raise RuntimeError("Item support write actor drifted from the frozen scope.")
+    flag = _SUPPORT_WRITE_FLAGS.get(doctype)
+    if flag is None or not getattr(frappe.flags, flag, False):
+        raise RuntimeError("Item support write controller flag is missing.")
+
+
+def _require_authenticated_requester(requester_user_id: str) -> None:
+    _require_session_actor(requester_user_id)
+    _require_internal_npi_api_user(requester_user_id)
+
+
+def _require_session_actor(actor_user_id: str) -> None:
+    session_user = getattr(getattr(frappe, "session", None), "user", None)
+    if session_user != actor_user_id:
+        raise RuntimeError("Item publish authenticated requester does not match the session.")
+
+
+def _require_internal_npi_api_user(actor_user_id: str) -> None:
+    if not _is_internal_npi_api_user(actor_user_id):
+        raise ItemServiceActorUnavailable(
+            "Item publish actor is not an enabled internal NPI API User."
+        )
+
+
+def validate_item_service_actor(actor_user_id: str) -> None:
+    """Fail closed unless the frozen actor is an enabled internal API user."""
+
+    _require_internal_npi_api_user(actor_user_id)
+
+
+def _is_internal_npi_api_user(actor_user_id: str) -> bool:
+    if (
+        not isinstance(actor_user_id, str)
+        or not actor_user_id
+        or actor_user_id.casefold() in {"guest", "administrator"}
+    ):
+        return False
+    database = getattr(frappe, "db", None)
+    get_value = getattr(database, "get_value", None)
+    get_roles = getattr(frappe, "get_roles", None)
+    if not callable(get_value) or not callable(get_roles):
+        return False
+    user = get_value(
+        "User",
+        actor_user_id,
+        ["enabled", "user_type"],
+        as_dict=True,
+    )
+    roles = frozenset(get_roles(actor_user_id)) if user else frozenset()
+    return bool(
+        user
+        and int(_field(user, "enabled") or 0) == 1
+        and str(_field(user, "user_type")) == "System User"
+        and "NPI API User" in roles
+    )
+
+
+def _field(value: Any, key: str) -> Any:
+    if isinstance(value, dict):
+        return value.get(key)
+    return getattr(value, key, None)
 
 
 def validate_one_way_transition(

@@ -33,6 +33,7 @@ def resolve_profile(
         or not tenant_id
         or not requester
         or not worker
+        or requester == worker
     ):
         return None
     return ItemExecutionProfile(

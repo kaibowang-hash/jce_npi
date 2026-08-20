@@ -2908,7 +2908,7 @@ export_item_publish_runtime_environment() {
   export NPI_P8_03_RUNTIME_MARKER=npi-one-item-publish-disposable-v1
   export NPI_P8_03_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
   export NPI_P8_03_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
-  export NPI_P8_03_RUNTIME_WORKER="${item_publish_runtime_actor}"
+  export NPI_P8_03_RUNTIME_WORKER="${inbound_project_runtime_actor}"
 }
 
 clear_item_publish_runtime_environment() {

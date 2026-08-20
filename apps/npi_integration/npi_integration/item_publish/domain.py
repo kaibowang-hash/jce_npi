@@ -722,7 +722,6 @@ class ItemPublishRequest:
             "profile_snapshot_hash": self.profile.snapshot_hash,
             "idempotency_key_hash": self.idempotency_key_hash,
             "target_idempotency_key_hash": self.target_idempotency_key_hash,
-            "service_actor_user_id": self.service_actor_user_id,
             "semantic_effect_hash": self.semantic_effect_hash,
         }
 

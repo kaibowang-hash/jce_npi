@@ -4,6 +4,7 @@ import importlib
 import sys
 import types
 import unittest
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
@@ -57,6 +58,14 @@ class StubDatabase:
     def rollback(self) -> None:
         self.owner.events.append("rollback")
 
+    def get_value(self, doctype, name, fieldname, **kwargs):
+        if doctype == "User" and isinstance(fieldname, list):
+            if str(name) == "item-worker@example.invalid":
+                value = {"enabled": 1, "user_type": "System User"}
+                return types.SimpleNamespace(**value) if kwargs.get("as_dict") else value
+            return None
+        raise AssertionError((doctype, name, fieldname))
+
 
 class StubRepository:
     def __init__(self, owner: "Phase8ItemPublishWorkerTest") -> None:
@@ -72,22 +81,36 @@ class StubRepository:
             lease_expires_at=NOW + timedelta(minutes=5),
             command=command(),
             profile_reference=synthetic.reference,
+            service_actor_user_id=synthetic.service_actor_user_id,
             expired_recovery=False,
             recovered_after_adapter_boundary=False,
         )
         self.profile_failure: Exception | None = None
+        self.enforce_profile_actor_binding = True
         self.boundary_value = True
         self.recoverable: tuple[UUID, ...] = ()
         self.results: list[object] = []
 
-    def claim(self, event_id: UUID, *, now: datetime):
+    def claim(self, event_id: UUID, *, now: datetime, expected_route=None):
         self.owner.events.append("claim")
         return self.claim_value
+
+    def execution_route(self, event_id: UUID):
+        return types.SimpleNamespace(
+            outbox_event_id=event_id,
+            service_actor_user_id=self.claim_value.service_actor_user_id,
+        )
 
     def require_execution_profile(self, claim, value):
         self.owner.events.append("profile")
         if self.profile_failure is not None:
             raise self.profile_failure
+        if (
+            self.enforce_profile_actor_binding
+            and getattr(value, "service_actor_user_id", None)
+            != claim.service_actor_user_id
+        ):
+            raise StubFinalFailure("ITEM_PUBLISH_EXECUTION_PROFILE_UNAVAILABLE")
         return value
 
     def mark_adapter_boundary(self, claim, *, profile, now: datetime) -> bool:
@@ -123,6 +146,7 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
         "frappe",
         "npi_core.api",
         "npi_integration.item_publish.worker_repository",
+        "npi_integration.item_publish.frappe_validation",
         "npi_integration.item_publish.worker",
     )
 
@@ -134,7 +158,13 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
         self.enqueued: list[dict[str, object]] = []
         self.diagnostics: list[dict[str, object]] = []
         frappe = types.ModuleType("frappe")
+        frappe._ = lambda source: source
         frappe.db = StubDatabase(self)
+        frappe.session = types.SimpleNamespace(user="publisher@example.invalid")
+        frappe.set_user = lambda user: setattr(frappe.session, "user", user)
+        frappe.get_roles = lambda actor: (
+            ["NPI API User"] if actor == "item-worker@example.invalid" else []
+        )
         frappe.enqueue = lambda path, **kwargs: self.enqueued.append(
             {"path": path, **kwargs}
         )
@@ -155,10 +185,12 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
         self.repository = StubRepository(self)
         self.synthetic = profile(ItemTargetMode.SYNTHETIC)
         self.adapter_calls = 0
+        self.adapter_users: list[str] = []
 
         def adapter(value) -> ItemAdapterResponse:
             self.events.append("adapter")
             self.adapter_calls += 1
+            self.adapter_users.append(sys.modules["frappe"].session.user)
             return response()
 
         self.registry = ItemAdapterRegistry(
@@ -178,11 +210,13 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
             if self.saved[name] is not None:
                 sys.modules[name] = self.saved[name]
 
-    def execute(self):
+    def execute(self, profile_value=None):
         return self.module._execute_worker(
             outbox_event_id=OUTBOX_ID,
             repository=self.repository,
-            profile_resolver=lambda _tenant, _project: self.synthetic,
+            profile_resolver=lambda _tenant, _project: (
+                self.synthetic if profile_value is None else profile_value
+            ),
             registry_resolver=lambda: self.registry,
             clock=lambda: NOW,
         )
@@ -204,6 +238,11 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
             ],
         )
         self.assertEqual(self.adapter_calls, 1)
+        self.assertEqual(self.adapter_users, ["item-worker@example.invalid"])
+        self.assertEqual(
+            sys.modules["frappe"].session.user,
+            "publisher@example.invalid",
+        )
 
     def test_missing_profile_or_registry_fails_before_boundary_without_adapter(self) -> None:
         self.repository.profile_failure = StubFinalFailure(
@@ -216,11 +255,58 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
             ["claim", "commit", "profile", "rollback", "seal", "commit"],
         )
         self.assertEqual(self.adapter_calls, 0)
+        self.assertEqual(
+            sys.modules["frappe"].session.user,
+            "publisher@example.invalid",
+        )
+
+    def test_invalid_frozen_actor_fails_closed_without_claim_or_adapter(self) -> None:
+        for actor in (
+            "disabled@example.invalid",
+            "website@example.invalid",
+            "no-role@example.invalid",
+            "Guest",
+            "Administrator",
+        ):
+            with self.subTest(actor=actor):
+                self.repository.claim_value.service_actor_user_id = actor
+                outcome = self.execute()
+                self.assertIsNone(outcome)
+                self.assertEqual(self.events, ["rollback"])
+                self.assertEqual(self.adapter_calls, 0)
+                self.assertEqual(
+                    self.diagnostics[-1]["code"],
+                    "ITEM_PUBLISH_SERVICE_ACTOR_UNAVAILABLE",
+                )
+                self.assertEqual(
+                    sys.modules["frappe"].session.user,
+                    "publisher@example.invalid",
+                )
+                self.events.clear()
+                self.diagnostics.clear()
+
+    def test_profile_actor_drift_fails_before_boundary_without_adapter(self) -> None:
+        drifted = replace(
+            self.synthetic,
+            service_actor_user_id="other-worker@example.invalid",
+        )
+        outcome = self.execute(profile_value=drifted)
+        self.assertEqual(outcome.state, "failed_final")
+        self.assertEqual(
+            self.events,
+            ["claim", "commit", "profile", "rollback", "seal", "commit"],
+        )
+        self.assertEqual(self.adapter_calls, 0)
+        self.assertEqual(
+            sys.modules["frappe"].session.user,
+            "publisher@example.invalid",
+        )
 
     def test_exception_after_boundary_is_uncertain_and_not_retried(self) -> None:
         def failing_adapter(_value):
             self.events.append("adapter")
             self.adapter_calls += 1
+            self.adapter_users.append(sys.modules["frappe"].session.user)
             raise TimeoutError("private synthetic response body")
 
         self.registry = ItemAdapterRegistry(
@@ -236,6 +322,11 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
         outcome = self.execute()
         self.assertEqual(outcome.state, "uncertain_after_timeout")
         self.assertEqual(self.adapter_calls, 1)
+        self.assertEqual(self.adapter_users, ["item-worker@example.invalid"])
+        self.assertEqual(
+            sys.modules["frappe"].session.user,
+            "publisher@example.invalid",
+        )
         self.assertTrue(self.repository.results[-1].reconciliation_required)
         self.assertNotIn("private synthetic", repr(self.diagnostics))
 
@@ -258,12 +349,21 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
             self.events,
             ["claim", "commit", "profile", "boundary", "commit", "rollback"],
         )
+        self.assertEqual(
+            sys.modules["frappe"].session.user,
+            "publisher@example.invalid",
+        )
 
     def test_result_commit_failure_remains_ambiguous_after_durable_boundary(self) -> None:
         sys.modules["frappe"].db.fail_commit_number = 3
         with self.assertRaisesRegex(RuntimeError, "commit failure"):
             self.execute()
         self.assertEqual(self.adapter_calls, 1)
+        self.assertEqual(self.adapter_users, ["item-worker@example.invalid"])
+        self.assertEqual(
+            sys.modules["frappe"].session.user,
+            "publisher@example.invalid",
+        )
         self.assertEqual(
             self.events,
             [
@@ -285,6 +385,11 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
         outcome = self.execute()
         self.assertEqual(outcome.state, "synthetic_verified")
         self.assertEqual(self.adapter_calls, 1)
+        self.assertEqual(self.adapter_users, ["item-worker@example.invalid"])
+        self.assertEqual(
+            sys.modules["frappe"].session.user,
+            "publisher@example.invalid",
+        )
         self.assertEqual(
             self.events,
             [
@@ -307,6 +412,11 @@ class Phase8ItemPublishWorkerTest(unittest.TestCase):
         outcome = self.execute()
         self.assertEqual(outcome.state, "synthetic_verified")
         self.assertEqual(self.adapter_calls, 1)
+        self.assertEqual(self.adapter_users, ["item-worker@example.invalid"])
+        self.assertEqual(
+            sys.modules["frappe"].session.user,
+            "publisher@example.invalid",
+        )
         self.assertEqual(
             self.events,
             [
