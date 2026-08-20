@@ -7,6 +7,7 @@ import types
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
 
@@ -56,6 +57,7 @@ class FakeDocument(AttrDict):
     ) -> None:
         super().__init__(values)
         object.__setattr__(self, "_owner", owner)
+        self.flags = SimpleNamespace()
 
     def insert(self):
         doctype = str(self.doctype)
@@ -428,6 +430,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
         request = self.only("NPI Item Publish Request")
         self.assertEqual(request.state, "queued")
         self.assertEqual(request.outbox_event_id, outbox.event_id)
+        self.assertTrue(request.flags.ignore_links)
         self.assertEqual(outbox.event_type, "npi.item_publish_request.ready")
         self.assertEqual(outbox.operation, "publish_released_item")
         self.assertEqual(outbox.state, "pending")

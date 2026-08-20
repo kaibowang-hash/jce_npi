@@ -837,7 +837,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         now: datetime,
     ) -> None:
         expectation = value.mapping_expectation
-        frappe.get_doc(
+        document = frappe.get_doc(
             {
                 "doctype": "NPI Item Publish Request",
                 "global_id": str(value.global_id),
@@ -884,7 +884,17 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 "created_at": _database_datetime(value.created_at),
                 "updated_at": _database_datetime(now),
             }
-        ).insert()
+        )
+        if outbox_event_id is not None:
+            # The executable request and its Outbox row are one atomic write
+            # scope, but each row carries a Link to the other.  Defer only
+            # Frappe's existence check for this forward reference; the domain
+            # guards, controlled write flags, and transaction rollback still
+            # cover both rows before the command can return success.
+            flags = getattr(document, "flags", None)
+            if flags is not None:
+                flags.ignore_links = True
+        document.insert()
 
     @staticmethod
     def _insert_outbox(
