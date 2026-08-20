@@ -266,11 +266,11 @@ async function openItemInspector(
   await expect(page.locator("html")).toHaveAttribute("lang", locale);
   await expect(page.locator(".route-loading")).toHaveCount(0);
   await page.getByRole("button", { name: "R1", exact: true }).click();
+  await page.locator('[data-item-inspector-trigger="true"]').first().click();
   const inspector = page.getByRole("region", {
     name: translate(locale, "Item execution inspector"),
   });
   await expect(inspector).toBeVisible();
-  await inspector.getByRole("button", { name: "ENG-SYN-001" }).click();
   await expect(
     inspector.getByText(
       translate(locale, "Exact source and execution expectation"),

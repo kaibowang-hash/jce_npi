@@ -107,3 +107,61 @@ authorized.
 This evidence closes only P8-03 checkpoint 4 after exact-SHA ordinary CI PASS.
 It does not perform the final Level 3 gate, controller transition or P8-04
 activation.
+
+## 6. C4 CI repair evidence (2026-08-20)
+
+The repair was opened from PR #1 head
+`1bd638c4c6a50182db3abae52bd477ee7d8ee4bd`, ordinary run `32351005738`.
+The run had repository job `96369938498` successful; frontend job
+`96369938694`, visual job `96369938724` and secret-scan job `96369938795`
+failed; controlled jobs `96373363423` and `96373363833` were skipped as
+expected. Frontend failure analysis was kept separate from visual analysis:
+the frontend lane had exactly the three legacy P5-05 `renders exact Mock and
+node truth` failures, while the six visual failures were the three legacy
+P5-05 cases plus the three P8-03 cases.
+
+The visual always-upload artifact was `r1-06-linux-visual-evidence`, artifact
+`9399977792`, digest
+`sha256:1e48b03cc5b6bcb9ad44cbc2168db6e8ea6397b5d76f5c50a03669abf9b4409a`.
+The connector supplied a signed download URI, but this managed environment
+could not resolve its host, so the zip SHA256 and actual/diff image byte
+inspection could not be completed locally. The three old P5-05 expected
+baselines were inspected and remain immutable. The three new P8-03 expected
+baselines were inspected; no new baseline is accepted until CI actual bytes
+are available and the six affected visual cases pass their structural checks.
+
+Root cause and repair: the C4 inspector was mounted as soon as the existing
+P5 detail loaded, and `itemPublishDataSource` demoted the P5 toolbar primary
+even before an Item node was selected. The Item identifier now provides a
+keyboard-accessible, visually neutral activation control. The inspector is
+mounted only after that explicit activation and starts from the activated
+immutable node; primary-action selection is based on the active inspector or
+form, not merely data-source injection. This preserves the P5-05 baseline
+surface while keeping the P8-03 inspector path explicit and single-primary.
+
+The history secret scan reported one finding only:
+`bfa9c9bb4fa70d0c66938b940b286c7f9bbb3d47:frontend/tests/unit/item-publish-data-source.test.ts:generic-api-key:26`.
+The current-tree scan was clean; the finding is a synthetic fixture value,
+not a credential, and the literal shape has already been removed from the
+current tree. The exact fingerprint is the only new ignore entry. The
+verifier and its tests accept that exact commit/path/rule/line tuple and
+reject altered commit, path, rule or line values; no path, regex, rule or
+history-scope allowlist was added.
+
+Repair scope, risk and rollback: `.gitleaksignore`,
+`scripts/verify_devcontainer.py`, `tests/test_devcontainer_verifier.py`,
+`implementation/CURRENT_TASK.json`, this evidence file, the C4 workspace,
+its P8-03 E2E test and the focused workspace unit test. The security verifier
+paths were added to `CURRENT_TASK.allowed_paths` only after the exact CI
+finding and current-tree scan established the C4 repair scope. Product risk
+is limited to explicit Item-inspector activation and legacy P5 surface
+restoration; rollback restores the prior C4 workspace/test pair and removes
+the exact fingerprint entry while retaining all request/audit evidence.
+
+Changed-files to affected-tests map:
+
+| Changed boundary | Affected checks |
+|---|---|
+| C4 workspace and P8-03 E2E/unit tests | TypeScript, focused workspace unit tests, P8-03 non-visual/visual E2E, P5-05 regression visual and primary-action/a11y checks |
+| Exact gitleaks fingerprint and verifier tests | devcontainer verifier unit tests, current-tree/history gitleaks lanes, exact positive/negative fingerprint validation |
+| `CURRENT_TASK.json` and this evidence | current-task verifier, diff check and task evidence review |

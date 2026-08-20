@@ -364,18 +364,22 @@ function itemActionBlockReason(
 function ItemPublishExecutionInspector({
   dataSource,
   disabled,
+  initialNodeId,
   onDirtyChange,
   projectId,
   publishRequest,
 }: {
   dataSource?: ItemPublishDataSource | undefined;
   disabled: boolean;
+  initialNodeId: string;
   onDirtyChange: (dirty: boolean) => void;
   projectId: string;
   publishRequest: EngineeringBomPublishRequestViewModel;
 }): React.JSX.Element {
   const { locale, sessionCommandContext, t } = useI18n();
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
+    initialNodeId,
+  );
   const [reloadAttempt, setReloadAttempt] = useState(0);
   const [listState, setItemListState] = useState<
     ResourceState<ItemPublishRequestListViewModel>
@@ -1012,6 +1016,9 @@ export function EngineeringBomPublishRequestWorkspace({
   const [formError, setFormError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [itemDirty, setItemDirty] = useState(false);
+  const [itemInspectorNodeId, setItemInspectorNodeId] = useState<string | null>(
+    null,
+  );
   const [commandState, setCommandState] = useState<CommandState>({
     kind: "idle",
   });
@@ -1065,6 +1072,8 @@ export function EngineeringBomPublishRequestWorkspace({
           setPolicyRef(value.policies[0] ? policyValue(value.policies[0]) : "");
           const firstRequestId = value.items[0]?.globalId ?? null;
           setSelectedRequestId(firstRequestId);
+          setItemInspectorNodeId(null);
+          setItemDirty(false);
           setDetailState({ kind: firstRequestId ? "loading" : "idle" });
         })
         .catch((error: unknown) => {
@@ -1134,6 +1143,8 @@ export function EngineeringBomPublishRequestWorkspace({
     closeForm();
     setCommandState({ kind: "idle" });
     setSelectedRequestId(null);
+    setItemInspectorNodeId(null);
+    setItemDirty(false);
     setDetailState({ kind: "idle" });
     setListState({ kind: "loading" });
     setListAttempt((current) => current + 1);
@@ -1193,6 +1204,8 @@ export function EngineeringBomPublishRequestWorkspace({
       .then((request) => {
         setCommandState({ kind: "accepted", request });
         setSelectedRequestId(request.globalId);
+        setItemInspectorNodeId(null);
+        setItemDirty(false);
         setListState((current) => {
           if (current.kind !== "loaded") return current;
           const items = current.value.items.some(
@@ -1289,7 +1302,10 @@ export function EngineeringBomPublishRequestWorkspace({
                     openForm(event.currentTarget);
                   }}
                   visual={
-                    formOpen || itemPublishDataSource ? "secondary" : "primary"
+                    formOpen ||
+                    Boolean(itemInspectorNodeId && itemPublishDataSource)
+                      ? "secondary"
+                      : "primary"
                   }
                 >
                   {t("Prepare publish request")}
@@ -1476,7 +1492,11 @@ export function EngineeringBomPublishRequestWorkspace({
                   <Button
                     disabled={commandState.kind === "processing"}
                     type="submit"
-                    visual={itemPublishDataSource ? "secondary" : "primary"}
+                    visual={
+                      itemInspectorNodeId && itemPublishDataSource
+                        ? "secondary"
+                        : "primary"
+                    }
                   >
                     {t("Validate exact released EBOM")}
                   </Button>
@@ -1528,6 +1548,8 @@ export function EngineeringBomPublishRequestWorkspace({
                               className="table-link"
                               data-language-exempt="identifier"
                               onClick={() => {
+                                setItemInspectorNodeId(null);
+                                setItemDirty(false);
                                 setDetailState({ kind: "loading" });
                                 setSelectedRequestId(request.globalId);
                               }}
@@ -1657,6 +1679,23 @@ export function EngineeringBomPublishRequestWorkspace({
                                   <span
                                     className="publish-request__node-meta"
                                     data-language-exempt="identifier"
+                                    data-item-inspector-trigger="true"
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => {
+                                      setItemInspectorNodeId(node.globalId);
+                                      setItemDirty(false);
+                                    }}
+                                    onKeyDown={(event) => {
+                                      if (
+                                        event.key === "Enter" ||
+                                        event.key === " "
+                                      ) {
+                                        event.preventDefault();
+                                        setItemInspectorNodeId(node.globalId);
+                                        setItemDirty(false);
+                                      }
+                                    }}
                                   >
                                     {node.line.engineeringItemId}
                                   </span>
@@ -1723,13 +1762,19 @@ export function EngineeringBomPublishRequestWorkspace({
                         </tbody>
                       </table>
                     </div>
-                    <ItemPublishExecutionInspector
-                      dataSource={itemPublishDataSource}
-                      disabled={disabled || commandState.kind === "processing"}
-                      onDirtyChange={setItemDirty}
-                      projectId={projectId}
-                      publishRequest={detail}
-                    />
+                    {itemInspectorNodeId ? (
+                      <ItemPublishExecutionInspector
+                        dataSource={itemPublishDataSource}
+                        disabled={
+                          disabled || commandState.kind === "processing"
+                        }
+                        initialNodeId={itemInspectorNodeId}
+                        key={itemInspectorNodeId}
+                        onDirtyChange={setItemDirty}
+                        projectId={projectId}
+                        publishRequest={detail}
+                      />
+                    ) : null}
                   </div>
                 ) : selectedSummary ? null : (
                   <div className="publish-request__empty" role="status">

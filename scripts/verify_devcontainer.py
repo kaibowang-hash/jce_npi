@@ -87,6 +87,10 @@ REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
             "b1babbf46f0ebe7f22c21fca3162ed71327c46dc:"
             "implementation/evidence/phase-7/p7-07-plan.md:generic-api-key:419"
         ),
+        (
+            "bfa9c9bb4fa70d0c66938b940b286c7f9bbb3d47:"
+            "frontend/tests/unit/item-publish-data-source.test.ts:generic-api-key:26"
+        ),
     }
 )
 

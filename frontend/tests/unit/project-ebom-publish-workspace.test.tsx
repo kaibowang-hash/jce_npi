@@ -270,10 +270,12 @@ describe("EBOM publish-request workspace", () => {
     const user = userEvent.setup();
     renderWorkspace(dataSource(), undefined, undefined, itemDataSource());
 
+    await user.click(
+      await screen.findByRole("button", { name: "ENG-SYN-001" }),
+    );
     expect(
       await screen.findByRole("heading", { name: "Item execution inspector" }),
     ).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "ENG-SYN-001" }));
     expect(
       await screen.findByText("Synthetic verification; not authoritative"),
     ).toBeVisible();

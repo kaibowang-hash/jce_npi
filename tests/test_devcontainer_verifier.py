@@ -136,6 +136,10 @@ class DevcontainerVerifierTest(unittest.TestCase):
                 "b1babbf46f0ebe7f22c21fca3162ed71327c46dc:"
                 "implementation/evidence/phase-7/p7-07-plan.md:generic-api-key:419"
             ),
+            (
+                "bfa9c9bb4fa70d0c66938b940b286c7f9bbb3d47:"
+                "frontend/tests/unit/item-publish-data-source.test.ts:generic-api-key:26"
+            ),
         )
         safe = "\n".join(reviewed) + "\n"
         validate_gitleaks_ignore(safe)
@@ -148,6 +152,23 @@ class DevcontainerVerifierTest(unittest.TestCase):
         ):
             with self.subTest(unsafe=unsafe), self.assertRaises(VerificationError):
                 validate_gitleaks_ignore(unsafe)
+        fixture_fingerprint = reviewed[-1]
+        self.assertIn(fixture_fingerprint, safe)
+        for unsafe_fixture in (
+            fixture_fingerprint.replace(":26", ":27"),
+            fixture_fingerprint.replace(":generic-api-key:", ":password:"),
+            fixture_fingerprint.replace(
+                ":frontend/tests/unit/item-publish-data-source.test.ts:",
+                ":frontend/tests/unit/item-publish-data-source.test.tsx:",
+            ),
+            fixture_fingerprint.replace(
+                "bfa9c9bb4fa70d0c66938b940b286c7f9bbb3d47", "0" * 40
+            ),
+        ):
+            with self.subTest(unsafe_fixture=unsafe_fixture), self.assertRaises(
+                VerificationError
+            ):
+                validate_gitleaks_ignore(safe.replace(fixture_fingerprint, unsafe_fixture))
 
     def test_ci_installs_ripgrep_before_the_fail_closed_repository_scan(self):
         visual_image = (
