@@ -151,6 +151,19 @@ def item_publish_path(project_id: str, request_id: str | None = None) -> str:
     return base if request_id is None else f"{base}/{request_id}"
 
 
+def _mariadb_index_is_unique(non_unique: object) -> bool:
+    """Interpret only MariaDB's exact unique-index marker as unique."""
+
+    return (
+        isinstance(non_unique, int)
+        and not isinstance(non_unique, bool)
+        and non_unique == 0
+    ) or (
+        isinstance(non_unique, str)
+        and non_unique == "0"
+    )
+
+
 def item_publish_request(
     opener,
     base_url: str,
@@ -1660,7 +1673,7 @@ def inspect_legacy(
     )
     attempt_index_is_unique = any(
         str(index.get("Column_name")) == "attempt_global_id"
-        and int(index.get("Non_unique") or 1) == 0
+        and _mariadb_index_is_unique(index.get("Non_unique"))
         for index in unique_indexes
     )
     require(

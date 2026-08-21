@@ -344,3 +344,32 @@ and final unchanged Gate `0/1`. The narrower strict-predicate subcycle remains
 product repair `0/1`. Create, replay, parent collection, and legacy-query
 server diagnostic activations are all closed; the response-neutral diagnostic
 mechanism remains dormant.
+
+## Strict fixture final Gate and inspect-legacy harness remediation
+
+- Fixture-precondition checkpoint:
+  `eb57fb41884467d02fb7b74ebcc66ff08cf82f23`.
+- Exact-SHA ordinary CI `32476162013` passed all required lanes.
+- The sole diagnostics-closed final Level 3 run `32477263506` passed repository
+  `96756092445`, secret scan `96756092217`, visual `96756092321`, frontend
+  `96756092523`, and controlled preflight `96758486682`. Cumulative Site job
+  `96758530446` reached the post-migration `inspect_legacy` fixture and failed
+  with the existing withheld fixture constant.
+
+Read-only cross-proof uniquely located a verifier-only MariaDB index-reader
+error. The inspect predicate used `int(index.get("Non_unique") or 1) == 0`.
+MariaDB returns numeric `0` for a unique index, but Python evaluates `0 or 1`
+as `1`, so the valid `attempt_global_id` unique-index row was deterministically
+rejected. The already-passing Project-control and Gate-review runtime peers use
+the correct numeric-zero semantics. Earlier collection, detail, strict legacy
+projection and reconciliation checks had succeeded in the same Site run; the
+worker and adapter checks follow this deterministic failure.
+
+The bounded remediation recognizes only exact numeric `0` or string `"0"` as
+MariaDB unique-index truth. Numeric/string `1`, missing, null, boolean and
+invalid values remain non-unique, and the existing compound `require` remains
+fail closed. `cleanup_legacy` remains ordered only after a successful inspect.
+This is an inspect verifier harness correction, not a product repair. The new
+`inspect-legacy` downstream cycle remains diagnostic `0/1`, product repair
+`0/1`, and final unchanged Gate `0/1`; all historical cycle counters remain
+immutable and all four diagnostic activations remain closed.

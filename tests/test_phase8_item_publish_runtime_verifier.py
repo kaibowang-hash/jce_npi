@@ -1049,6 +1049,62 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             },
         )
 
+    def test_legacy_result_unique_index_uses_exact_mariadb_marker(self) -> None:
+        verifier = load_verifier()
+        for value in (0, "0"):
+            with self.subTest(value=value):
+                self.assertTrue(verifier._mariadb_index_is_unique(value))
+        invalid_values = (1, "1", None, True, False, "", "00", "invalid", object())
+        for value in invalid_values:
+            with self.subTest(value=value):
+                self.assertFalse(verifier._mariadb_index_is_unique(value))
+        self.assertFalse(verifier._mariadb_index_is_unique({}.get("Non_unique")))
+
+        tree = ast.parse(SCRIPT.read_text(encoding="utf-8"))
+        inspect_function = _function_nodes(tree)["inspect_legacy"]
+        helper_calls = [
+            node
+            for node in ast.walk(inspect_function)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "_mariadb_index_is_unique"
+        ]
+        self.assertEqual(len(helper_calls), 1)
+        helper_argument = helper_calls[0].args[0]
+        self.assertIsInstance(helper_argument, ast.Call)
+        self.assertIsInstance(helper_argument.func, ast.Attribute)
+        self.assertEqual(helper_argument.func.attr, "get")
+        self.assertEqual(len(helper_argument.args), 1)
+        self.assertIsInstance(helper_argument.args[0], ast.Constant)
+        self.assertEqual(helper_argument.args[0].value, "Non_unique")
+        inspect_source = ast.unparse(inspect_function)
+        self.assertNotIn('index.get("Non_unique") or 1', inspect_source)
+        self.assertNotIn("index.get('Non_unique') or 1", inspect_source)
+
+        for peer in (
+            ROOT / "scripts" / "verify_project_controls_runtime.py",
+            ROOT / "scripts" / "verify_gate_review_runtime.py",
+        ):
+            self.assertIn(
+                'int(row.get("Non_unique")) == 0',
+                peer.read_text(encoding="utf-8"),
+            )
+
+    def test_legacy_cleanup_remains_after_successful_inspection(self) -> None:
+        tree = ast.parse(SCRIPT.read_text(encoding="utf-8"))
+        run_legacy = _function_nodes(tree)["run_legacy"]
+        calls = {
+            node.args[0].value: node.lineno
+            for node in ast.walk(run_legacy)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "run_bench_fixture"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        }
+        self.assertLess(calls["inspect_legacy"], calls["cleanup_legacy"])
+
     def test_legacy_fixture_sql_negative_variants_fail_closed(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8")
         variants = {
