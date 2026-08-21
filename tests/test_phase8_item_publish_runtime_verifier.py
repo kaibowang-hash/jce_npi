@@ -227,6 +227,133 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.module = load_verifier()
 
+    def test_legacy_collection_diagnostic_is_exact_and_response_neutral(
+        self,
+    ) -> None:
+        module = self.module
+        cases = (
+            (
+                "status",
+                SimpleNamespace(
+                    status=503,
+                    body={"privateValue": "released Item status value"},
+                    trace_id=_TRACE_ID,
+                ),
+                "P803_LEGACY_COLLECTION_STATUS",
+            ),
+            (
+                "shape",
+                SimpleNamespace(
+                    status=200,
+                    body={"items": {"privateValue": "released Item shape value"}},
+                    trace_id=_TRACE_ID,
+                ),
+                "P803_LEGACY_COLLECTION_SHAPE",
+            ),
+            (
+                "cardinality",
+                SimpleNamespace(
+                    status=200,
+                    body={
+                        "items": [
+                            {"globalId": "private-request-one"},
+                            {"globalId": "private-request-two"},
+                        ]
+                    },
+                    trace_id=_TRACE_ID,
+                ),
+                "P803_LEGACY_COLLECTION_CARDINALITY",
+            ),
+        )
+        for label, result, code in cases:
+            with self.subTest(context=label):
+                rendered = module.legacy_collection_failure_message(result)
+                self.assertEqual(
+                    rendered,
+                    "P8-03 migrated legacy Item collection check failed "
+                    f"[diagnostic_code={code}; exception_type=RuntimeError; "
+                    f"trace_id={_TRACE_ID}]",
+                )
+                self.assertNotIn("503", rendered)
+                self.assertNotIn("private", rendered)
+                self.assertNotIn("released Item", rendered)
+                self.assertNotIn("actual_count", rendered)
+                self.assertNotIn("globalId", rendered)
+
+        complete = SimpleNamespace(
+            status=200,
+            body={"items": [{}, {}, {}]},
+            trace_id=_TRACE_ID,
+        )
+        self.assertIsNone(module.legacy_collection_failure_message(complete))
+
+    def test_legacy_collection_diagnostic_falls_back_closed(self) -> None:
+        module = self.module
+        private = "released Item /tmp/private actor payload hash target"
+        failures = (
+            SimpleNamespace(
+                status=500,
+                body={"privateValue": private},
+                trace_id=None,
+            ),
+            SimpleNamespace(
+                status=200,
+                body={"items": [{"privateValue": private}]},
+                trace_id="trace-private-value",
+            ),
+        )
+        for result in failures:
+            with self.subTest(trace_id=result.trace_id):
+                rendered = module.legacy_collection_failure_message(result)
+                self.assertEqual(rendered, module._LEGACY_COLLECTION_FAILURE)
+                self.assertNotIn(private, rendered)
+                self.assertNotIn("diagnostic_code", rendered)
+                self.assertNotIn("trace-private-value", rendered)
+
+        with patch.object(module, "LEGACY_COLLECTION_DIAGNOSTICS_ENABLED", False):
+            rendered = module.legacy_collection_failure_message(
+                SimpleNamespace(
+                    status=500,
+                    body={"privateValue": private},
+                    trace_id=_TRACE_ID,
+                )
+            )
+        self.assertEqual(rendered, module._LEGACY_COLLECTION_FAILURE)
+        self.assertNotIn(_TRACE_ID, rendered)
+
+    def test_legacy_collection_diagnostic_activation_is_parent_only(self) -> None:
+        module = self.module
+        self.assertTrue(module.LEGACY_COLLECTION_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.ITEM_CREATE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
+        self.assertEqual(
+            module._LEGACY_COLLECTION_DIAGNOSTIC_CODES,
+            {
+                "P803_LEGACY_COLLECTION_STATUS",
+                "P803_LEGACY_COLLECTION_SHAPE",
+                "P803_LEGACY_COLLECTION_CARDINALITY",
+            },
+        )
+        source = SCRIPT.read_text(encoding="utf-8")
+        run_legacy = source.split("def run_legacy(", 1)[1].split("\ndef ", 1)[0]
+        self.assertIn("legacy_collection_failure_message(listed)", run_legacy)
+        self.assertNotIn("_sanitized_server_diagnostic", run_legacy)
+        helper = source.split(
+            "def legacy_collection_failure_message", 1
+        )[1].split("\ndef ", 1)[0]
+        for code in module._LEGACY_COLLECTION_DIAGNOSTIC_CODES:
+            self.assertEqual(helper.count(f'"{code}"'), 1)
+        for forbidden in (
+            "result.body}",
+            "result.status}",
+            "len(items)}",
+            "project_id",
+            "legacy_request_id",
+            "ACTOR_USER",
+            "path",
+        ):
+            self.assertNotIn(forbidden, helper)
+
     def test_replay_diagnostic_checkpoint_is_dormant_with_closed_create_scope(self) -> None:
         module = self.module
         self.assertFalse(module.ITEM_CREATE_DIAGNOSTICS_ENABLED)

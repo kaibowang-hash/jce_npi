@@ -39,11 +39,22 @@ ACKNOWLEDGEMENT = (
 RUNTIME_MARKER = "npi-one-item-publish-disposable-v1"
 ITEM_CREATE_DIAGNOSTICS_ENABLED = False
 REPLAY_TERMINAL_DIAGNOSTICS_ENABLED = False
+LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = True
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _PROBLEM_CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{0,79}$")
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_LEGACY_COLLECTION_FAILURE = (
+    "P8-03 migrated legacy Item was not readable in the collection"
+)
+_LEGACY_COLLECTION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P803_LEGACY_COLLECTION_STATUS",
+        "P803_LEGACY_COLLECTION_SHAPE",
+        "P803_LEGACY_COLLECTION_CARDINALITY",
+    }
+)
 _CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
     {
         "P803_CREATE_COMMAND_CONTEXT",
@@ -199,6 +210,37 @@ def item_create_failure_message(result) -> str | None:
 
 def _valid_replay_diagnostic_trace(value: object) -> bool:
     return isinstance(value, str) and _TRACE_PATTERN.fullmatch(value) is not None
+
+
+def legacy_collection_failure_message(result: Any) -> str | None:
+    """Classify one failed legacy collection response without rendering values."""
+
+    body = result.body
+    items = body.get("items") if isinstance(body, dict) else None
+    if result.status == 200 and isinstance(items, list) and len(items) == 3:
+        return None
+    trace_id = result.trace_id
+    if (
+        not LEGACY_COLLECTION_DIAGNOSTICS_ENABLED
+        or not isinstance(trace_id, str)
+        or _TRACE_PATTERN.fullmatch(trace_id) is None
+    ):
+        return _LEGACY_COLLECTION_FAILURE
+    if result.status != 200:
+        code = "P803_LEGACY_COLLECTION_STATUS"
+    elif not isinstance(items, list):
+        code = "P803_LEGACY_COLLECTION_SHAPE"
+    else:
+        code = "P803_LEGACY_COLLECTION_CARDINALITY"
+    require(
+        code in _LEGACY_COLLECTION_DIAGNOSTIC_CODES,
+        _LEGACY_COLLECTION_FAILURE,
+    )
+    return (
+        "P8-03 migrated legacy Item collection check failed"
+        f" [diagnostic_code={code}; exception_type=RuntimeError; "
+        f"trace_id={trace_id}]"
+    )
 
 
 @contextmanager
@@ -629,13 +671,12 @@ def run_legacy(
     _require_enabled_runtime_marker(project_id)
     path = item_publish_path(project_id)
     listed = item_publish_request(actor, base_url, path, query_key="legacy-list")
-    items = listed.body.get("items")
+    collection_failure = legacy_collection_failure_message(listed)
     require(
-        listed.status == 200
-        and isinstance(items, list)
-        and len(items) == 3,
-        "P8-03 migrated legacy Item was not readable in the collection",
+        collection_failure is None,
+        collection_failure or _LEGACY_COLLECTION_FAILURE,
     )
+    items = listed.body["items"]
     legacy_items = [
         item
         for item in items

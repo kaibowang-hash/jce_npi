@@ -244,3 +244,37 @@ processing, retryable, uncertain and unknown states retain the prior active
 binding and lease behavior. Replay diagnostic activation is closed after the
 unique root; the response-neutral mechanism remains dormant. The replay cycle
 has consumed product repair `1/1` and final unchanged Gate remains `0/1`.
+
+## Replay repair final Gate and new legacy-collection cycle
+
+- Replay product repair checkpoint:
+  `59e74814b7c8d5cdeb2e0d08ed0fbbddbdf92c0d`.
+- Exact-SHA ordinary CI `32467712811` passed repository, secret scan, governed
+  visual and frontend lanes, including the complete E2E suite.
+- The sole diagnostics-closed final Level 3 run `32468617016` passed repository
+  `96730489147`, secret scan `96730488896`, visual `96730489034`, frontend
+  `96730489037`, and controlled preflight `96733570954`. Cumulative Site job
+  `96733614493` passed the repaired fresh and cross-process terminal replay
+  boundary, seeded the marker-gated legacy row, ran both migrations, and then
+  failed in the subsequent migrated-legacy collection check.
+
+The outer failure was the existing constant `RuntimeError` at the compound
+collection predicate. Response body, HTTP status, actual cardinality, business
+values and identities were withheld, so the run cannot uniquely distinguish a
+non-success response, response-shape drift, or collection-cardinality drift.
+It therefore does not authorize another product repair. The completed create
+and replay cycles remain immutable at diagnostic `1/1`, product repair `1/1`,
+and final unchanged Gate `1/1`. This new `legacy-collection` cycle starts at
+diagnostic `0/1`, product repair `0/1`, and final unchanged Gate `0/1`.
+
+The parent-verifier-only diagnostic checkpoint classifies that one predicate
+as exactly one of `P803_LEGACY_COLLECTION_STATUS`,
+`P803_LEGACY_COLLECTION_SHAPE`, or `P803_LEGACY_COLLECTION_CARDINALITY`. It
+renders only the allowlisted diagnostic code, fixed outer
+`exception_type=RuntimeError`, and the exact validated response trace. It
+never renders the status, response body, actual count, Project/Request/Outbox
+identities, actor, request path, or business values. A disabled activation or
+missing/invalid trace retains the original constant failure. The existing
+create and replay diagnostic activations remain closed; no server log is read
+and no product, API, permission, transaction, migration, query projection,
+Schema, ownership, claim, lease, or external behavior changes.
