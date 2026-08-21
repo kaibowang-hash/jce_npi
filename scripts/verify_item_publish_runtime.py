@@ -39,9 +39,11 @@ ACKNOWLEDGEMENT = (
 RUNTIME_MARKER = "npi-one-item-publish-disposable-v1"
 ITEM_CREATE_DIAGNOSTICS_ENABLED = False
 REPLAY_TERMINAL_DIAGNOSTICS_ENABLED = False
-LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = True
+LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = False
+LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED = True
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
+_LEGACY_QUERY_DIAGNOSTIC_SCOPE = "p803-legacy-query-v1"
 _PROBLEM_CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{0,79}$")
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
@@ -79,6 +81,22 @@ _CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
         "P803_CREATE_COMMIT",
         "P803_CREATE_ENQUEUE",
         "P803_CREATE_API_RESPONSE",
+    }
+)
+_LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P803_LEGACY_QUERY_CONTEXT",
+        "P803_LEGACY_QUERY_REPOSITORY",
+        "P803_LEGACY_QUERY_RESPONSE",
+        "P803_LEGACY_QUERY_PROJECT",
+        "P803_LEGACY_QUERY_PROFILE",
+        "P803_LEGACY_QUERY_ROWS",
+        "P803_LEGACY_QUERY_ROW_CLASSIFY",
+        "P803_LEGACY_QUERY_BINDING_STATE",
+        "P803_LEGACY_QUERY_STRICT_LEGACY",
+        "P803_LEGACY_QUERY_LEGACY_PROJECT",
+        "P803_LEGACY_QUERY_CURRENT_PROJECT",
+        "P803_LEGACY_QUERY_MAPPING_EXPECTATION",
     }
 )
 _REPLAY_TERMINAL_DIAGNOSTIC_CODES = frozenset(
@@ -144,6 +162,7 @@ def item_publish_request(
     idempotency_key: str | None = None,
     query_key: str = "query",
     create_diagnostic: bool = False,
+    legacy_query_diagnostic: bool = False,
 ):
     headers = (
         document_runtime.command_headers(csrf_token, idempotency_key)
@@ -156,6 +175,21 @@ def item_publish_request(
             "The P8-03 Item create diagnostic requires one command request",
         )
         headers[_CREATE_DIAGNOSTIC_HEADER] = _CREATE_DIAGNOSTIC_SCOPE
+    if legacy_query_diagnostic:
+        require(
+            method == "GET"
+            and query_key == "legacy-list"
+            and payload is None
+            and csrf_token is None
+            and idempotency_key is None
+            and re.fullmatch(
+                r"/api/npi/v1/projects/[^/]+/item-publish-requests",
+                path,
+            )
+            is not None,
+            _LEGACY_COLLECTION_FAILURE,
+        )
+        headers[_CREATE_DIAGNOSTIC_HEADER] = _LEGACY_QUERY_DIAGNOSTIC_SCOPE
     result = document_runtime.request(
         opener,
         base_url,
@@ -212,7 +246,10 @@ def _valid_replay_diagnostic_trace(value: object) -> bool:
     return isinstance(value, str) and _TRACE_PATTERN.fullmatch(value) is not None
 
 
-def legacy_collection_failure_message(result: Any) -> str | None:
+def legacy_collection_failure_message(
+    result: Any,
+    cursors: dict[str, int] | None = None,
+) -> str | None:
     """Classify one failed legacy collection response without rendering values."""
 
     body = result.body
@@ -220,10 +257,18 @@ def legacy_collection_failure_message(result: Any) -> str | None:
     if result.status == 200 and isinstance(items, list) and len(items) == 3:
         return None
     trace_id = result.trace_id
-    if (
-        not LEGACY_COLLECTION_DIAGNOSTICS_ENABLED
-        or not isinstance(trace_id, str)
-        or _TRACE_PATTERN.fullmatch(trace_id) is None
+    if LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED:
+        diagnostic = _sanitized_legacy_query_diagnostic(trace_id, cursors)
+        if diagnostic is None:
+            return _LEGACY_COLLECTION_FAILURE
+        exception_type, code, validated_trace = diagnostic
+        return (
+            "P8-03 migrated legacy Item collection check failed"
+            f" [diagnostic_code={code}; exception_type={exception_type}; "
+            f"trace_id={validated_trace}]"
+        )
+    if not LEGACY_COLLECTION_DIAGNOSTICS_ENABLED or not (
+        _valid_replay_diagnostic_trace(trace_id)
     ):
         return _LEGACY_COLLECTION_FAILURE
     if result.status != 200:
@@ -670,8 +715,22 @@ def run_legacy(
     project_id = str(context["projectGlobalId"])
     _require_enabled_runtime_marker(project_id)
     path = item_publish_path(project_id)
-    listed = item_publish_request(actor, base_url, path, query_key="legacy-list")
-    collection_failure = legacy_collection_failure_message(listed)
+    diagnostic_cursors = (
+        _replay_diagnostic_log_cursors()
+        if LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED
+        else None
+    )
+    listed = item_publish_request(
+        actor,
+        base_url,
+        path,
+        query_key="legacy-list",
+        legacy_query_diagnostic=LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED,
+    )
+    collection_failure = legacy_collection_failure_message(
+        listed,
+        diagnostic_cursors,
+    )
     require(
         collection_failure is None,
         collection_failure or _LEGACY_COLLECTION_FAILURE,
@@ -2090,6 +2149,37 @@ def _sanitized_replay_terminal_diagnostic(
 ) -> tuple[str, str, str] | None:
     """Accept one logical allowlisted replay record for one exact trace."""
 
+    return _sanitized_server_log_diagnostic(
+        trace_id,
+        cursors,
+        code_prefix="P803_REPLAY_",
+        allowed_codes=_REPLAY_TERMINAL_DIAGNOSTIC_CODES,
+    )
+
+
+def _sanitized_legacy_query_diagnostic(
+    trace_id: object,
+    cursors: dict[str, int] | None,
+) -> tuple[str, str, str] | None:
+    """Accept one logical allowlisted legacy-query record for one exact trace."""
+
+    return _sanitized_server_log_diagnostic(
+        trace_id,
+        cursors,
+        code_prefix="P803_LEGACY_QUERY_",
+        allowed_codes=_LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES,
+    )
+
+
+def _sanitized_server_log_diagnostic(
+    trace_id: object,
+    cursors: dict[str, int] | None,
+    *,
+    code_prefix: str,
+    allowed_codes: frozenset[str],
+) -> tuple[str, str, str] | None:
+    """Accept one logical three-key record mirrored by controlled handlers."""
+
     if not _valid_replay_diagnostic_trace(trace_id) or not isinstance(cursors, dict):
         return None
     expected_keys = {
@@ -2130,7 +2220,7 @@ def _sanitized_replay_terminal_diagnostic(
         for line in appended.decode("utf-8", errors="ignore").splitlines():
             for record in _json_records(line):
                 code = record.get("code")
-                if isinstance(code, str) and code.startswith("P803_REPLAY_"):
+                if isinstance(code, str) and code.startswith(code_prefix):
                     source_records.append(record)
         if len(source_records) > 1:
             return None
@@ -2142,7 +2232,7 @@ def _sanitized_replay_terminal_diagnostic(
         if (
             set(record) != _REPLAY_DIAGNOSTIC_RECORD_KEYS
             or not isinstance(code, str)
-            or code not in _REPLAY_TERMINAL_DIAGNOSTIC_CODES
+            or code not in allowed_codes
             or not isinstance(exception_type, str)
             or _TYPE_PATTERN.fullmatch(exception_type) is None
             or record.get("traceId") != trace_id

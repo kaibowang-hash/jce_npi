@@ -24,6 +24,8 @@ from npi_integration.item_publish.domain import ITEM_PUBLISH_ACKNOWLEDGEMENT
 from npi_integration.item_publish.diagnostics import (
     item_create_server_diagnostics,
     item_create_server_step,
+    item_legacy_query_server_diagnostics,
+    item_legacy_query_server_step,
 )
 from npi_integration.item_publish.problems import ItemPublishUnavailable
 
@@ -102,25 +104,29 @@ def get_item_publish_requests(
     headers = {"X-Request-ID": response_request_id()}
 
     def handle() -> dict[str, Any]:
-        request_id, repository, project_id = _query_context(
-            request_fields,
-            allowed_fields=_LIST_FIELDS,
-        )
-        response = repository.list_item_publish_requests(
-            project_id,
-            publish_request_id=_optional_uuid(
-                publishRequestGlobalId,
-                "publishRequestGlobalId",
-            ),
-            selected_publish_node_id=_optional_uuid(
-                selectedPublishNodeGlobalId,
-                "selectedPublishNodeGlobalId",
-            ),
-        )
-        if response is None:
-            raise ItemPublishUnavailable()
-        headers["X-Request-ID"] = request_id
-        return _response(response)
+        with item_legacy_query_server_diagnostics(current_trace_id.get()):
+            with item_legacy_query_server_step("P803_LEGACY_QUERY_CONTEXT"):
+                request_id, repository, project_id = _query_context(
+                    request_fields,
+                    allowed_fields=_LIST_FIELDS,
+                )
+            with item_legacy_query_server_step("P803_LEGACY_QUERY_REPOSITORY"):
+                response = repository.list_item_publish_requests(
+                    project_id,
+                    publish_request_id=_optional_uuid(
+                        publishRequestGlobalId,
+                        "publishRequestGlobalId",
+                    ),
+                    selected_publish_node_id=_optional_uuid(
+                        selectedPublishNodeGlobalId,
+                        "selectedPublishNodeGlobalId",
+                    ),
+                )
+            with item_legacy_query_server_step("P803_LEGACY_QUERY_RESPONSE"):
+                if response is None:
+                    raise ItemPublishUnavailable()
+                headers["X-Request-ID"] = request_id
+                return _response(response)
 
     return frappe_domain_call(
         handle,

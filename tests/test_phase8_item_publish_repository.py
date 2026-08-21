@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -182,6 +183,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
         "npi_core.documents.frappe_repository",
         "npi_core.ebom.frappe_repository",
         "npi_integration.publish_request.frappe_repository",
+        "npi_integration.item_publish.diagnostics",
         "npi_integration.item_publish.frappe_validation",
         "npi_integration.item_publish.frappe_repository",
     )
@@ -707,6 +709,112 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             else:
                 self.frappe.get_all = original_get_all
             self.frappe.get_doc = original_get_doc
+
+    def test_legacy_query_diagnostic_stages_are_unique_and_read_only(self) -> None:
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/item_publish/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        codes = {
+            value.value
+            for value in ast.walk(tree)
+            if isinstance(value, ast.Constant)
+            and isinstance(value.value, str)
+            and value.value.startswith("P803_LEGACY_QUERY_")
+        }
+        self.assertEqual(
+            codes,
+            {
+                "P803_LEGACY_QUERY_PROJECT",
+                "P803_LEGACY_QUERY_PROFILE",
+                "P803_LEGACY_QUERY_ROWS",
+                "P803_LEGACY_QUERY_ROW_CLASSIFY",
+                "P803_LEGACY_QUERY_BINDING_STATE",
+                "P803_LEGACY_QUERY_STRICT_LEGACY",
+                "P803_LEGACY_QUERY_LEGACY_PROJECT",
+                "P803_LEGACY_QUERY_CURRENT_PROJECT",
+                "P803_LEGACY_QUERY_MAPPING_EXPECTATION",
+            },
+        )
+        for code in codes:
+            self.assertEqual(source.count(f'"{code}"'), 1)
+        diagnostic_lines = "\n".join(
+            line for line in source.splitlines() if "P803_LEGACY_QUERY_" in line
+        )
+        for forbidden in ("insert(", "save(", "commit(", "rollback(", "delete("):
+            self.assertNotIn(forbidden, diagnostic_lines)
+
+    def test_legacy_classifier_records_innermost_failure_without_writes(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.item_publish.diagnostics"
+        )
+        cases = (
+            (
+                "partial",
+                AttrDict(
+                    target_mode="sandbox",
+                    service_actor_user_id="item-worker@example.invalid",
+                    target_idempotency_key_hash=None,
+                    semantic_source_effect_hash=None,
+                    semantic_effect_hash=None,
+                ),
+                "P803_LEGACY_QUERY_BINDING_STATE",
+            ),
+            (
+                "strict-invalid",
+                AttrDict(
+                    target_mode="sandbox",
+                    service_actor_user_id=None,
+                    target_idempotency_key_hash=None,
+                    semantic_source_effect_hash=None,
+                    semantic_effect_hash=None,
+                    schema_version=0,
+                ),
+                "P803_LEGACY_QUERY_STRICT_LEGACY",
+            ),
+        )
+        for label, row, expected_code in cases:
+            with self.subTest(context=label):
+                repository = self.new_repository(self.synthetic_profile())
+                repository._bounded_documents = lambda *_args, **_kwargs: [row]
+                records: list[dict[str, object]] = []
+                exception_class = (
+                    self.module.ItemPublishStreamReconciliationRequired
+                )
+                original = exception_class()
+                original.args = ("private actor payload /tmp/private",)
+                before_events = list(self.events)
+                setattr(
+                    self.frappe.flags,
+                    "npi_p803_item_legacy_query_diagnostic",
+                    {"trace_id": "trace-" + "d" * 32, "recorded": False},
+                )
+                with patch(
+                    "npi_core.api.record_safe_diagnostic",
+                    side_effect=lambda **values: records.append(values),
+                ), patch.object(
+                    self.module,
+                    "ItemPublishStreamReconciliationRequired",
+                    return_value=original,
+                ), self.assertRaises(exception_class) as failure:
+                    repository.list_item_publish_requests(PROJECT_ID)
+                self.assertIs(failure.exception, original)
+                self.assertEqual(self.events, before_events)
+                self.assertEqual(len(records), 1)
+                self.assertEqual(records[0]["code"], expected_code)
+                self.assertEqual(
+                    records[0]["exception_type"],
+                    type(original).__name__,
+                )
+                rendered = repr(records)
+                self.assertNotIn("P803_LEGACY_QUERY_ROW_CLASSIFY", rendered)
+                self.assertNotIn(str(original), rendered)
+                self.assertNotIn("item-worker@example.invalid", rendered)
+                delattr(
+                    self.frappe.flags,
+                    "npi_p803_item_legacy_query_diagnostic",
+                )
 
     def test_legacy_nonmock_list_and_detail_are_read_only_projection(self) -> None:
         self.repository = self.new_repository(self.synthetic_profile())

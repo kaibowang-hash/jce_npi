@@ -5,7 +5,9 @@ import importlib
 import sys
 import types
 import unittest
+from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -409,6 +411,152 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
         self.assertFalse(
             hasattr(self.frappe.flags, "npi_p803_item_create_diagnostic")
         )
+
+    def test_legacy_query_diagnostic_is_scoped_response_neutral_and_restored(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.item_publish.diagnostics"
+        )
+        trace_id = "trace-" + "9" * 32
+        self.headers["X-Trace-ID"] = trace_id
+        self.headers[diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_SCOPE
+        )
+        original = RuntimeError("private actor payload /tmp/private")
+
+        def fail(*_args: object, **_kwargs: Any):
+            raise original
+
+        self.repository.list_item_publish_requests = fail
+        result = self.call(self.api.get_item_publish_requests)
+        self.headers.pop(diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_HEADER)
+        without_diagnostic = self.call(self.api.get_item_publish_requests)
+        self.assertEqual(result, without_diagnostic)
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        self.assertNotIn(str(original), repr(result))
+        rendered_logs = repr(self.safe_logs)
+        self.assertIn("P803_LEGACY_QUERY_REPOSITORY", rendered_logs)
+        self.assertIn('"exceptionType":"RuntimeError"', rendered_logs)
+        self.assertIn(f'"traceId":"{trace_id}"', rendered_logs)
+        self.assertNotIn(str(original), rendered_logs)
+        self.assertFalse(
+            hasattr(self.frappe.flags, "npi_p803_item_legacy_query_diagnostic")
+        )
+
+    def test_legacy_query_diagnostic_records_only_innermost_and_reraises_same(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.item_publish.diagnostics"
+        )
+        trace_id = "trace-" + "a" * 32
+        self.headers[diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_SCOPE
+        )
+        previous = {"trace_id": "trace-" + "b" * 32, "recorded": False}
+        setattr(
+            self.frappe.flags,
+            "npi_p803_item_legacy_query_diagnostic",
+            previous,
+        )
+        original = ValueError("private business value")
+        with self.assertRaises(ValueError) as failure:
+            with diagnostics.item_legacy_query_server_diagnostics(trace_id):
+                with diagnostics.item_legacy_query_server_step(
+                    "P803_LEGACY_QUERY_REPOSITORY"
+                ):
+                    with diagnostics.item_legacy_query_server_step(
+                        "P803_LEGACY_QUERY_ROWS"
+                    ):
+                        raise original
+        self.assertIs(failure.exception, original)
+        self.assertIs(
+            self.frappe.flags.npi_p803_item_legacy_query_diagnostic,
+            previous,
+        )
+        rendered_logs = repr(self.safe_logs)
+        diagnostic_records = [
+            value
+            for value in self.safe_logs
+            if isinstance(value, dict)
+            and "P803_LEGACY_QUERY_ROWS" in str(value.get("message", ""))
+        ]
+        self.assertEqual(len(diagnostic_records), 1)
+        self.assertNotIn("P803_LEGACY_QUERY_REPOSITORY", rendered_logs)
+        self.assertNotIn(str(original), rendered_logs)
+
+        self.safe_logs.clear()
+        self.headers.pop(diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_HEADER)
+        with self.assertRaises(ValueError):
+            with diagnostics.item_legacy_query_server_diagnostics(trace_id):
+                with diagnostics.item_legacy_query_server_step(
+                    "P803_LEGACY_QUERY_ROWS"
+                ):
+                    raise original
+        self.assertNotIn("P803_LEGACY_QUERY_", repr(self.safe_logs))
+
+    def test_legacy_query_scope_does_not_activate_create_or_detail(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.item_publish.diagnostics"
+        )
+        self.headers["X-Trace-ID"] = "trace-" + "c" * 32
+        self.headers[diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_SCOPE
+        )
+
+        def fail(*_args: object, **_kwargs: Any):
+            raise RuntimeError("private query failure")
+
+        self.repository.item_publish_request_detail = fail
+        self.call(self.api.get_item_publish_request)
+        self.assertNotIn("P803_LEGACY_QUERY_", repr(self.safe_logs))
+
+        self.safe_logs.clear()
+        self.repository.create_item_publish_request = fail
+        self.call(self.api.create_item_publish_request, self.payload())
+        self.assertNotIn("P803_LEGACY_QUERY_", repr(self.safe_logs))
+
+    def test_legacy_query_wrong_scope_and_invalid_trace_are_closed(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.item_publish.diagnostics"
+        )
+
+        def fail(*_args: object, **_kwargs: Any):
+            raise RuntimeError("private query failure /tmp/private")
+
+        self.repository.list_item_publish_requests = fail
+        baseline = self.call(self.api.get_item_publish_requests)
+        self.safe_logs.clear()
+
+        self.headers[diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_HEADER] = (
+            "p803-legacy-query-wrong"
+        )
+        wrong_scope = self.call(self.api.get_item_publish_requests)
+        self.assertEqual(wrong_scope, baseline)
+        self.assertNotIn("P803_LEGACY_QUERY_", repr(self.safe_logs))
+        self.safe_logs.clear()
+
+        self.headers[diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.ITEM_LEGACY_QUERY_SERVER_DIAGNOSTIC_SCOPE
+        )
+        with patch.object(
+            self.api,
+            "current_trace_id",
+            types.SimpleNamespace(get=lambda: "trace-private-invalid"),
+        ):
+            invalid_trace = self.call(self.api.get_item_publish_requests)
+        self.assertEqual(invalid_trace, baseline)
+        self.assertNotIn("P803_LEGACY_QUERY_", repr(self.safe_logs))
+        self.assertNotIn("private query failure", repr(invalid_trace))
+
+    def test_legacy_query_handler_stage_codes_are_unique(self) -> None:
+        source = Path(self.api.__file__).read_text(encoding="utf-8")
+        handler = source.split("def get_item_publish_requests(", 1)[1].split(
+            "\n\n@frappe.whitelist", 1
+        )[0]
+        for code in (
+            "P803_LEGACY_QUERY_CONTEXT",
+            "P803_LEGACY_QUERY_REPOSITORY",
+            "P803_LEGACY_QUERY_RESPONSE",
+        ):
+            self.assertEqual(handler.count(f'"{code}"'), 1)
 
     def test_authorization_csrf_and_project_scope_precede_body_validation(self) -> None:
         self.repository.scope = False

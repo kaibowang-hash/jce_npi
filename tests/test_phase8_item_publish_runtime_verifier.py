@@ -227,58 +227,34 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.module = load_verifier()
 
-    def test_legacy_collection_diagnostic_is_exact_and_response_neutral(
-        self,
-    ) -> None:
+    def test_legacy_collection_diagnostic_is_exact_and_response_neutral(self) -> None:
         module = self.module
-        cases = (
-            (
-                "status",
-                SimpleNamespace(
-                    status=503,
-                    body={"privateValue": "released Item status value"},
-                    trace_id=_TRACE_ID,
-                ),
-                "P803_LEGACY_COLLECTION_STATUS",
-            ),
-            (
-                "shape",
-                SimpleNamespace(
-                    status=200,
-                    body={"items": {"privateValue": "released Item shape value"}},
-                    trace_id=_TRACE_ID,
-                ),
-                "P803_LEGACY_COLLECTION_SHAPE",
-            ),
-            (
-                "cardinality",
-                SimpleNamespace(
-                    status=200,
-                    body={
-                        "items": [
-                            {"globalId": "private-request-one"},
-                            {"globalId": "private-request-two"},
-                        ]
-                    },
-                    trace_id=_TRACE_ID,
-                ),
-                "P803_LEGACY_COLLECTION_CARDINALITY",
-            ),
+        result = SimpleNamespace(
+            status=503,
+            body={"privateValue": "released Item status value"},
+            trace_id=_TRACE_ID,
         )
-        for label, result, code in cases:
-            with self.subTest(context=label):
-                rendered = module.legacy_collection_failure_message(result)
-                self.assertEqual(
-                    rendered,
-                    "P8-03 migrated legacy Item collection check failed "
-                    f"[diagnostic_code={code}; exception_type=RuntimeError; "
-                    f"trace_id={_TRACE_ID}]",
-                )
-                self.assertNotIn("503", rendered)
-                self.assertNotIn("private", rendered)
-                self.assertNotIn("released Item", rendered)
-                self.assertNotIn("actual_count", rendered)
-                self.assertNotIn("globalId", rendered)
+        with patch.object(
+            module,
+            "_sanitized_legacy_query_diagnostic",
+            return_value=(
+                "RuntimeError",
+                "P803_LEGACY_QUERY_ROWS",
+                _TRACE_ID,
+            ),
+        ):
+            rendered = module.legacy_collection_failure_message(
+                result,
+                {"logs/npi_core.log": 0},
+            )
+        self.assertEqual(
+            rendered,
+            "P8-03 migrated legacy Item collection check failed "
+            "[diagnostic_code=P803_LEGACY_QUERY_ROWS; "
+            f"exception_type=RuntimeError; trace_id={_TRACE_ID}]",
+        )
+        for forbidden in ("503", "private", "released Item", "actual_count"):
+            self.assertNotIn(forbidden, rendered)
 
         complete = SimpleNamespace(
             status=200,
@@ -310,7 +286,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
                 self.assertNotIn("diagnostic_code", rendered)
                 self.assertNotIn("trace-private-value", rendered)
 
-        with patch.object(module, "LEGACY_COLLECTION_DIAGNOSTICS_ENABLED", False):
+        with patch.object(module, "LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED", False):
             rendered = module.legacy_collection_failure_message(
                 SimpleNamespace(
                     status=500,
@@ -321,38 +297,75 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(rendered, module._LEGACY_COLLECTION_FAILURE)
         self.assertNotIn(_TRACE_ID, rendered)
 
-    def test_legacy_collection_diagnostic_activation_is_parent_only(self) -> None:
+    def test_legacy_query_server_diagnostic_activation_is_exact(self) -> None:
         module = self.module
-        self.assertTrue(module.LEGACY_COLLECTION_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.LEGACY_COLLECTION_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
-        self.assertEqual(
-            module._LEGACY_COLLECTION_DIAGNOSTIC_CODES,
-            {
-                "P803_LEGACY_COLLECTION_STATUS",
-                "P803_LEGACY_COLLECTION_SHAPE",
-                "P803_LEGACY_COLLECTION_CARDINALITY",
-            },
-        )
         source = SCRIPT.read_text(encoding="utf-8")
         run_legacy = source.split("def run_legacy(", 1)[1].split("\ndef ", 1)[0]
-        self.assertIn("legacy_collection_failure_message(listed)", run_legacy)
+        self.assertIn(
+            "legacy_query_diagnostic=LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED",
+            run_legacy,
+        )
+        self.assertIn("diagnostic_cursors", run_legacy)
         self.assertNotIn("_sanitized_server_diagnostic", run_legacy)
-        helper = source.split(
-            "def legacy_collection_failure_message", 1
-        )[1].split("\ndef ", 1)[0]
-        for code in module._LEGACY_COLLECTION_DIAGNOSTIC_CODES:
-            self.assertEqual(helper.count(f'"{code}"'), 1)
-        for forbidden in (
-            "result.body}",
-            "result.status}",
-            "len(items)}",
-            "project_id",
-            "legacy_request_id",
-            "ACTOR_USER",
-            "path",
-        ):
-            self.assertNotIn(forbidden, helper)
+        self.assertEqual(source.count("legacy_query_diagnostic=True"), 0)
+
+    def test_legacy_query_scope_header_requires_exact_collection_request(self) -> None:
+        module = self.module
+        captured: list[dict[str, str]] = []
+
+        def request(*_args, request_headers, **_kwargs):
+            captured.append(dict(request_headers))
+            return SimpleNamespace(
+                status=500,
+                body={},
+                trace_id=_TRACE_ID,
+                headers={
+                    "X-Request-ID": request_headers["X-Request-ID"],
+                    "Cache-Control": "private, no-store",
+                },
+            )
+
+        path = module.item_publish_path("00000000-0000-4000-8000-000000000001")
+        with patch.object(module.document_runtime, "request", side_effect=request):
+            module.item_publish_request(
+                object(),
+                "https://example.invalid",
+                path,
+                query_key="legacy-list",
+                legacy_query_diagnostic=True,
+            )
+        self.assertEqual(
+            captured[0][module._CREATE_DIAGNOSTIC_HEADER],
+            module._LEGACY_QUERY_DIAGNOSTIC_SCOPE,
+        )
+        with patch.object(module.document_runtime, "request", side_effect=request):
+            module.item_publish_request(
+                object(),
+                "https://example.invalid",
+                path,
+                query_key="legacy-list",
+            )
+        self.assertNotIn(module._CREATE_DIAGNOSTIC_HEADER, captured[1])
+        invalid = (
+            {"method": "POST", "query_key": "legacy-list"},
+            {"query_key": "legacy-detail"},
+            {"query_key": "legacy-list", "path": path + "/detail"},
+            {"query_key": "legacy-list", "payload": {"private": "value"}},
+        )
+        for values in invalid:
+            with self.subTest(values=values), self.assertRaises(RuntimeError):
+                module.item_publish_request(
+                    object(),
+                    "https://example.invalid",
+                    values.pop("path", path),
+                    legacy_query_diagnostic=True,
+                    **values,
+                )
+        self.assertEqual(len(captured), 2)
 
     def test_replay_diagnostic_checkpoint_is_dormant_with_closed_create_scope(self) -> None:
         module = self.module
@@ -455,7 +468,11 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
                 bench_path = Path(directory).resolve()
                 paths = (
                     bench_path / "logs" / "npi_core.log",
-                    bench_path / "sites" / module.SITE_NAME / "logs" / "npi_core.log",
+                    bench_path
+                    / "sites"
+                    / module.SITE_NAME
+                    / "logs"
+                    / "npi_core.log",
                 )
                 for path in paths:
                     path.parent.mkdir(parents=True, exist_ok=True)
@@ -506,6 +523,67 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             [{**valid, "privateValue": "released Item"}],
         )
         for records in invalid_cases:
+            with self.subTest(records=records):
+                self.assertIsNone(read(records))
+        self.assertIsNone(read([valid], trace_id="trace-private-value"))
+
+    def test_legacy_query_log_reader_requires_one_exact_logical_record(self) -> None:
+        module = self.module
+
+        def read(
+            records: list[dict[str, object]],
+            site_records: list[dict[str, object]] | None = None,
+            trace_id: str = _TRACE_ID,
+        ):
+            with tempfile.TemporaryDirectory() as directory:
+                bench_path = Path(directory).resolve()
+                paths = (
+                    bench_path / "logs" / "npi_core.log",
+                    bench_path / "sites" / module.SITE_NAME / "logs" / "npi_core.log",
+                )
+                for path in paths:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("prior safe log\n", encoding="utf-8")
+                with patch.object(module, "BENCH_PATH", bench_path):
+                    cursors = module._replay_diagnostic_log_cursors()
+                    for path, source_records in zip(
+                        paths,
+                        (records, site_records or []),
+                    ):
+                        with path.open("a", encoding="utf-8") as log_file:
+                            for record in source_records:
+                                log_file.write(
+                                    "private actor /tmp/private "
+                                    + json.dumps(record, separators=(",", ":"))
+                                    + "\n"
+                                )
+                    return module._sanitized_legacy_query_diagnostic(
+                        trace_id,
+                        cursors,
+                    )
+
+        valid = {
+            "code": "P803_LEGACY_QUERY_ROWS",
+            "exceptionType": "RuntimeError",
+            "traceId": _TRACE_ID,
+        }
+        expected = ("RuntimeError", "P803_LEGACY_QUERY_ROWS", _TRACE_ID)
+        self.assertEqual(read([valid]), expected)
+        self.assertEqual(read([valid], [valid]), expected)
+        self.assertIsNone(read([valid, valid]))
+        self.assertIsNone(
+            read(
+                [valid],
+                [{**valid, "code": "P803_LEGACY_QUERY_PROFILE"}],
+            )
+        )
+        for records in (
+            [],
+            [{**valid, "traceId": "trace-ffffffffffffffffffffffffffffffff"}],
+            [{**valid, "code": "P803_LEGACY_QUERY_NOT_ALLOWED"}],
+            [{**valid, "exceptionType": "Bad Type /tmp/private"}],
+            [{**valid, "privateValue": "released Item"}],
+        ):
             with self.subTest(records=records):
                 self.assertIsNone(read(records))
         self.assertIsNone(read([valid], trace_id="trace-private-value"))

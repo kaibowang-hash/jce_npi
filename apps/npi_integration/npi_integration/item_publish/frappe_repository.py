@@ -34,7 +34,10 @@ from npi_integration.item_publish.domain import (
     create_item_publish_request,
     group_item_source,
 )
-from npi_integration.item_publish.diagnostics import item_create_server_step
+from npi_integration.item_publish.diagnostics import (
+    item_create_server_step,
+    item_legacy_query_server_step,
+)
 from npi_integration.item_publish.problems import (
     ItemExecutionProfileUnavailable,
     ItemPublishAuthorityUnavailable,
@@ -146,24 +149,32 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         publish_request_id: UUID | None = None,
         selected_publish_node_id: UUID | None = None,
     ) -> dict[str, Any] | None:
-        project = self._authorized_project(project_id)
+        with item_legacy_query_server_step("P803_LEGACY_QUERY_PROJECT"):
+            project = self._authorized_project(project_id)
         if project is None:
             return None
-        profile = self._read_profile(project)
-        rows = self._bounded_documents(
-            "NPI Item Publish Request",
-            {
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-            },
-            order_by="created_at desc, global_id asc",
-            maximum=_MAX_ITEM_REQUESTS,
-        )
+        with item_legacy_query_server_step("P803_LEGACY_QUERY_PROFILE"):
+            profile = self._read_profile(project)
+        with item_legacy_query_server_step("P803_LEGACY_QUERY_ROWS"):
+            rows = self._bounded_documents(
+                "NPI Item Publish Request",
+                {
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                },
+                order_by="created_at desc, global_id asc",
+                maximum=_MAX_ITEM_REQUESTS,
+            )
         items: list[dict[str, Any]] = []
         for row in rows:
-            if _is_legacy_nonmock_request_row(row):
-                legacy = _legacy_request_public_dict(row)
-                legacy_evidence = _json_object(row.released_evidence_snapshot)
+            with item_legacy_query_server_step("P803_LEGACY_QUERY_ROW_CLASSIFY"):
+                is_legacy = _is_legacy_nonmock_request_row(row)
+            if is_legacy:
+                with item_legacy_query_server_step(
+                    "P803_LEGACY_QUERY_LEGACY_PROJECT"
+                ):
+                    legacy = _legacy_request_public_dict(row)
+                    legacy_evidence = _json_object(row.released_evidence_snapshot)
                 if (
                     publish_request_id is not None
                     and str(legacy_evidence.get("publishRequestGlobalId", ""))
@@ -180,7 +191,8 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                     continue
                 items.append(legacy)
                 continue
-            value = self._item_request_value(project, row)
+            with item_legacy_query_server_step("P803_LEGACY_QUERY_CURRENT_PROJECT"):
+                value = self._item_request_value(project, row)
             if (
                 publish_request_id is not None
                 and value.released_evidence.publish_request_global_id
@@ -196,11 +208,12 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             ):
                 continue
             items.append(self._request_public_dict(row, value))
-        mapping_expectation = self._preview_mapping_expectation(
-            project,
-            publish_request_id=publish_request_id,
-            selected_publish_node_id=selected_publish_node_id,
-        )
+        with item_legacy_query_server_step("P803_LEGACY_QUERY_MAPPING_EXPECTATION"):
+            mapping_expectation = self._preview_mapping_expectation(
+                project,
+                publish_request_id=publish_request_id,
+                selected_publish_node_id=selected_publish_node_id,
+            )
         return {
             "projectGlobalId": str(project.global_id),
             "sourceFilters": {
@@ -1819,13 +1832,15 @@ def _is_legacy_nonmock_request_row(row: object) -> bool:
     target_mode = str(_value(row, "target_mode") or "").casefold()
     if target_mode == ItemTargetMode.MOCK.value:
         return False
-    binding_state = _legacy_binding_state(row, _LEGACY_REQUEST_BINDING_FIELDS)
+    with item_legacy_query_server_step("P803_LEGACY_QUERY_BINDING_STATE"):
+        binding_state = _legacy_binding_state(row, _LEGACY_REQUEST_BINDING_FIELDS)
+        if binding_state == "partial":
+            raise ItemPublishStreamReconciliationRequired()
     if binding_state == "complete":
         return False
-    if binding_state == "partial":
-        raise ItemPublishStreamReconciliationRequired()
-    if not _strict_legacy_request_row(row):
-        raise ItemPublishStreamReconciliationRequired()
+    with item_legacy_query_server_step("P803_LEGACY_QUERY_STRICT_LEGACY"):
+        if not _strict_legacy_request_row(row):
+            raise ItemPublishStreamReconciliationRequired()
     return True
 
 

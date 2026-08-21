@@ -278,3 +278,37 @@ missing/invalid trace retains the original constant failure. The existing
 create and replay diagnostic activations remain closed; no server log is read
 and no product, API, permission, transaction, migration, query projection,
 Schema, ownership, claim, lease, or external behavior changes.
+
+## Legacy collection parent result and legacy-query server subcycle
+
+- Parent diagnostic checkpoint SHA:
+  `ae81cfe66dc38482a0093387567300b300ef8eb7`.
+- Exact-SHA ordinary CI `32470972890` passed all required lanes.
+- Controlled diagnostic run `32472011299` passed preflight job `96740580834`;
+  Site job `96740634515` emitted the unique parent tuple
+  `P803_LEGACY_COLLECTION_STATUS` / `RuntimeError` /
+  `trace-6c5d7fc706da502d8406b9aacfb1ff3a`.
+
+That tuple proves only a non-success response at the fixed legacy collection
+request. It does not identify the server-side query failure and therefore does
+not authorize a product repair. The historical parent cycle is immutable at
+diagnostic `1/1`, product repair `0/1`, and final unchanged Gate `0/1`. The new
+`legacy-query-server` subcycle starts at diagnostic `0/1`, product repair
+`0/1`, and final unchanged Gate `0/1`.
+
+The response-neutral server checkpoint is enabled only by the verifier for the
+exact GET collection request with query key `legacy-list` and a fixed scope
+header. The list handler installs an independent request-local state and each
+allowlisted `P803_LEGACY_QUERY_*` code names one innermost query context. At
+most one safe three-key record is written, and the original exception object
+is re-raised; request flags are restored in `finally`. The parent accepts only
+one logical record correlated to the exact HTTP response trace, folding only
+identical bench/site handler mirrors. Missing, duplicate, drifting, wrong-
+trace, disallowed, malformed, oversized, symlinked, or out-of-root evidence
+retains the original constant failure.
+
+No status, response body, count, identity, actor, path, query value, exception
+message, stack, target, payload, or hash is recorded or rendered. The earlier
+parent classifier and create/replay activations are closed. This checkpoint
+does not alter API responses, authentication, permissions, transactions,
+queries, projections, Schema, migrations, ownership, or external behavior.
