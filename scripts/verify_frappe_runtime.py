@@ -82,7 +82,7 @@ def response_trace_id(
     status: int,
     headers: Any,
     body: object,
-) -> str:
+) -> str | None:
     """Resolve one validated response trace without trusting arbitrary body data."""
 
     header_trace = _validated_response_trace(headers.get("X-Trace-ID"))
@@ -103,10 +103,7 @@ def response_trace_id(
         and header_trace != body_trace
     ):
         raise RuntimeError("HTTP response trace identities do not match")
-    trace_id = header_trace or body_trace
-    if trace_id is None:
-        raise RuntimeError("HTTP response trace identity is missing")
-    return trace_id
+    return header_trace or body_trace
 
 
 def _validated_response_trace(value: object) -> str | None:

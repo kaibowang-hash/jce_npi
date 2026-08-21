@@ -71,14 +71,21 @@ def response_headers(*, trace_id: str | None, problem: bool = True) -> Message:
 
 
 class ErrorOpener:
-    def __init__(self, headers: Message, body: dict[str, object]) -> None:
+    def __init__(
+        self,
+        headers: Message,
+        body: dict[str, object],
+        *,
+        status: int = 500,
+    ) -> None:
         self.headers = headers
         self.body = body
+        self.status = status
 
     def open(self, request, timeout: int):
         self.error = urllib.error.HTTPError(
             request.full_url,
-            500,
+            self.status,
             "private upstream exception message",
             self.headers,
             io.BytesIO(json.dumps(self.body).encode()),
@@ -96,8 +103,14 @@ class VerifyFrappeRuntimeHttpTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.module = load_verifier()
 
-    def request(self, headers: Message, body: dict[str, object]):
-        opener = ErrorOpener(headers, body)
+    def request(
+        self,
+        headers: Message,
+        body: dict[str, object],
+        *,
+        status: int = 500,
+    ):
+        opener = ErrorOpener(headers, body, status=status)
         try:
             return self.module.request(
                 opener,
@@ -128,21 +141,44 @@ class VerifyFrappeRuntimeHttpTest(unittest.TestCase):
             {"code": "INTERNAL_SERVER_ERROR", "traceId": TRACE_ID},
         )
         self.assertEqual(result.trace_id, TRACE_ID)
-        with self.assertRaisesRegex(RuntimeError, "missing") as failure:
-            self.request(
-                response_headers(trace_id=None, problem=False),
-                {"traceId": TRACE_ID, "privateValue": "released item"},
-            )
-        self.assertNotIn("released item", str(failure.exception))
-        self.assertNotIn(TRACE_ID, str(failure.exception))
+        ignored = self.request(
+            response_headers(trace_id=None, problem=False),
+            {"traceId": TRACE_ID, "privateValue": "released item"},
+        )
+        self.assertIsNone(ignored.trace_id)
 
-    def test_missing_mismatched_and_invalid_trace_fail_closed_without_leak(self) -> None:
+    def test_missing_trace_is_optional_and_never_leaks_response_values(self) -> None:
         cases = (
             (
                 response_headers(trace_id=None),
                 {"code": "PRIVATE_VALUE", "privateValue": "released item"},
-                "missing",
+                500,
             ),
+            (
+                response_headers(trace_id=None, problem=False),
+                {
+                    "exc_type": "DoesNotExistError",
+                    "privateValue": "released item",
+                    "traceId": TRACE_ID,
+                },
+                404,
+            ),
+        )
+        for headers, body, status in cases:
+            with self.subTest(status=status), patch(
+                "sys.stdout", new_callable=io.StringIO
+            ) as stdout, patch("sys.stderr", new_callable=io.StringIO) as stderr:
+                result = self.request(headers, body, status=status)
+            self.assertEqual(result.status, status)
+            self.assertIsNone(result.trace_id)
+            rendered = stdout.getvalue() + stderr.getvalue()
+            self.assertNotIn("released item", rendered)
+            self.assertNotIn("DoesNotExistError", rendered)
+            self.assertNotIn("PRIVATE_VALUE", rendered)
+            self.assertNotIn(TRACE_ID, rendered)
+
+    def test_mismatched_and_invalid_trace_fail_closed_without_leak(self) -> None:
+        cases = (
             (
                 response_headers(trace_id=TRACE_ID),
                 {"traceId": "trace-" + "b" * 32, "privateValue": "released item"},

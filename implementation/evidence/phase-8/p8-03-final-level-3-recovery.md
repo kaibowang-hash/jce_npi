@@ -79,9 +79,10 @@ The corrected remediation resolves trace identity once at the shared
 `verify_frappe_runtime.request` / `HttpResult` boundary. It prefers the real
 `X-Trace-ID` response header, permits a body fallback only for a governed
 `application/problem+json` 4xx/5xx response, validates the existing platform
-trace shape, and requires header/body equality when both exist. Missing,
-mismatched, or invalid trace evidence cannot be used as a diagnostic identity;
-all three fail closed with a constant message. P8-03 no longer parses or
+trace shape, and requires header/body equality when both exist. Missing trace
+evidence, including an untrusted trace-like value in a non-problem body, closes
+the optional diagnostic path with `None`; mismatched or invalid governed trace
+evidence fails closed with a constant message. P8-03 no longer parses or
 fabricates trace identity locally.
 
 The diagnostic run `32450566995` remains a diagnostic harness failure within
@@ -103,3 +104,20 @@ root. The minimal remediation adds only the exact shared helper and exact
 contract-test paths to `CURRENT_TASK.allowed_paths`; it does not broaden a
 wildcard, change product behavior, or weaken the Gate. Product repair rounds
 consumed remain `0/1`.
+
+## Shared trace optionality harness repair
+
+- Manifest repair SHA: `65c5ae8ba8dda4524acba5d834e0d785f8ea6fa8`.
+- Exact-SHA ordinary CI: `32453738832` PASS.
+- Diagnostic controlled-Site run: `32454484126`; cumulative job
+  `96690632429` failed before P8-03 in
+  `verify_document_runtime.verify_fresh_namespace`.
+- The exact predecessor response was a raw Frappe resource `404` with neither
+  an `X-Trace-ID` header nor a governed problem body. The shared helper treated
+  the intentionally absent optional diagnostic identity as an exception.
+
+This is the same response-neutral diagnostic harness remediation, not a
+product failure or a new product root. The parser keeps the governed-body
+allowlist and constant-message fail-closed behavior for malformed or
+conflicting evidence while restoring `HttpResult.trace_id` optionality for
+raw Frappe responses. Product repair rounds consumed remain `0/1`.
