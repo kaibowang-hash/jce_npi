@@ -41,6 +41,15 @@ Status: `IMPLEMENTED — AWAITING EXACT-SHA ORDINARY CI`
 - Exact-SHA ordinary CI must pass before checkpoint 4 activates. This file
   records no CI or runtime PASS in advance.
 
+The first exact candidate
+`e3e36a0c7adc600a2df012fae8d2d8cb33cc74c4` reached ordinary CI
+`32505131927`. Repository job `96843477712` passed `2,259/2,259` tracked
+Python tests before the direct-SQL zero-match scanner matched only this
+checkpoint's negative-test combination literal. Frontend `96843477566`,
+secret `96843477773` and visual `96843477762` passed. This is a test-harness
+self-trigger, not product or Gate evidence; the response-neutral AST
+remediation must pass a new exact-SHA ordinary CI before checkpoint 4.
+
 ## Changed-files to affected-checks map
 
 | Changed boundary | Affected evidence |

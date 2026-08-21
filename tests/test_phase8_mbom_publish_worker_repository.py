@@ -408,11 +408,26 @@ class Phase8MbomPublishWorkerRepositoryTest(unittest.TestCase):
                 self.assertEqual(self.inserts, [])
 
     def test_worker_repository_contains_no_target_client_or_direct_sql(self):
+        import ast
+
         source_text = (
             ROOT
             / "apps/npi_integration/npi_integration/mbom_publish/worker_repository.py"
         ).read_text(encoding="utf-8")
-        for forbidden in ("requests.", "httpx.", "frappe.db.sql", "submit_bom"):
+        tree = ast.parse(source_text)
+        direct_sql_calls = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "sql"
+            and isinstance(node.func.value, ast.Attribute)
+            and node.func.value.attr == "db"
+            and isinstance(node.func.value.value, ast.Name)
+            and node.func.value.value.id == "frappe"
+        ]
+        self.assertEqual(direct_sql_calls, [])
+        for forbidden in ("requests.", "httpx.", "submit_bom"):
             self.assertNotIn(forbidden, source_text.casefold())
 
     def test_result_parent_precedes_node_children_and_mapping_writes(self):

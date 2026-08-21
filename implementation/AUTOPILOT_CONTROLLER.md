@@ -4377,3 +4377,19 @@ repeat or rewrite it merely to restore context. See
   ordinary CI. Checkpoint 4 UI, default/networked/production profiles, actual
   ERPNext BOM projection facts, generic P8-07 operations and P8-05 through
   P8-09 remain inactive. The controller marker is: `P8-04 checkpoint 2 PASS; checkpoint 3 awaits exact-SHA ordinary CI`.
+
+## 2026-08-22 P8-04 checkpoint 3 repository scanner self-trigger
+
+- Checkpoint 3 candidate `e3e36a0c7adc600a2df012fae8d2d8cb33cc74c4`
+  reached ordinary CI `32505131927`. Repository job `96843477712` passed all
+  `2,259` tracked Python tests, then the direct-SQL zero-match scanner matched
+  only a negative-test combination literal in
+  `tests/test_phase8_mbom_publish_worker_repository.py`; no product SQL call
+  exists. Frontend `96843477566`, secret `96843477773` and unchanged visual
+  `96843477762` passed.
+- The response-neutral remediation reuses the already verified AST Call-chain
+  assertion and keeps the separate `requests.`, `httpx.` and `submit_bom`
+  negative scans. It changes no product, scanner, ignore rule, API, permission,
+  transaction, threshold or Gate truth.
+- Checkpoint 4 remains inactive until the remediated exact checkpoint 3 SHA
+  passes a new ordinary CI. The controller marker remains: `P8-04 checkpoint 2 PASS; checkpoint 3 awaits exact-SHA ordinary CI`.

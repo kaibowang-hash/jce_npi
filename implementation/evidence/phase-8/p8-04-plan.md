@@ -603,3 +603,14 @@ network-free synthetic proof, aggregate/per-node result truth and exact
 authenticated mapping compare-and-set. Its candidate awaits affected checks
 and exact-SHA ordinary CI. Checkpoint 4 UI, production/Sandbox activation and
 generic operations remain inactive.
+
+Checkpoint 3 candidate `e3e36a0c7adc600a2df012fae8d2d8cb33cc74c4`
+reached ordinary CI `32505131927`. Repository job `96843477712` passed
+`2,259/2,259` tracked Python tests before the direct-SQL zero-match scanner
+self-triggered on the new negative test's combination literal. Frontend
+`96843477566`, secret `96843477773` and unchanged visual `96843477762` passed;
+controlled lanes skipped. The product contains no direct SQL. The bounded
+harness remediation reuses the verified AST Call-chain assertion while
+retaining the other negative scans and changes no product, scanner, ignore,
+permission, transaction, threshold or Gate truth. Checkpoint 4 remains closed
+until a new exact-SHA ordinary CI passes.
