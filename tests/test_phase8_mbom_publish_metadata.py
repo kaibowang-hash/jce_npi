@@ -206,6 +206,7 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
             {
                 "__init__.py",
                 "config.py",
+                "diagnostics.py",
                 "domain.py",
                 "doctype_base.py",
                 "frappe_repository.py",

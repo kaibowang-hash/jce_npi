@@ -688,3 +688,39 @@ original constant; success emits no diagnostic. The activation is temporary
 for the one bounded diagnostic dispatch and must be closed after tuple
 recovery. API, repository, permission, transaction, Schema, response and Gate
 behavior remain unchanged.
+
+The first server-checkpoint candidate `43bf869891bf99f62f0cfbddeb56b42bd6b2a9af`
+reached ordinary CI `32529961407`. Frontend `96919848835`, repository
+`96919848850` and visual `96919848904` passed. Secret job `96919848666` alone
+self-triggered the branch-history `generic-api-key` rule on the negative
+runtime-verifier fixture value paired with the `idempotency_key` test key. The
+fixture is not a credential and only proves that a non-exact synthetic
+idempotency value fails closed; replacing it with the lower-entropy literal
+`wrong` preserves that contract. This is a history-clean test-harness
+remediation and consumes no diagnostic or product repair round.
+
+The parent-verifier diagnostic checkpoint exact SHA
+`f1c59bb6000a37a5427522c559130112eb560adb` passes ordinary CI
+`32526910040`: frontend `96910769884`, canonical visual `96910769942`,
+repository `96910769972` and secret `96910770018` pass. Its only controlled
+diagnostic dispatch `32528181842`, preflight `96914641053` and runtime job
+`96914756808` returns exactly one tuple:
+`P804_CREATE_RESPONSE_STATUS / RuntimeError /
+trace-4928b75518d75155a4fe459cb419dc98`. This proves only that the first fresh
+Synthetic POST did not return the required create status; it exposes no actual
+status, body, identifier or product symbol. The parent response cycle is now
+immutable at `diagnostic 1/1`, `repair 0/1`, `final 0/1`.
+
+A separate server-narrowing cycle starts at `diagnostic 0/1`, `repair 0/1`,
+`final 0/1`; product repair remains unconsumed. Only the exact runtime
+Synthetic POST may send the independent `p804-mbom-create-v1` diagnostic
+scope. The server records at most the innermost allowlisted `P804_CREATE_*`
+context, actual exception class and exact request trace, restores request flags
+and rethrows the same exception. The parent accepts only one exact three-key
+logical record, including identical dual-handler mirrors, through the existing
+strict bounded log reader. Missing, duplicate, divergent, wrong-trace,
+disallowed, malformed, oversized, symlink or out-of-root evidence returns the
+unchanged constant. Enqueue is deliberately outside the diagnostic because
+its existing post-commit failure contract still returns the committed queued
+request. No response, permission, transaction, API, Schema or Gate behavior is
+changed.

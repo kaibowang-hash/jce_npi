@@ -22,6 +22,10 @@ from npi_core.request_security import (
     response_request_id,
 )
 from npi_integration.mbom_publish.domain import MBOM_PUBLISH_ACKNOWLEDGEMENT
+from npi_integration.mbom_publish.diagnostics import (
+    mbom_create_server_diagnostics,
+    mbom_create_server_step,
+)
 from npi_integration.mbom_publish.problems import MbomPublishUnavailable
 
 
@@ -149,69 +153,93 @@ def create_mbom_publish_request(
 
     def handle() -> dict[str, Any]:
         nonlocal replayed
-        command_fields = {
-            **request_fields,
-            "phase5PublishRequestGlobalId": phase5PublishRequestGlobalId,
-            "expectedSourceHash": expectedSourceHash,
-            "expectedTopologyHash": expectedTopologyHash,
-            "expectedItemMappingSetHash": expectedItemMappingSetHash,
-            "expectedMbomMappingSetHash": expectedMbomMappingSetHash,
-            "acknowledgement": acknowledgement,
-        }
-        request_id, key_hash, repository, project_id = _command_context(command_fields)
-        outcome = repository.create_mbom_publish_request(
-            project_id,
-            phase5_publish_request_id=_uuid(
-                phase5PublishRequestGlobalId,
-                "phase5PublishRequestGlobalId",
-            ),
-            expected_source_hash=_sha256(expectedSourceHash, "expectedSourceHash"),
-            expected_topology_hash=_sha256(expectedTopologyHash, "expectedTopologyHash"),
-            expected_item_mapping_set_hash=_sha256(
-                expectedItemMappingSetHash,
-                "expectedItemMappingSetHash",
-            ),
-            expected_mbom_mapping_set_hash=_sha256(
-                expectedMbomMappingSetHash,
-                "expectedMbomMappingSetHash",
-            ),
-            acknowledgement=_exact_acknowledgement(acknowledgement),
-            idempotency_key_hash=key_hash,
-        )
-        if outcome is None:
-            raise MbomPublishUnavailable()
-        if type(outcome.replayed) is not bool or type(outcome.should_enqueue) is not bool:
-            raise RuntimeError("The MBOM publish command result is invalid.")
-        try:
-            frappe.db.commit()
-        except Exception:
-            try:
-                frappe.db.rollback()
-            except Exception:
-                pass
-            raise
-        if outcome.problem is not None:
-            if not isinstance(outcome.problem, NpiProblem):
-                raise RuntimeError("The MBOM publish command problem is invalid.")
-            raise outcome.problem
-        if outcome.response is None:
-            raise RuntimeError("The MBOM publish command response is unavailable.")
-        if outcome.should_enqueue:
-            if outcome.outbox_event_id is None:
-                raise RuntimeError("The MBOM publish Outbox identity is unavailable.")
-            try:
-                _enqueue_after_commit(outcome.outbox_event_id)
-            except Exception as error:
-                record_safe_diagnostic(
-                    code="MBOM_PUBLISH_ENQUEUE_FAILED",
-                    title="NPI MBOM publish enqueue failed",
-                    exception_type=type(error).__name__,
-                    trace_id=current_trace_id.get(),
+        with mbom_create_server_diagnostics(current_trace_id.get()):
+            with mbom_create_server_step("P804_CREATE_COMMAND_CONTEXT"):
+                command_fields = {
+                    **request_fields,
+                    "phase5PublishRequestGlobalId": phase5PublishRequestGlobalId,
+                    "expectedSourceHash": expectedSourceHash,
+                    "expectedTopologyHash": expectedTopologyHash,
+                    "expectedItemMappingSetHash": expectedItemMappingSetHash,
+                    "expectedMbomMappingSetHash": expectedMbomMappingSetHash,
+                    "acknowledgement": acknowledgement,
+                }
+                request_id, key_hash, repository, project_id = _command_context(
+                    command_fields
                 )
-        replayed = outcome.replayed
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(replayed).lower()
-        return _response(outcome.response)
+            with mbom_create_server_step("P804_CREATE_INPUT_PARSE"):
+                values = {
+                    "phase5_publish_request_id": _uuid(
+                        phase5PublishRequestGlobalId,
+                        "phase5PublishRequestGlobalId",
+                    ),
+                    "expected_source_hash": _sha256(
+                        expectedSourceHash,
+                        "expectedSourceHash",
+                    ),
+                    "expected_topology_hash": _sha256(
+                        expectedTopologyHash,
+                        "expectedTopologyHash",
+                    ),
+                    "expected_item_mapping_set_hash": _sha256(
+                        expectedItemMappingSetHash,
+                        "expectedItemMappingSetHash",
+                    ),
+                    "expected_mbom_mapping_set_hash": _sha256(
+                        expectedMbomMappingSetHash,
+                        "expectedMbomMappingSetHash",
+                    ),
+                    "acknowledgement": _exact_acknowledgement(acknowledgement),
+                }
+            with mbom_create_server_step("P804_CREATE_REPOSITORY_COMMAND"):
+                outcome = repository.create_mbom_publish_request(
+                    project_id,
+                    idempotency_key_hash=key_hash,
+                    **values,
+                )
+            with mbom_create_server_step("P804_CREATE_OUTCOME_VALIDATE"):
+                if outcome is None:
+                    raise MbomPublishUnavailable()
+                if (
+                    type(outcome.replayed) is not bool
+                    or type(outcome.should_enqueue) is not bool
+                ):
+                    raise RuntimeError("The MBOM publish command result is invalid.")
+            with mbom_create_server_step("P804_CREATE_COMMIT"):
+                try:
+                    frappe.db.commit()
+                except Exception:
+                    try:
+                        frappe.db.rollback()
+                    except Exception:
+                        pass
+                    raise
+            with mbom_create_server_step("P804_CREATE_OUTCOME_PROBLEM"):
+                if outcome.problem is not None:
+                    if not isinstance(outcome.problem, NpiProblem):
+                        raise RuntimeError("The MBOM publish command problem is invalid.")
+                    raise outcome.problem
+            with mbom_create_server_step("P804_CREATE_RESPONSE_VALIDATE"):
+                if outcome.response is None:
+                    raise RuntimeError("The MBOM publish command response is unavailable.")
+            if outcome.should_enqueue:
+                with mbom_create_server_step("P804_CREATE_OUTBOX_VALIDATE"):
+                    if outcome.outbox_event_id is None:
+                        raise RuntimeError("The MBOM publish Outbox identity is unavailable.")
+                try:
+                    _enqueue_after_commit(outcome.outbox_event_id)
+                except Exception as error:
+                    record_safe_diagnostic(
+                        code="MBOM_PUBLISH_ENQUEUE_FAILED",
+                        title="NPI MBOM publish enqueue failed",
+                        exception_type=type(error).__name__,
+                        trace_id=current_trace_id.get(),
+                    )
+            with mbom_create_server_step("P804_CREATE_API_RESPONSE"):
+                replayed = outcome.replayed
+                headers["X-Request-ID"] = request_id
+                headers["Idempotency-Replayed"] = str(replayed).lower()
+                return _response(outcome.response)
 
     result = frappe_domain_call(
         handle,

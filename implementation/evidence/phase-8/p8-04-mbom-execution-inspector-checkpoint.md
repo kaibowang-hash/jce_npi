@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-22`
 
-Status: `FINAL LEVEL 3 NARROWING — PARENT CREATE DIAGNOSTIC ACTIVE`
+Status: `FINAL LEVEL 3 NARROWING — SERVER CREATE DIAGNOSTIC ACTIVE`
 
 ## Scope and truth boundary
 
@@ -210,3 +210,52 @@ success is silent. The activation is temporary for this checkpoint and must
 be disabled immediately after the single diagnostic tuple is recovered. No
 API, repository, permission, transaction, Schema, response, production target
 or Gate standard changes.
+
+## Parent response tuple and server narrowing
+
+The parent-verifier checkpoint SHA
+`f1c59bb6000a37a5427522c559130112eb560adb` passes ordinary CI
+`32526910040`: frontend `96910769884`, visual `96910769942`, repository
+`96910769972` and secret `96910770018` pass. The one bounded controlled
+diagnostic run `32528181842` passes preflight `96914641053`; runtime
+`96914756808` returns one and only one safe tuple:
+
+`P804_CREATE_RESPONSE_STATUS / RuntimeError /
+trace-4928b75518d75155a4fe459cb419dc98`
+
+This establishes only the failed response-status predicate. It neither exposes
+the actual status/body nor uniquely identifies a server symbol, so no product
+repair is authorized or consumed. The parent response cycle is immutable at
+`diagnostic 1/1`, `repair 0/1`, `final 0/1`.
+
+The new server-narrowing cycle starts at `diagnostic 0/1`, `repair 0/1`,
+`final 0/1`. Its independent exact scope is `p804-mbom-create-v1`; only the
+fixed runtime Synthetic POST can add it. An exact validated request trace
+activates a request-local `{trace_id, recorded}` state. API and repository
+contexts record only the first innermost allowlisted stage and actual exception
+class through the existing safe three-key log format, then rethrow the same
+exception and restore prior flags in `finally`. The enqueue call remains
+unwrapped because its existing response-neutral post-commit diagnostic and
+recoverable queued Outbox semantics are unchanged.
+
+Before the POST the parent captures both controlled log cursors. On a failed
+create predicate it reads only the existing bounded strict mirrored-log helper
+with the exact shared `HttpResult.trace_id` and `P804_CREATE_*` allowlist. A
+single source record or two identical handler mirrors is accepted. Missing,
+duplicate, divergent, wrong-trace, disallowed, extra-field, invalid-type,
+oversized, symlink or out-of-root evidence falls back to the unchanged constant.
+The parent never renders actual status, body, headers, IDs, hashes, actor,
+profile, target, exception message or stack. Server diagnostics do not change
+API response, permission, transaction, Schema, production target or Gate
+behavior.
+
+The first server-checkpoint candidate `43bf869891bf99f62f0cfbddeb56b42bd6b2a9af`
+reached ordinary CI `32529961407`: frontend `96919848835`, repository
+`96919848850` and visual `96919848904` passed. Secret job `96919848666` alone
+reported one branch-history `generic-api-key` finding on a negative verifier
+fixture combining the `idempotency_key` test key with a deliberately wrong
+synthetic-looking value. It is not a credential. The history-clean remediation
+uses the low-entropy literal `wrong`, which still proves exact synthetic
+idempotency matching and changes no product, scope, response, permission,
+transaction, diagnostic or Gate behavior. No diagnostic or product repair
+round is consumed.

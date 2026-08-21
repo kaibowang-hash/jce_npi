@@ -5,11 +5,14 @@ import sys
 import types
 import unittest
 from contextvars import ContextVar
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 
 sys.path[:0] = ["apps/npi_core", "apps/npi_integration"]
+
+ROOT = Path(__file__).resolve().parents[1]
 
 PROJECT = "00000000-0000-4000-8000-000000009401"
 PHASE5 = "00000000-0000-4000-8000-000000009402"
@@ -54,6 +57,7 @@ class Phase8MbomPublishApiTest(unittest.TestCase):
         "npi_core.foundation.tracing",
         "npi_core.project.domain",
         "npi_core.request_security",
+        "npi_integration.mbom_publish.diagnostics",
         "npi_integration.mbom_publish.frappe_repository",
         "npi_integration.mbom_publish_api",
     )
@@ -257,6 +261,129 @@ class Phase8MbomPublishApiTest(unittest.TestCase):
         )
         self.assertNotIn(private_message, repr(result))
         self.assertNotIn(private_message, repr(self.diagnostics))
+
+    def test_create_diagnostic_is_exact_inner_first_and_response_neutral(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.mbom_publish.diagnostics"
+        )
+        trace_id = "trace-" + "8" * 32
+        self.headers[diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_SCOPE
+        )
+        self.api.current_trace_id.set(trace_id)
+        original = RuntimeError(
+            "private MBOM id/hash actor/profile target /tmp/private stack"
+        )
+
+        def fail(*_args: object, **_kwargs: object) -> None:
+            with diagnostics.mbom_create_server_step(
+                "P804_CREATE_PROJECT_LOCK"
+            ):
+                raise original
+
+        self.repository.create_mbom_publish_request = fail
+        self.headers.pop(diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_HEADER)
+        with self.assertRaises(RuntimeError) as baseline:
+            self.api.create_mbom_publish_request(**self.payload())
+        self.assertIs(baseline.exception, original)
+        self.assertEqual(self.diagnostics, [])
+        self.headers[diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_SCOPE
+        )
+        with self.assertRaises(RuntimeError) as raised:
+            self.api.create_mbom_publish_request(**self.payload())
+
+        self.assertIs(raised.exception, original)
+        self.assertEqual(
+            self.diagnostics,
+            [
+                {
+                    "code": "P804_CREATE_PROJECT_LOCK",
+                    "title": "NPI MBOM publish create substage failed",
+                    "exception_type": "RuntimeError",
+                    "trace_id": trace_id,
+                }
+            ],
+        )
+        self.assertNotIn(str(original), repr(self.diagnostics))
+        self.assertNotIn("commit", self.events)
+        self.assertFalse(
+            hasattr(self.frappe.flags, "npi_p804_mbom_create_diagnostic")
+        )
+
+    def test_create_diagnostic_wrong_scope_or_trace_records_nothing(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.mbom_publish.diagnostics"
+        )
+        private = RuntimeError("private response value")
+
+        def fail(*_args: object, **_kwargs: object) -> None:
+            raise private
+
+        self.repository.create_mbom_publish_request = fail
+        for scope, trace_id in (
+            (None, "trace-" + "8" * 32),
+            ("p804-mbom-create-wrong", "trace-" + "8" * 32),
+            (diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_SCOPE, "trace-invalid"),
+        ):
+            with self.subTest(scope=scope, trace_id=trace_id):
+                self.headers[diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_HEADER] = scope
+                self.api.current_trace_id.set(trace_id)
+                with self.assertRaises(RuntimeError) as raised:
+                    self.api.create_mbom_publish_request(**self.payload())
+                self.assertIs(raised.exception, private)
+                self.assertEqual(self.diagnostics, [])
+                self.assertFalse(
+                    hasattr(self.frappe.flags, "npi_p804_mbom_create_diagnostic")
+                )
+
+    def test_create_diagnostic_restores_a_preexisting_request_flag(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.mbom_publish.diagnostics"
+        )
+        trace_id = "trace-" + "6" * 32
+        sentinel = {"owned": "by-outer-request"}
+        setattr(
+            self.frappe.flags,
+            "npi_p804_mbom_create_diagnostic",
+            sentinel,
+        )
+        self.headers[diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_SCOPE
+        )
+        with diagnostics.mbom_create_server_diagnostics(trace_id):
+            self.assertIsNot(
+                getattr(
+                    self.frappe.flags,
+                    "npi_p804_mbom_create_diagnostic",
+                ),
+                sentinel,
+            )
+        self.assertIs(
+            getattr(self.frappe.flags, "npi_p804_mbom_create_diagnostic"),
+            sentinel,
+        )
+
+    def test_each_create_server_code_has_one_product_context(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.mbom_publish.diagnostics"
+        )
+        source = "\n".join(
+            (
+                (
+                    ROOT
+                    / "apps/npi_integration/npi_integration/mbom_publish_api.py"
+                ).read_text(encoding="utf-8"),
+                (
+                    ROOT
+                    / "apps/npi_integration/npi_integration/mbom_publish/frappe_repository.py"
+                ).read_text(encoding="utf-8"),
+            )
+        )
+        for code in diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_CODES:
+            with self.subTest(code=code):
+                self.assertEqual(source.count(f'"{code}"'), 1)
+        self.assertNotIn("P804_CREATE_ENQUEUE", source)
 
     def test_queries_authorize_project_before_secondary_request(self) -> None:
         self.api.get_mbom_publish_requests(

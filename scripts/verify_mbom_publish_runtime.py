@@ -36,6 +36,41 @@ ACKNOWLEDGEMENT = (
 MBOM_CREATE_DIAGNOSTICS_ENABLED = True
 _CREATE_FAILURE_MESSAGE = "P8-04 Synthetic command did not create one queued batch"
 _CREATE_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_CREATE_DIAGNOSTIC_SCOPE = "p804-mbom-create-v1"
+_CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P804_CREATE_COMMAND_CONTEXT",
+        "P804_CREATE_INPUT_PARSE",
+        "P804_CREATE_PROJECT_LOCK",
+        "P804_CREATE_IDEMPOTENCY_CONTEXT",
+        "P804_CREATE_IDEMPOTENCY_REPLAY",
+        "P804_CREATE_PROBLEM_OUTCOME",
+        "P804_CREATE_PROJECT_MUTABILITY",
+        "P804_CREATE_PROFILE_RESOLVE",
+        "P804_CREATE_PRELOCK_BUILD",
+        "P804_CREATE_SERVICE_ACTOR_VALIDATE",
+        "P804_CREATE_RESPONSE_BUILD",
+        "P804_CREATE_TRANSACTION_SCOPE",
+        "P804_CREATE_STREAM_GUARD",
+        "P804_CREATE_PROFILE_REVALIDATE",
+        "P804_CREATE_LOCKED_BUILD",
+        "P804_CREATE_LOCK_COMPARE",
+        "P804_CREATE_REQUEST_INSERT",
+        "P804_CREATE_NODE_INSERT",
+        "P804_CREATE_OUTBOX_INSERT",
+        "P804_CREATE_GUARD_ACTIVATE",
+        "P804_CREATE_AUDIT_APPEND",
+        "P804_CREATE_IDEMPOTENCY_INSERT",
+        "P804_CREATE_REPOSITORY_COMMAND",
+        "P804_CREATE_OUTCOME_VALIDATE",
+        "P804_CREATE_COMMIT",
+        "P804_CREATE_OUTCOME_PROBLEM",
+        "P804_CREATE_RESPONSE_VALIDATE",
+        "P804_CREATE_OUTBOX_VALIDATE",
+        "P804_CREATE_API_RESPONSE",
+    }
+)
 
 
 def mbom_publish_path(project_id: str, request_id: str | None = None) -> str:
@@ -53,12 +88,27 @@ def mbom_publish_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "query",
+    create_diagnostic: bool = False,
 ):
     headers = (
         document_runtime.command_headers(csrf_token, idempotency_key)
         if idempotency_key is not None
         else document_runtime.query_headers(f"p804-{query_key}")
     )
+    if create_diagnostic:
+        require(
+            method == "POST"
+            and isinstance(payload, dict)
+            and csrf_token is not None
+            and idempotency_key == f"p8-04-synthetic-{FIXTURE_RUN_ID}"
+            and re.fullmatch(
+                r"/api/npi/v1/projects/[0-9a-f-]{36}/mbom-publish-requests",
+                path,
+            )
+            is not None,
+            _CREATE_FAILURE_MESSAGE,
+        )
+        headers[_CREATE_DIAGNOSTIC_HEADER] = _CREATE_DIAGNOSTIC_SCOPE
     result = document_runtime.request(
         opener,
         base_url,
@@ -136,7 +186,10 @@ def _created_synthetic_batch_failure(result: object) -> str | None:
     return None
 
 
-def require_created_synthetic_batch(result: object) -> None:
+def require_created_synthetic_batch(
+    result: object,
+    diagnostic_cursors: dict[str, int] | None = None,
+) -> None:
     diagnostic_code = _created_synthetic_batch_failure(result)
     if diagnostic_code is None:
         return
@@ -147,10 +200,18 @@ def require_created_synthetic_batch(result: object) -> None:
         and isinstance(trace_id, str)
         and _CREATE_DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id)
     ):
-        message = (
-            f"{message} [diagnostic_code={diagnostic_code}; "
-            f"exception_type=RuntimeError; trace_id={trace_id}]"
+        diagnostic = item_runtime._sanitized_server_log_diagnostic(
+            trace_id,
+            diagnostic_cursors,
+            code_prefix="P804_CREATE_",
+            allowed_codes=_CREATE_SERVER_DIAGNOSTIC_CODES,
         )
+        if diagnostic is not None:
+            exception_type, server_code, validated_trace = diagnostic
+            message = (
+                f"{message} [diagnostic_code={server_code}; "
+                f"exception_type={exception_type}; trace_id={validated_trace}]"
+            )
     raise RuntimeError(message)
 
 
@@ -205,6 +266,11 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
             "phase5_request_id": publish_request_id,
         },
     )
+    diagnostic_cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if MBOM_CREATE_DIAGNOSTICS_ENABLED
+        else None
+    )
     created = mbom_publish_request(
         actor,
         base_url,
@@ -220,8 +286,9 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
         },
         csrf_token=csrf,
         idempotency_key=f"p8-04-synthetic-{FIXTURE_RUN_ID}",
+        create_diagnostic=MBOM_CREATE_DIAGNOSTICS_ENABLED,
     )
-    require_created_synthetic_batch(created)
+    require_created_synthetic_batch(created, diagnostic_cursors)
     request_id = created.body.get("requestGlobalId")
     outbox_id = created.body.get("outboxEventId")
     exercised = run_bench_fixture(

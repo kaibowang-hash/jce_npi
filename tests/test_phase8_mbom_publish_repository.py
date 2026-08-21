@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import ast
+import importlib
 import json
 import sys
 import types
 import unittest
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -272,7 +275,10 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
         )
         positions = [segment.index(marker) for marker in markers]
         self.assertEqual(positions, sorted(positions))
-        self.assertIn("with mbom_request_transaction_write(self.actor)", segment)
+        self.assertIn(
+            "mbom_request_transaction_write(self.actor) as capability",
+            segment,
+        )
         direct_sql_calls = [
             node
             for node in ast.walk(tree)
@@ -292,6 +298,102 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
             "submit_bom",
         ):
             self.assertNotIn(forbidden, source.casefold())
+
+    def test_real_create_wrapper_records_innermost_insert_failure_without_extra_write(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.mbom_publish.diagnostics"
+        )
+        core_api = importlib.import_module("npi_core.api")
+        trace_id = "trace-" + "7" * 32
+        fake_frappe = types.SimpleNamespace(
+            flags=types.SimpleNamespace(),
+            get_request_header=lambda name: (
+                diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_SCOPE
+                if name == diagnostics.MBOM_CREATE_SERVER_DIAGNOSTIC_HEADER
+                else None
+            ),
+        )
+        records: list[dict[str, object]] = []
+        writes: list[str] = []
+        original = RuntimeError("private persisted MBOM business value")
+        project = types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1))
+        profile_reference = types.SimpleNamespace(target_mode=MbomTargetMode.MOCK)
+        profile = types.SimpleNamespace(
+            reference=profile_reference,
+            target_mode=MbomTargetMode.MOCK,
+            permits=lambda _actor: True,
+        )
+        value = types.SimpleNamespace(
+            source=types.SimpleNamespace(
+                source_hash="a" * 64,
+                topology_hash="b" * 64,
+            ),
+            item_mapping_set_hash="c" * 64,
+            mbom_mapping_set_hash="d" * 64,
+            created_at=datetime(2026, 8, 21, 15, 0, tzinfo=UTC),
+            dispatch_allowed=False,
+            global_id=uid(31),
+            profile=profile_reference,
+            state=types.SimpleNamespace(value="queued"),
+            payload_hash="e" * 64,
+        )
+        repository = object.__new__(self.repository.FrappeMbomPublishRepository)
+        repository.actor = "publisher@example.invalid"
+        repository._locked_command_project = lambda _project_id: project
+        repository._idempotency_scope_key = lambda *_args: "f" * 64
+        repository._idempotency_receipt = lambda _scope: None
+        repository._required_profile = lambda _project: profile
+        repository._build_request = lambda *_args, **_kwargs: value
+        repository._response_from_value = lambda *_args: {
+            "requestGlobalId": str(value.global_id)
+        }
+
+        def fail_insert(*_args: object, **_kwargs: object) -> None:
+            raise original
+
+        repository._insert_request = fail_insert
+        repository._insert_nodes = lambda *_args, **_kwargs: writes.append("nodes")
+        repository._append_audit = lambda *_args, **_kwargs: writes.append("audit")
+        repository._insert_idempotency_receipt = (
+            lambda *_args, **_kwargs: writes.append("idempotency")
+        )
+
+        @contextmanager
+        def transaction(_actor: str):
+            yield object()
+
+        with patch.object(diagnostics, "frappe", fake_frappe), patch.object(
+            self.repository,
+            "mbom_request_transaction_write",
+            transaction,
+        ), patch.object(
+            core_api,
+            "record_safe_diagnostic",
+            side_effect=lambda **values: records.append(values),
+        ):
+            with diagnostics.mbom_create_server_diagnostics(trace_id):
+                with self.assertRaises(RuntimeError) as raised:
+                    repository.create_mbom_publish_request(
+                        uid(1),
+                        phase5_publish_request_id=uid(3),
+                        expected_source_hash="a" * 64,
+                        expected_topology_hash="b" * 64,
+                        expected_item_mapping_set_hash="c" * 64,
+                        expected_mbom_mapping_set_hash="d" * 64,
+                        idempotency_key_hash="9" * 64,
+                        acknowledgement="acknowledged",
+                    )
+
+        self.assertIs(raised.exception, original)
+        self.assertEqual(writes, [])
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["code"], "P804_CREATE_REQUEST_INSERT")
+        self.assertEqual(records[0]["exception_type"], "RuntimeError")
+        self.assertEqual(records[0]["trace_id"], trace_id)
+        self.assertNotIn(str(original), repr(records))
+        self.assertFalse(
+            hasattr(fake_frappe.flags, "npi_p804_mbom_create_diagnostic")
+        )
 
     def test_request_row_roundtrip_revalidates_every_hash_and_scope(self) -> None:
         project = types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1))

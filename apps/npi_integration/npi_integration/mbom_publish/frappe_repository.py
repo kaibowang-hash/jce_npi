@@ -49,6 +49,7 @@ from npi_integration.mbom_publish.frappe_validation import (
     save_mbom_support_document,
     validate_mbom_service_actor,
 )
+from npi_integration.mbom_publish.diagnostics import mbom_create_server_step
 from npi_integration.mbom_publish.problems import (
     MbomExecutionProfileUnavailable,
     MbomPublishAuthorityUnavailable,
@@ -230,42 +231,48 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
         idempotency_key_hash: str,
         acknowledgement: str,
     ) -> MbomPublishCommandOutcome | None:
-        project = self._locked_command_project(project_id)
+        with mbom_create_server_step("P804_CREATE_PROJECT_LOCK"):
+            project = self._locked_command_project(project_id)
         if project is None:
             return None
-        command_hash = canonical_hash(
-            {
-                "apiVersion": MBOM_PUBLISH_API_VERSION,
-                "operation": MBOM_PUBLISH_OPERATION,
-                "projectGlobalId": str(project.global_id),
-                "phase5PublishRequestGlobalId": str(phase5_publish_request_id),
-                "expectedSourceHash": expected_source_hash,
-                "expectedTopologyHash": expected_topology_hash,
-                "expectedItemMappingSetHash": expected_item_mapping_set_hash,
-                "expectedMbomMappingSetHash": expected_mbom_mapping_set_hash,
-                "acknowledgement": acknowledgement,
-            }
-        )
-        scope_key = self._idempotency_scope_key(project, idempotency_key_hash)
-        receipt = self._idempotency_receipt(scope_key)
+        with mbom_create_server_step("P804_CREATE_IDEMPOTENCY_CONTEXT"):
+            command_hash = canonical_hash(
+                {
+                    "apiVersion": MBOM_PUBLISH_API_VERSION,
+                    "operation": MBOM_PUBLISH_OPERATION,
+                    "projectGlobalId": str(project.global_id),
+                    "phase5PublishRequestGlobalId": str(phase5_publish_request_id),
+                    "expectedSourceHash": expected_source_hash,
+                    "expectedTopologyHash": expected_topology_hash,
+                    "expectedItemMappingSetHash": expected_item_mapping_set_hash,
+                    "expectedMbomMappingSetHash": expected_mbom_mapping_set_hash,
+                    "acknowledgement": acknowledgement,
+                }
+            )
+            scope_key = self._idempotency_scope_key(project, idempotency_key_hash)
+            receipt = self._idempotency_receipt(scope_key)
         if receipt is not None:
-            return self._replay_or_conflict(
-                project,
-                receipt,
-                scope_key=scope_key,
-                idempotency_key_hash=idempotency_key_hash,
-                command_hash=command_hash,
-            )
-        require_mutable_project(project)
+            with mbom_create_server_step("P804_CREATE_IDEMPOTENCY_REPLAY"):
+                return self._replay_or_conflict(
+                    project,
+                    receipt,
+                    scope_key=scope_key,
+                    idempotency_key_hash=idempotency_key_hash,
+                    command_hash=command_hash,
+                )
+        with mbom_create_server_step("P804_CREATE_PROJECT_MUTABILITY"):
+            require_mutable_project(project)
         try:
-            profile = self._required_profile(project)
-            value = self._build_request(
-                project,
-                phase5_publish_request_id,
-                profile,
-                idempotency_key_hash=idempotency_key_hash,
-                lock=False,
-            )
+            with mbom_create_server_step("P804_CREATE_PROFILE_RESOLVE"):
+                profile = self._required_profile(project)
+            with mbom_create_server_step("P804_CREATE_PRELOCK_BUILD"):
+                value = self._build_request(
+                    project,
+                    phase5_publish_request_id,
+                    profile,
+                    idempotency_key_hash=idempotency_key_hash,
+                    lock=False,
+                )
         except NpiProblem as problem:
             return self._problem_outcome(project, phase5_publish_request_id, problem)
         except (MbomPublishContractError, RuntimeError):
@@ -293,7 +300,10 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
             )
         if profile.target_mode is not MbomTargetMode.MOCK:
             try:
-                validate_mbom_service_actor(profile.service_actor_user_id)
+                with mbom_create_server_step(
+                    "P804_CREATE_SERVICE_ACTOR_VALIDATE"
+                ):
+                    validate_mbom_service_actor(profile.service_actor_user_id)
             except RuntimeError:
                 return self._problem_outcome(
                     project,
@@ -302,79 +312,103 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
                 )
         now = value.created_at
         outbox_event_id = uuid4() if value.dispatch_allowed else None
-        response = self._response_from_value(value, outbox_event_id, now)
-        with mbom_request_transaction_write(self.actor) as capability:
+        with mbom_create_server_step("P804_CREATE_RESPONSE_BUILD"):
+            response = self._response_from_value(value, outbox_event_id, now)
+        with mbom_create_server_step(
+            "P804_CREATE_TRANSACTION_SCOPE"
+        ), mbom_request_transaction_write(self.actor) as capability:
             guard = None
             if value.dispatch_allowed:
-                guard = _locked_stream_guard(
-                    value.source,
-                    create=True,
+                with mbom_create_server_step("P804_CREATE_STREAM_GUARD"):
+                    guard = _locked_stream_guard(
+                        value.source,
+                        create=True,
+                        now=now,
+                        capability=capability,
+                    )
+                    problem = _stream_guard_problem(guard, value)
+                if problem is not None:
+                    return self._problem_outcome(project, value.global_id, problem)
+            with mbom_create_server_step("P804_CREATE_PROFILE_REVALIDATE"):
+                locked_profile = self._required_profile(project)
+            with mbom_create_server_step("P804_CREATE_LOCKED_BUILD"):
+                locked = self._build_request(
+                    project,
+                    phase5_publish_request_id,
+                    locked_profile,
+                    idempotency_key_hash=idempotency_key_hash,
+                    lock=True,
+                    global_id=value.global_id,
+                    created_at=value.created_at,
+                )
+            with mbom_create_server_step("P804_CREATE_LOCK_COMPARE"):
+                if locked != value or locked_profile.reference != value.profile:
+                    raise RuntimeError(
+                        "The MBOM command inputs changed during locking."
+                    )
+            with mbom_create_server_step("P804_CREATE_REQUEST_INSERT"):
+                self._insert_request(
+                    project,
+                    value,
+                    outbox_event_id=outbox_event_id,
                     now=now,
                     capability=capability,
                 )
-                problem = _stream_guard_problem(guard, value)
-                if problem is not None:
-                    return self._problem_outcome(project, value.global_id, problem)
-            locked_profile = self._required_profile(project)
-            locked = self._build_request(
-                project,
-                phase5_publish_request_id,
-                locked_profile,
-                idempotency_key_hash=idempotency_key_hash,
-                lock=True,
-                global_id=value.global_id,
-                created_at=value.created_at,
-            )
-            if locked != value or locked_profile.reference != value.profile:
-                raise RuntimeError("The MBOM command inputs changed during locking.")
-            self._insert_request(
-                project,
-                value,
-                outbox_event_id=outbox_event_id,
-                now=now,
-                capability=capability,
-            )
-            node_manifest_hash = self._insert_nodes(
-                value,
-                now=now,
-                capability=capability,
-            )
-            if outbox_event_id is not None:
-                self._insert_outbox(
-                    project,
+            with mbom_create_server_step("P804_CREATE_NODE_INSERT"):
+                node_manifest_hash = self._insert_nodes(
                     value,
-                    event_id=outbox_event_id,
-                    node_manifest_hash=node_manifest_hash,
+                    now=now,
                     capability=capability,
                 )
+            if outbox_event_id is not None:
+                with mbom_create_server_step("P804_CREATE_OUTBOX_INSERT"):
+                    self._insert_outbox(
+                        project,
+                        value,
+                        event_id=outbox_event_id,
+                        node_manifest_hash=node_manifest_hash,
+                        capability=capability,
+                    )
             if guard is not None:
-                _activate_stream_guard(guard, value, now=now, capability=capability)
-            self._append_audit(
-                operation="mbom_publish.request.create",
-                global_id=value.global_id,
-                object_version=1,
-                result=value.state.value,
-                summary={
-                    "phase5PublishRequestGlobalId": str(phase5_publish_request_id),
-                    "sourceHash": value.source.source_hash,
-                    "topologyHash": value.source.topology_hash,
-                    "itemMappingSetHash": value.item_mapping_set_hash,
-                    "mbomMappingSetHash": value.mbom_mapping_set_hash,
-                    "profileId": value.profile.profile_id,
-                    "profileVersion": value.profile.profile_version,
-                    "requestPayloadHash": value.payload_hash,
-                    "outboxEventId": str(outbox_event_id) if outbox_event_id else None,
-                },
-            )
-            self._insert_idempotency_receipt(
-                project,
-                value,
-                scope_key=scope_key,
-                command_hash=command_hash,
-                response=response,
-                now=now,
-                capability=capability,
-            )
+                with mbom_create_server_step("P804_CREATE_GUARD_ACTIVATE"):
+                    _activate_stream_guard(
+                        guard,
+                        value,
+                        now=now,
+                        capability=capability,
+                    )
+            with mbom_create_server_step("P804_CREATE_AUDIT_APPEND"):
+                self._append_audit(
+                    operation="mbom_publish.request.create",
+                    global_id=value.global_id,
+                    object_version=1,
+                    result=value.state.value,
+                    summary={
+                        "phase5PublishRequestGlobalId": str(
+                            phase5_publish_request_id
+                        ),
+                        "sourceHash": value.source.source_hash,
+                        "topologyHash": value.source.topology_hash,
+                        "itemMappingSetHash": value.item_mapping_set_hash,
+                        "mbomMappingSetHash": value.mbom_mapping_set_hash,
+                        "profileId": value.profile.profile_id,
+                        "profileVersion": value.profile.profile_version,
+                        "requestPayloadHash": value.payload_hash,
+                        "outboxEventId": (
+                            str(outbox_event_id) if outbox_event_id else None
+                        ),
+                    },
+                )
+            with mbom_create_server_step("P804_CREATE_IDEMPOTENCY_INSERT"):
+                self._insert_idempotency_receipt(
+                    project,
+                    value,
+                    scope_key=scope_key,
+                    command_hash=command_hash,
+                    response=response,
+                    now=now,
+                    capability=capability,
+                )
         return MbomPublishCommandOutcome(
             response=response,
             should_enqueue=outbox_event_id is not None,
@@ -697,7 +731,9 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
         global_id: UUID,
         problem: NpiProblem,
     ) -> MbomPublishCommandOutcome:
-        with mbom_request_transaction_write(self.actor):
+        with mbom_create_server_step(
+            "P804_CREATE_PROBLEM_OUTCOME"
+        ), mbom_request_transaction_write(self.actor):
             self._append_audit(
                 operation="mbom_publish.request.conflict",
                 global_id=global_id,

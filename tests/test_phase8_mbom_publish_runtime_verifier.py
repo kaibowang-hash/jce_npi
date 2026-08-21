@@ -15,6 +15,10 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/verify_mbom_publish_runtime.py"
 SHELL = ROOT / "scripts/verify-frappe-runtime.sh"
 WORKFLOW = ROOT / ".github/workflows/ci.yml"
+SERVER_DIAGNOSTICS = (
+    ROOT
+    / "apps/npi_integration/npi_integration/mbom_publish/diagnostics.py"
+)
 
 
 def load_verifier():
@@ -119,7 +123,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             trace_id=trace_id,
         )
 
-    def test_create_diagnostic_maps_each_predicate_in_fixed_first_failure_order(self):
+    def test_create_response_predicates_remain_fixed_and_first_failure_ordered(self):
         cases = (
             (
                 self._create_result(
@@ -146,24 +150,55 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         )
         for result, expected_code in cases:
             with self.subTest(expected_code=expected_code):
-                with self.assertRaisesRegex(
-                    RuntimeError,
-                    rf"diagnostic_code={expected_code}; "
-                    r"exception_type=RuntimeError; "
-                    r"trace_id=trace-0123456789abcdef0123456789abcdef",
-                ) as raised:
-                    self.module.require_created_synthetic_batch(result)
-                message = str(raised.exception)
-                for forbidden in (
-                    "599",
-                    "business-secret",
-                    "response-body-secret",
-                    "failed-secret",
-                    "request-secret",
-                    "outbox-secret",
-                    "Traceback",
-                ):
-                    self.assertNotIn(forbidden, message)
+                self.assertEqual(
+                    self.module._created_synthetic_batch_failure(result),
+                    expected_code,
+                )
+
+    def test_create_server_tuple_is_the_only_diagnostic_output_and_does_not_leak(self):
+        result = self._create_result(
+            status=599,
+            request={"state": "failed-secret"},
+            request_id="request-secret",
+            outbox_id="outbox-secret",
+        )
+        diagnostic = (
+            "RuntimeError",
+            "P804_CREATE_REQUEST_INSERT",
+            "trace-0123456789abcdef0123456789abcdef",
+        )
+        with patch.object(
+            self.module.item_runtime,
+            "_sanitized_server_log_diagnostic",
+            return_value=diagnostic,
+        ) as reader:
+            with self.assertRaisesRegex(
+                RuntimeError,
+                r"diagnostic_code=P804_CREATE_REQUEST_INSERT; "
+                r"exception_type=RuntimeError; "
+                r"trace_id=trace-0123456789abcdef0123456789abcdef",
+            ) as raised:
+                self.module.require_created_synthetic_batch(
+                    result,
+                    {"logs/npi_core.log": 0},
+                )
+        reader.assert_called_once_with(
+            "trace-0123456789abcdef0123456789abcdef",
+            {"logs/npi_core.log": 0},
+            code_prefix="P804_CREATE_",
+            allowed_codes=self.module._CREATE_SERVER_DIAGNOSTIC_CODES,
+        )
+        message = str(raised.exception)
+        for forbidden in (
+            "599",
+            "business-secret",
+            "response-body-secret",
+            "failed-secret",
+            "request-secret",
+            "outbox-secret",
+            "Traceback",
+        ):
+            self.assertNotIn(forbidden, message)
 
     def test_create_diagnostic_falls_back_to_constant_when_off_or_trace_is_untrusted(self):
         original = "P8-04 Synthetic command did not create one queued batch"
@@ -174,6 +209,17 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                         self._create_result(status=503, trace_id=trace_id)
                     )
                 self.assertEqual(str(raised.exception), original)
+        with patch.object(
+            self.module.item_runtime,
+            "_sanitized_server_log_diagnostic",
+            return_value=None,
+        ):
+            with self.assertRaises(RuntimeError) as raised:
+                self.module.require_created_synthetic_batch(
+                    self._create_result(status=503),
+                    {"logs/npi_core.log": 0},
+                )
+        self.assertEqual(str(raised.exception), original)
         with patch.object(self.module, "MBOM_CREATE_DIAGNOSTICS_ENABLED", False):
             with self.assertRaises(RuntimeError) as raised:
                 self.module.require_created_synthetic_batch(
@@ -199,6 +245,109 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn("headers", segment)
         self.assertNotIn("problem", segment.casefold())
         self.assertNotIn("json", segment.casefold())
+        self.assertIn("_sanitized_server_log_diagnostic", segment)
+
+    def test_create_scope_header_is_only_available_to_exact_synthetic_post(self):
+        response = SimpleNamespace(
+            status=201,
+            body={},
+            headers={
+                "X-Request-ID": "request-id",
+                "Cache-Control": "private, no-store",
+            },
+            trace_id="trace-0123456789abcdef0123456789abcdef",
+        )
+        captured = {}
+
+        def request(*_args, **kwargs):
+            captured.update(kwargs)
+            return response
+
+        path = self.module.mbom_publish_path(
+            "00000000-0000-0000-0000-000000000001"
+        )
+        with patch.object(
+            self.module.document_runtime,
+            "command_headers",
+            return_value={"X-Request-ID": "request-id"},
+        ), patch.object(self.module.document_runtime, "request", side_effect=request):
+            self.module.mbom_publish_request(
+                object(),
+                "http://127.0.0.1",
+                path,
+                method="POST",
+                payload={"fixed": True},
+                csrf_token="csrf",
+                idempotency_key=(
+                    f"p8-04-synthetic-{self.module.FIXTURE_RUN_ID}"
+                ),
+                create_diagnostic=True,
+            )
+        self.assertEqual(
+            captured["request_headers"][self.module._CREATE_DIAGNOSTIC_HEADER],
+            self.module._CREATE_DIAGNOSTIC_SCOPE,
+        )
+        for mutation in (
+            {"method": "GET"},
+            {"path": f"{path}/detail"},
+            {"idempotency_key": "wrong"},
+        ):
+            values = {
+                "method": "POST",
+                "path": path,
+                "idempotency_key": f"p8-04-synthetic-{self.module.FIXTURE_RUN_ID}",
+                **mutation,
+            }
+            with self.subTest(mutation=mutation), self.assertRaises(RuntimeError):
+                self.module.mbom_publish_request(
+                    object(),
+                    "http://127.0.0.1",
+                    values["path"],
+                    method=values["method"],
+                    payload={"fixed": True},
+                    csrf_token="csrf",
+                    idempotency_key=values["idempotency_key"],
+                    create_diagnostic=True,
+                )
+
+    def test_fresh_runtime_captures_log_cursors_before_one_scoped_post(self):
+        function = next(
+            node
+            for node in self.tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "run_fresh"
+        )
+        segment = ast.get_source_segment(self.source, function) or ""
+        cursor = segment.index("_replay_diagnostic_log_cursors()")
+        post = segment.index("created = mbom_publish_request(")
+        self.assertLess(cursor, post)
+        self.assertEqual(
+            segment.count("create_diagnostic=MBOM_CREATE_DIAGNOSTICS_ENABLED"),
+            1,
+        )
+        self.assertEqual(segment.count("_replay_diagnostic_log_cursors()"), 1)
+
+    def test_parent_and_server_create_allowlists_are_exactly_equal(self):
+        tree = ast.parse(SERVER_DIAGNOSTICS.read_text(encoding="utf-8"))
+        assignment = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name)
+                and target.id == "MBOM_CREATE_SERVER_DIAGNOSTIC_CODES"
+                for target in node.targets
+            )
+        )
+        self.assertIsInstance(assignment.value, ast.Call)
+        values = {
+            node.value
+            for node in ast.walk(assignment.value)
+            if isinstance(node, ast.Constant)
+            and isinstance(node.value, str)
+            and node.value.startswith("P804_CREATE_")
+        }
+        self.assertEqual(values, self.module._CREATE_SERVER_DIAGNOSTIC_CODES)
+        self.assertNotIn("P804_CREATE_ENQUEUE", values)
 
     def test_bench_child_hides_stderr_and_drops_password_environment(self):
         function = next(
