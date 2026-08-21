@@ -1,16 +1,139 @@
 from __future__ import annotations
 
 import json
+import re
+import sys
+from datetime import UTC, datetime
 import unittest
 from pathlib import Path
+from uuid import UUID
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "apps/npi_integration"))
+
+from npi_integration.item_publish.domain import (  # noqa: E402
+    ItemExecutionProfileReference,
+    ItemMappingExpectation,
+    ItemOccurrence,
+    ItemTargetMode,
+    ReleasedItemSourceEvidence,
+    create_item_publish_request,
+    group_item_source,
+)
+
+
 EVENT = json.loads(
     (ROOT / "contracts/integration-event.schema.json").read_text(encoding="utf-8")
 )
 OPENAPI = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
 OWNERSHIP = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
+
+
+def _uuid(value: int) -> UUID:
+    return UUID(int=value)
+
+
+def _non_mock_item_event_payload() -> dict[str, object]:
+    occurrence = ItemOccurrence(
+        publish_node_global_id=_uuid(1),
+        line_global_id=_uuid(101),
+        engineering_item_id="ENG-ITEM-001",
+        description="Synthetic engineering item",
+        engineering_uom="Nos",
+        attributes=(("material", "PA66"),),
+        line_hash="1" * 64,
+        node_input_hash="2" * 64,
+    )
+    source = group_item_source(
+        tenant_id="tenant-contract",
+        project_global_id=_uuid(2),
+        selected_publish_node_global_id=occurrence.publish_node_global_id,
+        occurrences=(occurrence,),
+    )
+    released_evidence = ReleasedItemSourceEvidence(
+        publish_request_global_id=_uuid(3),
+        publish_request_payload_hash="3" * 64,
+        publish_policy_global_id=_uuid(4),
+        publish_policy_version=2,
+        publish_policy_snapshot_hash="4" * 64,
+        ebom_global_id=_uuid(5),
+        ebom_version=3,
+        revision_global_id=_uuid(6),
+        revision_number=3,
+        revision_snapshot_hash="5" * 64,
+        lifecycle_version=4,
+        release_event_global_id=_uuid(7),
+        release_event_hash="6" * 64,
+        approval_evidence_ids=(_uuid(7),),
+        released_at=datetime(2026, 8, 16, 13, 0, tzinfo=UTC),
+    )
+    profile = ItemExecutionProfileReference(
+        profile_id="item-synthetic-contract-v1",
+        profile_version=1,
+        target_mode=ItemTargetMode.SYNTHETIC,
+        environment_code="disposable-test",
+        snapshot_hash="7" * 64,
+    )
+    request = create_item_publish_request(
+        source=source,
+        released_evidence=released_evidence,
+        profile=profile,
+        mapping_expectation=ItemMappingExpectation(0),
+        actor_user_id="requester@example.invalid",
+        service_actor_user_id="worker@example.invalid",
+        request_id=_uuid(8),
+        trace_id="trace-item-contract-001",
+        idempotency_key_hash="8" * 64,
+        global_id=_uuid(9),
+        created_at=datetime(2026, 8, 16, 13, 0, tzinfo=UTC),
+    )
+    return request.event_payload()
+
+
+def _schema_errors(payload: object, schema: dict[str, object]) -> list[str]:
+    if not isinstance(payload, dict):
+        return ["payload must be an object"]
+    properties = schema["properties"]
+    assert isinstance(properties, dict)
+    required = set(schema["required"])
+    errors: list[str] = []
+    if set(payload) != set(properties):
+        errors.append("payload keys are not exactly the schema properties")
+    if set(payload) != required:
+        errors.append("payload keys are not exactly the schema required fields")
+
+    def matches_type(value: object, expected: str) -> bool:
+        return {
+            "string": type(value) is str,
+            "integer": type(value) is int,
+            "null": value is None,
+            "boolean": type(value) is bool,
+        }.get(expected, True)
+
+    for name, specification in properties.items():
+        if name not in payload:
+            errors.append(f"missing {name}")
+            continue
+        assert isinstance(specification, dict)
+        value = payload[name]
+        expected_type = specification.get("type")
+        if isinstance(expected_type, str) and not matches_type(value, expected_type):
+            errors.append(f"wrong type for {name}")
+        elif isinstance(expected_type, list) and not any(
+            matches_type(value, candidate) for candidate in expected_type
+        ):
+            errors.append(f"wrong type for {name}")
+        if "const" in specification and value != specification["const"]:
+            errors.append(f"wrong const for {name}")
+        if "enum" in specification and value not in specification["enum"]:
+            errors.append(f"wrong enum for {name}")
+        pattern = specification.get("pattern")
+        if isinstance(pattern, str) and isinstance(value, str) and not re.fullmatch(
+            pattern, value
+        ):
+            errors.append(f"wrong pattern for {name}")
+    return errors
 
 
 class Phase8ItemPublishContractTest(unittest.TestCase):
@@ -67,6 +190,24 @@ class Phase8ItemPublishContractTest(unittest.TestCase):
             "service_actor_user_id",
         ):
             self.assertNotIn(forbidden, serialized)
+
+    def test_real_non_mock_event_payload_is_closed_and_rejects_shape_drift(self) -> None:
+        schema = EVENT["$defs"]["item_publish_request_ready_v1"]
+        payload = _non_mock_item_event_payload()
+        self.assertEqual(_schema_errors(payload, schema), [])
+        self.assertRegex(payload["semantic_source_effect_hash"], r"^[a-f0-9]{64}$")
+
+        missing = dict(payload)
+        del missing["semantic_source_effect_hash"]
+        self.assertTrue(_schema_errors(missing, schema))
+
+        extra = dict(payload)
+        extra["service_actor_user_id"] = "worker@example.invalid"
+        self.assertTrue(_schema_errors(extra, schema))
+
+        wrong_type = dict(payload)
+        wrong_type["profile_version"] = "1"
+        self.assertTrue(_schema_errors(wrong_type, schema))
 
     def test_result_event_requires_authenticated_authoritative_truth_for_formal_identity(self) -> None:
         schema = EVENT["$defs"]["item_publish_result_observed_v1"]

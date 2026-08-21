@@ -709,6 +709,7 @@
         "profile_snapshot_hash",
         "idempotency_key_hash",
         "target_idempotency_key_hash",
+        "semantic_source_effect_hash",
         "semantic_effect_hash"
       ],
       "properties": {
@@ -733,6 +734,7 @@
         "profile_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "target_idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "semantic_source_effect_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "semantic_effect_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
       },
       "allOf": [
