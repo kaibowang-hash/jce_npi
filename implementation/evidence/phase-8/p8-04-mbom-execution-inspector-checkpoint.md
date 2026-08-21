@@ -296,3 +296,33 @@ the old P8-01 loading-state case misses its transient spinner after navigation
 already completes. The exact repair diff has no frontend path and all P8-04
 E2E pass. No timeout, retry, baseline or product behavior changes. This is
 harness evidence only and consumes no new diagnostic/product repair round.
+
+## Post-array-create downstream diagnostic cycle
+
+The deterministic harness repair exact SHA
+`8ffd881f81fd26731c41edea545689ed6e0d4917` passes ordinary CI
+`32534726775` after its one authorized same-run failed-job-only attempt 2:
+repository `96936025915`, frontend `96936009997`, secret `96936009966` and
+canonical `126/126` visual `96936008811` pass. Visual artifact `9465410732`
+has SHA-256
+`3fbbf0e47e7f10edffe3202b1744179d1039d3a3a1faccb7e76ce4e5deec06c6`.
+Attempt 1 had passed all nonvisual jobs; visual `96933374410` alone observed
+the pre-existing R1-05 loading-position transient.
+
+The only unchanged final Level 3 dispatch `32536066784` passes secret
+`96937128093`, repository `96937128315`, frontend `96937128212`, canonical
+`126/126` visual `96937128296` and controlled preflight `96939235660`.
+Controlled runtime `96939285384` stops at the first Synthetic POST composite
+verifier boundary after the array-serialization repair. No safe tuple, result
+artifact or retained Site log identifies which ordered response predicate
+failed, so no product root is proven. The historical server/create cycle is
+frozen at `diagnostic 1/1`, `repair 1/1`, `final 1/1`.
+
+The independent post-array-create downstream cycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. This verifier-only checkpoint temporarily enables
+the existing exact Synthetic POST scope, shared validated `HttpResult.trace_id`,
+strict mirrored-log reader and 29-code `P804_CREATE_*` allowlist. It changes no
+server, product, API, permission, transaction, Schema or Gate behavior and
+does not consume a product repair. Missing, invalid or absent safe evidence
+still returns the original constant; the activation must be disabled after
+the single bounded tuple is recovered.

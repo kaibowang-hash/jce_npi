@@ -236,8 +236,18 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             self.module.require_created_synthetic_batch(self._create_result())
         )
 
-    def test_create_diagnostics_are_closed_by_default_without_header_or_log_read(self):
-        self.assertFalse(self.module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
+    def test_create_diagnostics_are_temporarily_scoped_to_the_synthetic_post(self):
+        self.assertTrue(self.module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(self.module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(
+            self.module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED
+        )
+        self.assertFalse(
+            self.module.item_runtime.LEGACY_COLLECTION_DIAGNOSTICS_ENABLED
+        )
+        self.assertFalse(
+            self.module.item_runtime.LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED
+        )
         captured = {}
 
         def request(*_args, **kwargs):
@@ -273,12 +283,16 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 idempotency_key=f"p8-04-synthetic-{self.module.FIXTURE_RUN_ID}",
                 create_diagnostic=self.module.MBOM_CREATE_DIAGNOSTICS_ENABLED,
             )
-        self.assertNotIn(
-            self.module._CREATE_DIAGNOSTIC_HEADER,
-            captured["request_headers"],
+        self.assertEqual(
+            captured["request_headers"][self.module._CREATE_DIAGNOSTIC_HEADER],
+            self.module._CREATE_DIAGNOSTIC_SCOPE,
         )
 
         with patch.object(
+            self.module,
+            "MBOM_CREATE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.module.item_runtime,
             "_sanitized_server_log_diagnostic",
         ) as reader, self.assertRaises(RuntimeError):

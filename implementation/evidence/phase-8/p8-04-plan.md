@@ -764,3 +764,33 @@ spinner before navigation completed. The exact six-path repair diff contains
 no frontend path; every P8-04 E2E case passes. No timeout, retry, baseline,
 product or Gate standard changes. This run is a test-harness failure and does
 not consume another diagnostic or product repair round.
+
+The deterministic test-harness repair exact SHA
+`8ffd881f81fd26731c41edea545689ed6e0d4917` reached ordinary CI
+`32534726775`. Attempt 1 passed repository `96933374457`, frontend
+`96933374441` and secret `96933374248`; visual `96933374410` alone observed a
+pre-existing R1-05 loading-position transient. The one authorized same-run,
+failed-job-only attempt 2 passed repository `96936025915`, frontend
+`96936009997`, secret `96936009966` and the canonical `126/126` visual job
+`96936008811`. Visual artifact `9465410732` has SHA-256
+`3fbbf0e47e7f10edffe3202b1744179d1039d3a3a1faccb7e76ce4e5deec06c6`.
+
+The one unchanged final Level 3 dispatch `32536066784` retains successful
+secret `96937128093`, repository `96937128315`, frontend `96937128212`,
+canonical `126/126` visual `96937128296` and controlled preflight
+`96939235660`. Controlled runtime `96939285384` stops at the existing first
+Synthetic POST composite verifier boundary after the request-array repair.
+No safe tuple, result artifact or retained Site log distinguishes the ordered
+status, response-shape, queued-state, request-identity and Outbox-identity
+predicates. Static code inspection therefore proves no new product symbol.
+The historical server/create cycle is immutable at `diagnostic 1/1`,
+`repair 1/1`, `final 1/1`.
+
+An independent post-array-create downstream cycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its verifier-only checkpoint temporarily activates
+the existing exact `p804-mbom-create-v1` Synthetic POST scope and strict
+mirrored-log reader. The existing 29-code `P804_CREATE_*` allowlist, shared
+validated `HttpResult.trace_id`, one logical safe record and constant fallback
+remain unchanged. It changes no server, product, API, permission, transaction,
+Schema or Gate behavior and consumes no product repair. The activation must be
+closed after the single bounded tuple is recovered.
