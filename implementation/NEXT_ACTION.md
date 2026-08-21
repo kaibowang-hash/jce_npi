@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_FINAL_LEVEL_3 — P8-03`
+`IN_PROGRESS_AUDIT — P8-04`
 
-Recovery time: `2026-08-20T14:06:43Z`
+Recovery time: `2026-08-21T12:44:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -202,6 +202,15 @@ P8-03 checkpoint 4 ordinary CI:
 secret/Gitleaks `96448041487`, visual `96448041169` (`122/122`); controlled
 lanes correctly skipped.
 
+P8-03 final product checkpoint and P8-04 audit base:
+`c11d97cc4e26cd3961d7927608eb2510f6411269`
+
+P8-03 final ordinary CI:
+`32479492064`
+
+P8-03 final Level 3 workflow:
+`32480568505`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -325,20 +334,33 @@ Checkpoint 3 passes at exact product SHA `1a2c5be` and ordinary CI
 `31956908978`; complete evidence is
 `implementation/evidence/phase-8/p8-03-worker-adapter-result-checkpoint.md`.
 
-Execute only the final P8-03 Level 3 Gate against unchanged product checkpoint
-`5dbce209ea818a3ae929feb6decd40491175df5a`. First retain the exact ordinary CI
-attestation above, then (in the next authorized execution step) dispatch the
-complete Level 3 repository/frontend/full-history-secret/visual and cumulative
-disposable-Site runtime proof, migrations twice, route recovery, no target
-write/production traffic and cleanup, followed by the required `release-gate`
-review. This transition itself does not dispatch Level 3. P8-03 remains
-`IN_PROGRESS_FINAL_LEVEL_3` and P8-04 is not activated until that Gate passes.
+P8-03 passes Level 3 at exact final product checkpoint `c11d97c`. Ordinary CI
+`32479492064` passes secret `96762610233`, frontend `96762610332`, visual
+`96762610399` and repository `96762610789`. Final unchanged workflow
+`32480568505` passes secret `96765813580`, frontend `96765813706`, repository
+`96765813720`, visual `96765813721` (`123/123`), preflight `96768967388` and
+cumulative Site `96769017531`. Runtime artifact `9446493624` has digest
+`sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`.
+Complete evidence is
+`implementation/evidence/phase-8/p8-03-validation.md`.
 
-Do not contact production ERPNext/JCE, infer current custom Item fields,
-naming/UOM rules or service scopes, invent a cross-Project part identity, let
-Mock or synthetic proof report a formal Item code/mapping, execute an Item
-write, activate a route/row/worker before its checkpoint, add generic retry/
-reconciliation, activate MBOM/Asset/quality operations, or activate P8-04
+Execute only the bounded P8-04 requirement/domain/existing-capability/security
+audit for `INT-004` and the MBOM portion of `FR-DS-013`. Read the Phase 8
+requirement anchor and detailed requirement slices, P8-03 validation and
+ownership/contract boundaries, Phase 5 released EBOM evidence, existing
+integration request/result/Outbox/permission/migration code and directly
+related tests. Freeze exact released EBOM node/hierarchy/version/hash input,
+authoritative Item-mapping prerequisites, separate command and approval,
+target BOM/version authority, partial/uncertain truth, permissions, migration,
+rollback, allowed paths, affected tests and Level 3 impact in
+`implementation/evidence/phase-8/p8-04-plan.md`.
+
+P8-04 is `IN_PROGRESS_AUDIT`. No P8-04 product code, route, DocType, worker,
+adapter, UI or external effect is authorized until that frozen plan transition
+passes its exact-SHA ordinary CI. Do not contact production ERPNext/JCE,
+install a Sandbox/default profile, infer BOM field/naming/routing/service-scope
+facts, overwrite a submitted BOM, treat Mock/synthetic/HTTP acceptance/partial/
+timeout as formal success, add generic P8-07 operations or activate P8-05
 through P8-09 behavior.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow

@@ -1,34 +1,31 @@
 # Blockers
 
-Updated: `2026-08-20T14:06:43Z`
+Updated: `2026-08-21T12:44:00Z`
 
 ## Active hard blockers
 
-None. P8-02 passes at exact final product SHA
-`260ed2ef865180f33edfca0e8fe1daf4a0a4e771`. Ordinary CI `31944345420`
-passes repository `95157995410`, frontend `95157995356`, secret
-`95157995393` and `119/119` fixed-Linux visual `95157995395`. Final Level 3
-workflow `31944941030` passes repository, frontend, secret, visual, controlled
-preflight and cumulative disposable-Site runtime `95160766683`. Runtime
-artifact `9263250125` has digest
-`sha256:f9a8acee24ee8ac6d07c8e0efddd2cc384f1664fbd9397a7c3a219c59dc3b693`;
-signed ingress/Inbox concurrency/restart, at-most-one Project draft, stable
-cross-process replay, migrations twice, zero target write, zero production
-traffic and cleanup pass. P8-03 checkpoint 4 product SHA
-`5dbce209ea818a3ae929feb6decd40491175df5a` passes ordinary CI `32376188274`,
-including repository `96448042317`, frontend `96448041734`, secret/Gitleaks
-`96448041487` and visual `96448041169` at `122/122`. Checkpoint 4 is sealed;
-the final Level 3 Gate is active. No user action, login or frontend operation
-is required.
+None. P8-03 passes at exact final product SHA
+`c11d97cc4e26cd3961d7927608eb2510f6411269`. Ordinary CI `32479492064`
+passes secret `96762610233`, frontend `96762610332`, visual `96762610399` and
+repository `96762610789`. Final Level 3 `32480568505` passes secret
+`96765813580`, frontend `96765813706`, repository `96765813720`, visual
+`96765813721`, preflight `96768967388` and cumulative Site `96769017531`.
+Runtime artifact `9446493624` has digest
+`sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`;
+migrations twice, stream conflicts, uncertainty/no redispatch, cross-process
+replay, strict legacy read-only/non-claimable behavior, zero Mock mapping,
+zero production traffic and cleanup pass. Only the bounded P8-04 MBOM-publish
+audit is active. No user action, login or frontend operation is required.
 
 ## Active recovery
 
-None. P8-02 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
+None. P8-03 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-03 checkpoints 1 through 4 are sealed by exact-SHA ordinary
-CI; the final Level 3 Gate is active. Production adapters, formal Item mapping
-from Mock or synthetic proof, Item/MBOM/Asset/quality production writes, P8-04 through
-P8-09 and the P8-07 operations/replay/reconciliation surface remain inactive.
+authoritative. P8-04 changes no product behavior until its audit plan and
+transition ordinary CI pass. Production adapters, formal Item/BOM mapping
+from Mock or synthetic proof, Item/MBOM/Asset/quality production writes,
+P8-05 through P8-09 and the P8-07 operations/replay/reconciliation surface
+remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -39,29 +36,24 @@ actuals, stability policy, readiness/release, the external Released Trial
 Summary event/projection under `DR-REC-009`, form mapping, signature,
 retention and copy policy under `DR-REC-003` and `DR-REC-004`, and G7/ERP/
 production print authority remain scoped holds, not global Hard Blockers. The
-latest complete Level 3 is `31944941030` at
-`260ed2ef865180f33edfca0e8fe1daf4a0a4e771`. Production ERPNext/JCE endpoints,
+latest complete Level 3 is `32480568505` at
+`c11d97cc4e26cd3961d7927608eb2510f6411269`. Production ERPNext/JCE endpoints,
 credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-## Current authoritative blocker state — 2026-08-20T14:06:43Z
+## Current authoritative blocker state — 2026-08-21T12:44:00Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
-- P8-03 checkpoint 4 product SHA
-  `5dbce209ea818a3ae929feb6decd40491175df5a` passes exact-SHA ordinary CI
-  `32376188274`; repository, frontend, secret/Gitleaks and `122/122` visual
-  lanes are green and controlled lanes correctly skip.
-- The final Level 3 Gate is active after checkpoint 4 sealed the dense
-  trilingual EBOM Item execution inspector, truthful status/disabled/impact/
-  result/mapping states and one guarded primary request action. It requires no
-  production credential, endpoint or contact and is not dispatched by this
-  transition.
-- Missing current ERPNext Item customization, naming/UOM/service-scope and
-  authenticated Sandbox facts are scoped external holds. Formal mapping cannot
-  be inferred from Mock, synthetic, HTTP acceptance or timeout. Browser target
-  access, production traffic, P8-04 through P8-09 and P8-07 manual operations
-  remain inactive.
+- P8-03 exact final SHA `c11d97c` passes ordinary `32479492064` and final
+  unchanged Level 3 `32480568505`; the release review reports no P0/P1/P2.
+- P8-04 is planning/audit-only. The next action is to freeze its MBOM command,
+  ownership, exact released source, authoritative Item-mapping prerequisites,
+  partial/uncertain truth, permission, migration, rollback and Gate contract.
+- Missing ERPNext BOM customization, naming/routing/service-scope and
+  authenticated Sandbox facts are scoped external holds. No P8-04 product
+  route, row, worker, adapter or UI is authorized; production traffic, P8-05
+  through P8-09 and P8-07 manual operations remain inactive.
 
 ## Historical recovery
 

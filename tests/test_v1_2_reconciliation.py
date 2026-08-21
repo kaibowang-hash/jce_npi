@@ -161,6 +161,8 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_01_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_02_COMPLETED_ALLOCATION:
                 expected_evidence |= self.verifier.EXPECTED_P8_02_COMPLETED_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION:
+                expected_evidence |= self.verifier.EXPECTED_P8_03_COMPLETED_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -184,6 +186,8 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_01_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_02_COMPLETED_ALLOCATION:
                 expected_evidence |= self.verifier.EXPECTED_P8_02_COMPLETED_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION:
+                expected_evidence |= self.verifier.EXPECTED_P8_03_COMPLETED_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -257,6 +261,8 @@ class V12ReconciliationTests(unittest.TestCase):
                         expected_evidence |= self.verifier.EXPECTED_P8_01_COMPLETED_EVIDENCE
                     if requirement_id in self.verifier.EXPECTED_P8_02_COMPLETED_ALLOCATION:
                         expected_evidence |= self.verifier.EXPECTED_P8_02_COMPLETED_EVIDENCE
+                    if requirement_id in self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION:
+                        expected_evidence |= self.verifier.EXPECTED_P8_03_COMPLETED_EVIDENCE
                     self.assertEqual(evidence, expected_evidence)
                 for evidence_path in evidence:
                     self.assertTrue(
@@ -291,7 +297,10 @@ class V12ReconciliationTests(unittest.TestCase):
                         requirement_id,
                         self.verifier.EXPECTED_P8_02_COMPLETED_ALLOCATION.get(
                             requirement_id,
-                            anchored_status,
+                            self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION.get(
+                                requirement_id,
+                                anchored_status,
+                            ),
                         ),
                     )
                 )
@@ -316,13 +325,30 @@ class V12ReconciliationTests(unittest.TestCase):
                             evidence
                         )
                     )
+                if requirement_id in self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION:
+                    self.assertTrue(
+                        self.verifier.EXPECTED_P8_03_COMPLETED_EVIDENCE.issubset(
+                            evidence
+                        )
+                    )
 
         for requirement_id, expected_trace in {
             **self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS,
             **self.verifier.EXPECTED_P8_SCOPED_HOLDS,
         }.items():
             row = by_id[requirement_id]
-            self.assertEqual((row["phase"], row["status"]), expected_trace)
+            effective_trace = (
+                (
+                    "8",
+                    self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION[
+                        requirement_id
+                    ],
+                )
+                if requirement_id
+                in self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION
+                else expected_trace
+            )
+            self.assertEqual((row["phase"], row["status"]), effective_trace)
             evidence = {
                 value.strip()
                 for value in row["evidence"].split(";")
@@ -340,6 +366,12 @@ class V12ReconciliationTests(unittest.TestCase):
             if requirement_id in self.verifier.EXPECTED_P8_02_COMPLETED_ALLOCATION:
                 self.assertTrue(
                     self.verifier.EXPECTED_P8_02_COMPLETED_EVIDENCE.issubset(
+                        evidence
+                    )
+                )
+            if requirement_id in self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION:
+                self.assertTrue(
+                    self.verifier.EXPECTED_P8_03_COMPLETED_EVIDENCE.issubset(
                         evidence
                     )
                 )

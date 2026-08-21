@@ -4181,3 +4181,47 @@ repeat or rewrite it merely to restore context. See
   mapping from Mock or synthetic proof; default/networked profiles; generic
   retry/replay/reconciliation; MBOM/P8-04 through P8-09; and any target write
   remain inactive. No Hard Blocker or user action is required.
+
+## 2026-08-21 P8-03 Level 3 PASS; P8-04 audit active
+
+- Exact final product checkpoint
+  `c11d97cc4e26cd3961d7927608eb2510f6411269` passes ordinary pull-request CI
+  `32479492064`: secret `96762610233`, frontend `96762610332`, visual
+  `96762610399` and repository `96762610789` all pass.
+- The sole final unchanged Level 3 run `32480568505` passes secret
+  `96765813580`, frontend `96765813706`, repository `96765813720`, visual
+  `96765813721` (`123/123`), controlled preflight `96768967388` and cumulative
+  disposable Site `96769017531`. Runtime artifact `9446493624` has ZIP digest
+  `sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`;
+  its `result.txt` digest is
+  `sha256:7da7a1b27d7df031efad8ff2131a49e2d163efdebf5a8b4adc930231eea7d991`.
+  Visual artifact `9446001929` and Gitleaks artifact `9445882686` have ZIP
+  digests `sha256:241ee2da5387626b94e0f1c3883963912ccf2e8d774ccf949f8336b044a3cb5d`
+  and `sha256:3a36f0eef868a807f0eb8a2dccf060549b47bdc8e17ed269acee7b8c8e7eb6e7`.
+- Cumulative runtime proves default-disable, Project-first route/permission
+  truth, request/Outbox/attempt/result/mapping separation, active and retained
+  stream conflicts, uncertainty/no blind redispatch, cross-process replay,
+  migrations twice, strict legacy read-only/non-claimable behavior, zero Mock
+  mapping, zero production traffic and cleanup. All four response-neutral
+  diagnostic activations are closed.
+- The release review finds no P0, P1 or P2 issue. Complete evidence is
+  `implementation/evidence/phase-8/p8-03-validation.md`; the append-only
+  recovery record is
+  `implementation/evidence/phase-8/p8-03-final-level-3-recovery.md`. P8-03
+  closes `PASS_LEVEL_3`.
+- `INT-003` is technically verified for the Item execution foundation while
+  production/Sandbox mapping remains held. Only the Item portion of
+  `FR-DS-013` is technically verified; its MBOM and production/Sandbox mapping
+  portions remain held, so the requirement is not marked wholly complete.
+- Standing continuous-delivery authority activates only the bounded P8-04
+  requirement/domain/existing-capability/security audit for `INT-004` and the
+  MBOM portion of `FR-DS-013`. It must inspect released EBOM hierarchy,
+  current authoritative Item mapping prerequisites, operation separation,
+  immutable input/version/hash, target BOM/version authority, partial and
+  uncertain truth, permissions, migration, rollback, affected tests and Level
+  3 impact, then freeze `implementation/evidence/phase-8/p8-04-plan.md`.
+- The controller marker is: `P8-03 Level 3 PASS; P8-04 audit active`. No P8-04
+  product code is authorized before the frozen plan transition passes its
+  exact-SHA ordinary CI. Production ERPNext/JCE, target writes, generic P8-07
+  retry/DLQ/replay/reconciliation and P8-05 through P8-09 remain inactive.
+  There is no Hard Blocker and no user action is required.

@@ -373,3 +373,36 @@ This is an inspect verifier harness correction, not a product repair. The new
 `inspect-legacy` downstream cycle remains diagnostic `0/1`, product repair
 `0/1`, and final unchanged Gate `0/1`; all historical cycle counters remain
 immutable and all four diagnostic activations remain closed.
+
+## Terminal unchanged Gate and release disposition
+
+- Inspect-verifier remediation checkpoint:
+  `c11d97cc4e26cd3961d7927608eb2510f6411269`.
+- Exact-SHA ordinary CI `32479492064` passes secret `96762610233`, frontend
+  `96762610332`, visual `96762610399` and repository `96762610789`.
+- The sole final unchanged Level 3 run `32480568505` passes secret
+  `96765813580`, frontend `96765813706`, repository `96765813720`, visual
+  `96765813721`, controlled preflight `96768967388` and cumulative Site
+  `96769017531` at the same exact SHA.
+- Runtime artifact `9446493624` has ZIP SHA-256
+  `3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`;
+  its `result.txt` has SHA-256
+  `7da7a1b27d7df031efad8ff2131a49e2d163efdebf5a8b4adc930231eea7d991`.
+- Visual artifact `9446001929` has ZIP SHA-256
+  `241ee2da5387626b94e0f1c3883963912ccf2e8d774ccf949f8336b044a3cb5d`;
+  Gitleaks artifact `9445882686` has ZIP SHA-256
+  `3a36f0eef868a807f0eb8a2dccf060549b47bdc8e17ed269acee7b8c8e7eb6e7`.
+
+The cumulative disposable Site proves migrations twice after fixture setup,
+fresh and cross-process replay, same-stream active/retained conflicts,
+uncertain/no-redispatch truth, zero Mock mapping, strict legacy read-only/
+non-claimable behavior and complete cleanup. All four diagnostic activations
+remain `False`. The `release-gate` review reports no P0, P1 or P2 issue, so the
+inspect-legacy cycle closes at diagnostic `0/1`, product repair `0/1`, final
+unchanged Gate `1/1`, and P8-03 closes `PASS_LEVEL_3`.
+
+This terminal paragraph is append-only. Every earlier failed run, tuple,
+cycle counter and remediation classification above remains immutable
+diagnostic/recovery evidence and is not retroactively converted into PASS
+evidence. Complete final evidence is
+`implementation/evidence/phase-8/p8-03-validation.md`.

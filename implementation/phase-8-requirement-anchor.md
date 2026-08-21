@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-03 CHECKPOINT 4 PASS; FINAL LEVEL 3 ACTIVE**
+Status: **IN PROGRESS — P8-03 LEVEL 3 PASS; P8-04 AUDIT ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -394,12 +394,25 @@ repository `96448042317`, frontend `96448041734`, secret/Gitleaks
 correctly skip. Complete evidence is
 `implementation/evidence/phase-8/p8-03-item-inspector-checkpoint.md`.
 
-Standing authority now activates only the final Level 3 Gate: the dense
-direct-trilingual EBOM Item execution inspector, exact source/profile/expected-
-version impact, truthful Mock/queued/processing/failed/uncertain/synthetic/
-authoritative-mapping states and one guarded primary request action are sealed
-at checkpoint 4. No retry/reconcile control, browser target access, Sandbox or
-production network profile is installed. `NFR-INT-001` full operations/DLQ/
-manual replay/reconciliation remains P8-07. P8-04 through P8-09 and production
-ERPNext/JCE remain inactive. `INT-003` and the Item portion of `FR-DS-013`
-remain foundation/target-mapping holds; neither is finally complete.
+P8-03 then passes ordinary CI `32479492064` and final unchanged Level 3
+`32480568505` at exact product checkpoint `c11d97c`. The cumulative Site proves
+migrations twice, route and Project-first permission truth, request/Outbox/
+attempt/result/mapping separation, stream conflicts, uncertain no-redispatch,
+cross-process replay, strict legacy read-only/non-claimable behavior, zero Mock
+mapping, zero production traffic and cleanup. Complete evidence is
+`implementation/evidence/phase-8/p8-03-validation.md`.
+
+`INT-003` is technically verified for the Item execution foundation while
+production/Sandbox mapping remains held. Only the Item portion of `FR-DS-013`
+is technically verified; MBOM and production/Sandbox mapping remain held, so
+the whole requirement is not complete.
+
+Standing authority activates only the bounded P8-04 requirement/domain/
+existing-capability/security audit for `INT-004` and the MBOM portion of
+`FR-DS-013`. It must freeze exact released EBOM hierarchy/version/hash,
+current authoritative Item-mapping prerequisites, separate command/approval,
+target BOM/version authority, partial and uncertain truth, permissions,
+migration, rollback and Level 3 impact in
+`implementation/evidence/phase-8/p8-04-plan.md` before product code.
+`NFR-INT-001` full operations/DLQ/manual replay/reconciliation remains P8-07.
+P8-05 through P8-09 and production ERPNext/JCE remain inactive.

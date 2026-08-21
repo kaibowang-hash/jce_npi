@@ -1,25 +1,25 @@
 # Active Execution Goal
 
-Updated: `2026-08-20T14:06:43Z`
+Updated: `2026-08-21T12:44:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_FINAL_LEVEL_3 — P8-03`
+- Mode: `IN_PROGRESS_AUDIT — P8-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `5dbce209ea818a3ae929feb6decd40491175df5a` (pushed; P8-03
-  `CHECKPOINT_4_PASS`; final Level 3 active)
+  `c11d97cc4e26cd3961d7927608eb2510f6411269` (pushed; P8-03
+  `PASS_LEVEL_3`; P8-04 audit base)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `31944941030` (`PASS — LEVEL 3` at `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`;
-  repository, frontend, secret, `119/119` visual and cumulative controlled Site)
+  `32480568505` (`PASS — LEVEL 3` at `c11d97cc4e26cd3961d7927608eb2510f6411269`;
+  repository, frontend, secret, `123/123` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32376188274` (`PASS` at
-  `5dbce209ea818a3ae929feb6decd40491175df5a`; P8-03 checkpoint 4)
+  `32479492064` (`PASS` at
+  `c11d97cc4e26cd3961d7927608eb2510f6411269`; P8-03 final)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -94,18 +94,21 @@ Updated: `2026-08-20T14:06:43Z`
   ordinary CI `32376188274` exact-SHA PASS; repository `96448042317`, frontend
   `96448041734`, secret/Gitleaks `96448041487`, visual `96448041169`
   `122/122`; controlled lanes correctly skipped)
+- P8-03 final product Gate:
+  `c11d97cc4e26cd3961d7927608eb2510f6411269` (`LEVEL 3 PASS`;
+  ordinary CI `32479492064`; exact-SHA Level 3 `32480568505`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-03 — Item publish execution`
-  (`IN_PROGRESS_FINAL_LEVEL_3`)
-- Resumed product task: `P8-03` (`ACTIVE_FINAL_LEVEL_3`)
+  `P8-04 — MBOM publish execution`
+  (`IN_PROGRESS_AUDIT`)
+- Resumed product task: `P8-04` (`ACTIVE_AUDIT_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-03 FINAL LEVEL 3`)
+  (`IN_PROGRESS — P8-04 AUDIT`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -244,10 +247,21 @@ product SHA `5dbce209ea818a3ae929feb6decd40491175df5a` passes ordinary CI
 secret/Gitleaks `96448041487` and visual `96448041169` (`122/122`) all pass;
 controlled lanes correctly skip. The dense trilingual EBOM Item execution
 inspector, truthful status/impact/result/mapping states and one guarded primary
-request action are sealed. The final Level 3 Gate is now the only active
-scope. Mock/synthetic cannot report a formal Item code or mapping. Production
-ERPNext/JCE contact and P8-04 through P8-09 remain inactive. There is no Hard
-Blocker.
+request action are sealed. Exact final product SHA `c11d97c` passes ordinary
+CI `32479492064` and final unchanged Level 3 `32480568505`; runtime artifact
+`9446493624` has digest
+`sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`.
+Complete evidence is `implementation/evidence/phase-8/p8-03-validation.md`.
+
+The only active atomic scope is the P8-04 requirement/domain/existing-
+capability/security audit for `INT-004` and the MBOM portion of `FR-DS-013`.
+It must freeze exact released EBOM hierarchy, current authoritative Item-
+mapping prerequisites, separate command/approval and ownership, target BOM/
+version authority, partial/uncertain truth, permissions, migration, rollback,
+tests and Level 3 impact in `implementation/evidence/phase-8/p8-04-plan.md`.
+No P8-04 product code is authorized before the frozen-plan transition passes
+ordinary CI. Production ERPNext/JCE, target writes, generic P8-07 operations
+and P8-05 through P8-09 remain inactive. There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

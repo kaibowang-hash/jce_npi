@@ -34,10 +34,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P8-03")
+        self.assertEqual(value["task_id"], "P8-04")
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P8-04")
+        self.assertEqual(value["authorized_next_task"], "P8-05")
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
         source = MANIFEST.read_text(encoding="utf-8")
