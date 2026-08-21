@@ -348,6 +348,10 @@ function itemActionBlockReason(
   if (disabled) return t("Another EBOM command is in progress.");
   if (!list.permissions.canView)
     return t("You cannot view Item execution history for this Project.");
+  if (list.items.some((item) => item.legacyReadOnly))
+    return t(
+      "The historical Item publish request is read-only and requires reconciliation before any new request can be queued.",
+    );
   if (!list.permissions.canExecute)
     return t("You can inspect Item execution but cannot request it.");
   if (!list.executionProfile)
@@ -370,6 +374,95 @@ function itemActionBlockReason(
   }
   if (!sessionAvailable) return t("The secure command session is unavailable.");
   return null;
+}
+
+function LegacyItemPublishReadOnly({
+  detail,
+  locale,
+  t,
+}: {
+  detail: ItemPublishRequestDetailViewModel;
+  locale: Parameters<typeof formatNumber>[0];
+  t: ReturnType<typeof useI18n>["t"];
+}): React.JSX.Element {
+  const request = detail.request;
+  return (
+    <>
+      <div className="scenario-banner scenario-banner--read_only" role="status">
+        <SemanticStatus label={t("Reconciliation Required")} tone="warning" />
+        <span>
+          {t(
+            "The historical Item publish request is read-only and requires reconciliation before any new request can be queued.",
+          )}
+        </span>
+      </div>
+      <div className="item-publish__grid">
+        <div className="item-publish__evidence">
+          <h4>{t("Historical Item publish evidence")}</h4>
+          <DefinitionList
+            rows={[
+              {
+                label: t("Engineering item"),
+                value: request.source.engineeringItemId,
+                exempt: "identifier",
+              },
+              {
+                label: t("Source occurrences"),
+                value: formatNumber(
+                  locale,
+                  request.source.occurrences.length,
+                  0,
+                ),
+              },
+              {
+                label: t("Source hash"),
+                value: request.source.sourceHash,
+                exempt: "identifier",
+              },
+              {
+                label: t("Phase 5 request hash"),
+                value: request.releasedEvidence.publishRequestPayloadHash,
+                exempt: "identifier",
+              },
+              {
+                label: t("Request ID"),
+                value: request.globalId,
+                exempt: "identifier",
+              },
+              {
+                label: t("Recorded at"),
+                value: formatDateTime(locale, request.createdAt),
+              },
+              {
+                label: t("Last updated"),
+                value: formatDateTime(locale, request.updatedAt),
+              },
+            ]}
+          />
+        </div>
+        <div className="item-publish__evidence">
+          <h4>{t("Reconciliation boundary")}</h4>
+          <DefinitionList
+            rows={[
+              {
+                label: t("Request state"),
+                value: t("Reconciliation Required"),
+              },
+              {
+                label: t("Execution profile"),
+                value: t("Historical read-only evidence"),
+              },
+            ]}
+          />
+          <p>
+            {t(
+              "No target execution, adapter attempt, result or mapping authority is available from this historical record.",
+            )}
+          </p>
+        </div>
+      </div>
+    </>
+  );
 }
 
 function ItemPublishExecutionInspector({
@@ -408,6 +501,9 @@ function ItemPublishExecutionInspector({
     null;
   const list = listState.kind === "loaded" ? listState.value : null;
   const detail = detailState.kind === "loaded" ? detailState.value : null;
+  const legacyReadOnly =
+    detail?.request.legacyReadOnly === true ||
+    list?.items.some((item) => item.legacyReadOnly) === true;
   const displayProfile =
     detail?.request.profile ?? list?.executionProfile ?? null;
   const effectiveMappingExpectation =
@@ -505,6 +601,7 @@ function ItemPublishExecutionInspector({
       !dataSource ||
       !selectedNode ||
       !list ||
+      legacyReadOnly ||
       !sessionCommandContext ||
       actionBlockReason ||
       !acknowledged
@@ -576,7 +673,7 @@ function ItemPublishExecutionInspector({
           </p>
         </div>
         <CompactAction
-          disabled={commandState.kind === "processing"}
+          disabled={commandState.kind === "processing" || legacyReadOnly}
           icon="refresh"
           intent="familiar-low-risk"
           label={t("Reload")}
@@ -667,11 +764,19 @@ function ItemPublishExecutionInspector({
           <div className="item-publish__status-strip">
             <SemanticStatus
               label={
-                detail
-                  ? itemStateLabel(t, detail.request.state)
-                  : t("No Item execution request")
+                legacyReadOnly
+                  ? t("Reconciliation Required")
+                  : detail
+                    ? itemStateLabel(t, detail.request.state)
+                    : t("No Item execution request")
               }
-              tone={detail ? itemStateTone(detail.request.state) : "info"}
+              tone={
+                legacyReadOnly
+                  ? "warning"
+                  : detail
+                    ? itemStateTone(detail.request.state)
+                    : "info"
+              }
             />
             <span>
               {t("Requests")}:{" "}
@@ -679,9 +784,11 @@ function ItemPublishExecutionInspector({
             </span>
             <span>
               {t("Execution profile")}:{" "}
-              {displayProfile
-                ? targetModeLabel(t, displayProfile.targetMode)
-                : t("Unavailable")}
+              {legacyReadOnly
+                ? t("Historical read-only evidence")
+                : displayProfile
+                  ? targetModeLabel(t, displayProfile.targetMode)
+                  : t("Unavailable")}
             </span>
           </div>
 
@@ -697,283 +804,322 @@ function ItemPublishExecutionInspector({
             </div>
           ) : null}
 
-          <div className="item-publish__grid">
-            <div className="item-publish__evidence">
-              <h4>{t("Exact source and execution expectation")}</h4>
-              <DefinitionList
-                rows={[
-                  {
-                    label: t("Engineering item"),
-                    value: detail
-                      ? detail.request.source.engineeringItemId
-                      : selectedNode.line.engineeringItemId,
-                    exempt: "identifier",
-                  },
-                  {
-                    label: t("Source occurrences"),
-                    value: formatNumber(
-                      locale,
-                      detail
-                        ? detail.request.source.occurrences.length
-                        : publishRequest.nodes.filter(
-                            (node) =>
-                              node.line.engineeringItemId ===
-                              selectedNode.line.engineeringItemId,
-                          ).length,
-                      0,
-                    ),
-                  },
-                  {
-                    label: t("Item intent"),
-                    value:
-                      detail?.request.intent ===
-                      "update_item_engineering_fields"
-                        ? t("Update engineering fields intent")
-                        : t("Create Item intent"),
-                  },
-                  {
-                    label: t("Expected mapping version"),
-                    value: effectiveMappingExpectation
-                      ? formatNumber(
+          {legacyReadOnly ? (
+            detailState.kind === "loading" || detailState.kind === "idle" ? (
+              <Loading label={t("Loading historical Item evidence")} />
+            ) : detailState.kind === "failed" ? (
+              <div className="item-publish__resource" role="alert">
+                <SemanticStatus
+                  label={t("Item detail unavailable")}
+                  tone="danger"
+                />
+                <RequestFailurePanel failure={detailState.failure} />
+                <Button icon="refresh" onClick={reload}>
+                  {t("Reload")}
+                </Button>
+              </div>
+            ) : detail ? (
+              <LegacyItemPublishReadOnly
+                detail={detail}
+                locale={locale}
+                t={t}
+              />
+            ) : null
+          ) : (
+            <>
+              <div className="item-publish__grid">
+                <div className="item-publish__evidence">
+                  <h4>{t("Exact source and execution expectation")}</h4>
+                  <DefinitionList
+                    rows={[
+                      {
+                        label: t("Engineering item"),
+                        value: detail
+                          ? detail.request.source.engineeringItemId
+                          : selectedNode.line.engineeringItemId,
+                        exempt: "identifier",
+                      },
+                      {
+                        label: t("Source occurrences"),
+                        value: formatNumber(
                           locale,
-                          effectiveMappingExpectation.mappingVersion,
+                          detail
+                            ? detail.request.source.occurrences.length
+                            : publishRequest.nodes.filter(
+                                (node) =>
+                                  node.line.engineeringItemId ===
+                                  selectedNode.line.engineeringItemId,
+                              ).length,
                           0,
-                        )
-                      : t("Unavailable"),
-                  },
-                  {
-                    label: t("Expected target version"),
-                    value:
-                      effectiveMappingExpectation?.targetVersion ??
-                      t("Not assigned"),
-                    ...(effectiveMappingExpectation?.targetVersion
-                      ? ({ exempt: "identifier" } as const)
-                      : {}),
-                  },
-                  {
-                    label: t("Source hash"),
-                    value: detail
-                      ? detail.request.source.sourceHash
-                      : selectedNode.inputHash,
-                    exempt: "identifier",
-                  },
-                  {
-                    label: t("Phase 5 request hash"),
-                    value: publishRequest.payloadHash,
-                    exempt: "identifier",
-                  },
-                ]}
-              />
-            </div>
-            <div className="item-publish__evidence">
-              <h4>{t("Profile and mapping authority")}</h4>
-              <DefinitionList
-                rows={[
-                  {
-                    label: t("Profile"),
-                    value: displayProfile?.profileId ?? t("Unavailable"),
-                    ...(displayProfile?.profileId
-                      ? ({ exempt: "identifier" } as const)
-                      : {}),
-                  },
-                  {
-                    label: t("Profile version"),
-                    value: displayProfile
-                      ? formatNumber(locale, displayProfile.profileVersion, 0)
-                      : t("Unavailable"),
-                  },
-                  {
-                    label: t("Environment"),
-                    value: displayProfile?.environmentCode ?? t("Unavailable"),
-                    exempt: "identifier",
-                  },
-                  {
-                    label: t("Current mapping authority"),
-                    value: authoritativeCurrentMapping
-                      ? t("Authoritative Sandbox observation")
-                      : t("No authoritative mapping"),
-                  },
-                  {
-                    label: t("Formal Item Code"),
-                    value:
-                      detail?.permissions.canView && detail.currentMapping
-                        ? detail.currentMapping.head.formalItemCode
-                        : t("Not assigned"),
-                    ...(detail?.permissions.canView && detail.currentMapping
-                      ? ({ exempt: "identifier" } as const)
-                      : {}),
-                  },
-                  {
-                    label: t("Target version"),
-                    value:
-                      detail?.permissions.canView && detail.currentMapping
-                        ? detail.currentMapping.head.targetVersion
-                        : t("Not assigned"),
-                    ...(detail?.permissions.canView && detail.currentMapping
-                      ? ({ exempt: "identifier" } as const)
-                      : {}),
-                  },
-                  {
-                    label: t("Mapping version"),
-                    value: detail?.currentMapping
-                      ? formatNumber(
-                          locale,
-                          detail.currentMapping.head.mappingVersion,
-                          0,
-                        )
-                      : t("Not assigned"),
-                  },
-                ]}
-              />
-            </div>
-          </div>
-
-          {detailState.kind === "loading" ? (
-            <Loading label={t("Loading Item attempt history")} />
-          ) : detailState.kind === "failed" ? (
-            <div className="item-publish__resource" role="alert">
-              <SemanticStatus
-                label={t("Item detail unavailable")}
-                tone="danger"
-              />
-              <RequestFailurePanel failure={detailState.failure} />
-              <Button icon="refresh" onClick={reload}>
-                {t("Reload")}
-              </Button>
-            </div>
-          ) : detail ? (
-            <div className="item-publish__attempts">
-              <h4>{t("Immutable attempt history")}</h4>
-              {detail.attempts.length === 0 ? (
-                <p>{t("No adapter attempt was recorded for this request.")}</p>
-              ) : (
-                <div className="item-publish__attempt-table" tabIndex={0}>
-                  <table className="data-table data-table--compact">
-                    <thead>
-                      <tr>
-                        <th>{t("Attempt")}</th>
-                        <th>{t("State")}</th>
-                        <th>{t("Adapter boundary")}</th>
-                        <th>{t("Started at")}</th>
-                        <th>{t("Finished")}</th>
-                        <th>{t("Fault")}</th>
-                        <th>{t("Reconciliation")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detail.attempts.map((attempt) => (
-                        <tr key={attempt.globalId}>
-                          <td>
-                            {formatNumber(locale, attempt.attemptNumber, 0)}
-                          </td>
-                          <td>{itemAttemptStateLabel(t, attempt.state)}</td>
-                          <td>
-                            {attempt.adapterBoundaryCrossed
-                              ? t("Crossed")
-                              : t("Not crossed")}
-                          </td>
-                          <td>{formatDateTime(locale, attempt.startedAt)}</td>
-                          <td>
-                            {attempt.finishedAt
-                              ? formatDateTime(locale, attempt.finishedAt)
-                              : t("Pending")}
-                          </td>
-                          <td>{itemFaultKindLabel(t, attempt.faultKind)}</td>
-                          <td>
-                            {attempt.reconciliationRequired
-                              ? t("Required")
-                              : t("Not required")}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                        ),
+                      },
+                      {
+                        label: t("Item intent"),
+                        value:
+                          detail?.request.intent ===
+                          "update_item_engineering_fields"
+                            ? t("Update engineering fields intent")
+                            : t("Create Item intent"),
+                      },
+                      {
+                        label: t("Expected mapping version"),
+                        value: effectiveMappingExpectation
+                          ? formatNumber(
+                              locale,
+                              effectiveMappingExpectation.mappingVersion,
+                              0,
+                            )
+                          : t("Unavailable"),
+                      },
+                      {
+                        label: t("Expected target version"),
+                        value:
+                          effectiveMappingExpectation?.targetVersion ??
+                          t("Not assigned"),
+                        ...(effectiveMappingExpectation?.targetVersion
+                          ? ({ exempt: "identifier" } as const)
+                          : {}),
+                      },
+                      {
+                        label: t("Source hash"),
+                        value: detail
+                          ? detail.request.source.sourceHash
+                          : selectedNode.inputHash,
+                        exempt: "identifier",
+                      },
+                      {
+                        label: t("Phase 5 request hash"),
+                        value: publishRequest.payloadHash,
+                        exempt: "identifier",
+                      },
+                    ]}
+                  />
                 </div>
-              )}
-            </div>
-          ) : null}
+                <div className="item-publish__evidence">
+                  <h4>{t("Profile and mapping authority")}</h4>
+                  <DefinitionList
+                    rows={[
+                      {
+                        label: t("Profile"),
+                        value: displayProfile?.profileId ?? t("Unavailable"),
+                        ...(displayProfile?.profileId
+                          ? ({ exempt: "identifier" } as const)
+                          : {}),
+                      },
+                      {
+                        label: t("Profile version"),
+                        value: displayProfile
+                          ? formatNumber(
+                              locale,
+                              displayProfile.profileVersion,
+                              0,
+                            )
+                          : t("Unavailable"),
+                      },
+                      {
+                        label: t("Environment"),
+                        value:
+                          displayProfile?.environmentCode ?? t("Unavailable"),
+                        exempt: "identifier",
+                      },
+                      {
+                        label: t("Current mapping authority"),
+                        value: authoritativeCurrentMapping
+                          ? t("Authoritative Sandbox observation")
+                          : t("No authoritative mapping"),
+                      },
+                      {
+                        label: t("Formal Item Code"),
+                        value:
+                          detail?.permissions.canView && detail.currentMapping
+                            ? detail.currentMapping.head.formalItemCode
+                            : t("Not assigned"),
+                        ...(detail?.permissions.canView && detail.currentMapping
+                          ? ({ exempt: "identifier" } as const)
+                          : {}),
+                      },
+                      {
+                        label: t("Target version"),
+                        value:
+                          detail?.permissions.canView && detail.currentMapping
+                            ? detail.currentMapping.head.targetVersion
+                            : t("Not assigned"),
+                        ...(detail?.permissions.canView && detail.currentMapping
+                          ? ({ exempt: "identifier" } as const)
+                          : {}),
+                      },
+                      {
+                        label: t("Mapping version"),
+                        value: detail?.currentMapping
+                          ? formatNumber(
+                              locale,
+                              detail.currentMapping.head.mappingVersion,
+                              0,
+                            )
+                          : t("Not assigned"),
+                      },
+                    ]}
+                  />
+                </div>
+              </div>
 
-          {commandState.kind === "processing" ? (
-            <div className="item-publish__command" role="status">
-              <SemanticStatus
-                label={t("Creating local execution request")}
-                tone="info"
-              />
-              <span>
-                {t(
-                  "No target success is reported while the request is being committed.",
-                )}
-              </span>
-            </div>
-          ) : commandState.kind === "failed" ? (
-            <div className="item-publish__command" role="alert">
-              <SemanticStatus label={t("Item request failed")} tone="danger" />
-              <RequestFailurePanel failure={commandState.failure} />
-            </div>
-          ) : commandState.kind === "accepted" ? (
-            <div className="item-publish__command" role="status">
-              <SemanticStatus
-                label={itemStateLabel(t, commandState.detail.request.state)}
-                tone={itemStateTone(commandState.detail.request.state)}
-              />
-              <span>
-                {t(
-                  "The immutable request was committed locally. This is not target success.",
-                )}
-              </span>
-            </div>
-          ) : null}
-
-          <form
-            className="item-publish__request-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              submit();
-            }}
-          >
-            <div className="item-publish__request-copy">
-              <h4>{t("Request exact Item execution")}</h4>
-              <p>
-                {t(
-                  "Impact: the server freezes this released source, current profile and mapping expectation, then commits an auditable request before any worker may cross an adapter boundary.",
-                )}
-              </p>
-              {actionBlockReason ? (
-                <p className="form-error" role="status">
-                  {actionBlockReason}
-                </p>
+              {detailState.kind === "loading" ? (
+                <Loading label={t("Loading Item attempt history")} />
+              ) : detailState.kind === "failed" ? (
+                <div className="item-publish__resource" role="alert">
+                  <SemanticStatus
+                    label={t("Item detail unavailable")}
+                    tone="danger"
+                  />
+                  <RequestFailurePanel failure={detailState.failure} />
+                  <Button icon="refresh" onClick={reload}>
+                    {t("Reload")}
+                  </Button>
+                </div>
+              ) : detail ? (
+                <div className="item-publish__attempts">
+                  <h4>{t("Immutable attempt history")}</h4>
+                  {detail.attempts.length === 0 ? (
+                    <p>
+                      {t("No adapter attempt was recorded for this request.")}
+                    </p>
+                  ) : (
+                    <div className="item-publish__attempt-table" tabIndex={0}>
+                      <table className="data-table data-table--compact">
+                        <thead>
+                          <tr>
+                            <th>{t("Attempt")}</th>
+                            <th>{t("State")}</th>
+                            <th>{t("Adapter boundary")}</th>
+                            <th>{t("Started at")}</th>
+                            <th>{t("Finished")}</th>
+                            <th>{t("Fault")}</th>
+                            <th>{t("Reconciliation")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {detail.attempts.map((attempt) => (
+                            <tr key={attempt.globalId}>
+                              <td>
+                                {formatNumber(locale, attempt.attemptNumber, 0)}
+                              </td>
+                              <td>{itemAttemptStateLabel(t, attempt.state)}</td>
+                              <td>
+                                {attempt.adapterBoundaryCrossed
+                                  ? t("Crossed")
+                                  : t("Not crossed")}
+                              </td>
+                              <td>
+                                {formatDateTime(locale, attempt.startedAt)}
+                              </td>
+                              <td>
+                                {attempt.finishedAt
+                                  ? formatDateTime(locale, attempt.finishedAt)
+                                  : t("Pending")}
+                              </td>
+                              <td>
+                                {itemFaultKindLabel(t, attempt.faultKind)}
+                              </td>
+                              <td>
+                                {attempt.reconciliationRequired
+                                  ? t("Required")
+                                  : t("Not required")}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               ) : null}
-            </div>
-            <label className="confirmation-check">
-              <input
-                checked={acknowledged}
-                disabled={
-                  Boolean(actionBlockReason) ||
-                  commandState.kind === "processing"
-                }
-                onChange={(event) => {
-                  setAcknowledged(event.currentTarget.checked);
+
+              {commandState.kind === "processing" ? (
+                <div className="item-publish__command" role="status">
+                  <SemanticStatus
+                    label={t("Creating local execution request")}
+                    tone="info"
+                  />
+                  <span>
+                    {t(
+                      "No target success is reported while the request is being committed.",
+                    )}
+                  </span>
+                </div>
+              ) : commandState.kind === "failed" ? (
+                <div className="item-publish__command" role="alert">
+                  <SemanticStatus
+                    label={t("Item request failed")}
+                    tone="danger"
+                  />
+                  <RequestFailurePanel failure={commandState.failure} />
+                </div>
+              ) : commandState.kind === "accepted" ? (
+                <div className="item-publish__command" role="status">
+                  <SemanticStatus
+                    label={itemStateLabel(t, commandState.detail.request.state)}
+                    tone={itemStateTone(commandState.detail.request.state)}
+                  />
+                  <span>
+                    {t(
+                      "The immutable request was committed locally. This is not target success.",
+                    )}
+                  </span>
+                </div>
+              ) : null}
+
+              <form
+                className="item-publish__request-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  submit();
                 }}
-                type="checkbox"
-              />
-              <span>
-                {t(
-                  "I confirm this request uses the exact released Item source and current execution profile.",
-                )}
-              </span>
-            </label>
-            <Button
-              disabled={
-                Boolean(actionBlockReason) ||
-                !acknowledged ||
-                commandState.kind === "processing"
-              }
-              type="submit"
-              visual="primary"
-            >
-              {t("Request Item execution")}
-            </Button>
-          </form>
+              >
+                <div className="item-publish__request-copy">
+                  <h4>{t("Request exact Item execution")}</h4>
+                  <p>
+                    {t(
+                      "Impact: the server freezes this released source, current profile and mapping expectation, then commits an auditable request before any worker may cross an adapter boundary.",
+                    )}
+                  </p>
+                  {actionBlockReason ? (
+                    <p className="form-error" role="status">
+                      {actionBlockReason}
+                    </p>
+                  ) : null}
+                </div>
+                <label className="confirmation-check">
+                  <input
+                    checked={acknowledged}
+                    disabled={
+                      Boolean(actionBlockReason) ||
+                      commandState.kind === "processing"
+                    }
+                    onChange={(event) => {
+                      setAcknowledged(event.currentTarget.checked);
+                    }}
+                    type="checkbox"
+                  />
+                  <span>
+                    {t(
+                      "I confirm this request uses the exact released Item source and current execution profile.",
+                    )}
+                  </span>
+                </label>
+                <Button
+                  disabled={
+                    Boolean(actionBlockReason) ||
+                    !acknowledged ||
+                    commandState.kind === "processing"
+                  }
+                  type="submit"
+                  visual="primary"
+                >
+                  {t("Request Item execution")}
+                </Button>
+              </form>
+            </>
+          )}
         </>
       )}
     </section>

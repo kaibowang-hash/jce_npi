@@ -12,6 +12,7 @@ import {
 import { ebomProjectId } from "../support/ebom-fixture";
 import {
   itemPublishDetailFixture,
+  itemPublishLegacyDetailFixture,
   itemPublishListFixture,
   itemPublishRequestId,
   itemPublishSiblingNodeId,
@@ -58,6 +59,76 @@ describe("Item publish response validation", () => {
     expect(isItemPublishRequestList(itemPublishListFixture(synthetic))).toBe(
       true,
     );
+  });
+
+  it("accepts only the strict read-only legacy Item history matrix", () => {
+    const legacy = itemPublishLegacyDetailFixture();
+    expect(legacy.request.legacyReadOnly).toBe(true);
+    expect(isItemPublishRequest(legacy.request)).toBe(true);
+    expect(isItemPublishRequestDetail(legacy)).toBe(true);
+    expect(isItemPublishRequestList(itemPublishListFixture(legacy))).toBe(true);
+
+    expect(
+      isItemPublishRequest({
+        ...legacy.request,
+        profile: { ...legacy.request.profile, targetMode: "mock" as const },
+      }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequest({ ...legacy.request, dispatchAllowed: true }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequest({
+        ...legacy.request,
+        outboxEventId: "76000000-0000-4000-8000-000000000004",
+      }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequest({
+        ...legacy.request,
+        resultGlobalId: "76000000-0000-4000-8000-000000000003",
+      }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequest({
+        ...legacy.request,
+        state: "validated_mock" as const,
+      }),
+    ).toBe(false);
+    expect(isItemPublishRequest({ ...legacy.request, current: true })).toBe(
+      false,
+    );
+    expect(
+      isItemPublishRequest({ ...legacy.request, legacyReadOnly: false }),
+    ).toBe(false);
+
+    const currentMapping = itemPublishDetailFixture({
+      authoritativeMapping: true,
+      state: "succeeded",
+      targetMode: "sandbox",
+    }).currentMapping;
+    expect(currentMapping).not.toBeNull();
+    expect(isItemPublishRequestDetail({ ...legacy, currentMapping })).toBe(
+      false,
+    );
+    expect(
+      isItemPublishRequestDetail({
+        ...legacy,
+        permissions: { canView: true, canExecute: true },
+      }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequestDetail({
+        ...legacy,
+        attempts: itemPublishDetailFixture({ state: "processing" }).attempts,
+      }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequestDetail({
+        ...legacy,
+        result: itemPublishDetailFixture({ state: "succeeded" }).result,
+      }),
+    ).toBe(false);
   });
 
   it("keeps mapping-conflict request truth separate from authoritative result truth", () => {

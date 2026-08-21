@@ -22,6 +22,7 @@ import {
 } from "../support/ebom-fixture";
 import {
   itemPublishDetailFixture,
+  itemPublishLegacyDetailFixture,
   itemPublishListFixture,
   itemPublishRequestId,
 } from "../support/item-publish-fixture";
@@ -399,6 +400,63 @@ test.describe("P8-03 live Item execution inspector", () => {
       expect(itemReads.every((item) => item.csrfToken === undefined)).toBe(
         true,
       );
+    });
+
+    test(`renders strict legacy Item history as read-only in ${locale}`, async ({
+      page,
+    }) => {
+      await installSession(page, locale);
+      const observed = await installApi(page, {
+        detail: itemPublishLegacyDetailFixture(),
+      });
+      await openItemInspector(page, locale, {
+        expectAttemptHistory: false,
+        expectSourceEvidence: false,
+      });
+      const inspector = page.getByRole("region", {
+        name: translate(locale, "Item execution inspector"),
+      });
+
+      await expect(
+        inspector
+          .getByText(translate(locale, "Reconciliation Required"))
+          .first(),
+      ).toBeVisible();
+      await expect(
+        inspector.getByText(
+          translate(
+            locale,
+            "The historical Item publish request is read-only and requires reconciliation before any new request can be queued.",
+          ),
+        ),
+      ).toBeVisible();
+      await expect(
+        inspector.getByText(
+          translate(locale, "Historical Item publish evidence"),
+        ),
+      ).toBeVisible();
+      await expect(
+        inspector.getByRole("button", {
+          name: translate(locale, "Request Item execution"),
+        }),
+      ).toHaveCount(0);
+      await expect(
+        inspector.getByText(translate(locale, "Mock validation")),
+      ).toHaveCount(0);
+      await expect(
+        inspector.getByText(translate(locale, "Sandbox execution")),
+      ).toHaveCount(0);
+      await expect(
+        inspector.getByText(translate(locale, "Queued; target result pending")),
+      ).toHaveCount(0);
+      await expectNoMixedLanguage(page, locale);
+
+      const itemCommands = observed.filter(
+        (item) =>
+          item.method === "POST" &&
+          item.path.endsWith("/item-publish-requests"),
+      );
+      expect(itemCommands).toHaveLength(0);
     });
   }
 

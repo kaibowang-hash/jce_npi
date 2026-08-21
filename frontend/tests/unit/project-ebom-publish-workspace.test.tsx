@@ -22,6 +22,7 @@ import {
 } from "../support/publish-request-fixture";
 import {
   itemPublishDetailFixture,
+  itemPublishLegacyDetailFixture,
   itemPublishListFixture,
 } from "../support/item-publish-fixture";
 import { renderWithLocale } from "../support/render";
@@ -305,6 +306,39 @@ describe("EBOM publish-request workspace", () => {
     expect(screen.queryByText("ITEM-SANDBOX-0001")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /reconcile/iu }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders legacy Item history as read-only reconciliation evidence", async () => {
+    const user = userEvent.setup();
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      itemDataSource(itemPublishLegacyDetailFixture()),
+    );
+
+    await activateItemInspector(user);
+    expect(
+      (await screen.findAllByText("Reconciliation Required")).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        "The historical Item publish request is read-only and requires reconciliation before any new request can be queued.",
+      ),
+    ).toBeVisible();
+    expect(screen.getByText("Historical Item publish evidence")).toBeVisible();
+    expect(screen.getByText("Historical read-only evidence")).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Request Item execution" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Mock validation")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sandbox execution")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Queued; target result pending"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("No adapter attempt was recorded for this request."),
     ).not.toBeInTheDocument();
   });
 

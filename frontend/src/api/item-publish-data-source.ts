@@ -102,6 +102,8 @@ export interface ItemPublishRequestViewModel {
   payloadHash: string;
   state: ItemPublishRequestState;
   dispatchAllowed: boolean;
+  legacyReadOnly: boolean;
+  current: boolean;
   outboxEventId: string | null;
   resultGlobalId: string | null;
   optimisticVersion: number;
@@ -565,6 +567,8 @@ export function isItemPublishRequest(
       "payloadHash",
       "state",
       "dispatchAllowed",
+      "legacyReadOnly",
+      "current",
       "outboxEventId",
       "resultGlobalId",
       "optimisticVersion",
@@ -588,6 +592,8 @@ export function isItemPublishRequest(
     !hash(value.payloadHash) ||
     !requestStates.has(value.state as ItemPublishRequestState) ||
     typeof value.dispatchAllowed !== "boolean" ||
+    typeof value.legacyReadOnly !== "boolean" ||
+    typeof value.current !== "boolean" ||
     !nullable(value.outboxEventId, uuid) ||
     !nullable(value.resultGlobalId, uuid) ||
     !positive(value.optimisticVersion) ||
@@ -595,6 +601,17 @@ export function isItemPublishRequest(
     !timestamp(value.updatedAt)
   )
     return false;
+  if (value.legacyReadOnly) {
+    return (
+      value.profile.targetMode !== "mock" &&
+      !value.current &&
+      value.state !== "validated_mock" &&
+      !value.dispatchAllowed &&
+      value.outboxEventId === null &&
+      value.resultGlobalId === null
+    );
+  }
+  if (!value.current) return false;
   if (value.profile.targetMode === "mock") {
     return (
       value.state === "validated_mock" &&
@@ -935,6 +952,17 @@ export function isItemPublishRequestDetail(
     return false;
   const candidate = value as unknown as ItemPublishRequestDetailViewModel;
   const request = candidate.request;
+  if (request.legacyReadOnly) {
+    return (
+      !request.current &&
+      candidate.currentMapping === null &&
+      candidate.attempts.length === 0 &&
+      candidate.result === null &&
+      candidate.permissions.canView &&
+      !candidate.permissions.canExecute
+    );
+  }
+  if (!request.current) return false;
   const attemptsAreBound =
     (request.profile.targetMode === "mock"
       ? candidate.attempts.length === 0

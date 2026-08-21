@@ -7901,10 +7901,16 @@ An immutable Item request already exists for this exact source.,此准确来源�
 Load the exact Item execution context before requesting execution.,发起执行请求前请先加载准确的物料执行上下文。
 Item execution inspector,物料执行检查器
 Request and result history is bound to the selected immutable Phase 5 node. Formal Item identity is shown only from the current authoritative mapping.,请求与结果历史绑定到所选不可变第 5 阶段节点。正式物料标识仅来自当前权威映射。
+Historical Item publish evidence,历史物料发布证据
+Historical read-only evidence,历史只读证据
+Reconciliation boundary,对账边界
+The historical Item publish request is read-only and requires reconciliation before any new request can be queued.,历史物料发布请求为只读，在排队任何新请求前需要对账。
+"No target execution, adapter attempt, result or mapping authority is available from this historical record.","此历史记录不提供目标执行、适配器尝试、结果或映射权威性。"
 Select exact Item source,选择准确物料来源
 Source node,来源节点
 The Item execution data source is not configured. No target system was contacted.,物料执行数据源未配置。未联系任何目标系统。
 Loading Item execution context,正在加载物料执行上下文
+Loading historical Item evidence,正在加载历史物料证据
 Item execution unavailable,物料执行不可用
 No Item execution request,无物料执行请求
 Execution profile,执行配置

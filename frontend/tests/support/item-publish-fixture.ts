@@ -159,6 +159,8 @@ export function itemPublishDetailFixture(
     payloadHash: hash("6"),
     state,
     dispatchAllowed: !mock,
+    legacyReadOnly: false,
+    current: true,
     outboxEventId,
     resultGlobalId: hasResult ? itemPublishResultId : null,
     optimisticVersion: 2,
@@ -406,5 +408,28 @@ export function itemPublishListFixture(
         observationHash: null,
       },
     items: detail ? [detail.request] : [],
+  };
+}
+
+export function itemPublishLegacyDetailFixture(): ItemPublishRequestDetailViewModel {
+  const detail = itemPublishDetailFixture({
+    state: "queued",
+    targetMode: "sandbox",
+  });
+  return {
+    requestGlobalId: detail.requestGlobalId,
+    request: {
+      ...detail.request,
+      dispatchAllowed: false,
+      legacyReadOnly: true,
+      current: false,
+      outboxEventId: null,
+      resultGlobalId: null,
+      state: "queued",
+    },
+    currentMapping: null,
+    attempts: [],
+    result: null,
+    permissions: { canView: true, canExecute: false },
   };
 }
