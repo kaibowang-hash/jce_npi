@@ -34,6 +34,7 @@ from npi_integration.item_publish.domain import (
     create_item_publish_request,
     group_item_source,
 )
+from npi_integration.item_publish.diagnostics import item_create_server_step
 from npi_integration.item_publish.problems import (
     ItemExecutionProfileUnavailable,
     ItemPublishAuthorityUnavailable,
@@ -244,15 +245,16 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         if phase5_row is None:
             raise ItemPublishUnavailable()
         try:
-            phase5_request = self._exact_released_phase5_request(
-                project,
-                phase5_row,
-            )
-            source = self._item_source(
-                project,
-                phase5_request,
-                selected_publish_node_id,
-            )
+            with item_create_server_step("P803_CREATE_SOURCE_RESOLVE"):
+                phase5_request = self._exact_released_phase5_request(
+                    project,
+                    phase5_row,
+                )
+                source = self._item_source(
+                    project,
+                    phase5_request,
+                    selected_publish_node_id,
+                )
         except ItemPublishContractError as error:
             raise ItemPublishSourceConflict() from error
         except NpiProblem:
@@ -310,25 +312,27 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         idempotency_key_hash: str,
         acknowledgement: str,
     ) -> ItemPublishCommandOutcome | None:
-        project = self._locked_command_project(project_id)
+        with item_create_server_step("P803_CREATE_PROJECT_LOCK"):
+            project = self._locked_command_project(project_id)
         if project is None:
             return None
-        command_hash = canonical_hash(
-            {
-                "apiVersion": ITEM_PUBLISH_API_VERSION,
-                "operation": ITEM_PUBLISH_OPERATION,
-                "projectGlobalId": str(project.global_id),
-                "publishRequestGlobalId": str(publish_request_id),
-                "selectedPublishNodeGlobalId": str(selected_publish_node_id),
-                "expectedMappingVersion": expected_mapping_version,
-                "acknowledgement": acknowledgement,
-            }
-        )
-        scope_key = self._idempotency_scope_key(
-            project,
-            idempotency_key_hash=idempotency_key_hash,
-        )
-        receipt = self._idempotency_receipt(scope_key)
+        with item_create_server_step("P803_CREATE_IDEMPOTENCY_CONTEXT"):
+            command_hash = canonical_hash(
+                {
+                    "apiVersion": ITEM_PUBLISH_API_VERSION,
+                    "operation": ITEM_PUBLISH_OPERATION,
+                    "projectGlobalId": str(project.global_id),
+                    "publishRequestGlobalId": str(publish_request_id),
+                    "selectedPublishNodeGlobalId": str(selected_publish_node_id),
+                    "expectedMappingVersion": expected_mapping_version,
+                    "acknowledgement": acknowledgement,
+                }
+            )
+            scope_key = self._idempotency_scope_key(
+                project,
+                idempotency_key_hash=idempotency_key_hash,
+            )
+            receipt = self._idempotency_receipt(scope_key)
         if receipt is not None:
             return self._replay_or_conflict(
                 project,
@@ -337,13 +341,15 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                 idempotency_key_hash=idempotency_key_hash,
                 command_hash=command_hash,
             )
-        require_mutable_project(project)
+        with item_create_server_step("P803_CREATE_PROJECT_MUTABILITY"):
+            require_mutable_project(project)
 
-        phase5_row = self._phase5_request_for_project(
-            project,
-            publish_request_id,
-            lock=True,
-        )
+        with item_create_server_step("P803_CREATE_SOURCE_RESOLVE"):
+            phase5_row = self._phase5_request_for_project(
+                project,
+                publish_request_id,
+                lock=True,
+            )
         if phase5_row is None:
             return self._problem_outcome(
                 project,
@@ -412,7 +418,8 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
         # guard, so a concurrent mapping change is rejected rather than
         # silently captured in a new request.
         # Contract anchor: self._current_mapping_for_source(project, source, lock=True)
-        current = self._current_mapping_for_source(project, source, lock=False)
+        with item_create_server_step("P803_CREATE_MAPPING_READ"):
+            current = self._current_mapping_for_source(project, source, lock=False)
         current_version = 0 if current is None else current.mapping_version
         if current_version != expected_mapping_version:
             return self._problem_outcome(
@@ -429,7 +436,8 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             )
         expectation = self._mapping_expectation(current)
         try:
-            profile = self._required_profile(project)
+            with item_create_server_step("P803_CREATE_PROFILE_RESOLVE"):
+                profile = self._required_profile(project)
         except NpiProblem as problem:
             return self._problem_outcome(
                 project,
@@ -471,38 +479,43 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                     },
                 )
 
-        evidence = self._item_released_evidence(phase5_request)
-        now = datetime.now(UTC)
-        value = create_item_publish_request(
-            source=source,
-            released_evidence=evidence,
-            profile=profile.reference,
-            mapping_expectation=expectation,
-            actor_user_id=self.actor,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-            idempotency_key_hash=idempotency_key_hash,
-            service_actor_user_id=profile.service_actor_user_id,
-            global_id=uuid4(),
-            created_at=now,
-        )
+        with item_create_server_step("P803_CREATE_DOMAIN_BUILD"):
+            evidence = self._item_released_evidence(phase5_request)
+            now = datetime.now(UTC)
+            value = create_item_publish_request(
+                source=source,
+                released_evidence=evidence,
+                profile=profile.reference,
+                mapping_expectation=expectation,
+                actor_user_id=self.actor,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+                idempotency_key_hash=idempotency_key_hash,
+                service_actor_user_id=profile.service_actor_user_id,
+                global_id=uuid4(),
+                created_at=now,
+            )
         outbox_event_id = uuid4() if value.dispatch_allowed else None
-        response = self._detail_response_from_value(
-            value,
-            outbox_event_id=outbox_event_id,
-            current=self._current_mapping_public_dict(project, value, current),
-            can_execute=True,
-            updated_at=now,
-        )
-        with item_request_transaction_write(self.actor) as capability:
+        with item_create_server_step("P803_CREATE_RESPONSE_BUILD"):
+            response = self._detail_response_from_value(
+                value,
+                outbox_event_id=outbox_event_id,
+                current=self._current_mapping_public_dict(project, value, current),
+                can_execute=True,
+                updated_at=now,
+            )
+        with item_create_server_step(
+            "P803_CREATE_TRANSACTION_SCOPE"
+        ), item_request_transaction_write(self.actor) as capability:
             guard = None
             if value.profile.target_mode is not ItemTargetMode.MOCK:
-                guard = _locked_stream_guard(
-                    source,
-                    create=True,
-                    now=now,
-                    capability=capability,
-                )
+                with item_create_server_step("P803_CREATE_STREAM_GUARD"):
+                    guard = _locked_stream_guard(
+                        source,
+                        create=True,
+                        now=now,
+                        capability=capability,
+                    )
                 guard_problem = _stream_guard_problem(guard, value)
                 if guard_problem is not None:
                     return self._problem_outcome(
@@ -516,7 +529,12 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                             "errorCode": guard_problem.code,
                         },
                     )
-                locked_current = self._current_mapping_for_source(project, source, lock=True)
+                with item_create_server_step("P803_CREATE_LOCK_REVALIDATE"):
+                    locked_current = self._current_mapping_for_source(
+                        project,
+                        source,
+                        lock=True,
+                    )
                 locked_version = (
                     0 if locked_current is None else locked_current.mapping_version
                 )
@@ -585,57 +603,62 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
                             "errorCode": "ITEM_PUBLISH_AUTHORITY_UNAVAILABLE",
                         },
                     )
-            self._insert_item_request(
-                project,
-                value,
-                outbox_event_id=outbox_event_id,
-                now=now,
-                capability=capability,
-            )
-            if outbox_event_id is not None:
-                self._insert_outbox(
+            with item_create_server_step("P803_CREATE_REQUEST_INSERT"):
+                self._insert_item_request(
                     project,
                     value,
-                    event_id=outbox_event_id,
-                    capability=capability,
-                )
-            if guard is not None:
-                _set_stream_guard_active(
-                    guard,
-                    value,
+                    outbox_event_id=outbox_event_id,
                     now=now,
                     capability=capability,
                 )
-            self._append_audit(
-                operation="item_publish.request.create",
-                global_id=value.global_id,
-                object_version=1,
-                result=value.state.value,
-                summary={
-                    "publishRequestGlobalId": str(publish_request_id),
-                    "selectedPublishNodeGlobalId": str(selected_publish_node_id),
-                    "sourceStreamKeyHash": source.stream_key_hash,
-                    "sourceHash": source.source_hash,
-                    "profileId": profile.profile_id,
-                    "profileVersion": profile.profile_version,
-                    "profileSnapshotHash": profile.snapshot_hash,
-                    "targetMode": profile.target_mode.value,
-                    "expectedMappingVersion": expectation.mapping_version,
-                    "requestPayloadHash": value.payload_hash,
-                    "outboxEventId": (
-                        str(outbox_event_id) if outbox_event_id else None
-                    ),
-                },
-            )
-            self._insert_idempotency_receipt(
-                project,
-                value,
-                scope_key=scope_key,
-                command_hash=command_hash,
-                response=response,
-                now=now,
-                capability=capability,
-            )
+            if outbox_event_id is not None:
+                with item_create_server_step("P803_CREATE_OUTBOX_INSERT"):
+                    self._insert_outbox(
+                        project,
+                        value,
+                        event_id=outbox_event_id,
+                        capability=capability,
+                    )
+            if guard is not None:
+                with item_create_server_step("P803_CREATE_GUARD_ACTIVATE"):
+                    _set_stream_guard_active(
+                        guard,
+                        value,
+                        now=now,
+                        capability=capability,
+                    )
+            with item_create_server_step("P803_CREATE_AUDIT_APPEND"):
+                self._append_audit(
+                    operation="item_publish.request.create",
+                    global_id=value.global_id,
+                    object_version=1,
+                    result=value.state.value,
+                    summary={
+                        "publishRequestGlobalId": str(publish_request_id),
+                        "selectedPublishNodeGlobalId": str(selected_publish_node_id),
+                        "sourceStreamKeyHash": source.stream_key_hash,
+                        "sourceHash": source.source_hash,
+                        "profileId": profile.profile_id,
+                        "profileVersion": profile.profile_version,
+                        "profileSnapshotHash": profile.snapshot_hash,
+                        "targetMode": profile.target_mode.value,
+                        "expectedMappingVersion": expectation.mapping_version,
+                        "requestPayloadHash": value.payload_hash,
+                        "outboxEventId": (
+                            str(outbox_event_id) if outbox_event_id else None
+                        ),
+                    },
+                )
+            with item_create_server_step("P803_CREATE_IDEMPOTENCY_INSERT"):
+                self._insert_idempotency_receipt(
+                    project,
+                    value,
+                    scope_key=scope_key,
+                    command_hash=command_hash,
+                    response=response,
+                    now=now,
+                    capability=capability,
+                )
         return ItemPublishCommandOutcome(
             response=response,
             should_enqueue=outbox_event_id is not None,

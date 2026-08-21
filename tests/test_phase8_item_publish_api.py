@@ -86,6 +86,7 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
         "frappe.sessions",
         "npi_core.api",
         "npi_core.request_security",
+        "npi_integration.item_publish.diagnostics",
         "npi_integration.item_publish.frappe_repository",
         "npi_integration.item_publish_api",
         "npi_core.bff",
@@ -372,6 +373,42 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
         self.assertNotIn("private detail", repr(result))
         self.assertIn("rollback", self.events)
         self.assertFalse(self.enqueued)
+
+    def test_create_diagnostic_is_closed_response_neutral_and_sanitized(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.item_publish.diagnostics"
+        )
+        self.headers["X-Trace-ID"] = "trace-" + "8" * 32
+        self.headers[diagnostics.ITEM_CREATE_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.ITEM_CREATE_SERVER_DIAGNOSTIC_SCOPE
+        )
+
+        def fail(*_args: object, **_kwargs: Any):
+            raise RuntimeError("private released Item value")
+
+        self.repository.create_item_publish_request = fail
+        result = self.call(self.api.create_item_publish_request, self.payload())
+
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        self.assertNotIn("private released Item value", repr(self.safe_logs))
+        records = [
+            value
+            for value in self.safe_logs
+            if isinstance(value, dict) and "message" in value
+        ]
+        self.assertTrue(records)
+        diagnostic_messages = [str(value["message"]) for value in records]
+        self.assertTrue(
+            any(
+                "P803_CREATE_REPOSITORY_COMMAND" in value
+                and '"exceptionType":"RuntimeError"' in value
+                and '"traceId":"trace-' + "8" * 32 + '"' in value
+                for value in diagnostic_messages
+            )
+        )
+        self.assertFalse(
+            hasattr(self.frappe.flags, "npi_p803_item_create_diagnostic")
+        )
 
     def test_authorization_csrf_and_project_scope_precede_body_validation(self) -> None:
         self.repository.scope = False

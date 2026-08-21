@@ -21,6 +21,10 @@ from npi_core.request_security import (
     response_request_id,
 )
 from npi_integration.item_publish.domain import ITEM_PUBLISH_ACKNOWLEDGEMENT
+from npi_integration.item_publish.diagnostics import (
+    item_create_server_diagnostics,
+    item_create_server_step,
+)
 from npi_integration.item_publish.problems import ItemPublishUnavailable
 
 
@@ -166,64 +170,74 @@ def create_item_publish_request(
 
     def handle() -> dict[str, Any]:
         nonlocal replayed
-        request_id, key_hash, repository, project_id = _command_context(
-            request_fields
-        )
-        outcome = repository.create_item_publish_request(
-            project_id,
-            publish_request_id=_uuid(
-                publishRequestGlobalId,
-                "publishRequestGlobalId",
-            ),
-            selected_publish_node_id=_uuid(
-                selectedPublishNodeGlobalId,
-                "selectedPublishNodeGlobalId",
-            ),
-            expected_mapping_version=_nonnegative(
-                expectedMappingVersion,
-                "expectedMappingVersion",
-            ),
-            idempotency_key_hash=key_hash,
-            acknowledgement=_exact_acknowledgement(acknowledgement),
-        )
-        if outcome is None:
-            raise ItemPublishUnavailable()
-        if (
-            type(outcome.replayed) is not bool
-            or type(outcome.should_enqueue) is not bool
-        ):
-            raise RuntimeError("The Item publish command result is invalid.")
-        try:
-            frappe.db.commit()
-        except Exception:
-            # No response or enqueue is allowed when local durability is unknown.
-            try:
-                frappe.db.rollback()
-            except Exception:
-                pass
-            raise
-        if outcome.problem is not None:
-            if not isinstance(outcome.problem, NpiProblem):
-                raise RuntimeError("The Item publish command problem is invalid.")
-            raise outcome.problem
-        if outcome.response is None:
-            raise RuntimeError("The Item publish command response is unavailable.")
-        if outcome.should_enqueue:
-            if outcome.outbox_event_id is None:
-                raise RuntimeError("The Item publish Outbox identity is unavailable.")
-            try:
-                _enqueue_after_commit(outcome.outbox_event_id)
-            except Exception as error:
-                record_safe_diagnostic(
-                    code="ITEM_PUBLISH_ENQUEUE_FAILED",
-                    title="NPI Item publish enqueue failed",
-                    exception_type=type(error).__name__,
-                    trace_id=current_trace_id.get(),
+        with item_create_server_diagnostics(current_trace_id.get()):
+            with item_create_server_step("P803_CREATE_COMMAND_CONTEXT"):
+                request_id, key_hash, repository, project_id = _command_context(
+                    request_fields
                 )
-        replayed = outcome.replayed
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(replayed).lower()
-        return _response(outcome.response)
+            with item_create_server_step("P803_CREATE_INPUT_PARSE"):
+                values = {
+                    "publish_request_id": _uuid(
+                        publishRequestGlobalId,
+                        "publishRequestGlobalId",
+                    ),
+                    "selected_publish_node_id": _uuid(
+                        selectedPublishNodeGlobalId,
+                        "selectedPublishNodeGlobalId",
+                    ),
+                    "expected_mapping_version": _nonnegative(
+                        expectedMappingVersion,
+                        "expectedMappingVersion",
+                    ),
+                    "acknowledgement": _exact_acknowledgement(acknowledgement),
+                }
+            with item_create_server_step("P803_CREATE_REPOSITORY_COMMAND"):
+                outcome = repository.create_item_publish_request(
+                    project_id,
+                    idempotency_key_hash=key_hash,
+                    **values,
+                )
+            with item_create_server_step("P803_CREATE_COMMIT"):
+                if outcome is None:
+                    raise ItemPublishUnavailable()
+                if (
+                    type(outcome.replayed) is not bool
+                    or type(outcome.should_enqueue) is not bool
+                ):
+                    raise RuntimeError("The Item publish command result is invalid.")
+                try:
+                    frappe.db.commit()
+                except Exception:
+                    # No response or enqueue is allowed when local durability is unknown.
+                    try:
+                        frappe.db.rollback()
+                    except Exception:
+                        pass
+                    raise
+            if outcome.problem is not None:
+                if not isinstance(outcome.problem, NpiProblem):
+                    raise RuntimeError("The Item publish command problem is invalid.")
+                raise outcome.problem
+            if outcome.response is None:
+                raise RuntimeError("The Item publish command response is unavailable.")
+            if outcome.should_enqueue:
+                if outcome.outbox_event_id is None:
+                    raise RuntimeError("The Item publish Outbox identity is unavailable.")
+                try:
+                    with item_create_server_step("P803_CREATE_ENQUEUE"):
+                        _enqueue_after_commit(outcome.outbox_event_id)
+                except Exception as error:
+                    record_safe_diagnostic(
+                        code="ITEM_PUBLISH_ENQUEUE_FAILED",
+                        title="NPI Item publish enqueue failed",
+                        exception_type=type(error).__name__,
+                        trace_id=current_trace_id.get(),
+                    )
+            with item_create_server_step("P803_CREATE_API_RESPONSE"):
+                replayed = outcome.replayed
+                headers["X-Request-ID"] = request_id
+                headers["Idempotency-Replayed"] = str(replayed).lower()
+                return _response(outcome.response)
 
     result = frappe_domain_call(
         handle,

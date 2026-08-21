@@ -1446,7 +1446,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             "self._current_mapping_for_source(project, source, lock=True)",
             "self._required_profile(project)",
             "value = create_item_publish_request(",
-            "with item_request_transaction_write(self.actor)",
+            "item_request_transaction_write(self.actor) as capability",
             "self._insert_item_request(",
             "self._insert_outbox(",
             "self._append_audit(",

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import urllib.request
 from datetime import UTC, datetime, timedelta
@@ -34,6 +35,36 @@ ACKNOWLEDGEMENT = (
     "execution profile."
 )
 RUNTIME_MARKER = "npi-one-item-publish-disposable-v1"
+ITEM_CREATE_DIAGNOSTICS_ENABLED = True
+_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
+_PROBLEM_CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{0,79}$")
+_CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P803_CREATE_COMMAND_CONTEXT",
+        "P803_CREATE_INPUT_PARSE",
+        "P803_CREATE_PROJECT_LOCK",
+        "P803_CREATE_IDEMPOTENCY_CONTEXT",
+        "P803_CREATE_PROJECT_MUTABILITY",
+        "P803_CREATE_SOURCE_RESOLVE",
+        "P803_CREATE_MAPPING_READ",
+        "P803_CREATE_PROFILE_RESOLVE",
+        "P803_CREATE_DOMAIN_BUILD",
+        "P803_CREATE_RESPONSE_BUILD",
+        "P803_CREATE_TRANSACTION_SCOPE",
+        "P803_CREATE_STREAM_GUARD",
+        "P803_CREATE_LOCK_REVALIDATE",
+        "P803_CREATE_REQUEST_INSERT",
+        "P803_CREATE_OUTBOX_INSERT",
+        "P803_CREATE_GUARD_ACTIVATE",
+        "P803_CREATE_AUDIT_APPEND",
+        "P803_CREATE_IDEMPOTENCY_INSERT",
+        "P803_CREATE_REPOSITORY_COMMAND",
+        "P803_CREATE_COMMIT",
+        "P803_CREATE_ENQUEUE",
+        "P803_CREATE_API_RESPONSE",
+    }
+)
 
 LEGACY_OUTBOX_PAYLOAD_KEYS = frozenset(
     {
@@ -79,12 +110,19 @@ def item_publish_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "query",
+    create_diagnostic: bool = False,
 ):
     headers = (
         document_runtime.command_headers(csrf_token, idempotency_key)
         if idempotency_key is not None
         else document_runtime.query_headers(f"p803-{query_key}")
     )
+    if create_diagnostic:
+        require(
+            method == "POST" and idempotency_key is not None,
+            "The P8-03 Item create diagnostic requires one command request",
+        )
+        headers[_CREATE_DIAGNOSTIC_HEADER] = _CREATE_DIAGNOSTIC_SCOPE
     result = document_runtime.request(
         opener,
         base_url,
@@ -102,6 +140,15 @@ def item_publish_request(
         "P8-03 Item response cache control drifted",
     )
     return result
+
+
+def sanitized_problem_code(result) -> str | None:
+    """Return only a contract-shaped problem code from a failed response."""
+
+    code = result.body.get("code") if isinstance(result.body, dict) else None
+    if isinstance(code, str) and _PROBLEM_CODE_PATTERN.fullmatch(code):
+        return code
+    return None
 
 
 def released_item_context(administrator, actor, base_url: str) -> dict[str, object]:
@@ -318,7 +365,29 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
             payload=create_payload(context, str(node_id)),
             csrf_token=actor_csrf,
             idempotency_key=f"p8-03-{label}-{FIXTURE_RUN_ID}",
+            create_diagnostic=(
+                ITEM_CREATE_DIAGNOSTICS_ENABLED and label == "synthetic"
+            ),
         )
+        if created.status != 201 and ITEM_CREATE_DIAGNOSTICS_ENABLED:
+            diagnostic = ebom_runtime._sanitized_server_diagnostic(
+                created.trace_id,
+                _CREATE_SERVER_DIAGNOSTIC_CODES,
+            )
+            if diagnostic is not None:
+                exception_type, code, trace_id = diagnostic
+                raise RuntimeError(
+                    "P8-03 Item command create failed"
+                    f" [diagnostic_code={code}; "
+                    f"exception_type={exception_type}; trace_id={trace_id}]"
+                )
+            problem_code = sanitized_problem_code(created)
+            if problem_code is not None:
+                raise RuntimeError(
+                    "P8-03 Item command create returned a governed problem"
+                    f" [http_status={created.status}; problem_code={problem_code}; "
+                    f"trace_id={created.trace_id}]"
+                )
         require(
             created.status == 201
             and created.headers.get("Idempotency-Replayed") == "false",
