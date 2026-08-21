@@ -4459,3 +4459,22 @@ repeat or rewrite it merely to restore context. See
   record `scope=p5-01-through-p8-04` with
   `predecessor_scope=p5-01-through-p8-03`; P8-03 remains explicit immutable
   predecessor evidence.
+
+## 2026-08-22 P8-04 product-repair test-harness remediation
+
+- Product-repair candidate `fde8505b478eb83f6e74ff6a9d8197246e79029e`
+  reached ordinary CI `32533729907`. Visual `96930635920` passes the governed
+  `126`-case matrix and secret `96930636093` passes.
+- Repository `96930636035` ran `2,277` tests with one deterministic harness
+  error: the pinned-Frappe regression depended on a `ValidationError`
+  attribute on a shared fake `frappe` module, but full-suite import order had
+  installed a smaller fake without that optional attribute. The bounded
+  remediation uses a private test-local `PinnedValidationError`; the product,
+  Frappe predicate, test threshold and Gate remain unchanged.
+- Frontend `96930636054` passed the full verifier and `449/450` E2E. The sole
+  failure is the pre-existing P8-01 loading test missing its transient spinner
+  after navigation completed. The exact repair diff has no frontend path and
+  every P8-04 E2E passed. No timeout, retry or baseline is changed.
+- This run is harness evidence and consumes no additional diagnostic or
+  product repair. Final Level 3 and Site dispatch remain closed pending a new
+  exact-SHA ordinary CI PASS.

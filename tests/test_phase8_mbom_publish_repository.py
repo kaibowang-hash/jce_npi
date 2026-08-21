@@ -563,14 +563,17 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
                 self.repository.canonical_json(json.loads(stored)),
             )
 
+        class PinnedValidationError(Exception):
+            pass
+
         def pinned_frappe_v15_json_value(value: object) -> object:
             if isinstance(value, list):
-                raise self.repository.frappe.ValidationError
+                raise PinnedValidationError
             if isinstance(value, dict):
                 return json.dumps(value, separators=(",", ":"))
             return value
 
-        with self.assertRaises(self.repository.frappe.ValidationError):
+        with self.assertRaises(PinnedValidationError):
             pinned_frappe_v15_json_value(expected_readiness)
         self.assertIsInstance(
             pinned_frappe_v15_json_value(captured["source_snapshot"]),

@@ -281,3 +281,18 @@ The historical parent response cycle stays `diagnostic 1/1`, `repair 0/1`,
 `final 0/1`; the server cycle is `diagnostic 1/1`, `repair 1/1`, `final 0/1`.
 Parent and server diagnostic activation are both disabled after recovery; the
 strict response-neutral mechanism remains dormant.
+
+Product-repair candidate `fde8505b478eb83f6e74ff6a9d8197246e79029e`
+reached ordinary CI `32533729907`. Visual `96930635920` and secret
+`96930636093` pass. Repository `96930636035` runs `2,277` tests with one
+deterministic test-harness error: the new pinned-Frappe simulation referenced
+a `ValidationError` attribute on a shared fake `frappe` module whose exact
+full-suite import order does not define that optional attribute. A private
+test-local `PinnedValidationError` removes the import-order dependency without
+changing the simulated Frappe predicate or product.
+
+Frontend `96930636054` passes its complete verifier and `449/450` E2E; only
+the old P8-01 loading-state case misses its transient spinner after navigation
+already completes. The exact repair diff has no frontend path and all P8-04
+E2E pass. No timeout, retry, baseline or product behavior changes. This is
+harness evidence only and consumes no new diagnostic/product repair round.

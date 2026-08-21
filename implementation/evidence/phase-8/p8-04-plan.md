@@ -748,3 +748,19 @@ immutable at `diagnostic 1/1`, `repair 0/1`, `final 0/1`; the server cycle is
 now `diagnostic 1/1`, `repair 1/1`, `final 0/1`. Both parent and server
 diagnostic activations are closed; the response-neutral mechanism remains
 dormant for regression coverage.
+
+The product-repair candidate `fde8505b478eb83f6e74ff6a9d8197246e79029e`
+reached ordinary CI `32533729907`. Visual `96930635920` passes the governed
+`126`-case matrix and secret `96930636093` passes. Repository job
+`96930636035` runs `2,277` tests with one deterministic error in the new
+pinned-Frappe simulation: full-suite import order reuses a minimal fake
+`frappe` module without a `ValidationError` attribute. The test-only repair
+uses its own private `PinnedValidationError`, preserving the exact list
+rejection predicate without depending on shared fake-module state.
+
+Frontend `96930636054` passes the full verifier and `449/450` E2E. Its only
+failure is the pre-existing P8-01 loading-state test missing a transient
+spinner before navigation completed. The exact six-path repair diff contains
+no frontend path; every P8-04 E2E case passes. No timeout, retry, baseline,
+product or Gate standard changes. This run is a test-harness failure and does
+not consume another diagnostic or product repair round.
