@@ -662,3 +662,29 @@ Canonical Level 1 passes two consecutive focused `10/10` no-update visual
 runs, the complete `126/126` visual matrix, `29/29` affected nonvisual browser
 cases, the complete `1,046/1,046` frontend unit/coverage/build/audit boundary,
 `8,183` direct trilingual sources and `317/317` runtime-verifier tests.
+
+The governed checkpoint 4 exact SHA
+`4e9c8d6577e503087ec137a6b1144858c21e38fb` passes ordinary CI
+`32523149643`: repository `96899549039`, frontend `96899549122`, secret
+`96899549195` and canonical `126/126` visual job `96899549250` pass. The first
+unchanged final Level 3 dispatch `32524439660` retains successful visual
+`96903389857`, frontend `96903390151`, repository `96903390207`, secret
+`96903390224` and controlled preflight `96906520757`, but controlled runtime
+job `96906588035` stops in the first fresh Synthetic MBOM create response at
+the existing composite verifier boundary. The observable evidence cannot
+distinguish response status, response shape, queued state, request identity or
+Outbox identity and therefore proves no product repair root.
+
+This completed final dispatch is immutable historical evidence. A new opaque
+P8-04 create-response narrowing cycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`; the prior dispatch remains consumed and no product
+repair is counted. Its response-neutral checkpoint is parent-verifier only:
+the existing shared `HttpResult.trace_id` may expose exactly one fixed
+`P804_CREATE_*` response predicate with fixed `RuntimeError` type and an exact
+validated `trace-[a-f0-9]{32}` correlation. It never reads or emits response
+status/body, identifiers, business values, hashes, actor, target, exception
+message or stack. Missing/invalid trace and disabled activation retain the
+original constant; success emits no diagnostic. The activation is temporary
+for the one bounded diagnostic dispatch and must be closed after tuple
+recovery. API, repository, permission, transaction, Schema, response and Gate
+behavior remain unchanged.

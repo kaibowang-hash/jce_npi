@@ -7,6 +7,7 @@ import sys
 import types
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -94,6 +95,110 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         ):
             with self.assertRaises(RuntimeError):
                 self.module._assert_no_formal_target(value)
+
+    def _create_result(
+        self,
+        *,
+        status=201,
+        request=...,
+        request_id="00000000-0000-0000-0000-000000000001",
+        outbox_id="00000000-0000-0000-0000-000000000002",
+        trace_id="trace-0123456789abcdef0123456789abcdef",
+    ):
+        body = {
+            "request": {"state": "queued", "private": "business-secret"}
+            if request is ...
+            else request,
+            "requestGlobalId": request_id,
+            "outboxEventId": outbox_id,
+            "unexpected": "response-body-secret",
+        }
+        return SimpleNamespace(
+            status=status,
+            body=body,
+            trace_id=trace_id,
+        )
+
+    def test_create_diagnostic_maps_each_predicate_in_fixed_first_failure_order(self):
+        cases = (
+            (
+                self._create_result(
+                    status=599,
+                    request={"state": "failed-secret"},
+                    request_id="request-secret",
+                    outbox_id="outbox-secret",
+                ),
+                "P804_CREATE_RESPONSE_STATUS",
+            ),
+            (self._create_result(request=[]), "P804_CREATE_RESPONSE_SHAPE"),
+            (
+                self._create_result(request={"state": "failed-secret"}),
+                "P804_CREATE_REQUEST_STATE",
+            ),
+            (
+                self._create_result(request_id="request-secret"),
+                "P804_CREATE_REQUEST_IDENTITY",
+            ),
+            (
+                self._create_result(outbox_id="outbox-secret"),
+                "P804_CREATE_OUTBOX_IDENTITY",
+            ),
+        )
+        for result, expected_code in cases:
+            with self.subTest(expected_code=expected_code):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    rf"diagnostic_code={expected_code}; "
+                    r"exception_type=RuntimeError; "
+                    r"trace_id=trace-0123456789abcdef0123456789abcdef",
+                ) as raised:
+                    self.module.require_created_synthetic_batch(result)
+                message = str(raised.exception)
+                for forbidden in (
+                    "599",
+                    "business-secret",
+                    "response-body-secret",
+                    "failed-secret",
+                    "request-secret",
+                    "outbox-secret",
+                    "Traceback",
+                ):
+                    self.assertNotIn(forbidden, message)
+
+    def test_create_diagnostic_falls_back_to_constant_when_off_or_trace_is_untrusted(self):
+        original = "P8-04 Synthetic command did not create one queued batch"
+        for trace_id in (None, "trace-short", "trace-0123456789abcdef0123456789abcdeg"):
+            with self.subTest(trace_id=trace_id):
+                with self.assertRaises(RuntimeError) as raised:
+                    self.module.require_created_synthetic_batch(
+                        self._create_result(status=503, trace_id=trace_id)
+                    )
+                self.assertEqual(str(raised.exception), original)
+        with patch.object(self.module, "MBOM_CREATE_DIAGNOSTICS_ENABLED", False):
+            with self.assertRaises(RuntimeError) as raised:
+                self.module.require_created_synthetic_batch(
+                    self._create_result(status=503)
+                )
+        self.assertEqual(str(raised.exception), original)
+
+    def test_create_diagnostic_success_is_silent(self):
+        self.assertIsNone(
+            self.module.require_created_synthetic_batch(self._create_result())
+        )
+
+    def test_create_diagnostic_uses_shared_http_result_trace_only(self):
+        function = next(
+            node
+            for node in self.tree.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "require_created_synthetic_batch"
+        )
+        segment = ast.get_source_segment(self.source, function) or ""
+        self.assertIn('getattr(result, "trace_id", None)', segment)
+        self.assertNotIn("X-Trace-ID", segment)
+        self.assertNotIn("headers", segment)
+        self.assertNotIn("problem", segment.casefold())
+        self.assertNotIn("json", segment.casefold())
 
     def test_bench_child_hides_stderr_and_drops_password_environment(self):
         function = next(

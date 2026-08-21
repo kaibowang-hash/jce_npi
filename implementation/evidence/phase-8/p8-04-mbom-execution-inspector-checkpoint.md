@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-22`
 
-Status: `IMPLEMENTED — AWAITING EXACT-SHA ORDINARY CI`
+Status: `FINAL LEVEL 3 NARROWING — PARENT CREATE DIAGNOSTIC ACTIVE`
 
 ## Scope and truth boundary
 
@@ -169,5 +169,44 @@ target compensation. Never delete or rewrite observed truth, blindly
 redispatch a crossed boundary, change a formal BOM identity, submit/overwrite a
 BOM or contact production ERPNext/JCE.
 
-This checkpoint is not P8-04 Level 2 or Level 3. Exact-SHA ordinary CI must
-pass before final Level 3 becomes the only active scope.
+Checkpoint 4 implementation has passed exact-SHA ordinary CI. Final Level 3
+remains open only for the bounded controlled-runtime narrowing recorded below.
+
+## Exact-SHA ordinary and first final Level 3 evidence
+
+- Exact checkpoint SHA `4e9c8d6577e503087ec137a6b1144858c21e38fb`
+  passes ordinary CI `32523149643`: repository `96899549039`, frontend
+  `96899549122`, secret `96899549195` and canonical `126/126` visual
+  `96899549250` pass.
+- The only unchanged final Level 3 dispatch is `32524439660`. Visual
+  `96903389857`, frontend `96903390151`, repository `96903390207`, secret
+  `96903390224` and controlled preflight `96906520757` pass. Controlled
+  runtime `96906588035` alone fails in the first fresh Synthetic MBOM create
+  response at `verify_mbom_publish_runtime.py:180-188`, before worker exercise.
+- That boundary combines five predicates: HTTP success status, response
+  request shape, queued request state, canonical request identity and canonical
+  Outbox identity. The job exposes neither a discriminating response predicate
+  nor a safe trace-correlated server tuple, so it does not prove a product
+  root and consumes no product repair.
+
+The prior final dispatch is retained as immutable `final 1/1` history. A new
+opaque create-response cycle starts at `diagnostic 0/1`, `repair 0/1`,
+`final 0/1`. The bounded checkpoint changes only the parent verifier and its
+tests. In fixed first-failure order it can emit one of:
+
+1. `P804_CREATE_RESPONSE_STATUS`
+2. `P804_CREATE_RESPONSE_SHAPE`
+3. `P804_CREATE_REQUEST_STATE`
+4. `P804_CREATE_REQUEST_IDENTITY`
+5. `P804_CREATE_OUTBOX_IDENTITY`
+
+The tuple contains only the fixed diagnostic code,
+`exception_type=RuntimeError` and the exact shared `HttpResult.trace_id` after
+the stricter `^trace-[a-f0-9]{32}$` check. It does not parse headers or body for
+trace and does not expose actual status, response body, identifiers, business
+values, hashes, actor, target, exception message or stack. Disabled activation
+or missing/invalid trace falls back to the unchanged constant; a conforming
+success is silent. The activation is temporary for this checkpoint and must
+be disabled immediately after the single diagnostic tuple is recovered. No
+API, repository, permission, transaction, Schema, response, production target
+or Gate standard changes.

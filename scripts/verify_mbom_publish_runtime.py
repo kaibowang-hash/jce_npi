@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import tempfile
 from datetime import UTC, datetime
@@ -32,6 +33,9 @@ ACKNOWLEDGEMENT = (
     "I confirm this request uses the exact released EBOM topology, current Item "
     "readiness, MBOM expectations, and execution profile."
 )
+MBOM_CREATE_DIAGNOSTICS_ENABLED = True
+_CREATE_FAILURE_MESSAGE = "P8-04 Synthetic command did not create one queued batch"
+_CREATE_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 
 
 def mbom_publish_path(project_id: str, request_id: str | None = None) -> str:
@@ -107,6 +111,49 @@ def _assert_no_formal_target(value: object) -> None:
             _assert_no_formal_target(nested)
 
 
+def _canonical_uuid(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        return str(UUID(value)) == value
+    except (AttributeError, ValueError):
+        return False
+
+
+def _created_synthetic_batch_failure(result: object) -> str | None:
+    if getattr(result, "status", None) != 201:
+        return "P804_CREATE_RESPONSE_STATUS"
+    body = getattr(result, "body", None)
+    request = body.get("request") if isinstance(body, Mapping) else None
+    if not isinstance(request, dict):
+        return "P804_CREATE_RESPONSE_SHAPE"
+    if request.get("state") != "queued":
+        return "P804_CREATE_REQUEST_STATE"
+    if not _canonical_uuid(body.get("requestGlobalId")):
+        return "P804_CREATE_REQUEST_IDENTITY"
+    if not _canonical_uuid(body.get("outboxEventId")):
+        return "P804_CREATE_OUTBOX_IDENTITY"
+    return None
+
+
+def require_created_synthetic_batch(result: object) -> None:
+    diagnostic_code = _created_synthetic_batch_failure(result)
+    if diagnostic_code is None:
+        return
+    message = _CREATE_FAILURE_MESSAGE
+    trace_id = getattr(result, "trace_id", None)
+    if (
+        MBOM_CREATE_DIAGNOSTICS_ENABLED
+        and isinstance(trace_id, str)
+        and _CREATE_DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id)
+    ):
+        message = (
+            f"{message} [diagnostic_code={diagnostic_code}; "
+            f"exception_type=RuntimeError; trace_id={trace_id}]"
+        )
+    raise RuntimeError(message)
+
+
 def run_disabled_probe(base_url: str, fixture_password: str) -> dict[str, object]:
     administrator = login(
         base_url,
@@ -174,19 +221,9 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
         csrf_token=csrf,
         idempotency_key=f"p8-04-synthetic-{FIXTURE_RUN_ID}",
     )
-    request = created.body.get("request")
+    require_created_synthetic_batch(created)
     request_id = created.body.get("requestGlobalId")
     outbox_id = created.body.get("outboxEventId")
-    require(
-        created.status == 201
-        and isinstance(request, dict)
-        and request.get("state") == "queued"
-        and isinstance(request_id, str)
-        and str(UUID(request_id)) == request_id
-        and isinstance(outbox_id, str)
-        and str(UUID(outbox_id)) == outbox_id,
-        "P8-04 Synthetic command did not create one queued batch",
-    )
     exercised = run_bench_fixture(
         "exercise_worker",
         {
