@@ -148,6 +148,19 @@ def _read_execution_route(
         return None
     try:
         request = frappe.get_doc("NPI Item Publish Request", str(request_id))
+        # A pre-guard row is historical evidence only.  Reject it before
+        # domain rehydration so a missing actor/effect binding can never
+        # become an in-memory executable request or a fallback claim.
+        if any(
+            _value(request, fieldname) in (None, "")
+            for fieldname in (
+                "service_actor_user_id",
+                "target_idempotency_key_hash",
+                "semantic_source_effect_hash",
+                "semantic_effect_hash",
+            )
+        ):
+            return None
         value = _request_value(request)
         _require_outbox_binding(outbox, request, value)
         actor = value.service_actor_user_id
@@ -791,6 +804,16 @@ class FrappeItemPublishWorkerRepository:
 
 
 def _request_value(row: Any) -> ItemPublishRequest:
+    if any(
+        _value(row, fieldname) in (None, "")
+        for fieldname in (
+            "service_actor_user_id",
+            "target_idempotency_key_hash",
+            "semantic_source_effect_hash",
+            "semantic_effect_hash",
+        )
+    ):
+        raise RuntimeError("Legacy Item publish request is read-only evidence.")
     source = _source_value(_json_object(row.source_snapshot))
     evidence: ReleasedItemSourceEvidence = _evidence_value(
         _json_object(row.released_evidence_snapshot)

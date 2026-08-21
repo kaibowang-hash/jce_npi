@@ -55,6 +55,13 @@ LEGACY_OUTBOX_PAYLOAD_KEYS = frozenset(
         "idempotency_key_hash",
     }
 )
+CURRENT_OUTBOX_PAYLOAD_KEYS = LEGACY_OUTBOX_PAYLOAD_KEYS | frozenset(
+    {
+        "target_idempotency_key_hash",
+        "semantic_source_effect_hash",
+        "semantic_effect_hash",
+    }
+)
 
 
 def item_publish_path(project_id: str, request_id: str | None = None) -> str:
@@ -499,6 +506,8 @@ def run_legacy(
     legacy_public = legacy_items[0]
     require(
         legacy_public.get("dispatchAllowed") is False
+        and legacy_public.get("legacyReadOnly") is True
+        and legacy_public.get("current") is False
         and legacy_public.get("outboxEventId") is None
         and legacy_public.get("resultGlobalId") is None,
         "P8-03 legacy Item was exposed as executable work",
@@ -512,6 +521,8 @@ def run_legacy(
     require(detail.status == 200, "P8-03 migrated legacy Item detail is unavailable")
     require(
         detail.body.get("requestGlobalId") == legacy_request_id
+        and detail.body.get("request", {}).get("legacyReadOnly") is True
+        and detail.body.get("request", {}).get("current") is False
         and detail.body.get("currentMapping") is None
         and detail.body.get("attempts") == []
         and detail.body.get("result") is None
@@ -650,6 +661,8 @@ def _structural_context(project_id: str) -> dict[str, object]:
         [
             "event_id",
             "request_global_id",
+            "payload_hash",
+            "payload",
             "state",
             "attempt_count",
             "adapter_boundary_crossed",
@@ -664,6 +677,20 @@ def _structural_context(project_id: str) -> dict[str, object]:
             "semantic_effect_hash",
         ],
     )
+    for outbox in outboxes:
+        payload = outbox.get("payload")
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except json.JSONDecodeError:
+                payload = None
+        require(
+            isinstance(payload, dict)
+            and set(payload) == CURRENT_OUTBOX_PAYLOAD_KEYS
+            and isinstance(outbox.get("payload_hash"), str)
+            and canonical_hash(payload) == outbox.get("payload_hash"),
+            "P8-03 persisted Item Outbox payload is not the exact 19-key envelope",
+        )
     attempts = (
         _rows(
             "NPI Item Publish Attempt",

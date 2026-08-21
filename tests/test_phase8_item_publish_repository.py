@@ -21,6 +21,8 @@ from npi_integration.item_publish.domain import (
     ITEM_PUBLISH_ACKNOWLEDGEMENT,
     ITEM_PUBLISH_OPERATION,
     CurrentItemMapping,
+    ItemExecutionProfileReference,
+    ItemMappingExpectation,
     ItemTargetMode,
     canonical_hash,
 )
@@ -605,7 +607,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
                 return []
 
             self.frappe.get_all = get_all
-            empty = self.module._legacy_stream_guard_adoption(source)
+            empty = self.module._legacy_stream_guard_state(source)
             self.assertIsNone(empty["blocked_reason_code"])
             self.assertIsNone(empty["active_request_global_id"])
 
@@ -623,7 +625,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             )
             self.frappe.get_all = lambda _doctype, **kwargs: [{"name": legacy.name}]
             self.documents["NPI Item Publish Request"] = {legacy.name: legacy}
-            blocked = self.module._legacy_stream_guard_adoption(source)
+            blocked = self.module._legacy_stream_guard_state(source)
             self.assertEqual(
                 blocked["blocked_reason_code"],
                 "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
@@ -646,20 +648,21 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             )
             self.frappe.get_all = lambda _doctype, **kwargs: [{"name": complete.name}]
             self.documents["NPI Item Publish Request"] = {complete.name: complete}
-            adopted = self.module._legacy_stream_guard_adoption(source)
-            self.assertEqual(adopted["active_request_global_id"], complete.global_id)
-            self.assertEqual(adopted["active_state"], "processing")
+            blocked_complete = self.module._legacy_stream_guard_state(source)
             self.assertEqual(
-                adopted["active_target_idempotency_key_hash"],
-                complete.target_idempotency_key_hash,
+                blocked_complete["blocked_reason_code"],
+                "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
             )
-            self.assertIsNone(adopted["blocked_reason_code"])
+            self.assertIsNone(blocked_complete["active_request_global_id"])
+            self.assertIsNone(
+                blocked_complete["active_target_idempotency_key_hash"]
+            )
 
             self.frappe.get_all = lambda _doctype, **kwargs: [
                 {"name": complete.name},
                 {"name": legacy.name},
             ]
-            ambiguous = self.module._legacy_stream_guard_adoption(source)
+            ambiguous = self.module._legacy_stream_guard_state(source)
             self.assertEqual(
                 ambiguous["blocked_reason_code"],
                 "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
@@ -712,7 +715,7 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             expected_mapping_observation_hash=None,
             state="queued",
             dispatch_allowed=1,
-            outbox_event_id="old-outbox",
+            outbox_event_id="00000000-0000-4000-8000-000000008321",
             result_global_id=None,
             actor_user_id="publisher@example.invalid",
             request_id=str(REQUEST_ID),
@@ -727,6 +730,110 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             semantic_source_effect_hash=None,
             semantic_effect_hash=None,
         )
+        legacy_profile = ItemExecutionProfileReference(
+            profile_id="item-sandbox-v1",
+            profile_version=1,
+            target_mode=ItemTargetMode.SANDBOX,
+            environment_code="sandbox",
+            snapshot_hash=HASH_C,
+        )
+        legacy_expectation = ItemMappingExpectation(0, None, None, None)
+        old.payload_hash = canonical_hash(
+            {
+                "schemaVersion": 1,
+                "apiVersion": "npi.erp-item-publish.v1",
+                "operation": "publish_released_item",
+                "source": source.canonical_mapping(),
+                "releasedEvidence": evidence.canonical_mapping(),
+                "profile": legacy_profile.canonical_mapping(),
+                "mappingExpectation": legacy_expectation.canonical_mapping(),
+                "intent": legacy_expectation.intent.value,
+            }
+        )
+        legacy_payload = {
+            "schema_version": 1,
+            "api_version": "npi.erp-item-publish.v1",
+            "operation": "publish_released_item",
+            "request_global_id": str(PHASE5_REQUEST_ID),
+            "request_payload_hash": old.payload_hash,
+            "project_global_id": str(PROJECT_ID),
+            "source_stream_key_hash": source.stream_key_hash,
+            "source_hash": source.source_hash,
+            "intent": legacy_expectation.intent.value,
+            "expected_mapping_version": 0,
+            "expected_target_version": None,
+            "target_mode": "sandbox",
+            "profile_id": legacy_profile.profile_id,
+            "profile_version": legacy_profile.profile_version,
+            "profile_snapshot_hash": legacy_profile.snapshot_hash,
+            "idempotency_key_hash": HASH_A,
+        }
+        legacy_event_snapshot = {
+            "schemaVersion": 1,
+            "eventId": "00000000-0000-4000-8000-000000008321",
+            "eventType": "npi.item_publish_request.ready",
+            "globalId": str(PHASE5_REQUEST_ID),
+            "objectVersion": 1,
+            "tenantId": "TENANT-A",
+            "projectGlobalId": str(PROJECT_ID),
+            "requestGlobalId": str(PHASE5_REQUEST_ID),
+            "operation": "publish_released_item",
+            "profileId": legacy_profile.profile_id,
+            "profileVersion": legacy_profile.profile_version,
+            "profileSnapshotHash": legacy_profile.snapshot_hash,
+            "sourceStreamKeyHash": source.stream_key_hash,
+            "sourceHash": source.source_hash,
+            "expectedMappingVersion": 0,
+            "expectedTargetVersion": None,
+            "actorUserId": "publisher@example.invalid",
+            "requestId": str(REQUEST_ID),
+            "traceId": "trace-legacy-item",
+            "idempotencyKeyHash": HASH_A,
+            "payloadHash": canonical_hash(legacy_payload),
+        }
+        old_outbox = AttrDict(
+            doctype="NPI Outbox Message",
+            name="00000000-0000-4000-8000-000000008321",
+            event_id="00000000-0000-4000-8000-000000008321",
+            event_type="npi.item_publish_request.ready",
+            global_id=str(PHASE5_REQUEST_ID),
+            object_version=1,
+            trace_id="trace-legacy-item",
+            payload_hash=canonical_hash(legacy_payload),
+            payload=legacy_payload,
+            state="pending",
+            attempt_count=0,
+            schema_version=1,
+            operation="publish_released_item",
+            tenant_id="TENANT-A",
+            project_global_id=str(PROJECT_ID),
+            request_global_id=str(PHASE5_REQUEST_ID),
+            profile_id=legacy_profile.profile_id,
+            profile_version=legacy_profile.profile_version,
+            profile_snapshot_hash=legacy_profile.snapshot_hash,
+            source_stream_key_hash=source.stream_key_hash,
+            source_hash=source.source_hash,
+            expected_mapping_version=0,
+            expected_target_version=None,
+            actor_user_id="publisher@example.invalid",
+            request_id=str(REQUEST_ID),
+            idempotency_key_hash=HASH_A,
+            event_snapshot_hash=canonical_hash(legacy_event_snapshot),
+            disposition="ready",
+            adapter_boundary_crossed=0,
+            claim_token=None,
+            claimed_at=None,
+            lease_expires_at=None,
+            last_attempt_global_id=None,
+            result_global_id=None,
+            last_error_code=None,
+            last_error_at=None,
+            target_idempotency_key_hash=None,
+            service_actor_user_id=None,
+            semantic_source_effect_hash=None,
+            semantic_effect_hash=None,
+        )
+        self.documents["NPI Outbox Message"] = {old_outbox.name: old_outbox}
         self.documents["NPI Item Publish Request"] = {old.name: old}
         original_value = self.module.ItemPublishRequest
         self.module.ItemPublishRequest = lambda *args, **kwargs: (_ for _ in ()).throw(
@@ -739,17 +846,40 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             )
             self.assertEqual(len(listed["items"]), 1)
             self.assertFalse(listed["items"][0]["dispatchAllowed"])
+            self.assertTrue(listed["items"][0]["legacyReadOnly"])
+            self.assertFalse(listed["items"][0]["current"])
             self.assertNotIn("targetIdempotencyKeyHash", repr(listed["items"][0]))
             detail = self.repository.item_publish_request_detail(
                 PROJECT_ID,
                 PHASE5_REQUEST_ID,
             )
             self.assertFalse(detail["permissions"]["canExecute"])
+            self.assertTrue(detail["request"]["legacyReadOnly"])
+            self.assertFalse(detail["request"]["current"])
             self.assertIsNone(detail["currentMapping"])
             self.assertEqual(detail["attempts"], [])
             self.assertIsNone(detail["result"])
             self.assertIsNone(old.target_idempotency_key_hash)
             self.assertIsNone(old.service_actor_user_id)
+
+            self.assertTrue(self.module._is_legacy_nonmock_request_row(old))
+            old.target_idempotency_key_hash = HASH_A
+            with self.assertRaises(
+                self.module.ItemPublishStreamReconciliationRequired
+            ):
+                self.module._is_legacy_nonmock_request_row(old)
+            old.target_idempotency_key_hash = None
+            old.source_hash = HASH_D
+            with self.assertRaises(
+                self.module.ItemPublishStreamReconciliationRequired
+            ):
+                self.module._is_legacy_nonmock_request_row(old)
+            old.source_hash = source.source_hash
+            old.target_idempotency_key_hash = HASH_A
+            old.service_actor_user_id = "item-worker@example.invalid"
+            old.semantic_source_effect_hash = source.semantic_source_effect_hash
+            old.semantic_effect_hash = HASH_A
+            self.assertFalse(self.module._is_legacy_nonmock_request_row(old))
         finally:
             self.module.ItemPublishRequest = original_value
 
@@ -911,7 +1041,12 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             PROJECT_ID,
             UUID(outcome.response["requestGlobalId"]),
         )
-        self.assertEqual(detail, outcome.response)
+        self.assertEqual(detail["request"]["legacyReadOnly"], False)
+        self.assertEqual(detail["request"]["current"], True)
+        expected = dict(outcome.response)
+        expected["request"] = dict(expected["request"])
+        expected["request"].update(legacyReadOnly=False, current=True)
+        self.assertEqual(detail, expected)
 
         self.project.global_id = str(
             UUID("00000000-0000-4000-8000-000000008398")

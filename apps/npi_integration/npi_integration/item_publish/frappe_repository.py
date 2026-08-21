@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -62,6 +63,34 @@ from npi_integration.publish_request.frappe_repository import (
 
 _MAX_ITEM_REQUESTS = 200
 _MAX_ITEM_ATTEMPTS = 100
+_LEGACY_REQUEST_BINDING_FIELDS = (
+    "service_actor_user_id",
+    "target_idempotency_key_hash",
+    "semantic_source_effect_hash",
+    "semantic_effect_hash",
+)
+_LEGACY_OUTBOX_BINDING_FIELDS = _LEGACY_REQUEST_BINDING_FIELDS
+_LEGACY_OUTBOX_PAYLOAD_KEYS = frozenset(
+    {
+        "schema_version",
+        "api_version",
+        "operation",
+        "request_global_id",
+        "request_payload_hash",
+        "project_global_id",
+        "source_stream_key_hash",
+        "source_hash",
+        "intent",
+        "expected_mapping_version",
+        "expected_target_version",
+        "target_mode",
+        "profile_id",
+        "profile_version",
+        "profile_snapshot_hash",
+        "idempotency_key_hash",
+    }
+)
+_LEGACY_TRACE_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
 _STREAM_ACTIVE_STATES = frozenset(
     {
         ItemPublishRequestState.QUEUED.value,
@@ -1537,6 +1566,8 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             "payloadHash": value.payload_hash,
             "state": str(row.state),
             "dispatchAllowed": bool(row.dispatch_allowed),
+            "legacyReadOnly": False,
+            "current": True,
             "outboxEventId": (
                 str(row.outbox_event_id) if row.outbox_event_id else None
             ),
@@ -1721,6 +1752,8 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             "payloadHash": value.payload_hash,
             "state": value.state.value,
             "dispatchAllowed": value.dispatch_allowed,
+            "legacyReadOnly": False,
+            "current": True,
             "outboxEventId": (
                 str(outbox_event_id) if outbox_event_id else None
             ),
@@ -1752,19 +1785,382 @@ def _stream_guard_supported() -> bool:
 
 
 def _is_legacy_nonmock_request_row(row: object) -> bool:
-    """Identify 8dd non-Mock rows without promoting them to domain values."""
+    """Identify only strict 8dd non-Mock rows as read-only evidence.
 
-    if str(_value(row, "target_mode") or "").casefold() == ItemTargetMode.MOCK.value:
+    A nullable post-8dd binding is not a compatibility signal by itself.  A
+    partial binding, a malformed old row, or a row that looks current but does
+    not carry the exact old Outbox envelope is a reconciliation boundary, not
+    an executable request.
+    """
+
+    target_mode = str(_value(row, "target_mode") or "").casefold()
+    if target_mode == ItemTargetMode.MOCK.value:
         return False
-    return any(
-        not _value(row, fieldname)
-        for fieldname in (
-            "target_idempotency_key_hash",
-            "service_actor_user_id",
-            "semantic_source_effect_hash",
-            "semantic_effect_hash",
+    binding_state = _legacy_binding_state(row, _LEGACY_REQUEST_BINDING_FIELDS)
+    if binding_state == "complete":
+        return False
+    if binding_state == "partial":
+        raise ItemPublishStreamReconciliationRequired()
+    if not _strict_legacy_request_row(row):
+        raise ItemPublishStreamReconciliationRequired()
+    return True
+
+
+def _legacy_binding_state(row: object, fields: tuple[str, ...]) -> str:
+    present = tuple(_value(row, fieldname) not in (None, "") for fieldname in fields)
+    if all(present):
+        return "complete"
+    if any(present):
+        return "partial"
+    return "empty"
+
+
+def _strict_legacy_request_row(row: object) -> bool:
+    """Validate the immutable, pre-guard 8dd request and Outbox envelope."""
+
+    try:
+        if (
+            isinstance(_value(row, "schema_version"), bool)
+            or not isinstance(_value(row, "schema_version"), int)
+            or _value(row, "schema_version") != ITEM_PUBLISH_SCHEMA_VERSION
+            or _value(row, "api_version") != ITEM_PUBLISH_API_VERSION
+            or _value(row, "operation") != ITEM_PUBLISH_OPERATION
+        ):
+            return False
+        if str(_value(row, "target_mode") or "").casefold() not in {
+            ItemTargetMode.SYNTHETIC.value,
+            ItemTargetMode.SANDBOX.value,
+        }:
+            return False
+        if _value(row, "dispatch_allowed") not in (1, True):
+            return False
+        state = str(_value(row, "state") or "")
+        if state not in {
+            item_state.value
+            for item_state in ItemPublishRequestState
+            if item_state is not ItemPublishRequestState.VALIDATED_MOCK
+        }:
+            return False
+        if _value(row, "result_global_id") not in (None, ""):
+            return False
+
+        request_global_id = _strict_uuid_value(_value(row, "global_id"))
+        request_id = _strict_uuid_value(_value(row, "request_id"))
+        outbox_id = _strict_uuid_value(_value(row, "outbox_event_id"))
+        optimistic_version = _strict_positive_int(
+            _value(row, "optimistic_version")
         )
+        tenant_id = _strict_text_value(_value(row, "tenant_id"), 128)
+        project_id = _strict_uuid_value(_value(row, "project_global_id"))
+        engineering_item_id = _strict_text_value(
+            _value(row, "engineering_item_id"),
+            128,
+        )
+        actor_user_id = _strict_text_value(_value(row, "actor_user_id"), 254)
+        trace_id = _value(row, "trace_id")
+        if (
+            not isinstance(trace_id, str)
+            or not _LEGACY_TRACE_PATTERN.fullmatch(trace_id)
+        ):
+            return False
+        idempotency_key_hash = _strict_sha256_value(
+            _value(row, "idempotency_key_hash")
+        )
+        payload_hash = _strict_sha256_value(_value(row, "payload_hash"))
+        created_at = _strict_timestamp_value(_value(row, "created_at"))
+        updated_at = _strict_timestamp_value(_value(row, "updated_at"))
+        if updated_at < created_at:
+            return False
+
+        source_snapshot = _json_object(_value(row, "source_snapshot"))
+        source = _source_value(source_snapshot)
+        source_stream_key_hash = _strict_sha256_value(
+            _value(row, "source_stream_key_hash")
+        )
+        source_hash = _strict_sha256_value(_value(row, "source_hash"))
+        selected_publish_node_global_id = _strict_uuid_value(
+            _value(row, "selected_publish_node_global_id")
+        )
+        if (
+            source_snapshot != source.canonical_mapping()
+            or source.tenant_id != tenant_id
+            or source.project_global_id != project_id
+            or source.engineering_item_id != engineering_item_id
+            or source_stream_key_hash != source.stream_key_hash
+            or source_hash != source.source_hash
+            or selected_publish_node_global_id
+            != source.selected_publish_node_global_id
+            or not _legacy_occurrences_match(
+                row,
+                selected_publish_node_global_id,
+            )
+        ):
+            return False
+        evidence_snapshot = _json_object(_value(row, "released_evidence_snapshot"))
+        evidence = _evidence_value(evidence_snapshot)
+        released_evidence_hash = _strict_sha256_value(
+            _value(row, "released_evidence_hash")
+        )
+        if (
+            evidence_snapshot != evidence.canonical_mapping()
+            or released_evidence_hash != canonical_hash(evidence_snapshot)
+        ):
+            return False
+
+        profile = ItemExecutionProfileReference(
+            profile_id=_strict_text_value(_value(row, "profile_id"), 128),
+            profile_version=_strict_positive_int(_value(row, "profile_version")),
+            target_mode=ItemTargetMode(str(_value(row, "target_mode"))),
+            environment_code=_strict_text_value(_value(row, "environment_code"), 64),
+            snapshot_hash=_strict_sha256_value(_value(row, "profile_snapshot_hash")),
+        )
+        expected_formal_item_code = _value(row, "expected_formal_item_code")
+        expected_target_version = _value(row, "expected_target_version")
+        expected_mapping_observation_hash = _value(
+            row,
+            "expected_mapping_observation_hash",
+        )
+        if any(
+            value == ""
+            for value in (
+                expected_formal_item_code,
+                expected_target_version,
+                expected_mapping_observation_hash,
+            )
+        ):
+            return False
+        if expected_mapping_observation_hash is not None:
+            _strict_sha256_value(expected_mapping_observation_hash)
+        expectation = ItemMappingExpectation(
+            _strict_nonnegative_int(_value(row, "expected_mapping_version")),
+            expected_formal_item_code,
+            expected_target_version,
+            expected_mapping_observation_hash,
+        )
+        if _value(row, "intent") != expectation.intent.value:
+            return False
+        expected_payload = {
+            "schemaVersion": ITEM_PUBLISH_SCHEMA_VERSION,
+            "apiVersion": ITEM_PUBLISH_API_VERSION,
+            "operation": ITEM_PUBLISH_OPERATION,
+            "source": source.canonical_mapping(),
+            "releasedEvidence": evidence.canonical_mapping(),
+            "profile": profile.canonical_mapping(),
+            "mappingExpectation": expectation.canonical_mapping(),
+            "intent": expectation.intent.value,
+        }
+        if payload_hash != canonical_hash(expected_payload):
+            return False
+        return _strict_legacy_outbox(
+            row,
+            request_global_id=request_global_id,
+            request_id=request_id,
+            outbox_id=outbox_id,
+            tenant_id=tenant_id,
+            project_id=project_id,
+            actor_user_id=actor_user_id,
+            trace_id=trace_id,
+            idempotency_key_hash=idempotency_key_hash,
+            payload_hash=payload_hash,
+            source=source,
+            profile=profile,
+            expectation=expectation,
+        )
+    except (
+        AttributeError,
+        KeyError,
+        TypeError,
+        ValueError,
+        RuntimeError,
+        ItemPublishContractError,
+        frappe.DoesNotExistError,
+    ):
+        return False
+
+
+def _strict_legacy_outbox(
+    row: object,
+    *,
+    request_global_id: UUID,
+    request_id: UUID,
+    outbox_id: UUID,
+    tenant_id: str,
+    project_id: UUID,
+    actor_user_id: str,
+    trace_id: str,
+    idempotency_key_hash: str,
+    payload_hash: str,
+    source: ItemSourceSnapshot,
+    profile: ItemExecutionProfileReference,
+    expectation: ItemMappingExpectation,
+) -> bool:
+    outbox = frappe.get_doc("NPI Outbox Message", str(outbox_id))
+    if _legacy_binding_state(outbox, _LEGACY_OUTBOX_BINDING_FIELDS) != "empty":
+        return False
+    event_id = _strict_uuid_value(_value(outbox, "event_id"))
+    outbox_global_id = _strict_uuid_value(_value(outbox, "global_id"))
+    object_version = _strict_positive_int(_value(outbox, "object_version"))
+    trace_value = _value(outbox, "trace_id")
+    if (
+        not isinstance(trace_value, str)
+        or not _LEGACY_TRACE_PATTERN.fullmatch(trace_value)
+    ):
+        return False
+    attempt_count = _strict_nonnegative_int(_value(outbox, "attempt_count"))
+    schema_version = _strict_positive_int(_value(outbox, "schema_version"))
+    project_value = _strict_uuid_value(_value(outbox, "project_global_id"))
+    request_value = _strict_uuid_value(_value(outbox, "request_global_id"))
+    profile_id = _strict_text_value(_value(outbox, "profile_id"), 128)
+    profile_version = _strict_positive_int(_value(outbox, "profile_version"))
+    profile_snapshot_hash = _strict_sha256_value(
+        _value(outbox, "profile_snapshot_hash")
     )
+    source_stream_key_hash = _strict_sha256_value(
+        _value(outbox, "source_stream_key_hash")
+    )
+    source_hash = _strict_sha256_value(_value(outbox, "source_hash"))
+    expected_mapping_version = _strict_nonnegative_int(
+        _value(outbox, "expected_mapping_version")
+    )
+    expected_target_version = _value(outbox, "expected_target_version")
+    if expected_target_version == "":
+        return False
+    actor_value = _strict_text_value(_value(outbox, "actor_user_id"), 254)
+    outbox_request_id = _strict_uuid_value(_value(outbox, "request_id"))
+    outbox_idempotency_key_hash = _strict_sha256_value(
+        _value(outbox, "idempotency_key_hash")
+    )
+    if (
+        event_id != outbox_id
+        or str(_value(outbox, "event_type")) != ITEM_REQUEST_EVENT_TYPE
+        or outbox_global_id != request_global_id
+        or object_version != 1
+        or trace_value != trace_id
+        or str(_value(outbox, "state")) != "pending"
+        or attempt_count != 0
+        or schema_version != ITEM_PUBLISH_SCHEMA_VERSION
+        or str(_value(outbox, "operation")) != ITEM_PUBLISH_OPERATION
+        or str(_value(outbox, "tenant_id")) != tenant_id
+        or project_value != project_id
+        or request_value != request_global_id
+        or profile_id != profile.profile_id
+        or profile_version != profile.profile_version
+        or profile_snapshot_hash != profile.snapshot_hash
+        or source_stream_key_hash != source.stream_key_hash
+        or source_hash != source.source_hash
+        or expected_mapping_version != expectation.mapping_version
+        or expected_target_version != expectation.target_version
+        or actor_value != actor_user_id
+        or outbox_request_id != request_id
+        or outbox_idempotency_key_hash != idempotency_key_hash
+        or str(_value(outbox, "disposition")) != "ready"
+        or _value(outbox, "claim_token") not in (None, "")
+        or _value(outbox, "claimed_at") not in (None, "")
+        or _value(outbox, "lease_expires_at") not in (None, "")
+        or _value(outbox, "last_attempt_global_id") not in (None, "")
+        or _value(outbox, "result_global_id") not in (None, "")
+        or _value(outbox, "last_error_code") not in (None, "")
+        or _value(outbox, "last_error_at") not in (None, "")
+        or bool(_value(outbox, "adapter_boundary_crossed"))
+    ):
+        return False
+    payload = _json_object(_value(outbox, "payload"))
+    expected_payload = {
+        "schema_version": ITEM_PUBLISH_SCHEMA_VERSION,
+        "api_version": ITEM_PUBLISH_API_VERSION,
+        "operation": ITEM_PUBLISH_OPERATION,
+        "request_global_id": str(request_global_id),
+        "request_payload_hash": payload_hash,
+        "project_global_id": str(project_id),
+        "source_stream_key_hash": source.stream_key_hash,
+        "source_hash": source.source_hash,
+        "intent": expectation.intent.value,
+        "expected_mapping_version": expectation.mapping_version,
+        "expected_target_version": expectation.target_version,
+        "target_mode": profile.target_mode.value,
+        "profile_id": profile.profile_id,
+        "profile_version": profile.profile_version,
+        "profile_snapshot_hash": profile.snapshot_hash,
+        "idempotency_key_hash": idempotency_key_hash,
+    }
+    if (
+        set(payload) != _LEGACY_OUTBOX_PAYLOAD_KEYS
+        or payload != expected_payload
+        or _strict_sha256_value(_value(outbox, "payload_hash"))
+        != canonical_hash(payload)
+    ):
+        return False
+    expected_event_snapshot = {
+        "schemaVersion": ITEM_PUBLISH_SCHEMA_VERSION,
+        "eventId": str(outbox_id),
+        "eventType": ITEM_REQUEST_EVENT_TYPE,
+        "globalId": str(request_global_id),
+        "objectVersion": 1,
+        "tenantId": tenant_id,
+        "projectGlobalId": str(project_id),
+        "requestGlobalId": str(request_global_id),
+        "operation": ITEM_PUBLISH_OPERATION,
+        "profileId": profile.profile_id,
+        "profileVersion": profile.profile_version,
+        "profileSnapshotHash": profile.snapshot_hash,
+        "sourceStreamKeyHash": source.stream_key_hash,
+        "sourceHash": source.source_hash,
+        "expectedMappingVersion": expectation.mapping_version,
+        "expectedTargetVersion": expectation.target_version,
+        "actorUserId": actor_user_id,
+        "requestId": str(request_id),
+        "traceId": trace_id,
+        "idempotencyKeyHash": idempotency_key_hash,
+        "payloadHash": canonical_hash(payload),
+    }
+    return _strict_sha256_value(_value(outbox, "event_snapshot_hash")) == (
+        canonical_hash(expected_event_snapshot)
+    )
+
+
+def _strict_uuid_value(value: object) -> UUID:
+    if not isinstance(value, (str, UUID)) or not str(value):
+        raise ValueError("legacy UUID is missing")
+    parsed = UUID(str(value))
+    if str(parsed) != str(value).casefold():
+        raise ValueError("legacy UUID is not canonical")
+    return parsed
+
+
+def _strict_sha256_value(value: object) -> str:
+    if not isinstance(value, str) or not _is_sha256_text(value):
+        raise ValueError("legacy SHA-256 value is invalid")
+    return value
+
+
+def _strict_text_value(value: object, maximum: int) -> str:
+    if (
+        not isinstance(value, str)
+        or not value
+        or len(value) > maximum
+        or any(character.isspace() or ord(character) < 32 for character in value)
+    ):
+        raise ValueError("legacy text value is invalid")
+    return value
+
+
+def _strict_positive_int(value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise ValueError("legacy positive integer is invalid")
+    return value
+
+
+def _strict_nonnegative_int(value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError("legacy nonnegative integer is invalid")
+    return value
+
+
+def _strict_timestamp_value(value: object) -> datetime:
+    parsed = _datetime_value(value)
+    if parsed <= datetime(1970, 1, 1, tzinfo=UTC):
+        raise ValueError("legacy timestamp is a default epoch")
+    return parsed
 
 
 def _legacy_occurrences_match(row: object, selected_node_id: UUID) -> bool:
@@ -1788,36 +2184,38 @@ def _legacy_request_public_dict(row: object) -> dict[str, Any]:
     source = _json_object(_value(row, "source_snapshot"))
     evidence = _json_object(_value(row, "released_evidence_snapshot"))
     return {
-        "schemaVersion": int(_value(row, "schema_version") or 1),
+        "schemaVersion": int(_value(row, "schema_version")),
         "globalId": str(_value(row, "global_id")),
-        "apiVersion": str(_value(row, "api_version") or ITEM_PUBLISH_API_VERSION),
-        "operation": str(_value(row, "operation") or ITEM_PUBLISH_OPERATION),
+        "apiVersion": str(_value(row, "api_version")),
+        "operation": str(_value(row, "operation")),
         "source": source,
         "releasedEvidence": evidence,
         "profile": {
-            "profileId": str(_value(row, "profile_id") or ""),
-            "profileVersion": int(_value(row, "profile_version") or 0),
-            "targetMode": str(_value(row, "target_mode") or ""),
-            "environmentCode": str(_value(row, "environment_code") or ""),
-            "snapshotHash": str(_value(row, "profile_snapshot_hash") or ""),
+            "profileId": str(_value(row, "profile_id")),
+            "profileVersion": int(_value(row, "profile_version")),
+            "targetMode": str(_value(row, "target_mode")),
+            "environmentCode": str(_value(row, "environment_code")),
+            "snapshotHash": str(_value(row, "profile_snapshot_hash")),
         },
         "mappingExpectation": {
-            "mappingVersion": int(_value(row, "expected_mapping_version") or 0),
+            "mappingVersion": int(_value(row, "expected_mapping_version")),
             "formalItemCode": _value(row, "expected_formal_item_code") or None,
             "targetVersion": _value(row, "expected_target_version") or None,
             "observationHash": _value(row, "expected_mapping_observation_hash") or None,
         },
-        "intent": str(_value(row, "intent") or ""),
-        "actorUserId": str(_value(row, "actor_user_id") or ""),
-        "requestId": str(_value(row, "request_id") or ""),
-        "traceId": str(_value(row, "trace_id") or ""),
-        "idempotencyKeyHash": str(_value(row, "idempotency_key_hash") or ""),
-        "payloadHash": str(_value(row, "payload_hash") or ""),
-        "state": str(_value(row, "state") or ""),
+        "intent": str(_value(row, "intent")),
+        "actorUserId": str(_value(row, "actor_user_id")),
+        "requestId": str(_value(row, "request_id")),
+        "traceId": str(_value(row, "trace_id")),
+        "idempotencyKeyHash": str(_value(row, "idempotency_key_hash")),
+        "payloadHash": str(_value(row, "payload_hash")),
+        "state": str(_value(row, "state")),
         "dispatchAllowed": False,
+        "legacyReadOnly": True,
+        "current": False,
         "outboxEventId": None,
         "resultGlobalId": None,
-        "optimisticVersion": int(_value(row, "optimistic_version") or 1),
+        "optimisticVersion": int(_value(row, "optimistic_version")),
         "createdAt": _legacy_datetime_text(_value(row, "created_at")),
         "updatedAt": _legacy_datetime_text(_value(row, "updated_at")),
     }
@@ -1835,10 +2233,7 @@ def _legacy_detail_response(row: object) -> dict[str, Any]:
 
 
 def _legacy_datetime_text(value: object) -> str:
-    try:
-        return _utc_text(_datetime_value(value))
-    except (TypeError, ValueError, RuntimeError):
-        return "1970-01-01T00:00:00Z"
+    return _utc_text(_strict_timestamp_value(value))
 
 
 def _locked_stream_guard(
@@ -1871,7 +2266,7 @@ def _locked_stream_guard(
     savepoint = f"item_publish_stream_guard_{source.stream_key_hash[:16]}"
     frappe.db.savepoint(savepoint)
     try:
-        adoption = _legacy_stream_guard_adoption(source)
+        guard_state = _legacy_stream_guard_state(source)
         guard = frappe.get_doc(
             {
                 "doctype": "NPI Item Publish Stream Guard",
@@ -1879,7 +2274,7 @@ def _locked_stream_guard(
                 "tenant_id": source.tenant_id,
                 "project_global_id": str(source.project_global_id),
                 "engineering_item_id": source.engineering_item_id,
-                **adoption,
+                **guard_state,
                 "optimistic_version": 1,
                 "updated_at": _database_datetime(_aware_utc(now)),
             }
@@ -1908,13 +2303,12 @@ def _locked_stream_guard(
         return guard
 
 
-def _legacy_stream_guard_adoption(source: ItemSourceSnapshot) -> dict[str, object]:
-    """Derive a guard only from bounded, exact historical evidence.
+def _legacy_stream_guard_state(source: ItemSourceSnapshot) -> dict[str, object]:
+    """Return only an empty anchor or a durable reconciliation block.
 
-    A missing guard is not permission to invent an executable binding.  The
-    query is deliberately capped at two rows: zero rows create an empty
-    anchor, one complete new-format row is adopted verbatim, and every legacy
-    or ambiguous shape is durably blocked for reconciliation.
+    Historical requests are never adopted into the current guard.  The
+    bounded read exists solely to distinguish a never-used stream from one
+    whose pre-guard history needs explicit reconciliation.
     """
 
     get_all = getattr(frappe, "get_all", None)
@@ -1938,87 +2332,7 @@ def _legacy_stream_guard_adoption(source: ItemSourceSnapshot) -> dict[str, objec
             "last_state": None,
             "blocked_reason_code": None,
         }
-    if len(rows) != 1:
-        return _blocked_stream_guard_adoption()
-    name = _value(rows[0], "name") or _value(rows[0], "global_id")
-    if not name:
-        return _blocked_stream_guard_adoption()
-    historical = frappe.get_doc(
-        "NPI Item Publish Request",
-        str(name),
-        for_update=True,
-    )
-    if not _complete_new_nonmock_request_row(historical, source):
-        return _blocked_stream_guard_adoption()
-    state = str(_value(historical, "state"))
-    request_id = str(_value(historical, "global_id"))
-    target_key = str(_value(historical, "target_idempotency_key_hash"))
-    if state in _STREAM_ACTIVE_STATES:
-        return {
-            "active_request_global_id": request_id,
-            "active_target_idempotency_key_hash": target_key,
-            "active_state": state,
-            "last_request_global_id": None,
-            "last_target_idempotency_key_hash": None,
-            "last_state": None,
-            "blocked_reason_code": None,
-        }
-    if state in _STREAM_RETAINED_STATES:
-        return {
-            "active_request_global_id": None,
-            "active_target_idempotency_key_hash": None,
-            "active_state": None,
-            "last_request_global_id": request_id,
-            "last_target_idempotency_key_hash": target_key,
-            "last_state": state,
-            "blocked_reason_code": None,
-        }
-    return _blocked_stream_guard_adoption()
-
-
-def _complete_new_nonmock_request_row(
-    row: object,
-    source: ItemSourceSnapshot,
-) -> bool:
-    if (
-        str(_value(row, "source_stream_key_hash")) != source.stream_key_hash
-        or str(_value(row, "tenant_id")) != source.tenant_id
-        or str(_value(row, "project_global_id")) != str(source.project_global_id)
-        or str(_value(row, "engineering_item_id")) != source.engineering_item_id
-    ):
-        return False
-    if str(_value(row, "target_mode") or "").casefold() not in {
-        ItemTargetMode.SYNTHETIC.value,
-        ItemTargetMode.SANDBOX.value,
-    }:
-        return False
-    if not bool(_value(row, "dispatch_allowed")):
-        return False
-    global_id = _value(row, "global_id")
-    target_key = _value(row, "target_idempotency_key_hash")
-    semantic_source = _value(row, "semantic_source_effect_hash")
-    semantic_effect = _value(row, "semantic_effect_hash")
-    if not all(
-        (
-            global_id,
-            target_key,
-            semantic_source,
-            semantic_effect,
-            _value(row, "service_actor_user_id"),
-        )
-    ):
-        return False
-    if not _is_sha256_text(target_key) or not _is_sha256_text(semantic_source):
-        return False
-    if not _is_sha256_text(semantic_effect) or str(target_key) != str(semantic_effect):
-        return False
-    if str(semantic_source) != source.semantic_source_effect_hash:
-        return False
-    try:
-        UUID(str(global_id))
-    except (TypeError, ValueError):
-        return False
-    return True
+    return _blocked_stream_guard_state()
 
 
 def _is_sha256_text(value: object) -> bool:
@@ -2030,7 +2344,7 @@ def _is_sha256_text(value: object) -> bool:
     )
 
 
-def _blocked_stream_guard_adoption() -> dict[str, object]:
+def _blocked_stream_guard_state() -> dict[str, object]:
     return {
         "active_request_global_id": None,
         "active_target_idempotency_key_hash": None,

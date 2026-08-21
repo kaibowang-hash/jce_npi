@@ -20970,7 +20970,8 @@ components:
       type: object
       additionalProperties: false
       description: Immutable Project-scoped Item execution request; local commit does not mean target acceptance or success.
-      required: [schemaVersion, globalId, apiVersion, operation, source, releasedEvidence, profile, mappingExpectation, intent, actorUserId, requestId, traceId, idempotencyKeyHash, payloadHash, state, dispatchAllowed, outboxEventId, resultGlobalId, optimisticVersion, createdAt, updatedAt]
+      required:
+        [schemaVersion, globalId, apiVersion, operation, source, releasedEvidence, profile, mappingExpectation, intent, actorUserId, requestId, traceId, idempotencyKeyHash, payloadHash, state, dispatchAllowed, legacyReadOnly, current, outboxEventId, resultGlobalId, optimisticVersion, createdAt, updatedAt]
       properties:
         schemaVersion: { type: integer, const: 1 }
         globalId: { type: string, format: uuid }
@@ -20988,6 +20989,10 @@ components:
         payloadHash: { $ref: "#/components/schemas/ItemPublishSha256" }
         state: { $ref: "#/components/schemas/ItemPublishRequestState" }
         dispatchAllowed: { type: boolean }
+        legacyReadOnly:
+          { type: boolean, description: Derived true only for a strict exact-8dd non-Mock historical projection. }
+        current:
+          { type: boolean, description: Derived false for legacy historical evidence; no database column. }
         outboxEventId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
         resultGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
         optimisticVersion: { type: integer, minimum: 1 }

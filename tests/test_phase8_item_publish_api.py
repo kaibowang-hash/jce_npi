@@ -179,6 +179,8 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
                 "globalId": ITEM_REQUEST_ID,
                 "state": "queued",
                 "dispatchAllowed": True,
+                "legacyReadOnly": False,
+                "current": True,
             },
             "currentMapping": None,
             "attempts": [],
