@@ -15,6 +15,7 @@ import verify_document_runtime as document_runtime
 import verify_ebom_runtime as ebom_runtime
 import verify_publish_request_runtime as publish_runtime
 from verify_frappe_runtime import (
+    HttpResult,
     login,
     require,
     secret_from_environment,
@@ -139,7 +140,13 @@ def item_publish_request(
         result.headers.get("Cache-Control") == "private, no-store",
         "P8-03 Item response cache control drifted",
     )
-    return result
+    return HttpResult(
+        result.status,
+        result.headers,
+        result.body,
+        request_id=headers["X-Request-ID"],
+        trace_id=headers["X-Trace-ID"],
+    )
 
 
 def sanitized_problem_code(result) -> str | None:

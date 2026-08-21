@@ -51,3 +51,26 @@ Local validation before commit:
 
 No production ERPNext or JCE endpoint, credential, or data is used by this
 recovery path.
+
+## First diagnostic Site result
+
+- Diagnostic checkpoint SHA: `5fe1bd2afef27cdbfd7ebe4cb9a219eec812be92`.
+- Exact-SHA ordinary CI: `32449902174` PASS; secret `96676311461`, repository
+  `96676311381`, frontend `96676311389`, visual `96676311258`.
+- Controlled diagnostic run: `32450566995`; preflight `96680418565` PASS;
+  cumulative Site job `96680463723` failed only at the first P8-03 create.
+- Governed response: HTTP `500`, problem code `INTERNAL_SERVER_ERROR`.
+
+The diagnostic reader did not return a server stage because
+`item_publish_request` returned the lower-level `HttpResult` without the fixed
+request and trace IDs. The request did send and the server did echo the exact
+`X-Trace-ID`, but the verifier then called the allowlisted log reader with the
+unpopulated optional `created.trace_id`, producing `trace_id=None`. Peer EBOM
+and P5-05 runtime helpers already preserve these generated IDs in their
+returned `HttpResult`; P8-03 alone omitted that response-neutral wrapper.
+
+This uniquely proves a verifier diagnostic-plumbing root, not a product root.
+The minimal remediation preserves the fixed request/trace IDs in the returned
+runtime result and adds a structural regression assertion. Product repair
+rounds consumed remain `0/1`; the failed run remains diagnostic-only evidence
+and is not represented as a Gate PASS.

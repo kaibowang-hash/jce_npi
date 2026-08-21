@@ -207,6 +207,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('"p803-item-create-v1"', source)
         self.assertIn("_sanitized_server_diagnostic", source)
         self.assertIn("_CREATE_SERVER_DIAGNOSTIC_CODES", source)
+        self.assertIn('trace_id=headers["X-Trace-ID"]', source)
         diagnostic_block = source.split("if created.status != 201", 1)[1].split(
             "require(", 1
         )[0]
