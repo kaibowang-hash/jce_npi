@@ -2558,6 +2558,12 @@ def _datetime_value(value: object) -> datetime:
     return parsed.astimezone(UTC)
 
 
+def _aware_utc(value: datetime) -> datetime:
+    if not isinstance(value, datetime) or value.tzinfo is None:
+        raise ValueError("Item publish time must be timezone-aware.")
+    return value.astimezone(UTC)
+
+
 def _utc_text(value: datetime) -> str:
     return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
 

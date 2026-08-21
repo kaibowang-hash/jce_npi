@@ -121,3 +121,25 @@ product failure or a new product root. The parser keeps the governed-body
 allowlist and constant-message fail-closed behavior for malformed or
 conflicting evidence while restoring `HttpResult.trace_id` optionality for
 raw Frappe responses. Product repair rounds consumed remain `0/1`.
+
+## Diagnostic result and bounded product repair
+
+- Shared trace optionality repair SHA:
+  `6a1801527511225d3f72639754d462bf180141be`.
+- Exact-SHA ordinary CI: `32455525411` PASS.
+- Diagnostic controlled-Site run: `32456460755`; preflight job `96694600008`
+  PASS and cumulative job `96694682993` FAILURE at the first P8-03 create.
+- The only emitted tuple was `P803_CREATE_STREAM_GUARD` / `NameError` /
+  `trace-50d0538b2f0f53d68118a0b3ce3edc4d`. The verifier withheld response-body,
+  business-value, target-identity, exception-message, and server-stack data.
+- Read-only cross-location inspection maps that tuple uniquely to
+  `frappe_repository._locked_stream_guard`: its first-create timestamp called
+  `_aware_utc` even though that private name was neither defined nor imported
+  in the module. The same undefined name guarded the active and clear update
+  timestamps.
+
+The bounded repair adds the missing module-private aware-UTC normalizer and a
+real first-guard-create regression covering all three call sites. Automatic
+synthetic diagnostic activation is disabled after obtaining the unique root;
+the response-neutral diagnostic mechanism remains dormant. Product repair
+rounds consumed are now `1/1`.

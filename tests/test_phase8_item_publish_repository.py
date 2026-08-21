@@ -70,6 +70,9 @@ class FakeDocument(AttrDict):
                 "npi_item_publish_idempotency_write"
             ),
             "NPI Outbox Message": "npi_item_outbox_write",
+            "NPI Item Publish Stream Guard": (
+                "npi_item_publish_stream_guard_write"
+            ),
             "NPI Audit Event": "npi_audit_append",
         }.get(doctype)
         if required_flag is not None and not getattr(
@@ -84,6 +87,7 @@ class FakeDocument(AttrDict):
             "NPI Item Publish Request": "global_id",
             "NPI Item Publish Command Idempotency": "scope_key_hash",
             "NPI Outbox Message": "event_id",
+            "NPI Item Publish Stream Guard": "source_stream_key_hash",
             "NPI Audit Event": "event_id",
         }[doctype]
         self.name = str(self[identity_field])
@@ -95,6 +99,22 @@ class FakeDocument(AttrDict):
         bucket[self.name] = self
         self._owner.pending.append((doctype, self.name))
         self._owner.events.append(f"insert:{doctype}")
+        return self
+
+    def save(self, *, ignore_permissions: bool = False):
+        doctype = str(self.doctype)
+        if doctype != "NPI Item Publish Stream Guard":
+            raise AssertionError(f"unexpected save for {doctype}")
+        if not getattr(
+            self._owner.frappe.flags,
+            "npi_item_publish_stream_guard_write",
+            False,
+        ):
+            raise AssertionError("missing controlled stream guard write flag")
+        if self.name not in self._owner.documents.get(doctype, {}):
+            raise AssertionError("stream guard must exist before save")
+        self.modified_by = self._owner.frappe.session.user
+        self._owner.events.append(f"save:{doctype}")
         return self
 
 
@@ -123,6 +143,11 @@ class FakeDatabase:
             value = {"enabled": enabled, "user_type": user_type}
             return AttrDict(value) if _kwargs.get("as_dict") else value
         if doctype == "NPI Item Mapping Head" and fieldname == "name":
+            for row in self.owner.documents.get(doctype, {}).values():
+                if all(row.get(key) == value for key, value in dict(filters).items()):
+                    return row.name
+            return None
+        if doctype == "NPI Item Publish Stream Guard" and fieldname == "name":
             for row in self.owner.documents.get(doctype, {}).values():
                 if all(row.get(key) == value for key, value in dict(filters).items()):
                     return row.name
@@ -1497,6 +1522,58 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
         finally:
             self.module._locked_stream_guard = original_guard
             self.module._set_stream_guard_active = original_set_active
+
+    def test_first_stream_guard_create_and_updates_use_aware_utc_database_time(self) -> None:
+        self.repository = self.new_repository(self.synthetic_profile())
+        self.frappe.get_meta = lambda _doctype: object()
+        self.frappe.get_all = lambda _doctype, **_kwargs: []
+
+        outcome = self.create()
+
+        self.assertIsNone(outcome.problem)
+        guard = self.only("NPI Item Publish Stream Guard")
+        request = self.only("NPI Item Publish Request")
+        self.assertRegex(
+            guard.updated_at,
+            r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[.]\d{6}$",
+        )
+        self.assertEqual(guard.active_request_global_id, request.global_id)
+        self.assertEqual(
+            guard.active_target_idempotency_key_hash,
+            request.target_idempotency_key_hash,
+        )
+        self.assertEqual(guard.active_state, "queued")
+
+        offset_now = datetime.fromisoformat("2026-08-16T21:00:00+07:00")
+        value = self.repository._item_request_value(self.project, request)
+        with self.module.item_request_transaction_write(
+            self.repository.actor
+        ) as capability:
+            self.module._set_stream_guard_active(
+                guard,
+                value,
+                now=offset_now,
+                capability=capability,
+            )
+            self.assertEqual(guard.updated_at, "2026-08-16 14:00:00.000000")
+            self.module._clear_stream_guard_active(
+                guard,
+                request_global_id=value.global_id,
+                target_idempotency_key_hash=value.target_idempotency_key_hash,
+                state="synthetic_verified",
+                now=offset_now,
+                capability=capability,
+            )
+        self.assertEqual(guard.updated_at, "2026-08-16 14:00:00.000000")
+        self.assertIsNone(guard.active_request_global_id)
+        self.assertEqual(guard.last_request_global_id, str(value.global_id))
+        self.assertEqual(guard.last_state, "synthetic_verified")
+        self.assertGreaterEqual(
+            self.events.count("save:NPI Item Publish Stream Guard"),
+            3,
+        )
+        with self.assertRaisesRegex(ValueError, "timezone-aware"):
+            self.module._aware_utc(datetime(2026, 8, 16, 14, 0))
 
 
 if __name__ == "__main__":

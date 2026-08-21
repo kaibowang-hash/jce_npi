@@ -35,7 +35,7 @@ ACKNOWLEDGEMENT = (
     "execution profile."
 )
 RUNTIME_MARKER = "npi-one-item-publish-disposable-v1"
-ITEM_CREATE_DIAGNOSTICS_ENABLED = True
+ITEM_CREATE_DIAGNOSTICS_ENABLED = False
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _PROBLEM_CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{0,79}$")

@@ -200,9 +200,9 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         ):
             self.assertIn(marker, source)
 
-    def test_create_diagnostic_is_first_request_only_closed_and_structural(self) -> None:
+    def test_create_diagnostic_is_disabled_and_remains_closed_and_structural(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8")
-        self.assertIn("ITEM_CREATE_DIAGNOSTICS_ENABLED = True", source)
+        self.assertIn("ITEM_CREATE_DIAGNOSTICS_ENABLED = False", source)
         self.assertIn('label == "synthetic"', source)
         self.assertIn('"p803-item-create-v1"', source)
         self.assertIn("_sanitized_server_diagnostic", source)
