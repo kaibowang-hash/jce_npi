@@ -143,3 +143,46 @@ real first-guard-create regression covering all three call sites. Automatic
 synthetic diagnostic activation is disabled after obtaining the unique root;
 the response-neutral diagnostic mechanism remains dormant. Product repair
 rounds consumed are now `1/1`.
+
+## Final unchanged Gate and new downstream replay cycle
+
+- Product repair checkpoint:
+  `d71cd7e5b1ff2ffec89f301f63d8d4f9c2751211`.
+- Exact-SHA ordinary CI `32457541575` passed on attempt 2 after the single
+  permitted same-run failed-frontend-job rerun; the replacement frontend job
+  `96700401878` passed all `444` E2E cases. No code, baseline, threshold, or
+  product behavior changed for that rerun.
+- The sole diagnostics-closed final Level 3 run `32459531850` retained the
+  exact checkpoint. Repository `96703501236`, secret `96703501254`, frontend
+  `96703501098`, visual `96703501232`, and controlled preflight `96706283836`
+  passed. Cumulative Site job `96706331478` failed only in the first
+  cross-process terminal replay fixture.
+- The only exposed failure was the constant outer `RuntimeError`:
+  `P8-03 Bench fixture replay_terminal failed with a withheld diagnostic`.
+  No inner exception class, governed stage, or trace was available, so this
+  run does not uniquely prove another product repair.
+
+Under the controller's standing serial recovery rule, this is a new opaque
+downstream cycle. The completed create cycle remains immutable at diagnostic
+`1/1`, product repair `1/1`, and final unchanged Gate `1/1`. The new
+`replay_terminal` cycle starts at diagnostic `0/1`, product repair `0/1`, and
+final unchanged Gate `0/1`.
+
+The verifier-only diagnostic checkpoint correlates the child fixture to the
+already validated trace from the controlled replay-list HTTP response. It may
+record and render exactly one allowlisted `P803_REPLAY_*` stage, with each
+stage code bound to exactly one failure context, plus the validated
+exception class name, and exact trace. The child records through the existing
+safe diagnostic hook and re-raises the original exception. The parent reads
+only bytes appended to the two exact controlled `npi_core.log` candidates
+during that child process and accepts exactly one strict three-field record.
+Missing, duplicate, wrong-trace, disallowed, malformed, oversized, symlinked,
+or out-of-root evidence keeps the existing constant withheld failure.
+
+The parent never reads or renders failed-child stdout/stderr, exception text,
+response bodies, Project/Request/Outbox identities, actors, payloads, hashes,
+formal Item or target values, or filesystem paths. The old create activation
+remains `ITEM_CREATE_DIAGNOSTICS_ENABLED = False`; no product worker,
+repository, API, permission, transaction, claim, replay, ownership, Schema, or
+external behavior changes in this checkpoint. No production ERPNext or JCE
+system is contacted.

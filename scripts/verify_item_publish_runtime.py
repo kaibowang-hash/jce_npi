@@ -5,10 +5,12 @@ import json
 import os
 import re
 import subprocess
+import tempfile
 import urllib.request
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
@@ -36,9 +38,12 @@ ACKNOWLEDGEMENT = (
 )
 RUNTIME_MARKER = "npi-one-item-publish-disposable-v1"
 ITEM_CREATE_DIAGNOSTICS_ENABLED = False
+REPLAY_TERMINAL_DIAGNOSTICS_ENABLED = True
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _PROBLEM_CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{0,79}$")
+_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
 _CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
     {
         "P803_CREATE_COMMAND_CONTEXT",
@@ -64,6 +69,23 @@ _CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
         "P803_CREATE_ENQUEUE",
         "P803_CREATE_API_RESPONSE",
     }
+)
+_REPLAY_TERMINAL_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P803_REPLAY_FIXTURE_VALIDATE",
+        "P803_REPLAY_REQUESTER_SESSION",
+        "P803_REPLAY_BEFORE_SNAPSHOT",
+        "P803_REPLAY_PROCESS_OUTBOX",
+        "P803_REPLAY_SESSION_RESTORE",
+        "P803_REPLAY_AFTER_SNAPSHOT",
+        "P803_REPLAY_TERMINAL_OUTCOME",
+        "P803_REPLAY_RECOVERABLE_SET",
+        "P803_REPLAY_STRUCTURAL_EQUALITY",
+    }
+)
+_REPLAY_DIAGNOSTIC_LOG_LIMIT = 64 * 1024
+_REPLAY_DIAGNOSTIC_RECORD_KEYS = frozenset(
+    {"code", "exceptionType", "traceId"}
 )
 
 LEGACY_OUTBOX_PAYLOAD_KEYS = frozenset(
@@ -173,6 +195,42 @@ def item_create_failure_message(result) -> str | None:
             f"trace_id={result.trace_id}]"
         )
     return None
+
+
+def _valid_replay_diagnostic_trace(value: object) -> bool:
+    return isinstance(value, str) and _TRACE_PATTERN.fullmatch(value) is not None
+
+
+@contextmanager
+def replay_terminal_diagnostic_step(
+    code: str,
+    trace_id: str,
+) -> Iterator[None]:
+    """Record one closed verifier stage and preserve the original failure."""
+
+    try:
+        yield
+    except Exception as error:
+        try:
+            exception_type = type(error).__name__
+            if (
+                REPLAY_TERMINAL_DIAGNOSTICS_ENABLED
+                and code in _REPLAY_TERMINAL_DIAGNOSTIC_CODES
+                and _valid_replay_diagnostic_trace(trace_id)
+                and _TYPE_PATTERN.fullmatch(exception_type) is not None
+            ):
+                from npi_core.api import record_safe_diagnostic
+
+                record_safe_diagnostic(
+                    code=code,
+                    title="NPI Item publish terminal replay stage failed",
+                    exception_type=exception_type,
+                    trace_id=trace_id,
+                )
+        except Exception:
+            # Diagnostic recording cannot replace the original verifier failure.
+            pass
+        raise
 
 
 def released_item_context(administrator, actor, base_url: str) -> dict[str, object]:
@@ -517,6 +575,11 @@ def run_replay(base_url: str, fixture_password: str) -> dict[str, object]:
         listed.status == 200 and isinstance(items, list) and len(items) == 2,
         "P8-03 retained terminal requests are unavailable",
     )
+    diagnostic_trace_id = listed.trace_id
+    require(
+        _valid_replay_diagnostic_trace(diagnostic_trace_id),
+        "P8-03 terminal replay diagnostic trace is unavailable",
+    )
     bindings = [
         {
             "request_id": str(item.get("globalId")),
@@ -532,6 +595,7 @@ def run_replay(base_url: str, fixture_password: str) -> dict[str, object]:
             "fixture_run_id": FIXTURE_RUN_ID,
             "project_id": project_id,
             "bindings": bindings,
+            "diagnostic_trace_id": diagnostic_trace_id,
         },
     )
     require(
@@ -1828,6 +1892,7 @@ def replay_terminal(
     fixture_run_id: str,
     project_id: str,
     bindings: list[dict[str, str]],
+    diagnostic_trace_id: str,
 ) -> dict[str, object]:
     import frappe
 
@@ -1837,44 +1902,87 @@ def replay_terminal(
     )
 
     require(
-        isinstance(bindings, list)
-        and len(bindings) == 2
-        and all(
-            isinstance(value, dict)
-            and set(value) == {"request_id", "outbox_id"}
-            for value in bindings
-        ),
-        "P8-03 replay bindings are invalid",
+        _valid_replay_diagnostic_trace(diagnostic_trace_id),
+        "P8-03 terminal replay diagnostic trace is invalid",
     )
-    request_ids = tuple(str(value["request_id"]) for value in bindings)
-    _validate_fixture(
-        fixture_run_id=fixture_run_id,
-        project_id=project_id,
-        request_ids=request_ids,
-    )
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_FIXTURE_VALIDATE",
+        diagnostic_trace_id,
+    ):
+        require(
+            isinstance(bindings, list)
+            and len(bindings) == 2
+            and all(
+                isinstance(value, dict)
+                and set(value) == {"request_id", "outbox_id"}
+                for value in bindings
+            ),
+            "P8-03 replay bindings are invalid",
+        )
+        request_ids = tuple(str(value["request_id"]) for value in bindings)
+        _validate_fixture(
+            fixture_run_id=fixture_run_id,
+            project_id=project_id,
+            request_ids=request_ids,
+        )
     requester_user = str(getattr(frappe.session, "user", ""))
-    require(
-        requester_user == ACTOR_USER,
-        "P8-03 replay fixture did not start as the authenticated requester",
-    )
-    before = _structural_context(project_id)
-    outcomes = [
-        process_outbox_message(str(value["outbox_id"])) for value in bindings
-    ]
-    require(
-        str(getattr(frappe.session, "user", "")) == requester_user,
-        "P8-03 worker did not restore the requester after terminal replay",
-    )
-    after = _structural_context(project_id)
-    recoverable = FrappeItemPublishWorkerRepository().recoverable_outbox_event_ids(
-        now=datetime.now(UTC)
-    )
-    require(
-        all(outcome.get("state") == "not_claimed" for outcome in outcomes)
-        and before == after
-        and recoverable == (),
-        "P8-03 cross-process replay changed terminal truth",
-    )
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_REQUESTER_SESSION",
+        diagnostic_trace_id,
+    ):
+        require(
+            requester_user == ACTOR_USER,
+            "P8-03 replay fixture did not start as the authenticated requester",
+        )
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_BEFORE_SNAPSHOT",
+        diagnostic_trace_id,
+    ):
+        before = _structural_context(project_id)
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_PROCESS_OUTBOX",
+        diagnostic_trace_id,
+    ):
+        outcomes = [
+            process_outbox_message(str(value["outbox_id"])) for value in bindings
+        ]
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_SESSION_RESTORE",
+        diagnostic_trace_id,
+    ):
+        require(
+            str(getattr(frappe.session, "user", "")) == requester_user,
+            "P8-03 worker did not restore the requester after terminal replay",
+        )
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_AFTER_SNAPSHOT",
+        diagnostic_trace_id,
+    ):
+        after = _structural_context(project_id)
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_TERMINAL_OUTCOME",
+        diagnostic_trace_id,
+    ):
+        require(
+            all(outcome.get("state") == "not_claimed" for outcome in outcomes),
+            "P8-03 terminal replay outcome changed",
+        )
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_RECOVERABLE_SET",
+        diagnostic_trace_id,
+    ):
+        recoverable = FrappeItemPublishWorkerRepository().recoverable_outbox_event_ids(
+            now=datetime.now(UTC)
+        )
+        require(recoverable == (), "P8-03 terminal work became recoverable")
+    with replay_terminal_diagnostic_step(
+        "P803_REPLAY_STRUCTURAL_EQUALITY",
+        diagnostic_trace_id,
+    ):
+        require(
+            before == after,
+            "P8-03 cross-process replay changed terminal truth",
+        )
     return {
         "callerRestored": True,
         "crossProcessReplay": True,
@@ -1883,6 +1991,141 @@ def replay_terminal(
         "notClaimedCount": len(outcomes),
         "recoverableCount": len(recoverable),
     }
+
+
+def _replay_diagnostic_log_paths() -> tuple[Path, Path]:
+    return (
+        BENCH_PATH / "logs" / "npi_core.log",
+        BENCH_PATH / "sites" / SITE_NAME / "logs" / "npi_core.log",
+    )
+
+
+def _replay_diagnostic_log_cursors() -> dict[str, int] | None:
+    """Snapshot only exact controlled log sizes before the child fixture."""
+
+    try:
+        bench_root = BENCH_PATH.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None
+    cursors: dict[str, int] = {}
+    for candidate in _replay_diagnostic_log_paths():
+        key = str(candidate.relative_to(BENCH_PATH))
+        try:
+            if candidate.is_symlink():
+                return None
+            if candidate.exists():
+                if not candidate.is_file():
+                    return None
+                resolved = candidate.resolve(strict=True)
+                if not resolved.is_relative_to(bench_root):
+                    return None
+                cursors[key] = candidate.stat().st_size
+            else:
+                parent = candidate.parent.resolve(strict=True)
+                if not parent.is_relative_to(bench_root):
+                    return None
+                cursors[key] = 0
+        except (OSError, RuntimeError, ValueError):
+            return None
+    return cursors
+
+
+def _json_records(line: str) -> Iterator[dict[str, object]]:
+    decoder = json.JSONDecoder()
+    for start, character in enumerate(line):
+        if character != "{":
+            continue
+        try:
+            record, _end = decoder.raw_decode(line[start:])
+        except (TypeError, ValueError):
+            continue
+        if isinstance(record, dict):
+            yield record
+
+
+def _sanitized_replay_terminal_diagnostic(
+    trace_id: object,
+    cursors: dict[str, int] | None,
+) -> tuple[str, str, str] | None:
+    """Accept exactly one new allowlisted replay record for one exact trace."""
+
+    if not _valid_replay_diagnostic_trace(trace_id) or not isinstance(cursors, dict):
+        return None
+    expected_keys = {
+        str(path.relative_to(BENCH_PATH))
+        for path in _replay_diagnostic_log_paths()
+    }
+    if set(cursors) != expected_keys or any(
+        type(offset) is not int or offset < 0 for offset in cursors.values()
+    ):
+        return None
+    try:
+        bench_root = BENCH_PATH.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None
+    replay_records: list[dict[str, object]] = []
+    for candidate in _replay_diagnostic_log_paths():
+        key = str(candidate.relative_to(BENCH_PATH))
+        offset = cursors[key]
+        try:
+            if candidate.is_symlink():
+                return None
+            if not candidate.is_file():
+                continue
+            resolved = candidate.resolve(strict=True)
+            if not resolved.is_relative_to(bench_root):
+                return None
+            size = candidate.stat().st_size
+            if offset > size or size - offset > _REPLAY_DIAGNOSTIC_LOG_LIMIT:
+                return None
+            with resolved.open("rb") as log_file:
+                log_file.seek(offset)
+                appended = log_file.read(_REPLAY_DIAGNOSTIC_LOG_LIMIT + 1)
+            if len(appended) > _REPLAY_DIAGNOSTIC_LOG_LIMIT:
+                return None
+        except (OSError, RuntimeError):
+            return None
+        for line in appended.decode("utf-8", errors="ignore").splitlines():
+            for record in _json_records(line):
+                code = record.get("code")
+                if isinstance(code, str) and code.startswith("P803_REPLAY_"):
+                    replay_records.append(record)
+    if len(replay_records) != 1:
+        return None
+    record = replay_records[0]
+    code = record.get("code")
+    exception_type = record.get("exceptionType")
+    if (
+        set(record) != _REPLAY_DIAGNOSTIC_RECORD_KEYS
+        or not isinstance(code, str)
+        or code not in _REPLAY_TERMINAL_DIAGNOSTIC_CODES
+        or not isinstance(exception_type, str)
+        or _TYPE_PATTERN.fullmatch(exception_type) is None
+        or record.get("traceId") != trace_id
+    ):
+        return None
+    return exception_type, code, str(trace_id)
+
+
+def _bench_fixture_failure_message(
+    method: str,
+    kwargs: dict[str, object],
+    cursors: dict[str, int] | None,
+) -> str:
+    message = f"P8-03 Bench fixture {method} failed with a withheld diagnostic"
+    if method != "replay_terminal" or not REPLAY_TERMINAL_DIAGNOSTICS_ENABLED:
+        return message
+    diagnostic = _sanitized_replay_terminal_diagnostic(
+        kwargs.get("diagnostic_trace_id"),
+        cursors,
+    )
+    if diagnostic is None:
+        return message
+    exception_type, code, trace_id = diagnostic
+    return (
+        f"{message} [diagnostic_code={code}; "
+        f"exception_type={exception_type}; trace_id={trace_id}]"
+    )
 
 
 def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
@@ -1900,26 +2143,34 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         "NPI_DATABASE_ROOT_PASSWORD",
     ):
         environment.pop(variable, None)
-    completed = subprocess.run(
-        [
-            str(BENCH_PATH / "env" / "bin" / "python"),
-            str(Path(__file__).resolve()),
-            "--bench-fixture",
-            method,
-            "--fixture-kwargs",
-            json.dumps(kwargs, separators=(",", ":"), sort_keys=True),
-        ],
-        cwd=BENCH_PATH / "sites",
-        env=environment,
-        check=False,
-        capture_output=True,
-        text=True,
+    diagnostic_cursors = (
+        _replay_diagnostic_log_cursors()
+        if method == "replay_terminal" and REPLAY_TERMINAL_DIAGNOSTICS_ENABLED
+        else None
     )
-    require(
-        completed.returncode == 0,
-        f"P8-03 Bench fixture {method} failed with a withheld diagnostic",
-    )
-    lines = [line for line in completed.stdout.splitlines() if line.strip()]
+    with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as fixture_output:
+        completed = subprocess.run(
+            [
+                str(BENCH_PATH / "env" / "bin" / "python"),
+                str(Path(__file__).resolve()),
+                "--bench-fixture",
+                method,
+                "--fixture-kwargs",
+                json.dumps(kwargs, separators=(",", ":"), sort_keys=True),
+            ],
+            cwd=BENCH_PATH / "sites",
+            env=environment,
+            check=False,
+            stdout=fixture_output,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(
+                _bench_fixture_failure_message(method, kwargs, diagnostic_cursors)
+            )
+        fixture_output.seek(0)
+        lines = [line for line in fixture_output if line.strip()]
     result = json.loads(lines[-1]) if lines else None
     require(isinstance(result, dict), "P8-03 Bench fixture result is invalid")
     return result

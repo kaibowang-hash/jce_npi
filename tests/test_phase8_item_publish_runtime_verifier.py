@@ -1,10 +1,17 @@
 from __future__ import annotations
 
 import ast
+import importlib.util
 import json
+import os
 import re
+import sys
+import tempfile
+import types
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +40,45 @@ _LEGACY_NEW_COLUMNS = {
     "semantic_source_effect_hash",
     "semantic_effect_hash",
 }
+_TRACE_ID = "trace-0123456789abcdef0123456789abcdef"
+_FIXTURE_RUN_ID = "0123456789abcdef0123456789abcdef"
+
+
+def load_verifier():
+    scripts = str(ROOT / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    saved = {
+        name: sys.modules.pop(name, None)
+        for name in (
+            "verify_document_runtime",
+            "verify_ebom_runtime",
+            "verify_publish_request_runtime",
+            "verify_item_publish_runtime_contract",
+        )
+    }
+    spec = importlib.util.spec_from_file_location(
+        "verify_item_publish_runtime_contract",
+        SCRIPT,
+    )
+    if spec is None or spec.loader is None:
+        raise AssertionError("Item publish runtime verifier cannot be imported")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    try:
+        with patch.dict(
+            os.environ,
+            {"NPI_DOCUMENT_RUNTIME_RUN_ID": _FIXTURE_RUN_ID},
+            clear=False,
+        ):
+            spec.loader.exec_module(module)
+    finally:
+        for name in tuple(saved):
+            sys.modules.pop(name, None)
+        for name, value in saved.items():
+            if value is not None:
+                sys.modules[name] = value
+    return module
 
 
 def _is_frappe_db_sql(node: ast.AST) -> bool:
@@ -177,6 +223,292 @@ def _legacy_sql_contract_violations(source: str) -> list[str]:
 
 
 class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.module = load_verifier()
+
+    def test_replay_diagnostic_checkpoint_is_separate_from_closed_create_scope(self) -> None:
+        module = self.module
+        self.assertFalse(module.ITEM_CREATE_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
+        self.assertEqual(
+            module._REPLAY_TERMINAL_DIAGNOSTIC_CODES,
+            {
+                "P803_REPLAY_FIXTURE_VALIDATE",
+                "P803_REPLAY_REQUESTER_SESSION",
+                "P803_REPLAY_BEFORE_SNAPSHOT",
+                "P803_REPLAY_PROCESS_OUTBOX",
+                "P803_REPLAY_SESSION_RESTORE",
+                "P803_REPLAY_AFTER_SNAPSHOT",
+                "P803_REPLAY_TERMINAL_OUTCOME",
+                "P803_REPLAY_RECOVERABLE_SET",
+                "P803_REPLAY_STRUCTURAL_EQUALITY",
+            },
+        )
+        source = SCRIPT.read_text(encoding="utf-8")
+        replay = source.split("def replay_terminal(", 1)[1].split("\ndef ", 1)[0]
+        for code in module._REPLAY_TERMINAL_DIAGNOSTIC_CODES:
+            self.assertIn(code, replay)
+            self.assertEqual(replay.count(f'"{code}"'), 1)
+        self.assertIn('"diagnostic_trace_id": diagnostic_trace_id', source)
+        self.assertIn("diagnostic_trace_id = listed.trace_id", source)
+
+    def test_replay_diagnostic_step_records_only_closed_tuple_and_reraises(self) -> None:
+        module = self.module
+        records: list[dict[str, object]] = []
+        package = types.ModuleType("npi_core")
+        package.__path__ = []
+        api = types.ModuleType("npi_core.api")
+        api.record_safe_diagnostic = lambda **values: records.append(values)
+        original = RuntimeError("private released Item value /tmp/private")
+        with patch.dict(
+            sys.modules,
+            {"npi_core": package, "npi_core.api": api},
+        ), self.assertRaises(RuntimeError) as failure:
+            with module.replay_terminal_diagnostic_step(
+                "P803_REPLAY_PROCESS_OUTBOX",
+                _TRACE_ID,
+            ):
+                raise original
+        self.assertIs(failure.exception, original)
+        self.assertEqual(
+            records,
+            [
+                {
+                    "code": "P803_REPLAY_PROCESS_OUTBOX",
+                    "title": "NPI Item publish terminal replay stage failed",
+                    "exception_type": "RuntimeError",
+                    "trace_id": _TRACE_ID,
+                }
+            ],
+        )
+        self.assertNotIn("private released Item value", str(records))
+        self.assertNotIn("/tmp/private", str(records))
+
+    def test_replay_diagnostic_step_is_closed_when_disabled_or_invalid(self) -> None:
+        module = self.module
+        cases = (
+            (False, "P803_REPLAY_PROCESS_OUTBOX", _TRACE_ID),
+            (True, "P803_REPLAY_NOT_ALLOWED", _TRACE_ID),
+            (True, "P803_REPLAY_PROCESS_OUTBOX", "trace-private-value"),
+        )
+        for enabled, code, trace_id in cases:
+            records: list[dict[str, object]] = []
+            package = types.ModuleType("npi_core")
+            package.__path__ = []
+            api = types.ModuleType("npi_core.api")
+            api.record_safe_diagnostic = lambda **values: records.append(values)
+            original = RuntimeError("private exception message")
+            with self.subTest(enabled=enabled, code=code, trace_id=trace_id), patch.object(
+                module,
+                "REPLAY_TERMINAL_DIAGNOSTICS_ENABLED",
+                enabled,
+            ), patch.dict(
+                sys.modules,
+                {"npi_core": package, "npi_core.api": api},
+            ), self.assertRaises(RuntimeError) as failure:
+                with module.replay_terminal_diagnostic_step(code, trace_id):
+                    raise original
+            self.assertIs(failure.exception, original)
+            self.assertEqual(records, [])
+
+    def test_replay_log_reader_requires_one_exact_new_record(self) -> None:
+        module = self.module
+
+        def read(records: list[dict[str, object]], trace_id: str = _TRACE_ID):
+            with tempfile.TemporaryDirectory() as directory:
+                bench_path = Path(directory).resolve()
+                paths = (
+                    bench_path / "logs" / "npi_core.log",
+                    bench_path / "sites" / module.SITE_NAME / "logs" / "npi_core.log",
+                )
+                for path in paths:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("prior safe log\n", encoding="utf-8")
+                with patch.object(module, "BENCH_PATH", bench_path):
+                    cursors = module._replay_diagnostic_log_cursors()
+                    with paths[0].open("a", encoding="utf-8") as log_file:
+                        for record in records:
+                            log_file.write(
+                                "private value /tmp/private "
+                                + json.dumps(record, separators=(",", ":"))
+                                + "\n"
+                            )
+                    return module._sanitized_replay_terminal_diagnostic(
+                        trace_id,
+                        cursors,
+                    )
+
+        valid = {
+            "code": "P803_REPLAY_PROCESS_OUTBOX",
+            "exceptionType": "RuntimeError",
+            "traceId": _TRACE_ID,
+        }
+        self.assertEqual(
+            read([valid]),
+            ("RuntimeError", "P803_REPLAY_PROCESS_OUTBOX", _TRACE_ID),
+        )
+        invalid_cases = (
+            [],
+            [valid, valid],
+            [{**valid, "traceId": "trace-ffffffffffffffffffffffffffffffff"}],
+            [{**valid, "code": "P803_REPLAY_NOT_ALLOWED"}],
+            [{**valid, "exceptionType": "Bad Type /tmp/private"}],
+            [{**valid, "privateValue": "released Item"}],
+        )
+        for records in invalid_cases:
+            with self.subTest(records=records):
+                self.assertIsNone(read(records))
+        self.assertIsNone(read([valid], trace_id="trace-private-value"))
+
+    def test_failed_child_output_is_never_read_or_rendered(self) -> None:
+        module = self.module
+        private = "released Item /tmp/private actor payload hash target"
+        completed = SimpleNamespace(returncode=1)
+        kwargs = {
+            "diagnostic_trace_id": _TRACE_ID,
+            "project_id": private,
+            "bindings": [{"request_id": private, "outbox_id": private}],
+        }
+        with patch.object(
+            module,
+            "_replay_diagnostic_log_cursors",
+            return_value={"logs/npi_core.log": 0},
+        ), patch.object(
+            module.subprocess,
+            "run",
+            return_value=completed,
+        ) as failed_run, patch.object(
+            module,
+            "_sanitized_replay_terminal_diagnostic",
+            return_value=(
+                "RuntimeError",
+                "P803_REPLAY_PROCESS_OUTBOX",
+                _TRACE_ID,
+            ),
+        ), self.assertRaises(RuntimeError) as failure:
+            module.run_bench_fixture("replay_terminal", kwargs)
+        run_kwargs = failed_run.call_args.kwargs
+        self.assertNotIn("capture_output", run_kwargs)
+        self.assertIs(run_kwargs["stderr"], module.subprocess.DEVNULL)
+        self.assertNotIn("stdout", vars(completed))
+        self.assertNotIn("stderr", vars(completed))
+        rendered = str(failure.exception)
+        self.assertEqual(
+            rendered,
+            "P8-03 Bench fixture replay_terminal failed with a withheld diagnostic "
+            "[diagnostic_code=P803_REPLAY_PROCESS_OUTBOX; "
+            f"exception_type=RuntimeError; trace_id={_TRACE_ID}]",
+        )
+        self.assertNotIn(private, rendered)
+
+        with patch.object(
+            module,
+            "_replay_diagnostic_log_cursors",
+            return_value=None,
+        ), patch.object(
+            module.subprocess,
+            "run",
+            return_value=completed,
+        ), self.assertRaises(RuntimeError) as closed:
+            module.run_bench_fixture("replay_terminal", kwargs)
+        self.assertEqual(
+            str(closed.exception),
+            "P8-03 Bench fixture replay_terminal failed with a withheld diagnostic",
+        )
+        self.assertNotIn(private, str(closed.exception))
+
+    def test_successful_child_result_is_read_only_after_zero_exit(self) -> None:
+        module = self.module
+        expected = {"fixture": "complete", "count": 2}
+
+        def complete_successfully(*_args, **kwargs):
+            kwargs["stdout"].write("bench prelude\n")
+            kwargs["stdout"].write(json.dumps(expected) + "\n")
+            kwargs["stdout"].flush()
+            return SimpleNamespace(returncode=0)
+
+        with patch.object(
+            module.subprocess,
+            "run",
+            side_effect=complete_successfully,
+        ) as successful_run:
+            result = module.run_bench_fixture("capture_project", {})
+        self.assertEqual(result, expected)
+        run_kwargs = successful_run.call_args.kwargs
+        self.assertNotIn("capture_output", run_kwargs)
+        self.assertIs(run_kwargs["stderr"], module.subprocess.DEVNULL)
+
+    def test_replay_log_reader_rejects_unsafe_log_boundaries(self) -> None:
+        module = self.module
+        valid = {
+            "code": "P803_REPLAY_PROCESS_OUTBOX",
+            "exceptionType": "RuntimeError",
+            "traceId": _TRACE_ID,
+        }
+
+        with tempfile.TemporaryDirectory() as directory:
+            bench_path = Path(directory).resolve()
+            log_path = bench_path / "logs" / "npi_core.log"
+            site_log_path = (
+                bench_path / "sites" / module.SITE_NAME / "logs" / "npi_core.log"
+            )
+            for path in (log_path, site_log_path):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("prior safe log\n", encoding="utf-8")
+            with patch.object(module, "BENCH_PATH", bench_path):
+                cursors = module._replay_diagnostic_log_cursors()
+                self.assertIsNotNone(cursors)
+
+                log_path.unlink()
+                external = bench_path.parent / f"{bench_path.name}-outside.log"
+                try:
+                    external.write_text(json.dumps(valid) + "\n", encoding="utf-8")
+                    log_path.symlink_to(external)
+                    self.assertIsNone(
+                        module._sanitized_replay_terminal_diagnostic(
+                            _TRACE_ID,
+                            cursors,
+                        )
+                    )
+                finally:
+                    log_path.unlink(missing_ok=True)
+                    external.unlink(missing_ok=True)
+
+                log_path.write_text("prior safe log\n", encoding="utf-8")
+                with log_path.open("a", encoding="utf-8") as log_file:
+                    log_file.write("x" * (module._REPLAY_DIAGNOSTIC_LOG_LIMIT + 1))
+                self.assertIsNone(
+                    module._sanitized_replay_terminal_diagnostic(
+                        _TRACE_ID,
+                        cursors,
+                    )
+                )
+
+                log_path.write_text(
+                    "prior safe log\n" + json.dumps(valid) + "\n",
+                    encoding="utf-8",
+                )
+                original_resolve = Path.resolve
+
+                def resolve_outside(path, *, strict=False):
+                    if path == log_path:
+                        return bench_path.parent / "simulated-outside.log"
+                    return original_resolve(path, strict=strict)
+
+                with patch.object(
+                    Path,
+                    "resolve",
+                    autospec=True,
+                    side_effect=resolve_outside,
+                ):
+                    self.assertIsNone(
+                        module._sanitized_replay_terminal_diagnostic(
+                            _TRACE_ID,
+                            cursors,
+                        )
+                    )
+
     def test_runtime_verifier_covers_command_claim_boundary_and_restart(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8")
         ast.parse(source)
