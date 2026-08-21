@@ -99,6 +99,7 @@
     "scripts/verify-frappe-runtime.sh",
     "scripts/verify_current_task.py",
     "scripts/verify_devcontainer.py",
+    "scripts/verify_frappe_runtime.py",
     "scripts/verify_item_publish_runtime.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
@@ -107,6 +108,7 @@
     "tests/test_phase2_metadata.py",
     "tests/test_phase5_publish_request_*.py",
     "tests/test_phase8_item_publish_*.py",
+    "tests/test_verify_frappe_runtime_http.py",
     "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {

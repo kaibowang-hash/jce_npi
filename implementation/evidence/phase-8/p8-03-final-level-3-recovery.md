@@ -87,3 +87,19 @@ fabricates trace identity locally.
 The diagnostic run `32450566995` remains a diagnostic harness failure within
 the same recovery cycle. Product repair rounds consumed remain `0/1`; it is not
 represented as a Gate PASS or a new product root.
+
+## Shared-harness ordinary CI manifest repair
+
+- Shared trace parser checkpoint SHA:
+  `9532dc6f1fc52672974cdad38df2f4bd068b58d0`.
+- Exact-SHA ordinary CI: `32452695822` FAILURE; repository `96683966535`,
+  frontend `96683966261`, and visual `96683966454` PASS.
+- Secret job `96683966433` failed before gitleaks in
+  `scripts/verify_current_task.py` because the newly authorized shared harness
+  path `scripts/verify_frappe_runtime.py` was not in the P8-03 manifest.
+
+This is a controller-manifest harness failure, not a secret finding or product
+root. The minimal remediation adds only the exact shared helper and exact
+contract-test paths to `CURRENT_TASK.allowed_paths`; it does not broaden a
+wildcard, change product behavior, or weaken the Gate. Product repair rounds
+consumed remain `0/1`.
