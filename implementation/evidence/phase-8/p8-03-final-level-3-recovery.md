@@ -312,3 +312,35 @@ message, stack, target, payload, or hash is recorded or rendered. The earlier
 parent classifier and create/replay activations are closed. This checkpoint
 does not alter API responses, authentication, permissions, transactions,
 queries, projections, Schema, migrations, ownership, or external behavior.
+
+## Legacy strict-predicate result and synthetic fixture remediation
+
+- Legacy-query diagnostic checkpoint:
+  `4c83ca31a9b6f8b5b12103e4c2732b5c7e21e5dc`.
+- Exact-SHA ordinary CI `32473988846` passed all required lanes, including
+  `1018` frontend tests and `444` E2E cases.
+- The sole controlled diagnostic run `32474917403` passed preflight job
+  `96749163173`; Site job `96749226139` emitted the unique safe tuple
+  `P803_LEGACY_QUERY_STRICT_LEGACY` /
+  `ItemPublishStreamReconciliationRequired` /
+  `trace-d537373bfa8257a38616fcb00c093aff`.
+
+Read-only predicate cross-proof found a deterministic fixture-precondition
+mismatch. The seeded Request used `trace-p8-03-legacy-<run>`, while its Outbox
+used `trace-p8-03-legacy-outbox-<run>`. Both were individually valid legacy
+trace strings, but strict legacy truth requires the linked Request and Outbox
+to carry the same trace. The first guaranteed failing scalar predicate was
+therefore `trace_value != trace_id` inside `_strict_legacy_outbox`. The unit
+fixture had used one matching trace for both rows and did not expose the
+runtime-only construction drift.
+
+The bounded remediation derives one validated synthetic trace and inserts that
+same value into the Request, Outbox, and frozen Outbox event snapshot. It does
+not relax the strict repository predicate or alter API, Schema, migration,
+query, permission, transaction, ownership, claim, lease, or product behavior.
+This is a marker-gated disposable fixture-precondition correction, so the
+legacy-query server subcycle closes at diagnostic `1/1`, product repair `0/1`,
+and final unchanged Gate `0/1`. The narrower strict-predicate subcycle remains
+product repair `0/1`. Create, replay, parent collection, and legacy-query
+server diagnostic activations are all closed; the response-neutral diagnostic
+mechanism remains dormant.

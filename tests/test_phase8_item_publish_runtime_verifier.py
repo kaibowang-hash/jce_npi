@@ -236,6 +236,10 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         )
         with patch.object(
             module,
+            "LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            module,
             "_sanitized_legacy_query_diagnostic",
             return_value=(
                 "RuntimeError",
@@ -300,7 +304,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
     def test_legacy_query_server_diagnostic_activation_is_exact(self) -> None:
         module = self.module
         self.assertFalse(module.LEGACY_COLLECTION_DIAGNOSTICS_ENABLED)
-        self.assertTrue(module.LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
         source = SCRIPT.read_text(encoding="utf-8")
@@ -966,6 +970,47 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         seed_text = ast.unparse(functions["seed_legacy"])
         self.assertIn("disposition", seed_text)
         self.assertIn("ready", seed_text)
+        self.assertIn("_TRACE_PATTERN.fullmatch(legacy_trace_id)", seed_text)
+        self.assertIn("trace_id=legacy_trace_id", seed_text)
+        seed = functions["seed_legacy"]
+        assignments = {
+            target.id: node.value
+            for node in seed.body
+            if isinstance(node, ast.Assign)
+            for target in node.targets
+            if isinstance(target, ast.Name)
+        }
+        request_columns = assignments["legacy_request_columns"]
+        request_values = assignments["legacy_request_values"]
+        outbox_columns = assignments["legacy_outbox_columns"]
+        outbox_values = assignments["legacy_outbox_values"]
+        self.assertIsInstance(request_columns, ast.Tuple)
+        self.assertIsInstance(request_values, ast.Tuple)
+        self.assertIsInstance(outbox_columns, ast.Tuple)
+        self.assertIsInstance(outbox_values, ast.Tuple)
+
+        def value_for(columns: ast.Tuple, values: ast.Tuple, fieldname: str):
+            names = [
+                value.value
+                for value in columns.elts
+                if isinstance(value, ast.Constant)
+            ]
+            return values.elts[names.index(fieldname)]
+
+        request_trace = value_for(
+            request_columns,
+            request_values,
+            "trace_id",
+        )
+        outbox_trace = value_for(
+            outbox_columns,
+            outbox_values,
+            "trace_id",
+        )
+        self.assertIsInstance(request_trace, ast.Name)
+        self.assertIsInstance(outbox_trace, ast.Name)
+        self.assertEqual(request_trace.id, "legacy_trace_id")
+        self.assertEqual(outbox_trace.id, "legacy_trace_id")
         event_helper = functions["_legacy_event_snapshot"]
         event_return = next(
             node

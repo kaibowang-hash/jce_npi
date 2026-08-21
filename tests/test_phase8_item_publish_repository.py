@@ -1029,6 +1029,14 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
                     setattr(old, field, original_value)
 
             self.assertTrue(self.module._is_legacy_nonmock_request_row(old))
+            old_outbox.trace_id = "trace-legacy-item-mismatch"
+            self.assertFalse(self.module._strict_legacy_request_row(old))
+            with self.assertRaises(
+                self.module.ItemPublishStreamReconciliationRequired
+            ):
+                self.module._is_legacy_nonmock_request_row(old)
+            old_outbox.trace_id = old.trace_id
+            self.assertTrue(self.module._strict_legacy_request_row(old))
             old.target_idempotency_key_hash = HASH_A
             with self.assertRaises(
                 self.module.ItemPublishStreamReconciliationRequired

@@ -40,7 +40,7 @@ RUNTIME_MARKER = "npi-one-item-publish-disposable-v1"
 ITEM_CREATE_DIAGNOSTICS_ENABLED = False
 REPLAY_TERMINAL_DIAGNOSTICS_ENABLED = False
 LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = False
-LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED = True
+LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED = False
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _LEGACY_QUERY_DIAGNOSTIC_SCOPE = "p803-legacy-query-v1"
@@ -1228,6 +1228,14 @@ def seed_legacy(
     legacy_id = str(uuid5(UUID(source_request_id), "npi-one-p8-03-legacy-8dd"))
     legacy_request_id = str(uuid5(UUID(source_request_id), "legacy-request"))
     legacy_outbox_id = str(uuid5(UUID(source_request_id), "legacy-outbox"))
+    legacy_trace_id = (
+        "trace-"
+        + uuid5(UUID(source_request_id), "npi-one-p8-03-legacy-trace").hex
+    )
+    require(
+        _TRACE_PATTERN.fullmatch(legacy_trace_id) is not None,
+        "P8-03 legacy fixture trace is invalid",
+    )
     source_stream = str(source_request.source_stream_key_hash)
     now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
     source_payload = source_outbox.payload
@@ -1250,7 +1258,6 @@ def seed_legacy(
         "P8-03 source Outbox payload is not the exact 8dd shape",
     )
     legacy_payload_hash = canonical_hash(legacy_payload)
-    legacy_trace_id = f"trace-p8-03-legacy-outbox-{FIXTURE_RUN_ID[:12]}"
     legacy_event_snapshot = _legacy_event_snapshot(
         event_id=legacy_outbox_id,
         global_id=legacy_id,
@@ -1389,7 +1396,7 @@ def seed_legacy(
         None,
         source_request.actor_user_id,
         legacy_request_id,
-        f"trace-p8-03-legacy-{FIXTURE_RUN_ID[:12]}",
+        legacy_trace_id,
         source_request.idempotency_key_hash,
         source_request.payload_hash,
         1,
