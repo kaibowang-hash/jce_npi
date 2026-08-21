@@ -308,6 +308,24 @@ class Phase8ItemPublishContractTest(unittest.TestCase):
         self.assertIn("mappingexpectation", item_list)
         self.assertIn("mapping expectation", item_list)
 
+    def test_openapi_closes_legacy_and_current_item_request_state_matrix(self) -> None:
+        item = OPENAPI[
+            OPENAPI.index("    ItemPublishRequest:\n") : OPENAPI.index(
+                "    ItemPublishAttempt:\n"
+            )
+        ]
+        self.assertIn("      allOf:\n", item)
+        self.assertIn("legacyReadOnly: { const: true }", item)
+        self.assertIn("current: { const: false }", item)
+        self.assertIn("state: { const: queued }", item)
+        self.assertIn("dispatchAllowed: { const: false }", item)
+        self.assertIn('outboxEventId: { type: \"null\" }', item)
+        self.assertIn('resultGlobalId: { type: \"null\" }', item)
+        self.assertIn("optimisticVersion: { const: 1 }", item)
+        self.assertIn("not: { const: mock }", item)
+        self.assertIn("legacyReadOnly: { const: false }", item)
+        self.assertIn("current: { const: true }", item)
+
     def test_ownership_separates_npi_execution_truth_from_erp_item_master_truth(self) -> None:
         for marker in (
             "  ItemPublishRequest:\n    owner_system: NPI_ONE",

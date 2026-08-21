@@ -862,6 +862,39 @@ class Phase8ItemPublishRepositoryTest(unittest.TestCase):
             self.assertIsNone(old.target_idempotency_key_hash)
             self.assertIsNone(old.service_actor_user_id)
 
+            for field, invalid_value in (
+                ("state", "succeeded"),
+                ("state", "processing"),
+                ("optimistic_version", 2),
+                ("updated_at", NOW.replace(second=1)),
+            ):
+                original_value = getattr(old, field)
+                setattr(old, field, invalid_value)
+                try:
+                    with self.assertRaises(
+                        self.module.ItemPublishStreamReconciliationRequired
+                    ):
+                        self.module._is_legacy_nonmock_request_row(old)
+                    with self.assertRaises(
+                        self.module.ItemPublishStreamReconciliationRequired
+                    ):
+                        self.repository.list_item_publish_requests(
+                            PROJECT_ID,
+                            selected_publish_node_id=self.phase5.nodes[1].global_id,
+                        )
+                    with self.assertRaises(
+                        self.module.ItemPublishStreamReconciliationRequired
+                    ):
+                        self.repository.item_publish_request_detail(
+                            PROJECT_ID,
+                            PHASE5_REQUEST_ID,
+                        )
+                    self.assertEqual(self.events, [])
+                    self.assertIsNone(old.target_idempotency_key_hash)
+                    self.assertIsNone(old.service_actor_user_id)
+                finally:
+                    setattr(old, field, original_value)
+
             self.assertTrue(self.module._is_legacy_nonmock_request_row(old))
             old.target_idempotency_key_hash = HASH_A
             with self.assertRaises(

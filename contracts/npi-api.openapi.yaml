@@ -20998,6 +20998,28 @@ components:
         optimisticVersion: { type: integer, minimum: 1 }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+      allOf:
+        - if:
+            properties:
+              legacyReadOnly: { const: true }
+            required: [legacyReadOnly]
+          then:
+            properties:
+              current: { const: false }
+              state: { const: queued }
+              dispatchAllowed: { const: false }
+              outboxEventId: { type: "null" }
+              resultGlobalId: { type: "null" }
+              optimisticVersion: { const: 1 }
+              profile:
+                type: object
+                properties:
+                  targetMode:
+                    not: { const: mock }
+          else:
+            properties:
+              legacyReadOnly: { const: false }
+              current: { const: true }
     ItemPublishAttempt:
       type: object
       additionalProperties: false

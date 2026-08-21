@@ -605,10 +605,12 @@ export function isItemPublishRequest(
     return (
       value.profile.targetMode !== "mock" &&
       !value.current &&
-      value.state !== "validated_mock" &&
+      value.state === "queued" &&
       !value.dispatchAllowed &&
       value.outboxEventId === null &&
-      value.resultGlobalId === null
+      value.resultGlobalId === null &&
+      value.optimisticVersion === 1 &&
+      value.createdAt === value.updatedAt
     );
   }
   if (!value.current) return false;

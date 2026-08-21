@@ -1835,11 +1835,7 @@ def _strict_legacy_request_row(row: object) -> bool:
         if _value(row, "dispatch_allowed") not in (1, True):
             return False
         state = str(_value(row, "state") or "")
-        if state not in {
-            item_state.value
-            for item_state in ItemPublishRequestState
-            if item_state is not ItemPublishRequestState.VALIDATED_MOCK
-        }:
+        if state != ItemPublishRequestState.QUEUED.value:
             return False
         if _value(row, "result_global_id") not in (None, ""):
             return False
@@ -1869,7 +1865,7 @@ def _strict_legacy_request_row(row: object) -> bool:
         payload_hash = _strict_sha256_value(_value(row, "payload_hash"))
         created_at = _strict_timestamp_value(_value(row, "created_at"))
         updated_at = _strict_timestamp_value(_value(row, "updated_at"))
-        if updated_at < created_at:
+        if optimistic_version != 1 or updated_at != created_at:
             return False
 
         source_snapshot = _json_object(_value(row, "source_snapshot"))

@@ -95,6 +95,21 @@ describe("Item publish response validation", () => {
         state: "validated_mock" as const,
       }),
     ).toBe(false);
+    expect(
+      isItemPublishRequest({ ...legacy.request, state: "succeeded" }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequest({ ...legacy.request, state: "processing" }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequest({ ...legacy.request, optimisticVersion: 2 }),
+    ).toBe(false);
+    expect(
+      isItemPublishRequest({
+        ...legacy.request,
+        updatedAt: "2026-08-16T08:00:01Z",
+      }),
+    ).toBe(false);
     expect(isItemPublishRequest({ ...legacy.request, current: true })).toBe(
       false,
     );

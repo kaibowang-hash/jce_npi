@@ -582,6 +582,9 @@ def run_legacy(
     require(
         inspected.get("guardBlocked") is True
         and inspected.get("legacyBindingsNull") is True
+        and inspected.get("legacyState") == "queued"
+        and inspected.get("legacyOptimisticVersion") == 1
+        and inspected.get("legacyTimestampsEqual") is True
         and inspected.get("workerRoute") is None
         and inspected.get("adapterCalls") == 0
         and cleaned.get("legacyRowsRemoved") is True,
@@ -591,6 +594,9 @@ def run_legacy(
         "commandReconciliationRequired": True,
         "detailReadOnly": True,
         "guardBlocked": inspected["guardBlocked"],
+        "legacyState": inspected["legacyState"],
+        "legacyOptimisticVersion": inspected["legacyOptimisticVersion"],
+        "legacyTimestampsEqual": inspected["legacyTimestampsEqual"],
         "legacyBindingsNull": inspected["legacyBindingsNull"],
         "legacyRowsRemoved": cleaned["legacyRowsRemoved"],
         "listAndDetailReadable": True,
@@ -1302,6 +1308,9 @@ def inspect_legacy(
         set(request_ids) == set(expected_request_ids)
         and str(legacy.global_id) == legacy_request_id
         and str(legacy.outbox_event_id) == legacy_outbox_id
+        and str(legacy.state) == "queued"
+        and int(legacy.optimistic_version) == 1
+        and str(legacy.created_at) == str(legacy.updated_at)
         and not legacy.target_idempotency_key_hash
         and not legacy.service_actor_user_id
         and not legacy.semantic_source_effect_hash
@@ -1433,6 +1442,9 @@ def inspect_legacy(
     return {
         "adapterCalls": adapter_calls,
         "guardBlocked": True,
+        "legacyState": str(legacy.state),
+        "legacyOptimisticVersion": int(legacy.optimistic_version),
+        "legacyTimestampsEqual": str(legacy.created_at) == str(legacy.updated_at),
         "legacyBindingsNull": True,
         "legacyProjectionReadOnly": True,
         "postMigrationDuplicateAttemptCount": duplicate_attempt_count,
