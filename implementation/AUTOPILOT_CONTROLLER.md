@@ -4305,3 +4305,34 @@ repeat or rewrite it merely to restore context. See
 - Checkpoint 2 remains inactive until the amended exact checkpoint 1 SHA passes
   a new ordinary CI. The controller marker remains: `P8-04 audit-plan CI PASS;
   checkpoint 1 awaits exact-SHA ordinary CI`.
+
+## 2026-08-21 P8-04 checkpoint 1 PASS; checkpoint 2 awaits product CI
+
+- Amended exact checkpoint 1 SHA
+  `97cdfbb843aeac422c71f57434a4a39f22c1954a` passes ordinary CI
+  `32495121120`: repository `96811612041` passes `2,206` tracked Python
+  tests; frontend `96811612188` passes `1,018/1,018` unit, `444/444` E2E and
+  `8,095` direct trilingual sources; secret `96811612042` scans `580` branch
+  commits with no leak; unchanged `123/123` visual `96811611815` passes.
+  Controlled lanes correctly skip because checkpoint 1 activates no route,
+  business row, worker, adapter, fixture or external transport.
+- Checkpoint 1 is sealed in
+  `implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md`.
+  Exact released topology and role, P8-03 Item readiness, Item/MBOM mapping-set
+  expectations, immutable request/profile/state/fault/result/CAS domains,
+  additive MBOM-only contracts, guarded schema-version-2 Outbox metadata,
+  nine support DocTypes and direct translations are proven without target or
+  external effect.
+- Standing continuous-delivery authority activates only checkpoint 2: fixed
+  Project-first list/detail/create, exact Phase 5 release/topology and current
+  Item/MBOM expectation resolution, server permission/profile authority,
+  actor-bound idempotency and one atomic request + nodes + Outbox + audit
+  transaction. Response follows commit and enqueue follows commit; Mock creates
+  no Outbox and no worker/adapter call occurs in the browser transaction.
+- The checkpoint 2 candidate awaits affected checks and its exact-SHA ordinary
+  CI. Checkpoint 3 worker/adapter/attempt/result/mapping execution, checkpoint
+  4 UI, actual Sandbox/production profile or mapping, submitted-BOM successor
+  policy, generic P8-07 operations and P8-05 through P8-09 remain inactive.
+- The controller marker is: `P8-04 checkpoint 1 PASS; checkpoint 2 awaits exact-SHA ordinary CI`.
+  There is no Hard Blocker and no user action is
+  required.

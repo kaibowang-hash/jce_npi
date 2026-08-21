@@ -17,6 +17,7 @@ PROJECT_ID = "00000000-0000-4000-8000-000000008301"
 PHASE5_REQUEST_ID = "00000000-0000-4000-8000-000000008302"
 PUBLISH_NODE_ID = "00000000-0000-4000-8000-000000008303"
 ITEM_REQUEST_ID = "00000000-0000-4000-8000-000000008304"
+MBOM_REQUEST_ID = "00000000-0000-4000-8000-000000008307"
 OUTBOX_ID = "00000000-0000-4000-8000-000000008305"
 REQUEST_ID = "00000000-0000-4000-8000-000000008306"
 ACKNOWLEDGEMENT = (
@@ -682,6 +683,60 @@ class Phase8ItemPublishApiTest(unittest.TestCase):
                     self.frappe.local.form_dict.cmd,
                     "npi_core.bff.route_not_found",
                 )
+
+    def test_router_maps_only_fixed_mbom_project_first_methods_and_params(self) -> None:
+        base = f"/api/npi/v1/projects/{PROJECT_ID}/mbom-publish-requests"
+        routes = (
+            (
+                "GET",
+                base,
+                "npi_integration.mbom_publish_api.get_mbom_publish_requests",
+                {"project_id": PROJECT_ID},
+            ),
+            (
+                "POST",
+                base,
+                "npi_integration.mbom_publish_api.create_mbom_publish_request",
+                {"project_id": PROJECT_ID},
+            ),
+            (
+                "GET",
+                f"{base}/{MBOM_REQUEST_ID}",
+                "npi_integration.mbom_publish_api.get_mbom_publish_request",
+                {
+                    "project_id": PROJECT_ID,
+                    "mbom_publish_request_id": MBOM_REQUEST_ID,
+                },
+            ),
+        )
+        for method, path, expected, expected_params in routes:
+            with self.subTest(method=method, path=path):
+                self.frappe.local.request.method = method
+                self.frappe.local.request.path = path
+                self.frappe.local.form_dict = AttrDict()
+                self.frappe.flags = types.SimpleNamespace()
+                self.router.route_request()
+                self.assertEqual(self.frappe.local.form_dict.cmd, expected)
+                self.assertEqual(self.frappe.flags.npi_route_params, expected_params)
+                self.assertTrue(self.router._requires_project_request_id(method, path))
+
+        for method, path in (
+            ("PUT", base),
+            ("POST", f"{base}/{MBOM_REQUEST_ID}"),
+            ("GET", f"{base}/{MBOM_REQUEST_ID}:retry"),
+            ("POST", f"{base}:reconcile"),
+        ):
+            with self.subTest(method=method, path=path):
+                self.frappe.local.request.method = method
+                self.frappe.local.request.path = path
+                self.frappe.local.form_dict = AttrDict()
+                self.frappe.flags = types.SimpleNamespace()
+                self.router.route_request()
+                self.assertEqual(
+                    self.frappe.local.form_dict.cmd,
+                    "npi_core.bff.route_not_found",
+                )
+                self.assertEqual(self.frappe.flags.npi_route_params, {})
 
 
 if __name__ == "__main__":

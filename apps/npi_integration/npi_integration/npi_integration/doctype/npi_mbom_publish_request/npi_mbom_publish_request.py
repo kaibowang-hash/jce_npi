@@ -28,9 +28,22 @@ class NPIMBOMPublishRequest(MbomSupportDocument):
         "target_idempotency_key_hash",
         "semantic_effect_hash",
     )
-    positive_fields = ("schema_version", "profile_version", "optimistic_version")
+    positive_fields = (
+        "schema_version",
+        "profile_version",
+        "projection_policy_version",
+        "optimistic_version",
+    )
     tenant_fields = ("tenant_id",)
-    required_text_fields = ("api_version", "operation", "profile_id", "trace_id")
+    required_text_fields = (
+        "api_version",
+        "operation",
+        "profile_id",
+        "target_mode",
+        "environment_code",
+        "projection_policy_id",
+        "trace_id",
+    )
     actor_fields = ("actor_user_id",)
     optional_actor_fields = ("service_actor_user_id",)
     immutable_fields = (
@@ -52,7 +65,11 @@ class NPIMBOMPublishRequest(MbomSupportDocument):
         "mbom_mapping_set_hash",
         "profile_id",
         "profile_version",
+        "target_mode",
+        "environment_code",
         "profile_snapshot_hash",
+        "projection_policy_id",
+        "projection_policy_version",
         "projection_policy_hash",
         "actor_user_id",
         "service_actor_user_id",

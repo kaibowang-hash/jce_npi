@@ -155,6 +155,26 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
             self.assertIn(marker, controller)
         ast.parse(controller)
 
+    def test_request_persists_complete_profile_reference_for_fail_closed_rebuild(self) -> None:
+        metadata = self.load("npi_mbom_publish_request")
+        fields = {field["fieldname"]: field for field in metadata["fields"]}
+        required = (
+            "target_mode",
+            "environment_code",
+            "projection_policy_id",
+            "projection_policy_version",
+        )
+        for fieldname in required:
+            self.assertTrue(fields[fieldname]["reqd"])
+            self.assertTrue(fields[fieldname]["read_only"])
+        source = (
+            DOCTYPE_ROOT
+            / "npi_mbom_publish_request"
+            / "npi_mbom_publish_request.py"
+        ).read_text(encoding="utf-8")
+        for fieldname in required:
+            self.assertIn(f'"{fieldname}"', source)
+
     def test_outbox_event_hash_validation_stays_inside_its_schema_branch(self) -> None:
         path = DOCTYPE_ROOT / "npi_outbox_message/npi_outbox_message.py"
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -179,11 +199,19 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
         self.assertEqual(strings("validate").count("Item Outbox Event Snapshot Hash"), 1)
         self.assertNotIn("MBOM Outbox Event Snapshot Hash", strings("validate"))
 
-    def test_checkpoint_one_does_not_activate_runtime_or_transport(self) -> None:
+    def test_checkpoint_two_activates_only_command_landing_not_target_transport(self) -> None:
         files = {path.name for path in MBOM_ROOT.glob("*.py")}
         self.assertEqual(
             files,
-            {"__init__.py", "config.py", "domain.py", "doctype_base.py", "frappe_validation.py"},
+            {
+                "__init__.py",
+                "config.py",
+                "domain.py",
+                "doctype_base.py",
+                "frappe_repository.py",
+                "frappe_validation.py",
+                "problems.py",
+            },
         )
         combined = "\n".join(
             path.read_text(encoding="utf-8") for path in MBOM_ROOT.glob("*.py")
@@ -194,19 +222,37 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
             "urllib." + "request",
             "socket" + ".",
             "frappe.db" + ".sql",
-            "enqueue(",
             "adapter.call",
         ):
             self.assertNotIn(forbidden, combined)
-        self.assertFalse(
-            (ROOT / "apps/npi_integration/npi_integration/mbom_publish_api.py").exists()
-        )
+        api = ROOT / "apps/npi_integration/npi_integration/mbom_publish_api.py"
+        self.assertTrue(api.is_file())
+        api_source = api.read_text(encoding="utf-8")
+        self.assertIn("enqueue_after_commit=False", api_source)
+        self.assertNotIn("requests" + ".", api_source)
         openapi = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
-        self.assertNotIn("/projects/{projectGlobalId}/mbom-publish-requests", openapi)
+        self.assertIn("/projects/{projectId}/mbom-publish-requests:", openapi)
+        self.assertIn(
+            "/projects/{projectId}/mbom-publish-requests/{mbomPublishRequestId}:",
+            openapi,
+        )
+        router = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
+        for marker in (
+            "_PROJECT_MBOM_PUBLISH_REQUESTS_ROUTE",
+            "_PROJECT_MBOM_PUBLISH_REQUEST_ROUTE",
+            "npi_integration.mbom_publish_api.get_mbom_publish_requests",
+            "npi_integration.mbom_publish_api.create_mbom_publish_request",
+            "npi_integration.mbom_publish_api.get_mbom_publish_request",
+        ):
+            self.assertIn(marker, router)
 
     def test_visible_sources_have_symmetric_direct_chinese_translations(self) -> None:
         sources: set[str] = set()
-        source_paths = [MBOM_ROOT / "frappe_validation.py"]
+        source_paths = [
+            MBOM_ROOT / "frappe_validation.py",
+            MBOM_ROOT / "problems.py",
+            ROOT / "apps/npi_integration/npi_integration/mbom_publish_api.py",
+        ]
         for folder in (*self.FOLDERS, "npi_outbox_message"):
             metadata = self.load(folder)
             if folder != "npi_outbox_message":

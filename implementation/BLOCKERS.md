@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-21T14:32:05Z`
+Updated: `2026-08-21T15:33:49Z`
 
 ## Active hard blockers
 
@@ -14,19 +14,21 @@ Runtime artifact `9446493624` has digest
 `sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`;
 migrations twice, stream conflicts, uncertainty/no redispatch, cross-process
 replay, strict legacy read-only/non-claimable behavior, zero Mock mapping,
-zero production traffic and cleanup pass. Exact frozen P8-04 audit-plan SHA
-`171a183` passes ordinary CI `32487934051`; checkpoint 1 is active, implemented
-locally without runtime behavior and awaits its own exact-SHA ordinary CI. No
-user action, login or frontend operation is required.
+zero production traffic and cleanup pass. P8-04 checkpoint 1 exact product SHA
+`97cdfbb` passes ordinary CI `32495121120`; checkpoint 2 is active and its
+Project-first command/atomic durable Outbox candidate awaits affected checks
+and exact-SHA ordinary CI. No user action, login or frontend operation is
+required.
 
 ## Active recovery
 
 None. P8-03 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
 authoritative. P8-04 audit is frozen in
-`implementation/evidence/phase-8/p8-04-plan.md`; its plan CI passes and the
-checkpoint 1 candidate remains behavior-free domain/contract/metadata work.
-Checkpoint 2 stays held until checkpoint 1 exact-SHA ordinary CI passes.
+`implementation/evidence/phase-8/p8-04-plan.md`; checkpoint 1 is sealed in
+`implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md`.
+Checkpoint 2 activates no worker, adapter, attempt/result/mapping execution or
+UI, and checkpoint 3 stays held until its exact-SHA ordinary CI passes.
 Production adapters, formal Item/BOM mapping
 from Mock or synthetic proof, Item/MBOM/Asset/quality production writes,
 P8-05 through P8-09 and the P8-07 operations/replay/reconciliation surface
@@ -47,18 +49,18 @@ credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-## Current authoritative blocker state — 2026-08-21T14:32:05Z
+## Current authoritative blocker state — 2026-08-21T15:33:49Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-03 exact final SHA `c11d97c` passes ordinary `32479492064` and final
   unchanged Level 3 `32480568505`; the release review reports no P0/P1/P2.
-- P8-04 frozen plan SHA `171a183` passes ordinary CI `32487934051`.
-  Checkpoint 1 pure MBOM topology/readiness, contracts and guarded metadata is
-  implemented locally with no route, row, worker or adapter and awaits its
-  own exact-SHA ordinary CI; checkpoint 2 remains inactive.
+- P8-04 checkpoint 1 SHA `97cdfbb` passes ordinary CI `32495121120`.
+  Checkpoint 2 fixed Project-first list/detail/create, exact source/mapping-set
+  resolution, actor idempotency and atomic request + nodes + Outbox + audit is
+  active and awaits affected checks plus exact-SHA ordinary CI.
 - Missing ERPNext BOM customization, naming/routing/service-scope and
-  authenticated Sandbox facts are scoped external holds. No P8-04 product
-  route, row, worker, adapter or UI is authorized in checkpoint 1; production traffic, P8-05
+  authenticated Sandbox facts are scoped external holds. No P8-04 worker,
+  adapter, attempt/result/mapping execution or UI is authorized in checkpoint 2; production traffic, P8-05
   through P8-09 and P8-07 manual operations remain inactive.
 
 ## Historical recovery

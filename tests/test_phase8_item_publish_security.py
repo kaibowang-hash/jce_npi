@@ -10,6 +10,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 APP_ROOT = ROOT / "apps"
 ITEM_ROOT = APP_ROOT / "npi_integration/npi_integration/item_publish"
+MBOM_ROOT = APP_ROOT / "npi_integration/npi_integration/mbom_publish"
 EXPECTED_PERMISSION_CALLS = Counter(
     {
         (
@@ -21,6 +22,18 @@ EXPECTED_PERMISSION_CALLS = Counter(
         (
             str(ITEM_ROOT / "frappe_validation.py"),
             "save_item_support_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(MBOM_ROOT / "frappe_validation.py"),
+            "insert_mbom_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(MBOM_ROOT / "frappe_validation.py"),
+            "save_mbom_support_document",
             "document",
             "save",
         ): 1,
@@ -90,19 +103,13 @@ def _scan_permission_paths(paths: list[Path] | tuple[Path, ...]):
             value = permission_keywords[0].value
             if not isinstance(value, ast.Constant) or value.value is not True:
                 violations.append(f"{path}:{node.lineno}: non-literal true bypass")
-            if (
-                str(path) != str(ITEM_ROOT / "frappe_validation.py")
-                or function_name
-                not in {"insert_item_support_document", "save_item_support_document"}
-                or receiver != "document"
-                or method not in {"insert", "save"}
-            ):
+            if (str(path), function_name, receiver, method) not in EXPECTED_PERMISSION_CALLS:
                 violations.append(f"{path}:{node.lineno}: unapproved bypass call")
     return calls, violations
 
 
 class Phase8ItemPublishSecurityTest(unittest.TestCase):
-    def test_ignore_permissions_is_exactly_two_controlled_calls(self) -> None:
+    def test_ignore_permissions_is_exactly_four_controlled_calls(self) -> None:
         calls, violations = _scan_permission_paths(tuple(APP_ROOT.rglob("*.py")))
         self.assertEqual(violations, [])
         self.assertEqual(Counter(calls), EXPECTED_PERMISSION_CALLS)

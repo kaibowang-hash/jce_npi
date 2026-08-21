@@ -185,9 +185,17 @@ class Phase8MbomPublishContractTest(unittest.TestCase):
         self.assertEqual(synthetic["authority"]["const"], "synthetic")
         self.assertFalse(synthetic["response_authenticated"]["const"])
 
-    def test_openapi_adds_only_closed_components_and_no_mbom_route(self) -> None:
+    def test_openapi_adds_closed_project_first_mbom_command_routes(self) -> None:
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        self.assertNotIn("/mbom-publish-requests", paths)
+        self.assertEqual(paths.count("/projects/{projectId}/mbom-publish-requests:"), 1)
+        self.assertEqual(
+            paths.count(
+                "/projects/{projectId}/mbom-publish-requests/{mbomPublishRequestId}:"
+            ),
+            1,
+        )
+        self.assertIn("x-transaction-boundary: mbom-request-nodes-idempotency-stream-outbox-audit", paths)
+        self.assertNotIn("submit_bom", paths.casefold())
         schemas = OPENAPI[OPENAPI.index("  schemas:\n") :]
         for name in (
             "MbomPublishSourceLine",
@@ -196,6 +204,10 @@ class Phase8MbomPublishContractTest(unittest.TestCase):
             "MbomMappingExpectation",
             "MbomExecutionProfileReference",
             "MbomPublishRequest",
+            "CreateMbomPublishRequest",
+            "MbomPublishRequestView",
+            "MbomPublishRequestList",
+            "MbomPublishRequestDetail",
             "MbomPublishNodeResult",
         ):
             self.assertEqual(schemas.count(f"    {name}:\n"), 1)

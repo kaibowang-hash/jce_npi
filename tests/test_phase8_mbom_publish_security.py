@@ -41,6 +41,15 @@ class Phase8MbomPublishSecurityTest(unittest.TestCase):
         frappe._ = lambda source: source
         frappe.PermissionError = self.PermissionError
         frappe.flags = types.SimpleNamespace()
+        frappe.session = types.SimpleNamespace(user="engineer@example.invalid")
+        frappe.db = types.SimpleNamespace(
+            get_value=lambda doctype, name, fields, as_dict=False: (
+                {"enabled": 1, "user_type": "System User"}
+                if doctype == "User" and as_dict
+                else None
+            )
+        )
+        frappe.get_roles = lambda actor: ["NPI API User"]
 
         def throw(message: str, error_type: type[Exception]) -> None:
             raise error_type(message)
@@ -174,6 +183,47 @@ class Phase8MbomPublishSecurityTest(unittest.TestCase):
             head.before_save()
         with self.assertRaises(self.PermissionError):
             head.before_save()
+
+    def test_support_write_helper_binds_identity_actor_flag_and_exact_action(self) -> None:
+        helper = self.helper
+
+        class InsertDocument:
+            doctype = "NPI MBOM Publish Request"
+
+            def __init__(self) -> None:
+                self.flags = types.SimpleNamespace(ignore_links=False)
+                self.calls = []
+
+            def insert(self, **kwargs):
+                self.calls.append(("insert", kwargs, self.flags.ignore_links))
+                return self
+
+            def save(self, **kwargs):
+                self.calls.append(("save", kwargs, self.flags.ignore_links))
+                return self
+
+        document = InsertDocument()
+        with helper.mbom_request_transaction_write(
+            "engineer@example.invalid"
+        ) as capability:
+            helper.insert_mbom_support_document(
+                document,
+                capability=capability,
+                ignore_links=True,
+            )
+            self.assertEqual(
+                document.calls,
+                [("insert", {"ignore_permissions": True}, True)],
+            )
+            self.assertFalse(document.flags.ignore_links)
+            with self.assertRaises(RuntimeError):
+                helper.save_mbom_support_document(document, capability=capability)
+            self.frappe.session.user = "other@example.invalid"
+            with self.assertRaises(RuntimeError):
+                helper.insert_mbom_support_document(document, capability=capability)
+            self.frappe.session.user = "engineer@example.invalid"
+        with self.assertRaises(RuntimeError):
+            helper.insert_mbom_support_document(document, capability=capability)
 
 
 if __name__ == "__main__":

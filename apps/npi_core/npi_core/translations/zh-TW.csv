@@ -8084,6 +8084,19 @@ The MBOM Outbox envelope version or operation is invalid.,MBOM 寄件匣信封�
 The MBOM Outbox event snapshot hash does not match its fields.,MBOM 寄件匣事件快照雜湊與其欄位不符。
 The MBOM Outbox payload hash does not match its exact fields.,MBOM 寄件匣承載資料雜湊與其準確欄位不符。
 The MBOM execution actor is unavailable.,MBOM 執行主體無法使用。
+Another MBOM publish request is active for this source stream.,此來源串流已有另一個 MBOM 發佈請求處於作用中狀態。
+"Confirm the exact released MBOM source, mappings, and execution profile.",請確認精確的已發佈 MBOM 來源、映射及執行設定檔。
+MBOM Environment Code,MBOM 環境代碼
+MBOM Projection Policy ID,MBOM 投影原則識別碼
+MBOM Projection Policy Version,MBOM 投影原則版本
+MBOM Target Mode,MBOM 目標模式
+The exact MBOM execution profile is unavailable.,精確的 MBOM 執行設定檔無法使用。
+The exact MBOM publish request is unavailable.,精確的 MBOM 發佈請求無法使用。
+The idempotency key was already used for a different MBOM publish request.,該冪等鍵已用於另一個 MBOM 發佈請求。
+The MBOM source or mapping changed. Reload it before continuing.,MBOM 來源或映射已變更。請重新載入後再繼續。
+The MBOM source stream requires reconciliation before another request can be queued.,必須先對帳 MBOM 來源串流，才能將另一個請求加入佇列。
+This exact MBOM publish effect was already retained and cannot be replayed.,此精確 MBOM 發佈效果已保留，不能回放。
+You are not authorized to request MBOM execution for this Project.,您無權為此專案請求 MBOM 執行。
 This MBOM support record is outside the active execution capability.,此 MBOM 支援記錄不在作用中執行能力範圍內。
 assembly,組裝
 blocked_item_mapping,物料映射已阻斷

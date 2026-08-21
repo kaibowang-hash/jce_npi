@@ -419,12 +419,19 @@ The exact frozen plan/task-manifest SHA `171a183` passes ordinary CI
 `32487934051` (secret `96788603341`, repository `96788603559`, frontend
 `96788603635`, visual `96788603482`; controlled lanes correctly skip).
 
-Standing authority activates checkpoint 1 after the frozen plan CI passes.
-The pure domain, contract, guarded Outbox/metadata, translation and focused-
-test candidate is implemented and awaits its own exact-SHA ordinary CI; no
-route, persistent command row, Outbox row, worker, adapter, mapping, UI or
-target effect is active, and checkpoint 2 remains inactive. Actual ERPNext
-method/field/UOM/alternate/effectivity/routing mapping,
+Checkpoint 1 passes at exact product SHA `97cdfbb` and ordinary CI
+`32495121120`: repository `96811612041` proves `2,206` tracked Python tests;
+frontend `96811612188` proves `1,018/1,018` unit, `444/444` E2E and `8,095`
+direct trilingual sources; secret `96811612042` finds no leak; unchanged
+`123/123` visual `96811611815` passes. Complete evidence is
+`implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md`.
+
+Standing authority now activates checkpoint 2 only: fixed Project-first
+list/detail/create, exact released source and current Item/MBOM expectation
+resolution, actor-bound idempotency and atomic request + nodes + Outbox +
+audit with enqueue after commit. Its candidate awaits affected checks and
+exact-SHA ordinary CI; worker, adapter, attempts, result/mapping execution, UI
+and target effects remain inactive. Actual ERPNext method/field/UOM/alternate/effectivity/routing mapping,
 submitted-BOM successor policy and Sandbox/production activation remain held.
 `NFR-INT-001` full operations/DLQ/manual replay/reconciliation remains P8-07.
 P8-05 through P8-09 and production ERPNext/JCE remain inactive.

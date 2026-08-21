@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import Iterator
+from typing import Any, Iterator
 
 import frappe
 from frappe import _
@@ -33,6 +33,19 @@ _CURRENT_CAPABILITY: ContextVar[MbomSupportWriteCapability | None] = ContextVar(
     "npi_mbom_support_write_capability",
     default=None,
 )
+
+_SUPPORT_WRITE_FLAGS = {
+    "NPI MBOM Publish Request": MBOM_REQUEST_WRITE_FLAG,
+    "NPI MBOM Publish Node": MBOM_NODE_WRITE_FLAG,
+    "NPI MBOM Publish Command Idempotency": MBOM_IDEMPOTENCY_WRITE_FLAG,
+    "NPI MBOM Publish Stream Guard": MBOM_STREAM_GUARD_WRITE_FLAG,
+    "NPI MBOM Publish Attempt": MBOM_ATTEMPT_WRITE_FLAG,
+    "NPI MBOM Publish Result": MBOM_RESULT_WRITE_FLAG,
+    "NPI MBOM Publish Node Result": MBOM_RESULT_WRITE_FLAG,
+    "NPI MBOM Mapping Observation": MBOM_MAPPING_WRITE_FLAG,
+    "NPI MBOM Mapping Head": MBOM_MAPPING_WRITE_FLAG,
+    "NPI Outbox Message": MBOM_OUTBOX_WRITE_FLAG,
+}
 
 _REQUEST_WRITES = frozenset(
     {
@@ -161,6 +174,8 @@ def mbom_request_transaction_write(
     requester_user_id: str,
 ) -> Iterator[MbomSupportWriteCapability]:
     capability = _capability(requester_user_id, "request", _REQUEST_WRITES)
+    _require_session_actor(requester_user_id)
+    _require_internal_npi_api_user(requester_user_id)
     with _capability_scope(capability):
         with (
             _flag_scope(MBOM_REQUEST_WRITE_FLAG),
@@ -171,6 +186,47 @@ def mbom_request_transaction_write(
             _flag_scope(AUDIT_APPEND_FLAG),
         ):
             yield capability
+
+
+def validate_mbom_service_actor(actor_user_id: str) -> None:
+    """Fail closed unless the frozen actor is an enabled internal API user."""
+
+    _require_internal_npi_api_user(actor_user_id)
+
+
+def insert_mbom_support_document(
+    document: Any,
+    *,
+    capability: MbomSupportWriteCapability,
+    ignore_links: bool = False,
+) -> Any:
+    """Insert one exact MBOM support row under the active capability."""
+
+    _authorize_support_write(document, action="insert", capability=capability)
+    if ignore_links and str(getattr(document, "doctype", "")) != "NPI MBOM Publish Request":
+        raise RuntimeError("MBOM support insert ignore_links is outside its exact scope.")
+    flags = getattr(document, "flags", None)
+    previous_ignore_links = getattr(flags, "ignore_links", False) if flags else False
+    if ignore_links and flags is None:
+        raise RuntimeError("MBOM support insert link scope is unavailable.")
+    if ignore_links:
+        flags.ignore_links = True
+    try:
+        return document.insert(ignore_permissions=True)
+    finally:
+        if ignore_links:
+            flags.ignore_links = previous_ignore_links
+
+
+def save_mbom_support_document(
+    document: Any,
+    *,
+    capability: MbomSupportWriteCapability,
+) -> Any:
+    """Save one exact MBOM support row under the active capability."""
+
+    _authorize_support_write(document, action="save", capability=capability)
+    return document.save(ignore_permissions=True)
 
 
 @contextmanager
@@ -225,6 +281,64 @@ def _capability(
             frappe.PermissionError,
         )
     return MbomSupportWriteCapability(actor=actor, scope=scope, allowed=allowed)
+
+
+def _authorize_support_write(
+    document: Any,
+    *,
+    action: str,
+    capability: MbomSupportWriteCapability,
+) -> None:
+    current = _CURRENT_CAPABILITY.get()
+    if current is not capability:
+        raise RuntimeError("MBOM support write capability is invalid or out of scope.")
+    doctype = str(getattr(document, "doctype", ""))
+    if (doctype, action) not in capability.allowed:
+        raise RuntimeError("MBOM support write is outside the exact capability scope.")
+    if getattr(getattr(frappe, "session", None), "user", None) != capability.actor:
+        raise RuntimeError("MBOM support write actor drifted from the frozen scope.")
+    flag = _SUPPORT_WRITE_FLAGS.get(doctype)
+    if flag is None or not getattr(frappe.flags, flag, False):
+        raise RuntimeError("MBOM support write controller flag is missing.")
+
+
+def _require_session_actor(actor_user_id: str) -> None:
+    if getattr(getattr(frappe, "session", None), "user", None) != actor_user_id:
+        raise RuntimeError("MBOM publish authenticated requester does not match the session.")
+
+
+def _require_internal_npi_api_user(actor_user_id: str) -> None:
+    if not _is_internal_npi_api_user(actor_user_id):
+        raise RuntimeError("MBOM publish actor is not an enabled internal NPI API User.")
+
+
+def _is_internal_npi_api_user(actor_user_id: str) -> bool:
+    if (
+        not isinstance(actor_user_id, str)
+        or not actor_user_id
+        or actor_user_id.casefold() in {"guest", "administrator"}
+    ):
+        return False
+    database = getattr(frappe, "db", None)
+    get_value = getattr(database, "get_value", None)
+    get_roles = getattr(frappe, "get_roles", None)
+    if not callable(get_value) or not callable(get_roles):
+        return False
+    user = get_value(
+        "User",
+        actor_user_id,
+        ["enabled", "user_type"],
+        as_dict=True,
+    )
+    roles = frozenset(get_roles(actor_user_id)) if user else frozenset()
+    enabled = user.get("enabled") if isinstance(user, dict) else getattr(user, "enabled", None)
+    user_type = user.get("user_type") if isinstance(user, dict) else getattr(user, "user_type", None)
+    return bool(
+        user
+        and int(enabled or 0) == 1
+        and str(user_type) == "System User"
+        and "NPI API User" in roles
+    )
 
 
 @contextmanager

@@ -563,3 +563,17 @@ operation assertions and was replaced with the already governed
 `hmac-sha256-v1` test value. This is a secret-history fixture remediation, not
 a product, credential, contract, permission or Gate repair. Checkpoint 2 stays
 inactive until the amended exact SHA passes a new ordinary CI.
+
+The amended exact checkpoint 1 SHA
+`97cdfbb843aeac422c71f57434a4a39f22c1954a` passes ordinary CI
+`32495121120`: repository `96811612041`, frontend `96811612188`, secret
+`96811612042` and unchanged `123/123` visual `96811611815` pass; controlled
+lanes correctly skip. Complete checkpoint evidence is
+`implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md`.
+
+Checkpoint 2 is now active only for fixed Project-first list/detail/create,
+exact Phase 5 release/topology plus current P8-03 Item and MBOM expectation-set
+resolution, server permission/profile resolution, actor-bound idempotency and
+atomic request + nodes + schema-version-2 Outbox + audit, with response and
+enqueue strictly after commit. Worker, adapter, attempts, result/mapping
+execution and UI remain inactive until their later checkpoints.
