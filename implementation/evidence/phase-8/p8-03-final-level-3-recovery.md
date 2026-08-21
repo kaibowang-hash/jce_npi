@@ -70,7 +70,20 @@ and P5-05 runtime helpers already preserve these generated IDs in their
 returned `HttpResult`; P8-03 alone omitted that response-neutral wrapper.
 
 This uniquely proves a verifier diagnostic-plumbing root, not a product root.
-The minimal remediation preserves the fixed request/trace IDs in the returned
-runtime result and adds a structural regression assertion. Product repair
-rounds consumed remain `0/1`; the failed run remains diagnostic-only evidence
-and is not represented as a Gate PASS.
+The initial `fc2ab92` remediation preserved the request-generated trace inside
+the P8-03 helper. Ordinary CI `32452130327` was cancelled before completion and
+is not evidence because that ad-hoc direction was superseded before another
+Site dispatch.
+
+The corrected remediation resolves trace identity once at the shared
+`verify_frappe_runtime.request` / `HttpResult` boundary. It prefers the real
+`X-Trace-ID` response header, permits a body fallback only for a governed
+`application/problem+json` 4xx/5xx response, validates the existing platform
+trace shape, and requires header/body equality when both exist. Missing,
+mismatched, or invalid trace evidence cannot be used as a diagnostic identity;
+all three fail closed with a constant message. P8-03 no longer parses or
+fabricates trace identity locally.
+
+The diagnostic run `32450566995` remains a diagnostic harness failure within
+the same recovery cycle. Product repair rounds consumed remain `0/1`; it is not
+represented as a Gate PASS or a new product root.

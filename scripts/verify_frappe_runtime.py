@@ -54,6 +54,7 @@ INSPECTOR_PREFERENCE_PATH = (
     "/api/npi/v1/me/preferences/my-work-inspector"
 )
 INSPECTOR_PREFERENCE_KEY = "npi_one_my_work_inspector_layout_v1"
+_TRACE_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
 INSPECTOR_PREFERENCE_KEYS = {
     "paneId",
     "schemaVersion",
@@ -75,6 +76,56 @@ class HttpResult:
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise RuntimeError(message)
+
+
+def response_trace_id(
+    status: int,
+    headers: Any,
+    body: object,
+) -> str:
+    """Resolve one validated response trace without trusting arbitrary body data."""
+
+    header_trace = _validated_response_trace(headers.get("X-Trace-ID"))
+    body_trace = None
+    content_type = headers.get("Content-Type")
+    governed_problem = (
+        400 <= status <= 599
+        and isinstance(content_type, str)
+        and content_type.split(";", 1)[0].strip().casefold()
+        == "application/problem+json"
+        and isinstance(body, dict)
+    )
+    if governed_problem and "traceId" in body:
+        body_trace = _validated_response_trace(body.get("traceId"))
+    if (
+        header_trace is not None
+        and body_trace is not None
+        and header_trace != body_trace
+    ):
+        raise RuntimeError("HTTP response trace identities do not match")
+    trace_id = header_trace or body_trace
+    if trace_id is None:
+        raise RuntimeError("HTTP response trace identity is missing")
+    return trace_id
+
+
+def _validated_response_trace(value: object) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or _TRACE_ID_PATTERN.fullmatch(value) is None:
+        raise RuntimeError("HTTP response trace identity is invalid")
+    return value
+
+
+def _http_result(status: int, headers: Any, body: object) -> HttpResult:
+    if not isinstance(body, dict):
+        raise RuntimeError("HTTP response body is not a JSON object")
+    return HttpResult(
+        status,
+        headers,
+        body,
+        trace_id=response_trace_id(status, headers, body),
+    )
 
 
 def request(
@@ -105,10 +156,10 @@ def request(
     try:
         with opener.open(http_request, timeout=15) as response:
             raw = response.read().decode()
-            return HttpResult(response.status, response.headers, json.loads(raw))
+            return _http_result(response.status, response.headers, json.loads(raw))
     except urllib.error.HTTPError as error:
         raw = error.read().decode()
-        return HttpResult(error.code, error.headers, json.loads(raw))
+        return _http_result(error.code, error.headers, json.loads(raw))
 
 
 def login(base_url: str, user: str, password: str) -> urllib.request.OpenerDirector:

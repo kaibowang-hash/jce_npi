@@ -15,7 +15,6 @@ import verify_document_runtime as document_runtime
 import verify_ebom_runtime as ebom_runtime
 import verify_publish_request_runtime as publish_runtime
 from verify_frappe_runtime import (
-    HttpResult,
     login,
     require,
     secret_from_environment,
@@ -140,13 +139,7 @@ def item_publish_request(
         result.headers.get("Cache-Control") == "private, no-store",
         "P8-03 Item response cache control drifted",
     )
-    return HttpResult(
-        result.status,
-        result.headers,
-        result.body,
-        request_id=headers["X-Request-ID"],
-        trace_id=headers["X-Trace-ID"],
-    )
+    return result
 
 
 def sanitized_problem_code(result) -> str | None:
@@ -155,6 +148,30 @@ def sanitized_problem_code(result) -> str | None:
     code = result.body.get("code") if isinstance(result.body, dict) else None
     if isinstance(code, str) and _PROBLEM_CODE_PATTERN.fullmatch(code):
         return code
+    return None
+
+
+def item_create_failure_message(result) -> str | None:
+    """Return one response-neutral diagnostic message for a failed create."""
+
+    diagnostic = ebom_runtime._sanitized_server_diagnostic(
+        result.trace_id,
+        _CREATE_SERVER_DIAGNOSTIC_CODES,
+    )
+    if diagnostic is not None:
+        exception_type, code, trace_id = diagnostic
+        return (
+            "P8-03 Item command create failed"
+            f" [diagnostic_code={code}; "
+            f"exception_type={exception_type}; trace_id={trace_id}]"
+        )
+    problem_code = sanitized_problem_code(result)
+    if problem_code is not None:
+        return (
+            "P8-03 Item command create returned a governed problem"
+            f" [http_status={result.status}; problem_code={problem_code}; "
+            f"trace_id={result.trace_id}]"
+        )
     return None
 
 
@@ -377,24 +394,9 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
             ),
         )
         if created.status != 201 and ITEM_CREATE_DIAGNOSTICS_ENABLED:
-            diagnostic = ebom_runtime._sanitized_server_diagnostic(
-                created.trace_id,
-                _CREATE_SERVER_DIAGNOSTIC_CODES,
-            )
-            if diagnostic is not None:
-                exception_type, code, trace_id = diagnostic
-                raise RuntimeError(
-                    "P8-03 Item command create failed"
-                    f" [diagnostic_code={code}; "
-                    f"exception_type={exception_type}; trace_id={trace_id}]"
-                )
-            problem_code = sanitized_problem_code(created)
-            if problem_code is not None:
-                raise RuntimeError(
-                    "P8-03 Item command create returned a governed problem"
-                    f" [http_status={created.status}; problem_code={problem_code}; "
-                    f"trace_id={created.trace_id}]"
-                )
+            failure_message = item_create_failure_message(created)
+            if failure_message is not None:
+                raise RuntimeError(failure_message)
         require(
             created.status == 201
             and created.headers.get("Idempotency-Replayed") == "false",

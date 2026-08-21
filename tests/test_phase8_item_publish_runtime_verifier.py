@@ -207,12 +207,16 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('"p803-item-create-v1"', source)
         self.assertIn("_sanitized_server_diagnostic", source)
         self.assertIn("_CREATE_SERVER_DIAGNOSTIC_CODES", source)
-        self.assertIn('trace_id=headers["X-Trace-ID"]', source)
+        self.assertNotIn('trace_id=headers["X-Trace-ID"]', source)
         diagnostic_block = source.split("if created.status != 201", 1)[1].split(
             "require(", 1
         )[0]
         self.assertNotIn("created.body", diagnostic_block)
-        self.assertIn("sanitized_problem_code(created)", diagnostic_block)
+        self.assertIn("item_create_failure_message(created)", diagnostic_block)
+        failure_helper = source.split(
+            "def item_create_failure_message", 1
+        )[1].split("\ndef ", 1)[0]
+        self.assertIn("sanitized_problem_code(result)", failure_helper)
 
     def test_runtime_is_network_free_and_never_claims_formal_truth(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8")
