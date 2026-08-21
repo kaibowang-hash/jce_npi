@@ -4336,3 +4336,19 @@ repeat or rewrite it merely to restore context. See
 - The controller marker is: `P8-04 checkpoint 1 PASS; checkpoint 2 awaits exact-SHA ordinary CI`.
   There is no Hard Blocker and no user action is
   required.
+
+## 2026-08-21 P8-04 checkpoint 2 repository scanner self-trigger
+
+- Checkpoint 2 candidate `d993028560a91aa86895bb9bf028833e4c73d0fa`
+  reached ordinary CI `32499141551`. Repository job `96824538360` passed all
+  `2,221` Python tests, prototype/P0 governance and reconciliation, then the
+  direct-SQL zero-match scan found only the negative test literal in
+  `tests/test_phase8_mbom_publish_repository.py`; no product SQL call exists.
+  Frontend `96824538278`, secret `96824538096` and unchanged visual
+  `96824538211` passed.
+- The narrow harness remediation replaces the combination literal with an AST
+  Call-chain assertion over the product repository. It retains and strengthens
+  the zero-direct-SQL criterion without changing the scanner, ignore rules,
+  product behavior, API, permission, transaction, test threshold or Gate.
+- Checkpoint 3 remains inactive until the remediated exact checkpoint 2 SHA
+  passes a new ordinary CI. The controller marker remains: `P8-04 checkpoint 1 PASS; checkpoint 2 awaits exact-SHA ordinary CI`.

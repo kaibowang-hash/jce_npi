@@ -241,10 +241,21 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
         positions = [segment.index(marker) for marker in markers]
         self.assertEqual(positions, sorted(positions))
         self.assertIn("with mbom_request_transaction_write(self.actor)", segment)
+        direct_sql_calls = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "sql"
+            and isinstance(node.func.value, ast.Attribute)
+            and node.func.value.attr == "db"
+            and isinstance(node.func.value.value, ast.Name)
+            and node.func.value.value.id == "frappe"
+        ]
+        self.assertEqual(direct_sql_calls, [])
         for forbidden in (
             "requests.",
             "httpx.",
-            "frappe.db.sql",
             "adapter.call",
             "submit_bom",
         ):

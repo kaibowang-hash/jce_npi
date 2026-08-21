@@ -577,3 +577,14 @@ resolution, server permission/profile resolution, actor-bound idempotency and
 atomic request + nodes + schema-version-2 Outbox + audit, with response and
 enqueue strictly after commit. Worker, adapter, attempts, result/mapping
 execution and UI remain inactive until their later checkpoints.
+
+The first checkpoint 2 candidate
+`d993028560a91aa86895bb9bf028833e4c73d0fa` reached ordinary CI
+`32499141551`. Repository job `96824538360` passed `2,221/2,221` Python tests
+and reconciliation, then the direct-SQL zero-match scanner self-triggered on a
+negative test's combination literal; frontend `96824538278`, secret
+`96824538096` and unchanged visual `96824538211` all passed. The product
+repository has no direct SQL. The bounded harness remediation replaces only
+that literal with an AST Call-chain assertion, changes no scanner/ignore,
+product, permission, transaction, threshold or Gate truth, and checkpoint 3
+remains inactive until a new exact-SHA ordinary CI passes.
