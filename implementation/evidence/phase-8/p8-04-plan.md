@@ -627,3 +627,38 @@ projection, truthful aggregate and per-assembly states, one guarded primary
 request action and exactly three affected fixed-Linux visual cases. Retry,
 reconcile, submit, browser target access, default/networked profiles and
 production ERPNext/JCE remain prohibited.
+
+Checkpoint 4 candidate `a62d5ebaf28ffa4a8fd9482dadce4870e4669e77`
+reached ordinary CI `32514627234`. Repository `96873370223` and secret
+`96873370244` passed; frontend `96873370008` passed its complete verifier before
+`23` E2E failures, and visual `96873370234` reported `116` passing and `7`
+failing cases. All `30` failures derive from one legacy Playwright fixture
+root: strict P5-05/P8-03 routers rejected the new fixed Project-first MBOM list
+GET. The bounded remediation adds only the exact method/path/
+`phase5PublishRequestGlobalId` branch with a validated default-disabled empty
+list and no formal IDs. Product/UI/baseline behavior and Gate standards are
+unchanged; final Level 3 remains closed pending a new exact-SHA ordinary PASS.
+
+The seven existing P5-05/P8-03 fixed-Linux baselines are an explicitly
+governed semantic migration because checkpoint 4 intentionally composes the
+MBOM inspector into this same released-EBOM workspace and makes the exact MBOM
+request the single primary action. Manual industrial/trilingual review retains
+the older context and secondary actions, exposes the disabled MBOM reason for
+the empty default-disabled legacy fixture, carries no MBOM formal identity and
+keeps 125%/150% layouts usable. No product, visual threshold or Darwin baseline
+is changed.
+
+Linux/amd64 in the exact ordinary workflow is the sole canonical visual
+renderer. All three P8-04 images are normalized to canonical x64 after the
+visual-only harness applies one deterministic final scroll anchor; two
+consecutive focused `10/10` no-update runs prove zero position drift. All
+three P8-04 cases are added to the workflow and visual artifact, raising the
+governed cumulative matrix from `123` to `126`.
+The cumulative controlled runtime result likewise advances from P8-03 to
+`scope=p5-01-through-p8-04` with P8-03 retained as
+`predecessor_scope=p5-01-through-p8-03`; the executable shell already runs the
+MBOM default-disabled and fresh network-free Synthetic verifier stages.
+Canonical Level 1 passes two consecutive focused `10/10` no-update visual
+runs, the complete `126/126` visual matrix, `29/29` affected nonvisual browser
+cases, the complete `1,046/1,046` frontend unit/coverage/build/audit boundary,
+`8,183` direct trilingual sources and `317/317` runtime-verifier tests.

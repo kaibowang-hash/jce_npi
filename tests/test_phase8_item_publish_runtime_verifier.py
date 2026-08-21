@@ -1155,7 +1155,9 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertTrue(_legacy_sql_contract_violations(variant))
 
-    def test_controlled_workflow_records_cumulative_p8_03_scope(self) -> None:
+    def test_controlled_workflow_retains_p8_03_as_current_p8_04_predecessor(
+        self,
+    ) -> None:
         source = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
             encoding="utf-8"
         )
@@ -1163,8 +1165,16 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn(
             "bash scripts/verify-frappe-runtime.sh --projection-only", source
         )
-        self.assertIn("scope=p5-01-through-p8-03", source)
-        self.assertIn("predecessor_scope=p5-01-through-p8-02", source)
+        self.assertIn(
+            "# Preserved P8-03 scope: scope=p5-01-through-p8-03", source
+        )
+        self.assertIn(
+            "# Preserved P8-03 predecessor_scope=p5-01-through-p8-02", source
+        )
+        self.assertIn("printf 'scope=p5-01-through-p8-04\\n'", source)
+        self.assertIn(
+            "printf 'predecessor_scope=p5-01-through-p8-03\\n'", source
+        )
         self.assertIn("p8-integration-runtime-${{ github.run_id }}", source)
         self.assertIn("needs.controlled_preflight.result == 'success'", source)
 

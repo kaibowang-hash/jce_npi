@@ -57,9 +57,9 @@ task scope:
 
 | Case | SHA256 |
 |---|---|
-| `p8-04-mbom-synthetic-en-1366x768-125-linux.png` | `202ba76fcf5a7e9803f9e23e71eb9f84cc161db5521ff3c32f954da50d35365e` |
-| `p8-04-mbom-partial-zh-1920x1080-150-linux.png` | `5c2f34bd06af6abe2c5e3b2911203b3d99a866ac087a8772cbbf073650e6086c` |
-| `p8-04-mbom-authoritative-zh-TW-1920x1080-125-linux.png` | `db8070026d683516a1cf661ca4f3a6d8de370325803a7254883187781718d506` |
+| `p8-04-mbom-synthetic-en-1366x768-125-linux.png` | `c8e2801b96538eaf40b5011577ed0e9158ce0c53a586c9a8a6640898035e005e` |
+| `p8-04-mbom-partial-zh-1920x1080-150-linux.png` | `2a73fbb89586c83553b8955454f294eaff85445131605fc4b7c8c89bc35efa4a` |
+| `p8-04-mbom-authoritative-zh-TW-1920x1080-125-linux.png` | `1819e3878882e2dbf26d1c83e8a6aee9748016dd65d56f1537a0cc6e85a02ee2` |
 
 The three baselines pass exact zero-diff Linux verification. They show
 synthetic no-formal truth, mixed authoritative/failed partial truth and two
@@ -97,6 +97,67 @@ complete per-assembly outcome phrase rather than an icon-only fragment.
 - Current-task and V1.2 reconciliation verifiers, controller/foundation tests
   (`47/47`), changed Python compilation and `git diff --check` pass. No
   production ERPNext/JCE endpoint, credential or request was used.
+
+## Ordinary CI legacy-fixture remediation
+
+- Candidate `a62d5ebaf28ffa4a8fd9482dadce4870e4669e77` reached ordinary CI
+  `32514627234`. Repository `96873370223` and secret `96873370244` passed;
+  frontend `96873370008` passed the full frontend verifier before `23` E2E
+  failures, while visual `96873370234` reported `116` pass and `7` failures.
+- The `30` failures are derived from one fixture-only root. The existing strict
+  P5-05 and P8-03 route fixtures rejected the newly composed fixed MBOM list
+  GET before those legacy pages could reach their assertions. No product API,
+  UI, permission, transaction, response or visual-baseline defect was shown.
+- The remediation admits only `GET` on the exact Project MBOM collection with
+  the sole exact `phase5PublishRequestGlobalId` query. It reuses the validated
+  MBOM fixture shape in a default-disabled, empty state with no formal IDs;
+  every other request remains an unhandled-request failure. The response-
+  neutral fixture remediation consumes no product repair round.
+- Final Level 3 remains closed until a remediated exact-SHA ordinary CI passes.
+
+The frozen checkpoint deliberately keeps the new MBOM inspector in the
+existing released-EBOM workspace and reserves its visible-text request action
+as the single primary action. Consequently, the following seven existing
+fixed-Linux baselines receive an approved semantic migration; no Darwin image,
+product behavior or visual threshold changes:
+
+| Existing governed case | SHA256 |
+|---|---|
+| `p5-05-publish-request-en-1366x768-100-linux.png` | `1c2a11edbd7a7d137fe29376b873cf7dc1478299cc76ed12f740434ecbf92ee3` |
+| `p5-05-publish-request-zh-1440x900-125-linux.png` | `fb28b7e2468ce37ff08c471145bbfb21ba4b4cea2bfe1b5dd289348cf9bd93b7` |
+| `p5-05-publish-request-zh-TW-1920x1080-150-linux.png` | `36cf14ad797bffcb550be429e6321b63cb2bbc2887bd3d0626703ff41596eaf0` |
+| `p8-03-item-synthetic-en-1366x768-100-linux.png` | `c7b1e71c5c8f0147b0f34424a7e93b713f6b175fadb0a54a12ffc65ff3696a41` |
+| `p8-03-item-uncertain-zh-1440x900-125-linux.png` | `8b237ec7b055467d33423228204c641a3a732d09c30a6a6b6d91dad26a300f14` |
+| `p8-03-item-authoritative-zh-TW-1920x1080-150-linux.png` | `f6b0f629c7c9de215ea5d3fce250588221ccf29ea5c9ac0481364d8cbe913faf` |
+| `p8-03-item-inactive-en-1366x768-100-linux.png` | `024b6d283919d7b33a3722ccf8b9284193dfb300335abc94290a55ae5866d88f` |
+
+Manual review confirms the flat, square, neutral composition; retained EBOM
+and Item context; secondary legacy actions; visible disabled MBOM reason; no
+MBOM formal identity in the empty fixture; direct `en`/`zh`/`zh-TW` text with
+no unapproved mixing; and usable 125%/150% layouts.
+
+Canonical visual evidence is now generated only in the ordinary workflow's
+exact Linux/amd64 bookworm, Node `24.18.0`, Playwright `1.61.1` environment.
+All three P8-04 baselines are normalized to that canonical renderer after the
+visual-only harness applies one deterministic final scroll anchor. Two
+consecutive focused `10/10` no-update runs prove zero position drift. The
+workflow governs all three P8-04 images, increasing the cumulative visual
+matrix from `123` to `126`, and publishes them in the visual artifact.
+
+The remediated canonical Level 1 evidence passes `29/29` affected nonvisual
+browser cases and `126/126` governed visual cases. The complete frontend
+suite passes `1,046/1,046` unit tests with coverage, production build, brand
+audit and both dependency audits; source localization remains `8,183` direct
+English literals at `100%` `zh`/`zh-TW` coverage. All `317` runtime-verifier
+tests, the focused controller/reconciliation set, current-task verification,
+JSON/YAML parsing, changed Python compilation and `git diff --check` pass.
+
+The controlled runtime already executes the MBOM verifier's default-disabled
+and network-free fresh Synthetic stages after the retained P8-03 source. Its
+job/step/result attestation now records current
+`scope=p5-01-through-p8-04` and
+`predecessor_scope=p5-01-through-p8-03`; the prior P8-03 scope remains an
+explicit predecessor contract rather than being deleted.
 
 ## Rollback
 

@@ -4418,3 +4418,44 @@ repeat or rewrite it merely to restore context. See
   submit, browser target access, default/networked/production profiles, actual
   ERPNext BOM projection facts, P8-07 generic operations and P8-05 through
   P8-09 remain inactive. No Hard Blocker or user action is required.
+
+## 2026-08-22 P8-04 checkpoint 4 legacy fixture remediation
+
+- Checkpoint 4 candidate `a62d5ebaf28ffa4a8fd9482dadce4870e4669e77`
+  reached ordinary CI `32514627234`. Repository `96873370223` and secret
+  `96873370244` passed. Frontend job `96873370008` passed the complete frontend
+  verifier before `23` E2E cases failed; visual job `96873370234` reported
+  `116` passing and `7` failing cases.
+- All `30` derived failures have one response-neutral fixture root: the strict
+  P5-05/P8-03 Playwright routers predate the composed read-only MBOM list and
+  rejected its fixed Project-first GET. The product route, query, response,
+  UI and governed baselines are unchanged.
+- The bounded remediation adds only an exact GET/Project path/exact
+  `phase5PublishRequestGlobalId` fixture branch returning a validated,
+  default-disabled empty MBOM list with no formal IDs. Unknown requests remain
+  fail-closed. This is fixture/controller evidence, not a product repair.
+- Checkpoint 4 still awaits a new exact-SHA ordinary CI. Final Level 3 remains
+  closed; production ERPNext/JCE, retry, reconcile, submit and P8-05 through
+  P8-09 remain inactive.
+- Frozen plan checkpoint 4 intentionally composes the MBOM inspector into the
+  existing released-EBOM workspace and reserves the one visible primary action
+  for exact MBOM execution. The seven affected P5-05/P8-03 fixed-Linux images
+  therefore receive a governed semantic baseline migration after manual
+  trilingual/industrial review; no product, threshold or Darwin baseline is
+  changed.
+- Linux/amd64 is the only canonical workflow renderer. All three P8-04 images
+  are normalized to that renderer after a visual-only deterministic final
+  scroll anchor; two consecutive focused `10/10` no-update runs prove zero
+  position drift. The governed workflow now includes all three P8-04 cases
+  and publishes them, so the cumulative visual matrix is `126` rather than
+  the predecessor `123`.
+- The bounded remediation Level 1 passes `29/29` affected nonvisual browser
+  cases, `126/126` governed visuals, `1,046/1,046` frontend unit tests with
+  coverage/build/audits, `8,183` direct trilingual sources and `317/317`
+  runtime-verifier tests. Current-task/reconciliation checks and diff hygiene
+  also pass; final Level 3 remains closed pending exact-SHA ordinary CI.
+- The controlled runtime already executes the default-disabled and fresh
+  network-free MBOM verifier stages. Its job, step and result attestation now
+  record `scope=p5-01-through-p8-04` with
+  `predecessor_scope=p5-01-through-p8-03`; P8-03 remains explicit immutable
+  predecessor evidence.

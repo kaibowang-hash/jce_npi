@@ -13,6 +13,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/verify_mbom_publish_runtime.py"
 SHELL = ROOT / "scripts/verify-frappe-runtime.sh"
+WORKFLOW = ROOT / ".github/workflows/ci.yml"
 
 
 def load_verifier():
@@ -161,6 +162,31 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             "mbom_publish_runtime_environment_active=true",
         ):
             self.assertIn(marker, shell)
+
+    def test_workflow_governs_p8_04_visual_and_current_runtime_scope(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        visual_spec = "tests/e2e/p8-04-mbom-publish-live.spec.ts"
+        self.assertEqual(workflow.count(visual_spec), 2)
+        self.assertIn(
+            "frontend/tests/e2e/p8-04-mbom-publish-live.spec.ts-snapshots/p8-04-*-linux.png",
+            workflow,
+        )
+        self.assertIn(
+            "P5 controlled runtime through P8-04 MBOM command and Outbox worker",
+            workflow,
+        )
+        self.assertIn(
+            "Verify cumulative P5 through P8-04 MBOM integration runtime",
+            workflow,
+        )
+        self.assertIn("printf 'scope=p5-01-through-p8-04\\n'", workflow)
+        self.assertIn(
+            "printf 'predecessor_scope=p5-01-through-p8-03\\n'", workflow
+        )
+        self.assertIn(
+            "bash scripts/verify-frappe-runtime.sh --projection-only", workflow
+        )
+        self.assertIn("p8-integration-runtime-${{ github.run_id }}", workflow)
 
 
 if __name__ == "__main__":

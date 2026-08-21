@@ -13,6 +13,10 @@ import type {
   EngineeringBomPublishRequestListViewModel,
   EngineeringBomPublishRequestViewModel,
 } from "../../src/api/publish-request-data-source";
+import {
+  isMbomRequestList,
+  type MbomRequestListViewModel,
+} from "../../src/api/mbom-publish-data-source";
 import { translate } from "../../src/i18n/runtime";
 import {
   ebomId,
@@ -32,6 +36,7 @@ import {
   publishRequestId,
   publishRequestListFixture,
 } from "../support/publish-request-fixture";
+import { mbomPublishListFixture } from "../support/mbom-publish-fixture";
 import { projectWorkCockpitFixture } from "../support/project-work-fixture";
 import {
   effectiveViewport,
@@ -81,6 +86,25 @@ function phase5List(
 ): EngineeringBomPublishRequestListViewModel {
   const fixture = publishRequestListFixture(request);
   return { ...fixture, project: { ...fixture.project, globalId: projectId } };
+}
+
+function disabledMbomListFixture(): MbomRequestListViewModel {
+  const fixture = mbomPublishListFixture(null, {
+    profileUnavailable: true,
+    canView: true,
+    canExecute: false,
+  });
+  const exactFixture = {
+    ...fixture,
+    projectGlobalId: projectId,
+    phase5PublishRequestGlobalId: publishRequestId,
+  };
+  expect(isMbomRequestList(exactFixture)).toBe(true);
+  expect(exactFixture.executionProfile).toBeNull();
+  expect(exactFixture.createContext).toBeNull();
+  expect(exactFixture.items).toEqual([]);
+  expect(JSON.stringify(exactFixture)).not.toContain("formalBomId");
+  return exactFixture;
 }
 
 function exactItemDetail(
@@ -181,6 +205,7 @@ async function installApi(
   const engineeringDetail = detailFixture();
   const publishRequest = phase5Request();
   const publishList = phase5List(publishRequest);
+  const mbomList = disabledMbomListFixture();
   const itemDetail =
     options.detail === undefined
       ? exactItemDetail(itemPublishDetailFixture())
@@ -241,6 +266,15 @@ async function installApi(
     }
     if (url.pathname.endsWith(publishBase) && request.method() === "GET") {
       await fulfillJson(route, publishList);
+      return;
+    }
+    const mbomBase = `/api/npi/v1/projects/${projectId}/mbom-publish-requests`;
+    if (url.pathname === mbomBase) {
+      expect(request.method()).toBe("GET");
+      expect([...url.searchParams.entries()]).toEqual([
+        ["phase5PublishRequestGlobalId", publishRequestId],
+      ]);
+      await fulfillJson(route, mbomList);
       return;
     }
     const itemBase = `/projects/${projectId}/item-publish-requests`;
@@ -356,6 +390,22 @@ async function openItemInspector(
   if (options.expectAttemptHistory ?? true) {
     await expect(inspector.locator(".item-publish__attempts")).toBeVisible();
   }
+  const mbomInspector = page.getByRole("region", {
+    name: translate(locale, "MBOM execution inspector"),
+  });
+  await expect(
+    mbomInspector.getByText(
+      translate(
+        locale,
+        "You can inspect MBOM execution but cannot request it.",
+      ),
+    ),
+  ).toBeVisible();
+  await expect(
+    mbomInspector.getByRole("button", {
+      name: translate(locale, "Review MBOM request"),
+    }),
+  ).toBeDisabled();
 }
 
 async function expectAxeClean(page: Page): Promise<void> {
@@ -851,6 +901,9 @@ test.describe("@visual P8-03 Item execution truth", () => {
           "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
       });
       await page.evaluate(async () => document.fonts.ready);
+      await heading.evaluate((element) => {
+        element.scrollIntoView({ block: "start", inline: "nearest" });
+      });
       await expect(page).toHaveScreenshot(`${visual.name}.png`, {
         fullPage: false,
       });

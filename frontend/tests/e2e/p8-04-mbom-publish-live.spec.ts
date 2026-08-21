@@ -486,6 +486,16 @@ test.describe("@visual P8-04 MBOM execution truth", () => {
           "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
       });
       await page.evaluate(async () => document.fonts.ready);
+      await visualAnchor.evaluate((element) => {
+        element.scrollIntoView({ block: "start", inline: "nearest" });
+      });
+      if (visual.detail.request.state === "partially_succeeded") {
+        await page
+          .getByLabel(translate(visual.locale, "MBOM assembly execution truth"))
+          .evaluate((element) => {
+            element.scrollLeft = element.scrollWidth;
+          });
+      }
       await expect(page).toHaveScreenshot(`${visual.name}.png`, {
         fullPage: false,
       });
