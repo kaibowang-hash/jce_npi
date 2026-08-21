@@ -16,6 +16,7 @@ import type {
 import { EngineeringBomRequestCancelledError } from "../api/ebom-data-source";
 import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
 import type { ItemPublishDataSource } from "../api/item-publish-data-source";
+import type { MbomPublishDataSource } from "../api/mbom-publish-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type { ReportWorkspaceDirty } from "../app/workspace-navigation";
 import { DockedInspector } from "../components/object-components";
@@ -572,12 +573,14 @@ function LineEditor({
 export function ProjectEngineeringBomWorkspace({
   dataSource,
   itemPublishDataSource,
+  mbomPublishDataSource,
   publishRequestDataSource,
   projectId,
   reportWorkspaceDirty,
 }: {
   dataSource?: EngineeringBomDataSource | undefined;
   itemPublishDataSource?: ItemPublishDataSource | undefined;
+  mbomPublishDataSource?: MbomPublishDataSource | undefined;
   publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   projectId: string;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
@@ -1381,6 +1384,7 @@ export function ProjectEngineeringBomWorkspace({
                       disabled={commandProcessing || editor !== null}
                       ebom={detailState.value.ebom}
                       itemPublishDataSource={itemPublishDataSource}
+                      mbomPublishDataSource={mbomPublishDataSource}
                       key={selectedRevision.globalId}
                       onDirtyChange={setPublishDirty}
                       projectId={projectId}

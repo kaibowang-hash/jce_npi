@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3_AWAITING_ORDINARY_CI — P8-04`
+`IN_PROGRESS_CHECKPOINT_4 — P8-04`
 
-Recovery time: `2026-08-21T16:39:02Z`
+Recovery time: `2026-08-21T18:11:41Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -372,19 +372,20 @@ Item/MBOM mapping-set expectations are immutable. ERPNext retains formal BOM
 ID/version/submitted state/routing ownership; P8-04 never submits or
 overwrites a submitted BOM and preserves per-node partial/uncertain truth.
 
-P8-04 is `IN_PROGRESS_CHECKPOINT_3_AWAITING_ORDINARY_CI`. Exact checkpoint 2
-SHA `197a59f` passes ordinary CI `32500465488`; complete evidence is
-`implementation/evidence/phase-8/p8-04-command-outbox-checkpoint.md`.
-Checkpoint 3 is active only for bounded leased worker/recovery, immutable
-batch attempts, a closed default-disabled adapter registry, disposable
-network-free synthetic proof, aggregate/per-node result truth and authenticated
-per-node mapping compare-and-set. The candidate must pass affected checks and
-its own exact-SHA ordinary CI before checkpoint 4 UI activates. No UI is active.
-Do not contact production ERPNext/JCE,
-install a Sandbox/default profile, infer BOM field/naming/routing/service-scope
-facts, overwrite a submitted BOM, treat Mock/synthetic/HTTP acceptance/partial/
-timeout as formal success, add generic P8-07 operations or activate P8-05
-through P8-09 behavior.
+P8-04 is `IN_PROGRESS_CHECKPOINT_4`. Exact checkpoint 3 SHA `93823e3` passes
+ordinary CI `32506591419`: repository `96848025053`, frontend `96848024686`,
+secret `96848024933` and unchanged `123/123` visual `96848024903` pass.
+Complete checkpoint 3 evidence is
+`implementation/evidence/phase-8/p8-04-worker-adapter-result-checkpoint.md`.
+Checkpoint 4 is the only active scope: the dense trilingual EBOM MBOM
+execution inspector, strict exact-request read projection, truthful aggregate
+and per-assembly states, one guarded primary request action and three affected
+fixed-Linux baselines. The implementation candidate must pass affected checks
+and exact-SHA ordinary CI before final Level 3 activates. Do not contact
+production ERPNext/JCE, install a Sandbox/default profile, infer BOM
+field/naming/routing/service-scope facts, overwrite a submitted BOM, treat
+Mock/synthetic/HTTP acceptance/partial/timeout as formal success, add retry/
+reconcile/submit or generic P8-07 operations, or activate P8-05 through P8-09.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

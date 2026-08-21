@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-21T16:39:02Z`
+Updated: `2026-08-21T18:11:41Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3_AWAITING_ORDINARY_CI — P8-04`
+- Mode: `IN_PROGRESS_CHECKPOINT_4 — P8-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -106,18 +106,21 @@ Updated: `2026-08-21T16:39:02Z`
 - P8-04 checkpoint 2 final product checkpoint:
   `197a59f9ecf41daa486e84d75ac6007af38fa423` (`CHECKPOINT 2 PASS`;
   ordinary CI `32500465488`; controlled lanes correctly skipped)
+- P8-04 checkpoint 3 final product checkpoint:
+  `93823e35b2dbec2aa48e364e46c9abad350443c5` (`CHECKPOINT 3 PASS`;
+  ordinary CI `32506591419`; controlled lanes correctly skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-04 — MBOM publish execution`
-  (`IN_PROGRESS_CHECKPOINT_3_AWAITING_ORDINARY_CI`)
-- Resumed product task: `P8-04` (`ACTIVE_CHECKPOINT_3_AFTER_CHECKPOINT_2_CI`)
+  (`IN_PROGRESS_CHECKPOINT_4`)
+- Resumed product task: `P8-04` (`ACTIVE_CHECKPOINT_4_AFTER_CHECKPOINT_3_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-04 CHECKPOINT 3 AWAITS ORDINARY CI`)
+  (`IN_PROGRESS — P8-04 CHECKPOINT 4`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 

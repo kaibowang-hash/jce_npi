@@ -50,6 +50,19 @@ secret `96843477773` and visual `96843477762` passed. This is a test-harness
 self-trigger, not product or Gate evidence; the response-neutral AST
 remediation must pass a new exact-SHA ordinary CI before checkpoint 4.
 
+The response-neutral remediation exact SHA
+`93823e35b2dbec2aa48e364e46c9abad350443c5` passes ordinary CI
+`32506591419`: repository `96848025053` passes `2,259/2,259` tracked Python
+tests and reconciliation; frontend `96848024686` passes `1,018/1,018` unit,
+`444/444` E2E and `8,108` direct trilingual sources; secret scan
+`96848024933` finds no leak; unchanged fixed-Linux visual `96848024903`
+passes `123/123`. Controlled lanes correctly skip. Visual artifact
+`9455613608` has digest
+`sha256:4eb1a2f54d408fd1f96c4ab6ee4172581356328fed72b4288539c310448c93aa`;
+Gitleaks artifact `9455468475` has digest
+`sha256:e3da67fe5880db458a2d98f589d42862dcd5b8a02e44a1e7c40135c88e94377e`.
+Checkpoint 3 is sealed and checkpoint 4 is the only active product scope.
+
 ## Changed-files to affected-checks map
 
 | Changed boundary | Affected evidence |

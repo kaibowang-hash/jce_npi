@@ -14,10 +14,9 @@ Runtime artifact `9446493624` has digest
 `sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`;
 migrations twice, stream conflicts, uncertainty/no redispatch, cross-process
 replay, strict legacy read-only/non-claimable behavior, zero Mock mapping,
-zero production traffic and cleanup pass. P8-04 checkpoint 2 exact product SHA
-`197a59f` passes ordinary CI `32500465488`; checkpoint 3 is active and its
-leased worker/default-disabled adapter/network-free synthetic/per-node result
-candidate awaits affected checks and exact-SHA ordinary CI. No user action,
+zero production traffic and cleanup pass. P8-04 checkpoint 3 exact SHA
+`93823e3` passes ordinary CI `32506591419`; checkpoint 4 is active for only
+the dense trilingual MBOM execution inspector and guarded request action. No user action,
 login or frontend operation is
 required.
 
@@ -28,8 +27,8 @@ diagnostic evidence rather than PASS evidence and the final exact-SHA run is
 authoritative. P8-04 audit is frozen in
 `implementation/evidence/phase-8/p8-04-plan.md`; checkpoint 1 is sealed in
 `implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md`.
-Checkpoint 3 installs no default/networked/production profile and activates no
-UI; checkpoint 4 stays held until checkpoint 3 exact-SHA ordinary CI passes.
+Checkpoint 3 installs no default/networked/production profile. Checkpoint 4
+adds no target network path and awaits its own exact-SHA ordinary CI.
 Production adapters, formal Item/BOM mapping
 from Mock or synthetic proof, Item/MBOM/Asset/quality production writes,
 P8-05 through P8-09 and the P8-07 operations/replay/reconciliation surface
@@ -55,13 +54,12 @@ remain scoped holds, not global Hard Blockers.
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-03 exact final SHA `c11d97c` passes ordinary `32479492064` and final
   unchanged Level 3 `32480568505`; the release review reports no P0/P1/P2.
-- P8-04 checkpoint 2 SHA `197a59f` passes ordinary CI `32500465488`.
-  Checkpoint 3 leased worker, closed default-disabled adapters, network-free
-  synthetic proof and aggregate/per-node result/CAS candidate is active and
-  awaits affected checks plus exact-SHA ordinary CI.
+- P8-04 checkpoint 3 SHA `93823e3` passes ordinary CI `32506591419`.
+  Checkpoint 4 dense trilingual execution inspector and guarded request action
+  are active and await affected checks plus exact-SHA ordinary CI.
 - Missing ERPNext BOM customization, naming/routing/service-scope and
   authenticated Sandbox facts are scoped external holds. No default/networked
-  adapter, formal synthetic mapping or UI is authorized in checkpoint 3; production traffic, P8-05
+  adapter or formal synthetic mapping is authorized; production traffic, P8-05
   through P8-09 and P8-07 manual operations remain inactive.
 
 ## Historical recovery

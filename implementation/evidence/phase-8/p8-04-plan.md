@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-21`
 
-Status: `FROZEN — AUDIT-PLAN CI PASS; CHECKPOINT 1 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
+Status: `FROZEN — AUDIT-PLAN AND CHECKPOINTS 1–3 EXACT-SHA ORDINARY CI PASS; CHECKPOINT 4 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
 
 Frozen plan/task-manifest checkpoint:
 `171a183009b10eb4c1d8f7135b635ca1537afd27`
@@ -37,9 +37,10 @@ evidence, not MBOM command state.
 The exact frozen plan/task-manifest SHA `171a183` passes ordinary CI
 `32487934051`: secret `96788603341`, repository `96788603559`, frontend
 `96788603635` and unchanged fixed-Linux visual `96788603482` pass; controlled
-lanes correctly skip. Checkpoint 1 is therefore active. Its pure domain,
-contract and guarded-metadata candidate is implemented locally and awaits its
-own exact-SHA ordinary CI before checkpoint 2 may activate.
+lanes correctly skip. Checkpoints 1–3 subsequently pass their own exact-SHA
+ordinary CI and are sealed by the checkpoint evidence recorded below.
+Checkpoint 4 is implemented locally and awaits its exact-SHA ordinary CI;
+final Level 3 remains closed until that ordinary run passes.
 
 The repository provides useful foundations but no executable MBOM boundary:
 
@@ -614,3 +615,15 @@ harness remediation reuses the verified AST Call-chain assertion while
 retaining the other negative scans and changes no product, scanner, ignore,
 permission, transaction, threshold or Gate truth. Checkpoint 4 remains closed
 until a new exact-SHA ordinary CI passes.
+
+The response-neutral remediation exact SHA `93823e35b2dbec2aa48e364e46c9abad350443c5`
+passes ordinary CI `32506591419`: repository `96848025053` passes `2,259`
+tracked Python tests; frontend `96848024686` passes `1,018` unit, `444` E2E
+and `8,108` direct trilingual sources; secret `96848024933` finds no leak;
+unchanged visual `96848024903` passes `123/123`. Checkpoint 3 is sealed.
+Checkpoint 4 is now the only active scope: the dense direct-trilingual EBOM
+MBOM execution inspector, strict request/project/result/current-head
+projection, truthful aggregate and per-assembly states, one guarded primary
+request action and exactly three affected fixed-Linux visual cases. Retry,
+reconcile, submit, browser target access, default/networked profiles and
+production ERPNext/JCE remain prohibited.

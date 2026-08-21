@@ -4002,6 +4002,11 @@ paths:
         remain server-derived.
       parameters:
         - $ref: "#/components/parameters/ProjectId"
+        - in: query
+          name: phase5PublishRequestGlobalId
+          required: false
+          description: Exact released Phase 5 publish request used to resolve a read-only MBOM create context.
+          schema: { type: string, format: uuid }
         - $ref: "#/components/parameters/RequestId"
       responses:
         "200": { $ref: "#/components/responses/MbomPublishRequestListResult" }
@@ -21513,20 +21518,44 @@ components:
     MbomPublishRequestList:
       type: object
       additionalProperties: false
-      required: [projectGlobalId, permissions, executionProfile, items]
+      required: [projectGlobalId, phase5PublishRequestGlobalId, permissions, executionProfile, createContext, items]
       properties:
         projectGlobalId: { type: string, format: uuid }
+        phase5PublishRequestGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
         permissions: { $ref: "#/components/schemas/MbomPublishPermissions" }
         executionProfile:
           oneOf: [{ $ref: "#/components/schemas/MbomExecutionProfileReference" }, { type: "null" }]
+        createContext:
+          oneOf: [{ $ref: "#/components/schemas/MbomPublishCreateContext" }, { type: "null" }]
         items:
           type: array
           maxItems: 200
           items: { $ref: "#/components/schemas/MbomPublishRequestView" }
+    MbomPublishCreateContext:
+      type: object
+      additionalProperties: false
+      description: Read-only exact candidate context; no request, Outbox, attempt, adapter or target effect has occurred.
+      required: [phase5PublishRequestGlobalId, source, itemReadiness, itemMappingSetHash, mbomExpectations, mbomMappingSetHash, profile]
+      properties:
+        phase5PublishRequestGlobalId: { type: string, format: uuid }
+        source: { $ref: "#/components/schemas/MbomPublishSourceSnapshot" }
+        itemReadiness:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/MbomItemMappingReadiness" }
+        itemMappingSetHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        mbomExpectations:
+          type: array
+          minItems: 1
+          maxItems: 499
+          items: { $ref: "#/components/schemas/MbomMappingExpectation" }
+        mbomMappingSetHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        profile: { $ref: "#/components/schemas/MbomExecutionProfileReference" }
     MbomPublishRequestDetail:
       type: object
       additionalProperties: false
-      required: [requestGlobalId, request, outboxEventId, updatedAt, nodes, permissions]
+      required: [requestGlobalId, request, outboxEventId, updatedAt, nodes, attempts, result, nodeResults, currentMappings, permissions]
       properties:
         requestGlobalId: { type: string, format: uuid }
         request: { $ref: "#/components/schemas/MbomPublishRequest" }
@@ -21537,13 +21566,75 @@ components:
           minItems: 1
           maxItems: 500
           items: { $ref: "#/components/schemas/MbomPublishNode" }
+        attempts:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/MbomPublishAttempt" }
+        result:
+          oneOf: [{ $ref: "#/components/schemas/MbomPublishAggregateResult" }, { type: "null" }]
+        nodeResults:
+          type: array
+          maxItems: 499
+          items: { $ref: "#/components/schemas/MbomPublishNodeResult" }
+        currentMappings:
+          type: array
+          maxItems: 499
+          items: { $ref: "#/components/schemas/MbomPublishCurrentMapping" }
         permissions: { $ref: "#/components/schemas/MbomPublishPermissions" }
+    MbomPublishAttempt:
+      type: object
+      additionalProperties: false
+      required: [globalId, requestGlobalId, outboxEventId, attemptNumber, state, adapterBoundaryCrossed, transportDisposition, responseHash, faultKind, reconciliationRequired, safeErrorCode, startedAt, finishedAt, attemptHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        requestGlobalId: { type: string, format: uuid }
+        outboxEventId: { type: string, format: uuid }
+        attemptNumber: { type: integer, minimum: 1 }
+        state: { type: string, enum: [started, synthetic_verified, observed_success, observed_partial, observed_failure, uncertain] }
+        adapterBoundaryCrossed: { type: boolean }
+        transportDisposition: { oneOf: [{ type: string, minLength: 1, maxLength: 100 }, { type: "null" }] }
+        responseHash: { oneOf: [{ $ref: "#/components/schemas/MbomPublishSha256" }, { type: "null" }] }
+        faultKind: { oneOf: [{ type: string, minLength: 1, maxLength: 100 }, { type: "null" }] }
+        reconciliationRequired: { type: boolean }
+        safeErrorCode: { oneOf: [{ type: string, minLength: 1, maxLength: 100 }, { type: "null" }] }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { oneOf: [{ type: string, format: date-time }, { type: "null" }] }
+        attemptHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+    MbomPublishAggregateResult:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, requestGlobalId, outboxEventId, attemptGlobalId, attemptNumber, sourceHash, topologyHash, itemMappingSetHash, mbomMappingSetHash, state, authority, responseAuthenticated, responseHash, faultKind, nodeResultSetHash, observedAt, resultHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        requestGlobalId: { type: string, format: uuid }
+        outboxEventId: { type: string, format: uuid }
+        attemptGlobalId: { type: string, format: uuid }
+        attemptNumber: { type: integer, minimum: 1 }
+        sourceHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        topologyHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        itemMappingSetHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        mbomMappingSetHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        state: { type: string, enum: [synthetic_verified, partially_succeeded, succeeded, failed_retryable, failed_final, uncertain_after_timeout, mapping_conflict] }
+        authority: { type: string, enum: [none, synthetic, authoritative_sandbox] }
+        responseAuthenticated: { type: boolean }
+        responseHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        faultKind: { type: string, minLength: 1, maxLength: 100 }
+        nodeResultSetHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        observedAt: { type: string, format: date-time }
+        resultHash: { $ref: "#/components/schemas/MbomPublishSha256" }
     MbomPublishNodeResult:
       type: object
       additionalProperties: false
       description: Formal BOM identity is visible only for an authenticated authoritative Sandbox editable-draft observation.
-      required: [stableLineKey, assemblySourceKey, state, authority, responseAuthenticated, responseHash, formalBomId, targetVersion, targetSubmissionState, faultKind]
+      required: [schemaVersion, globalId, requestGlobalId, resultGlobalId, attemptGlobalId, nodeGlobalId, stableLineKey, assemblySourceKey, state, authority, responseAuthenticated, responseHash, formalBomId, targetVersion, targetSubmissionState, faultKind, observedAt, nodeResultHash]
       properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        requestGlobalId: { type: string, format: uuid }
+        resultGlobalId: { type: string, format: uuid }
+        attemptGlobalId: { type: string, format: uuid }
+        nodeGlobalId: { type: string, format: uuid }
         stableLineKey: { type: string, minLength: 1, maxLength: 128 }
         assemblySourceKey: { $ref: "#/components/schemas/MbomPublishSha256" }
         state: { type: string, enum: [synthetic_verified, succeeded_authoritative, failed_retryable, failed_final, blocked_item_mapping, blocked_submitted, uncertain_after_timeout, observed_conflict] }
@@ -21554,6 +21645,24 @@ components:
         targetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
         targetSubmissionState: { oneOf: [{ type: string, enum: [editable_draft, submitted_immutable] }, { type: "null" }] }
         faultKind: { type: string, minLength: 1, maxLength: 100 }
+        observedAt: { type: string, format: date-time }
+        nodeResultHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+    MbomPublishCurrentMapping:
+      type: object
+      additionalProperties: false
+      description: Current exact authenticated authoritative Sandbox mapping; the only MBOM projection that may expose a formal BOM ID.
+      required: [stableLineKey, assemblySourceKey, mappingVersion, formalBomId, targetVersion, targetSubmissionState, authority, responseAuthenticated, observationHash, updatedAt]
+      properties:
+        stableLineKey: { type: string, minLength: 1, maxLength: 128 }
+        assemblySourceKey: { $ref: "#/components/schemas/MbomPublishSha256" }
+        mappingVersion: { type: integer, minimum: 1 }
+        formalBomId: { type: string, minLength: 1, maxLength: 140 }
+        targetVersion: { type: string, minLength: 1, maxLength: 140 }
+        targetSubmissionState: { type: string, enum: [editable_draft, submitted_immutable] }
+        authority: { type: string, const: authoritative_sandbox }
+        responseAuthenticated: { type: boolean, const: true }
+        observationHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        updatedAt: { type: string, format: date-time }
     ProblemDetails:
       type: object
       additionalProperties: false

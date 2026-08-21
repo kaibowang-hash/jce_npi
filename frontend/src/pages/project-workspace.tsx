@@ -11,6 +11,7 @@ import type { DocumentDataSource } from "../api/document-data-source";
 import type { EngineeringBomDataSource } from "../api/ebom-data-source";
 import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
 import type { ItemPublishDataSource } from "../api/item-publish-data-source";
+import type { MbomPublishDataSource } from "../api/mbom-publish-data-source";
 import type { ReadinessDataSource } from "../api/readiness-data-source";
 import type { ProductionTransitionDataSource } from "../api/production-transition-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
@@ -1282,6 +1283,7 @@ export function ProjectWorkspace({
   domainWorkItemsDataSource,
   engineeringBomDataSource,
   itemPublishDataSource,
+  mbomPublishDataSource,
   publishRequestDataSource,
   productionTransitionDataSource,
   readinessDataSource,
@@ -1298,6 +1300,7 @@ export function ProjectWorkspace({
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   engineeringBomDataSource?: EngineeringBomDataSource | undefined;
   itemPublishDataSource?: ItemPublishDataSource | undefined;
+  mbomPublishDataSource?: MbomPublishDataSource | undefined;
   publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   productionTransitionDataSource?: ProductionTransitionDataSource | undefined;
   readinessDataSource?: ReadinessDataSource | undefined;
@@ -1708,6 +1711,7 @@ export function ProjectWorkspace({
       <ProjectEngineeringBomWorkspace
         dataSource={engineeringBomDataSource}
         itemPublishDataSource={itemPublishDataSource}
+        mbomPublishDataSource={mbomPublishDataSource}
         publishRequestDataSource={publishRequestDataSource}
         projectId={cockpit.project.globalId}
         reportWorkspaceDirty={reportWorkspaceDirty}

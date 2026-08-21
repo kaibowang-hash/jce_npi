@@ -125,6 +125,38 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
         self.assertNotEqual(source.topology_hash, changed_source.topology_hash)
         self.assertNotEqual(source.source_hash, changed_source.source_hash)
 
+    def test_list_scope_filters_the_exact_phase5_publish_request(self) -> None:
+        repository = object.__new__(self.repository.FrappeMbomPublishRepository)
+        project = types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1))
+        observed: list[dict[str, str]] = []
+        repository._authorized_project = lambda _project_id: project
+        repository._bounded_documents = lambda _doctype, filters, **_kwargs: (
+            observed.append(filters.copy()) or []
+        )
+        repository._read_profile = lambda _project: None
+        repository._permissions = lambda _project, _profile: {
+            "canView": True,
+            "canExecute": False,
+        }
+        repository._request_public_dict = lambda _project, row: row
+
+        result = repository.list_mbom_publish_requests(
+            uid(1), phase5_publish_request_id=uid(3)
+        )
+
+        self.assertEqual(
+            observed,
+            [
+                {
+                    "tenant_id": "tenant-a",
+                    "project_global_id": str(uid(1)),
+                    "phase5_publish_request_global_id": str(uid(3)),
+                }
+            ],
+        )
+        self.assertEqual(result["phase5PublishRequestGlobalId"], str(uid(3)))
+        self.assertEqual(result["items"], [])
+
     def test_item_stream_key_is_exact_p803_identity(self) -> None:
         self.assertEqual(
             self.repository._item_stream_key("tenant-a", uid(1), "ENG-ROOT"),
@@ -340,6 +372,242 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
         row.project_global_id = str(uid(99))
         with self.assertRaises(RuntimeError):
             self.repository._request_value(project, row)
+
+    def test_execution_projection_requires_exact_attempt_result_node_and_current_mapping(self) -> None:
+        request_id = str(uid(70))
+        outbox_id = str(uid(71))
+        attempt_id = str(uid(72))
+        result_id = str(uid(73))
+        node_id = str(uid(74))
+        node_result_id = str(uid(75))
+        observation_id = str(uid(76))
+        head_id = str(uid(77))
+        observed_at = "2026-08-21T15:00:02Z"
+        request = {
+            "globalId": request_id,
+            "state": "succeeded",
+            "source": {
+                "projectGlobalId": str(uid(1)),
+                "ebomGlobalId": str(uid(2)),
+                "sourceHash": "1" * 64,
+                "topologyHash": "2" * 64,
+            },
+            "itemMappingSetHash": "3" * 64,
+            "mbomMappingSetHash": "4" * 64,
+            "profile": {"profileId": "mbom-sandbox-v1", "profileVersion": 1},
+        }
+        request_row = types.SimpleNamespace(
+            outbox_event_id=outbox_id,
+            result_global_id=result_id,
+        )
+        attempt_snapshot = {
+            "globalId": attempt_id,
+            "requestGlobalId": request_id,
+            "outboxEventId": outbox_id,
+            "attemptNumber": 1,
+            "claimToken": str(uid(78)),
+            "state": "observed_success",
+            "adapterBoundaryCrossed": True,
+            "requestSnapshotHash": "5" * 64,
+            "transportDisposition": "response_observed",
+            "responseHash": "6" * 64,
+            "faultKind": "none",
+            "reconciliationRequired": False,
+            "safeErrorCode": None,
+            "startedAt": "2026-08-21T15:00:01Z",
+            "finishedAt": observed_at,
+        }
+        attempt = types.SimpleNamespace(
+            global_id=attempt_id,
+            request_global_id=request_id,
+            outbox_event_id=outbox_id,
+            attempt_number=1,
+            source_hash="1" * 64,
+            topology_hash="2" * 64,
+            item_mapping_set_hash="3" * 64,
+            mbom_mapping_set_hash="4" * 64,
+            profile_id="mbom-sandbox-v1",
+            profile_version=1,
+            state="observed_success",
+            adapter_boundary_crossed=1,
+            request_snapshot_hash="5" * 64,
+            attempt_snapshot=attempt_snapshot,
+            attempt_hash=canonical_hash(attempt_snapshot),
+        )
+        result_snapshot = {
+            "schemaVersion": 1,
+            "globalId": result_id,
+            "requestGlobalId": request_id,
+            "outboxEventId": outbox_id,
+            "attemptGlobalId": attempt_id,
+            "attemptNumber": 1,
+            "sourceHash": "1" * 64,
+            "topologyHash": "2" * 64,
+            "itemMappingSetHash": "3" * 64,
+            "mbomMappingSetHash": "4" * 64,
+            "state": "succeeded",
+            "authority": "authoritative_sandbox",
+            "responseAuthenticated": True,
+            "responseHash": "6" * 64,
+            "faultKind": "none",
+            "nodeResultSetHash": "0" * 64,
+            "observedAt": observed_at,
+        }
+        result_row = types.SimpleNamespace(
+            global_id=result_id,
+            request_global_id=request_id,
+            outbox_event_id=outbox_id,
+            attempt_global_id=attempt_id,
+            attempt_number=1,
+            node_result_set_hash="0" * 64,
+            result_snapshot=result_snapshot,
+            result_hash=canonical_hash(result_snapshot),
+        )
+        assembly_key = "7" * 64
+        node_snapshot = {
+            "schemaVersion": 1,
+            "globalId": node_result_id,
+            "requestGlobalId": request_id,
+            "resultGlobalId": result_id,
+            "attemptGlobalId": attempt_id,
+            "nodeGlobalId": node_id,
+            "stableLineKey": "ROOT",
+            "assemblySourceKey": assembly_key,
+            "state": "succeeded_authoritative",
+            "authority": "authoritative_sandbox",
+            "responseAuthenticated": True,
+            "responseHash": "8" * 64,
+            "formalBomId": "BOM-SANDBOX-0001",
+            "targetVersion": "7",
+            "targetSubmissionState": "editable_draft",
+            "faultKind": "none",
+            "observedAt": observed_at,
+        }
+        node_result = types.SimpleNamespace(
+            global_id=node_result_id,
+            request_global_id=request_id,
+            result_global_id=result_id,
+            attempt_global_id=attempt_id,
+            node_global_id=node_id,
+            stable_line_key="ROOT",
+            assembly_source_key=assembly_key,
+            state="succeeded_authoritative",
+            authority="authoritative_sandbox",
+            response_authenticated=1,
+            response_hash="8" * 64,
+            node_result_snapshot=node_snapshot,
+            node_result_hash=canonical_hash(node_snapshot),
+        )
+        result_snapshot["nodeResultSetHash"] = canonical_hash(
+            [{"globalId": node_result_id, "nodeResultHash": node_result.node_result_hash}]
+        )
+        result_row.node_result_set_hash = result_snapshot["nodeResultSetHash"]
+        result_row.result_hash = canonical_hash(result_snapshot)
+        line_snapshot = {"sourceRole": "assembly"}
+        node = types.SimpleNamespace(
+            global_id=node_id,
+            stable_line_key="ROOT",
+            line_snapshot=line_snapshot,
+            result_global_id=node_result_id,
+        )
+        observation_snapshot = {
+            "requestGlobalId": request_id,
+            "resultGlobalId": result_id,
+            "nodeResultGlobalId": node_result_id,
+            "targetResultHash": node_result.node_result_hash,
+            "authority": "authoritative_sandbox",
+            "disposition": "advanced",
+            "formalBomId": "BOM-SANDBOX-0001",
+            "targetVersion": "7",
+            "targetSubmissionState": "editable_draft",
+        }
+        observation = types.SimpleNamespace(
+            global_id=observation_id,
+            observation_snapshot=observation_snapshot,
+            observation_hash=canonical_hash(observation_snapshot),
+        )
+        head_snapshot = {
+            "globalId": head_id,
+            "tenantId": "tenant-a",
+            "projectGlobalId": str(uid(1)),
+            "ebomGlobalId": str(uid(2)),
+            "assemblySourceKey": assembly_key,
+            "stableLineKey": "ROOT",
+            "mappingVersion": 1,
+            "formalBomId": "BOM-SANDBOX-0001",
+            "targetVersion": "7",
+            "targetSubmissionState": "editable_draft",
+            "currentObservationGlobalId": observation_id,
+            "currentObservationHash": observation.observation_hash,
+            "updatedAt": observed_at,
+        }
+        head = types.SimpleNamespace(
+            global_id=head_id,
+            current_observation=observation_id,
+            head_snapshot=head_snapshot,
+            head_hash=canonical_hash(head_snapshot),
+        )
+        rows = {
+            "NPI MBOM Publish Attempt": [attempt],
+            "NPI MBOM Publish Node Result": [node_result],
+        }
+        repository = object.__new__(self.repository.FrappeMbomPublishRepository)
+        repository._bounded_documents = lambda doctype, *args, **kwargs: rows[doctype]
+        saved_db = getattr(self.repository.frappe, "db", None)
+        saved_get_doc = getattr(self.repository.frappe, "get_doc", None)
+        self.repository.frappe.db = types.SimpleNamespace(
+            get_value=lambda doctype, filters, field: (
+                "head-name"
+                if doctype == "NPI MBOM Mapping Head"
+                and filters == {"assembly_source_key": assembly_key}
+                and field == "name"
+                else None
+            )
+        )
+        self.repository.frappe.get_doc = lambda doctype, name: (
+            result_row
+            if doctype == "NPI MBOM Publish Result"
+            else head
+            if doctype == "NPI MBOM Mapping Head"
+            else observation
+            if doctype == "NPI MBOM Mapping Observation"
+            else None
+        )
+        try:
+            attempts = repository._attempt_public_dicts(request_row, request)
+            self.assertEqual(attempts[0]["state"], "observed_success")
+            result = repository._result_public_dict(request_row, request)
+            self.assertIsNotNone(result)
+            node_results, mappings = repository._node_result_public_dicts(
+                types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1)),
+                request_row,
+                request,
+                [node],
+                result,
+                can_view=True,
+            )
+            self.assertEqual(node_results[0]["formalBomId"], "BOM-SANDBOX-0001")
+            self.assertEqual(mappings[0]["authority"], "authoritative_sandbox")
+            attempt.request_global_id = str(uid(99))
+            with self.assertRaises(RuntimeError):
+                repository._attempt_public_dicts(request_row, request)
+            attempt.request_global_id = request_id
+            observation_snapshot["nodeResultGlobalId"] = str(uid(99))
+            observation.observation_hash = canonical_hash(observation_snapshot)
+            head_snapshot["currentObservationHash"] = observation.observation_hash
+            head.head_hash = canonical_hash(head_snapshot)
+            with self.assertRaises(RuntimeError):
+                repository._node_result_public_dicts(
+                    types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1)),
+                    request_row,
+                    request,
+                    [node],
+                    result,
+                    can_view=True,
+                )
+        finally:
+            self.repository.frappe.db = saved_db
+            self.repository.frappe.get_doc = saved_get_doc
 
 
 if __name__ == "__main__":

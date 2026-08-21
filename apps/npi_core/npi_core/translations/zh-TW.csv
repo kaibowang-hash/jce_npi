@@ -8106,3 +8106,78 @@ editable_draft,可編輯草稿
 observed_partial,已觀察部分結果
 submitted_immutable,已提交且不可變
 succeeded_authoritative,權威成功
+Validated in Mock; no MBOM dispatched,已在模擬模式驗證；未分派MBOM
+Queued; MBOM result pending,已排隊；MBOM結果待定
+Processing MBOM assemblies,正在處理MBOM裝配節點
+Synthetic MBOM verification; not authoritative,MBOM合成驗證；非權威結果
+Partial MBOM result; inspect every assembly,MBOM部分完成；請檢查每個裝配節點
+Authoritative Sandbox MBOM result observed,已觀察到權威沙箱MBOM結果
+Retryable MBOM failure; no success recorded,MBOM發生可重試失敗；未記錄成功
+Final MBOM failure; no success recorded,MBOM最終失敗；未記錄成功
+Uncertain MBOM outcome; reconciliation required,MBOM結果不確定；需要對賬
+MBOM mapping conflict; no mapping changed,MBOM映射衝突；未變更映射
+Component only,僅組件
+Authoritative Sandbox success,權威沙箱成功
+Blocked by Item readiness,因物料就緒狀態受阻
+Blocked by submitted MBOM,因已提交的MBOM受阻
+Observed mapping conflict,已觀察到映射衝突
+You cannot view MBOM execution history for this Project.,您無權檢視此專案的MBOM執行歷程。
+You can inspect MBOM execution but cannot request it.,您可以檢查MBOM執行，但無權發起請求。
+"The exact MBOM topology, Item readiness, or mapping expectations are unavailable.",MBOM的精確拓撲、物料就緒狀態或映射預期無法使用。
+The exact released topology contains no assembly node.,精確的已發佈拓撲不包含裝配節點。
+Every exact Item mapping must be ready before Sandbox MBOM execution.,執行沙箱MBOM前，每個精確物料映射都必須就緒。
+A submitted MBOM is immutable and cannot be overwritten.,已提交的MBOM不可變且不能覆寫。
+The MBOM outcome is uncertain. Reconciliation is required before another request.,MBOM結果不確定。發起其他請求前必須先對賬。
+The existing MBOM request is still active.,現有MBOM請求仍處於作用中狀態。
+An immutable MBOM request already exists for this exact released topology.,此精確已發佈拓撲已存在不可變的MBOM請求。
+Load the exact MBOM execution context before requesting execution.,發起執行請求前請載入精確的MBOM執行內容。
+MBOM execution inspector,MBOM執行檢查器
+"This inspector binds one exact released EBOM topology to current Item readiness, MBOM expectations, and aggregate plus per-assembly execution truth.",此檢查器將一個精確的已發佈EBOM拓撲繫結至目前物料就緒狀態、MBOM預期以及彙總與逐裝配節點執行實況。
+The MBOM execution data source is not configured. No target system was contacted.,未設定MBOM執行資料來源。未聯絡目標系統。
+Loading MBOM execution context,正在載入MBOM執行內容
+MBOM execution unavailable,MBOM執行無法使用
+No MBOM execution request,無MBOM執行請求
+Assemblies,裝配節點
+Exact topology and Item readiness,精確拓撲與物料就緒狀態
+Released Phase 5 request,已發佈的第 5 階段請求
+Topology hash,拓撲雜湊
+Topology lines,拓撲列數
+Ready Item mappings,已就緒的物料映射
+Item mapping set hash,物料映射集雜湊
+MBOM expectation and profile,MBOM預期與設定檔
+Expected MBOM mappings,預期MBOM映射
+MBOM mapping set hash,MBOM映射集雜湊
+Submitted MBOM guards,已提交MBOM保護項
+Loading MBOM result evidence,正在載入MBOM結果證據
+MBOM detail unavailable,MBOM詳細資料無法使用
+No immutable MBOM request has been recorded for this exact released topology.,尚未為此精確已發佈拓撲記錄不可變的MBOM請求。
+Committing the exact MBOM request and durable Outbox locally,正在本機提交精確的MBOM請求與持久寄件匣
+Request committed,請求已提交
+The immutable MBOM request was committed. Target completion is not claimed.,不可變的MBOM請求已提交。不聲稱目標系統已完成。
+Request exact MBOM execution,請求執行精確MBOM
+"Impact: commits one immutable request and, outside Mock, one recoverable Outbox event. It does not submit or overwrite any BOM.",影響：提交一個不可變請求；在模擬模式之外還會提交一個可復原的寄件匣事件。此操作不會提交或覆寫任何 BOM。
+Review MBOM request,檢閱MBOM請求
+Review exact MBOM request,檢閱精確MBOM請求
+Request MBOM execution,請求執行MBOM
+Exact released EBOM topology,精確的已發佈EBOM拓撲
+Commit one immutable MBOM request and one recoverable Outbox event when execution is enabled. It does not submit or overwrite any BOM.,啟用執行時，提交一個不可變的MBOM請求與一個可復原的寄件匣事件。此操作不會提交或覆寫任何 BOM。
+Project membership and exact MBOM profile requester authority are required.,需要專案成員資格與精確MBOM設定檔的請求者權限。
+"The request, node manifest, audit and any observed target truth remain immutable.",請求、節點清單、稽核及任何已觀察到的目標實況保持不可變。
+"Partial, failed and uncertain assembly truth remains visible. No retry or reconcile command is available here.",部分完成、失敗與不確定的裝配實況保持可見。此處不提供重試或對賬命令。
+"Actor, trace, idempotency, source hashes and mapping expectations are recorded.",已記錄執行者、追蹤識別碼、冪等資訊、來源雜湊與映射預期。
+"I confirm this request uses the exact released EBOM topology, current Item readiness, MBOM expectations, and execution profile.",我確認此請求使用精確的已發佈EBOM拓撲、目前物料就緒狀態、MBOM預期與執行設定檔。
+MBOM assembly execution truth,MBOM裝配執行實況
+Item readiness,物料就緒狀態
+Expected version,預期版本
+Submission state,提交狀態
+Execution result,執行結果
+Authoritative Item mapping ready,權威物料映射已就緒
+Synthetic Item reference,合成物料參照
+Item mapping not ready,物料映射未就緒
+Submitted and immutable,已提交且不可變
+Editable draft,可編輯草稿
+Unmapped create,未映射新增
+Authenticated authoritative Sandbox mapping,已驗證的權威沙箱映射
+Formal BOM ID,正式 BOM 識別碼
+Synthetic evidence; no formal identity,合成證據；無正式識別
+No authoritative MBOM mapping,無權威MBOM映射

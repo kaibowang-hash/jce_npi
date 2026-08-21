@@ -29,10 +29,21 @@ import {
   ITEM_PUBLISH_ACKNOWLEDGEMENT,
   ItemPublishCancelledError,
 } from "../api/item-publish-data-source";
+import type {
+  MbomPublishDataSource,
+  MbomRequestDetailViewModel,
+  MbomRequestListViewModel,
+  MbomRequestState,
+} from "../api/mbom-publish-data-source";
+import {
+  MBOM_PUBLISH_ACKNOWLEDGEMENT,
+  MbomPublishCancelledError,
+} from "../api/mbom-publish-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import { RequestFailurePanel } from "../components/problem-details-panel";
 import {
   DefinitionList,
+  ImpactReview,
   Panel,
   SemanticStatus,
 } from "../components/primitives";
@@ -473,6 +484,7 @@ function ItemPublishExecutionInspector({
   projectId,
   publishRequest,
   selectedNodeId,
+  primaryAction = true,
 }: {
   dataSource?: ItemPublishDataSource | undefined;
   disabled: boolean;
@@ -481,6 +493,7 @@ function ItemPublishExecutionInspector({
   projectId: string;
   publishRequest: EngineeringBomPublishRequestViewModel;
   selectedNodeId: string | null;
+  primaryAction?: boolean | undefined;
 }): React.JSX.Element {
   const { locale, sessionCommandContext, t } = useI18n();
   const [reloadAttempt, setReloadAttempt] = useState(0);
@@ -1113,7 +1126,7 @@ function ItemPublishExecutionInspector({
                     commandState.kind === "processing"
                   }
                   type="submit"
-                  visual="primary"
+                  visual={primaryAction ? "primary" : "secondary"}
                 >
                   {t("Request Item execution")}
                 </Button>
@@ -1126,11 +1139,728 @@ function ItemPublishExecutionInspector({
   );
 }
 
+type MbomCommandState =
+  | { kind: "idle" | "processing" | "accepted" }
+  | { kind: "failed"; failure: RequestFailure };
+
+function mbomStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: MbomRequestState,
+): string {
+  return {
+    validated_mock: t("Validated in Mock; no MBOM dispatched"),
+    queued: t("Queued; MBOM result pending"),
+    processing: t("Processing MBOM assemblies"),
+    synthetic_verified: t("Synthetic MBOM verification; not authoritative"),
+    partially_succeeded: t("Partial MBOM result; inspect every assembly"),
+    succeeded: t("Authoritative Sandbox MBOM result observed"),
+    failed_retryable: t("Retryable MBOM failure; no success recorded"),
+    failed_final: t("Final MBOM failure; no success recorded"),
+    uncertain_after_timeout: t(
+      "Uncertain MBOM outcome; reconciliation required",
+    ),
+    mapping_conflict: t("MBOM mapping conflict; no mapping changed"),
+  }[state];
+}
+
+function mbomTone(
+  state: MbomRequestState,
+): "danger" | "info" | "success" | "warning" {
+  if (state === "succeeded") return "success";
+  if (state === "failed_final") return "danger";
+  return [
+    "partially_succeeded",
+    "failed_retryable",
+    "uncertain_after_timeout",
+    "mapping_conflict",
+  ].includes(state)
+    ? "warning"
+    : "info";
+}
+
+function mbomModeLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  mode: "mock" | "synthetic" | "sandbox",
+): string {
+  return mode === "mock"
+    ? t("Mock validation")
+    : mode === "synthetic"
+      ? t("Disposable synthetic runtime")
+      : t("Sandbox execution");
+}
+
+function mbomNodeStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: MbomRequestDetailViewModel["nodes"][number]["state"],
+): string {
+  return {
+    component_only: t("Component only"),
+    queued: t("Queued"),
+    processing: t("Processing"),
+    synthetic_verified: t("Synthetic verification"),
+    succeeded_authoritative: t("Authoritative Sandbox success"),
+    failed_retryable: t("Retryable failure"),
+    failed_final: t("Final failure"),
+    blocked_item_mapping: t("Blocked by Item readiness"),
+    blocked_submitted: t("Blocked by submitted MBOM"),
+    uncertain_after_timeout: t("Uncertain after timeout"),
+    observed_conflict: t("Observed mapping conflict"),
+  }[state];
+}
+
+function mbomActionBlockReason(
+  t: ReturnType<typeof useI18n>["t"],
+  list: MbomRequestListViewModel,
+  sessionAvailable: boolean,
+  disabled: boolean,
+): string | null {
+  if (disabled) return t("Another EBOM command is in progress.");
+  if (!list.permissions.canView)
+    return t("You cannot view MBOM execution history for this Project.");
+  if (!list.permissions.canExecute)
+    return t("You can inspect MBOM execution but cannot request it.");
+  if (!list.executionProfile)
+    return t("The exact MBOM execution profile is unavailable.");
+  if (!list.createContext)
+    return t(
+      "The exact MBOM topology, Item readiness, or mapping expectations are unavailable.",
+    );
+  if (list.createContext.mbomExpectations.length === 0)
+    return t("The exact released topology contains no assembly node.");
+  if (
+    list.createContext.itemReadiness.some(
+      (item) => item.disposition === "not_ready",
+    )
+  )
+    return t(
+      "Every exact Item mapping must be ready before Sandbox MBOM execution.",
+    );
+  if (
+    list.createContext.mbomExpectations.some(
+      (item) => item.submissionState === "submitted_immutable",
+    )
+  )
+    return t("A submitted MBOM is immutable and cannot be overwritten.");
+  const existing = list.items[0]?.request;
+  if (existing) {
+    if (existing.state === "uncertain_after_timeout")
+      return t(
+        "The MBOM outcome is uncertain. Reconciliation is required before another request.",
+      );
+    if (["queued", "processing", "failed_retryable"].includes(existing.state))
+      return t("The existing MBOM request is still active.");
+    return t(
+      "An immutable MBOM request already exists for this exact released topology.",
+    );
+  }
+  return sessionAvailable
+    ? null
+    : t("The secure command session is unavailable.");
+}
+
+function MbomExecutionInspector({
+  dataSource,
+  disabled,
+  onDirtyChange,
+  projectId,
+  publishRequest,
+}: {
+  dataSource?: MbomPublishDataSource | undefined;
+  disabled: boolean;
+  onDirtyChange: (dirty: boolean) => void;
+  projectId: string;
+  publishRequest: EngineeringBomPublishRequestViewModel;
+}): React.JSX.Element {
+  const { locale, sessionCommandContext, t } = useI18n();
+  const [reloadAttempt, setReloadAttempt] = useState(0);
+  const [listState, setListState] = useState<
+    ResourceState<MbomRequestListViewModel>
+  >({ kind: "loading" });
+  const [detailState, setDetailState] = useState<
+    ResourceState<MbomRequestDetailViewModel>
+  >({ kind: "idle" });
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [commandState, setCommandState] = useState<MbomCommandState>({
+    kind: "idle",
+  });
+  const idempotencyKey = useRef<string | null>(null);
+  const list = listState.kind === "loaded" ? listState.value : null;
+  const detail = detailState.kind === "loaded" ? detailState.value : null;
+  const blockReason = list
+    ? mbomActionBlockReason(t, list, sessionCommandContext !== null, disabled)
+    : t("Load the exact MBOM execution context before requesting execution.");
+
+  useEffect(() => {
+    onDirtyChange(reviewOpen);
+    return () => {
+      onDirtyChange(false);
+    };
+  }, [onDirtyChange, reviewOpen]);
+
+  useEffect(() => {
+    if (!dataSource) return undefined;
+    const controller = new AbortController();
+    const timer = globalThis.setTimeout(() => {
+      void dataSource
+        .loadRequests(projectId, publishRequest.globalId, controller.signal)
+        .then((value) => {
+          if (controller.signal.aborted) return;
+          setListState({ kind: "loaded", value });
+          const requestId = value.items[0]?.requestGlobalId;
+          if (!value.permissions.canView || !requestId) return;
+          setDetailState({ kind: "loading" });
+          return dataSource.loadRequest(
+            projectId,
+            requestId,
+            controller.signal,
+          );
+        })
+        .then((value) => {
+          if (value && !controller.signal.aborted)
+            setDetailState({ kind: "loaded", value });
+        })
+        .catch((error: unknown) => {
+          if (
+            controller.signal.aborted ||
+            error instanceof MbomPublishCancelledError
+          )
+            return;
+          const failure = toRequestFailure(error);
+          setListState((current) =>
+            current.kind === "loading" ? { kind: "failed", failure } : current,
+          );
+          setDetailState((current) =>
+            current.kind === "loading" ? { kind: "failed", failure } : current,
+          );
+        });
+    }, 0);
+    return () => {
+      globalThis.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [dataSource, projectId, publishRequest.globalId, reloadAttempt]);
+
+  const reload = (): void => {
+    setListState({ kind: "loading" });
+    setDetailState({ kind: "idle" });
+    setCommandState({ kind: "idle" });
+    setReviewOpen(false);
+    idempotencyKey.current = null;
+    setReloadAttempt((value) => value + 1);
+  };
+  const submit = (): void => {
+    const context = list?.createContext;
+    if (!dataSource || !context || !sessionCommandContext || blockReason)
+      return;
+    const key =
+      idempotencyKey.current ??
+      `mbom-publish-${globalThis.crypto.randomUUID()}`;
+    idempotencyKey.current = key;
+    setReviewOpen(false);
+    setCommandState({ kind: "processing" });
+    void dataSource
+      .createRequest(
+        projectId,
+        {
+          phase5PublishRequestGlobalId: context.phase5PublishRequestGlobalId,
+          expectedSourceHash: context.source.sourceHash,
+          expectedTopologyHash: context.source.topologyHash,
+          expectedItemMappingSetHash: context.itemMappingSetHash,
+          expectedMbomMappingSetHash: context.mbomMappingSetHash,
+          acknowledgement: MBOM_PUBLISH_ACKNOWLEDGEMENT,
+        },
+        {
+          ...sessionCommandContext,
+          idempotencyKey: key,
+          signal: new AbortController().signal,
+        },
+      )
+      .then(() => {
+        setCommandState({ kind: "accepted" });
+        setReloadAttempt((value) => value + 1);
+      })
+      .catch((error: unknown) => {
+        if (!(error instanceof MbomPublishCancelledError))
+          setCommandState({ kind: "failed", failure: toRequestFailure(error) });
+      });
+  };
+
+  const context = list?.createContext ?? null;
+  const expectations =
+    context?.mbomExpectations ?? detail?.request.mbomExpectations ?? [];
+  const readiness =
+    context?.itemReadiness ?? detail?.request.itemReadiness ?? [];
+  return (
+    <section
+      aria-label={t("MBOM execution inspector")}
+      className="mbom-publish"
+      id="mbom-execution-inspector"
+    >
+      <div className="mbom-publish__header">
+        <div>
+          <h3>{t("MBOM execution inspector")}</h3>
+          <p>
+            {t(
+              "This inspector binds one exact released EBOM topology to current Item readiness, MBOM expectations, and aggregate plus per-assembly execution truth.",
+            )}
+          </p>
+        </div>
+        <CompactAction
+          disabled={commandState.kind === "processing"}
+          icon="refresh"
+          intent="familiar-low-risk"
+          label={t("Reload")}
+          onClick={reload}
+        />
+      </div>
+      {!dataSource ? (
+        <div className="scenario-banner scenario-banner--partial" role="status">
+          <SemanticStatus label={t("Unavailable")} tone="warning" />
+          <span>
+            {t(
+              "The MBOM execution data source is not configured. No target system was contacted.",
+            )}
+          </span>
+        </div>
+      ) : listState.kind === "loading" || listState.kind === "idle" ? (
+        <Loading label={t("Loading MBOM execution context")} />
+      ) : listState.kind === "failed" ? (
+        <div className="mbom-publish__resource" role="alert">
+          <SemanticStatus
+            label={
+              listState.failure.problem?.status === 403
+                ? t("No permission")
+                : t("MBOM execution unavailable")
+            }
+            tone="danger"
+          />
+          <RequestFailurePanel failure={listState.failure} />
+        </div>
+      ) : (
+        <>
+          <div className="mbom-publish__status-strip">
+            <SemanticStatus
+              label={
+                detail
+                  ? mbomStateLabel(t, detail.request.state)
+                  : t("No MBOM execution request")
+              }
+              tone={detail ? mbomTone(detail.request.state) : "info"}
+            />
+            <span>
+              {t("Assemblies")}: {formatNumber(locale, expectations.length, 0)}
+            </span>
+            <span>
+              {t("Execution profile")}:{" "}
+              {listState.value.executionProfile
+                ? mbomModeLabel(t, listState.value.executionProfile.targetMode)
+                : t("Unavailable")}
+            </span>
+          </div>
+          {!listState.value.permissions.canView ? (
+            <div
+              className="scenario-banner scenario-banner--read_only"
+              role="status"
+            >
+              <SemanticStatus label={t("No permission")} tone="warning" />
+              <span>
+                {t("You cannot view MBOM execution history for this Project.")}
+              </span>
+            </div>
+          ) : null}
+          <div className="mbom-publish__evidence-grid">
+            <div className="mbom-publish__evidence">
+              <h4>{t("Exact topology and Item readiness")}</h4>
+              <DefinitionList
+                rows={[
+                  {
+                    label: t("Released Phase 5 request"),
+                    value:
+                      context?.phase5PublishRequestGlobalId ??
+                      detail?.request.source.phase5PublishRequestGlobalId ??
+                      t("Unavailable"),
+                    ...(context || detail
+                      ? { exempt: "identifier" as const }
+                      : {}),
+                  },
+                  {
+                    label: t("Topology hash"),
+                    value:
+                      context?.source.topologyHash ??
+                      detail?.request.source.topologyHash ??
+                      t("Unavailable"),
+                    ...(context || detail
+                      ? { exempt: "identifier" as const }
+                      : {}),
+                  },
+                  {
+                    label: t("Topology lines"),
+                    value: formatNumber(
+                      locale,
+                      context?.source.topology.lines.length ??
+                        detail?.request.source.topology.lines.length ??
+                        0,
+                      0,
+                    ),
+                  },
+                  {
+                    label: t("Ready Item mappings"),
+                    value: formatNumber(
+                      locale,
+                      readiness.filter(
+                        (item) => item.disposition !== "not_ready",
+                      ).length,
+                      0,
+                    ),
+                  },
+                  {
+                    label: t("Item mapping set hash"),
+                    value:
+                      context?.itemMappingSetHash ??
+                      detail?.request.itemMappingSetHash ??
+                      t("Unavailable"),
+                    ...(context || detail
+                      ? { exempt: "identifier" as const }
+                      : {}),
+                  },
+                ]}
+              />
+            </div>
+            <div className="mbom-publish__evidence">
+              <h4>{t("MBOM expectation and profile")}</h4>
+              <DefinitionList
+                rows={[
+                  {
+                    label: t("Target mode"),
+                    value: listState.value.executionProfile
+                      ? mbomModeLabel(
+                          t,
+                          listState.value.executionProfile.targetMode,
+                        )
+                      : t("Unavailable"),
+                  },
+                  {
+                    label: t("Profile"),
+                    value:
+                      listState.value.executionProfile?.profileId ??
+                      t("Unavailable"),
+                    ...(listState.value.executionProfile
+                      ? { exempt: "identifier" as const }
+                      : {}),
+                  },
+                  {
+                    label: t("Expected MBOM mappings"),
+                    value: formatNumber(locale, expectations.length, 0),
+                  },
+                  {
+                    label: t("MBOM mapping set hash"),
+                    value:
+                      context?.mbomMappingSetHash ??
+                      detail?.request.mbomMappingSetHash ??
+                      t("Unavailable"),
+                    ...(context || detail
+                      ? { exempt: "identifier" as const }
+                      : {}),
+                  },
+                  {
+                    label: t("Submitted MBOM guards"),
+                    value: formatNumber(
+                      locale,
+                      expectations.filter(
+                        (item) =>
+                          item.submissionState === "submitted_immutable",
+                      ).length,
+                      0,
+                    ),
+                  },
+                ]}
+              />
+            </div>
+          </div>
+          {detailState.kind === "loading" ? (
+            <Loading label={t("Loading MBOM result evidence")} />
+          ) : detailState.kind === "failed" ? (
+            <div className="mbom-publish__resource" role="alert">
+              <SemanticStatus
+                label={t("MBOM detail unavailable")}
+                tone="danger"
+              />
+              <RequestFailurePanel failure={detailState.failure} />
+            </div>
+          ) : detail ? (
+            <MbomNodeTruthTable detail={detail} />
+          ) : (
+            <div className="mbom-publish__empty" role="status">
+              <p>
+                {t(
+                  "No immutable MBOM request has been recorded for this exact released topology.",
+                )}
+              </p>
+            </div>
+          )}
+          {commandState.kind === "processing" ? (
+            <div className="mbom-publish__command" role="status">
+              <SemanticStatus label={t("Processing")} tone="info" />
+              <span>
+                {t(
+                  "Committing the exact MBOM request and durable Outbox locally",
+                )}
+              </span>
+            </div>
+          ) : commandState.kind === "accepted" ? (
+            <div className="mbom-publish__command" role="status">
+              <SemanticStatus label={t("Request committed")} tone="info" />
+              <span>
+                {t(
+                  "The immutable MBOM request was committed. Target completion is not claimed.",
+                )}
+              </span>
+            </div>
+          ) : commandState.kind === "failed" ? (
+            <div className="mbom-publish__command" role="alert">
+              <SemanticStatus label={t("Command failed")} tone="danger" />
+              <RequestFailurePanel failure={commandState.failure} />
+            </div>
+          ) : null}
+          <div className="mbom-publish__action">
+            <div>
+              <strong>{t("Request exact MBOM execution")}</strong>
+              <p>
+                {t(
+                  "Impact: commits one immutable request and, outside Mock, one recoverable Outbox event. It does not submit or overwrite any BOM.",
+                )}
+              </p>
+              {blockReason ? <small>{blockReason}</small> : null}
+            </div>
+            <Button
+              data-mbom-request-action="true"
+              disabled={
+                Boolean(blockReason) || commandState.kind === "processing"
+              }
+              onClick={() => {
+                setReviewOpen(true);
+              }}
+              visual="primary"
+            >
+              {t("Review MBOM request")}
+            </Button>
+          </div>
+          {reviewOpen && context ? (
+            <ImpactReview
+              title={t("Review exact MBOM request")}
+              confirmLabel={t("Request MBOM execution")}
+              reasonRequired={false}
+              returnFocusTarget={() =>
+                document.querySelector<HTMLElement>(
+                  '[data-mbom-request-action="true"]',
+                )
+              }
+              onCancel={() => {
+                setReviewOpen(false);
+              }}
+              onConfirm={submit}
+              details={{
+                objectIdentity: t("Exact released EBOM topology"),
+                version: context.source.topologyHash,
+                impact: t(
+                  "Commit one immutable MBOM request and one recoverable Outbox event when execution is enabled. It does not submit or overwrite any BOM.",
+                ),
+                permission: t(
+                  "Project membership and exact MBOM profile requester authority are required.",
+                ),
+                irreversible: t(
+                  "The request, node manifest, audit and any observed target truth remain immutable.",
+                ),
+                failureHandling: t(
+                  "Partial, failed and uncertain assembly truth remains visible. No retry or reconcile command is available here.",
+                ),
+                audit: t(
+                  "Actor, trace, idempotency, source hashes and mapping expectations are recorded.",
+                ),
+              }}
+              contextRows={[
+                {
+                  label: t("Acknowledgement"),
+                  value: t(
+                    "I confirm this request uses the exact released EBOM topology, current Item readiness, MBOM expectations, and execution profile.",
+                  ),
+                },
+                {
+                  label: t("Assemblies"),
+                  value: formatNumber(
+                    locale,
+                    context.mbomExpectations.length,
+                    0,
+                  ),
+                },
+                {
+                  label: t("Target mode"),
+                  value: mbomModeLabel(t, context.profile.targetMode),
+                },
+              ]}
+            />
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}
+
+function MbomNodeTruthTable({
+  detail,
+}: {
+  detail: MbomRequestDetailViewModel;
+}): React.JSX.Element {
+  const { locale, t } = useI18n();
+  return (
+    <div
+      aria-label={t("MBOM assembly execution truth")}
+      className="mbom-publish__nodes"
+      tabIndex={0}
+    >
+      <table className="data-table data-table--compact">
+        <thead>
+          <tr>
+            <th>{t("Line")}</th>
+            <th>{t("Item readiness")}</th>
+            <th>{t("Submission state")}</th>
+            <th>{t("Execution result")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {detail.nodes.map((node) => {
+            const result = detail.nodeResults.find(
+              (item) => item.nodeGlobalId === node.globalId,
+            );
+            const mapping = detail.currentMappings.find(
+              (item) => item.stableLineKey === node.line.stableLineKey,
+            );
+            const warning = [
+              "failed_retryable",
+              "uncertain_after_timeout",
+              "observed_conflict",
+              "blocked_item_mapping",
+            ].includes(node.state);
+            const submission =
+              node.mbomExpectation?.submissionState === "submitted_immutable"
+                ? t("Submitted and immutable")
+                : node.mbomExpectation?.submissionState === "editable_draft"
+                  ? t("Editable draft")
+                  : node.mbomExpectation
+                    ? t("Unmapped create")
+                    : t("Not applicable");
+            return (
+              <tr key={node.globalId}>
+                <td className="mbom-publish__node-cell">
+                  <span data-language-exempt="identifier">
+                    {node.line.stableLineKey}
+                  </span>
+                  <small>
+                    {node.line.sourceRole === "assembly"
+                      ? t("Assembly")
+                      : t("Component only")}
+                  </small>
+                </td>
+                <td className="mbom-publish__node-cell">
+                  <span data-language-exempt="identifier">
+                    {node.line.engineeringItemId}
+                  </span>
+                  <SemanticStatus
+                    label={
+                      node.itemReadiness.disposition === "advanced"
+                        ? t("Authoritative Item mapping ready")
+                        : node.itemReadiness.disposition ===
+                            "synthetic_reference"
+                          ? t("Synthetic Item reference")
+                          : t("Item mapping not ready")
+                    }
+                    tone={
+                      node.itemReadiness.disposition === "advanced"
+                        ? "success"
+                        : node.itemReadiness.disposition === "not_ready"
+                          ? "warning"
+                          : "info"
+                    }
+                  />
+                </td>
+                <td className="mbom-publish__node-cell">
+                  <span>{submission}</span>
+                  <small>
+                    {t("Expected version")}:{" "}
+                    {node.mbomExpectation
+                      ? formatNumber(
+                          locale,
+                          node.mbomExpectation.mappingVersion,
+                          0,
+                        )
+                      : t("Not applicable")}
+                  </small>
+                </td>
+                <td className="mbom-publish__node-cell">
+                  <SemanticStatus
+                    label={mbomNodeStateLabel(t, node.state)}
+                    tone={
+                      node.state === "succeeded_authoritative"
+                        ? "success"
+                        : ["failed_final", "blocked_submitted"].includes(
+                              node.state,
+                            )
+                          ? "danger"
+                          : warning
+                            ? "warning"
+                            : "info"
+                    }
+                  />
+                  {result?.faultKind && result.faultKind !== "none" ? (
+                    <small>
+                      {t("Fault")}:{" "}
+                      <span data-language-exempt="identifier">
+                        {result.faultKind}
+                      </span>
+                    </small>
+                  ) : null}
+                  {mapping ? (
+                    <>
+                      <SemanticStatus
+                        label={t("Authenticated authoritative Sandbox mapping")}
+                        tone="success"
+                      />
+                      <small>
+                        {t("Formal BOM ID")}:{" "}
+                        <span data-language-exempt="identifier">
+                          {mapping.formalBomId}
+                        </span>
+                      </small>
+                      <small>
+                        {t("Target version")}:{" "}
+                        <span data-language-exempt="identifier">
+                          {mapping.targetVersion}
+                        </span>
+                      </small>
+                    </>
+                  ) : (
+                    <small>
+                      {result?.authority === "synthetic"
+                        ? t("Synthetic evidence; no formal identity")
+                        : t("No authoritative MBOM mapping")}
+                    </small>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function EngineeringBomPublishRequestWorkspace({
   dataSource,
   disabled = false,
   ebom,
   itemPublishDataSource,
+  mbomPublishDataSource,
   onDirtyChange,
   projectId,
   revision,
@@ -1139,6 +1869,7 @@ export function EngineeringBomPublishRequestWorkspace({
   disabled?: boolean | undefined;
   ebom: EngineeringBomSummaryViewModel;
   itemPublishDataSource?: ItemPublishDataSource | undefined;
+  mbomPublishDataSource?: MbomPublishDataSource | undefined;
   onDirtyChange?: ((dirty: boolean) => void) | undefined;
   projectId: string;
   revision: EngineeringBomRevisionViewModel;
@@ -1167,6 +1898,7 @@ export function EngineeringBomPublishRequestWorkspace({
   const [formError, setFormError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [itemDirty, setItemDirty] = useState(false);
+  const [mbomDirty, setMbomDirty] = useState(false);
   const [itemInspectorNodeId, setItemInspectorNodeId] = useState<string | null>(
     null,
   );
@@ -1186,11 +1918,11 @@ export function EngineeringBomPublishRequestWorkspace({
   );
 
   useEffect(() => {
-    onDirtyChange?.(dirty || itemDirty);
+    onDirtyChange?.(dirty || itemDirty || mbomDirty);
     return () => {
       onDirtyChange?.(false);
     };
-  }, [dirty, itemDirty, onDirtyChange]);
+  }, [dirty, itemDirty, mbomDirty, onDirtyChange]);
 
   const closeForm = useCallback((): void => {
     setFormOpen(false);
@@ -1454,7 +2186,8 @@ export function EngineeringBomPublishRequestWorkspace({
                   }}
                   visual={
                     formOpen ||
-                    Boolean(itemInspectorNodeId && itemPublishDataSource)
+                    Boolean(itemInspectorNodeId && itemPublishDataSource) ||
+                    Boolean(mbomPublishDataSource)
                       ? "secondary"
                       : "primary"
                   }
@@ -1920,9 +2653,17 @@ export function EngineeringBomPublishRequestWorkspace({
                         }}
                         projectId={projectId}
                         publishRequest={detail}
+                        primaryAction={!mbomPublishDataSource}
                         selectedNodeId={itemInspectorNodeId}
                       />
                     ) : null}
+                    <MbomExecutionInspector
+                      dataSource={mbomPublishDataSource}
+                      disabled={disabled || commandState.kind === "processing"}
+                      onDirtyChange={setMbomDirty}
+                      projectId={projectId}
+                      publishRequest={detail}
+                    />
                   </div>
                 ) : selectedSummary ? null : (
                   <div className="publish-request__empty" role="status">

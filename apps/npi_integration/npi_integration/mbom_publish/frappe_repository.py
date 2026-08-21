@@ -63,6 +63,7 @@ from npi_integration.mbom_publish.problems import (
 
 _MAX_REQUESTS = 200
 _MAX_NODES = 500
+_MAX_ATTEMPTS = 100
 _ACTIVE_STATES = frozenset(
     {
         MbomPublishRequestState.QUEUED.value,
@@ -112,24 +113,69 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
         )
         self._mbom_profile_resolver = profile_resolver
 
-    def list_mbom_publish_requests(self, project_id: UUID) -> dict[str, Any] | None:
+    def list_mbom_publish_requests(
+        self,
+        project_id: UUID,
+        *,
+        phase5_publish_request_id: UUID | None = None,
+    ) -> dict[str, Any] | None:
         project = self._authorized_project(project_id)
         if project is None:
             return None
+        filters = {
+            "tenant_id": str(project.tenant_id),
+            "project_global_id": str(project.global_id),
+        }
+        if phase5_publish_request_id is not None:
+            filters["phase5_publish_request_global_id"] = str(
+                phase5_publish_request_id
+            )
         rows = self._bounded_documents(
             "NPI MBOM Publish Request",
-            {
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-            },
+            filters,
             order_by="created_at desc, global_id asc",
             maximum=_MAX_REQUESTS,
         )
         profile = self._read_profile(project)
+        create_context = None
+        if phase5_publish_request_id is not None and profile is not None:
+            try:
+                candidate = self._build_request(
+                    project,
+                    phase5_publish_request_id,
+                    profile,
+                    idempotency_key_hash="0" * 64,
+                    lock=False,
+                )
+            except (NpiProblem, MbomPublishContractError, RuntimeError):
+                candidate = None
+            if candidate is not None:
+                create_context = {
+                    "phase5PublishRequestGlobalId": str(
+                        candidate.source.phase5_publish_request_global_id
+                    ),
+                    "source": candidate.source.canonical_mapping(),
+                    "itemReadiness": [
+                        item.canonical_mapping() for item in candidate.item_readiness
+                    ],
+                    "itemMappingSetHash": candidate.item_mapping_set_hash,
+                    "mbomExpectations": [
+                        item.canonical_mapping()
+                        for item in candidate.mbom_expectations
+                    ],
+                    "mbomMappingSetHash": candidate.mbom_mapping_set_hash,
+                    "profile": candidate.profile.canonical_mapping(),
+                }
         return {
             "projectGlobalId": str(project.global_id),
+            "phase5PublishRequestGlobalId": (
+                str(phase5_publish_request_id)
+                if phase5_publish_request_id is not None
+                else None
+            ),
             "permissions": self._permissions(project, profile),
             "executionProfile": profile.reference.canonical_mapping() if profile else None,
+            "createContext": create_context,
             "items": [self._request_public_dict(project, row) for row in rows],
         }
 
@@ -154,7 +200,22 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
         if len(nodes) != len(response["request"]["source"]["topology"]["lines"]):
             raise RuntimeError("Persisted MBOM node manifest is incomplete.")
         response["nodes"] = [self._node_public_dict(project, row, node) for node in nodes]
-        response["permissions"] = self._permissions(project, self._read_profile(project))
+        permissions = self._permissions(project, self._read_profile(project))
+        attempts = self._attempt_public_dicts(row, response["request"])
+        result = self._result_public_dict(row, response["request"])
+        node_results, current_mappings = self._node_result_public_dicts(
+            project,
+            row,
+            response["request"],
+            nodes,
+            result,
+            can_view=permissions["canView"],
+        )
+        response["attempts"] = list(attempts)
+        response["result"] = result
+        response["nodeResults"] = list(node_results)
+        response["currentMappings"] = list(current_mappings)
+        response["permissions"] = permissions
         return response
 
     def create_mbom_publish_request(
@@ -932,6 +993,274 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
             ),
             "state": str(row.state),
             "nodeSnapshotHash": str(row.node_snapshot_hash),
+        }
+
+    def _attempt_public_dicts(
+        self,
+        request_row: object,
+        request: Mapping[str, Any],
+    ) -> tuple[dict[str, Any], ...]:
+        rows = self._bounded_documents(
+            "NPI MBOM Publish Attempt",
+            {"request_global_id": str(request["globalId"])},
+            order_by="attempt_number asc, global_id asc",
+            maximum=_MAX_ATTEMPTS,
+        )
+        values: list[dict[str, Any]] = []
+        for row in rows:
+            snapshot = _json_object(row.attempt_snapshot)
+            if (
+                canonical_hash(snapshot) != str(row.attempt_hash)
+                or snapshot.get("globalId") != str(row.global_id)
+                or snapshot.get("requestGlobalId") != str(request["globalId"])
+                or str(row.request_global_id) != str(request["globalId"])
+                or snapshot.get("outboxEventId") != str(row.outbox_event_id)
+                or str(row.outbox_event_id) != str(request_row.outbox_event_id or "")
+                or snapshot.get("attemptNumber") != int(row.attempt_number)
+                or str(row.source_hash) != str(request["source"]["sourceHash"])
+                or str(row.topology_hash) != str(request["source"]["topologyHash"])
+                or str(row.item_mapping_set_hash) != str(request["itemMappingSetHash"])
+                or str(row.mbom_mapping_set_hash) != str(request["mbomMappingSetHash"])
+                or str(row.profile_id) != str(request["profile"]["profileId"])
+                or int(row.profile_version) != int(request["profile"]["profileVersion"])
+                or snapshot.get("state") != str(row.state)
+                or snapshot.get("adapterBoundaryCrossed")
+                is not bool(row.adapter_boundary_crossed)
+                or snapshot.get("requestSnapshotHash")
+                != str(row.request_snapshot_hash)
+            ):
+                raise RuntimeError("Persisted MBOM publish attempt is invalid.")
+            values.append(
+                {
+                    "globalId": snapshot["globalId"],
+                    "requestGlobalId": snapshot["requestGlobalId"],
+                    "outboxEventId": snapshot["outboxEventId"],
+                    "attemptNumber": snapshot["attemptNumber"],
+                    "state": snapshot["state"],
+                    "adapterBoundaryCrossed": snapshot["adapterBoundaryCrossed"],
+                    "transportDisposition": snapshot.get("transportDisposition"),
+                    "responseHash": snapshot.get("responseHash"),
+                    "faultKind": snapshot.get("faultKind"),
+                    "reconciliationRequired": snapshot["reconciliationRequired"],
+                    "safeErrorCode": snapshot.get("safeErrorCode"),
+                    "startedAt": snapshot["startedAt"],
+                    "finishedAt": snapshot.get("finishedAt"),
+                    "attemptHash": str(row.attempt_hash),
+                }
+            )
+        return tuple(values)
+
+    @staticmethod
+    def _result_public_dict(
+        request_row: object,
+        request: Mapping[str, Any],
+    ) -> dict[str, Any] | None:
+        if not request_row.result_global_id:
+            if str(request["state"]) in _RETAINED_STATES:
+                raise RuntimeError("Persisted MBOM publish result is unavailable.")
+            return None
+        try:
+            row = frappe.get_doc(
+                "NPI MBOM Publish Result",
+                str(request_row.result_global_id),
+            )
+        except frappe.DoesNotExistError as error:
+            raise RuntimeError("Persisted MBOM publish result is unavailable.") from error
+        snapshot = _json_object(row.result_snapshot)
+        if (
+            canonical_hash(snapshot) != str(row.result_hash)
+            or snapshot.get("globalId") != str(row.global_id)
+            or str(row.global_id) != str(request_row.result_global_id)
+            or snapshot.get("requestGlobalId") != str(request["globalId"])
+            or str(row.request_global_id) != str(request["globalId"])
+            or snapshot.get("outboxEventId") != str(row.outbox_event_id)
+            or str(row.outbox_event_id) != str(request_row.outbox_event_id or "")
+            or snapshot.get("attemptGlobalId") != str(row.attempt_global_id)
+            or snapshot.get("attemptNumber") != int(row.attempt_number)
+            or snapshot.get("sourceHash") != str(request["source"]["sourceHash"])
+            or snapshot.get("topologyHash") != str(request["source"]["topologyHash"])
+            or snapshot.get("itemMappingSetHash") != str(request["itemMappingSetHash"])
+            or snapshot.get("mbomMappingSetHash") != str(request["mbomMappingSetHash"])
+            or snapshot.get("state") != str(request["state"])
+            or snapshot.get("nodeResultSetHash") != str(row.node_result_set_hash)
+        ):
+            raise RuntimeError("Persisted MBOM publish result is invalid.")
+        return {
+            **snapshot,
+            "resultHash": str(row.result_hash),
+        }
+
+    def _node_result_public_dicts(
+        self,
+        project: object,
+        request_row: object,
+        request: Mapping[str, Any],
+        nodes: Sequence[object],
+        result: Mapping[str, Any] | None,
+        *,
+        can_view: bool,
+    ) -> tuple[tuple[dict[str, Any], ...], tuple[dict[str, Any], ...]]:
+        if result is None:
+            if any(getattr(node, "result_global_id", None) for node in nodes):
+                raise RuntimeError("Persisted MBOM node result binding is invalid.")
+            return (), ()
+        assembly_nodes = {
+            str(node.stable_line_key): node
+            for node in nodes
+            if str(_json_object(node.line_snapshot).get("sourceRole")) == "assembly"
+        }
+        rows = self._bounded_documents(
+            "NPI MBOM Publish Node Result",
+            {"result_global_id": str(result["globalId"])},
+            order_by="stable_line_key asc, global_id asc",
+            maximum=_MAX_NODES,
+        )
+        if len(rows) != len(assembly_nodes):
+            raise RuntimeError("Persisted MBOM node result set is incomplete.")
+        values: list[dict[str, Any]] = []
+        mappings: list[dict[str, Any]] = []
+        set_members: list[dict[str, str]] = []
+        for row in rows:
+            snapshot = _json_object(row.node_result_snapshot)
+            node = assembly_nodes.get(str(row.stable_line_key))
+            if (
+                node is None
+                or canonical_hash(snapshot) != str(row.node_result_hash)
+                or snapshot.get("globalId") != str(row.global_id)
+                or snapshot.get("requestGlobalId") != str(request["globalId"])
+                or str(row.request_global_id) != str(request["globalId"])
+                or snapshot.get("resultGlobalId") != str(result["globalId"])
+                or str(row.result_global_id) != str(result["globalId"])
+                or snapshot.get("attemptGlobalId") != str(result["attemptGlobalId"])
+                or str(row.attempt_global_id) != str(result["attemptGlobalId"])
+                or snapshot.get("nodeGlobalId") != str(node.global_id)
+                or str(row.node_global_id) != str(node.global_id)
+                or snapshot.get("stableLineKey") != str(row.stable_line_key)
+                or snapshot.get("assemblySourceKey") != str(row.assembly_source_key)
+                or snapshot.get("state") != str(row.state)
+                or snapshot.get("authority") != str(row.authority)
+                or snapshot.get("responseAuthenticated")
+                is not bool(row.response_authenticated)
+                or snapshot.get("responseHash") != str(row.response_hash)
+                or str(getattr(node, "result_global_id", "")) != str(row.global_id)
+            ):
+                raise RuntimeError("Persisted MBOM node result is invalid.")
+            current = self._current_mapping_public_dict(
+                project,
+                request,
+                row,
+                snapshot,
+                can_view=can_view,
+            )
+            public = {
+                **snapshot,
+                "formalBomId": current["formalBomId"] if current else None,
+                "targetVersion": current["targetVersion"] if current else None,
+                "targetSubmissionState": (
+                    current["targetSubmissionState"] if current else None
+                ),
+                "nodeResultHash": str(row.node_result_hash),
+            }
+            values.append(public)
+            if current is not None:
+                mappings.append(current)
+            set_members.append(
+                {
+                    "globalId": str(row.global_id),
+                    "nodeResultHash": str(row.node_result_hash),
+                }
+            )
+        if canonical_hash(set_members) != str(result["nodeResultSetHash"]):
+            raise RuntimeError("Persisted MBOM node result set is invalid.")
+        return tuple(values), tuple(mappings)
+
+    @staticmethod
+    def _current_mapping_public_dict(
+        project: object,
+        request: Mapping[str, Any],
+        node_result: object,
+        node_snapshot: Mapping[str, Any],
+        *,
+        can_view: bool,
+    ) -> dict[str, Any] | None:
+        authoritative = (
+            node_snapshot.get("state") == "succeeded_authoritative"
+            and node_snapshot.get("authority") == "authoritative_sandbox"
+            and node_snapshot.get("responseAuthenticated") is True
+        )
+        if not authoritative:
+            if any(
+                node_snapshot.get(key) is not None
+                for key in ("formalBomId", "targetVersion", "targetSubmissionState")
+            ):
+                raise RuntimeError("Non-authoritative MBOM result contains target identity.")
+            return None
+        name = frappe.db.get_value(
+            "NPI MBOM Mapping Head",
+            {"assembly_source_key": str(node_result.assembly_source_key)},
+            "name",
+        )
+        if not name:
+            raise RuntimeError("Current MBOM mapping evidence is unavailable.")
+        try:
+            head = frappe.get_doc("NPI MBOM Mapping Head", str(name))
+            observation = frappe.get_doc(
+                "NPI MBOM Mapping Observation",
+                str(head.current_observation),
+            )
+        except frappe.DoesNotExistError as error:
+            raise RuntimeError("Current MBOM mapping evidence is unavailable.") from error
+        head_snapshot = _json_object(head.head_snapshot)
+        observation_snapshot = _json_object(observation.observation_snapshot)
+        if (
+            canonical_hash(head_snapshot) != str(head.head_hash)
+            or canonical_hash(observation_snapshot) != str(observation.observation_hash)
+            or head_snapshot.get("globalId") != str(head.global_id)
+            or head_snapshot.get("tenantId") != str(project.tenant_id)
+            or head_snapshot.get("projectGlobalId") != str(project.global_id)
+            or head_snapshot.get("ebomGlobalId") != str(request["source"]["ebomGlobalId"])
+            or head_snapshot.get("assemblySourceKey")
+            != str(node_result.assembly_source_key)
+            or head_snapshot.get("stableLineKey") != str(node_result.stable_line_key)
+            or head_snapshot.get("currentObservationGlobalId")
+            != str(observation.global_id)
+            or head_snapshot.get("currentObservationHash")
+            != str(observation.observation_hash)
+            or observation_snapshot.get("requestGlobalId")
+            != str(request["globalId"])
+            or observation_snapshot.get("resultGlobalId")
+            != str(node_result.result_global_id)
+            or observation_snapshot.get("nodeResultGlobalId")
+            != str(node_result.global_id)
+            or observation_snapshot.get("targetResultHash")
+            != str(node_result.node_result_hash)
+            or observation_snapshot.get("authority") != "authoritative_sandbox"
+            or observation_snapshot.get("disposition") != "advanced"
+            or observation_snapshot.get("formalBomId")
+            != node_snapshot.get("formalBomId")
+            or observation_snapshot.get("targetVersion")
+            != node_snapshot.get("targetVersion")
+            or observation_snapshot.get("targetSubmissionState")
+            != node_snapshot.get("targetSubmissionState")
+            or head_snapshot.get("formalBomId") != node_snapshot.get("formalBomId")
+            or head_snapshot.get("targetVersion") != node_snapshot.get("targetVersion")
+            or head_snapshot.get("targetSubmissionState")
+            != node_snapshot.get("targetSubmissionState")
+        ):
+            raise RuntimeError("Current MBOM mapping evidence is invalid.")
+        if not can_view:
+            return None
+        return {
+            "stableLineKey": str(node_result.stable_line_key),
+            "assemblySourceKey": str(node_result.assembly_source_key),
+            "mappingVersion": int(head_snapshot["mappingVersion"]),
+            "formalBomId": str(head_snapshot["formalBomId"]),
+            "targetVersion": str(head_snapshot["targetVersion"]),
+            "targetSubmissionState": str(head_snapshot["targetSubmissionState"]),
+            "authority": "authoritative_sandbox",
+            "responseAuthenticated": True,
+            "observationHash": str(observation.observation_hash),
+            "updatedAt": str(head_snapshot["updatedAt"]),
         }
 
 

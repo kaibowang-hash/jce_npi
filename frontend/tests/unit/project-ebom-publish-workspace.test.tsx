@@ -8,6 +8,8 @@ import type {
   ItemPublishRequestListViewModel,
 } from "../../src/api/item-publish-data-source";
 import { NpiApiError } from "../../src/api/http";
+import type { MbomPublishDataSource } from "../../src/api/mbom-publish-data-source";
+import { MBOM_PUBLISH_ACKNOWLEDGEMENT } from "../../src/api/mbom-publish-data-source";
 import { EngineeringBomPublishRequestWorkspace } from "../../src/pages/project-ebom-publish-workspace";
 import {
   ebomProjectId,
@@ -25,6 +27,10 @@ import {
   itemPublishLegacyDetailFixture,
   itemPublishListFixture,
 } from "../support/item-publish-fixture";
+import {
+  mbomPublishDetailFixture,
+  mbomPublishListFixture,
+} from "../support/mbom-publish-fixture";
 import { renderWithLocale } from "../support/render";
 
 const csrfToken = "publish-workspace-csrf-token-fixture";
@@ -77,11 +83,28 @@ function itemDataSource(
   };
 }
 
+function mbomDataSource(
+  detail = mbomPublishDetailFixture(),
+  overrides: Partial<MbomPublishDataSource> = {},
+): MbomPublishDataSource {
+  const [summary] = mbomPublishListFixture(detail).items;
+  if (!summary) {
+    throw new Error("The MBOM fixture summary is missing.");
+  }
+  return {
+    createRequest: () => Promise.resolve(summary),
+    loadRequest: () => Promise.resolve(detail),
+    loadRequests: () => Promise.resolve(mbomPublishListFixture(detail)),
+    ...overrides,
+  };
+}
+
 function renderWorkspace(
   source: EngineeringBomPublishRequestDataSource | undefined = dataSource(),
   revision = releasedEngineeringBomRevisionFixture(),
   onDirtyChange?: (dirty: boolean) => void,
   itemSource?: ItemPublishDataSource,
+  mbomSource?: MbomPublishDataSource,
 ): void {
   const detail = engineeringBomDetailFixture();
   renderWithLocale(
@@ -89,6 +112,7 @@ function renderWorkspace(
       dataSource={source}
       ebom={detail.ebom}
       itemPublishDataSource={itemSource}
+      mbomPublishDataSource={mbomSource}
       onDirtyChange={onDirtyChange}
       projectId={ebomProjectId}
       revision={revision}
@@ -997,5 +1021,218 @@ describe("EBOM publish-request workspace", () => {
       dataSource({ loadRequests: () => Promise.reject(failure) }),
     );
     expect(await screen.findByText("trace-publish-protected")).toBeVisible();
+  });
+
+  it.each([
+    ["validated_mock", "Validated in Mock; no MBOM dispatched"],
+    ["queued", "Queued; MBOM result pending"],
+    ["processing", "Processing MBOM assemblies"],
+    ["synthetic_verified", "Synthetic MBOM verification; not authoritative"],
+    ["partially_succeeded", "Partial MBOM result; inspect every assembly"],
+    ["failed_final", "Final MBOM failure; no success recorded"],
+    [
+      "uncertain_after_timeout",
+      "Uncertain MBOM outcome; reconciliation required",
+    ],
+    ["mapping_conflict", "MBOM mapping conflict; no mapping changed"],
+    ["succeeded", "Authoritative Sandbox MBOM result observed"],
+  ] as const)("renders non-color MBOM %s truth", async (state, label) => {
+    const detail = mbomPublishDetailFixture({ state });
+    const { unmount } = renderWithLocale(
+      <EngineeringBomPublishRequestWorkspace
+        dataSource={dataSource()}
+        ebom={engineeringBomDetailFixture().ebom}
+        mbomPublishDataSource={mbomDataSource(detail)}
+        projectId={ebomProjectId}
+        revision={releasedEngineeringBomRevisionFixture()}
+      />,
+      "en",
+    );
+    expect(await screen.findByText(label)).toBeVisible();
+    expect(
+      screen.getByRole("region", { name: "MBOM execution inspector" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Review MBOM request" }),
+    ).toBeDisabled();
+    if (state === "succeeded" || state === "partially_succeeded") {
+      expect(screen.getByText("BOM-SANDBOX-0001")).toBeVisible();
+      expect(
+        screen.getAllByText("Authenticated authoritative Sandbox mapping"),
+      ).toHaveLength(state === "succeeded" ? 2 : 1);
+    } else {
+      expect(screen.queryByText("BOM-SANDBOX-0001")).not.toBeInTheDocument();
+    }
+    unmount();
+  });
+
+  it("opens a focused Impact Review and sends the exact acknowledged command", async () => {
+    enableCommandSession();
+    const user = userEvent.setup();
+    const detail = mbomPublishDetailFixture({
+      state: "queued",
+      targetMode: "synthetic",
+    });
+    const list = { ...mbomPublishListFixture(detail), items: [] };
+    const [summary] = mbomPublishListFixture(detail).items;
+    if (!summary) {
+      throw new Error("The MBOM fixture summary is missing.");
+    }
+    const createRequest = vi.fn<MbomPublishDataSource["createRequest"]>(() =>
+      Promise.resolve(summary),
+    );
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      undefined,
+      mbomDataSource(detail, {
+        createRequest,
+        loadRequests: () => Promise.resolve(list),
+      }),
+    );
+    const review = await screen.findByRole("button", {
+      name: "Review MBOM request",
+    });
+    await waitFor(() => {
+      expect(review).toBeEnabled();
+    });
+    expect(
+      document.querySelectorAll('[data-visual-primary="true"]'),
+    ).toHaveLength(1);
+    await user.click(review);
+    const dialog = screen.getByRole("dialog", {
+      name: "Review exact MBOM request",
+    });
+    expect(
+      within(dialog).getByRole("heading", {
+        name: "Review exact MBOM request",
+      }),
+    ).toHaveAttribute("tabindex", "-1");
+    expect(
+      within(dialog).getByText(MBOM_PUBLISH_ACKNOWLEDGEMENT),
+    ).toBeVisible();
+    expect(
+      within(dialog).getByText("It does not submit or overwrite any BOM.", {
+        exact: false,
+      }),
+    ).toBeVisible();
+    await user.click(
+      within(dialog).getByRole("button", { name: "Request MBOM execution" }),
+    );
+    await waitFor(() => {
+      expect(createRequest).toHaveBeenCalledOnce();
+    });
+    expect(createRequest.mock.calls[0]?.[1]).toEqual({
+      phase5PublishRequestGlobalId: publishRequestId,
+      expectedSourceHash: detail.request.source.sourceHash,
+      expectedTopologyHash: detail.request.source.topologyHash,
+      expectedItemMappingSetHash: detail.request.itemMappingSetHash,
+      expectedMbomMappingSetHash: detail.request.mbomMappingSetHash,
+      acknowledgement: MBOM_PUBLISH_ACKNOWLEDGEMENT,
+    });
+    const commandContext = createRequest.mock.calls[0]?.[2];
+    expect(commandContext?.csrfToken).toBe(csrfToken);
+    expect(commandContext?.idempotencyKey).toMatch(/^mbom-publish-/u);
+  });
+
+  it("covers empty, unavailable, no-permission, read-only and submitted guards without a command", async () => {
+    const detail = mbomPublishDetailFixture({
+      state: "queued",
+      targetMode: "synthetic",
+    });
+    const cases = [
+      {
+        list: {
+          ...mbomPublishListFixture(detail),
+          items: [],
+          createContext: null,
+        },
+        expected:
+          "The exact MBOM topology, Item readiness, or mapping expectations are unavailable.",
+      },
+      {
+        list: {
+          ...mbomPublishListFixture(detail),
+          permissions: { canView: false, canExecute: false },
+        },
+        expected: "You cannot view MBOM execution history for this Project.",
+      },
+      {
+        list: {
+          ...mbomPublishListFixture(detail),
+          permissions: { canView: true, canExecute: false },
+        },
+        expected: "You can inspect MBOM execution but cannot request it.",
+      },
+      {
+        list: mbomPublishListFixture(
+          mbomPublishDetailFixture({
+            state: "queued",
+            targetMode: "sandbox",
+            submittedExpectation: true,
+          }),
+        ),
+        expected: "A submitted MBOM is immutable and cannot be overwritten.",
+      },
+    ];
+    for (const item of cases) {
+      const { unmount } = renderWithLocale(
+        <EngineeringBomPublishRequestWorkspace
+          dataSource={dataSource()}
+          ebom={engineeringBomDetailFixture().ebom}
+          mbomPublishDataSource={mbomDataSource(detail, {
+            loadRequests: () => Promise.resolve(item.list),
+          })}
+          projectId={ebomProjectId}
+          revision={releasedEngineeringBomRevisionFixture()}
+        />,
+        "en",
+      );
+      expect((await screen.findAllByText(item.expected))[0]).toBeVisible();
+      expect(
+        screen.getByRole("button", { name: "Review MBOM request" }),
+      ).toBeDisabled();
+      unmount();
+    }
+  });
+
+  it("fails closed for absent or failed MBOM data without retry/reconcile/submit controls", async () => {
+    const { unmount } = renderWithLocale(
+      <EngineeringBomPublishRequestWorkspace
+        dataSource={dataSource()}
+        ebom={engineeringBomDetailFixture().ebom}
+        projectId={ebomProjectId}
+        revision={releasedEngineeringBomRevisionFixture()}
+      />,
+      "en",
+    );
+    expect(
+      await screen.findByText(
+        "The MBOM execution data source is not configured. No target system was contacted.",
+      ),
+    ).toBeVisible();
+    unmount();
+    const failure = new NpiApiError({
+      type: "https://example.invalid/problems/unavailable",
+      title: "Unavailable",
+      status: 503,
+      code: "MBOM_PUBLISH_UNAVAILABLE",
+      traceId: "trace-mbom-ui-unavailable",
+      retryable: true,
+    });
+    renderWorkspace(
+      dataSource(),
+      undefined,
+      undefined,
+      undefined,
+      mbomDataSource(undefined, {
+        loadRequests: () => Promise.reject(failure),
+      }),
+    );
+    expect(await screen.findByText("trace-mbom-ui-unavailable")).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: /retry|reconcile|submit/iu }),
+    ).not.toBeInTheDocument();
   });
 });

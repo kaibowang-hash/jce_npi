@@ -259,6 +259,18 @@ class Phase8MbomPublishApiTest(unittest.TestCase):
         self.assertNotIn(private_message, repr(self.diagnostics))
 
     def test_queries_authorize_project_before_secondary_request(self) -> None:
+        self.api.get_mbom_publish_requests(
+            phase5PublishRequestGlobalId=PHASE5,
+        )
+        self.assertEqual(self.repository.calls[-1][0], "list")
+        self.assertEqual(
+            str(
+                self.repository.calls[-1][2][
+                    "phase5_publish_request_id"
+                ]
+            ),
+            PHASE5,
+        )
         self.api.get_mbom_publish_request()
         self.assertEqual(self.repository.calls[-1][0], "detail")
         self.assertEqual(str(self.repository.calls[-1][1][1]), REQUEST)

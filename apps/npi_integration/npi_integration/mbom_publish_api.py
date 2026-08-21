@@ -42,7 +42,12 @@ _CREATE_FIELDS = frozenset(
 class _Repository(Protocol):
     def authorize_scope(self, project_id: UUID, **values: Any) -> bool: ...
 
-    def list_mbom_publish_requests(self, project_id: UUID) -> dict[str, Any] | None: ...
+    def list_mbom_publish_requests(
+        self,
+        project_id: UUID,
+        *,
+        phase5_publish_request_id: UUID | None = None,
+    ) -> dict[str, Any] | None: ...
 
     def mbom_publish_request_detail(
         self,
@@ -73,12 +78,25 @@ def _repository_factory(
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
-def get_mbom_publish_requests(**request_fields: Any) -> dict[str, Any] | None:
+def get_mbom_publish_requests(
+    phase5PublishRequestGlobalId: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
     headers = {"X-Request-ID": response_request_id()}
 
     def handle() -> dict[str, Any]:
         request_id, repository, project_id = _query_context(request_fields)
-        response = repository.list_mbom_publish_requests(project_id)
+        response = repository.list_mbom_publish_requests(
+            project_id,
+            phase5_publish_request_id=(
+                _uuid(
+                    phase5PublishRequestGlobalId,
+                    "phase5PublishRequestGlobalId",
+                )
+                if phase5PublishRequestGlobalId is not None
+                else None
+            ),
+        )
         if response is None:
             raise MbomPublishUnavailable()
         headers["X-Request-ID"] = request_id

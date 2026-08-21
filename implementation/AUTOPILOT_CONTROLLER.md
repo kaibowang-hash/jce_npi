@@ -4393,3 +4393,28 @@ repeat or rewrite it merely to restore context. See
   transaction, threshold or Gate truth.
 - Checkpoint 4 remains inactive until the remediated exact checkpoint 3 SHA
   passes a new ordinary CI. The controller marker remains: `P8-04 checkpoint 2 PASS; checkpoint 3 awaits exact-SHA ordinary CI`.
+
+## 2026-08-22 P8-04 checkpoint 3 PASS; checkpoint 4 active
+
+- Response-neutral remediation exact SHA
+  `93823e35b2dbec2aa48e364e46c9abad350443c5` passes ordinary CI
+  `32506591419`: repository `96848025053` passes `2,259/2,259` tracked Python
+  tests and reconciliation; frontend `96848024686` passes `1,018/1,018` unit,
+  `444/444` E2E and `8,108` direct trilingual sources; secret `96848024933`
+  finds no leak; unchanged fixed-Linux visual `96848024903` passes `123/123`.
+  Controlled lanes correctly skip.
+- Checkpoint 3 is sealed in
+  `implementation/evidence/phase-8/p8-04-worker-adapter-result-checkpoint.md`.
+  Bounded leases, immutable attempts, default-disabled closed adapters,
+  network-free synthetic proof, per-node aggregate truth, uncertainty/no blind
+  redispatch and authenticated exact mapping compare-and-set are proven.
+- Standing continuous-delivery authority activates only checkpoint 4: the
+  dense direct-trilingual EBOM MBOM execution inspector, strict exact-request
+  read projection, truthful Mock/queued/processing/partial/failed/uncertain/
+  submitted/synthetic/authoritative per-node states, one guarded primary
+  request action and exactly three affected fixed-Linux visual cases.
+- The controller marker is: `P8-04 checkpoint 3 PASS; checkpoint 4 active`.
+  Final Level 3 waits for checkpoint 4 exact-SHA ordinary CI. Retry, reconcile,
+  submit, browser target access, default/networked/production profiles, actual
+  ERPNext BOM projection facts, P8-07 generic operations and P8-05 through
+  P8-09 remain inactive. No Hard Blocker or user action is required.
