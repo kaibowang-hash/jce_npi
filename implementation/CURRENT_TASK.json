@@ -95,6 +95,7 @@
     "implementation/evidence/phase-8/p8-02-validation.md",
     "implementation/evidence/phase-8/p8-03-*.md",
     "scripts/reconcile_v1_2_traceability.py",
+    "scripts/verify.sh",
     "scripts/verify-frappe-runtime.sh",
     "scripts/verify_current_task.py",
     "scripts/verify_devcontainer.py",

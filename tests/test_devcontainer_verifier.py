@@ -451,11 +451,28 @@ fi
                 'node_actual="${NODE_EXPECTED_VERSION}"',
             ),
             repository_verify.replace("if ! command -v rg >/dev/null 2>&1; then", "if false; then"),
-            repository_verify.replace("|| scan_status=$?", ""),
-            repository_verify.replace('exit "${scan_status}"', "true"),
             repository_verify.replace(
-                "scan_status=0\n  rg -n",
-                "scan_status=0\n  if rg -n",
+                "python -m unittest tests.test_phase8_item_publish_security -v\n",
+                "",
+            ),
+            repository_verify.replace(
+                "rg -n --glob '!**/*.py' 'ignore_permissions' apps frontend/src",
+                "rg -n 'ignore_permissions' apps frontend/src",
+            ),
+            repository_verify.replace(
+                "rg -n 'frappe[.]db[.]sql' apps tests frontend/src frontend/tests",
+                "rg -n 'frappe[.]db[.]sql' apps",
+            ),
+            repository_verify.replace(
+                "rg -n '[T]ODO|[F]IXME' apps tests frontend/src frontend/tests scripts",
+                "rg -n '[T]ODO|[F]IXME' apps tests frontend/src frontend/tests",
+            ),
+            repository_verify.replace('if "$@"; then', "if true; then"),
+            repository_verify.replace('return "${scan_status}"', "return 0"),
+            repository_verify.replace("rg -n --glob", "rg -v --glob"),
+            repository_verify.replace(
+                'case "${scan_status}" in',
+                'if "${scan_status}"; then',
             ),
         )
         for unsafe in unsafe_variants:

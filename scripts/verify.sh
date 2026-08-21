@@ -39,6 +39,7 @@ if [[ "${verify_repository}" == true ]]; then
   python -m json.tool design/design-tokens.json >/dev/null
   find apps -name '*.json' -print0 | xargs -0 -r -n1 python -m json.tool >/dev/null
   python -m compileall -q apps/npi_core apps/npi_integration scripts tests
+  python -m unittest tests.test_phase8_item_publish_security -v
   python -m unittest discover -s tests -v
   python scripts/verify_prototype_approvals.py
   python scripts/verify_p0_visual_governance.py
@@ -47,19 +48,35 @@ if [[ "${verify_repository}" == true ]]; then
     echo "required verification command missing: rg" >&2
     exit 1
   fi
-  scan_status=0
-  rg -n 'ignore_permissions|frappe\.db\.sql|TODO|FIXME' apps tests frontend/src frontend/tests || scan_status=$?
-  case "${scan_status}" in
-    0)
-      echo "prohibited backend pattern found" >&2
-      exit 1
-      ;;
-    1) ;;
-    *)
-      echo "prohibited backend pattern scan failed with status ${scan_status}" >&2
-      exit "${scan_status}"
-      ;;
-  esac
+  run_zero_match_scan() {
+    local scan_name="$1"
+    shift
+    local scan_status
+    if "$@"; then
+      scan_status=0
+    else
+      scan_status=$?
+    fi
+    case "${scan_status}" in
+      0)
+        echo "${scan_name} found a prohibited pattern" >&2
+        return 1
+        ;;
+      1)
+        return 0
+        ;;
+      *)
+        echo "${scan_name} scan failed with status ${scan_status}" >&2
+        return "${scan_status}"
+        ;;
+    esac
+  }
+  run_zero_match_scan "non-Python permission bypass" \
+    rg -n --glob '!**/*.py' 'ignore_permissions' apps frontend/src
+  run_zero_match_scan "direct Frappe SQL" \
+    rg -n 'frappe[.]db[.]sql' apps tests frontend/src frontend/tests
+  run_zero_match_scan "marker scan" \
+    rg -n '[T]ODO|[F]IXME' apps tests frontend/src frontend/tests scripts
 fi
 
 if [[ "${verify_frontend}" == true ]]; then

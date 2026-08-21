@@ -266,30 +266,53 @@ def validate_repository_verifier(repository_verify: str) -> None:
     )
     require(
         "bash scripts/verify-dev-config.sh" in repository_verify
+        and "python -m unittest tests.test_phase8_item_publish_security -v"
+        in repository_verify
         and "python -m unittest discover -s tests -v" in repository_verify
         and "python scripts/verify_v1_2_reconciliation.py" in repository_verify,
         "Repository mode lost a complete governance boundary",
     )
-    dependency_check = repository_verify.find("command -v rg")
-    scan = repository_verify.find("rg -n 'ignore_permissions")
-    require(dependency_check >= 0, "Repository verifier must require ripgrep")
-    require(scan >= 0, "Repository verifier must run the prohibited-pattern scan")
+    security_test = repository_verify.find(
+        "python -m unittest tests.test_phase8_item_publish_security -v"
+    )
+    full_unit = repository_verify.find("python -m unittest discover -s tests -v")
     require(
-        dependency_check < scan,
+        repository_guard <= security_test < full_unit,
+        "Repository mode must run the Item permission-bypass test before the full suite",
+    )
+    dependency_check = repository_verify.find("command -v rg")
+    scan_function = repository_verify.find("  run_zero_match_scan() {")
+    require(dependency_check >= 0, "Repository verifier must require ripgrep")
+    require(
+        scan_function >= 0,
+        "Repository verifier must define the fail-closed scan helper",
+    )
+    require(
+        dependency_check < scan_function,
         "Repository verifier must require ripgrep before the prohibited-pattern scan",
     )
     require(
-        "|| scan_status=$?" in repository_verify,
-        "Repository verifier must capture prohibited-pattern scan failures",
+        "if \"$@\"; then" in repository_verify
+        and 'scan_status=$?' in repository_verify
+        and 'case "${scan_status}" in' in repository_verify
+        and "0)" in repository_verify
+        and "1)" in repository_verify
+        and "*)" in repository_verify
+        and "return 1" in repository_verify
+        and 'return "${scan_status}"' in repository_verify,
+        "Repository scans must preserve all three ripgrep exit branches",
     )
+    for required_scan in (
+        "run_zero_match_scan \"non-Python permission bypass\" \\\n    rg -n --glob '!**/*.py' 'ignore_permissions' apps frontend/src",
+        "run_zero_match_scan \"direct Frappe SQL\" \\\n    rg -n 'frappe[.]db[.]sql' apps tests frontend/src frontend/tests",
+        "run_zero_match_scan \"marker scan\" \\\n    rg -n '[T]ODO|[F]IXME' apps tests frontend/src frontend/tests scripts",
+    ):
+        require(required_scan in repository_verify, "Repository scan contract drifted")
     require(
-        'case "${scan_status}" in' in repository_verify
-        and 'exit "${scan_status}"' in repository_verify,
-        "Repository verifier must fail when the prohibited-pattern scan cannot run",
-    )
-    require(
-        "if rg -n 'ignore_permissions" not in repository_verify,
-        "Repository verifier must not treat every non-match status as success",
+        "rg -v" not in repository_verify
+        and "ignore_permissions|frappe" not in repository_verify
+        and "|| true" not in repository_verify[scan_function:],
+        "Repository scans must not invert, combine or swallow pattern checks",
     )
 
 
