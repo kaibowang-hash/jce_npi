@@ -50,7 +50,11 @@ unset \
   NPI_P8_03_RUNTIME_MARKER \
   NPI_P8_03_RUNTIME_PROJECT_ID \
   NPI_P8_03_RUNTIME_REQUESTER \
-  NPI_P8_03_RUNTIME_WORKER
+  NPI_P8_03_RUNTIME_WORKER \
+  NPI_P8_03_RUNTIME_LEGACY_REQUEST_ID \
+  NPI_P8_03_RUNTIME_LEGACY_NODE_ID \
+  NPI_P8_03_RUNTIME_LEGACY_STREAM_HASH \
+  NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID
 
 # shellcheck disable=SC1090
 source "${toolchain_file}"
@@ -1788,6 +1792,10 @@ inbound_project_runtime_actor="npi-inbound-${document_runtime_run_id:0:12}@examp
 inbound_project_runtime_owner="npi-owner-${document_runtime_run_id:0:12}@example.invalid"
 item_publish_runtime_actor="npi-document-${document_runtime_run_id:0:20}-baseline@example.invalid"
 item_publish_runtime_project_id=""
+item_publish_runtime_legacy_request_id=""
+item_publish_runtime_legacy_node_id=""
+item_publish_runtime_legacy_stream_hash=""
+item_publish_runtime_legacy_outbox_id=""
 inbound_project_runtime_template_id="$(
   "${bench_path}/env/bin/python" -c \
     'import sys; from uuid import UUID, uuid5; print(uuid5(UUID("be05ea93-4d1a-4ac0-a148-c3e7a8a80202"), sys.argv[1]))' \
@@ -2903,12 +2911,54 @@ if not isinstance(project_id, str):
 print(project_id)' <<<"${captured}"
 }
 
+seed_item_publish_runtime_legacy() {
+  local captured
+  captured="$({
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    export NPI_P8_03_RUNTIME_ENABLED=1
+    export NPI_P8_03_RUNTIME_MARKER=npi-one-item-publish-disposable-v1
+    export NPI_P8_03_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
+    export NPI_P8_03_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
+    export NPI_P8_03_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+    cd "${bench_path}/sites"
+    exec "${bench_path}/env/bin/python" \
+      "${repo_root}/scripts/verify_item_publish_runtime.py" \
+      --bench-fixture seed_legacy \
+      --fixture-kwargs "{\"fixture_run_id\":\"${document_runtime_run_id}\",\"project_id\":\"${item_publish_runtime_project_id}\"}"
+  })"
+  "${bench_path}/env/bin/python" -c \
+    'import json, sys
+lines = [line for line in sys.stdin.read().splitlines() if line.strip()]
+value = json.loads(lines[-1]) if lines else {}
+for key in ("legacyOutboxId", "legacyRequestId", "selectedPublishNodeGlobalId", "sourceStreamKeyHash", "preMigrationDuplicateAttemptCount"):
+    if not isinstance(value.get(key), str):
+        if key == "preMigrationDuplicateAttemptCount" and value.get(key) == 0:
+            continue
+        raise SystemExit(1)
+print(json.dumps({key: value[key] for key in ("legacyOutboxId", "legacyRequestId", "selectedPublishNodeGlobalId", "sourceStreamKeyHash", "preMigrationDuplicateAttemptCount")}, separators=(",", ":"), sort_keys=True))' <<<"${captured}"
+}
+
 export_item_publish_runtime_environment() {
   export NPI_P8_03_RUNTIME_ENABLED=1
   export NPI_P8_03_RUNTIME_MARKER=npi-one-item-publish-disposable-v1
   export NPI_P8_03_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
   export NPI_P8_03_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
   export NPI_P8_03_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+  if [[ -n "${item_publish_runtime_legacy_request_id:-}" ]]; then
+    export NPI_P8_03_RUNTIME_LEGACY_REQUEST_ID="${item_publish_runtime_legacy_request_id}"
+    export NPI_P8_03_RUNTIME_LEGACY_NODE_ID="${item_publish_runtime_legacy_node_id}"
+    export NPI_P8_03_RUNTIME_LEGACY_STREAM_HASH="${item_publish_runtime_legacy_stream_hash}"
+    export NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID="${item_publish_runtime_legacy_outbox_id}"
+  fi
 }
 
 clear_item_publish_runtime_environment() {
@@ -2917,7 +2967,11 @@ clear_item_publish_runtime_environment() {
     NPI_P8_03_RUNTIME_MARKER \
     NPI_P8_03_RUNTIME_PROJECT_ID \
     NPI_P8_03_RUNTIME_REQUESTER \
-    NPI_P8_03_RUNTIME_WORKER
+    NPI_P8_03_RUNTIME_WORKER \
+    NPI_P8_03_RUNTIME_LEGACY_REQUEST_ID \
+    NPI_P8_03_RUNTIME_LEGACY_NODE_ID \
+    NPI_P8_03_RUNTIME_LEGACY_STREAM_HASH \
+    NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID
 }
 
 run_item_publish_runtime_verifier() {
@@ -2948,6 +3002,13 @@ run_item_publish_runtime_verifier() {
       exec python "${repo_root}/scripts/verify_item_publish_runtime.py" \
         --base-url "${base_url}" \
         --replay-only
+    fi
+    if [[ "${mode}" == "legacy-only" ]]; then
+      exec python "${repo_root}/scripts/verify_item_publish_runtime.py" \
+        --base-url "${base_url}" \
+        --legacy-only \
+        --legacy-request-id "${NPI_P8_03_RUNTIME_LEGACY_REQUEST_ID}" \
+        --legacy-node-id "${NPI_P8_03_RUNTIME_LEGACY_NODE_ID}"
     fi
     echo "Unknown Item publish runtime verification mode." >&2
     exit 2
@@ -3966,6 +4027,44 @@ if [[ "${verification_mode}" == "all" ||
   fi
   if ! run_item_publish_runtime_verifier replay-only; then
     echo "Local Frappe Item publish cross-process replay verification failed." >&2
+    report_item_publish_runtime_failure
+    exit 1
+  fi
+  # Insert one marker-gated 8dd-shaped row after the executable proof, run the
+  # pinned migration twice, and prove the old row is readable but cannot be
+  # promoted or claimed.  The fixture removes its exact rows after inspection.
+  stop_runtime_server
+  legacy_seed="$(seed_item_publish_runtime_legacy)"
+  item_publish_runtime_legacy_request_id="$(${bench_path}/env/bin/python -c 'import json,sys; print(json.loads(sys.stdin.read())['"'"'legacyRequestId'"'"'])' <<<"${legacy_seed}")"
+  item_publish_runtime_legacy_outbox_id="$(${bench_path}/env/bin/python -c 'import json,sys; print(json.loads(sys.stdin.read())['"'"'legacyOutboxId'"'"'])' <<<"${legacy_seed}")"
+  item_publish_runtime_legacy_node_id="$(${bench_path}/env/bin/python -c 'import json,sys; print(json.loads(sys.stdin.read())['"'"'selectedPublishNodeGlobalId'"'"'])' <<<"${legacy_seed}")"
+  item_publish_runtime_legacy_stream_hash="$(${bench_path}/env/bin/python -c 'import json,sys; print(json.loads(sys.stdin.read())['"'"'sourceStreamKeyHash'"'"'])' <<<"${legacy_seed}")"
+  legacy_duplicate_attempt_count="$(${bench_path}/env/bin/python -c 'import json,sys; print(json.loads(sys.stdin.read())['"'"'preMigrationDuplicateAttemptCount'"'"'])' <<<"${legacy_seed}")"
+  if [[ ! "${item_publish_runtime_legacy_request_id}" =~ ^[a-f0-9-]{36}$ ||
+        ! "${item_publish_runtime_legacy_outbox_id}" =~ ^[a-f0-9-]{36}$ ||
+        ! "${item_publish_runtime_legacy_node_id}" =~ ^[a-f0-9-]{36}$ ||
+        ! "${item_publish_runtime_legacy_stream_hash}" =~ ^[a-f0-9]{64}$ ||
+        "${legacy_duplicate_attempt_count}" != 0 ]]; then
+    echo "P8-03 legacy fixture identity capture failed." >&2
+    exit 1
+  fi
+  for _migration_attempt in 1 2; do
+    (
+      cd "${bench_path}"
+      bench --site "${site_name}" migrate
+    )
+  done
+  export NPI_P8_03_RUNTIME_LEGACY_REQUEST_ID="${item_publish_runtime_legacy_request_id}"
+  export NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID="${item_publish_runtime_legacy_outbox_id}"
+  export NPI_P8_03_RUNTIME_LEGACY_NODE_ID="${item_publish_runtime_legacy_node_id}"
+  export NPI_P8_03_RUNTIME_LEGACY_STREAM_HASH="${item_publish_runtime_legacy_stream_hash}"
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_item_publish_runtime_failure
+    exit 1
+  fi
+  if ! run_item_publish_runtime_verifier legacy-only; then
+    echo "Local Frappe Item publish migrated-legacy runtime verification failed." >&2
     report_item_publish_runtime_failure
     exit 1
   fi

@@ -16,6 +16,7 @@ from .domain import ITEM_PUBLISH_OPERATION, ItemTargetMode, canonical_hash
 _RUNTIME_MARKER = "npi-one-item-publish-disposable-v1"
 _ADAPTER_PATH = "npi_integration.item_publish.runtime_fixture.synthetic_adapter"
 _synthetic_adapter_calls = 0
+_synthetic_adapter_session_users: list[str] = []
 
 
 def resolve_profile(
@@ -71,6 +72,17 @@ def synthetic_adapter(command: ItemAdapterCommand) -> ItemAdapterResponse:
     global _synthetic_adapter_calls
     if not _enabled() or not isinstance(command, ItemAdapterCommand):
         raise RuntimeError("Disposable Item adapter is unavailable.")
+    # The disposable adapter is the only permitted execution boundary in this
+    # fixture.  Recording the ambient session here proves that the worker
+    # switched to, and stayed in, the frozen service actor scope without
+    # contacting a target endpoint.
+    import frappe
+
+    worker = os.environ.get("NPI_P8_03_RUNTIME_WORKER", "")
+    session_user = getattr(getattr(frappe, "session", None), "user", None)
+    if session_user != worker:
+        raise RuntimeError("Disposable Item adapter session actor drifted.")
+    _synthetic_adapter_session_users.append(str(session_user))
     _synthetic_adapter_calls += 1
     response_hash = canonical_hash(
         {
@@ -96,6 +108,14 @@ def synthetic_adapter_call_count() -> int:
     if not _enabled():
         raise RuntimeError("Disposable Item adapter is unavailable.")
     return _synthetic_adapter_calls
+
+
+def synthetic_adapter_session_users() -> tuple[str, ...]:
+    """Return the exact actors observed at the synthetic adapter boundary."""
+
+    if not _enabled():
+        raise RuntimeError("Disposable Item adapter is unavailable.")
+    return tuple(_synthetic_adapter_session_users)
 
 
 def _enabled() -> bool:

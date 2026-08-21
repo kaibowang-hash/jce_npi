@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import unittest
 from pathlib import Path
 
@@ -59,6 +60,66 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, source)
 
+    def test_runtime_trace_is_structured_and_backed_by_persisted_queries(self) -> None:
+        tree = ast.parse(SCRIPT.read_text(encoding="utf-8"))
+        functions = {
+            node.name: node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+        }
+        structural = functions["_structural_context"]
+        structural_text = ast.unparse(structural)
+        for persisted_field in (
+            "'owner'",
+            "'modified_by'",
+            "'service_actor_user_id'",
+            "'semantic_effect_hash'",
+            "'guards'",
+            "'auditEvents'",
+        ):
+            self.assertIn(persisted_field, structural_text)
+        exercise = functions["exercise_worker"]
+        exercise_text = ast.unparse(exercise)
+        for trace_key in (
+            "'callerRestoredAfterSynthetic'",
+            "'callerRestoredAfterUncertain'",
+            "'adapterSessionWorkerOnly'",
+        ):
+            self.assertIn(trace_key, exercise_text)
+        runtime_text = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('"ITEM_PUBLISH_STREAM_ACTIVE"', runtime_text)
+        self.assertIn('"ITEM_PUBLISH_EFFECT_RETAINED"', runtime_text)
+        trace = {
+            "adapterSessionWorkerOnly": True,
+            "callerRestoredAfterSynthetic": True,
+            "callerRestoredAfterUncertain": True,
+            "ownerAndAuditBindingsVerified": True,
+        }
+        decoded = json.loads(json.dumps(trace, sort_keys=True))
+        self.assertEqual(decoded, trace)
+
+    def test_worker_actor_is_bound_before_use_and_process_runs_from_requester(self) -> None:
+        tree = ast.parse(SCRIPT.read_text(encoding="utf-8"))
+        exercise = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "exercise_worker"
+        )
+        assigned = {
+            node.id
+            for node in ast.walk(exercise)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)
+        }
+        loaded = {
+            node.id
+            for node in ast.walk(exercise)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
+        }
+        self.assertIn("worker_user", assigned)
+        self.assertIn("worker_user", loaded)
+        self.assertNotIn("frappe.set_user(worker_user)", ast.unparse(exercise))
+        self.assertIn("process_outbox_message", ast.unparse(exercise))
+
     def test_disposable_adapter_registry_is_exactly_marker_gated(self) -> None:
         source = FIXTURE.read_text(encoding="utf-8")
         ast.parse(source)
@@ -69,6 +130,8 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             "ItemTargetMode.SYNTHETIC",
             "synthetic_adapter_call_count",
             "network-free-synthetic-v1",
+            "synthetic_adapter_session_users",
+            "Disposable Item adapter session actor drifted",
         ):
             self.assertIn(marker, source)
         for forbidden in (
@@ -100,6 +163,34 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertLess(disabled, enabled)
         self.assertLess(enabled, fresh)
         self.assertLess(fresh, replay)
+
+    def test_migration_fixture_is_marker_gated_and_runs_after_replay(self) -> None:
+        verifier = SCRIPT.read_text(encoding="utf-8")
+        shell = SHELL.read_text(encoding="utf-8")
+        for marker in (
+            "def seed_legacy(",
+            "def inspect_legacy(",
+            "def cleanup_legacy(",
+            '"preMigrationShape": "8dd"',
+            '"newBindingsNull": True',
+            '"preMigrationDuplicateAttemptCount": duplicate_attempt_count',
+            'resultAttemptIndexUnique',
+            '"ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED"',
+            "--legacy-only",
+            "tabNPI Item Publish Stream Guard",
+        ):
+            self.assertIn(marker, verifier)
+        self.assertIn("seed_item_publish_runtime_legacy", shell)
+        self.assertIn("bench --site \"${site_name}\" migrate", shell)
+        self.assertIn("run_item_publish_runtime_verifier legacy-only", shell)
+        self.assertLess(
+            shell.rindex("run_item_publish_runtime_verifier replay-only"),
+            shell.rindex("seed_item_publish_runtime_legacy"),
+        )
+        self.assertLess(
+            shell.rindex("seed_item_publish_runtime_legacy"),
+            shell.rindex("run_item_publish_runtime_verifier legacy-only"),
+        )
 
     def test_controlled_workflow_records_cumulative_p8_03_scope(self) -> None:
         source = (ROOT / ".github" / "workflows" / "ci.yml").read_text(

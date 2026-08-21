@@ -8,7 +8,7 @@ import urllib.request
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Mapping
-from uuid import UUID
+from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
 import verify_ebom_runtime as ebom_runtime
@@ -165,6 +165,26 @@ def _assert_no_formal_target(value: object) -> None:
             _assert_no_formal_target(nested)
 
 
+def _assert_no_private_execution_metadata(value: object) -> None:
+    """Keep frozen worker/effect routing out of the public HTTP projection."""
+
+    forbidden = {
+        "serviceActorUserId",
+        "semanticSourceEffectHash",
+        "semanticEffectHash",
+    }
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            require(
+                key not in forbidden,
+                "P8-03 public Item projection leaked private execution metadata",
+            )
+            _assert_no_private_execution_metadata(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            _assert_no_private_execution_metadata(nested)
+
+
 def run_disabled_probe(base_url: str, fixture_password: str) -> dict[str, object]:
     administrator = login(
         base_url,
@@ -230,6 +250,7 @@ def _assert_created(value: object, *, project_id: str) -> tuple[str, str]:
         "P8-03 queued Item identities drifted",
     )
     _assert_no_formal_target(value)
+    _assert_no_private_execution_metadata(value)
     return request_id, outbox_id
 
 
@@ -277,6 +298,26 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
         )
         identities.append(_assert_created(created.body, project_id=project_id))
 
+        if label == "synthetic":
+            # A second semantic request on the same source stream is rejected
+            # while the first request is queued.  This is the runtime proof
+            # that the guard serializes the effect rather than the caller's
+            # selected occurrence or HTTP idempotency key.
+            active_conflict = item_publish_request(
+                actor,
+                base_url,
+                path,
+                method="POST",
+                payload=create_payload(context, str(node_id)),
+                csrf_token=actor_csrf,
+                idempotency_key=f"p8-03-same-stream-active-{FIXTURE_RUN_ID}",
+            )
+            validate_problem(
+                active_conflict,
+                409,
+                "ITEM_PUBLISH_STREAM_ACTIVE",
+            )
+
     exercised = run_bench_fixture(
         "exercise_worker",
         {
@@ -294,10 +335,27 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
         and exercised.get("liveClaimRejected") is True
         and exercised.get("expiredPreBoundaryRecovered") is True
         and exercised.get("adapterCalls") == 1
+        and exercised.get("adapterSessionWorkerOnly") is True
+        and exercised.get("callerRestoredAfterSynthetic") is True
+        and exercised.get("callerRestoredAfterUncertain") is True
         and exercised.get("attemptCount") == 4
         and exercised.get("resultCount") == 2
         and exercised.get("mappingCount") == 0,
         "P8-03 worker durability proof drifted",
+    )
+    retained_conflict = item_publish_request(
+        actor,
+        base_url,
+        path,
+        method="POST",
+        payload=create_payload(context, str(nodes[0])),
+        csrf_token=actor_csrf,
+        idempotency_key=f"p8-03-same-stream-retained-{FIXTURE_RUN_ID}",
+    )
+    validate_problem(
+        retained_conflict,
+        409,
+        "ITEM_PUBLISH_EFFECT_RETAINED",
     )
     listed = item_publish_request(actor, base_url, path, query_key="terminal-list")
     require(listed.status == 200, "P8-03 terminal Item collection is unavailable")
@@ -311,12 +369,25 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
         "P8-03 terminal Item states drifted",
     )
     _assert_no_formal_target(listed.body)
+    _assert_no_private_execution_metadata(listed.body)
     return {
         "crossProcessReplayReady": True,
+        "actorScopeTrace": {
+            "adapterSessionWorkerOnly": exercised["adapterSessionWorkerOnly"],
+            "callerRestoredAfterSynthetic": exercised[
+                "callerRestoredAfterSynthetic"
+            ],
+            "callerRestoredAfterUncertain": exercised[
+                "callerRestoredAfterUncertain"
+            ],
+            "ownerAndAuditBindingsVerified": True,
+        },
         "digest": exercised["digest"],
         "mappingCount": 0,
         "projectGlobalId": project_id,
         "resultCount": 2,
+        "sameStreamActiveConflict": True,
+        "sameStreamRetainedEffectConflict": True,
     }
 
 
@@ -368,6 +439,133 @@ def run_replay(base_url: str, fixture_password: str) -> dict[str, object]:
     return replayed
 
 
+def run_legacy(
+    base_url: str,
+    fixture_password: str,
+    legacy_request_id: str,
+    legacy_node_id: str,
+) -> dict[str, object]:
+    """Exercise the post-migration read-only legacy boundary over HTTP."""
+
+    administrator = login(
+        base_url,
+        "Administrator",
+        secret_from_environment("NPI_RUNTIME_ADMINISTRATOR_PASSWORD"),
+    )
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    actor_csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
+    context = released_item_context(administrator, actor, base_url)
+    project_id = str(context["projectGlobalId"])
+    _require_enabled_runtime_marker(project_id)
+    path = item_publish_path(project_id)
+    listed = item_publish_request(actor, base_url, path, query_key="legacy-list")
+    items = listed.body.get("items")
+    require(
+        listed.status == 200
+        and isinstance(items, list)
+        and len(items) == 3,
+        "P8-03 migrated legacy Item was not readable in the collection",
+    )
+    legacy_items = [
+        item
+        for item in items
+        if isinstance(item, dict) and item.get("globalId") == legacy_request_id
+    ]
+    require(
+        len(legacy_items) == 1,
+        "P8-03 migrated legacy Item was not projected",
+    )
+    legacy_public = legacy_items[0]
+    require(
+        legacy_public.get("dispatchAllowed") is False
+        and legacy_public.get("outboxEventId") is None
+        and legacy_public.get("resultGlobalId") is None,
+        "P8-03 legacy Item was exposed as executable work",
+    )
+    detail = item_publish_request(
+        actor,
+        base_url,
+        item_publish_path(project_id, legacy_request_id),
+        query_key="legacy-detail",
+    )
+    require(detail.status == 200, "P8-03 migrated legacy Item detail is unavailable")
+    require(
+        detail.body.get("requestGlobalId") == legacy_request_id
+        and detail.body.get("currentMapping") is None
+        and detail.body.get("attempts") == []
+        and detail.body.get("result") is None
+        and detail.body.get("permissions") == {"canView": True, "canExecute": False},
+        "P8-03 legacy Item detail was not read-only",
+    )
+    _assert_no_formal_target(legacy_public)
+    _assert_no_formal_target(detail.body)
+    _assert_no_private_execution_metadata(legacy_public)
+    _assert_no_private_execution_metadata(detail.body)
+    expected_request_ids = [
+        str(item.get("globalId")) for item in items if isinstance(item, dict)
+    ]
+    legacy_outbox_id = os.environ.get("NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID", "")
+    legacy_stream_hash = os.environ.get("NPI_P8_03_RUNTIME_LEGACY_STREAM_HASH", "")
+    require(
+        str(UUID(legacy_outbox_id)) == legacy_outbox_id
+        and len(legacy_stream_hash) == 64
+        and all(character in "0123456789abcdef" for character in legacy_stream_hash),
+        "P8-03 legacy runtime binding is incomplete",
+    )
+    rejected = item_publish_request(
+        actor,
+        base_url,
+        path,
+        method="POST",
+        payload=create_payload(context, legacy_node_id),
+        csrf_token=actor_csrf,
+        idempotency_key=f"p8-03-legacy-reconcile-{FIXTURE_RUN_ID}",
+    )
+    validate_problem(
+        rejected,
+        409,
+        "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+    )
+    inspected = run_bench_fixture(
+        "inspect_legacy",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "legacy_request_id": legacy_request_id,
+            "legacy_outbox_id": legacy_outbox_id,
+            "source_stream_key_hash": legacy_stream_hash,
+            "expected_request_ids": expected_request_ids,
+        },
+    )
+    cleaned = run_bench_fixture(
+        "cleanup_legacy",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "legacy_request_id": legacy_request_id,
+            "legacy_outbox_id": legacy_outbox_id,
+            "source_stream_key_hash": legacy_stream_hash,
+        },
+    )
+    require(
+        inspected.get("guardBlocked") is True
+        and inspected.get("legacyBindingsNull") is True
+        and inspected.get("workerRoute") is None
+        and inspected.get("adapterCalls") == 0
+        and cleaned.get("legacyRowsRemoved") is True,
+        "P8-03 legacy migration boundary proof drifted",
+    )
+    return {
+        "commandReconciliationRequired": True,
+        "detailReadOnly": True,
+        "guardBlocked": inspected["guardBlocked"],
+        "legacyBindingsNull": inspected["legacyBindingsNull"],
+        "legacyRowsRemoved": cleaned["legacyRowsRemoved"],
+        "listAndDetailReadable": True,
+        "workerZeroClaimAdapter": inspected["workerRoute"] is None,
+    }
+
+
 def capture_project(fixture_run_id: str) -> dict[str, object]:
     import frappe
 
@@ -405,7 +603,20 @@ def _structural_context(project_id: str) -> dict[str, object]:
     requests = _rows(
         "NPI Item Publish Request",
         {"project_global_id": project_id},
-        ["global_id", "state", "outbox_event_id", "result_global_id", "optimistic_version"],
+        [
+            "global_id",
+            "state",
+            "outbox_event_id",
+            "result_global_id",
+            "optimistic_version",
+            "actor_user_id",
+            "service_actor_user_id",
+            "target_idempotency_key_hash",
+            "semantic_source_effect_hash",
+            "semantic_effect_hash",
+            "owner",
+            "modified_by",
+        ],
     )
     request_ids = [str(row["global_id"]) for row in requests]
     scoped = [["request_global_id", "in", request_ids]]
@@ -424,6 +635,12 @@ def _structural_context(project_id: str) -> dict[str, object]:
             "last_attempt_global_id",
             "result_global_id",
             "disposition",
+            "owner",
+            "modified_by",
+            "service_actor_user_id",
+            "target_idempotency_key_hash",
+            "semantic_source_effect_hash",
+            "semantic_effect_hash",
         ],
     )
     attempts = (
@@ -442,6 +659,8 @@ def _structural_context(project_id: str) -> dict[str, object]:
                 "reconciliation_required",
                 "safe_error_code",
                 "attempt_hash",
+                "owner",
+                "modified_by",
             ],
         )
         if request_ids
@@ -463,6 +682,8 @@ def _structural_context(project_id: str) -> dict[str, object]:
                 "target_version",
                 "fault_kind",
                 "result_hash",
+                "owner",
+                "modified_by",
             ],
         )
         if request_ids
@@ -478,6 +699,33 @@ def _structural_context(project_id: str) -> dict[str, object]:
         {"project_global_id": project_id},
         ["global_id"],
     )
+    guards = _rows(
+        "NPI Item Publish Stream Guard",
+        {"project_global_id": project_id},
+        [
+            "name",
+            "source_stream_key_hash",
+            "active_request_global_id",
+            "active_target_idempotency_key_hash",
+            "active_state",
+            "last_request_global_id",
+            "last_target_idempotency_key_hash",
+            "last_state",
+            "blocked_reason_code",
+            "optimistic_version",
+            "owner",
+            "modified_by",
+        ],
+    )
+    audit_events = (
+        _rows(
+            "NPI Audit Event",
+            [["global_id", "in", request_ids]],
+            ["global_id", "actor", "operation", "result", "trace_id"],
+        )
+        if request_ids
+        else []
+    )
     value = {
         "requests": requests,
         "outboxes": outboxes,
@@ -485,6 +733,8 @@ def _structural_context(project_id: str) -> dict[str, object]:
         "results": results,
         "mappingHeadCount": len(mapping_heads),
         "mappingObservationCount": len(mapping_observations),
+        "guards": guards,
+        "auditEvents": audit_events,
     }
     return {**value, "digest": canonical_hash(value)}
 
@@ -541,6 +791,381 @@ def _validate_fixture(
         )
 
 
+def _require_enabled_runtime_marker(project_id: str) -> None:
+    require(
+        os.environ.get("NPI_P8_03_RUNTIME_ENABLED") == "1"
+        and os.environ.get("NPI_P8_03_RUNTIME_MARKER") == RUNTIME_MARKER
+        and os.environ.get("NPI_P8_03_RUNTIME_PROJECT_ID") == project_id,
+        "P8-03 legacy fixture is not bound to the disposable runtime marker",
+    )
+
+
+def seed_legacy(
+    fixture_run_id: str,
+    project_id: str,
+) -> dict[str, object]:
+    """Insert one exact 8dd-shaped row through a marker-gated test seam.
+
+    This intentionally uses the database only as a disposable migration
+    fixture: the row omits all post-8dd execution bindings and is never
+    promoted through a product controller.  The production repositories stay
+    responsible for the read-only legacy projection and reconciliation block.
+    """
+
+    import frappe
+
+    _require_enabled_runtime_marker(project_id)
+    require(fixture_run_id == FIXTURE_RUN_ID, "P8-03 legacy fixture namespace drifted")
+    rows = _rows(
+        "NPI Item Publish Request",
+        {"project_global_id": project_id},
+        ["global_id"],
+    )
+    require(rows, "P8-03 legacy fixture source request is unavailable")
+    source_request_id = str(rows[0]["global_id"])
+    source_request = frappe.get_doc("NPI Item Publish Request", source_request_id)
+    require(
+        source_request.outbox_event_id,
+        "P8-03 legacy fixture source Outbox is unavailable",
+    )
+    source_outbox = frappe.get_doc(
+        "NPI Outbox Message", str(source_request.outbox_event_id)
+    )
+    legacy_id = str(uuid5(UUID(source_request_id), "npi-one-p8-03-legacy-8dd"))
+    legacy_request_id = str(uuid5(UUID(source_request_id), "legacy-request"))
+    legacy_outbox_id = str(uuid5(UUID(source_request_id), "legacy-outbox"))
+    source_stream = str(source_request.source_stream_key_hash)
+    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
+    duplicate_attempt_count = int(
+        frappe.db.sql(
+            """
+            SELECT COUNT(*)
+            FROM (
+                SELECT attempt_global_id
+                FROM `tabNPI Item Publish Result`
+                WHERE attempt_global_id IS NOT NULL
+                GROUP BY attempt_global_id
+                HAVING COUNT(*) > 1
+            ) AS duplicate_attempts
+            """
+        )[0][0]
+        or 0
+    )
+    require(
+        duplicate_attempt_count == 0,
+        "P8-03 pre-migration Result attempt identity is duplicated",
+    )
+    # A rerun of the disposable fixture replaces only its exact legacy row and
+    # guard.  No production or unrelated project rows are addressable here.
+    frappe.db.sql(
+        "DELETE FROM `tabNPI Item Publish Request` WHERE name = %s",
+        (legacy_id,),
+    )
+    frappe.db.sql(
+        "DELETE FROM `tabNPI Outbox Message` WHERE name = %s",
+        (legacy_outbox_id,),
+    )
+    frappe.db.sql(
+        "DELETE FROM `tabNPI Item Publish Stream Guard` "
+        "WHERE source_stream_key_hash = %s AND project_global_id = %s",
+        (source_stream, project_id),
+    )
+    frappe.db.sql(
+        """
+        INSERT INTO `tabNPI Item Publish Request` (
+            name, creation, modified, modified_by, owner,
+            global_id, schema_version, api_version, operation,
+            tenant_id, project_global_id, source_stream_key_hash,
+            engineering_item_id, selected_publish_node_global_id,
+            source_snapshot, source_hash, released_evidence_snapshot,
+            released_evidence_hash, profile_id, profile_version,
+            profile_snapshot_hash, target_mode, environment_code, intent,
+            expected_mapping_version, expected_formal_item_code,
+            expected_target_version, expected_mapping_observation_hash,
+            state, dispatch_allowed, outbox_event_id, result_global_id,
+            actor_user_id, service_actor_user_id, request_id, trace_id,
+            idempotency_key_hash, target_idempotency_key_hash,
+            semantic_source_effect_hash, semantic_effect_hash, payload_hash,
+            optimistic_version, created_at, updated_at
+        ) VALUES (
+            %s, %s, %s, %s, %s,
+            %s, %s, %s, %s,
+            %s, %s, %s,
+            %s, %s,
+            %s, %s, %s,
+            %s, %s, %s,
+            %s, %s, %s, %s,
+            %s, %s,
+            %s, %s,
+            %s, %s,
+            %s, %s, %s, %s,
+            %s, %s, %s, %s,
+            %s, %s,
+            %s, %s, %s,
+            %s, %s, %s
+        )
+        """,
+        (
+            legacy_id,
+            now,
+            now,
+            ACTOR_USER,
+            ACTOR_USER,
+            legacy_id,
+            source_request.schema_version,
+            source_request.api_version,
+            source_request.operation,
+            source_request.tenant_id,
+            source_request.project_global_id,
+            source_request.source_stream_key_hash,
+            source_request.engineering_item_id,
+            source_request.selected_publish_node_global_id,
+            source_request.source_snapshot,
+            source_request.source_hash,
+            source_request.released_evidence_snapshot,
+            source_request.released_evidence_hash,
+            source_request.profile_id,
+            source_request.profile_version,
+            source_request.profile_snapshot_hash,
+            source_request.target_mode,
+            source_request.environment_code,
+            source_request.intent,
+            source_request.expected_mapping_version,
+            source_request.expected_formal_item_code,
+            source_request.expected_target_version,
+            source_request.expected_mapping_observation_hash,
+            "queued",
+            1,
+            legacy_outbox_id,
+            None,
+            source_request.actor_user_id,
+            None,
+            legacy_request_id,
+            f"trace-p8-03-legacy-{FIXTURE_RUN_ID[:12]}",
+            source_request.idempotency_key_hash,
+            None,
+            None,
+            None,
+            source_request.payload_hash,
+            1,
+            now,
+            now,
+        ),
+    )
+    # Copy the exact historical envelope shape, then clear only the fields
+    # introduced by the repair.  Keeping this fixture SQL local and marker
+    # gated avoids exercising a product controller as a migration backdoor.
+    frappe.db.sql(
+        "INSERT INTO `tabNPI Outbox Message` "
+        "SELECT * FROM `tabNPI Outbox Message` WHERE name = %s",
+        (str(source_outbox.name),),
+    )
+    frappe.db.sql(
+        """
+        UPDATE `tabNPI Outbox Message`
+        SET name = %s, creation = %s, modified = %s, modified_by = %s,
+            owner = %s, event_id = %s, global_id = %s,
+            trace_id = %s, request_global_id = %s, request_id = %s,
+            state = %s, attempt_count = 0, claim_token = NULL,
+            claimed_at = NULL, lease_expires_at = NULL,
+            adapter_boundary_crossed = 0, last_attempt_global_id = NULL,
+            result_global_id = NULL, disposition = %s,
+            last_error_code = NULL, last_error_at = NULL,
+            service_actor_user_id = NULL,
+            target_idempotency_key_hash = NULL,
+            semantic_source_effect_hash = NULL,
+            semantic_effect_hash = NULL
+        WHERE name = %s
+        """,
+        (
+            legacy_outbox_id,
+            now,
+            now,
+            ACTOR_USER,
+            ACTOR_USER,
+            legacy_outbox_id,
+            legacy_id,
+            f"trace-p8-03-legacy-outbox-{FIXTURE_RUN_ID[:12]}",
+            legacy_id,
+            legacy_request_id,
+            "pending",
+            "legacy_unexecutable",
+            str(source_outbox.name),
+        ),
+    )
+    return {
+        "legacyOutboxId": legacy_outbox_id,
+        "legacyRequestId": legacy_id,
+        "legacyRequestCorrelationId": legacy_request_id,
+        "projectGlobalId": project_id,
+        "selectedPublishNodeGlobalId": str(
+            source_request.selected_publish_node_global_id
+        ),
+        "sourceStreamKeyHash": source_stream,
+        "newBindingsNull": True,
+        "preMigrationDuplicateAttemptCount": duplicate_attempt_count,
+        "preMigrationShape": "8dd",
+    }
+
+
+def inspect_legacy(
+    fixture_run_id: str,
+    project_id: str,
+    legacy_request_id: str,
+    legacy_outbox_id: str,
+    source_stream_key_hash: str,
+    expected_request_ids: list[str],
+) -> dict[str, object]:
+    """Verify migration left legacy bindings null and command blocked the stream."""
+
+    import frappe
+
+    _require_enabled_runtime_marker(project_id)
+    require(fixture_run_id == FIXTURE_RUN_ID, "P8-03 legacy fixture namespace drifted")
+    legacy = frappe.get_doc("NPI Item Publish Request", legacy_request_id)
+    request_ids = [
+        str(row["global_id"])
+        for row in _rows(
+            "NPI Item Publish Request",
+            {"project_global_id": project_id},
+            ["global_id"],
+        )
+    ]
+    require(
+        set(request_ids) == set(expected_request_ids)
+        and not legacy.target_idempotency_key_hash
+        and not legacy.service_actor_user_id
+        and not legacy.semantic_source_effect_hash
+        and not legacy.semantic_effect_hash,
+        "P8-03 migration backfilled the legacy Item execution bindings",
+    )
+    guard = frappe.db.get_value(
+        "NPI Item Publish Stream Guard",
+        {
+            "source_stream_key_hash": source_stream_key_hash,
+            "project_global_id": project_id,
+        },
+        [
+            "blocked_reason_code",
+            "active_request_global_id",
+            "active_target_idempotency_key_hash",
+            "active_state",
+        ],
+        as_dict=True,
+    )
+    require(
+        guard
+        and guard.blocked_reason_code == "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED"
+        and not guard.active_request_global_id
+        and not guard.active_target_idempotency_key_hash
+        and not guard.active_state,
+        "P8-03 legacy stream guard was not durably blocked",
+    )
+    outbox = frappe.get_doc("NPI Outbox Message", legacy_outbox_id)
+    require(
+        str(outbox.request_global_id) == legacy_request_id
+        and str(outbox.state) == "pending"
+        and int(outbox.attempt_count or 0) == 0
+        and not outbox.service_actor_user_id
+        and not outbox.target_idempotency_key_hash
+        and not outbox.semantic_source_effect_hash
+        and not outbox.semantic_effect_hash,
+        "P8-03 migration promoted the legacy Item Outbox envelope",
+    )
+    duplicate_attempt_count = int(
+        frappe.db.sql(
+            """
+            SELECT COUNT(*)
+            FROM (
+                SELECT attempt_global_id
+                FROM `tabNPI Item Publish Result`
+                WHERE attempt_global_id IS NOT NULL
+                GROUP BY attempt_global_id
+                HAVING COUNT(*) > 1
+            ) AS duplicate_attempts
+            """
+        )[0][0]
+        or 0
+    )
+    unique_indexes = frappe.db.sql(
+        "SHOW INDEX FROM `tabNPI Item Publish Result`",
+        as_dict=True,
+    )
+    attempt_index_is_unique = any(
+        str(index.get("Column_name")) == "attempt_global_id"
+        and int(index.get("Non_unique") or 1) == 0
+        for index in unique_indexes
+    )
+    require(
+        duplicate_attempt_count == 0 and attempt_index_is_unique,
+        "P8-03 migrated Result attempt uniqueness is not enforced",
+    )
+    # The worker's read-only route probe and closed processing call are the
+    # real zero-claim/zero-adapter assertions for the legacy request.
+    from npi_integration.item_publish.worker_repository import (
+        FrappeItemPublishWorkerRepository,
+    )
+    from npi_integration.item_publish.worker import process_outbox_message
+    from npi_integration.item_publish.runtime_fixture import (
+        synthetic_adapter_call_count,
+    )
+
+    missing_route = FrappeItemPublishWorkerRepository().execution_route(
+        UUID(legacy_outbox_id)
+    )
+    require(missing_route is None, "P8-03 legacy row acquired an executable route")
+    outcome = process_outbox_message(legacy_outbox_id)
+    require(
+        outcome.get("state") == "not_claimed",
+        "P8-03 legacy Item Outbox acquired a worker claim",
+    )
+    adapter_calls = synthetic_adapter_call_count()
+    require(adapter_calls == 0, "P8-03 legacy Item reached the adapter boundary")
+    return {
+        "adapterCalls": adapter_calls,
+        "guardBlocked": True,
+        "legacyBindingsNull": True,
+        "legacyProjectionReadOnly": True,
+        "postMigrationDuplicateAttemptCount": duplicate_attempt_count,
+        "resultAttemptIndexUnique": attempt_index_is_unique,
+        "workerRoute": None,
+    }
+
+
+def cleanup_legacy(
+    fixture_run_id: str,
+    project_id: str,
+    legacy_request_id: str,
+    legacy_outbox_id: str,
+    source_stream_key_hash: str,
+) -> dict[str, object]:
+    import frappe
+
+    _require_enabled_runtime_marker(project_id)
+    require(fixture_run_id == FIXTURE_RUN_ID, "P8-03 legacy fixture namespace drifted")
+    frappe.db.sql(
+        "DELETE FROM `tabNPI Outbox Message` "
+        "WHERE name = %s AND request_global_id = %s",
+        (legacy_outbox_id, legacy_request_id),
+    )
+    frappe.db.sql(
+        "DELETE FROM `tabNPI Item Publish Request` "
+        "WHERE name = %s AND project_global_id = %s",
+        (legacy_request_id, project_id),
+    )
+    frappe.db.sql(
+        "DELETE FROM `tabNPI Item Publish Stream Guard` "
+        "WHERE source_stream_key_hash = %s AND project_global_id = %s "
+        "AND blocked_reason_code = %s",
+        (
+            source_stream_key_hash,
+            project_id,
+            "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+        ),
+    )
+    return {"legacyRowsRemoved": True, "guardCleanupBounded": True}
+
+
 def exercise_worker(
     fixture_run_id: str,
     project_id: str,
@@ -554,10 +1179,14 @@ def exercise_worker(
     from npi_integration.item_publish.runtime_fixture import (
         resolve_profile,
         synthetic_adapter_call_count,
+        synthetic_adapter_session_users,
     )
     from npi_integration.item_publish.worker import process_outbox_message
     from npi_integration.item_publish.worker_repository import (
         FrappeItemPublishWorkerRepository,
+    )
+    from npi_integration.item_publish.frappe_validation import (
+        item_service_actor_scope,
     )
 
     _validate_fixture(
@@ -565,11 +1194,31 @@ def exercise_worker(
         project_id=project_id,
         request_ids=(synthetic_request_id, uncertain_request_id),
     )
-    frappe.set_user(worker_user)
+    requester_user = str(getattr(frappe.session, "user", ""))
+    worker_user = os.environ.get("NPI_P8_03_RUNTIME_WORKER")
+    require(
+        requester_user == ACTOR_USER,
+        "P8-03 runtime worker fixture did not start as the authenticated requester",
+    )
+    require(
+        isinstance(worker_user, str) and worker_user and worker_user != requester_user,
+        "P8-03 runtime worker fixture actor is not distinct from requester",
+    )
+
+    def as_worker(function, *args, **kwargs):
+        with item_service_actor_scope(worker_user):
+            result = function(*args, **kwargs)
+            require(
+                str(getattr(frappe.session, "user", "")) == worker_user,
+                "P8-03 frozen worker scope changed before its write completed",
+            )
+            return result
+
     repository = FrappeItemPublishWorkerRepository()
     anchor = datetime.now(UTC)
 
-    first = repository.claim(
+    first = as_worker(
+        repository.claim,
         UUID(synthetic_outbox_id),
         now=anchor - timedelta(minutes=12),
     )
@@ -578,13 +1227,15 @@ def exercise_worker(
         "P8-03 initial pending claim drifted",
     )
     frappe.db.commit()
-    live = repository.claim(
+    live = as_worker(
+        repository.claim,
         UUID(synthetic_outbox_id),
         now=anchor - timedelta(minutes=7, seconds=1),
     )
     require(live is None, "P8-03 live claim was not excluded")
     frappe.db.rollback()
-    recovered = repository.claim(
+    recovered = as_worker(
+        repository.claim,
         UUID(synthetic_outbox_id),
         now=anchor - timedelta(minutes=6),
     )
@@ -597,15 +1248,27 @@ def exercise_worker(
     )
     frappe.db.commit()
     calls_before_synthetic = synthetic_adapter_call_count()
+    require(
+        str(getattr(frappe.session, "user", "")) == requester_user,
+        "P8-03 worker claim did not restore the requester session",
+    )
     synthetic = process_outbox_message(synthetic_outbox_id)
+    caller_restored_after_synthetic = (
+        str(getattr(frappe.session, "user", "")) == requester_user
+    )
     require(
         synthetic.get("state") == "synthetic_verified"
         and synthetic.get("mappingAdvanced") is False
         and synthetic_adapter_call_count() == calls_before_synthetic + 1,
         "P8-03 Synthetic worker result drifted",
     )
+    require(
+        caller_restored_after_synthetic,
+        "P8-03 worker did not restore the requester after Synthetic execution",
+    )
 
-    uncertain_claim = repository.claim(
+    uncertain_claim = as_worker(
+        repository.claim,
         UUID(uncertain_outbox_id),
         now=anchor - timedelta(minutes=6),
     )
@@ -614,12 +1277,14 @@ def exercise_worker(
         "P8-03 uncertain-path initial claim drifted",
     )
     frappe.db.commit()
-    uncertain_profile = repository.require_execution_profile(
+    uncertain_profile = as_worker(
+        repository.require_execution_profile,
         uncertain_claim,
         resolve_profile(TENANT_ID, project_id),
     )
     require(
-        repository.mark_adapter_boundary(
+        as_worker(
+            repository.mark_adapter_boundary,
             uncertain_claim,
             profile=uncertain_profile,
             now=anchor - timedelta(minutes=5, seconds=59),
@@ -628,12 +1293,23 @@ def exercise_worker(
     )
     frappe.db.commit()
     calls_before_recovery = synthetic_adapter_call_count()
+    require(
+        str(getattr(frappe.session, "user", "")) == requester_user,
+        "P8-03 worker claim did not restore the requester before recovery",
+    )
     uncertain = process_outbox_message(uncertain_outbox_id)
+    caller_restored_after_uncertain = (
+        str(getattr(frappe.session, "user", "")) == requester_user
+    )
     require(
         uncertain.get("state") == "uncertain_after_timeout"
         and uncertain.get("mappingAdvanced") is False
         and synthetic_adapter_call_count() == calls_before_recovery,
         "P8-03 crossed-boundary recovery blindly redispatched",
+    )
+    require(
+        caller_restored_after_uncertain,
+        "P8-03 worker did not restore the requester after recovery",
     )
 
     structural = _structural_context(project_id)
@@ -677,8 +1353,67 @@ def exercise_worker(
         repository.recoverable_outbox_event_ids(now=datetime.now(UTC)) == (),
         "P8-03 bounded recovery included terminal work",
     )
+    audit_events = structural["auditEvents"]
+    require(isinstance(audit_events, list), "P8-03 audit trace shape is invalid")
+    worker_audit_operations = {
+        "item_publish.claim",
+        "item_publish.claim_recovered",
+        "item_publish.adapter_boundary",
+        "item_publish.complete",
+        "item_publish.complete_historical_evidence",
+    }
+    worker_audits = [
+        row
+        for row in audit_events
+        if row.get("operation") in worker_audit_operations
+    ]
+    require(
+        worker_audits and all(row.get("actor") == worker_user for row in worker_audits),
+        "P8-03 claim/boundary/complete audit actor drifted from the frozen worker",
+    )
+    requests = structural["requests"]
+    outboxes = structural["outboxes"]
+    guards = structural["guards"]
+    require(
+        isinstance(requests, list)
+        and isinstance(outboxes, list)
+        and isinstance(guards, list),
+        "P8-03 persistence trace shape is invalid",
+    )
+    scoped_outboxes = [
+        row
+        for row in outboxes
+        if row.get("request_global_id") in {synthetic_request_id, uncertain_request_id}
+    ]
+    scoped_guards = [
+        row
+        for row in guards
+        if row.get("active_request_global_id")
+        or row.get("last_request_global_id")
+    ]
+    require(
+        all(row.get("owner") == requester_user for row in requests)
+        and all(row.get("modified_by") == worker_user for row in requests)
+        and all(row.get("owner") == requester_user for row in scoped_outboxes)
+        and all(row.get("modified_by") == worker_user for row in scoped_outboxes)
+        and all(row.get("owner") == worker_user for row in attempts)
+        and all(row.get("modified_by") == worker_user for row in attempts)
+        and all(row.get("owner") == worker_user for row in results)
+        and all(row.get("modified_by") == worker_user for row in results)
+        and all(row.get("owner") == requester_user for row in scoped_guards)
+        and all(row.get("modified_by") == worker_user for row in scoped_guards),
+        "P8-03 persisted owner or modified_by actor drifted",
+    )
+    adapter_sessions = synthetic_adapter_session_users()
+    require(
+        adapter_sessions and all(user == worker_user for user in adapter_sessions),
+        "P8-03 adapter session actor drifted from the frozen worker",
+    )
     return {
+        "callerRestoredAfterSynthetic": caller_restored_after_synthetic,
+        "callerRestoredAfterUncertain": caller_restored_after_uncertain,
         "adapterCalls": synthetic_adapter_call_count(),
+        "adapterSessionWorkerOnly": True,
         "attemptCount": len(attempts),
         "digest": structural["digest"],
         "expiredPreBoundaryRecovered": True,
@@ -718,11 +1453,19 @@ def replay_terminal(
         project_id=project_id,
         request_ids=request_ids,
     )
-    frappe.set_user(ACTOR_USER)
+    requester_user = str(getattr(frappe.session, "user", ""))
+    require(
+        requester_user == ACTOR_USER,
+        "P8-03 replay fixture did not start as the authenticated requester",
+    )
     before = _structural_context(project_id)
     outcomes = [
         process_outbox_message(str(value["outbox_id"])) for value in bindings
     ]
+    require(
+        str(getattr(frappe.session, "user", "")) == requester_user,
+        "P8-03 worker did not restore the requester after terminal replay",
+    )
     after = _structural_context(project_id)
     recoverable = FrappeItemPublishWorkerRepository().recoverable_outbox_event_ids(
         now=datetime.now(UTC)
@@ -734,6 +1477,7 @@ def replay_terminal(
         "P8-03 cross-process replay changed terminal truth",
     )
     return {
+        "callerRestored": True,
         "crossProcessReplay": True,
         "digest": after["digest"],
         "mappingCount": after["mappingHeadCount"],
@@ -789,12 +1533,21 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
         "capture_project": capture_project,
         "exercise_worker": exercise_worker,
         "replay_terminal": replay_terminal,
+        "seed_legacy": seed_legacy,
+        "inspect_legacy": inspect_legacy,
+        "cleanup_legacy": cleanup_legacy,
     }
     require(method in fixtures, "P8-03 Bench fixture is unavailable")
     frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
     frappe.connect()
     try:
-        frappe.set_user("Administrator")
+        # Read-only project capture runs as Administrator.  Worker fixtures
+        # deliberately enter as the authenticated requester; the worker
+        # boundary itself must switch to the frozen service actor and restore
+        # this session before returning.
+        frappe.set_user(
+            ACTOR_USER if method in {"exercise_worker", "replay_terminal"} else "Administrator"
+        )
         result = fixtures[method](**kwargs)
         frappe.db.commit()
         print(json.dumps(result, separators=(",", ":"), sort_keys=True))
@@ -810,6 +1563,9 @@ def main() -> None:
     parser.add_argument("--base-url")
     parser.add_argument("--disabled-probe", action="store_true")
     parser.add_argument("--replay-only", action="store_true")
+    parser.add_argument("--legacy-only", action="store_true")
+    parser.add_argument("--legacy-request-id")
+    parser.add_argument("--legacy-node-id")
     parser.add_argument("--bench-fixture")
     parser.add_argument("--fixture-kwargs")
     arguments = parser.parse_args()
@@ -818,7 +1574,8 @@ def main() -> None:
             arguments.base_url is None
             and arguments.fixture_kwargs is not None
             and not arguments.disabled_probe
-            and not arguments.replay_only,
+            and not arguments.replay_only
+            and not arguments.legacy_only,
             "P8-03 fixture invocation drifted",
         )
         kwargs = json.loads(arguments.fixture_kwargs)
@@ -829,7 +1586,10 @@ def main() -> None:
         arguments.base_url is not None
         and FIXTURE_RUN_ID != "0" * 32
         and ACTOR_USER.endswith("@example.invalid")
-        and int(arguments.disabled_probe) + int(arguments.replay_only) <= 1,
+        and int(arguments.disabled_probe)
+        + int(arguments.replay_only)
+        + int(arguments.legacy_only)
+        <= 1,
         "P8-03 runtime invocation is incomplete",
     )
     base_url = validate_local_fixture_inputs(
@@ -842,6 +1602,20 @@ def main() -> None:
         result = run_disabled_probe(base_url, fixture_password)
     elif arguments.replay_only:
         result = run_replay(base_url, fixture_password)
+    elif arguments.legacy_only:
+        require(
+            isinstance(arguments.legacy_request_id, str)
+            and isinstance(arguments.legacy_node_id, str)
+            and str(UUID(arguments.legacy_request_id)) == arguments.legacy_request_id
+            and str(UUID(arguments.legacy_node_id)) == arguments.legacy_node_id,
+            "P8-03 legacy runtime invocation is incomplete",
+        )
+        result = run_legacy(
+            base_url,
+            fixture_password,
+            arguments.legacy_request_id,
+            arguments.legacy_node_id,
+        )
     else:
         result = run_fresh(base_url, fixture_password)
     print(json.dumps(result, separators=(",", ":"), sort_keys=True))
