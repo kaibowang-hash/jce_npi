@@ -312,10 +312,14 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             self.assertIs(failure.exception, original)
             self.assertEqual(records, [])
 
-    def test_replay_log_reader_requires_one_exact_new_record(self) -> None:
+    def test_replay_log_reader_requires_one_exact_logical_record(self) -> None:
         module = self.module
 
-        def read(records: list[dict[str, object]], trace_id: str = _TRACE_ID):
+        def read(
+            records: list[dict[str, object]],
+            site_records: list[dict[str, object]] | None = None,
+            trace_id: str = _TRACE_ID,
+        ):
             with tempfile.TemporaryDirectory() as directory:
                 bench_path = Path(directory).resolve()
                 paths = (
@@ -327,13 +331,17 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
                     path.write_text("prior safe log\n", encoding="utf-8")
                 with patch.object(module, "BENCH_PATH", bench_path):
                     cursors = module._replay_diagnostic_log_cursors()
-                    with paths[0].open("a", encoding="utf-8") as log_file:
-                        for record in records:
-                            log_file.write(
-                                "private value /tmp/private "
-                                + json.dumps(record, separators=(",", ":"))
-                                + "\n"
-                            )
+                    for path, source_records in zip(
+                        paths,
+                        (records, site_records or []),
+                    ):
+                        with path.open("a", encoding="utf-8") as log_file:
+                            for record in source_records:
+                                log_file.write(
+                                    "private value /tmp/private "
+                                    + json.dumps(record, separators=(",", ":"))
+                                    + "\n"
+                                )
                     return module._sanitized_replay_terminal_diagnostic(
                         trace_id,
                         cursors,
@@ -348,9 +356,19 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             read([valid]),
             ("RuntimeError", "P803_REPLAY_PROCESS_OUTBOX", _TRACE_ID),
         )
+        self.assertEqual(
+            read([valid], [valid]),
+            ("RuntimeError", "P803_REPLAY_PROCESS_OUTBOX", _TRACE_ID),
+        )
+        self.assertIsNone(read([valid, valid]))
+        self.assertIsNone(
+            read(
+                [valid],
+                [{**valid, "code": "P803_REPLAY_AFTER_SNAPSHOT"}],
+            )
+        )
         invalid_cases = (
             [],
-            [valid, valid],
             [{**valid, "traceId": "trace-ffffffffffffffffffffffffffffffff"}],
             [{**valid, "code": "P803_REPLAY_NOT_ALLOWED"}],
             [{**valid, "exceptionType": "Bad Type /tmp/private"}],

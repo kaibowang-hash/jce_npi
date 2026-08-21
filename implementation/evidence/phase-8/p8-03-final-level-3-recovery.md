@@ -175,8 +175,10 @@ stage code bound to exactly one failure context, plus the validated
 exception class name, and exact trace. The child records through the existing
 safe diagnostic hook and re-raises the original exception. The parent reads
 only bytes appended to the two exact controlled `npi_core.log` candidates
-during that child process and accepts exactly one strict three-field record.
-Missing, duplicate, wrong-trace, disallowed, malformed, oversized, symlinked,
+during that child process and accepts exactly one strict three-field logical
+record. Each source may contain at most one record, and identical bench/site
+handler mirrors fold to that one logical tuple. Missing, same-source duplicate,
+cross-source drift, wrong-trace, disallowed, malformed, oversized, symlinked,
 or out-of-root evidence keeps the existing constant withheld failure.
 
 The parent never reads or renders failed-child stdout/stderr, exception text,
@@ -186,3 +188,31 @@ remains `ITEM_CREATE_DIAGNOSTICS_ENABLED = False`; no product worker,
 repository, API, permission, transaction, claim, replay, ownership, Schema, or
 external behavior changes in this checkpoint. No production ERPNext or JCE
 system is contacted.
+
+## Replay diagnostic dual-handler harness remediation
+
+- Diagnostic checkpoint SHA:
+  `618cabe56491245422753f7e8d370acff5aa237d`.
+- Exact-SHA ordinary CI `32462506234` passed all lanes, including `1018`
+  frontend unit cases and `444` E2E cases.
+- The sole replay diagnostic run `32463671893` passed controlled preflight job
+  `96715653312`; cumulative Site job `96715708429` failed with the constant
+  withheld replay message and exposed no governed tuple.
+
+Read-only inspection proved a verifier harness root. With a Site initialized,
+Frappe's `npi_core` logger installs one bench and one site rotating-file
+handler. One logical `record_safe_diagnostic` call therefore writes the same
+safe record once to each exact candidate. The parent reader combined both
+physical records and rejected them as a duplicate before logical mirror
+folding. Isolated simulation reproduced two physical records and a `None`
+reader result. The run published no runtime-log artifact, so it does not prove
+which replay stage failed and does not authorize a product repair. The replay
+cycle remains product repair `0/1` and final unchanged Gate `0/1`.
+
+The bounded remediation groups records by source. Each candidate may contain
+at most one strict, allowlisted, exact-trace record; one or both candidates may
+supply it, and two candidates are folded only when their complete safe tuples
+are identical. A same-source duplicate, cross-source drift, missing record,
+wrong trace, disallowed stage, extra or invalid field, or every existing unsafe
+filesystem/log boundary retains the constant fail-closed result. The `64 KiB`
+append limit and all product behavior remain unchanged.

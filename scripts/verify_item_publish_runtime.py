@@ -2047,7 +2047,7 @@ def _sanitized_replay_terminal_diagnostic(
     trace_id: object,
     cursors: dict[str, int] | None,
 ) -> tuple[str, str, str] | None:
-    """Accept exactly one new allowlisted replay record for one exact trace."""
+    """Accept one logical allowlisted replay record for one exact trace."""
 
     if not _valid_replay_diagnostic_trace(trace_id) or not isinstance(cursors, dict):
         return None
@@ -2063,7 +2063,7 @@ def _sanitized_replay_terminal_diagnostic(
         bench_root = BENCH_PATH.resolve(strict=True)
     except (OSError, RuntimeError):
         return None
-    replay_records: list[dict[str, object]] = []
+    logical_records: list[tuple[str, str, str]] = []
     for candidate in _replay_diagnostic_log_paths():
         key = str(candidate.relative_to(BENCH_PATH))
         offset = cursors[key]
@@ -2085,26 +2085,34 @@ def _sanitized_replay_terminal_diagnostic(
                 return None
         except (OSError, RuntimeError):
             return None
+        source_records: list[dict[str, object]] = []
         for line in appended.decode("utf-8", errors="ignore").splitlines():
             for record in _json_records(line):
                 code = record.get("code")
                 if isinstance(code, str) and code.startswith("P803_REPLAY_"):
-                    replay_records.append(record)
-    if len(replay_records) != 1:
-        return None
-    record = replay_records[0]
-    code = record.get("code")
-    exception_type = record.get("exceptionType")
-    if (
-        set(record) != _REPLAY_DIAGNOSTIC_RECORD_KEYS
-        or not isinstance(code, str)
-        or code not in _REPLAY_TERMINAL_DIAGNOSTIC_CODES
-        or not isinstance(exception_type, str)
-        or _TYPE_PATTERN.fullmatch(exception_type) is None
-        or record.get("traceId") != trace_id
+                    source_records.append(record)
+        if len(source_records) > 1:
+            return None
+        if not source_records:
+            continue
+        record = source_records[0]
+        code = record.get("code")
+        exception_type = record.get("exceptionType")
+        if (
+            set(record) != _REPLAY_DIAGNOSTIC_RECORD_KEYS
+            or not isinstance(code, str)
+            or code not in _REPLAY_TERMINAL_DIAGNOSTIC_CODES
+            or not isinstance(exception_type, str)
+            or _TYPE_PATTERN.fullmatch(exception_type) is None
+            or record.get("traceId") != trace_id
+        ):
+            return None
+        logical_records.append((exception_type, code, str(trace_id)))
+    if not logical_records or any(
+        record != logical_records[0] for record in logical_records[1:]
     ):
         return None
-    return exception_type, code, str(trace_id)
+    return logical_records[0]
 
 
 def _bench_fixture_failure_message(
