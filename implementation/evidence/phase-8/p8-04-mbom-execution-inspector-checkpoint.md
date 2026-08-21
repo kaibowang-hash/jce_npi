@@ -259,3 +259,25 @@ uses the low-entropy literal `wrong`, which still proves exact synthetic
 idempotency matching and changes no product, scope, response, permission,
 transaction, diagnostic or Gate behavior. No diagnostic or product repair
 round is consumed.
+
+The amended server checkpoint
+`a35aae1b63becb39e6185babc001e7fb90d0a35c` passes ordinary CI
+`32531248862` (visual `96923518724`, repository `96923519012`, secret
+`96923519013`, frontend `96923519086`). Its sole controlled diagnostic run
+`32532396488`, preflight `96926841397` and runtime `96926902427` yields the
+single safe tuple `P804_CREATE_REQUEST_INSERT / ValidationError /
+trace-7b774b6d5f8f5df6853b4b5917f645d1`.
+
+Symbol-level cross-proof against pinned Frappe 15.115.4 identifies the first
+failing predicate without reading an exception message: `db_insert()` invokes
+`get_valid_dict()`, which rejects a Python list in any non-Table field before
+serializing JSON dictionaries. The repository supplied
+`item_readiness_snapshot` as the first list-valued JSON field; its preceding
+`source_snapshot` dictionary is accepted, while the later
+`mbom_expectation_snapshot` has the same representation defect. The only
+product repair canonicalizes those two arrays to JSON strings and leaves the
+source dictionary, write order, transaction and all external behavior intact.
+The historical parent response cycle stays `diagnostic 1/1`, `repair 0/1`,
+`final 0/1`; the server cycle is `diagnostic 1/1`, `repair 1/1`, `final 0/1`.
+Parent and server diagnostic activation are both disabled after recovery; the
+strict response-neutral mechanism remains dormant.

@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 import frappe
 
+from npi_core.documents.domain import canonical_json
 from npi_core.documents.frappe_repository import (
     _database_datetime,
     _json_array,
@@ -768,9 +769,13 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
                     "source_snapshot": value.source.canonical_mapping(),
                     "source_hash": value.source.source_hash,
                     "topology_hash": value.source.topology_hash,
-                    "item_readiness_snapshot": [item.canonical_mapping() for item in value.item_readiness],
+                    "item_readiness_snapshot": canonical_json(
+                        [item.canonical_mapping() for item in value.item_readiness]
+                    ),
                     "item_mapping_set_hash": value.item_mapping_set_hash,
-                    "mbom_expectation_snapshot": [item.canonical_mapping() for item in value.mbom_expectations],
+                    "mbom_expectation_snapshot": canonical_json(
+                        [item.canonical_mapping() for item in value.mbom_expectations]
+                    ),
                     "mbom_mapping_set_hash": value.mbom_mapping_set_hash,
                     "profile_id": value.profile.profile_id,
                     "profile_version": value.profile.profile_version,

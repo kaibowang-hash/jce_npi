@@ -724,3 +724,27 @@ unchanged constant. Enqueue is deliberately outside the diagnostic because
 its existing post-commit failure contract still returns the committed queued
 request. No response, permission, transaction, API, Schema or Gate behavior is
 changed.
+
+The history-clean server checkpoint exact SHA
+`a35aae1b63becb39e6185babc001e7fb90d0a35c` passes ordinary CI
+`32531248862`: frontend `96923519086`, canonical visual `96923518724`,
+repository `96923519012` and secret `96923519013` pass. Its one controlled
+diagnostic dispatch `32532396488` passes preflight `96926841397`; runtime job
+`96926902427` returns exactly one tuple:
+`P804_CREATE_REQUEST_INSERT / ValidationError /
+trace-7b774b6d5f8f5df6853b4b5917f645d1`.
+
+The exact pinned Frappe 15.115.4 insert path proves the unique first failure.
+`NPI MBOM Publish Request.item_readiness_snapshot` is a JSON field, but the
+repository supplied its snapshot as a Python list. Frappe `db_insert()` calls
+`get_valid_dict()`, whose non-Table list predicate raises `ValidationError`
+before its JSON-dict serialization branch. The preceding `source_snapshot`
+dict is valid; `mbom_expectation_snapshot` is the later instance of the same
+representation defect and has not yet executed. The bounded product repair
+serializes only those two arrays through the existing canonical JSON helper.
+It changes no source snapshot, field order, response, permission, transaction,
+Schema, adapter or target behavior. The parent response cycle remains
+immutable at `diagnostic 1/1`, `repair 0/1`, `final 0/1`; the server cycle is
+now `diagnostic 1/1`, `repair 1/1`, `final 0/1`. Both parent and server
+diagnostic activations are closed; the response-neutral mechanism remains
+dormant for regression coverage.

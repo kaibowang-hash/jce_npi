@@ -168,6 +168,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             "trace-0123456789abcdef0123456789abcdef",
         )
         with patch.object(
+            self.module,
+            "MBOM_CREATE_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
             self.module.item_runtime,
             "_sanitized_server_log_diagnostic",
             return_value=diagnostic,
@@ -231,6 +235,58 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIsNone(
             self.module.require_created_synthetic_batch(self._create_result())
         )
+
+    def test_create_diagnostics_are_closed_by_default_without_header_or_log_read(self):
+        self.assertFalse(self.module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
+        captured = {}
+
+        def request(*_args, **kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(
+                status=201,
+                body={},
+                headers={
+                    "X-Request-ID": "request-id",
+                    "Cache-Control": "private, no-store",
+                },
+                trace_id="trace-0123456789abcdef0123456789abcdef",
+            )
+
+        with patch.object(
+            self.module.document_runtime,
+            "command_headers",
+            return_value={"X-Request-ID": "request-id"},
+        ), patch.object(
+            self.module.document_runtime,
+            "request",
+            side_effect=request,
+        ):
+            self.module.mbom_publish_request(
+                object(),
+                "http://127.0.0.1",
+                self.module.mbom_publish_path(
+                    "00000000-0000-0000-0000-000000000001"
+                ),
+                method="POST",
+                payload={"fixed": True},
+                csrf_token="csrf",
+                idempotency_key=f"p8-04-synthetic-{self.module.FIXTURE_RUN_ID}",
+                create_diagnostic=self.module.MBOM_CREATE_DIAGNOSTICS_ENABLED,
+            )
+        self.assertNotIn(
+            self.module._CREATE_DIAGNOSTIC_HEADER,
+            captured["request_headers"],
+        )
+
+        with patch.object(
+            self.module.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as reader, self.assertRaises(RuntimeError):
+            self.module.require_created_synthetic_batch(
+                self._create_result(status=503),
+                {"logs/npi_core.log": 0},
+            )
+        reader.assert_not_called()
 
     def test_create_diagnostic_uses_shared_http_result_trace_only(self):
         function = next(
@@ -310,7 +366,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                     create_diagnostic=True,
                 )
 
-    def test_fresh_runtime_captures_log_cursors_before_one_scoped_post(self):
+    def test_fresh_runtime_keeps_diagnostic_hooks_guarded_and_closed(self):
         function = next(
             node
             for node in self.tree.body
@@ -325,6 +381,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             1,
         )
         self.assertEqual(segment.count("_replay_diagnostic_log_cursors()"), 1)
+        self.assertGreaterEqual(
+            segment.count("if MBOM_CREATE_DIAGNOSTICS_ENABLED"),
+            1,
+        )
 
     def test_parent_and_server_create_allowlists_are_exactly_equal(self):
         tree = ast.parse(SERVER_DIAGNOSTICS.read_text(encoding="utf-8"))

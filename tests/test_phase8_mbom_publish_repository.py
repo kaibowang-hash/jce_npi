@@ -475,6 +475,119 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.repository._request_value(project, row)
 
+    def test_request_insert_serializes_array_json_for_pinned_frappe_roundtrip(self) -> None:
+        project = types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1))
+        source = self.repository._source_from_phase5(project, phase5_request())
+        profile = MbomExecutionProfileReference(
+            "mbom-mock-v1",
+            1,
+            MbomTargetMode.MOCK,
+            "mock",
+            "projection-v1",
+            1,
+            "7" * 64,
+            "8" * 64,
+        )
+        readiness = tuple(
+            ItemMappingReadiness(
+                item,
+                ItemReadinessDisposition.NOT_READY,
+                self.repository._item_stream_key(
+                    source.tenant_id,
+                    source.project_global_id,
+                    item,
+                ),
+                0,
+            )
+            for item in source.engineering_item_ids
+        )
+        expectations = tuple(
+            MbomMappingExpectation(
+                source.assembly_source_key(key),
+                key,
+                0,
+                MbomTargetSubmissionState.UNMAPPED_CREATE,
+            )
+            for key in source.assembly_line_keys
+        )
+        value = create_mbom_publish_request(
+            source=source,
+            item_readiness=readiness,
+            mbom_expectations=expectations,
+            profile=profile,
+            actor_user_id="publisher@example.invalid",
+            service_actor_user_id=None,
+            request_id=uid(30),
+            trace_id="trace-p804-insert",
+            idempotency_key_hash="a" * 64,
+            global_id=uid(31),
+            created_at=datetime(2026, 8, 21, 15, 0, tzinfo=UTC),
+        )
+        captured: dict[str, object] = {}
+
+        def get_doc(payload: dict[str, object]) -> object:
+            captured.update(payload)
+            return types.SimpleNamespace(**payload)
+
+        with patch.object(
+            self.repository.frappe,
+            "get_doc",
+            side_effect=get_doc,
+            create=True,
+        ), patch.object(
+            self.repository,
+            "insert_mbom_support_document",
+        ) as insert_document:
+            self.repository.FrappeMbomPublishRepository._insert_request(
+                project,
+                value,
+                outbox_event_id=None,
+                now=value.created_at,
+                capability=object(),
+            )
+
+        insert_document.assert_called_once()
+        expected_readiness = [item.canonical_mapping() for item in readiness]
+        expected_expectations = [item.canonical_mapping() for item in expectations]
+        self.assertIsInstance(captured["source_snapshot"], dict)
+        for fieldname, expected in (
+            ("item_readiness_snapshot", expected_readiness),
+            ("mbom_expectation_snapshot", expected_expectations),
+        ):
+            stored = captured[fieldname]
+            self.assertIsInstance(stored, str)
+            self.assertEqual(json.loads(stored), expected)
+            self.assertEqual(stored, self.repository.canonical_json(expected))
+            self.assertEqual(
+                stored,
+                self.repository.canonical_json(json.loads(stored)),
+            )
+
+        def pinned_frappe_v15_json_value(value: object) -> object:
+            if isinstance(value, list):
+                raise self.repository.frappe.ValidationError
+            if isinstance(value, dict):
+                return json.dumps(value, separators=(",", ":"))
+            return value
+
+        with self.assertRaises(self.repository.frappe.ValidationError):
+            pinned_frappe_v15_json_value(expected_readiness)
+        self.assertIsInstance(
+            pinned_frappe_v15_json_value(captured["source_snapshot"]),
+            str,
+        )
+        self.assertEqual(
+            pinned_frappe_v15_json_value(captured["item_readiness_snapshot"]),
+            captured["item_readiness_snapshot"],
+        )
+        self.assertEqual(
+            self.repository._request_value(
+                project,
+                types.SimpleNamespace(**captured),
+            ),
+            value,
+        )
+
     def test_execution_projection_requires_exact_attempt_result_node_and_current_mapping(self) -> None:
         request_id = str(uid(70))
         outbox_id = str(uid(71))
