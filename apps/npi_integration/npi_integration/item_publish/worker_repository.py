@@ -67,6 +67,15 @@ _STREAM_RETAINED_STATES = frozenset(
         ItemPublishRequestState.FAILED_FINAL.value,
     }
 )
+_RETAINED_OUTBOX_REQUEST_STATES = {
+    "succeeded": frozenset(
+        {
+            ItemPublishRequestState.SYNTHETIC_VERIFIED.value,
+            ItemPublishRequestState.SUCCEEDED.value,
+        }
+    ),
+    "failed_final": frozenset({ItemPublishRequestState.FAILED_FINAL.value}),
+}
 
 
 def deterministic_item_result_id(attempt_global_id: UUID) -> UUID:
@@ -326,10 +335,13 @@ class FrappeItemPublishWorkerRepository:
         request = _required_locked_request(outbox)
         value = _request_value(request)
         _require_outbox_binding(outbox, request, value)
+        state = str(_value(outbox, "state"))
+        if state in _RETAINED_OUTBOX_REQUEST_STATES:
+            _require_terminal_retained_binding(guard, value, outbox_state=state)
+            return None
         _require_guard_active_binding(guard, value)
         if value.service_actor_user_id != route.service_actor_user_id:
             raise RuntimeError("Item service actor binding changed before claim.")
-        state = str(_value(outbox, "state"))
         if (
             state == "pending"
             and value.state is not ItemPublishRequestState.QUEUED
@@ -1554,6 +1566,23 @@ def _guard_retained_binding(guard: Any | None, value: ItemPublishRequest) -> boo
         == str(value.target_idempotency_key_hash)
         and str(_value(guard, "last_state")) in _STREAM_RETAINED_STATES
     )
+
+
+def _require_terminal_retained_binding(
+    guard: Any | None,
+    value: ItemPublishRequest,
+    *,
+    outbox_state: str,
+) -> None:
+    expected_request_states = _RETAINED_OUTBOX_REQUEST_STATES.get(outbox_state)
+    request_state = value.state.value
+    if expected_request_states is None or request_state not in expected_request_states:
+        raise RuntimeError("Persisted Item terminal request binding is invalid.")
+    if guard is not None and (
+        not _guard_retained_binding(guard, value)
+        or str(_value(guard, "last_state")) != request_state
+    ):
+        raise RuntimeError("Persisted Item terminal retained binding is invalid.")
 
 
 def _require_attempt_binding(

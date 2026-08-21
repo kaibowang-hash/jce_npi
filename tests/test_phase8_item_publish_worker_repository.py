@@ -42,6 +42,11 @@ class WorkerDatabase(command_test.FakeDatabase):
             )
             value = {"enabled": enabled, "user_type": user_type}
             return types.SimpleNamespace(**value) if kwargs.get("as_dict") else value
+        if doctype == "NPI Item Publish Result" and fieldname == "name":
+            for row in self.worker_owner.harness.documents.get(doctype, {}).values():
+                if all(row.get(key) == value for key, value in dict(filters).items()):
+                    return row.name
+            return None
         return super().get_value(doctype, filters, fieldname, **kwargs)
 
 
@@ -191,6 +196,38 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
     def count(self, doctype: str) -> int:
         return len(self.harness.documents.get(doctype, {}))
 
+    def install_stream_guard(self):
+        value = self.module._request_value(self.request())
+        stream_hash = value.source.stream_key_hash
+        guard = command_test.FakeDocument(
+            self.harness,
+            {
+                "doctype": "NPI Item Publish Stream Guard",
+                "name": stream_hash,
+                "source_stream_key_hash": stream_hash,
+                "tenant_id": value.source.tenant_id,
+                "project_global_id": str(value.source.project_global_id),
+                "active_request_global_id": str(value.global_id),
+                "active_target_idempotency_key_hash": (
+                    value.target_idempotency_key_hash
+                ),
+                "active_state": value.state.value,
+                "last_request_global_id": None,
+                "last_target_idempotency_key_hash": None,
+                "last_state": None,
+                "blocked_reason_code": None,
+                "optimistic_version": 1,
+                "updated_at": NOW,
+                "owner": "publisher@example.invalid",
+                "modified_by": "publisher@example.invalid",
+            },
+        )
+        self.harness.documents["NPI Item Publish Stream Guard"] = {
+            stream_hash: guard
+        }
+        self.module._stream_guard_supported = lambda: True
+        return guard
+
     @staticmethod
     def sandbox_profile() -> ItemExecutionProfile:
         return ItemExecutionProfile(
@@ -259,6 +296,196 @@ class Phase8ItemPublishWorkerRepositoryTest(unittest.TestCase):
         old = self.attempt(first.command.attempt_global_id)
         self.assertEqual(old.state, "observed_failure")
         self.assertFalse(bool(old.adapter_boundary_crossed))
+
+    def test_terminal_retained_guard_is_read_only_and_corruption_fails_closed(
+        self,
+    ) -> None:
+        guard = self.install_stream_guard()
+        claim = self.repository.claim(self.outbox_id, now=NOW)
+        assert claim is not None
+        self.repository.require_execution_profile(claim, self.profile)
+        self.repository.mark_adapter_boundary(
+            claim,
+            profile=self.profile,
+            now=NOW + timedelta(seconds=1),
+        )
+        classified = self.classify(claim, self.profile)
+        self.repository.seal_result(
+            claim,
+            profile=self.profile,
+            result=classified,
+            now=NOW + timedelta(seconds=4),
+        )
+        request_before = dict(self.request())
+        outbox_before = dict(self.outbox())
+        guard_before = dict(guard)
+        events_before = list(self.harness.events)
+        pending_before = list(self.harness.pending)
+        attempts_before = self.count("NPI Item Publish Attempt")
+
+        self.assertIsNone(
+            self.repository.claim(
+                self.outbox_id,
+                now=NOW + timedelta(minutes=1),
+            )
+        )
+        self.assertEqual(dict(self.request()), request_before)
+        self.assertEqual(dict(self.outbox()), outbox_before)
+        self.assertEqual(dict(guard), guard_before)
+        self.assertEqual(self.harness.events, events_before)
+        self.assertEqual(self.harness.pending, pending_before)
+        self.assertEqual(self.count("NPI Item Publish Attempt"), attempts_before)
+
+        guard.last_request_global_id = "00000000-0000-4000-8000-000000008399"
+        with self.assertRaisesRegex(RuntimeError, "terminal retained binding"):
+            self.repository.claim(
+                self.outbox_id,
+                now=NOW + timedelta(minutes=2),
+            )
+        self.assertEqual(self.count("NPI Item Publish Attempt"), attempts_before)
+
+    def test_all_terminal_retained_state_pairs_are_read_only(self) -> None:
+        guard = self.install_stream_guard()
+        request = self.request()
+        outbox = self.outbox()
+        for outbox_state, request_state in (
+            ("succeeded", "synthetic_verified"),
+            ("succeeded", "succeeded"),
+            ("failed_final", "failed_final"),
+        ):
+            with self.subTest(
+                outbox_state=outbox_state,
+                request_state=request_state,
+            ):
+                request.state = request_state
+                outbox.state = outbox_state
+                guard.active_request_global_id = None
+                guard.active_target_idempotency_key_hash = None
+                guard.active_state = None
+                guard.last_request_global_id = str(request.global_id)
+                guard.last_target_idempotency_key_hash = (
+                    request.target_idempotency_key_hash
+                )
+                guard.last_state = request_state
+                request_before = dict(request)
+                outbox_before = dict(outbox)
+                guard_before = dict(guard)
+                events_before = list(self.harness.events)
+                pending_before = list(self.harness.pending)
+
+                self.assertIsNone(self.repository.claim(self.outbox_id, now=NOW))
+                self.assertEqual(self.count("NPI Item Publish Attempt"), 0)
+                self.assertEqual(dict(request), request_before)
+                self.assertEqual(dict(outbox), outbox_before)
+                self.assertEqual(dict(guard), guard_before)
+                self.assertEqual(self.harness.events, events_before)
+                self.assertEqual(self.harness.pending, pending_before)
+
+    def test_terminal_retained_state_drift_is_fail_closed_without_writes(self) -> None:
+        guard = self.install_stream_guard()
+        request = self.request()
+        outbox = self.outbox()
+
+        def configure(outbox_state: str, request_state: str) -> None:
+            request.state = request_state
+            outbox.state = outbox_state
+            guard.active_request_global_id = None
+            guard.active_target_idempotency_key_hash = None
+            guard.active_state = None
+            guard.last_request_global_id = str(request.global_id)
+            guard.last_target_idempotency_key_hash = (
+                request.target_idempotency_key_hash
+            )
+            guard.last_state = request_state
+
+        for outbox_state, request_state in (
+            ("succeeded", "failed_final"),
+            ("failed_final", "succeeded"),
+            ("failed_final", "synthetic_verified"),
+        ):
+            with self.subTest(
+                outbox_state=outbox_state,
+                request_state=request_state,
+            ):
+                configure(outbox_state, request_state)
+                request_before = dict(request)
+                outbox_before = dict(outbox)
+                guard_before = dict(guard)
+                events_before = list(self.harness.events)
+                pending_before = list(self.harness.pending)
+                with self.assertRaisesRegex(RuntimeError, "terminal request binding"):
+                    self.repository.claim(self.outbox_id, now=NOW)
+                self.assertEqual(self.count("NPI Item Publish Attempt"), 0)
+                self.assertEqual(dict(request), request_before)
+                self.assertEqual(dict(outbox), outbox_before)
+                self.assertEqual(dict(guard), guard_before)
+                self.assertEqual(self.harness.events, events_before)
+                self.assertEqual(self.harness.pending, pending_before)
+
+        configure("succeeded", "succeeded")
+        guard.active_request_global_id = str(request.global_id)
+        for label, mutate in (
+            ("active_not_cleared", lambda: None),
+            (
+                "last_state_mismatch",
+                lambda: (
+                    setattr(guard, "active_request_global_id", None),
+                    setattr(guard, "last_state", "failed_final"),
+                ),
+            ),
+        ):
+            with self.subTest(corruption=label):
+                mutate()
+                request_before = dict(request)
+                outbox_before = dict(outbox)
+                guard_before = dict(guard)
+                events_before = list(self.harness.events)
+                pending_before = list(self.harness.pending)
+                with self.assertRaisesRegex(RuntimeError, "terminal retained binding"):
+                    self.repository.claim(self.outbox_id, now=NOW)
+                self.assertEqual(self.count("NPI Item Publish Attempt"), 0)
+                self.assertEqual(dict(request), request_before)
+                self.assertEqual(dict(outbox), outbox_before)
+                self.assertEqual(dict(guard), guard_before)
+                self.assertEqual(self.harness.events, events_before)
+                self.assertEqual(self.harness.pending, pending_before)
+
+    def test_pending_and_processing_claims_still_require_active_guard(self) -> None:
+        guard = self.install_stream_guard()
+        request = self.request()
+        guard.active_request_global_id = "00000000-0000-4000-8000-000000008398"
+        with self.assertRaisesRegex(RuntimeError, "active binding"):
+            self.repository.claim(self.outbox_id, now=NOW)
+        self.assertEqual(self.count("NPI Item Publish Attempt"), 0)
+
+        guard.active_request_global_id = str(request.global_id)
+        first = self.repository.claim(self.outbox_id, now=NOW)
+        assert first is not None
+        guard.active_target_idempotency_key_hash = "f" * 64
+        with self.assertRaisesRegex(RuntimeError, "active binding"):
+            self.repository.claim(
+                self.outbox_id,
+                now=NOW + timedelta(seconds=1),
+            )
+        self.assertEqual(self.count("NPI Item Publish Attempt"), 1)
+
+    def test_unknown_outbox_state_retains_active_binding_behavior(self) -> None:
+        guard = self.install_stream_guard()
+        first = self.repository.claim(self.outbox_id, now=NOW)
+        assert first is not None
+        self.outbox().state = "unknown"
+        self.assertIsNone(
+            self.repository.claim(
+                self.outbox_id,
+                now=NOW + timedelta(seconds=1),
+            )
+        )
+        guard.active_state = "corrupt"
+        with self.assertRaisesRegex(RuntimeError, "active binding"):
+            self.repository.claim(
+                self.outbox_id,
+                now=NOW + timedelta(seconds=2),
+            )
 
     def test_result_identity_is_deterministic_and_attempt_scoped(self) -> None:
         first = UUID("00000000-0000-4000-8000-000000008371")

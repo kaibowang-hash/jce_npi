@@ -227,10 +227,10 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.module = load_verifier()
 
-    def test_replay_diagnostic_checkpoint_is_separate_from_closed_create_scope(self) -> None:
+    def test_replay_diagnostic_checkpoint_is_dormant_with_closed_create_scope(self) -> None:
         module = self.module
         self.assertFalse(module.ITEM_CREATE_DIAGNOSTICS_ENABLED)
-        self.assertTrue(module.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
         self.assertEqual(
             module._REPLAY_TERMINAL_DIAGNOSTIC_CODES,
             {
@@ -261,7 +261,11 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         api = types.ModuleType("npi_core.api")
         api.record_safe_diagnostic = lambda **values: records.append(values)
         original = RuntimeError("private released Item value /tmp/private")
-        with patch.dict(
+        with patch.object(
+            module,
+            "REPLAY_TERMINAL_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.dict(
             sys.modules,
             {"npi_core": package, "npi_core.api": api},
         ), self.assertRaises(RuntimeError) as failure:
@@ -392,6 +396,10 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             module,
             "_replay_diagnostic_log_cursors",
             return_value={"logs/npi_core.log": 0},
+        ), patch.object(
+            module,
+            "REPLAY_TERMINAL_DIAGNOSTICS_ENABLED",
+            True,
         ), patch.object(
             module.subprocess,
             "run",

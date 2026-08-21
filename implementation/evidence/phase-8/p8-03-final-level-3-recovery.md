@@ -216,3 +216,31 @@ are identical. A same-source duplicate, cross-source drift, missing record,
 wrong trace, disallowed stage, extra or invalid field, or every existing unsafe
 filesystem/log boundary retains the constant fail-closed result. The `64 KiB`
 append limit and all product behavior remain unchanged.
+
+## Replay diagnostic result and bounded product repair
+
+- Dual-handler remediation SHA:
+  `84975ce736036e4fd6df21ef40f29a5e3b37ab47`.
+- Exact-SHA ordinary CI `32464920564` passed all lanes, including `1018`
+  frontend unit cases and `444` E2E cases.
+- The sole post-remediation controlled diagnostic run `32466064108` passed
+  preflight job `96722793060`; cumulative Site job `96722848851` emitted the
+  unique safe tuple `P803_REPLAY_PROCESS_OUTBOX` / `RuntimeError` /
+  `trace-006eda5a7f6d5546b5ce130ecb77aed4`.
+
+The stage maps only to the retained terminal `process_outbox_message` calls.
+Read-only symbol tracing proved `FrappeItemPublishWorkerRepository.claim`
+required an active stream-guard binding before reading the Outbox state. A
+properly completed terminal request has already moved that guard to retained
+truth, clearing active fields and freezing the matching request, target and
+last state, so the active check raised before the existing terminal
+`not_claimed` return.
+
+The bounded product repair reads the locked Outbox state after validating its
+immutable request binding. Only the two retained terminal Outbox states may
+return `None` before active validation, and only after the request state and
+retained guard's exact request, target and last-state binding agree. Pending,
+processing, retryable, uncertain and unknown states retain the prior active
+binding and lease behavior. Replay diagnostic activation is closed after the
+unique root; the response-neutral mechanism remains dormant. The replay cycle
+has consumed product repair `1/1` and final unchanged Gate remains `0/1`.
