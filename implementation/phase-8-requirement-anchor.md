@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-04 AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-04 AUDIT-PLAN CI PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
 
 Anchor date: 2026-08-16
 
@@ -415,11 +415,16 @@ direct-parent lines as assembly sources and leaves as component-only, freezes
 Item/MBOM mapping-set expectations, preserves per-node partial/uncertain truth
 and never submits or overwrites a submitted BOM.
 
-Standing authority activates checkpoint 1 only after this frozen plan/task-
-manifest exact SHA passes ordinary CI. Checkpoint 1 is pure domain, contract,
-guarded Outbox/metadata, translations and focused tests; no route, persistent
-command row, Outbox row, worker, adapter, mapping, UI or target effect is
-active. Actual ERPNext method/field/UOM/alternate/effectivity/routing mapping,
+The exact frozen plan/task-manifest SHA `171a183` passes ordinary CI
+`32487934051` (secret `96788603341`, repository `96788603559`, frontend
+`96788603635`, visual `96788603482`; controlled lanes correctly skip).
+
+Standing authority activates checkpoint 1 after the frozen plan CI passes.
+The pure domain, contract, guarded Outbox/metadata, translation and focused-
+test candidate is implemented and awaits its own exact-SHA ordinary CI; no
+route, persistent command row, Outbox row, worker, adapter, mapping, UI or
+target effect is active, and checkpoint 2 remains inactive. Actual ERPNext
+method/field/UOM/alternate/effectivity/routing mapping,
 submitted-BOM successor policy and Sandbox/production activation remain held.
 `NFR-INT-001` full operations/DLQ/manual replay/reconciliation remains P8-07.
 P8-05 through P8-09 and production ERPNext/JCE remain inactive.

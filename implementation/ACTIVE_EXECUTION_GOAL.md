@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-21T12:44:00Z`
+Updated: `2026-08-21T14:32:05Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-04`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_ORDINARY_CI — P8-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,8 +18,8 @@ Updated: `2026-08-21T12:44:00Z`
   `32480568505` (`PASS — LEVEL 3` at `c11d97cc4e26cd3961d7927608eb2510f6411269`;
   repository, frontend, secret, `123/123` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32479492064` (`PASS` at
-  `c11d97cc4e26cd3961d7927608eb2510f6411269`; P8-03 final)
+  `32487934051` (`PASS` at
+  `171a183009b10eb4c1d8f7135b635ca1537afd27`; P8-04 frozen audit plan)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -97,18 +97,21 @@ Updated: `2026-08-21T12:44:00Z`
 - P8-03 final product Gate:
   `c11d97cc4e26cd3961d7927608eb2510f6411269` (`LEVEL 3 PASS`;
   ordinary CI `32479492064`; exact-SHA Level 3 `32480568505`)
+- P8-04 frozen audit-plan checkpoint:
+  `171a183009b10eb4c1d8f7135b635ca1537afd27` (`AUDIT PLAN PASS`;
+  ordinary CI `32487934051`; controlled lanes correctly skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-04 — MBOM publish execution`
-  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI`)
+  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_ORDINARY_CI`)
 - Resumed product task: `P8-04` (`ACTIVE_CHECKPOINT_1_AFTER_AUDIT_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-04 CHECKPOINT 1 AWAITS AUDIT CI`)
+  (`IN_PROGRESS — P8-04 CHECKPOINT 1 AWAITS ORDINARY CI`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -262,12 +265,13 @@ topology plus Item/MBOM mapping-set hashes; treats direct-parent lines as
 assembly sources and leaves as component-only; preserves per-node partial and
 uncertain truth; and never submits or overwrites a submitted BOM.
 
-Checkpoint 1 is the only next product scope and begins only after this
-plan/task-manifest transition passes exact-SHA ordinary CI. It may add pure
-topology/readiness/request/profile/state/fault/result/CAS domains, additive
-MBOM-only contracts, a guarded additive MBOM Outbox branch, read-only support
-metadata, direct translations and focused tests. It activates no route,
-persistent command row, Outbox row, worker, adapter, mapping or UI behavior.
+Exact frozen plan SHA `171a183` passes ordinary CI `32487934051`, so
+checkpoint 1 is active. Its pure topology/readiness/request/profile/state/
+fault/result/CAS domains, additive MBOM-only contracts, guarded additive MBOM
+Outbox branch, read-only support metadata, direct translations and focused
+tests are implemented locally and now await their own exact-SHA ordinary CI.
+They activate no route, persistent command row, Outbox row, worker, adapter,
+mapping or UI behavior; checkpoint 2 remains inactive until that CI passes.
 Production ERPNext/JCE, actual BOM method/field/UOM/alternate/effectivity/
 routing mapping, submitted-BOM successor policy, generic P8-07 operations and
 P8-05 through P8-09 remain inactive. There is no Hard Blocker.

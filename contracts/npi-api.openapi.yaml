@@ -21179,6 +21179,176 @@ components:
         result:
           oneOf: [{ $ref: "#/components/schemas/ItemPublishResult" }, { type: "null" }]
         permissions: { $ref: "#/components/schemas/ItemPublishPermissions" }
+    MbomPublishSha256:
+      type: string
+      pattern: "^[a-f0-9]{64}$"
+    MbomPublishTargetMode:
+      type: string
+      enum: [mock, synthetic, sandbox]
+    MbomPublishSourceRole:
+      type: string
+      enum: [assembly, component_only]
+    MbomPublishRequestState:
+      type: string
+      enum: [validated_mock, queued, processing, synthetic_verified, partially_succeeded, succeeded, failed_retryable, failed_final, uncertain_after_timeout, mapping_conflict]
+    MbomPublishSourceLine:
+      type: object
+      additionalProperties: false
+      required: [lineGlobalId, stableLineKey, parentLineKey, engineeringItemId, quantity, engineeringUom, alternates, effectivity, attributes, lineHash, sourceRole]
+      properties:
+        lineGlobalId: { type: string, format: uuid }
+        stableLineKey: { type: string, minLength: 1, maxLength: 128 }
+        parentLineKey: { oneOf: [{ type: string, minLength: 1, maxLength: 128 }, { type: "null" }] }
+        engineeringItemId: { type: string, minLength: 1, maxLength: 128 }
+        quantity: { type: string, pattern: "^[0-9]+(?:\\.[0-9]+)?$" }
+        engineeringUom: { type: string, minLength: 1, maxLength: 16 }
+        alternates:
+          type: array
+          maxItems: 32
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 128 }
+        effectivity:
+          type: object
+          maxProperties: 50
+          additionalProperties: { type: string, minLength: 1, maxLength: 280 }
+        attributes:
+          type: object
+          maxProperties: 50
+          additionalProperties: { type: string, minLength: 1, maxLength: 280 }
+        lineHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        sourceRole: { $ref: "#/components/schemas/MbomPublishSourceRole" }
+    MbomPublishSourceSnapshot:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, tenantId, projectGlobalId, ebomGlobalId, phase5PublishRequestGlobalId, phase5PublishRequestPayloadHash, publishPolicyGlobalId, publishPolicyVersion, publishPolicySnapshotHash, lifecycleVersion, releaseEventGlobalId, releaseEventHash, approvalEvidenceIds, releasedAt, topology, sourceStreamKeyHash, topologyHash, sourceHash]
+      properties:
+        schemaVersion: { type: integer, const: 2 }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        ebomGlobalId: { type: string, format: uuid }
+        phase5PublishRequestGlobalId: { type: string, format: uuid }
+        phase5PublishRequestPayloadHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        publishPolicyGlobalId: { type: string, format: uuid }
+        publishPolicyVersion: { type: integer, minimum: 1 }
+        publishPolicySnapshotHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        lifecycleVersion: { type: integer, minimum: 1 }
+        releaseEventGlobalId: { type: string, format: uuid }
+        releaseEventHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        approvalEvidenceIds:
+          type: array
+          minItems: 1
+          maxItems: 32
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        releasedAt: { type: string, format: date-time }
+        topology:
+          type: object
+          additionalProperties: false
+          required: [revisionGlobalId, revisionNumber, revisionSnapshotHash, lines]
+          properties:
+            revisionGlobalId: { type: string, format: uuid }
+            revisionNumber: { type: integer, minimum: 1 }
+            revisionSnapshotHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+            lines:
+              type: array
+              minItems: 1
+              maxItems: 500
+              items: { $ref: "#/components/schemas/MbomPublishSourceLine" }
+        sourceStreamKeyHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        topologyHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        sourceHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+    MbomItemMappingReadiness:
+      type: object
+      additionalProperties: false
+      required: [engineeringItemId, disposition, itemStreamKeyHash, mappingVersion, formalItemCode, targetVersion, observationHash, authority, responseAuthenticated, syntheticItemReference]
+      properties:
+        engineeringItemId: { type: string, minLength: 1, maxLength: 128 }
+        disposition: { type: string, enum: [advanced, not_ready, synthetic_reference] }
+        itemStreamKeyHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        mappingVersion: { type: integer, minimum: 0 }
+        formalItemCode: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        targetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        observationHash: { oneOf: [{ $ref: "#/components/schemas/MbomPublishSha256" }, { type: "null" }] }
+        authority: { type: string, enum: [none, synthetic, authoritative_sandbox] }
+        responseAuthenticated: { type: boolean }
+        syntheticItemReference: { oneOf: [{ type: string, pattern: "^synthetic-item-[a-f0-9]{24}$" }, { type: "null" }] }
+    MbomMappingExpectation:
+      type: object
+      additionalProperties: false
+      required: [assemblySourceKey, stableLineKey, mappingVersion, submissionState, intent, formalBomId, targetVersion, observationHash]
+      properties:
+        assemblySourceKey: { $ref: "#/components/schemas/MbomPublishSha256" }
+        stableLineKey: { type: string, minLength: 1, maxLength: 128 }
+        mappingVersion: { type: integer, minimum: 0 }
+        submissionState: { type: string, enum: [unmapped_create, editable_draft, submitted_immutable] }
+        intent: { type: string, enum: [create_draft, update_draft] }
+        formalBomId: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        targetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        observationHash: { oneOf: [{ $ref: "#/components/schemas/MbomPublishSha256" }, { type: "null" }] }
+    MbomExecutionProfileReference:
+      type: object
+      additionalProperties: false
+      required: [profileId, profileVersion, targetMode, environmentCode, projectionPolicyId, projectionPolicyVersion, projectionPolicyHash, snapshotHash]
+      properties:
+        profileId: { type: string, minLength: 1, maxLength: 128 }
+        profileVersion: { type: integer, minimum: 1 }
+        targetMode: { $ref: "#/components/schemas/MbomPublishTargetMode" }
+        environmentCode: { type: string, minLength: 1, maxLength: 64 }
+        projectionPolicyId: { type: string, minLength: 1, maxLength: 128 }
+        projectionPolicyVersion: { type: integer, minimum: 1 }
+        projectionPolicyHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        snapshotHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+    MbomPublishRequest:
+      type: object
+      additionalProperties: false
+      description: Immutable Project-scoped MBOM execution request; local commit never means target acceptance, BOM success, or submission.
+      required: [schemaVersion, apiVersion, operation, globalId, source, itemReadiness, itemMappingSetHash, mbomExpectations, mbomMappingSetHash, profile, actorUserId, serviceActorUserId, requestId, traceId, idempotencyKeyHash, targetIdempotencyKeyHash, semanticEffectHash, state, dispatchAllowed, payloadHash, createdAt]
+      properties:
+        schemaVersion: { type: integer, const: 2 }
+        apiVersion: { type: string, const: npi.erp-mbom-publish.v1 }
+        operation: { type: string, const: publish_released_mbom }
+        globalId: { type: string, format: uuid }
+        source: { $ref: "#/components/schemas/MbomPublishSourceSnapshot" }
+        itemReadiness:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/MbomItemMappingReadiness" }
+        itemMappingSetHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        mbomExpectations:
+          type: array
+          minItems: 1
+          maxItems: 499
+          items: { $ref: "#/components/schemas/MbomMappingExpectation" }
+        mbomMappingSetHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        profile: { $ref: "#/components/schemas/MbomExecutionProfileReference" }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        serviceActorUserId: { oneOf: [{ type: string, minLength: 1, maxLength: 254 }, { type: "null" }] }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        idempotencyKeyHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        targetIdempotencyKeyHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        semanticEffectHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        state: { $ref: "#/components/schemas/MbomPublishRequestState" }
+        dispatchAllowed: { type: boolean }
+        payloadHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        createdAt: { type: string, format: date-time }
+    MbomPublishNodeResult:
+      type: object
+      additionalProperties: false
+      description: Formal BOM identity is visible only for an authenticated authoritative Sandbox editable-draft observation.
+      required: [stableLineKey, assemblySourceKey, state, authority, responseAuthenticated, responseHash, formalBomId, targetVersion, targetSubmissionState, faultKind]
+      properties:
+        stableLineKey: { type: string, minLength: 1, maxLength: 128 }
+        assemblySourceKey: { $ref: "#/components/schemas/MbomPublishSha256" }
+        state: { type: string, enum: [synthetic_verified, succeeded_authoritative, failed_retryable, failed_final, blocked_item_mapping, blocked_submitted, uncertain_after_timeout, observed_conflict] }
+        authority: { type: string, enum: [none, synthetic, authoritative_sandbox] }
+        responseAuthenticated: { type: boolean }
+        responseHash: { $ref: "#/components/schemas/MbomPublishSha256" }
+        formalBomId: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        targetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        targetSubmissionState: { oneOf: [{ type: string, enum: [editable_draft, submitted_immutable] }, { type: "null" }] }
+        faultKind: { type: string, minLength: 1, maxLength: 100 }
     ProblemDetails:
       type: object
       additionalProperties: false

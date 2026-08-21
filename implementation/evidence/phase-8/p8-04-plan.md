@@ -2,7 +2,13 @@
 
 Recorded: `2026-08-21`
 
-Status: `FROZEN — CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI`
+Status: `FROZEN — AUDIT-PLAN CI PASS; CHECKPOINT 1 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
+
+Frozen plan/task-manifest checkpoint:
+`171a183009b10eb4c1d8f7135b635ca1537afd27`
+
+Frozen plan ordinary pull-request CI:
+`32487934051` (`PASS`)
 
 Audit base and retained P8-03 product checkpoint:
 `c11d97cc4e26cd3961d7927608eb2510f6411269`
@@ -27,6 +33,13 @@ The bounded requirement, domain, existing-capability, ownership and security
 audit passes. P8-03 is sealed at exact product SHA `c11d97c`; its Item request,
 Outbox, attempt, result and authoritative mapping history are immutable input
 evidence, not MBOM command state.
+
+The exact frozen plan/task-manifest SHA `171a183` passes ordinary CI
+`32487934051`: secret `96788603341`, repository `96788603559`, frontend
+`96788603635` and unchanged fixed-Linux visual `96788603482` pass; controlled
+lanes correctly skip. Checkpoint 1 is therefore active. Its pure domain,
+contract and guarded-metadata candidate is implemented locally and awaits its
+own exact-SHA ordinary CI before checkpoint 2 may activate.
 
 The repository provides useful foundations but no executable MBOM boundary:
 
@@ -533,8 +546,20 @@ reconciliation and rollback evidence before use.
   overrides. P8-05 through P8-09 and Phase 9 remain inactive.
 
 Standing continuous-delivery authority permits automatic progression only
-after each exact-SHA ordinary CI and affected Gate passes. This frozen plan
-transition activates checkpoint 1 only after its own ordinary CI passes.
+after each exact-SHA ordinary CI and affected Gate passes. The frozen plan
+transition passes ordinary CI `32487934051`, so checkpoint 1 is active.
 Checkpoint 1 is behavior-free domain/contract/metadata work; checkpoint 2
-cannot begin early. P8-04 remains in progress until the final Level 3 Gate
-passes, and no checkpoint authorizes production ERPNext/JCE contact.
+remains inactive until the exact checkpoint 1 product SHA ordinary CI passes.
+P8-04 remains in progress until the final Level 3 Gate passes, and no
+checkpoint authorizes production ERPNext/JCE contact.
+
+The first checkpoint 1 product candidate at
+`7afeee28620ba7f487cbe8bdbf3a56dd4b033744` reached ordinary CI
+`32493590200`: repository `96806707492`, frontend `96806707616` and visual
+`96806707939` passed, while secret-history job `96806708013` found only the
+synthetic `detached-signature-v1` string in a configuration test fixture. The
+fixture was unrelated to that test's production-label, IP-literal and generic-
+operation assertions and was replaced with the already governed
+`hmac-sha256-v1` test value. This is a secret-history fixture remediation, not
+a product, credential, contract, permission or Gate repair. Checkpoint 2 stays
+inactive until the amended exact SHA passes a new ordinary CI.

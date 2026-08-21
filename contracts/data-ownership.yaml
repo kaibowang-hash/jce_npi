@@ -480,6 +480,83 @@ objects:
       current_authoritative_observation_pointer_and_mapping_version: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: NONE, conflict: COMPARE_AND_SET}
       formal_item_code_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_ITEM_IDENTITY}
 
+  MBOMPublishRequest:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_released_ebom_topology_item_readiness_and_mapping_expectations: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      request_profile_projection_policy_actor_trace_and_idempotency_identity: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_IDENTITY}
+      execution_state_and_terminal_result_reference: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: APPEND_ONLY_TRANSITION}
+      formal_bom_id_target_version_submission_routing_and_manufacturing_lifecycle: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+
+  MBOMPublishNode:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_line_parent_role_item_readiness_and_mapping_expectation: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      node_state_and_result_reference: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: APPEND_ONLY_TRANSITION}
+      component_only_target_mutation: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  MBOMPublishCommandIdempotency:
+    owner_system: NPI_ONE_MBOM_PUBLISH_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      request_payload_hash_and_sealed_response: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  MBOMPublishOutboxMessage:
+    owner_system: NPI_ONE_MBOM_EXECUTION_SERVICE
+    erp_view: integration_message
+    fields:
+      immutable_schema_version_2_request_profile_topology_mapping_sets_and_actor_envelope: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_SNAPSHOT}
+      claim_lease_attempt_count_and_safe_disposition: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: NONE, conflict: LEASE_AND_ONE_WAY_TRANSITION}
+      item_version_1_and_legacy_execution_authority: {owner: EXISTING_OPERATION_SPECIFIC_CONTROLLER, editable_in: [], direction: NONE, conflict: NEVER_REINTERPRET}
+      raw_secret_authorization_header_and_arbitrary_response_body: {owner: SECRET_AND_TRANSPORT_BOUNDARY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
+  MBOMPublishAttempt:
+    owner_system: NPI_ONE_MBOM_EXECUTION_SERVICE
+    erp_view: reference_only
+    fields:
+      immutable_request_claim_profile_topology_mapping_sets_node_manifest_and_target_idempotency: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_IDENTITY}
+      adapter_boundary_transport_hash_and_safe_fault_truth: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: ONE_WAY_SEAL}
+      retry_or_reconciliation_authority: {owner: FUTURE_P8_07_RETRY_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  MBOMPublishResult:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      aggregate_request_event_attempt_source_mapping_sets_and_response_binding: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      aggregate_authority_fault_and_node_result_set_hash: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      aggregate_http_or_queue_status_as_success: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  MBOMPublishNodeResult:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      request_attempt_node_and_response_binding: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formal_bom_id_target_version_and_submission_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+      result_authority_fault_and_observation_hash: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      synthetic_or_mock_formal_mapping: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  MBOMMappingObservation:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      project_ebom_assembly_request_event_attempt_result_and_node_identity: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      observed_formal_bom_id_target_version_and_submission_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+      authority_disposition_previous_mapping_and_observation_hash: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_OBSERVATION}
+      synthetic_or_mock_formal_mapping: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  MBOMMappingHead:
+    owner_system: NPI_ONE_INTEGRATION_PROJECTION
+    erp_view: reference_only
+    fields:
+      project_ebom_and_stable_assembly_source_identity: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_authoritative_observation_pointer_and_mapping_version: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: NONE, conflict: COMPARE_AND_SET}
+      formal_bom_id_target_version_and_submission_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_SUBMITTED_BOM_IDENTITY}
+      submitted_bom_successor_or_overwrite_authority: {owner: NONE, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
   EngineeringPart:
     owner_system: NPI_ONE
     erp_view: reference_only

@@ -192,6 +192,50 @@
     {
       "if": {
         "properties": {
+          "event_type": {"const": "npi.mbom_publish_request.ready"}
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "NPI_ONE"},
+          "target_system": {"const": "ERPNEXT"},
+          "object_type": {"const": "MBOMPublishRequest"},
+          "object_version": {"const": 1},
+          "payload": {"$ref": "#/$defs/mbom_publish_request_ready_v1"}
+        },
+        "required": ["target_system", "payload_hash", "actor"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {"const": "erpnext.mbom_publish_result.observed"}
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "object_type": {"const": "MBOMPublishRequest"},
+          "object_version": {"const": 1},
+          "payload": {"$ref": "#/$defs/mbom_publish_result_observed_v1"}
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "correlation_id",
+          "causation_id",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
           "event_type": {
             "const": "npi.tooling_asset_request.ready"
           }
@@ -339,6 +383,8 @@
         "erpnext.ebom_publish_result.observed",
         "npi.item_publish_request.ready",
         "erpnext.item_publish_result.observed",
+        "npi.mbom_publish_request.ready",
+        "erpnext.mbom_publish_result.observed",
         "npi.tooling_asset_request.ready",
         "erpnext.tooling_asset_result.observed",
         "erpnext.customer_master.observed",
@@ -687,6 +733,195 @@
           }
         }
       }
+    },
+    "mbom_publish_request_ready_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "request_global_id",
+        "request_payload_hash",
+        "project_global_id",
+        "source_stream_key_hash",
+        "source_hash",
+        "topology_hash",
+        "item_mapping_set_hash",
+        "mbom_mapping_set_hash",
+        "assembly_count",
+        "target_mode",
+        "profile_id",
+        "profile_version",
+        "profile_snapshot_hash",
+        "projection_policy_hash",
+        "idempotency_key_hash",
+        "target_idempotency_key_hash",
+        "semantic_effect_hash"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "api_version": {"const": "npi.erp-mbom-publish.v1"},
+        "operation": {"const": "publish_released_mbom"},
+        "request_global_id": {"type": "string", "format": "uuid"},
+        "request_payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "source_stream_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "topology_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "item_mapping_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "mbom_mapping_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "assembly_count": {"type": "integer", "minimum": 1, "maximum": 499},
+        "target_mode": {"enum": ["synthetic", "sandbox"]},
+        "profile_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "profile_version": {"type": "integer", "minimum": 1},
+        "profile_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "projection_policy_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target_idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "semantic_effect_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "mbom_publish_result_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "request_global_id",
+        "request_payload_hash",
+        "outbox_event_id",
+        "attempt_global_id",
+        "attempt_number",
+        "source_hash",
+        "topology_hash",
+        "item_mapping_set_hash",
+        "mbom_mapping_set_hash",
+        "state",
+        "authority",
+        "response_authenticated",
+        "response_hash",
+        "fault_kind",
+        "node_results",
+        "observed_at"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "api_version": {"const": "npi.erp-mbom-publish.v1"},
+        "operation": {"const": "publish_released_mbom"},
+        "request_global_id": {"type": "string", "format": "uuid"},
+        "request_payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "outbox_event_id": {"type": "string", "format": "uuid"},
+        "attempt_global_id": {"type": "string", "format": "uuid"},
+        "attempt_number": {"type": "integer", "minimum": 1},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "topology_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "item_mapping_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "mbom_mapping_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "state": {
+          "enum": [
+            "synthetic_verified",
+            "partially_succeeded",
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "uncertain_after_timeout",
+            "mapping_conflict"
+          ]
+        },
+        "authority": {"enum": ["none", "synthetic", "authoritative_sandbox"]},
+        "response_authenticated": {"type": "boolean"},
+        "response_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "fault_kind": {"type": "string", "minLength": 1, "maxLength": 100},
+        "node_results": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 499,
+          "items": {"$ref": "#/$defs/mbom_publish_node_result_observed_v1"}
+        },
+        "observed_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "mbom_publish_node_result_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stable_line_key",
+        "assembly_source_key",
+        "state",
+        "authority",
+        "response_authenticated",
+        "response_hash",
+        "formal_bom_id",
+        "target_version",
+        "target_submission_state",
+        "fault_kind"
+      ],
+      "properties": {
+        "stable_line_key": {"type": "string", "minLength": 1, "maxLength": 128},
+        "assembly_source_key": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "state": {
+          "enum": [
+            "synthetic_verified",
+            "succeeded_authoritative",
+            "failed_retryable",
+            "failed_final",
+            "blocked_item_mapping",
+            "blocked_submitted",
+            "uncertain_after_timeout",
+            "observed_conflict"
+          ]
+        },
+        "authority": {"enum": ["none", "synthetic", "authoritative_sandbox"]},
+        "response_authenticated": {"type": "boolean"},
+        "response_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "formal_bom_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 140},
+        "target_version": {"type": ["string", "null"], "minLength": 1, "maxLength": 140},
+        "target_submission_state": {
+          "type": ["string", "null"],
+          "enum": ["editable_draft", "submitted_immutable", null]
+        },
+        "fault_kind": {"type": "string", "minLength": 1, "maxLength": 100}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"state": {"const": "succeeded_authoritative"}},
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "authority": {"const": "authoritative_sandbox"},
+              "response_authenticated": {"const": true},
+              "formal_bom_id": {"type": "string"},
+              "target_version": {"type": "string"},
+              "target_submission_state": {"const": "editable_draft"},
+              "fault_kind": {"const": "none"}
+            }
+          },
+          "else": {
+            "properties": {
+              "formal_bom_id": {"type": "null"},
+              "target_version": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"state": {"const": "synthetic_verified"}},
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "authority": {"const": "synthetic"},
+              "response_authenticated": {"const": false},
+              "target_submission_state": {"type": "null"},
+              "fault_kind": {"const": "none"}
+            }
+          }
+        }
+      ]
     },
     "item_publish_request_ready_v1": {
       "type": "object",

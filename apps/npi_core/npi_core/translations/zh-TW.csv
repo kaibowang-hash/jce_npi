@@ -7983,3 +7983,113 @@ Semantic Target Effect Hash,語意目標效果雜湊
 Another Item publish request is active for this source stream.,此來源串流已有其他物料發佈請求處於作用中。
 This exact Item publish effect was already retained and cannot be replayed.,此精確物料發佈效果已保留，不能重放。
 The Item source stream requires reconciliation before another publish request can be queued.,物料來源串流在排隊其他發佈請求前需要對帳。
+A pending MBOM Outbox message cannot retain a live claim.,待處理的 MBOM 寄件匣訊息不能保留作用中認領。
+A processing MBOM Outbox message requires an exact claim.,處理中的 MBOM 寄件匣訊息需要準確認領。
+Active MBOM Publish Request,作用中 MBOM 發佈請求
+Active MBOM Publish State,作用中 MBOM 發佈狀態
+An MBOM Outbox message cannot return to pending after the adapter boundary.,MBOM 寄件匣訊息越過配接器邊界後不能返回待處理狀態。
+An uncertain MBOM Outbox message requires a crossed adapter boundary.,不確定的 MBOM 寄件匣訊息需要已越過配接器邊界。
+Current MBOM Mapping Observation,目前 MBOM 映射觀察
+Current MBOM Mapping Observation Hash,目前 MBOM 映射觀察雜湊
+EBOM Global ID,EBOM 全域識別碼
+Exact MBOM Adapter Request Snapshot,準確 MBOM 配接器請求快照
+Exact MBOM Source Snapshot,準確 MBOM 來源快照
+Item Mapping Set Hash,物料映射集雜湊
+Item Readiness Snapshot,物料就緒快照
+Last MBOM Publish Attempt,最近 MBOM 發佈嘗試
+Last MBOM Publish Request,最近 MBOM 發佈請求
+Last MBOM Publish State,最近 MBOM 發佈狀態
+MBOM Adapter Request Snapshot Hash,MBOM 配接器請求快照雜湊
+MBOM Assembly Source Key,MBOM 組裝來源鍵
+MBOM Dispatch Allowed,允許 MBOM 分派
+MBOM Execution Profile ID,MBOM 執行設定檔識別碼
+MBOM Execution Profile Snapshot Hash,MBOM 執行設定檔快照雜湊
+MBOM Execution Profile Version,MBOM 執行設定檔版本
+MBOM Mapping Disposition,MBOM 映射處置
+MBOM Mapping Expectation Snapshot,MBOM 映射預期快照
+MBOM Mapping Head Hash,MBOM 映射頭雜湊
+MBOM Mapping Head Snapshot,MBOM 映射頭快照
+MBOM Mapping Observation Hash,MBOM 映射觀察雜湊
+MBOM Mapping Observation Snapshot,MBOM 映射觀察快照
+MBOM Mapping Set Hash,MBOM 映射集雜湊
+MBOM Mapping Version,MBOM 映射版本
+MBOM Node Manifest Hash,MBOM 節點清單雜湊
+MBOM Node Result Set Hash,MBOM 節點結果集雜湊
+MBOM Outbox Claim Token,MBOM 寄件匣認領權杖
+MBOM Outbox Event ID,MBOM 寄件匣事件識別碼
+MBOM Outbox Event Snapshot Hash,MBOM 寄件匣事件快照雜湊
+MBOM Outbox Message,MBOM 寄件匣訊息
+MBOM Outbox attempt count cannot decrease.,MBOM 寄件匣嘗試次數不能減少。
+MBOM Outbox claim fields must be present together.,MBOM 寄件匣認領欄位必須同時存在。
+MBOM Outbox lease expiry must follow claim time.,MBOM 寄件匣租約到期時間必須晚於認領時間。
+MBOM Outbox terminal state and result reference must agree.,MBOM 寄件匣終態必須與結果參照一致。
+MBOM Projection Policy Hash,MBOM 投影原則雜湊
+MBOM Publish API Version,MBOM 發佈 API 版本
+MBOM Publish Attempt,MBOM 發佈嘗試
+MBOM Publish Attempt Hash,MBOM 發佈嘗試雜湊
+MBOM Publish Attempt Number,MBOM 發佈嘗試次數
+MBOM Publish Attempt Snapshot,MBOM 發佈嘗試快照
+MBOM Publish Attempt State,MBOM 發佈嘗試狀態
+MBOM Publish Fault Kind,MBOM 發佈故障類型
+MBOM Publish Idempotency Scope Hash,MBOM 發佈冪等範圍雜湊
+MBOM Publish Node,MBOM 發佈節點
+MBOM Publish Node Result,MBOM 發佈節點結果
+MBOM Publish Node Result Hash,MBOM 發佈節點結果雜湊
+MBOM Publish Node Result Snapshot,MBOM 發佈節點結果快照
+MBOM Publish Node Result State,MBOM 發佈節點結果狀態
+MBOM Publish Node Snapshot Hash,MBOM 發佈節點快照雜湊
+MBOM Publish Node State,MBOM 發佈節點狀態
+MBOM Publish Operation,MBOM 發佈操作
+MBOM Publish Request,MBOM 發佈請求
+MBOM Publish Request Payload Hash,MBOM 發佈請求承載資料雜湊
+MBOM Publish Request State,MBOM 發佈請求狀態
+MBOM Publish Result,MBOM 發佈結果
+MBOM Publish Result Hash,MBOM 發佈結果雜湊
+MBOM Publish Result Snapshot,MBOM 發佈結果快照
+MBOM Publish Result State,MBOM 發佈結果狀態
+MBOM Publish Sealed Response,MBOM 發佈密封回應
+MBOM Publish Sealed Response Hash,MBOM 發佈密封回應雜湊
+MBOM Result Authority,MBOM 結果權威性
+MBOM Source Hash,MBOM 來源雜湊
+MBOM Source Role,MBOM 來源角色
+MBOM Source Stream Key Hash,MBOM 來源串流鍵雜湊
+MBOM Topology Hash,MBOM 拓撲雜湊
+MBOM mapping records can only be changed by the controlled MBOM execution service.,MBOM 映射記錄只能由受控 MBOM 執行服務變更。
+MBOM publish Outbox messages can only be changed by the controlled MBOM execution service.,MBOM 發佈寄件匣訊息只能由受控 MBOM 執行服務變更。
+MBOM publish attempts can only be changed by the controlled MBOM execution service.,MBOM 發佈嘗試只能由受控 MBOM 執行服務變更。
+MBOM publish execution history cannot be changed.,MBOM 發佈執行歷程不能變更。
+MBOM publish execution history cannot be deleted.,MBOM 發佈執行歷程不能刪除。
+MBOM publish idempotency records can only be changed through an authorized NPI command.,MBOM 發佈冪等記錄只能透過已授權的 NPI 命令變更。
+MBOM publish nodes can only be changed through the controlled MBOM execution service.,MBOM 發佈節點只能透過受控 MBOM 執行服務變更。
+MBOM publish requests can only be changed through an authorized NPI command.,MBOM 發佈請求只能透過已授權的 NPI 命令變更。
+MBOM publish results can only be appended by the controlled MBOM execution service.,MBOM 發佈結果只能由受控 MBOM 執行服務附加。
+MBOM publish stream guards can only be changed by the controlled MBOM execution service.,MBOM 發佈串流守衛只能由受控 MBOM 執行服務變更。
+NPI MBOM Mapping Head,NPI MBOM 映射頭
+NPI MBOM Mapping Observation,NPI MBOM 映射觀察
+NPI MBOM Publish Attempt,NPI MBOM 發佈嘗試
+NPI MBOM Publish Command Idempotency,NPI MBOM 發佈命令冪等記錄
+NPI MBOM Publish Node,NPI MBOM 發佈節點
+NPI MBOM Publish Node Result,NPI MBOM 發佈節點結果
+NPI MBOM Publish Request,NPI MBOM 發佈請求
+NPI MBOM Publish Result,NPI MBOM 發佈結果
+NPI MBOM Publish Stream Guard,NPI MBOM 發佈串流守衛
+Observed Formal BOM ID,已觀察正式 BOM 識別碼
+Observed Target Submission State,已觀察目標提交狀態
+Outbox messages cannot be converted between Item and MBOM execution.,寄件匣訊息不能在物料執行與 MBOM 執行之間轉換。
+Previous MBOM Mapping Observation Hash,上一個 MBOM 映射觀察雜湊
+Previous MBOM Mapping Version,上一個 MBOM 映射版本
+Released EBOM Publish Request,已發佈 EBOM 發佈請求
+Stable EBOM Line Key,穩定 EBOM 行鍵
+The MBOM Outbox envelope version or operation is invalid.,MBOM 寄件匣信封版本或操作無效。
+The MBOM Outbox event snapshot hash does not match its fields.,MBOM 寄件匣事件快照雜湊與其欄位不符。
+The MBOM Outbox payload hash does not match its exact fields.,MBOM 寄件匣承載資料雜湊與其準確欄位不符。
+The MBOM execution actor is unavailable.,MBOM 執行主體無法使用。
+This MBOM support record is outside the active execution capability.,此 MBOM 支援記錄不在作用中執行能力範圍內。
+assembly,組裝
+blocked_item_mapping,物料映射已阻斷
+blocked_submitted,已提交狀態阻斷
+component_only,僅組件
+editable_draft,可編輯草稿
+observed_partial,已觀察部分結果
+submitted_immutable,已提交且不可變
+succeeded_authoritative,權威成功

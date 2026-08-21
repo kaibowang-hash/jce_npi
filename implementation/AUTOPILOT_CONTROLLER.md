@@ -4265,3 +4265,43 @@ repeat or rewrite it merely to restore context. See
   actual BOM method/field/UOM/alternate/effectivity/routing mapping,
   submitted-BOM successor policy, generic P8-07 operations and P8-05 through
   P8-09 remain inactive. There is no Hard Blocker and no user action required.
+
+## 2026-08-21 P8-04 audit-plan CI PASS; checkpoint 1 awaits product CI
+
+- Exact frozen plan/task-manifest SHA
+  `171a183009b10eb4c1d8f7135b635ca1537afd27` passes ordinary CI
+  `32487934051`: secret `96788603341`, repository `96788603559`, frontend
+  `96788603635` and unchanged fixed-Linux visual `96788603482` pass;
+  controlled lanes correctly skip because the plan activates no runtime
+  behavior.
+- Standing continuous-delivery authority activates only checkpoint 1. Its
+  candidate adds pure exact-topology, P8-03 Item-readiness, MBOM expectation,
+  request/profile/state/fault/result/CAS domains; additive MBOM event/OpenAPI/
+  ownership contracts; an isolated guarded MBOM-v2 Outbox branch; nine
+  read-only support DocTypes; direct translations/catalog and focused tests.
+- The checkpoint remains response- and runtime-neutral: no BFF route,
+  persistent command or Outbox row, worker, adapter, mapping observation, UI,
+  target call or production/Sandbox profile is activated. Checkpoint 2 cannot
+  begin before the exact checkpoint 1 product SHA ordinary CI passes.
+- The controller marker is: `P8-04 audit-plan CI PASS; checkpoint 1 awaits exact-SHA ordinary CI`.
+  Production ERPNext/JCE endpoint, credential, data,
+  traffic, actual BOM mapping, submitted-successor authority, generic P8-07
+  operations and P8-05 through P8-09 remain inactive. There is no Hard Blocker
+  and no user action is required.
+
+## 2026-08-21 P8-04 checkpoint 1 secret-history fixture remediation
+
+- Checkpoint 1 candidate `7afeee28620ba7f487cbe8bdbf3a56dd4b033744`
+  reached ordinary CI `32493590200`: repository `96806707492`, frontend
+  `96806707616` and visual `96806707939` passed. Secret-history job
+  `96806708013` alone failed on a synthetic `detached-signature-v1` value in
+  `tests/test_phase8_mbom_publish_config.py`; no secret, credential or product
+  path was involved.
+- Because ordinary CI scans the complete `origin/main..HEAD` history, the
+  history-clean remediation amends only the current checkpoint tip. The
+  unrelated fixture reuses the already governed `hmac-sha256-v1` value; the
+  test's production-label, IP-literal and generic-operation fail-closed
+  assertions, product contracts, permissions and Gate criteria are unchanged.
+- Checkpoint 2 remains inactive until the amended exact checkpoint 1 SHA passes
+  a new ordinary CI. The controller marker remains: `P8-04 audit-plan CI PASS;
+  checkpoint 1 awaits exact-SHA ordinary CI`.

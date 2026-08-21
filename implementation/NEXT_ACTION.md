@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-04`
+`IN_PROGRESS_CHECKPOINT_1_AWAITING_ORDINARY_CI — P8-04`
 
-Recovery time: `2026-08-21T13:29:14Z`
+Recovery time: `2026-08-21T14:32:05Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -211,6 +211,12 @@ P8-03 final ordinary CI:
 P8-03 final Level 3 workflow:
 `32480568505`
 
+P8-04 frozen audit-plan checkpoint:
+`171a183009b10eb4c1d8f7135b635ca1537afd27`
+
+P8-04 frozen audit-plan ordinary CI:
+`32487934051` (`PASS`)
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -354,13 +360,14 @@ Item/MBOM mapping-set expectations are immutable. ERPNext retains formal BOM
 ID/version/submitted state/routing ownership; P8-04 never submits or
 overwrites a submitted BOM and preserves per-node partial/uncertain truth.
 
-P8-04 is `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI`. Wait for this exact
-frozen plan/task-manifest SHA to pass ordinary CI, then implement only
-checkpoint 1 pure topology/readiness/request/profile/state/fault/result/CAS
-domains, additive MBOM-only contracts, a guarded additive MBOM Outbox branch,
-read-only support metadata, direct translations and focused tests. Checkpoint
-1 activates no route, persistent command row, Outbox row, worker, adapter,
-mapping or UI. Do not contact production ERPNext/JCE,
+P8-04 is `IN_PROGRESS_CHECKPOINT_1_AWAITING_ORDINARY_CI`. Exact frozen
+plan/task-manifest SHA `171a183` passes ordinary CI `32487934051`. Checkpoint 1
+pure topology/readiness/request/profile/state/fault/result/CAS domains,
+additive MBOM-only contracts, a guarded additive MBOM Outbox branch, read-only
+support metadata, direct translations and focused tests are implemented and
+must pass their own exact-SHA ordinary CI before checkpoint 2 activates.
+Checkpoint 1 activates no route, persistent command row, Outbox row, worker,
+adapter, mapping or UI. Do not contact production ERPNext/JCE,
 install a Sandbox/default profile, infer BOM field/naming/routing/service-scope
 facts, overwrite a submitted BOM, treat Mock/synthetic/HTTP acceptance/partial/
 timeout as formal success, add generic P8-07 operations or activate P8-05
