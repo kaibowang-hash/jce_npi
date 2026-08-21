@@ -331,6 +331,12 @@ class V12ReconciliationTests(unittest.TestCase):
                             evidence
                         )
                     )
+                if requirement_id in self.verifier.EXPECTED_P8_04_AUDIT_REQUIREMENTS:
+                    self.assertTrue(
+                        self.verifier.EXPECTED_P8_04_AUDIT_EVIDENCE.issubset(
+                            evidence
+                        )
+                    )
 
         for requirement_id, expected_trace in {
             **self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS,
@@ -372,6 +378,12 @@ class V12ReconciliationTests(unittest.TestCase):
             if requirement_id in self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION:
                 self.assertTrue(
                     self.verifier.EXPECTED_P8_03_COMPLETED_EVIDENCE.issubset(
+                        evidence
+                    )
+                )
+            if requirement_id in self.verifier.EXPECTED_P8_04_AUDIT_REQUIREMENTS:
+                self.assertTrue(
+                    self.verifier.EXPECTED_P8_04_AUDIT_EVIDENCE.issubset(
                         evidence
                     )
                 )

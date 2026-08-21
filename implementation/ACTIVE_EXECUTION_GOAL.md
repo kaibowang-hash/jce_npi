@@ -4,7 +4,7 @@ Updated: `2026-08-21T12:44:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P8-04`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -102,13 +102,13 @@ Updated: `2026-08-21T12:44:00Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-04 — MBOM publish execution`
-  (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P8-04` (`ACTIVE_AUDIT_ONLY`)
+  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI`)
+- Resumed product task: `P8-04` (`ACTIVE_CHECKPOINT_1_AFTER_AUDIT_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-04 AUDIT`)
+  (`IN_PROGRESS — P8-04 CHECKPOINT 1 AWAITS AUDIT CI`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -253,15 +253,24 @@ CI `32479492064` and final unchanged Level 3 `32480568505`; runtime artifact
 `sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`.
 Complete evidence is `implementation/evidence/phase-8/p8-03-validation.md`.
 
-The only active atomic scope is the P8-04 requirement/domain/existing-
-capability/security audit for `INT-004` and the MBOM portion of `FR-DS-013`.
-It must freeze exact released EBOM hierarchy, current authoritative Item-
-mapping prerequisites, separate command/approval and ownership, target BOM/
-version authority, partial/uncertain truth, permissions, migration, rollback,
-tests and Level 3 impact in `implementation/evidence/phase-8/p8-04-plan.md`.
-No P8-04 product code is authorized before the frozen-plan transition passes
-ordinary CI. Production ERPNext/JCE, target writes, generic P8-07 operations
-and P8-05 through P8-09 remain inactive. There is no Hard Blocker.
+The bounded P8-04 audit passes and is frozen in
+`implementation/evidence/phase-8/p8-04-plan.md`. It keeps Item and MBOM
+commands/profiles/confirmations distinct; requires exact current authenticated
+P8-03 Item mapping heads for Sandbox while Mock retains explicit not-ready and
+synthetic uses only source-derived non-authoritative test references; freezes one exact released EBOM
+topology plus Item/MBOM mapping-set hashes; treats direct-parent lines as
+assembly sources and leaves as component-only; preserves per-node partial and
+uncertain truth; and never submits or overwrites a submitted BOM.
+
+Checkpoint 1 is the only next product scope and begins only after this
+plan/task-manifest transition passes exact-SHA ordinary CI. It may add pure
+topology/readiness/request/profile/state/fault/result/CAS domains, additive
+MBOM-only contracts, a guarded additive MBOM Outbox branch, read-only support
+metadata, direct translations and focused tests. It activates no route,
+persistent command row, Outbox row, worker, adapter, mapping or UI behavior.
+Production ERPNext/JCE, actual BOM method/field/UOM/alternate/effectivity/
+routing mapping, submitted-BOM successor policy, generic P8-07 operations and
+P8-05 through P8-09 remain inactive. There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

@@ -4225,3 +4225,43 @@ repeat or rewrite it merely to restore context. See
   exact-SHA ordinary CI. Production ERPNext/JCE, target writes, generic P8-07
   retry/DLQ/replay/reconciliation and P8-05 through P8-09 remain inactive.
   There is no Hard Blocker and no user action is required.
+
+## 2026-08-21 P8-04 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI
+
+- The bounded audit is frozen in
+  `implementation/evidence/phase-8/p8-04-plan.md`. Existing Phase 5 combined
+  publish rows remain immutable Mock source evidence; P8-03 Item requests,
+  profiles, stream guards, attempts, results and mapping observations remain a
+  separate operation and are never promoted or rewritten by P8-04.
+- P8-04 uses operation `publish_released_mbom` over one exact released EBOM
+  topology. Every Sandbox-bound source line must resolve a current exact P8-03
+  Item mapping backed by an `advanced` authenticated authoritative Sandbox observation.
+  Direct-parent lines are assembly sources; leaves are component-only and
+  cannot claim a formal BOM mutation.
+- One immutable MBOM request freezes Phase 5 request/release/policy/topology
+  hashes, Item-mapping-set and MBOM-mapping-set expectations, separate profile
+  and projection-policy snapshot, actor/service actor, trace, command and
+  target idempotency. Approval, request, Outbox, attempt, aggregate/per-node
+  result, mapping observation and head remain distinct.
+- ERPNext owns formal BOM ID, target version, submitted state, routing and
+  manufacturing lifecycle. P8-04 never submits a BOM. A submitted mapping or
+  target-reported submission/version drift blocks update; a successor policy
+  is not guessed. Partial and uncertain node truth is retained and a crossed
+  adapter boundary cannot be blindly redispatched before P8-07 reconciliation.
+- Mock has no Outbox/attempt/formal mapping/success and may expose explicit
+  Item `not_ready`. Disposable synthetic may prove only network-free batch/node
+  mechanics using source-derived test-only references; it cannot emit formal
+  Item/BOM identifiers or advance mapping. Formal mapping requires exact authenticated
+  authoritative non-production Sandbox response plus per-node locked CAS; no
+  Sandbox or production profile/adapter is installed.
+- Checkpoint 1 is limited to pure topology/readiness/request/profile/state/
+  fault/result/CAS domains, additive MBOM-only event/OpenAPI/ownership
+  contracts, a guarded additive MBOM Outbox schema-version-2 branch, read-only support metadata,
+  direct translations and focused tests. It activates no route, persistent
+  command row, Outbox row, worker, adapter, mapping or UI behavior. It begins
+  only after this frozen plan/task-manifest commit passes ordinary CI.
+- The controller marker is: `P8-04 audit PASS; checkpoint 1 awaits exact-SHA
+  ordinary CI`. Production ERPNext/JCE endpoint, credential, data, traffic,
+  actual BOM method/field/UOM/alternate/effectivity/routing mapping,
+  submitted-BOM successor policy, generic P8-07 operations and P8-05 through
+  P8-09 remain inactive. There is no Hard Blocker and no user action required.

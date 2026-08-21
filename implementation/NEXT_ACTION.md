@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-04`
+`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-04`
 
-Recovery time: `2026-08-21T12:44:00Z`
+Recovery time: `2026-08-21T13:29:14Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -344,20 +344,23 @@ cumulative Site `96769017531`. Runtime artifact `9446493624` has digest
 Complete evidence is
 `implementation/evidence/phase-8/p8-03-validation.md`.
 
-Execute only the bounded P8-04 requirement/domain/existing-capability/security
-audit for `INT-004` and the MBOM portion of `FR-DS-013`. Read the Phase 8
-requirement anchor and detailed requirement slices, P8-03 validation and
-ownership/contract boundaries, Phase 5 released EBOM evidence, existing
-integration request/result/Outbox/permission/migration code and directly
-related tests. Freeze exact released EBOM node/hierarchy/version/hash input,
-authoritative Item-mapping prerequisites, separate command and approval,
-target BOM/version authority, partial/uncertain truth, permissions, migration,
-rollback, allowed paths, affected tests and Level 3 impact in
-`implementation/evidence/phase-8/p8-04-plan.md`.
+The bounded P8-04 audit passes and is frozen in
+`implementation/evidence/phase-8/p8-04-plan.md`. It defines a separate
+`publish_released_mbom` command over one exact released EBOM topology; every
+Sandbox-bound node must have a current authenticated P8-03 Item mapping while
+Mock retains not-ready and synthetic uses only non-authoritative source-derived
+test references; direct-parent lines are assembly sources, leaves are component-only, and exact
+Item/MBOM mapping-set expectations are immutable. ERPNext retains formal BOM
+ID/version/submitted state/routing ownership; P8-04 never submits or
+overwrites a submitted BOM and preserves per-node partial/uncertain truth.
 
-P8-04 is `IN_PROGRESS_AUDIT`. No P8-04 product code, route, DocType, worker,
-adapter, UI or external effect is authorized until that frozen plan transition
-passes its exact-SHA ordinary CI. Do not contact production ERPNext/JCE,
+P8-04 is `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI`. Wait for this exact
+frozen plan/task-manifest SHA to pass ordinary CI, then implement only
+checkpoint 1 pure topology/readiness/request/profile/state/fault/result/CAS
+domains, additive MBOM-only contracts, a guarded additive MBOM Outbox branch,
+read-only support metadata, direct translations and focused tests. Checkpoint
+1 activates no route, persistent command row, Outbox row, worker, adapter,
+mapping or UI. Do not contact production ERPNext/JCE,
 install a Sandbox/default profile, infer BOM field/naming/routing/service-scope
 facts, overwrite a submitted BOM, treat Mock/synthetic/HTTP acceptance/partial/
 timeout as formal success, add generic P8-07 operations or activate P8-05

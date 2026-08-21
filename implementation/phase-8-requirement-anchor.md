@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-03 LEVEL 3 PASS; P8-04 AUDIT ACTIVE**
+Status: **IN PROGRESS — P8-04 AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
 
 Anchor date: 2026-08-16
 
@@ -407,12 +407,19 @@ production/Sandbox mapping remains held. Only the Item portion of `FR-DS-013`
 is technically verified; MBOM and production/Sandbox mapping remain held, so
 the whole requirement is not complete.
 
-Standing authority activates only the bounded P8-04 requirement/domain/
-existing-capability/security audit for `INT-004` and the MBOM portion of
-`FR-DS-013`. It must freeze exact released EBOM hierarchy/version/hash,
-current authoritative Item-mapping prerequisites, separate command/approval,
-target BOM/version authority, partial and uncertain truth, permissions,
-migration, rollback and Level 3 impact in
-`implementation/evidence/phase-8/p8-04-plan.md` before product code.
+The bounded P8-04 audit passes and is frozen in
+`implementation/evidence/phase-8/p8-04-plan.md`. It defines a separate
+`publish_released_mbom` command over one exact released EBOM topology, requires
+current exact authenticated P8-03 Item mappings for every Sandbox-bound node, classifies
+direct-parent lines as assembly sources and leaves as component-only, freezes
+Item/MBOM mapping-set expectations, preserves per-node partial/uncertain truth
+and never submits or overwrites a submitted BOM.
+
+Standing authority activates checkpoint 1 only after this frozen plan/task-
+manifest exact SHA passes ordinary CI. Checkpoint 1 is pure domain, contract,
+guarded Outbox/metadata, translations and focused tests; no route, persistent
+command row, Outbox row, worker, adapter, mapping, UI or target effect is
+active. Actual ERPNext method/field/UOM/alternate/effectivity/routing mapping,
+submitted-BOM successor policy and Sandbox/production activation remain held.
 `NFR-INT-001` full operations/DLQ/manual replay/reconciliation remains P8-07.
 P8-05 through P8-09 and production ERPNext/JCE remain inactive.

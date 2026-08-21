@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-21T12:44:00Z`
+Updated: `2026-08-21T13:29:14Z`
 
 ## Active hard blockers
 
@@ -14,15 +14,18 @@ Runtime artifact `9446493624` has digest
 `sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`;
 migrations twice, stream conflicts, uncertainty/no redispatch, cross-process
 replay, strict legacy read-only/non-claimable behavior, zero Mock mapping,
-zero production traffic and cleanup pass. Only the bounded P8-04 MBOM-publish
-audit is active. No user action, login or frontend operation is required.
+zero production traffic and cleanup pass. The bounded P8-04 audit is frozen;
+checkpoint 1 awaits the exact-SHA plan-transition ordinary CI. No user action,
+login or frontend operation is required.
 
 ## Active recovery
 
 None. P8-03 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-04 changes no product behavior until its audit plan and
-transition ordinary CI pass. Production adapters, formal Item/BOM mapping
+authoritative. P8-04 audit is frozen in
+`implementation/evidence/phase-8/p8-04-plan.md` and changes no product
+behavior; checkpoint 1 remains held until this plan/task-manifest transition
+ordinary CI passes. Production adapters, formal Item/BOM mapping
 from Mock or synthetic proof, Item/MBOM/Asset/quality production writes,
 P8-05 through P8-09 and the P8-07 operations/replay/reconciliation surface
 remain inactive.
@@ -42,17 +45,17 @@ credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-## Current authoritative blocker state — 2026-08-21T12:44:00Z
+## Current authoritative blocker state — 2026-08-21T13:29:14Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-03 exact final SHA `c11d97c` passes ordinary `32479492064` and final
   unchanged Level 3 `32480568505`; the release review reports no P0/P1/P2.
-- P8-04 is planning/audit-only. The next action is to freeze its MBOM command,
-  ownership, exact released source, authoritative Item-mapping prerequisites,
-  partial/uncertain truth, permission, migration, rollback and Gate contract.
+- P8-04 audit passes. The next action, after the frozen plan/task-manifest
+  exact-SHA ordinary CI passes, is checkpoint 1 pure MBOM topology/readiness,
+  contract and guarded metadata work with no route, row, worker or adapter.
 - Missing ERPNext BOM customization, naming/routing/service-scope and
   authenticated Sandbox facts are scoped external holds. No P8-04 product
-  route, row, worker, adapter or UI is authorized; production traffic, P8-05
+  route, row, worker, adapter or UI is authorized in checkpoint 1; production traffic, P8-05
   through P8-09 and P8-07 manual operations remain inactive.
 
 ## Historical recovery
