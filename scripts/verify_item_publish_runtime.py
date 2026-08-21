@@ -35,6 +35,27 @@ ACKNOWLEDGEMENT = (
 )
 RUNTIME_MARKER = "npi-one-item-publish-disposable-v1"
 
+LEGACY_OUTBOX_PAYLOAD_KEYS = frozenset(
+    {
+        "schema_version",
+        "api_version",
+        "operation",
+        "request_global_id",
+        "request_payload_hash",
+        "project_global_id",
+        "source_stream_key_hash",
+        "source_hash",
+        "intent",
+        "expected_mapping_version",
+        "expected_target_version",
+        "target_mode",
+        "profile_id",
+        "profile_version",
+        "profile_snapshot_hash",
+        "idempotency_key_hash",
+    }
+)
+
 
 def item_publish_path(project_id: str, request_id: str | None = None) -> str:
     base = f"/api/npi/v1/projects/{project_id}/item-publish-requests"
@@ -791,6 +812,56 @@ def _validate_fixture(
         )
 
 
+def _require_disposable_legacy_fixture(
+    fixture_run_id: str,
+    project_id: str,
+) -> None:
+    """Validate every identity boundary before a legacy fixture SQL statement."""
+
+    import frappe
+
+    # This helper must remain the first guard before any legacy fixture SQL.
+    # The document runtime helper validates the persistent Site configuration
+    # and the live database identity (database/user/port), not merely env vars.
+    document_runtime._validated_runtime_site()
+    require(
+        frappe.local.site == SITE_NAME == "npi.localhost"
+        and frappe.conf.get("db_name")
+        == document_runtime.DATABASE_NAME
+        == "npi_one_runtime"
+        and frappe.conf.get("npi_tenant_id") == TENANT_ID
+        and frappe.conf.get("npi_runtime_disposable_marker")
+        == document_runtime.RUNTIME_MARKER
+        == "npi-one-local-runtime-disposable-v1"
+        and document_runtime.DATABASE_USER == "npi_one_runtime"
+        and document_runtime.DATABASE_PORT == 3306,
+        "P8-03 legacy fixture Site/database identity drifted",
+    )
+    require(
+        os.environ.get("NPI_P8_03_RUNTIME_ENABLED") == "1"
+        and os.environ.get("NPI_P8_03_RUNTIME_MARKER") == RUNTIME_MARKER
+        and os.environ.get("NPI_P8_03_RUNTIME_PROJECT_ID") == project_id
+        and os.environ.get("NPI_P8_03_RUNTIME_REQUESTER") == ACTOR_USER
+        and isinstance(os.environ.get("NPI_P8_03_RUNTIME_WORKER"), str)
+        and os.environ.get("NPI_P8_03_RUNTIME_WORKER") not in {None, ACTOR_USER},
+        "P8-03 legacy fixture environment binding drifted",
+    )
+    require(
+        fixture_run_id == FIXTURE_RUN_ID,
+        "P8-03 legacy fixture namespace drifted",
+    )
+    require(
+        str(getattr(frappe.session, "user", "")) == "Administrator",
+        "P8-03 legacy fixture must run as Administrator",
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    require(
+        str(project.global_id) == project_id
+        and str(project.tenant_id) == TENANT_ID,
+        "P8-03 legacy fixture Project identity drifted",
+    )
+
+
 def _require_enabled_runtime_marker(project_id: str) -> None:
     require(
         os.environ.get("NPI_P8_03_RUNTIME_ENABLED") == "1"
@@ -798,6 +869,54 @@ def _require_enabled_runtime_marker(project_id: str) -> None:
         and os.environ.get("NPI_P8_03_RUNTIME_PROJECT_ID") == project_id,
         "P8-03 legacy fixture is not bound to the disposable runtime marker",
     )
+
+
+def _legacy_event_snapshot(
+    *,
+    event_id: str,
+    global_id: str,
+    tenant_id: str,
+    project_id: str,
+    event_type: str,
+    operation: str,
+    profile_id: str,
+    profile_version: int,
+    profile_snapshot_hash: str,
+    source_stream_key_hash: str,
+    source_hash: str,
+    expected_mapping_version: int,
+    expected_target_version: int | None,
+    actor_user_id: str,
+    request_id: str,
+    trace_id: str,
+    idempotency_key_hash: str,
+    payload_hash: str,
+) -> dict[str, object]:
+    """Return the frozen 8dd event snapshot, excluding post-8dd bindings."""
+
+    return {
+        "schemaVersion": 1,
+        "eventId": event_id,
+        "eventType": event_type,
+        "globalId": global_id,
+        "objectVersion": 1,
+        "tenantId": tenant_id,
+        "projectGlobalId": project_id,
+        "requestGlobalId": global_id,
+        "operation": operation,
+        "profileId": profile_id,
+        "profileVersion": profile_version,
+        "profileSnapshotHash": profile_snapshot_hash,
+        "sourceStreamKeyHash": source_stream_key_hash,
+        "sourceHash": source_hash,
+        "expectedMappingVersion": expected_mapping_version,
+        "expectedTargetVersion": expected_target_version,
+        "actorUserId": actor_user_id,
+        "requestId": request_id,
+        "traceId": trace_id,
+        "idempotencyKeyHash": idempotency_key_hash,
+        "payloadHash": payload_hash,
+    }
 
 
 def seed_legacy(
@@ -813,9 +932,9 @@ def seed_legacy(
     """
 
     import frappe
+    from npi_integration.item_publish.domain import canonical_hash
 
-    _require_enabled_runtime_marker(project_id)
-    require(fixture_run_id == FIXTURE_RUN_ID, "P8-03 legacy fixture namespace drifted")
+    _require_disposable_legacy_fixture(fixture_run_id, project_id)
     rows = _rows(
         "NPI Item Publish Request",
         {"project_global_id": project_id},
@@ -836,6 +955,52 @@ def seed_legacy(
     legacy_outbox_id = str(uuid5(UUID(source_request_id), "legacy-outbox"))
     source_stream = str(source_request.source_stream_key_hash)
     now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
+    source_payload = source_outbox.payload
+    if isinstance(source_payload, str):
+        source_payload = json.loads(source_payload)
+    require(
+        isinstance(source_payload, dict),
+        "P8-03 source Outbox payload is not a JSON object",
+    )
+    legacy_payload = dict(source_payload)
+    for key in (
+        "target_idempotency_key_hash",
+        "semantic_source_effect_hash",
+        "semantic_effect_hash",
+    ):
+        legacy_payload.pop(key, None)
+    legacy_payload["request_global_id"] = legacy_id
+    require(
+        set(legacy_payload) == LEGACY_OUTBOX_PAYLOAD_KEYS,
+        "P8-03 source Outbox payload is not the exact 8dd shape",
+    )
+    legacy_payload_hash = canonical_hash(legacy_payload)
+    legacy_trace_id = f"trace-p8-03-legacy-outbox-{FIXTURE_RUN_ID[:12]}"
+    legacy_event_snapshot = _legacy_event_snapshot(
+        event_id=legacy_outbox_id,
+        global_id=legacy_id,
+        tenant_id=str(source_request.tenant_id),
+        project_id=str(source_request.project_global_id),
+        event_type=str(source_outbox.event_type),
+        operation=str(source_outbox.operation),
+        profile_id=str(source_outbox.profile_id),
+        profile_version=int(source_outbox.profile_version),
+        profile_snapshot_hash=str(source_outbox.profile_snapshot_hash),
+        source_stream_key_hash=source_stream,
+        source_hash=str(source_outbox.source_hash),
+        expected_mapping_version=int(source_outbox.expected_mapping_version),
+        expected_target_version=(
+            int(source_outbox.expected_target_version)
+            if source_outbox.expected_target_version is not None
+            else None
+        ),
+        actor_user_id=str(source_outbox.actor_user_id),
+        request_id=legacy_request_id,
+        trace_id=legacy_trace_id,
+        idempotency_key_hash=str(source_outbox.idempotency_key_hash),
+        payload_hash=legacy_payload_hash,
+    )
+    legacy_event_snapshot_hash = canonical_hash(legacy_event_snapshot)
     duplicate_attempt_count = int(
         frappe.db.sql(
             """
@@ -858,140 +1023,215 @@ def seed_legacy(
     # A rerun of the disposable fixture replaces only its exact legacy row and
     # guard.  No production or unrelated project rows are addressable here.
     frappe.db.sql(
-        "DELETE FROM `tabNPI Item Publish Request` WHERE name = %s",
-        (legacy_id,),
+        "DELETE FROM `tabNPI Item Publish Request` "
+        "WHERE name = %s AND project_global_id = %s",
+        (legacy_id, project_id),
     )
     frappe.db.sql(
-        "DELETE FROM `tabNPI Outbox Message` WHERE name = %s",
-        (legacy_outbox_id,),
+        "DELETE FROM `tabNPI Outbox Message` "
+        "WHERE name = %s AND project_global_id = %s",
+        (legacy_outbox_id, project_id),
     )
     frappe.db.sql(
         "DELETE FROM `tabNPI Item Publish Stream Guard` "
         "WHERE source_stream_key_hash = %s AND project_global_id = %s",
         (source_stream, project_id),
     )
-    frappe.db.sql(
-        """
-        INSERT INTO `tabNPI Item Publish Request` (
-            name, creation, modified, modified_by, owner,
-            global_id, schema_version, api_version, operation,
-            tenant_id, project_global_id, source_stream_key_hash,
-            engineering_item_id, selected_publish_node_global_id,
-            source_snapshot, source_hash, released_evidence_snapshot,
-            released_evidence_hash, profile_id, profile_version,
-            profile_snapshot_hash, target_mode, environment_code, intent,
-            expected_mapping_version, expected_formal_item_code,
-            expected_target_version, expected_mapping_observation_hash,
-            state, dispatch_allowed, outbox_event_id, result_global_id,
-            actor_user_id, service_actor_user_id, request_id, trace_id,
-            idempotency_key_hash, target_idempotency_key_hash,
-            semantic_source_effect_hash, semantic_effect_hash, payload_hash,
-            optimistic_version, created_at, updated_at
-        ) VALUES (
-            %s, %s, %s, %s, %s,
-            %s, %s, %s, %s,
-            %s, %s, %s,
-            %s, %s,
-            %s, %s, %s,
-            %s, %s, %s,
-            %s, %s, %s, %s,
-            %s, %s,
-            %s, %s,
-            %s, %s,
-            %s, %s, %s, %s,
-            %s, %s, %s, %s,
-            %s, %s,
-            %s, %s, %s,
-            %s, %s, %s
-        )
-        """,
-        (
-            legacy_id,
-            now,
-            now,
-            ACTOR_USER,
-            ACTOR_USER,
-            legacy_id,
-            source_request.schema_version,
-            source_request.api_version,
-            source_request.operation,
-            source_request.tenant_id,
-            source_request.project_global_id,
-            source_request.source_stream_key_hash,
-            source_request.engineering_item_id,
-            source_request.selected_publish_node_global_id,
-            source_request.source_snapshot,
-            source_request.source_hash,
-            source_request.released_evidence_snapshot,
-            source_request.released_evidence_hash,
-            source_request.profile_id,
-            source_request.profile_version,
-            source_request.profile_snapshot_hash,
-            source_request.target_mode,
-            source_request.environment_code,
-            source_request.intent,
-            source_request.expected_mapping_version,
-            source_request.expected_formal_item_code,
-            source_request.expected_target_version,
-            source_request.expected_mapping_observation_hash,
-            "queued",
-            1,
-            legacy_outbox_id,
-            None,
-            source_request.actor_user_id,
-            None,
-            legacy_request_id,
-            f"trace-p8-03-legacy-{FIXTURE_RUN_ID[:12]}",
-            source_request.idempotency_key_hash,
-            None,
-            None,
-            None,
-            source_request.payload_hash,
-            1,
-            now,
-            now,
-        ),
+    legacy_request_columns = (
+        "name",
+        "creation",
+        "modified",
+        "modified_by",
+        "owner",
+        "global_id",
+        "schema_version",
+        "api_version",
+        "operation",
+        "tenant_id",
+        "project_global_id",
+        "source_stream_key_hash",
+        "engineering_item_id",
+        "selected_publish_node_global_id",
+        "source_snapshot",
+        "source_hash",
+        "released_evidence_snapshot",
+        "released_evidence_hash",
+        "profile_id",
+        "profile_version",
+        "profile_snapshot_hash",
+        "target_mode",
+        "environment_code",
+        "intent",
+        "expected_mapping_version",
+        "expected_formal_item_code",
+        "expected_target_version",
+        "expected_mapping_observation_hash",
+        "state",
+        "dispatch_allowed",
+        "outbox_event_id",
+        "result_global_id",
+        "actor_user_id",
+        "request_id",
+        "trace_id",
+        "idempotency_key_hash",
+        "payload_hash",
+        "optimistic_version",
+        "created_at",
+        "updated_at",
     )
-    # Copy the exact historical envelope shape, then clear only the fields
-    # introduced by the repair.  Keeping this fixture SQL local and marker
-    # gated avoids exercising a product controller as a migration backdoor.
-    frappe.db.sql(
-        "INSERT INTO `tabNPI Outbox Message` "
-        "SELECT * FROM `tabNPI Outbox Message` WHERE name = %s",
-        (str(source_outbox.name),),
+    legacy_request_values = (
+        legacy_id,
+        now,
+        now,
+        ACTOR_USER,
+        ACTOR_USER,
+        legacy_id,
+        source_request.schema_version,
+        source_request.api_version,
+        source_request.operation,
+        source_request.tenant_id,
+        source_request.project_global_id,
+        source_request.source_stream_key_hash,
+        source_request.engineering_item_id,
+        source_request.selected_publish_node_global_id,
+        source_request.source_snapshot,
+        source_request.source_hash,
+        source_request.released_evidence_snapshot,
+        source_request.released_evidence_hash,
+        source_request.profile_id,
+        source_request.profile_version,
+        source_request.profile_snapshot_hash,
+        source_request.target_mode,
+        source_request.environment_code,
+        source_request.intent,
+        source_request.expected_mapping_version,
+        source_request.expected_formal_item_code,
+        source_request.expected_target_version,
+        source_request.expected_mapping_observation_hash,
+        "queued",
+        1,
+        legacy_outbox_id,
+        None,
+        source_request.actor_user_id,
+        legacy_request_id,
+        f"trace-p8-03-legacy-{FIXTURE_RUN_ID[:12]}",
+        source_request.idempotency_key_hash,
+        source_request.payload_hash,
+        1,
+        now,
+        now,
+    )
+    legacy_request_placeholders = tuple("%s" for _ in legacy_request_columns)
+    require(
+        len(legacy_request_columns)
+        == len(legacy_request_placeholders)
+        == len(legacy_request_values),
+        "P8-03 legacy Request SQL shape drifted",
     )
     frappe.db.sql(
-        """
-        UPDATE `tabNPI Outbox Message`
-        SET name = %s, creation = %s, modified = %s, modified_by = %s,
-            owner = %s, event_id = %s, global_id = %s,
-            trace_id = %s, request_global_id = %s, request_id = %s,
-            state = %s, attempt_count = 0, claim_token = NULL,
-            claimed_at = NULL, lease_expires_at = NULL,
-            adapter_boundary_crossed = 0, last_attempt_global_id = NULL,
-            result_global_id = NULL, disposition = %s,
-            last_error_code = NULL, last_error_at = NULL,
-            service_actor_user_id = NULL,
-            target_idempotency_key_hash = NULL,
-            semantic_source_effect_hash = NULL,
-            semantic_effect_hash = NULL
-        WHERE name = %s
-        """,
-        (
-            legacy_outbox_id,
-            now,
-            now,
-            ACTOR_USER,
-            ACTOR_USER,
-            legacy_outbox_id,
-            legacy_id,
-            f"trace-p8-03-legacy-outbox-{FIXTURE_RUN_ID[:12]}",
-            legacy_id,
-            legacy_request_id,
-            "pending",
-            "legacy_unexecutable",
-            str(source_outbox.name),
-        ),
+        "INSERT INTO `tabNPI Item Publish Request` ("
+        + ", ".join(legacy_request_columns)
+        + ") VALUES ("
+        + ", ".join(legacy_request_placeholders)
+        + ")",
+        legacy_request_values,
+    )
+    legacy_outbox_columns = (
+        "name",
+        "creation",
+        "modified",
+        "modified_by",
+        "owner",
+        "event_id",
+        "event_type",
+        "global_id",
+        "object_version",
+        "trace_id",
+        "payload_hash",
+        "payload",
+        "state",
+        "attempt_count",
+        "last_error_code",
+        "schema_version",
+        "operation",
+        "tenant_id",
+        "project_global_id",
+        "request_global_id",
+        "profile_id",
+        "profile_version",
+        "profile_snapshot_hash",
+        "source_stream_key_hash",
+        "source_hash",
+        "expected_mapping_version",
+        "expected_target_version",
+        "actor_user_id",
+        "request_id",
+        "idempotency_key_hash",
+        "event_snapshot_hash",
+        "claim_token",
+        "claimed_at",
+        "lease_expires_at",
+        "adapter_boundary_crossed",
+        "last_attempt_global_id",
+        "result_global_id",
+        "disposition",
+        "last_error_at",
+    )
+    legacy_outbox_values = (
+        legacy_outbox_id,
+        now,
+        now,
+        ACTOR_USER,
+        ACTOR_USER,
+        legacy_outbox_id,
+        source_outbox.event_type,
+        legacy_id,
+        1,
+        legacy_trace_id,
+        legacy_payload_hash,
+        json.dumps(legacy_payload, separators=(",", ":"), sort_keys=True),
+        "pending",
+        0,
+        None,
+        source_outbox.schema_version,
+        source_outbox.operation,
+        source_outbox.tenant_id,
+        source_outbox.project_global_id,
+        legacy_id,
+        source_outbox.profile_id,
+        source_outbox.profile_version,
+        source_outbox.profile_snapshot_hash,
+        source_outbox.source_stream_key_hash,
+        source_outbox.source_hash,
+        source_outbox.expected_mapping_version,
+        source_outbox.expected_target_version,
+        source_outbox.actor_user_id,
+        legacy_request_id,
+        source_outbox.idempotency_key_hash,
+        legacy_event_snapshot_hash,
+        None,
+        None,
+        None,
+        0,
+        None,
+        None,
+        "ready",
+        None,
+    )
+    legacy_outbox_placeholders = tuple("%s" for _ in legacy_outbox_columns)
+    require(
+        len(legacy_outbox_columns)
+        == len(legacy_outbox_placeholders)
+        == len(legacy_outbox_values),
+        "P8-03 legacy Outbox SQL shape drifted",
+    )
+    frappe.db.sql(
+        "INSERT INTO `tabNPI Outbox Message` ("
+        + ", ".join(legacy_outbox_columns)
+        + ") VALUES ("
+        + ", ".join(legacy_outbox_placeholders)
+        + ")",
+        legacy_outbox_values,
     )
     return {
         "legacyOutboxId": legacy_outbox_id,
@@ -1019,9 +1259,9 @@ def inspect_legacy(
     """Verify migration left legacy bindings null and command blocked the stream."""
 
     import frappe
+    from npi_integration.item_publish.domain import canonical_hash
 
-    _require_enabled_runtime_marker(project_id)
-    require(fixture_run_id == FIXTURE_RUN_ID, "P8-03 legacy fixture namespace drifted")
+    _require_disposable_legacy_fixture(fixture_run_id, project_id)
     legacy = frappe.get_doc("NPI Item Publish Request", legacy_request_id)
     request_ids = [
         str(row["global_id"])
@@ -1033,6 +1273,8 @@ def inspect_legacy(
     ]
     require(
         set(request_ids) == set(expected_request_ids)
+        and str(legacy.global_id) == legacy_request_id
+        and str(legacy.outbox_event_id) == legacy_outbox_id
         and not legacy.target_idempotency_key_hash
         and not legacy.service_actor_user_id
         and not legacy.semantic_source_effect_hash
@@ -1062,10 +1304,50 @@ def inspect_legacy(
         "P8-03 legacy stream guard was not durably blocked",
     )
     outbox = frappe.get_doc("NPI Outbox Message", legacy_outbox_id)
+    outbox_payload = outbox.payload
+    if isinstance(outbox_payload, str):
+        outbox_payload = json.loads(outbox_payload)
+    require(
+        isinstance(outbox_payload, dict)
+        and set(outbox_payload) == LEGACY_OUTBOX_PAYLOAD_KEYS
+        and outbox_payload.get("request_global_id") == legacy_request_id
+        and outbox_payload.get("request_payload_hash") == str(legacy.payload_hash)
+        and canonical_hash(outbox_payload) == str(outbox.payload_hash),
+        "P8-03 legacy Outbox payload is not an exact 8dd envelope",
+    )
+    expected_event_snapshot = _legacy_event_snapshot(
+        event_id=str(outbox.event_id),
+        global_id=str(outbox.global_id),
+        tenant_id=str(outbox.tenant_id),
+        project_id=str(outbox.project_global_id),
+        event_type=str(outbox.event_type),
+        operation=str(outbox.operation),
+        profile_id=str(outbox.profile_id),
+        profile_version=int(outbox.profile_version),
+        profile_snapshot_hash=str(outbox.profile_snapshot_hash),
+        source_stream_key_hash=str(outbox.source_stream_key_hash),
+        source_hash=str(outbox.source_hash),
+        expected_mapping_version=int(outbox.expected_mapping_version),
+        expected_target_version=(
+            int(outbox.expected_target_version)
+            if outbox.expected_target_version is not None
+            else None
+        ),
+        actor_user_id=str(outbox.actor_user_id),
+        request_id=str(outbox.request_id),
+        trace_id=str(outbox.trace_id),
+        idempotency_key_hash=str(outbox.idempotency_key_hash),
+        payload_hash=str(outbox.payload_hash),
+    )
     require(
         str(outbox.request_global_id) == legacy_request_id
+        and str(outbox.global_id) == legacy_request_id
+        and str(outbox.event_id) == legacy_outbox_id
         and str(outbox.state) == "pending"
         and int(outbox.attempt_count or 0) == 0
+        and str(outbox.disposition) == "ready"
+        and str(outbox.event_snapshot_hash)
+        == canonical_hash(expected_event_snapshot)
         and not outbox.service_actor_user_id
         and not outbox.target_idempotency_key_hash
         and not outbox.semantic_source_effect_hash
@@ -1141,12 +1423,12 @@ def cleanup_legacy(
 ) -> dict[str, object]:
     import frappe
 
-    _require_enabled_runtime_marker(project_id)
-    require(fixture_run_id == FIXTURE_RUN_ID, "P8-03 legacy fixture namespace drifted")
+    _require_disposable_legacy_fixture(fixture_run_id, project_id)
     frappe.db.sql(
         "DELETE FROM `tabNPI Outbox Message` "
-        "WHERE name = %s AND request_global_id = %s",
-        (legacy_outbox_id, legacy_request_id),
+        "WHERE name = %s AND request_global_id = %s "
+        "AND project_global_id = %s",
+        (legacy_outbox_id, legacy_request_id, project_id),
     )
     frappe.db.sql(
         "DELETE FROM `tabNPI Item Publish Request` "
@@ -1541,6 +1823,7 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
     frappe.connect()
     try:
+        document_runtime._validated_runtime_site()
         # Read-only project capture runs as Administrator.  Worker fixtures
         # deliberately enter as the authenticated requester; the worker
         # boundary itself must switch to the frozen service actor and restore
