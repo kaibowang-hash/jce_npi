@@ -42,6 +42,7 @@ class Phase8MbomPublishSecurityTest(unittest.TestCase):
         frappe.PermissionError = self.PermissionError
         frappe.flags = types.SimpleNamespace()
         frappe.session = types.SimpleNamespace(user="engineer@example.invalid")
+        frappe.set_user = lambda user: setattr(frappe.session, "user", user)
         frappe.db = types.SimpleNamespace(
             get_value=lambda doctype, name, fields, as_dict=False: (
                 {"enabled": 1, "user_type": "System User"}
@@ -224,6 +225,16 @@ class Phase8MbomPublishSecurityTest(unittest.TestCase):
             self.frappe.session.user = "engineer@example.invalid"
         with self.assertRaises(RuntimeError):
             helper.insert_mbom_support_document(document, capability=capability)
+
+    def test_service_actor_scope_validates_switches_and_restores_exact_session(self) -> None:
+        self.assertEqual(self.frappe.session.user, "engineer@example.invalid")
+        with self.helper.mbom_service_actor_scope("worker@example.invalid"):
+            self.assertEqual(self.frappe.session.user, "worker@example.invalid")
+        self.assertEqual(self.frappe.session.user, "engineer@example.invalid")
+        self.frappe.db.get_value = lambda *_args, **_kwargs: None
+        with self.assertRaises(self.helper.MbomServiceActorUnavailable):
+            with self.helper.mbom_service_actor_scope("disabled@example.invalid"):
+                self.fail("disabled actor entered MBOM worker scope")
 
 
 if __name__ == "__main__":

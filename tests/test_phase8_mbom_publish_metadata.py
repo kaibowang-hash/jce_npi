@@ -199,7 +199,7 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
         self.assertEqual(strings("validate").count("Item Outbox Event Snapshot Hash"), 1)
         self.assertNotIn("MBOM Outbox Event Snapshot Hash", strings("validate"))
 
-    def test_checkpoint_two_activates_only_command_landing_not_target_transport(self) -> None:
+    def test_checkpoint_three_adds_only_closed_worker_and_network_free_fixture(self) -> None:
         files = {path.name for path in MBOM_ROOT.glob("*.py")}
         self.assertEqual(
             files,
@@ -211,6 +211,10 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
                 "frappe_repository.py",
                 "frappe_validation.py",
                 "problems.py",
+                "adapters.py",
+                "worker.py",
+                "worker_repository.py",
+                "runtime_fixture.py",
             },
         )
         combined = "\n".join(
@@ -230,6 +234,12 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
         api_source = api.read_text(encoding="utf-8")
         self.assertIn("enqueue_after_commit=False", api_source)
         self.assertNotIn("requests" + ".", api_source)
+        hooks = (ROOT / "apps/npi_integration/npi_integration/hooks.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("recover_mbom_publish_outbox_messages", hooks)
+        self.assertIn("npi_mbom_publish_adapter_registry", hooks)
+        self.assertIn("npi_mbom_publish_profile_resolver", hooks)
         openapi = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
         self.assertIn("/projects/{projectId}/mbom-publish-requests:", openapi)
         self.assertIn(

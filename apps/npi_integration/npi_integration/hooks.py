@@ -18,6 +18,7 @@ scheduler_events = {
     "all": [
         "npi_integration.inbound_project.worker.recover_inbound_project_receipts",
         "npi_integration.item_publish.worker.recover_item_publish_outbox_messages",
+        "npi_integration.mbom_publish.worker.recover_mbom_publish_outbox_messages",
     ]
 }
 
@@ -39,4 +40,13 @@ npi_item_publish_profile_resolver = (
 )
 npi_item_publish_adapter_registry = (
     "npi_integration.item_publish.runtime_fixture.resolve_adapter_registry"
+)
+
+# P8-04 is inert outside its explicit disposable marker. The only built-in
+# adapter is a network-free synthetic batch proof with no formal target IDs.
+npi_mbom_publish_profile_resolver = (
+    "npi_integration.mbom_publish.runtime_fixture.resolve_profile"
+)
+npi_mbom_publish_adapter_registry = (
+    "npi_integration.mbom_publish.runtime_fixture.resolve_adapter_registry"
 )

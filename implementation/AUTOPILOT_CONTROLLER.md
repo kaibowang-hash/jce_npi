@@ -4352,3 +4352,28 @@ repeat or rewrite it merely to restore context. See
   product behavior, API, permission, transaction, test threshold or Gate.
 - Checkpoint 3 remains inactive until the remediated exact checkpoint 2 SHA
   passes a new ordinary CI. The controller marker remains: `P8-04 checkpoint 1 PASS; checkpoint 2 awaits exact-SHA ordinary CI`.
+
+## 2026-08-21 P8-04 checkpoint 2 PASS; checkpoint 3 awaits product CI
+
+- The response-neutral repository-test remediation exact SHA
+  `197a59f9ecf41daa486e84d75ac6007af38fa423` passes ordinary CI
+  `32500465488`: repository `96828715143` passes `2,221/2,221` tracked Python
+  tests and reconciliation; frontend `96828715126` passes `1,018/1,018` unit,
+  `444/444` E2E and `8,108` direct trilingual sources; secret `96828715130`
+  scans `582` branch commits without leak; unchanged `123/123` visual
+  `96828715029` passes. Controlled lanes correctly skip.
+- Checkpoint 2 is sealed in
+  `implementation/evidence/phase-8/p8-04-command-outbox-checkpoint.md`.
+  Project-first routes, exact release/topology/current mapping resolution,
+  actor-bound idempotency and atomic request + nodes + Outbox + audit are
+  proven with commit-before-response and enqueue-after-commit.
+- Standing continuous-delivery authority activates only checkpoint 3: bounded
+  pending/expired leases and recovery, immutable batch attempts, a closed
+  default-disabled adapter registry, disposable network-free synthetic proof,
+  aggregate/per-node result truth and authenticated per-node mapping
+  compare-and-set. A crossed boundary cannot blindly redispatch; Mock and
+  synthetic cannot create formal BOM truth.
+- The checkpoint 3 candidate awaits affected checks and its own exact-SHA
+  ordinary CI. Checkpoint 4 UI, default/networked/production profiles, actual
+  ERPNext BOM projection facts, generic P8-07 operations and P8-05 through
+  P8-09 remain inactive. The controller marker is: `P8-04 checkpoint 2 PASS; checkpoint 3 awaits exact-SHA ordinary CI`.

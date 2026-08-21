@@ -54,7 +54,12 @@ unset \
   NPI_P8_03_RUNTIME_LEGACY_REQUEST_ID \
   NPI_P8_03_RUNTIME_LEGACY_NODE_ID \
   NPI_P8_03_RUNTIME_LEGACY_STREAM_HASH \
-  NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID
+  NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID \
+  NPI_P8_04_RUNTIME_ENABLED \
+  NPI_P8_04_RUNTIME_MARKER \
+  NPI_P8_04_RUNTIME_PROJECT_ID \
+  NPI_P8_04_RUNTIME_REQUESTER \
+  NPI_P8_04_RUNTIME_WORKER
 
 # shellcheck disable=SC1090
 source "${toolchain_file}"
@@ -904,6 +909,7 @@ released_summary_route_disable_config_changed=false
 projection_route_disable_config_changed=false
 inbound_project_runtime_environment_active=false
 item_publish_runtime_environment_active=false
+mbom_publish_runtime_environment_active=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -1419,6 +1425,10 @@ cleanup() {
   if [[ "${item_publish_runtime_environment_active}" == true ]]; then
     clear_item_publish_runtime_environment
     item_publish_runtime_environment_active=false
+  fi
+  if [[ "${mbom_publish_runtime_environment_active}" == true ]]; then
+    clear_mbom_publish_runtime_environment
+    mbom_publish_runtime_environment_active=false
   fi
   if [[ "${route_disable_config_changed}" == true ]]; then
     if ! restore_p405_route_switch; then
@@ -3015,6 +3025,52 @@ run_item_publish_runtime_verifier() {
   )
 }
 
+export_mbom_publish_runtime_environment() {
+  export NPI_P8_04_RUNTIME_ENABLED=1
+  export NPI_P8_04_RUNTIME_MARKER=npi-one-mbom-publish-disposable-v1
+  export NPI_P8_04_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
+  export NPI_P8_04_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
+  export NPI_P8_04_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+}
+
+clear_mbom_publish_runtime_environment() {
+  unset \
+    NPI_P8_04_RUNTIME_ENABLED \
+    NPI_P8_04_RUNTIME_MARKER \
+    NPI_P8_04_RUNTIME_PROJECT_ID \
+    NPI_P8_04_RUNTIME_REQUESTER \
+    NPI_P8_04_RUNTIME_WORKER
+}
+
+run_mbom_publish_runtime_verifier() {
+  local mode="$1"
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    if [[ "${mode}" == "disabled" ]]; then
+      clear_mbom_publish_runtime_environment
+      exec python "${repo_root}/scripts/verify_mbom_publish_runtime.py" \
+        --base-url "${base_url}" \
+        --disabled-probe
+    fi
+    export_mbom_publish_runtime_environment
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_mbom_publish_runtime.py" \
+        --base-url "${base_url}"
+    fi
+    echo "Unknown MBOM publish runtime verification mode." >&2
+    exit 2
+  )
+}
+
 verify_tooling_import_runtime_log_redaction() {
   local marker
   for marker in \
@@ -4027,6 +4083,27 @@ if [[ "${verification_mode}" == "all" ||
   fi
   if ! run_item_publish_runtime_verifier replay-only; then
     echo "Local Frappe Item publish cross-process replay verification failed." >&2
+    report_item_publish_runtime_failure
+    exit 1
+  fi
+  # P8-04 reuses only the retained released EBOM and disposable actors. Its
+  # own profile remains independently default-disabled and its sole built-in
+  # adapter is a network-free Synthetic batch proof with no formal MBOM IDs.
+  if ! run_mbom_publish_runtime_verifier disabled; then
+    echo "Local Frappe MBOM publish default-disabled probe failed." >&2
+    report_item_publish_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  export_mbom_publish_runtime_environment
+  mbom_publish_runtime_environment_active=true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_item_publish_runtime_failure
+    exit 1
+  fi
+  if ! run_mbom_publish_runtime_verifier fresh; then
+    echo "Local Frappe MBOM publish worker runtime verification failed." >&2
     report_item_publish_runtime_failure
     exit 1
   fi

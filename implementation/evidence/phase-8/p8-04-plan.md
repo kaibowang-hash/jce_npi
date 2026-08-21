@@ -588,3 +588,18 @@ repository has no direct SQL. The bounded harness remediation replaces only
 that literal with an AST Call-chain assertion, changes no scanner/ignore,
 product, permission, transaction, threshold or Gate truth, and checkpoint 3
 remains inactive until a new exact-SHA ordinary CI passes.
+
+The response-neutral remediation exact SHA
+`197a59f9ecf41daa486e84d75ac6007af38fa423` passes ordinary CI
+`32500465488`: repository `96828715143` passes `2,221` tracked Python tests;
+frontend `96828715126` passes `1,018` unit, `444` E2E and `8,108` direct
+trilingual sources; secret `96828715130` finds no leak; unchanged `123/123`
+visual `96828715029` passes. Checkpoint 2 is sealed in
+`p8-04-command-outbox-checkpoint.md`.
+
+Checkpoint 3 is now the only active scope: bounded leased recovery, immutable
+batch attempts, a closed default-disabled adapter registry, disposable
+network-free synthetic proof, aggregate/per-node result truth and exact
+authenticated mapping compare-and-set. Its candidate awaits affected checks
+and exact-SHA ordinary CI. Checkpoint 4 UI, production/Sandbox activation and
+generic operations remain inactive.

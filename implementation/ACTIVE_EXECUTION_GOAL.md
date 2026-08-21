@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-21T15:33:49Z`
+Updated: `2026-08-21T16:39:02Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2_AWAITING_ORDINARY_CI — P8-04`
+- Mode: `IN_PROGRESS_CHECKPOINT_3_AWAITING_ORDINARY_CI — P8-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,8 +18,8 @@ Updated: `2026-08-21T15:33:49Z`
   `32480568505` (`PASS — LEVEL 3` at `c11d97cc4e26cd3961d7927608eb2510f6411269`;
   repository, frontend, secret, `123/123` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32495121120` (`PASS` at
-  `97cdfbb843aeac422c71f57434a4a39f22c1954a`; P8-04 checkpoint 1)
+  `32500465488` (`PASS` at
+  `197a59f9ecf41daa486e84d75ac6007af38fa423`; P8-04 checkpoint 2)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -103,18 +103,21 @@ Updated: `2026-08-21T15:33:49Z`
 - P8-04 checkpoint 1 product checkpoint:
   `97cdfbb843aeac422c71f57434a4a39f22c1954a` (`CHECKPOINT 1 PASS`;
   ordinary CI `32495121120`; controlled lanes correctly skipped)
+- P8-04 checkpoint 2 final product checkpoint:
+  `197a59f9ecf41daa486e84d75ac6007af38fa423` (`CHECKPOINT 2 PASS`;
+  ordinary CI `32500465488`; controlled lanes correctly skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-04 — MBOM publish execution`
-  (`IN_PROGRESS_CHECKPOINT_2_AWAITING_ORDINARY_CI`)
-- Resumed product task: `P8-04` (`ACTIVE_CHECKPOINT_2_AFTER_CHECKPOINT_1_CI`)
+  (`IN_PROGRESS_CHECKPOINT_3_AWAITING_ORDINARY_CI`)
+- Resumed product task: `P8-04` (`ACTIVE_CHECKPOINT_3_AFTER_CHECKPOINT_2_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-04 CHECKPOINT 2 AWAITS ORDINARY CI`)
+  (`IN_PROGRESS — P8-04 CHECKPOINT 3 AWAITS ORDINARY CI`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -268,16 +271,14 @@ topology plus Item/MBOM mapping-set hashes; treats direct-parent lines as
 assembly sources and leaves as component-only; preserves per-node partial and
 uncertain truth; and never submits or overwrites a submitted BOM.
 
-Exact checkpoint 1 product SHA `97cdfbb` passes ordinary CI `32495121120`.
-The pure topology/readiness/request/profile/state/fault/result/CAS domains,
-additive MBOM-only contracts, guarded additive MBOM Outbox branch, read-only
-support metadata and direct translations are sealed without activating a
-route, business row, worker, adapter, mapping or UI behavior. Checkpoint 2 is
-active only for the fixed Project-first list/detail/create boundary, exact
-released source plus current Item/MBOM expectation resolution, actor-bound
-idempotency and atomic request + nodes + Outbox + audit with enqueue strictly
-after commit. Its candidate awaits affected checks and exact-SHA ordinary CI;
-worker, adapter, attempt/result/mapping execution and UI remain inactive.
+Exact checkpoint 2 final SHA `197a59f` passes ordinary CI `32500465488`.
+The fixed Project-first boundary, exact released source plus current Item/MBOM
+expectation resolution, actor-bound idempotency and atomic request + nodes +
+Outbox + audit with enqueue strictly after commit are sealed. Checkpoint 3 is
+active only for bounded leases/recovery, immutable batch attempts, the closed
+default-disabled adapter registry, disposable network-free synthetic proof,
+aggregate/per-node result truth and authenticated per-node mapping CAS. Its
+candidate awaits affected checks and exact-SHA ordinary CI; UI remains inactive.
 Production ERPNext/JCE, actual BOM method/field/UOM/alternate/effectivity/
 routing mapping, submitted-BOM successor policy, generic P8-07 operations and
 P8-05 through P8-09 remain inactive. There is no Hard Blocker.

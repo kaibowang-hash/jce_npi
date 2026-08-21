@@ -34,6 +34,10 @@ _CURRENT_CAPABILITY: ContextVar[MbomSupportWriteCapability | None] = ContextVar(
     default=None,
 )
 
+
+class MbomServiceActorUnavailable(RuntimeError):
+    """Raised when the exact frozen MBOM service actor cannot be entered."""
+
 _SUPPORT_WRITE_FLAGS = {
     "NPI MBOM Publish Request": MBOM_REQUEST_WRITE_FLAG,
     "NPI MBOM Publish Node": MBOM_NODE_WRITE_FLAG,
@@ -192,6 +196,33 @@ def validate_mbom_service_actor(actor_user_id: str) -> None:
     """Fail closed unless the frozen actor is an enabled internal API user."""
 
     _require_internal_npi_api_user(actor_user_id)
+
+
+@contextmanager
+def mbom_service_actor_scope(service_actor_user_id: str) -> Iterator[None]:
+    """Run one worker boundary as its frozen actor and always restore session."""
+
+    try:
+        _require_internal_npi_api_user(service_actor_user_id)
+    except (RuntimeError, ValueError) as error:
+        raise MbomServiceActorUnavailable(
+            "The frozen MBOM service actor is unavailable."
+        ) from error
+    session = getattr(frappe, "session", None)
+    previous_user = getattr(session, "user", None)
+    set_user = getattr(frappe, "set_user", None)
+    if not isinstance(previous_user, str) or not previous_user or not callable(set_user):
+        raise MbomServiceActorUnavailable(
+            "The MBOM worker user context is unavailable."
+        )
+    switched = previous_user != service_actor_user_id
+    if switched:
+        set_user(service_actor_user_id)
+    try:
+        yield
+    finally:
+        if switched:
+            set_user(previous_user)
 
 
 def insert_mbom_support_document(

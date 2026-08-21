@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-04 AUDIT-PLAN CI PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-04 CHECKPOINT 2 PASS; CHECKPOINT 3 AWAITS EXACT-SHA ORDINARY CI**
 
 Anchor date: 2026-08-16
 
@@ -426,12 +426,18 @@ direct trilingual sources; secret `96811612042` finds no leak; unchanged
 `123/123` visual `96811611815` passes. Complete evidence is
 `implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md`.
 
-Standing authority now activates checkpoint 2 only: fixed Project-first
-list/detail/create, exact released source and current Item/MBOM expectation
+Checkpoint 2 passes at exact SHA `197a59f` and ordinary CI `32500465488`.
+Project-first routes, exact released source and current Item/MBOM expectation
 resolution, actor-bound idempotency and atomic request + nodes + Outbox +
-audit with enqueue after commit. Its candidate awaits affected checks and
-exact-SHA ordinary CI; worker, adapter, attempts, result/mapping execution, UI
-and target effects remain inactive. Actual ERPNext method/field/UOM/alternate/effectivity/routing mapping,
+audit with enqueue after commit are sealed in
+`implementation/evidence/phase-8/p8-04-command-outbox-checkpoint.md`.
+
+Standing authority now activates checkpoint 3 only: bounded leased recovery,
+immutable attempts, a closed default-disabled adapter registry, disposable
+network-free synthetic proof, aggregate/per-node result truth and authenticated
+per-node mapping compare-and-set. Its candidate awaits affected checks and
+exact-SHA ordinary CI; UI and production target effects remain inactive.
+Actual ERPNext method/field/UOM/alternate/effectivity/routing mapping,
 submitted-BOM successor policy and Sandbox/production activation remain held.
 `NFR-INT-001` full operations/DLQ/manual replay/reconciliation remains P8-07.
 P8-05 through P8-09 and production ERPNext/JCE remain inactive.

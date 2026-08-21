@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2_AWAITING_ORDINARY_CI — P8-04`
+`IN_PROGRESS_CHECKPOINT_3_AWAITING_ORDINARY_CI — P8-04`
 
-Recovery time: `2026-08-21T15:33:49Z`
+Recovery time: `2026-08-21T16:39:02Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -223,6 +223,12 @@ P8-04 checkpoint 1 product checkpoint:
 P8-04 checkpoint 1 ordinary CI:
 `32495121120` (`PASS`)
 
+P8-04 checkpoint 2 final product checkpoint:
+`197a59f9ecf41daa486e84d75ac6007af38fa423`
+
+P8-04 checkpoint 2 ordinary CI:
+`32500465488` (`PASS`)
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -366,16 +372,15 @@ Item/MBOM mapping-set expectations are immutable. ERPNext retains formal BOM
 ID/version/submitted state/routing ownership; P8-04 never submits or
 overwrites a submitted BOM and preserves per-node partial/uncertain truth.
 
-P8-04 is `IN_PROGRESS_CHECKPOINT_2_AWAITING_ORDINARY_CI`. Exact checkpoint 1
-product SHA `97cdfbb` passes ordinary CI `32495121120`; complete evidence is
-`implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md`.
-Checkpoint 2 is active only for the fixed Project-first list/detail/create
-boundary, exact Phase 5 release/topology and current P8-03 Item plus MBOM
-expectation-set resolution, actor-bound idempotency and one atomic request +
-nodes + schema-version-2 Outbox + audit transaction, with enqueue only after
-commit. The candidate must pass affected checks and its own exact-SHA ordinary
-CI before checkpoint 3 activates. Worker, adapter, attempts, result/mapping
-execution and UI remain inactive. Do not contact production ERPNext/JCE,
+P8-04 is `IN_PROGRESS_CHECKPOINT_3_AWAITING_ORDINARY_CI`. Exact checkpoint 2
+SHA `197a59f` passes ordinary CI `32500465488`; complete evidence is
+`implementation/evidence/phase-8/p8-04-command-outbox-checkpoint.md`.
+Checkpoint 3 is active only for bounded leased worker/recovery, immutable
+batch attempts, a closed default-disabled adapter registry, disposable
+network-free synthetic proof, aggregate/per-node result truth and authenticated
+per-node mapping compare-and-set. The candidate must pass affected checks and
+its own exact-SHA ordinary CI before checkpoint 4 UI activates. No UI is active.
+Do not contact production ERPNext/JCE,
 install a Sandbox/default profile, infer BOM field/naming/routing/service-scope
 facts, overwrite a submitted BOM, treat Mock/synthetic/HTTP acceptance/partial/
 timeout as formal success, add generic P8-07 operations or activate P8-05

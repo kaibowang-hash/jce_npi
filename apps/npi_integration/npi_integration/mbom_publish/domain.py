@@ -982,10 +982,14 @@ class MbomNodeObservation:
             )
         if (
             self.state is MbomNodeResultState.UNCERTAIN_AFTER_TIMEOUT
-            and self.fault_kind is not MbomFaultKind.TIMEOUT_AFTER_POSSIBLE_COMMIT
+            and self.fault_kind
+            not in {
+                MbomFaultKind.TIMEOUT_AFTER_POSSIBLE_COMMIT,
+                MbomFaultKind.RESPONSE_CONTRACT_INVALID,
+            }
         ):
             raise MbomPublishContractError(
-                "An uncertain MBOM node requires the exact possible-commit timeout fault."
+                "An uncertain MBOM node requires an exact possible-commit fault."
             )
 
 
