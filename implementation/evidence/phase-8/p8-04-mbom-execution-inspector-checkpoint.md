@@ -350,3 +350,28 @@ validation, capability and atomic transaction, and adds no Link bypass,
 DocType, API, permission, Schema or ownership change. Historical cycles remain
 immutable; this post-array cycle is `diagnostic 1/1`, `repair 1/1`,
 `final 0/1`. Temporary MBOM diagnostics are disabled after tuple recovery.
+
+The repaired exact SHA `23621f7ef2bf659a9deeb3c4a310f9730e159083`
+passes ordinary run `32546035801` with repository `96964496188`, frontend
+`96964496090`, secret `96964496159` and visual `96964496184`. The cycle's sole
+unchanged final dispatch `32546776248` passes repository `96966501556`,
+frontend `96966501557`, secret `96966501473`, visual `96966501591` and
+preflight `96967752866`; controlled runtime `96967779592` alone fails at the
+opaque `exercise_worker` child after the create response has passed all fixed
+parent predicates. Failed child output remains withheld and no runtime artifact
+exists. Multiple worker, read, truth, replay, recoverability, summary and
+commit contexts remain reachable, so no product symbol is uniquely proven.
+The post-array cycle is frozen at `diagnostic 1/1`, `repair 1/1`, `final 1/1`.
+
+The separate worker-downstream cycle begins at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its four-path verifier-only checkpoint temporarily
+activates one controlled `exercise_worker` diagnostic. It passes only the exact
+validated Synthetic POST `HttpResult.trace_id` to the child, records at most
+one allowlisted `P804_WORKER_*` stage plus exception class and trace, rethrows
+the same exception, and preserves the existing product and transaction call
+order. The parent reads neither failed-child stdout nor stderr and accepts only
+one logical exact-three-key record through the already hardened mirrored-log
+reader. Every unsafe, absent or ambiguous record returns the original constant.
+All create, Item, replay and legacy diagnostic activations remain closed; no
+worker, repository, adapter, response, permission, transaction, Schema,
+ownership or Gate semantics are modified.

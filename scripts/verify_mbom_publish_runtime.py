@@ -6,9 +6,10 @@ import os
 import re
 import subprocess
 import tempfile
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
@@ -34,7 +35,9 @@ ACKNOWLEDGEMENT = (
     "readiness, MBOM expectations, and execution profile."
 )
 MBOM_CREATE_DIAGNOSTICS_ENABLED = False
+MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED = True
 _CREATE_FAILURE_MESSAGE = "P8-04 Synthetic command did not create one queued batch"
+_WORKER_FAILURE_MESSAGE = "P8-04 Bench fixture failed"
 _CREATE_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p804-mbom-create-v1"
@@ -71,6 +74,67 @@ _CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
         "P804_CREATE_API_RESPONSE",
     }
 )
+_WORKER_DOWNSTREAM_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P804_WORKER_FIXTURE_VALIDATE",
+        "P804_WORKER_REQUESTER_SESSION",
+        "P804_WORKER_PROCESS_OUTBOX",
+        "P804_WORKER_SESSION_RESTORE",
+        "P804_WORKER_REQUEST_READ",
+        "P804_WORKER_NODE_RESULTS_READ",
+        "P804_WORKER_RESULT_OUTCOME",
+        "P804_WORKER_REQUEST_STATE",
+        "P804_WORKER_NODE_CARDINALITY",
+        "P804_WORKER_NODE_TRUTH",
+        "P804_WORKER_TERMINAL_REPLAY",
+        "P804_WORKER_REPLAY_SESSION_RESTORE",
+        "P804_WORKER_TERMINAL_OUTCOME",
+        "P804_WORKER_RECOVERABLE_QUERY",
+        "P804_WORKER_RECOVERABLE_SET",
+        "P804_WORKER_ADAPTER_COUNT",
+        "P804_WORKER_MAPPING_COUNT",
+        "P804_WORKER_FIXTURE_COMMIT",
+    }
+)
+
+
+def _valid_worker_downstream_trace(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and _CREATE_DIAGNOSTIC_TRACE_PATTERN.fullmatch(value) is not None
+    )
+
+
+@contextmanager
+def worker_downstream_diagnostic_step(
+    code: str,
+    trace_id: str,
+) -> Iterator[None]:
+    """Record one closed verifier stage and preserve its original failure."""
+
+    try:
+        yield
+    except Exception as error:
+        try:
+            exception_type = type(error).__name__
+            if (
+                MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED
+                and code in _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES
+                and _valid_worker_downstream_trace(trace_id)
+                and item_runtime._TYPE_PATTERN.fullmatch(exception_type) is not None
+            ):
+                from npi_core.api import record_safe_diagnostic
+
+                record_safe_diagnostic(
+                    code=code,
+                    title="NPI MBOM publish worker verifier stage failed",
+                    exception_type=exception_type,
+                    trace_id=trace_id,
+                )
+        except Exception:
+            # Diagnostic recording cannot replace the original verifier failure.
+            pass
+        raise
 
 
 def mbom_publish_path(project_id: str, request_id: str | None = None) -> str:
@@ -291,6 +355,11 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     require_created_synthetic_batch(created, diagnostic_cursors)
     request_id = created.body.get("requestGlobalId")
     outbox_id = created.body.get("outboxEventId")
+    diagnostic_trace_id = getattr(created, "trace_id", None)
+    require(
+        _valid_worker_downstream_trace(diagnostic_trace_id),
+        _WORKER_FAILURE_MESSAGE,
+    )
     exercised = run_bench_fixture(
         "exercise_worker",
         {
@@ -298,6 +367,7 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
             "project_id": project_id,
             "request_id": request_id,
             "outbox_id": outbox_id,
+            "diagnostic_trace_id": diagnostic_trace_id,
         },
     )
     require(
@@ -376,7 +446,11 @@ def capture_inputs(
 
 
 def exercise_worker(
-    fixture_run_id: str, project_id: str, request_id: str, outbox_id: str
+    fixture_run_id: str,
+    project_id: str,
+    request_id: str,
+    outbox_id: str,
+    diagnostic_trace_id: str,
 ) -> dict[str, object]:
     import frappe
 
@@ -384,46 +458,163 @@ def exercise_worker(
     from npi_integration.mbom_publish.worker import process_outbox_message
     from npi_integration.mbom_publish.worker_repository import FrappeMbomPublishWorkerRepository
 
-    require(
-        fixture_run_id == FIXTURE_RUN_ID
-        and project_id == str(UUID(project_id))
-        and request_id == str(UUID(request_id))
-        and outbox_id == str(UUID(outbox_id)),
-        "P8-04 worker fixture identity drifted",
-    )
-    result = process_outbox_message(outbox_id)
-    request = frappe.get_doc("NPI MBOM Publish Request", request_id)
-    node_results = frappe.get_all(
-        "NPI MBOM Publish Node Result",
-        filters={"request_global_id": request_id},
-        fields=["state", "formal_bom_id", "target_version", "authority"],
-    )
-    require(
-        result.get("state") == "synthetic_verified"
-        and str(request.state) == "synthetic_verified"
-        and node_results
-        and all(
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_FIXTURE_VALIDATE", diagnostic_trace_id
+    ):
+        require(
+            _valid_worker_downstream_trace(diagnostic_trace_id)
+            and fixture_run_id == FIXTURE_RUN_ID
+            and project_id == str(UUID(project_id))
+            and request_id == str(UUID(request_id))
+            and outbox_id == str(UUID(outbox_id)),
+            "P8-04 worker fixture identity drifted",
+        )
+    requester_user = str(getattr(frappe.session, "user", ""))
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_REQUESTER_SESSION", diagnostic_trace_id
+    ):
+        require(
+            requester_user == ACTOR_USER,
+            "P8-04 worker fixture did not start as the authenticated requester",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_PROCESS_OUTBOX", diagnostic_trace_id
+    ):
+        result = process_outbox_message(outbox_id)
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_SESSION_RESTORE", diagnostic_trace_id
+    ):
+        require(
+            str(getattr(frappe.session, "user", "")) == requester_user,
+            "P8-04 worker did not restore the requester",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_REQUEST_READ", diagnostic_trace_id
+    ):
+        request = frappe.get_doc("NPI MBOM Publish Request", request_id)
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_NODE_RESULTS_READ", diagnostic_trace_id
+    ):
+        node_results = frappe.get_all(
+            "NPI MBOM Publish Node Result",
+            filters={"request_global_id": request_id},
+            fields=["state", "formal_bom_id", "target_version", "authority"],
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_RESULT_OUTCOME", diagnostic_trace_id
+    ):
+        require(
+            result.get("state") == "synthetic_verified",
+            "P8-04 Synthetic worker outcome drifted",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_REQUEST_STATE", diagnostic_trace_id
+    ):
+        require(
+            str(request.state) == "synthetic_verified",
+            "P8-04 Synthetic request state drifted",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_NODE_CARDINALITY", diagnostic_trace_id
+    ):
+        require(bool(node_results), "P8-04 Synthetic node results are unavailable")
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_NODE_TRUTH", diagnostic_trace_id
+    ):
+        require(
+            all(
             row.get("state") == "synthetic_verified"
             and row.get("authority") == "synthetic"
             and not row.get("formal_bom_id")
             and not row.get("target_version")
             for row in node_results
-        ),
-        "P8-04 Synthetic node truth drifted",
-    )
-    replay = process_outbox_message(outbox_id)
-    recoverable = FrappeMbomPublishWorkerRepository().recoverable_outbox_event_ids(
-        now=datetime.now(UTC)
-    )
-    return {
-        "adapterCalls": synthetic_adapter_call_count(),
-        "mappingHeadCount": frappe.db.count(
+            ),
+            "P8-04 Synthetic node truth drifted",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_TERMINAL_REPLAY", diagnostic_trace_id
+    ):
+        replay = process_outbox_message(outbox_id)
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_REPLAY_SESSION_RESTORE", diagnostic_trace_id
+    ):
+        require(
+            str(getattr(frappe.session, "user", "")) == requester_user,
+            "P8-04 worker did not restore the requester after terminal replay",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_TERMINAL_OUTCOME", diagnostic_trace_id
+    ):
+        require(
+            replay.get("state") == "not_claimed",
+            "P8-04 terminal replay outcome changed",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_RECOVERABLE_QUERY", diagnostic_trace_id
+    ):
+        recoverable = FrappeMbomPublishWorkerRepository().recoverable_outbox_event_ids(
+            now=datetime.now(UTC)
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_ADAPTER_COUNT", diagnostic_trace_id
+    ):
+        adapter_calls = synthetic_adapter_call_count()
+        require(adapter_calls == 1, "P8-04 Synthetic adapter call count drifted")
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_MAPPING_COUNT", diagnostic_trace_id
+    ):
+        mapping_head_count = frappe.db.count(
             "NPI MBOM Mapping Head", {"project_global_id": project_id}
-        ),
-        "recoverableCount": sum(1 for value in recoverable if str(value) == outbox_id),
+        )
+        require(mapping_head_count == 0, "P8-04 Synthetic mapping truth drifted")
+    with worker_downstream_diagnostic_step(
+        "P804_WORKER_RECOVERABLE_SET", diagnostic_trace_id
+    ):
+        recoverable_count = sum(
+            1 for value in recoverable if str(value) == outbox_id
+        )
+        require(recoverable_count == 0, "P8-04 terminal work became recoverable")
+    return {
+        "adapterCalls": adapter_calls,
+        "mappingHeadCount": mapping_head_count,
+        "recoverableCount": recoverable_count,
         "syntheticVerified": True,
-        "terminalReplayNotClaimed": replay.get("state") == "not_claimed",
+        "terminalReplayNotClaimed": True,
     }
+
+
+def _sanitized_worker_downstream_diagnostic(
+    trace_id: object,
+    cursors: dict[str, int] | None,
+) -> tuple[str, str, str] | None:
+    """Accept one logical allowlisted worker record for one exact trace."""
+
+    return item_runtime._sanitized_server_log_diagnostic(
+        trace_id,
+        cursors,
+        code_prefix="P804_WORKER_",
+        allowed_codes=_WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
+    )
+
+
+def _bench_fixture_failure_message(
+    method: str,
+    kwargs: dict[str, object],
+    cursors: dict[str, int] | None,
+) -> str:
+    if method != "exercise_worker" or not MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED:
+        return _WORKER_FAILURE_MESSAGE
+    diagnostic = _sanitized_worker_downstream_diagnostic(
+        kwargs.get("diagnostic_trace_id"),
+        cursors,
+    )
+    if diagnostic is None:
+        return _WORKER_FAILURE_MESSAGE
+    exception_type, code, trace_id = diagnostic
+    return (
+        f"{_WORKER_FAILURE_MESSAGE} [diagnostic_code={code}; "
+        f"exception_type={exception_type}; trace_id={trace_id}]"
+    )
 
 
 def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
@@ -437,6 +628,12 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         "NPI_DATABASE_ROOT_PASSWORD",
     ):
         environment.pop(variable, None)
+    diagnostic_cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if method == "exercise_worker"
+        and MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED
+        else None
+    )
     with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as fixture_output:
         completed = subprocess.run(
             [
@@ -454,7 +651,10 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
             stderr=subprocess.DEVNULL,
             text=True,
         )
-        require(completed.returncode == 0, "P8-04 Bench fixture failed")
+        if completed.returncode != 0:
+            raise RuntimeError(
+                _bench_fixture_failure_message(method, kwargs, diagnostic_cursors)
+            )
         fixture_output.seek(0)
         lines = [line for line in fixture_output if line.strip()]
     result = json.loads(lines[-1]) if lines else None
@@ -473,7 +673,14 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
         document_runtime._validated_runtime_site()
         frappe.set_user(ACTOR_USER if method == "exercise_worker" else "Administrator")
         result = fixtures[method](**kwargs)
-        frappe.db.commit()
+        if method == "exercise_worker":
+            with worker_downstream_diagnostic_step(
+                "P804_WORKER_FIXTURE_COMMIT",
+                str(kwargs.get("diagnostic_trace_id", "")),
+            ):
+                frappe.db.commit()
+        else:
+            frappe.db.commit()
         print(json.dumps(result, separators=(",", ":"), sort_keys=True))
     except Exception:
         frappe.db.rollback()

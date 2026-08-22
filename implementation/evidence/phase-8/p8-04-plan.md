@@ -820,3 +820,32 @@ permission, Schema or ownership change is introduced. The historical response
 and server/create cycles remain immutable. This post-array downstream cycle is
 now `diagnostic 1/1`, `repair 1/1`, `final 0/1`; all MBOM and Item diagnostic
 activations are closed and the response-neutral mechanism remains dormant.
+
+The post-array repair exact SHA
+`23621f7ef2bf659a9deeb3c4a310f9730e159083` passes ordinary CI
+`32546035801`: repository `96964496188`, frontend `96964496090`, secret
+`96964496159` and governed visual `96964496184` pass. Its only unchanged final
+Level 3 dispatch `32546776248` passes repository `96966501556`, frontend
+`96966501557`, secret `96966501473`, governed visual `96966501591` and
+controlled preflight `96967752866`. Controlled runtime `96967779592` stops
+only after the Synthetic create response has passed all five parent predicates,
+at the opaque `exercise_worker` child boundary. The failed child stderr is
+discarded, its stdout is not read, and runtime artifact upload is skipped.
+Static inspection cannot distinguish worker processing, retained reads,
+terminal replay, recoverability, summary or fixture-commit boundaries. The
+post-array cycle is therefore immutable at `diagnostic 1/1`, `repair 1/1`,
+`final 1/1`; no further repair can be inferred from that constant failure.
+
+An independent worker-downstream cycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its verifier-only checkpoint temporarily sets
+`MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED=True` for only the controlled
+Synthetic `exercise_worker` child. The exact validated shared
+`HttpResult.trace_id` correlates one of eighteen unique `P804_WORKER_*`
+lexical stages with one exception class. The parent reuses the strict mirrored
+bench/site log reader: only one logical three-key record is accepted, while
+missing, duplicate, divergent, wrong-trace, disallowed, extra-field, invalid,
+oversized, symlinked or out-of-root evidence fails closed to the existing
+constant. Failed child stdout and stderr remain unread, and no response,
+status, ID, actor, payload, hash, path, exception message or stack is emitted.
+No worker, repository, adapter, API, permission, transaction, Schema,
+ownership or Gate behavior changes.

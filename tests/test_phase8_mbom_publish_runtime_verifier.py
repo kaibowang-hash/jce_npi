@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import json
 import os
 import sys
+import tempfile
 import types
 import unittest
 from pathlib import Path
@@ -19,6 +21,7 @@ SERVER_DIAGNOSTICS = (
     ROOT
     / "apps/npi_integration/npi_integration/mbom_publish/diagnostics.py"
 )
+_TRACE_ID = "trace-0123456789abcdef0123456789abcdef"
 
 
 def load_verifier():
@@ -464,6 +467,288 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('"NPI MBOM Mapping Head"', segment)
         self.assertIn('"not_claimed"', segment)
         self.assertIn('"synthetic_verified"', segment)
+
+    def test_worker_downstream_checkpoint_has_one_context_per_allowlisted_stage(self):
+        module = self.module
+        self.assertTrue(module.MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.item_runtime.LEGACY_COLLECTION_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.item_runtime.LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED)
+        self.assertEqual(
+            module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
+            {
+                "P804_WORKER_FIXTURE_VALIDATE",
+                "P804_WORKER_REQUESTER_SESSION",
+                "P804_WORKER_PROCESS_OUTBOX",
+                "P804_WORKER_SESSION_RESTORE",
+                "P804_WORKER_REQUEST_READ",
+                "P804_WORKER_NODE_RESULTS_READ",
+                "P804_WORKER_RESULT_OUTCOME",
+                "P804_WORKER_REQUEST_STATE",
+                "P804_WORKER_NODE_CARDINALITY",
+                "P804_WORKER_NODE_TRUTH",
+                "P804_WORKER_TERMINAL_REPLAY",
+                "P804_WORKER_REPLAY_SESSION_RESTORE",
+                "P804_WORKER_TERMINAL_OUTCOME",
+                "P804_WORKER_RECOVERABLE_QUERY",
+                "P804_WORKER_RECOVERABLE_SET",
+                "P804_WORKER_ADAPTER_COUNT",
+                "P804_WORKER_MAPPING_COUNT",
+                "P804_WORKER_FIXTURE_COMMIT",
+            },
+        )
+        exercise = self.source.split("def exercise_worker(", 1)[1].split(
+            "\ndef ", 1
+        )[0]
+        local_runner = self.source.split("def run_local_bench_fixture(", 1)[1].split(
+            "\ndef ", 1
+        )[0]
+        for code in module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES:
+            context = local_runner if code == "P804_WORKER_FIXTURE_COMMIT" else exercise
+            with self.subTest(code=code):
+                self.assertEqual(context.count(f'"{code}"'), 1)
+                self.assertEqual(self.source.count(f'"{code}"'), 2)
+
+    def test_worker_downstream_step_records_only_closed_tuple_and_reraises(self):
+        records: list[dict[str, object]] = []
+        package = types.ModuleType("npi_core")
+        package.__path__ = []
+        api = types.ModuleType("npi_core.api")
+        api.record_safe_diagnostic = lambda **values: records.append(values)
+        original = RuntimeError("private actor payload hash /tmp/private")
+        with patch.dict(
+            sys.modules,
+            {"npi_core": package, "npi_core.api": api},
+        ), self.assertRaises(RuntimeError) as raised:
+            with self.module.worker_downstream_diagnostic_step(
+                "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID
+            ):
+                raise original
+        self.assertIs(raised.exception, original)
+        self.assertEqual(
+            records,
+            [
+                {
+                    "code": "P804_WORKER_PROCESS_OUTBOX",
+                    "title": "NPI MBOM publish worker verifier stage failed",
+                    "exception_type": "RuntimeError",
+                    "trace_id": _TRACE_ID,
+                }
+            ],
+        )
+        for forbidden in ("private actor", "payload", "/tmp/private"):
+            self.assertNotIn(forbidden, str(records))
+
+        for enabled, code, trace_id in (
+            (False, "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID),
+            (True, "P804_WORKER_NOT_ALLOWED", _TRACE_ID),
+            (True, "P804_WORKER_PROCESS_OUTBOX", "trace-private"),
+        ):
+            records.clear()
+            with self.subTest(enabled=enabled, code=code), patch.object(
+                self.module,
+                "MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+                enabled,
+            ), patch.dict(
+                sys.modules,
+                {"npi_core": package, "npi_core.api": api},
+            ), self.assertRaises(RuntimeError) as closed:
+                with self.module.worker_downstream_diagnostic_step(code, trace_id):
+                    raise original
+            self.assertIs(closed.exception, original)
+            self.assertEqual(records, [])
+
+    def test_worker_trace_comes_only_from_shared_http_result(self):
+        function = next(
+            node
+            for node in self.tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "run_fresh"
+        )
+        segment = ast.get_source_segment(self.source, function) or ""
+        self.assertIn('getattr(created, "trace_id", None)', segment)
+        self.assertIn('"diagnostic_trace_id": diagnostic_trace_id', segment)
+        self.assertNotIn("X-Trace-ID", segment)
+        self.assertNotIn("headers", segment)
+
+    def test_worker_log_reader_requires_one_exact_logical_record(self):
+        module = self.module
+
+        def read(
+            records: list[dict[str, object]],
+            site_records: list[dict[str, object]] | None = None,
+            trace_id: str = _TRACE_ID,
+        ):
+            with tempfile.TemporaryDirectory() as directory:
+                bench_path = Path(directory).resolve()
+                paths = (
+                    bench_path / "logs" / "npi_core.log",
+                    bench_path
+                    / "sites"
+                    / module.SITE_NAME
+                    / "logs"
+                    / "npi_core.log",
+                )
+                for path in paths:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("prior safe log\n", encoding="utf-8")
+                with patch.object(module.item_runtime, "BENCH_PATH", bench_path):
+                    cursors = module.item_runtime._replay_diagnostic_log_cursors()
+                    for path, source_records in zip(
+                        paths, (records, site_records or []), strict=True
+                    ):
+                        with path.open("a", encoding="utf-8") as log_file:
+                            for record in source_records:
+                                log_file.write(
+                                    "private actor path payload "
+                                    + json.dumps(record, separators=(",", ":"))
+                                    + "\n"
+                                )
+                    return module._sanitized_worker_downstream_diagnostic(
+                        trace_id, cursors
+                    )
+
+        valid = {
+            "code": "P804_WORKER_PROCESS_OUTBOX",
+            "exceptionType": "RuntimeError",
+            "traceId": _TRACE_ID,
+        }
+        expected = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
+        self.assertEqual(read([valid]), expected)
+        self.assertEqual(read([valid], [valid]), expected)
+        self.assertIsNone(read([valid, valid]))
+        self.assertIsNone(
+            read([valid], [{**valid, "code": "P804_WORKER_REQUEST_READ"}])
+        )
+        for records in (
+            [],
+            [{**valid, "traceId": "trace-ffffffffffffffffffffffffffffffff"}],
+            [{**valid, "code": "P804_WORKER_NOT_ALLOWED"}],
+            [{**valid, "exceptionType": "Bad Type /tmp/private"}],
+            [{**valid, "privateValue": "released MBOM"}],
+        ):
+            with self.subTest(records=records):
+                self.assertIsNone(read(records))
+        self.assertIsNone(read([valid], trace_id="trace-private"))
+
+    def test_failed_worker_child_never_reads_output_and_only_renders_safe_tuple(self):
+        completed = SimpleNamespace(returncode=1)
+        private = "private actor payload hash /tmp/private"
+        kwargs = {
+            "fixture_run_id": private,
+            "project_id": private,
+            "request_id": private,
+            "outbox_id": private,
+            "diagnostic_trace_id": _TRACE_ID,
+        }
+        diagnostic = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
+        with patch.object(
+            self.module.item_runtime,
+            "_replay_diagnostic_log_cursors",
+            return_value={"logs/npi_core.log": 0},
+        ), patch.object(
+            self.module,
+            "_sanitized_worker_downstream_diagnostic",
+            return_value=diagnostic,
+        ) as reader, patch.object(
+            self.module.subprocess,
+            "run",
+            return_value=completed,
+        ) as failed_run, self.assertRaises(RuntimeError) as raised:
+            self.module.run_bench_fixture("exercise_worker", kwargs)
+        run_kwargs = failed_run.call_args.kwargs
+        self.assertNotIn("capture_output", run_kwargs)
+        self.assertIs(run_kwargs["stderr"], self.module.subprocess.DEVNULL)
+        self.assertNotIn("stdout", vars(completed))
+        self.assertNotIn("stderr", vars(completed))
+        self.assertEqual(
+            str(raised.exception),
+            "P8-04 Bench fixture failed "
+            "[diagnostic_code=P804_WORKER_PROCESS_OUTBOX; "
+            f"exception_type=RuntimeError; trace_id={_TRACE_ID}]",
+        )
+        self.assertNotIn(private, str(raised.exception))
+        reader.assert_called_once()
+
+        with patch.object(
+            self.module.item_runtime,
+            "_replay_diagnostic_log_cursors",
+            return_value=None,
+        ), patch.object(
+            self.module.subprocess,
+            "run",
+            return_value=completed,
+        ), self.assertRaises(RuntimeError) as closed:
+            self.module.run_bench_fixture("exercise_worker", kwargs)
+        self.assertEqual(str(closed.exception), "P8-04 Bench fixture failed")
+        self.assertNotIn(private, str(closed.exception))
+
+    def test_successful_worker_child_result_is_read_only_after_zero_exit(self):
+        expected = {"fixture": "complete", "count": 2}
+
+        def complete_successfully(*_args, **kwargs):
+            kwargs["stdout"].write("bench prelude\n")
+            kwargs["stdout"].write(json.dumps(expected) + "\n")
+            kwargs["stdout"].flush()
+            return SimpleNamespace(returncode=0)
+
+        with patch.object(
+            self.module.item_runtime,
+            "_replay_diagnostic_log_cursors",
+            return_value={"logs/npi_core.log": 0},
+        ), patch.object(
+            self.module.subprocess,
+            "run",
+            side_effect=complete_successfully,
+        ) as successful_run:
+            result = self.module.run_bench_fixture(
+                "exercise_worker", {"diagnostic_trace_id": _TRACE_ID}
+            )
+        self.assertEqual(result, expected)
+        self.assertIs(
+            successful_run.call_args.kwargs["stderr"],
+            self.module.subprocess.DEVNULL,
+        )
+
+    def test_worker_fixture_commit_stage_records_and_preserves_commit_failure(self):
+        records: list[dict[str, object]] = []
+        package = types.ModuleType("npi_core")
+        package.__path__ = []
+        api = types.ModuleType("npi_core.api")
+        api.record_safe_diagnostic = lambda **values: records.append(values)
+        frappe = types.ModuleType("frappe")
+        original = RuntimeError("private commit message /tmp/private")
+        frappe.init = lambda **_kwargs: None
+        frappe.connect = lambda: None
+        frappe.set_user = lambda _user: None
+        frappe.destroy = lambda: None
+        frappe.db = SimpleNamespace(
+            commit=lambda: (_ for _ in ()).throw(original),
+            rollback=lambda: None,
+        )
+        kwargs = {
+            "fixture_run_id": self.module.FIXTURE_RUN_ID,
+            "project_id": "00000000-0000-0000-0000-000000000001",
+            "request_id": "00000000-0000-0000-0000-000000000002",
+            "outbox_id": "00000000-0000-0000-0000-000000000003",
+            "diagnostic_trace_id": _TRACE_ID,
+        }
+        with patch.dict(
+            sys.modules,
+            {"frappe": frappe, "npi_core": package, "npi_core.api": api},
+        ), patch.object(
+            self.module,
+            "exercise_worker",
+            return_value={"fixed": True},
+        ), patch.object(
+            self.module.document_runtime,
+            "_validated_runtime_site",
+        ), self.assertRaises(RuntimeError) as raised:
+            self.module.run_local_bench_fixture("exercise_worker", kwargs)
+        self.assertIs(raised.exception, original)
+        self.assertEqual(records[0]["code"], "P804_WORKER_FIXTURE_COMMIT")
+        self.assertNotIn("private commit", str(records))
 
     def test_verifier_has_no_target_network_or_production_identity(self):
         for forbidden in (
