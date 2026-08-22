@@ -925,7 +925,6 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
                     "operation": MBOM_PUBLISH_OPERATION,
                     "tenant_id": str(project.tenant_id),
                     "project_global_id": str(project.global_id),
-                    "request_global_id": str(value.global_id),
                     "profile_id": value.profile.profile_id,
                     "profile_version": value.profile.profile_version,
                     "profile_snapshot_hash": value.profile.snapshot_hash,

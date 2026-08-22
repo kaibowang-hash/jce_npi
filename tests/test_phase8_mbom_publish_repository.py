@@ -591,6 +591,158 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
             value,
         )
 
+    def test_mbom_outbox_uses_only_v2_request_link_under_pinned_validation(self) -> None:
+        project = types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1))
+        source = self.repository._source_from_phase5(project, phase5_request())
+        profile = MbomExecutionProfileReference(
+            "mbom-synthetic-v1",
+            1,
+            MbomTargetMode.SYNTHETIC,
+            "disposable-test",
+            "projection-v1",
+            1,
+            "7" * 64,
+            "8" * 64,
+        )
+        readiness = tuple(
+            ItemMappingReadiness(
+                engineering_item_id=item,
+                disposition=ItemReadinessDisposition.SYNTHETIC_REFERENCE,
+                item_stream_key_hash=self.repository._item_stream_key(
+                    source.tenant_id,
+                    source.project_global_id,
+                    item,
+                ),
+                mapping_version=0,
+                authority=MbomResultAuthority.SYNTHETIC,
+                synthetic_item_reference=(
+                    "synthetic-item-" + canonical_hash({"item": item})[:24]
+                ),
+            )
+            for item in source.engineering_item_ids
+        )
+        expectations = tuple(
+            MbomMappingExpectation(
+                source.assembly_source_key(key),
+                key,
+                0,
+                MbomTargetSubmissionState.UNMAPPED_CREATE,
+            )
+            for key in source.assembly_line_keys
+        )
+        value = create_mbom_publish_request(
+            source=source,
+            item_readiness=readiness,
+            mbom_expectations=expectations,
+            profile=profile,
+            actor_user_id="publisher@example.invalid",
+            service_actor_user_id="worker@example.invalid",
+            request_id=uid(30),
+            trace_id="trace-p804-outbox-link",
+            idempotency_key_hash="a" * 64,
+            global_id=uid(31),
+            created_at=datetime(2026, 8, 21, 15, 0, tzinfo=UTC),
+        )
+        captured: dict[str, object] = {}
+        hash_inputs: list[dict[str, object]] = []
+        original_hash = self.repository.canonical_hash
+
+        def get_doc(payload: dict[str, object]) -> object:
+            captured.update(payload)
+            return types.SimpleNamespace(**payload)
+
+        def recording_hash(payload: dict[str, object]) -> str:
+            hash_inputs.append(payload)
+            return original_hash(payload)
+
+        capability = object()
+        with patch.object(
+            self.repository.frappe,
+            "get_doc",
+            side_effect=get_doc,
+            create=True,
+        ), patch.object(
+            self.repository,
+            "insert_mbom_support_document",
+        ) as insert_document, patch.object(
+            self.repository,
+            "canonical_hash",
+            side_effect=recording_hash,
+        ):
+            self.repository.FrappeMbomPublishRepository._insert_outbox(
+                project,
+                value,
+                event_id=uid(32),
+                node_manifest_hash="f" * 64,
+                capability=capability,
+            )
+
+        inserted_document = insert_document.call_args.args[0]
+        insert_document.assert_called_once_with(
+            inserted_document,
+            capability=capability,
+        )
+        self.assertNotIn("request_global_id", captured)
+        self.assertEqual(captured["mbom_request_global_id"], str(value.global_id))
+        self.assertEqual(hash_inputs[-1]["requestGlobalId"], str(value.global_id))
+        self.assertEqual(
+            captured["event_snapshot_hash"],
+            original_hash(hash_inputs[-1]),
+        )
+
+        metadata = json.loads(
+            (
+                ROOT
+                / "apps/npi_integration/npi_integration/npi_integration/doctype"
+                / "npi_outbox_message/npi_outbox_message.json"
+            ).read_text(encoding="utf-8")
+        )
+        link_fields = tuple(
+            field for field in metadata["fields"] if field["fieldtype"] == "Link"
+        )
+        link_targets = {
+            field["fieldname"]: field["options"] for field in link_fields
+        }
+        self.assertEqual(
+            link_targets["request_global_id"],
+            "NPI Item Publish Request",
+        )
+        self.assertEqual(
+            link_targets["mbom_request_global_id"],
+            "NPI MBOM Publish Request",
+        )
+        existing_links = {
+            ("NPI Engineering Project", str(project.global_id)),
+            ("NPI MBOM Publish Request", str(value.global_id)),
+        }
+
+        class PinnedLinkValidationError(Exception):
+            pass
+
+        def pinned_frappe_v15_validate_links(document: dict[str, object]) -> None:
+            invalid = [
+                field["fieldname"]
+                for field in link_fields
+                if document.get(field["fieldname"])
+                and (field["options"], str(document[field["fieldname"]]))
+                not in existing_links
+            ]
+            if invalid:
+                raise PinnedLinkValidationError(tuple(invalid))
+
+        pinned_frappe_v15_validate_links(captured)
+        wrong_v1_binding = dict(captured, request_global_id=str(value.global_id))
+        with self.assertRaises(PinnedLinkValidationError):
+            pinned_frappe_v15_validate_links(wrong_v1_binding)
+        self.assertEqual(
+            {
+                field["fieldname"]
+                for field in link_fields
+                if captured.get(field["fieldname"])
+            },
+            {"project_global_id", "mbom_request_global_id"},
+        )
+
     def test_execution_projection_requires_exact_attempt_result_node_and_current_mapping(self) -> None:
         request_id = str(uid(70))
         outbox_id = str(uid(71))

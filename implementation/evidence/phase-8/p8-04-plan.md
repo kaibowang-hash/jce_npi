@@ -794,3 +794,29 @@ validated `HttpResult.trace_id`, one logical safe record and constant fallback
 remain unchanged. It changes no server, product, API, permission, transaction,
 Schema or Gate behavior and consumes no product repair. The activation must be
 closed after the single bounded tuple is recovered.
+
+The checkpoint exact SHA `abbdfdb441fea0709726475e326d1e267d5a2b07`
+passes ordinary CI `32537827926` on the one authorized same-run failed-job-only
+attempt 2. Frontend `96944176937` passes all `450` E2E cases; visual
+`96944177556`, repository `96944177886` and secret `96944193213` also pass.
+Attempt 1's sole old P7-05 loading-state miss is therefore confirmed as an
+unaffected transient and changes no timeout, retry, baseline or threshold.
+
+The cycle's one diagnostic dispatch `32539503692` passes controlled preflight
+`96946568519`; controlled runtime `96946604608` yields exactly one safe tuple:
+`P804_CREATE_OUTBOX_INSERT / LinkValidationError /
+trace-d8e26cfe8f525d188a45d723f57c3b42`. Pinned Frappe 15.115.4 validates
+Link fields before DocType lifecycle methods. The MBOM-v2 Outbox constructor
+incorrectly populated legacy Item-v1 `request_global_id`, whose metadata target
+is `NPI Item Publish Request`, while also populating the correct
+`mbom_request_global_id`. Project and MBOM request Links already exist; all
+four attempt/result Links are empty, proving the legacy binding is the unique
+invalid Link.
+
+The bounded repair removes only that persisted legacy Link value. The logical
+event `requestGlobalId`, correct MBOM Link, strict Link validation, capability,
+transaction and event hash remain unchanged; no `ignore_links`, DocType, API,
+permission, Schema or ownership change is introduced. The historical response
+and server/create cycles remain immutable. This post-array downstream cycle is
+now `diagnostic 1/1`, `repair 1/1`, `final 0/1`; all MBOM and Item diagnostic
+activations are closed and the response-neutral mechanism remains dormant.

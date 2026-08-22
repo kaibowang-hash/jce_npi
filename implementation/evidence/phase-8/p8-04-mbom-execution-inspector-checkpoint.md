@@ -326,3 +326,27 @@ server, product, API, permission, transaction, Schema or Gate behavior and
 does not consume a product repair. Missing, invalid or absent safe evidence
 still returns the original constant; the activation must be disabled after
 the single bounded tuple is recovered.
+
+The verifier checkpoint SHA
+`abbdfdb441fea0709726475e326d1e267d5a2b07` passes ordinary run
+`32537827926` attempt 2. Frontend `96944176937` passes `450/450`; visual
+`96944177556`, repository `96944177886` and secret `96944193213` pass. The
+first attempt's sole old P7-05 loading miss is confirmed as an unaffected
+transient without changing any frontend standard.
+
+The sole downstream diagnostic dispatch `32539503692`, preflight
+`96946568519` and runtime `96946604608` returns one safe tuple:
+`P804_CREATE_OUTBOX_INSERT / LinkValidationError /
+trace-d8e26cfe8f525d188a45d723f57c3b42`. The exact MBOM-v2 Outbox constructor
+set both the correct `mbom_request_global_id` and legacy Item-v1
+`request_global_id`. Pinned Frappe checks metadata Links before controller
+lifecycle methods; the latter targets `NPI Item Publish Request` and is the
+only invalid nonempty Link. Project and MBOM request bindings exist, and all
+attempt/result Links are empty.
+
+The repair deletes only the erroneous persisted legacy binding. It retains the
+logical event request identity, correct MBOM Link, event hash, strict Link
+validation, capability and atomic transaction, and adds no Link bypass,
+DocType, API, permission, Schema or ownership change. Historical cycles remain
+immutable; this post-array cycle is `diagnostic 1/1`, `repair 1/1`,
+`final 0/1`. Temporary MBOM diagnostics are disabled after tuple recovery.

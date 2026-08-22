@@ -33,7 +33,7 @@ ACKNOWLEDGEMENT = (
     "I confirm this request uses the exact released EBOM topology, current Item "
     "readiness, MBOM expectations, and execution profile."
 )
-MBOM_CREATE_DIAGNOSTICS_ENABLED = True
+MBOM_CREATE_DIAGNOSTICS_ENABLED = False
 _CREATE_FAILURE_MESSAGE = "P8-04 Synthetic command did not create one queued batch"
 _CREATE_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
