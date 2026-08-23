@@ -465,3 +465,28 @@ same-exception propagation, reversible actor scope and unread failed-child
 stdout/stderr are unchanged. Product worker, repository, runtime fixture,
 adapter, API, permission, transaction, Schema, ownership and Gate paths remain
 untouched.
+
+Checkpoint SHA `b2ca863a4ade5313e0f4a67ce7b72d116082baf6` passes ordinary
+run `32633617096` (frontend `97179985200`, visual `97179985244`, repository
+`97179985277`, secret scan `97179985288`). The one diagnostic dispatch
+`32634305787` passes preflight `97181650404`; runtime `97181674803` produces
+only `P804_WORKER_PROCESS_OUTBOX / MbomPublishContractError /
+trace-1e95b738f90a5ff6864b80a75104c33c`. All nine tail preconditions and the
+worker route/scope complete first. In `claim`, `_command` is then the first
+operation that can raise this contract type and it runs before claim mutation,
+profile lookup or adapter execution.
+
+Static cross-proof finds that create persisted and hashed all source nodes,
+including component-only leaves, while the worker query and adapter command
+intentionally contain assembly nodes only. `MbomAdapterCommand` rejects that
+deterministic manifest mismatch. The repair preserves all node persistence and
+component read projection, but limits the execution manifest/hash to assembly
+roles. A real mixed-topology insert test and the actual `_command` boundary
+test prove the fixed hash passes and an all-node/corrupt hash fails with zero
+writes. No DocType, API, permission, transaction, Schema, ownership, claim,
+lease or worker-order change is introduced.
+
+The post-datetime cycle is `diagnostic 1/1`, `repair 1/1`, `final 0/1`.
+`MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED=False`; every other Item and
+MBOM diagnostic activation is also false, with the response-neutral mechanism
+dormant. All earlier cycle histories and counters remain immutable.

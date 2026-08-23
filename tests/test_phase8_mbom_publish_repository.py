@@ -613,6 +613,127 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
             value,
         )
 
+    def test_node_insert_persists_full_topology_but_hashes_only_assemblies(self) -> None:
+        project = types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1))
+        source = self.repository._source_from_phase5(project, phase5_request())
+        profile = MbomExecutionProfileReference(
+            "mbom-synthetic-v1",
+            1,
+            MbomTargetMode.SYNTHETIC,
+            "disposable-test",
+            "projection-v1",
+            1,
+            "7" * 64,
+            "8" * 64,
+        )
+        readiness = tuple(
+            ItemMappingReadiness(
+                engineering_item_id=item,
+                disposition=ItemReadinessDisposition.SYNTHETIC_REFERENCE,
+                item_stream_key_hash=self.repository._item_stream_key(
+                    source.tenant_id,
+                    source.project_global_id,
+                    item,
+                ),
+                mapping_version=0,
+                authority=MbomResultAuthority.SYNTHETIC,
+                synthetic_item_reference=(
+                    "synthetic-item-" + canonical_hash({"item": item})[:24]
+                ),
+            )
+            for item in source.engineering_item_ids
+        )
+        expectations = tuple(
+            MbomMappingExpectation(
+                source.assembly_source_key(key),
+                key,
+                0,
+                MbomTargetSubmissionState.UNMAPPED_CREATE,
+            )
+            for key in source.assembly_line_keys
+        )
+        value = create_mbom_publish_request(
+            source=source,
+            item_readiness=readiness,
+            mbom_expectations=expectations,
+            profile=profile,
+            actor_user_id="publisher@example.invalid",
+            service_actor_user_id="worker@example.invalid",
+            request_id=uid(40),
+            trace_id="trace-p804-node-manifest",
+            idempotency_key_hash="a" * 64,
+            global_id=uid(41),
+            created_at=datetime(2026, 8, 21, 15, 0, tzinfo=UTC),
+        )
+        inserted: list[types.SimpleNamespace] = []
+
+        with patch.object(
+            self.repository.frappe,
+            "get_doc",
+            side_effect=lambda payload: types.SimpleNamespace(**payload),
+            create=True,
+        ), patch.object(
+            self.repository,
+            "insert_mbom_support_document",
+            side_effect=lambda document, **_kwargs: inserted.append(document),
+        ):
+            manifest_hash = self.repository.FrappeMbomPublishRepository._insert_nodes(
+                value,
+                now=value.created_at,
+                capability=object(),
+            )
+
+        self.assertEqual(
+            [document.stable_line_key for document in inserted],
+            [line.stable_line_key for line in source.lines],
+        )
+        self.assertEqual(
+            [document.source_role for document in inserted],
+            [source.roles[line.stable_line_key].value for line in source.lines],
+        )
+        component = next(
+            document
+            for document in inserted
+            if document.source_role == "component_only"
+        )
+        self.assertEqual(component.state, "component_only")
+        self.assertIsNone(component.mbom_expectation_snapshot)
+        assembly_manifest = [
+            {
+                "globalId": document.global_id,
+                "stableLineKey": document.stable_line_key,
+                "nodeSnapshotHash": document.node_snapshot_hash,
+            }
+            for document in inserted
+            if document.source_role == "assembly"
+        ]
+        all_node_manifest = [
+            {
+                "globalId": document.global_id,
+                "stableLineKey": document.stable_line_key,
+                "nodeSnapshotHash": document.node_snapshot_hash,
+            }
+            for document in inserted
+        ]
+        self.assertEqual(
+            manifest_hash,
+            canonical_hash(
+                {
+                    "requestGlobalId": str(value.global_id),
+                    "nodes": assembly_manifest,
+                }
+            ),
+        )
+        self.assertNotEqual(
+            manifest_hash,
+            canonical_hash(
+                {
+                    "requestGlobalId": str(value.global_id),
+                    "nodes": all_node_manifest,
+                }
+            ),
+        )
+
     def test_persisted_datetime_normalizes_pinned_frappe_values_and_rejects_invalid(self) -> None:
         expected = datetime(2026, 8, 21, 15, 0, tzinfo=UTC)
         for stored in (

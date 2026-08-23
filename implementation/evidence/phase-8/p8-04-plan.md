@@ -945,3 +945,35 @@ strict mirrored-log validation, same-exception rethrow, actor-scope restoration
 and unread failed-child stdout/stderr remain unchanged. Product worker,
 repository, fixture, adapter, API, permission, transaction, Schema, ownership
 and Gate behavior have no diff.
+
+The post-datetime checkpoint exact SHA
+`b2ca863a4ade5313e0f4a67ce7b72d116082baf6` passes ordinary run
+`32633617096`: frontend `97179985200`, governed visual `97179985244`,
+repository `97179985277` and secret scan `97179985288` pass. Its sole
+controlled diagnostic dispatch `32634305787` passes preflight `97181650404`;
+runtime `97181674803` emits exactly `P804_WORKER_PROCESS_OUTBOX /
+MbomPublishContractError / trace-1e95b738f90a5ff6864b80a75104c33c`.
+The nine post-reconstruction checks prove the Outbox, Request, binding, actor,
+route and guard facts before the unchanged worker call. The exception class and
+lexical order isolate the first `_command` construction in `claim`, before any
+claim write, profile read or adapter call.
+
+The create repository persisted every topology node and also hashed every node
+into the Outbox execution manifest. The worker deliberately reads only
+`source_role=assembly` nodes and `MbomAdapterCommand` recomputes the manifest
+from those executable nodes. Every valid assembly has at least one
+component-only leaf, so the all-node and assembly-only hashes differ
+deterministically at the command manifest predicate. Existing repository tests
+did not carry the real insert result across `_command`, while the worker test
+constructed an already matching assembly-only hash.
+
+The bounded repair keeps `_insert_nodes` persistence for every assembly and
+component-only node, including component read projection and snapshot truth,
+but includes only assembly-role nodes in the execution manifest/hash. It does
+not change DocType, API, permission, transaction, Schema, ownership, claim,
+lease, worker order or adapter behavior. Mixed-topology insert and actual
+`_command` tests lock the boundary and prove a corrupt all-node manifest fails
+before any write. The post-datetime cycle is now `diagnostic 1/1`, `repair
+1/1`, `final 0/1`; `MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED=False` and
+all other Item and MBOM diagnostic activations remain false. Historical cycle
+counters are immutable and the response-neutral mechanism remains dormant.

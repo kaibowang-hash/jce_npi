@@ -862,9 +862,14 @@ class FrappeMbomPublishRepository(FrappeItemPublishRepository):
                 ),
                 capability=capability,
             )
-            manifest.append(
-                {"globalId": str(node_id), "stableLineKey": line.stable_line_key, "nodeSnapshotHash": node_hash}
-            )
+            if role is MbomSourceRole.ASSEMBLY:
+                manifest.append(
+                    {
+                        "globalId": str(node_id),
+                        "stableLineKey": line.stable_line_key,
+                        "nodeSnapshotHash": node_hash,
+                    }
+                )
         return canonical_hash({"requestGlobalId": str(value.global_id), "nodes": manifest})
 
     @staticmethod

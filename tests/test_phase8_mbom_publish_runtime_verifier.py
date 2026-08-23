@@ -473,7 +473,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         module = self.module
         self.assertFalse(module.MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
-        self.assertTrue(module.MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -554,10 +554,16 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             module._WORKER_POST_DATETIME_DIAGNOSTIC_CODES,
             fixed_stages | outcome_codes | post_datetime_stages,
         )
-        self.assertEqual(
-            module._active_worker_diagnostic_codes(),
-            fixed_stages | outcome_codes | post_datetime_stages,
-        )
+        self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
+        with patch.object(
+            module,
+            "MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertEqual(
+                module._active_worker_diagnostic_codes(),
+                fixed_stages | outcome_codes | post_datetime_stages,
+            )
         exercise = self.source.split("def exercise_worker(", 1)[1].split(
             "\ndef ", 1
         )[0]
@@ -582,11 +588,16 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                     self.source.count(f'"{code}"'),
                     3 if code in post_datetime_stages else 2,
                 )
-        self.assertEqual(
-            module._active_worker_diagnostic_codes()
-            - module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
-            post_datetime_stages,
-        )
+        with patch.object(
+            module,
+            "MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertEqual(
+                module._active_worker_diagnostic_codes()
+                - module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
+                post_datetime_stages,
+            )
         self.assertNotIn("P804_WORKER_RESULT_OUTCOME", self.source)
 
     def test_worker_outcome_diagnostic_classifies_every_fixed_state_and_shape(self):
@@ -889,6 +900,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(post_datetime_code=code), patch.dict(
                 sys.modules,
                 {"npi_core": package, "npi_core.api": api},
+            ), patch.object(
+                self.module,
+                "MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED",
+                True,
             ), self.assertRaises(RuntimeError) as post_datetime:
                 with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
                     raise original
@@ -1092,7 +1107,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             successful_run.call_args.kwargs["stderr"],
             self.module.subprocess.DEVNULL,
         )
-        cursor_reader.assert_called_once()
+        cursor_reader.assert_not_called()
 
     def test_worker_fixture_commit_stage_records_and_preserves_commit_failure(self):
         records: list[dict[str, object]] = []

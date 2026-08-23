@@ -288,6 +288,36 @@ class Phase8MbomPublishWorkerRepositoryTest(unittest.TestCase):
         from npi_integration.mbom_publish.domain import canonical_hash
 
         self.patch("_locked_assembly_nodes", lambda _request: tuple(nodes))
+        component_line = next(
+            line
+            for line in self.value.source.lines
+            if line.stable_line_key not in expectations_by_key
+        )
+        component_manifest = manifest + [
+            {
+                "globalId": str(UUID(int=99)),
+                "stableLineKey": component_line.stable_line_key,
+                "nodeSnapshotHash": "f" * 64,
+            }
+        ]
+        self.patch(
+            "_outbox_for_request",
+            lambda _request: types.SimpleNamespace(
+                mbom_node_manifest_hash=canonical_hash(
+                    {
+                        "requestGlobalId": str(self.value.global_id),
+                        "nodes": component_manifest,
+                    }
+                )
+            ),
+        )
+        from npi_integration.mbom_publish.domain import MbomPublishContractError
+
+        with self.assertRaises(MbomPublishContractError):
+            original_command(self.value, self.request, attempt_number=1)
+        self.assertEqual(self.inserts, [])
+        self.assertEqual(self.saves, [])
+
         self.patch(
             "_outbox_for_request",
             lambda _request: types.SimpleNamespace(
