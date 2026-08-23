@@ -396,3 +396,24 @@ mirrored-log reader permit only code, `RuntimeError` and trace; no actual state,
 identifier, count, response body, exception message or stack is read or
 displayed. Worker, repository, runtime fixture and adapter product paths remain
 unchanged.
+
+The outcome checkpoint exact SHA
+`493e22e98c0793b20a802891f28a4eec83d42059` passes ordinary run
+`32628503647`. Its one controlled dispatch `32629226416` passes preflight
+`97169285669`; runtime `97169314833` emits only
+`P804_WORKER_OUTCOME_NOT_CLAIMED / RuntimeError /
+trace-7314ff51f535533bb66d04fbf6bbd0f7`. The tuple identifies a fixed
+response-safe return but does not distinguish the route reader's internal
+read, contract, binding and actor predicates. Product repair remains
+unauthorized, and this outcome cycle is frozen at `diagnostic 1/1`,
+`repair 0/1`, `final 0/1`.
+
+The independent not-claimed precondition subcycle begins at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Fourteen mutually exclusive verifier-only stages
+check the fresh Outbox, Request, route, actor scope and active guard facts in
+order before the unchanged first worker invocation. They perform no insert,
+save, commit, enqueue, adapter or network operation; the service actor scope is
+always restored. The prior worker/outcome activation is closed and only this
+subcycle is temporarily active. Exact-trace strict mirrored-log handling and
+constant-safe failure behavior remain unchanged, and no actual state, shape,
+identifier, actor, hash, count, response, message or stack is rendered.

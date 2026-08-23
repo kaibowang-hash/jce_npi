@@ -871,3 +871,26 @@ path. Only the code, fixed `RuntimeError` class and exact validated trace can
 cross the strict mirrored-log reader; the actual state, IDs, counts, body,
 message and stack remain unread and unrendered. Product worker, repository,
 runtime fixture and adapter behavior remain unchanged.
+
+The outcome checkpoint exact SHA
+`493e22e98c0793b20a802891f28a4eec83d42059` passes ordinary run
+`32628503647`. Its sole controlled dispatch `32629226416` passes preflight
+`97169285669`; runtime `97169314833` yields exactly
+`P804_WORKER_OUTCOME_NOT_CLAIMED / RuntimeError /
+trace-7314ff51f535533bb66d04fbf6bbd0f7`. This proves only the worker's fixed
+response-safe not-claimed branch. The route reader can still collapse several
+read, contract, binding and actor predicates to the same return, so no product
+repair is authorized. The outcome-predicate cycle is frozen at
+`diagnostic 1/1`, `repair 0/1`, `final 0/1`.
+
+An independent not-claimed precondition subcycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its four-path verifier-only checkpoint performs
+fourteen ordered read-only checks before the unchanged first worker call:
+Outbox read and contract, request Link and read, request reconstruction,
+Outbox binding, profile actor and validation, route read, reversible service
+scope, pending Outbox, queued Request, and guard read and active binding. Each
+predicate has one exact allowlisted code. The old worker and outcome activation
+is closed; only this subcycle is temporarily active. No insert, save, commit,
+enqueue, adapter or network call is added, and the strict exact-trace mirrored
+reader still emits only code, exception class and trace. Product worker,
+repository, runtime fixture and adapter paths remain unchanged.

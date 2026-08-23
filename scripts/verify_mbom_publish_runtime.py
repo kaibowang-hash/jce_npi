@@ -35,7 +35,8 @@ ACKNOWLEDGEMENT = (
     "readiness, MBOM expectations, and execution profile."
 )
 MBOM_CREATE_DIAGNOSTICS_ENABLED = False
-MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED = True
+MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED = False
+MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED = True
 _CREATE_FAILURE_MESSAGE = "P8-04 Synthetic command did not create one queued batch"
 _WORKER_FAILURE_MESSAGE = "P8-04 Bench fixture failed"
 _CREATE_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
@@ -92,6 +93,24 @@ _WORKER_OUTCOME_SHAPE_DIAGNOSTIC_CODE_BY_PREDICATE = {
     "state_type": "P804_WORKER_OUTCOME_STATE_TYPE",
     "state_unknown": "P804_WORKER_OUTCOME_STATE_UNKNOWN",
 }
+_WORKER_NOT_CLAIMED_PRECONDITION_CODES = frozenset(
+    {
+        "P804_NOT_CLAIMED_OUTBOX_READ",
+        "P804_NOT_CLAIMED_OUTBOX_CONTRACT",
+        "P804_NOT_CLAIMED_REQUEST_LINK",
+        "P804_NOT_CLAIMED_REQUEST_READ",
+        "P804_NOT_CLAIMED_REQUEST_REBUILD",
+        "P804_NOT_CLAIMED_OUTBOX_BINDING",
+        "P804_NOT_CLAIMED_PROFILE_ACTOR",
+        "P804_NOT_CLAIMED_ACTOR_VALIDATE",
+        "P804_NOT_CLAIMED_ROUTE_READ",
+        "P804_NOT_CLAIMED_SERVICE_SCOPE",
+        "P804_NOT_CLAIMED_OUTBOX_PENDING",
+        "P804_NOT_CLAIMED_REQUEST_QUEUED",
+        "P804_NOT_CLAIMED_GUARD_READ",
+        "P804_NOT_CLAIMED_GUARD_ACTIVE",
+    }
+)
 _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES = frozenset(
     {
         "P804_WORKER_FIXTURE_VALIDATE",
@@ -115,6 +134,14 @@ _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES = frozenset(
 ) | frozenset(_WORKER_OUTCOME_DIAGNOSTIC_CODE_BY_STATE.values()) | (
     frozenset(_WORKER_OUTCOME_SHAPE_DIAGNOSTIC_CODE_BY_PREDICATE.values())
 )
+_WORKER_NOT_CLAIMED_DIAGNOSTIC_CODES = (
+    _WORKER_NOT_CLAIMED_PRECONDITION_CODES
+    | frozenset(
+        {
+            _WORKER_OUTCOME_DIAGNOSTIC_CODE_BY_STATE["not_claimed"],
+        }
+    )
+)
 
 
 def _valid_worker_downstream_trace(value: object) -> bool:
@@ -122,6 +149,14 @@ def _valid_worker_downstream_trace(value: object) -> bool:
         isinstance(value, str)
         and _CREATE_DIAGNOSTIC_TRACE_PATTERN.fullmatch(value) is not None
     )
+
+
+def _active_worker_diagnostic_codes() -> frozenset[str]:
+    if MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED:
+        return _WORKER_NOT_CLAIMED_DIAGNOSTIC_CODES
+    if MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED:
+        return _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES
+    return frozenset()
 
 
 def _worker_outcome_diagnostic_code(result: object) -> str | None:
@@ -155,8 +190,7 @@ def worker_downstream_diagnostic_step(
         try:
             exception_type = type(error).__name__
             if (
-                MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED
-                and code in _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES
+                code in _active_worker_diagnostic_codes()
                 and _valid_worker_downstream_trace(trace_id)
                 and item_runtime._TYPE_PATTERN.fullmatch(exception_type) is not None
             ):
@@ -172,6 +206,122 @@ def worker_downstream_diagnostic_step(
             # Diagnostic recording cannot replace the original verifier failure.
             pass
         raise
+
+
+def _verify_not_claimed_preconditions(
+    repository: object,
+    *,
+    outbox_id: str,
+    request_id: str,
+    diagnostic_trace_id: str,
+) -> None:
+    """Read the exact fresh claim facts without changing worker state."""
+
+    import frappe
+
+    from npi_integration.mbom_publish.frappe_repository import _request_value
+    from npi_integration.mbom_publish.frappe_validation import (
+        mbom_service_actor_scope,
+        validate_mbom_service_actor,
+    )
+    from npi_integration.mbom_publish.worker_repository import (
+        _is_mbom_outbox,
+        _locked_guard,
+        _project_for,
+        _require_active_guard,
+        _require_outbox_binding,
+    )
+
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_OUTBOX_READ", diagnostic_trace_id
+    ):
+        outbox = frappe.get_doc("NPI Outbox Message", outbox_id)
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_OUTBOX_CONTRACT", diagnostic_trace_id
+    ):
+        require(_is_mbom_outbox(outbox), "P8-04 fresh Outbox contract drifted")
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_REQUEST_LINK", diagnostic_trace_id
+    ):
+        linked_request_id = str(getattr(outbox, "mbom_request_global_id", ""))
+        require(
+            linked_request_id == request_id
+            and str(UUID(linked_request_id)) == linked_request_id,
+            "P8-04 fresh Outbox request binding drifted",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_REQUEST_READ", diagnostic_trace_id
+    ):
+        request = frappe.get_doc("NPI MBOM Publish Request", linked_request_id)
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_REQUEST_REBUILD", diagnostic_trace_id
+    ):
+        value = _request_value(_project_for(request), request)
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_OUTBOX_BINDING", diagnostic_trace_id
+    ):
+        _require_outbox_binding(outbox, value)
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_PROFILE_ACTOR", diagnostic_trace_id
+    ):
+        actor = getattr(value, "service_actor_user_id", None)
+        target_mode = getattr(getattr(value, "profile", None), "target_mode", None)
+        require(
+            getattr(target_mode, "value", None) in {"sandbox", "synthetic"}
+            and isinstance(actor, str)
+            and bool(actor),
+            "P8-04 fresh execution actor binding drifted",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_ACTOR_VALIDATE", diagnostic_trace_id
+    ):
+        validate_mbom_service_actor(actor)
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_ROUTE_READ", diagnostic_trace_id
+    ):
+        route_reader = getattr(repository, "execution_route", None)
+        require(callable(route_reader), "P8-04 execution route reader is unavailable")
+        route = route_reader(UUID(outbox_id))
+        require(
+            route is not None
+            and getattr(route, "service_actor_user_id", None) == actor,
+            "P8-04 fresh execution route is unavailable",
+        )
+    requester_user = str(getattr(frappe.session, "user", ""))
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_SERVICE_SCOPE", diagnostic_trace_id
+    ):
+        with mbom_service_actor_scope(actor):
+            require(
+                str(getattr(frappe.session, "user", "")) == actor,
+                "P8-04 service actor scope was not entered",
+            )
+        require(
+            str(getattr(frappe.session, "user", "")) == requester_user,
+            "P8-04 service actor scope was not restored",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_OUTBOX_PENDING", diagnostic_trace_id
+    ):
+        require(
+            str(getattr(outbox, "state", "")) == "pending",
+            "P8-04 fresh Outbox is not pending",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_REQUEST_QUEUED", diagnostic_trace_id
+    ):
+        require(
+            getattr(getattr(value, "state", None), "value", None) == "queued",
+            "P8-04 fresh request is not queued",
+        )
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_GUARD_READ", diagnostic_trace_id
+    ):
+        guard = _locked_guard(route)
+    with worker_downstream_diagnostic_step(
+        "P804_NOT_CLAIMED_GUARD_ACTIVE", diagnostic_trace_id
+    ):
+        _require_active_guard(guard, value)
 
 
 def mbom_publish_path(project_id: str, request_id: str | None = None) -> str:
@@ -514,6 +664,13 @@ def exercise_worker(
             requester_user == ACTOR_USER,
             "P8-04 worker fixture did not start as the authenticated requester",
         )
+    repository = FrappeMbomPublishWorkerRepository()
+    _verify_not_claimed_preconditions(
+        repository,
+        outbox_id=outbox_id,
+        request_id=request_id,
+        diagnostic_trace_id=diagnostic_trace_id,
+    )
     with worker_downstream_diagnostic_step(
         "P804_WORKER_PROCESS_OUTBOX", diagnostic_trace_id
     ):
@@ -628,8 +785,8 @@ def _sanitized_worker_downstream_diagnostic(
     return item_runtime._sanitized_server_log_diagnostic(
         trace_id,
         cursors,
-        code_prefix="P804_WORKER_",
-        allowed_codes=_WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
+        code_prefix="P804_",
+        allowed_codes=_active_worker_diagnostic_codes(),
     )
 
 
@@ -638,7 +795,7 @@ def _bench_fixture_failure_message(
     kwargs: dict[str, object],
     cursors: dict[str, int] | None,
 ) -> str:
-    if method != "exercise_worker" or not MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED:
+    if method != "exercise_worker" or not _active_worker_diagnostic_codes():
         return _WORKER_FAILURE_MESSAGE
     diagnostic = _sanitized_worker_downstream_diagnostic(
         kwargs.get("diagnostic_trace_id"),
@@ -667,7 +824,7 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
     diagnostic_cursors = (
         item_runtime._replay_diagnostic_log_cursors()
         if method == "exercise_worker"
-        and MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED
+        and _active_worker_diagnostic_codes()
         else None
     )
     with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as fixture_output:

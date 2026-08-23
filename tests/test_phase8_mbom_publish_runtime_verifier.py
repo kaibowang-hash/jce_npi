@@ -8,6 +8,7 @@ import sys
 import tempfile
 import types
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -470,7 +471,8 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
 
     def test_worker_downstream_checkpoint_has_one_context_per_allowlisted_stage(self):
         module = self.module
-        self.assertTrue(module.MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -515,6 +517,30 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
             fixed_stages | outcome_codes,
         )
+        not_claimed_stages = {
+            "P804_NOT_CLAIMED_OUTBOX_READ",
+            "P804_NOT_CLAIMED_OUTBOX_CONTRACT",
+            "P804_NOT_CLAIMED_REQUEST_LINK",
+            "P804_NOT_CLAIMED_REQUEST_READ",
+            "P804_NOT_CLAIMED_REQUEST_REBUILD",
+            "P804_NOT_CLAIMED_OUTBOX_BINDING",
+            "P804_NOT_CLAIMED_PROFILE_ACTOR",
+            "P804_NOT_CLAIMED_ACTOR_VALIDATE",
+            "P804_NOT_CLAIMED_ROUTE_READ",
+            "P804_NOT_CLAIMED_SERVICE_SCOPE",
+            "P804_NOT_CLAIMED_OUTBOX_PENDING",
+            "P804_NOT_CLAIMED_REQUEST_QUEUED",
+            "P804_NOT_CLAIMED_GUARD_READ",
+            "P804_NOT_CLAIMED_GUARD_ACTIVE",
+        }
+        self.assertEqual(
+            module._WORKER_NOT_CLAIMED_PRECONDITION_CODES,
+            not_claimed_stages,
+        )
+        self.assertEqual(
+            module._active_worker_diagnostic_codes(),
+            not_claimed_stages | {"P804_WORKER_OUTCOME_NOT_CLAIMED"},
+        )
         exercise = self.source.split("def exercise_worker(", 1)[1].split(
             "\ndef ", 1
         )[0]
@@ -529,6 +555,13 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         for code in outcome_codes:
             with self.subTest(code=code):
                 self.assertEqual(self.source.count(f'"{code}"'), 1)
+        preconditions = self.source.split(
+            "def _verify_not_claimed_preconditions(", 1
+        )[1].split("\ndef ", 1)[0]
+        for code in not_claimed_stages:
+            with self.subTest(code=code):
+                self.assertEqual(preconditions.count(f'"{code}"'), 1)
+                self.assertEqual(self.source.count(f'"{code}"'), 2)
         self.assertNotIn("P804_WORKER_RESULT_OUTCOME", self.source)
 
     def test_worker_outcome_diagnostic_classifies_every_fixed_state_and_shape(self):
@@ -582,6 +615,212 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(exercise.count("_worker_outcome_diagnostic_code(result)"), 1)
         self.assertEqual(exercise.count("raise RuntimeError(\"P8-04 Synthetic worker outcome drifted\")"), 1)
 
+    def test_not_claimed_preconditions_are_read_only_and_precede_one_worker_call(self):
+        helper = next(
+            node
+            for node in self.tree.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "_verify_not_claimed_preconditions"
+        )
+        segment = ast.get_source_segment(self.source, helper) or ""
+        for forbidden in (
+            ".insert(",
+            ".save(",
+            ".commit(",
+            "enqueue(",
+            "adapter(",
+            "requests.",
+            "httpx.",
+        ):
+            self.assertNotIn(forbidden, segment)
+        exercise = self.source.split("def exercise_worker(", 1)[1].split(
+            "\ndef ", 1
+        )[0]
+        precheck = exercise.index("_verify_not_claimed_preconditions(")
+        process = exercise.index("process_outbox_message(outbox_id)")
+        self.assertLess(precheck, process)
+        self.assertEqual(exercise.count("process_outbox_message(outbox_id)"), 2)
+        self.assertEqual(exercise[:process].count("process_outbox_message(outbox_id)"), 0)
+
+    def test_not_claimed_preconditions_record_exact_first_failure_and_restore_scope(self):
+        module = self.module
+        request_id = "00000000-0000-0000-0000-000000000002"
+        outbox_id = "00000000-0000-0000-0000-000000000003"
+        actor = "worker@example.invalid"
+        requester = module.ACTOR_USER
+        stages = tuple(sorted(module._WORKER_NOT_CLAIMED_PRECONDITION_CODES))
+
+        def execute(failure: str | None):
+            records: list[dict[str, object]] = []
+            calls: list[str] = []
+            original = RuntimeError("private actor id hash /tmp/private")
+            outbox = SimpleNamespace(
+                mbom_request_global_id=(
+                    "00000000-0000-0000-0000-000000000099"
+                    if failure == "P804_NOT_CLAIMED_REQUEST_LINK"
+                    else request_id
+                ),
+                state=(
+                    "processing"
+                    if failure == "P804_NOT_CLAIMED_OUTBOX_PENDING"
+                    else "pending"
+                ),
+            )
+            value = SimpleNamespace(
+                service_actor_user_id=(
+                    None if failure == "P804_NOT_CLAIMED_PROFILE_ACTOR" else actor
+                ),
+                profile=SimpleNamespace(target_mode=SimpleNamespace(value="synthetic")),
+                state=SimpleNamespace(
+                    value=(
+                        "processing"
+                        if failure == "P804_NOT_CLAIMED_REQUEST_QUEUED"
+                        else "queued"
+                    )
+                ),
+            )
+            route = SimpleNamespace(service_actor_user_id=actor)
+            guard = object()
+            frappe = types.ModuleType("frappe")
+            frappe.session = SimpleNamespace(user=requester)
+
+            def get_doc(doctype, _name):
+                calls.append(f"read:{doctype}")
+                if (
+                    failure == "P804_NOT_CLAIMED_OUTBOX_READ"
+                    and doctype == "NPI Outbox Message"
+                ):
+                    raise original
+                if (
+                    failure == "P804_NOT_CLAIMED_REQUEST_READ"
+                    and doctype == "NPI MBOM Publish Request"
+                ):
+                    raise original
+                return outbox if doctype == "NPI Outbox Message" else SimpleNamespace()
+
+            frappe.get_doc = get_doc
+            core = types.ModuleType("npi_core")
+            core.__path__ = []
+            api = types.ModuleType("npi_core.api")
+            api.record_safe_diagnostic = lambda **values: records.append(values)
+            integration = types.ModuleType("npi_integration")
+            integration.__path__ = []
+            package = types.ModuleType("npi_integration.mbom_publish")
+            package.__path__ = []
+            repository_module = types.ModuleType(
+                "npi_integration.mbom_publish.frappe_repository"
+            )
+            validation_module = types.ModuleType(
+                "npi_integration.mbom_publish.frappe_validation"
+            )
+            worker_repository_module = types.ModuleType(
+                "npi_integration.mbom_publish.worker_repository"
+            )
+
+            def fail_or_call(stage: str, value_to_return=None):
+                calls.append(stage)
+                if failure == stage:
+                    raise original
+                return value_to_return
+
+            repository_module._request_value = lambda *_args: fail_or_call(
+                "P804_NOT_CLAIMED_REQUEST_REBUILD", value
+            )
+            validation_module.validate_mbom_service_actor = lambda _actor: fail_or_call(
+                "P804_NOT_CLAIMED_ACTOR_VALIDATE"
+            )
+
+            @contextmanager
+            def service_scope(_actor):
+                calls.append("P804_NOT_CLAIMED_SERVICE_SCOPE")
+                if failure == "P804_NOT_CLAIMED_SERVICE_SCOPE":
+                    raise original
+                previous = frappe.session.user
+                frappe.session.user = actor
+                try:
+                    yield
+                finally:
+                    frappe.session.user = previous
+
+            validation_module.mbom_service_actor_scope = service_scope
+            worker_repository_module._is_mbom_outbox = lambda _row: (
+                failure != "P804_NOT_CLAIMED_OUTBOX_CONTRACT"
+            )
+            worker_repository_module._project_for = lambda _row: object()
+            worker_repository_module._require_outbox_binding = lambda *_args: fail_or_call(
+                "P804_NOT_CLAIMED_OUTBOX_BINDING"
+            )
+            worker_repository_module._locked_guard = lambda _route: fail_or_call(
+                "P804_NOT_CLAIMED_GUARD_READ", guard
+            )
+            worker_repository_module._require_active_guard = lambda *_args: fail_or_call(
+                "P804_NOT_CLAIMED_GUARD_ACTIVE"
+            )
+            repository = SimpleNamespace(
+                execution_route=lambda _event_id: fail_or_call(
+                    "P804_NOT_CLAIMED_ROUTE_READ",
+                    None
+                    if failure == "P804_NOT_CLAIMED_ROUTE_READ"
+                    else route,
+                )
+            )
+            modules = {
+                "frappe": frappe,
+                "npi_core": core,
+                "npi_core.api": api,
+                "npi_integration": integration,
+                "npi_integration.mbom_publish": package,
+                "npi_integration.mbom_publish.frappe_repository": repository_module,
+                "npi_integration.mbom_publish.frappe_validation": validation_module,
+                "npi_integration.mbom_publish.worker_repository": worker_repository_module,
+            }
+            with patch.dict(sys.modules, modules):
+                if failure is None:
+                    module._verify_not_claimed_preconditions(
+                        repository,
+                        outbox_id=outbox_id,
+                        request_id=request_id,
+                        diagnostic_trace_id=_TRACE_ID,
+                    )
+                    raised = None
+                else:
+                    with self.assertRaises(RuntimeError) as caught:
+                        module._verify_not_claimed_preconditions(
+                            repository,
+                            outbox_id=outbox_id,
+                            request_id=request_id,
+                            diagnostic_trace_id=_TRACE_ID,
+                        )
+                    raised = caught.exception
+            return records, calls, raised, original, frappe.session.user
+
+        records, calls, raised, _original, restored = execute(None)
+        self.assertEqual(records, [])
+        self.assertIsNone(raised)
+        self.assertEqual(restored, requester)
+        self.assertEqual(calls.count("P804_NOT_CLAIMED_SERVICE_SCOPE"), 1)
+        for stage in stages:
+            with self.subTest(stage=stage):
+                records, _calls, raised, original, restored = execute(stage)
+                self.assertEqual(len(records), 1)
+                self.assertEqual(records[0]["code"], stage)
+                self.assertEqual(records[0]["exception_type"], "RuntimeError")
+                self.assertEqual(records[0]["trace_id"], _TRACE_ID)
+                self.assertNotIn("private", str(records))
+                self.assertEqual(restored, requester)
+                if stage in {
+                    "P804_NOT_CLAIMED_OUTBOX_READ",
+                    "P804_NOT_CLAIMED_REQUEST_READ",
+                    "P804_NOT_CLAIMED_REQUEST_REBUILD",
+                    "P804_NOT_CLAIMED_OUTBOX_BINDING",
+                    "P804_NOT_CLAIMED_ACTOR_VALIDATE",
+                    "P804_NOT_CLAIMED_ROUTE_READ",
+                    "P804_NOT_CLAIMED_SERVICE_SCOPE",
+                    "P804_NOT_CLAIMED_GUARD_READ",
+                    "P804_NOT_CLAIMED_GUARD_ACTIVE",
+                }:
+                    self.assertIs(raised, original)
+
     def test_worker_downstream_step_records_only_closed_tuple_and_reraises(self):
         records: list[dict[str, object]] = []
         package = types.ModuleType("npi_core")
@@ -594,7 +833,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             {"npi_core": package, "npi_core.api": api},
         ), self.assertRaises(RuntimeError) as raised:
             with self.module.worker_downstream_diagnostic_step(
-                "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID
+                "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID
             ):
                 raise original
         self.assertIs(raised.exception, original)
@@ -602,7 +841,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             records,
             [
                 {
-                    "code": "P804_WORKER_PROCESS_OUTBOX",
+                    "code": "P804_NOT_CLAIMED_OUTBOX_READ",
                     "title": "NPI MBOM publish worker verifier stage failed",
                     "exception_type": "RuntimeError",
                     "trace_id": _TRACE_ID,
@@ -613,14 +852,14 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             self.assertNotIn(forbidden, str(records))
 
         for enabled, code, trace_id in (
-            (False, "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID),
+            (False, "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID),
             (True, "P804_WORKER_NOT_ALLOWED", _TRACE_ID),
-            (True, "P804_WORKER_PROCESS_OUTBOX", "trace-private"),
+            (True, "P804_NOT_CLAIMED_OUTBOX_READ", "trace-private"),
         ):
             records.clear()
             with self.subTest(enabled=enabled, code=code), patch.object(
                 self.module,
-                "MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+                "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
                 enabled,
             ), patch.dict(
                 sys.modules,
@@ -681,16 +920,16 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                     )
 
         valid = {
-            "code": "P804_WORKER_PROCESS_OUTBOX",
+            "code": "P804_NOT_CLAIMED_OUTBOX_READ",
             "exceptionType": "RuntimeError",
             "traceId": _TRACE_ID,
         }
-        expected = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
+        expected = ("RuntimeError", "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID)
         self.assertEqual(read([valid]), expected)
         self.assertEqual(read([valid], [valid]), expected)
         self.assertIsNone(read([valid, valid]))
         self.assertIsNone(
-            read([valid], [{**valid, "code": "P804_WORKER_REQUEST_READ"}])
+            read([valid], [{**valid, "code": "P804_NOT_CLAIMED_REQUEST_READ"}])
         )
         for records in (
             [],
@@ -713,7 +952,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             "outbox_id": private,
             "diagnostic_trace_id": _TRACE_ID,
         }
-        diagnostic = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
+        diagnostic = ("RuntimeError", "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID)
         with patch.object(
             self.module.item_runtime,
             "_replay_diagnostic_log_cursors",
@@ -736,7 +975,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             str(raised.exception),
             "P8-04 Bench fixture failed "
-            "[diagnostic_code=P804_WORKER_PROCESS_OUTBOX; "
+            "[diagnostic_code=P804_NOT_CLAIMED_OUTBOX_READ; "
             f"exception_type=RuntimeError; trace_id={_TRACE_ID}]",
         )
         self.assertNotIn(private, str(raised.exception))
@@ -808,6 +1047,14 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         with patch.dict(
             sys.modules,
             {"frappe": frappe, "npi_core": package, "npi_core.api": api},
+        ), patch.object(
+            self.module,
+            "MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            self.module,
+            "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
+            False,
         ), patch.object(
             self.module,
             "exercise_worker",
