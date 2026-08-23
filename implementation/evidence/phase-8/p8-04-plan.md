@@ -894,3 +894,30 @@ is closed; only this subcycle is temporarily active. No insert, save, commit,
 enqueue, adapter or network call is added, and the strict exact-trace mirrored
 reader still emits only code, exception class and trace. Product worker,
 repository, runtime fixture and adapter paths remain unchanged.
+
+The not-claimed checkpoint exact SHA
+`ac2d2e8b36e6a5e7aa5817faca2d879034d41c5e` passes ordinary run
+`32630270492`. Its sole controlled dispatch `32630817041` passes preflight
+`97173249724`; runtime `97173286086` emits exactly
+`P804_NOT_CLAIMED_REQUEST_REBUILD / RuntimeError /
+trace-fbfede24d1325b39a960553485dcb297`. The preceding Outbox contract, request
+Link and request read predicates completed. Static first-predicate proof then
+isolates the persisted Request timestamp reader: the approved shared Frappe
+storage adapter removes timezone information for MariaDB `Datetime`, while the
+MBOM private reader rejected that expected naive database value before domain
+construction or scope validation. The source topology is a canonical object;
+all remaining reconstruction contract failures are `ValueError` subclasses,
+so they cannot produce this tuple. The previous unit roundtrip used an identity
+storage stub and therefore retained timezone information instead of exercising
+the pinned boundary.
+
+The authorized repair changes only the private persisted-datetime reader to
+apply the established Item publish and MBOM worker rule: a naive Frappe
+database datetime means UTC, an aware datetime is normalized to UTC, and an
+invalid type or string still fails closed. Pinned storage roundtrip tests retain
+the exact source object, JSON arrays, topology, hashes and profile. No write,
+API, permission, transaction, Schema, ownership or worker ordering changes.
+The not-claimed cycle is now `diagnostic 1/1`, `repair 1/1`, `final 0/1`;
+`MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED=False` and every prior diagnostic remains
+closed while the response-neutral mechanism stays dormant. All earlier cycle
+counters remain immutable.

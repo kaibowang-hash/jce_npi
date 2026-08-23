@@ -472,7 +472,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
     def test_worker_downstream_checkpoint_has_one_context_per_allowlisted_stage(self):
         module = self.module
         self.assertFalse(module.MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED)
-        self.assertTrue(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -539,7 +539,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             module._active_worker_diagnostic_codes(),
-            not_claimed_stages | {"P804_WORKER_OUTCOME_NOT_CLAIMED"},
+            frozenset(),
         )
         exercise = self.source.split("def exercise_worker(", 1)[1].split(
             "\ndef ", 1
@@ -774,7 +774,11 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 "npi_integration.mbom_publish.frappe_validation": validation_module,
                 "npi_integration.mbom_publish.worker_repository": worker_repository_module,
             }
-            with patch.dict(sys.modules, modules):
+            with patch.dict(sys.modules, modules), patch.object(
+                module,
+                "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
+                True,
+            ):
                 if failure is None:
                     module._verify_not_claimed_preconditions(
                         repository,
@@ -831,6 +835,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         with patch.dict(
             sys.modules,
             {"npi_core": package, "npi_core.api": api},
+        ), patch.object(
+            self.module,
+            "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
+            True,
         ), self.assertRaises(RuntimeError) as raised:
             with self.module.worker_downstream_diagnostic_step(
                 "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID
@@ -903,7 +911,15 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 for path in paths:
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_text("prior safe log\n", encoding="utf-8")
-                with patch.object(module.item_runtime, "BENCH_PATH", bench_path):
+                with patch.object(
+                    module.item_runtime,
+                    "BENCH_PATH",
+                    bench_path,
+                ), patch.object(
+                    module,
+                    "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
+                    True,
+                ):
                     cursors = module.item_runtime._replay_diagnostic_log_cursors()
                     for path, source_records in zip(
                         paths, (records, site_records or []), strict=True
@@ -959,6 +975,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             return_value={"logs/npi_core.log": 0},
         ), patch.object(
             self.module,
+            "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            self.module,
             "_sanitized_worker_downstream_diagnostic",
             return_value=diagnostic,
         ) as reader, patch.object(
@@ -1007,7 +1027,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             self.module.item_runtime,
             "_replay_diagnostic_log_cursors",
             return_value={"logs/npi_core.log": 0},
-        ), patch.object(
+        ) as cursor_reader, patch.object(
             self.module.subprocess,
             "run",
             side_effect=complete_successfully,
@@ -1020,6 +1040,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             successful_run.call_args.kwargs["stderr"],
             self.module.subprocess.DEVNULL,
         )
+        cursor_reader.assert_not_called()
 
     def test_worker_fixture_commit_stage_records_and_preserves_commit_failure(self):
         records: list[dict[str, object]] = []

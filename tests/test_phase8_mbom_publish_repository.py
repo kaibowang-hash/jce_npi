@@ -529,11 +529,22 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
             captured.update(payload)
             return types.SimpleNamespace(**payload)
 
+        def pinned_database_datetime(value: datetime) -> str:
+            return (
+                value.astimezone(UTC)
+                .replace(tzinfo=None)
+                .isoformat(sep=" ", timespec="microseconds")
+            )
+
         with patch.object(
             self.repository.frappe,
             "get_doc",
             side_effect=get_doc,
             create=True,
+        ), patch.object(
+            self.repository,
+            "_database_datetime",
+            side_effect=pinned_database_datetime,
         ), patch.object(
             self.repository,
             "insert_mbom_support_document",
@@ -550,6 +561,8 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
         expected_readiness = [item.canonical_mapping() for item in readiness]
         expected_expectations = [item.canonical_mapping() for item in expectations]
         self.assertIsInstance(captured["source_snapshot"], dict)
+        self.assertIsInstance(captured["source_snapshot"]["topology"], dict)
+        self.assertEqual(captured["source_snapshot"], source.canonical_mapping())
         for fieldname, expected in (
             ("item_readiness_snapshot", expected_readiness),
             ("mbom_expectation_snapshot", expected_expectations),
@@ -562,6 +575,15 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
                 stored,
                 self.repository.canonical_json(json.loads(stored)),
             )
+        self.assertEqual(captured["item_mapping_set_hash"], value.item_mapping_set_hash)
+        self.assertEqual(captured["mbom_mapping_set_hash"], value.mbom_mapping_set_hash)
+        self.assertEqual(captured["source_hash"], value.source.source_hash)
+        self.assertEqual(captured["topology_hash"], value.source.topology_hash)
+        self.assertEqual(captured["profile_id"], value.profile.profile_id)
+        self.assertEqual(captured["profile_version"], value.profile.profile_version)
+        self.assertEqual(captured["profile_snapshot_hash"], value.profile.snapshot_hash)
+        self.assertIsInstance(captured["created_at"], str)
+        self.assertIsNone(datetime.fromisoformat(captured["created_at"]).tzinfo)
 
         class PinnedValidationError(Exception):
             pass
@@ -590,6 +612,27 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
             ),
             value,
         )
+
+    def test_persisted_datetime_normalizes_pinned_frappe_values_and_rejects_invalid(self) -> None:
+        expected = datetime(2026, 8, 21, 15, 0, tzinfo=UTC)
+        for stored in (
+            expected,
+            expected.isoformat().replace("+00:00", "Z"),
+            expected.replace(tzinfo=None),
+            expected.replace(tzinfo=None).isoformat(
+                sep=" ",
+                timespec="microseconds",
+            ),
+            datetime.fromisoformat("2026-08-21T23:00:00+08:00"),
+            "2026-08-21T23:00:00+08:00",
+        ):
+            with self.subTest(kind=type(stored).__name__, value=str(stored)):
+                self.assertEqual(self.repository._datetime_value(stored), expected)
+
+        for invalid in (None, object(), "not-a-datetime"):
+            with self.subTest(kind=type(invalid).__name__):
+                with self.assertRaises(RuntimeError):
+                    self.repository._datetime_value(invalid)
 
     def test_mbom_outbox_uses_only_v2_request_link_under_pinned_validation(self) -> None:
         project = types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1))

@@ -417,3 +417,28 @@ always restored. The prior worker/outcome activation is closed and only this
 subcycle is temporarily active. Exact-trace strict mirrored-log handling and
 constant-safe failure behavior remain unchanged, and no actual state, shape,
 identifier, actor, hash, count, response, message or stack is rendered.
+
+The not-claimed checkpoint exact SHA
+`ac2d2e8b36e6a5e7aa5817faca2d879034d41c5e` passes ordinary run
+`32630270492`. Its sole controlled dispatch `32630817041` passes preflight
+`97173249724`; runtime `97173286086` emits only
+`P804_NOT_CLAIMED_REQUEST_REBUILD / RuntimeError /
+trace-fbfede24d1325b39a960553485dcb297`. Earlier stages prove the Outbox,
+request Link and request read. The Request writer uses the approved shared
+Frappe database datetime adapter, which deliberately persists a timezone-naive
+MariaDB value; the MBOM private reader uniquely rejected that value before
+domain construction or scope validation. Canonical source topology remains an
+object, and all other reconstruction contract predicates raise `ValueError`
+subclasses rather than the observed `RuntimeError`. The prior unit roundtrip's
+identity storage stub explains why this exact database boundary was absent
+locally.
+
+The bounded repair only aligns the private reader with the verified Item and
+worker persistence rule: naive database datetime is interpreted as UTC, aware
+datetime is normalized to UTC, and invalid input remains fail closed. The
+pinned roundtrip locks exact source, arrays, topology, hashes and profile; no
+write, API, permission, transaction, Schema, ownership or worker order changes.
+The not-claimed cycle is `diagnostic 1/1`, `repair 1/1`, `final 0/1`, all
+historical counters are immutable, and
+`MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED=False` leaves the safe mechanism dormant
+with every other diagnostic activation also closed.

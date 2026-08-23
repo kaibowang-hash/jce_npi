@@ -1569,9 +1569,17 @@ def _expectation_value(value: Mapping[str, object]) -> MbomMappingExpectation:
 
 
 def _datetime_value(value: object) -> datetime:
-    parsed = value if isinstance(value, datetime) else datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise RuntimeError("Persisted MBOM datetime is not timezone-aware.")
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, str):
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as error:
+            raise RuntimeError("Persisted MBOM datetime is invalid.") from error
+    else:
+        raise RuntimeError("Persisted MBOM datetime is invalid.")
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
     return parsed.astimezone(UTC)
 
 
