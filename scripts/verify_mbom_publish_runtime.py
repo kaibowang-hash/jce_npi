@@ -74,6 +74,24 @@ _CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
         "P804_CREATE_API_RESPONSE",
     }
 )
+_WORKER_OUTCOME_DIAGNOSTIC_CODE_BY_STATE = {
+    "not_claimed": "P804_WORKER_OUTCOME_NOT_CLAIMED",
+    "validated_mock": "P804_WORKER_OUTCOME_VALIDATED_MOCK",
+    "queued": "P804_WORKER_OUTCOME_QUEUED",
+    "processing": "P804_WORKER_OUTCOME_PROCESSING",
+    "partially_succeeded": "P804_WORKER_OUTCOME_PARTIALLY_SUCCEEDED",
+    "succeeded": "P804_WORKER_OUTCOME_SUCCEEDED",
+    "failed_retryable": "P804_WORKER_OUTCOME_FAILED_RETRYABLE",
+    "failed_final": "P804_WORKER_OUTCOME_FAILED_FINAL",
+    "uncertain_after_timeout": "P804_WORKER_OUTCOME_UNCERTAIN_AFTER_TIMEOUT",
+    "mapping_conflict": "P804_WORKER_OUTCOME_MAPPING_CONFLICT",
+}
+_WORKER_OUTCOME_SHAPE_DIAGNOSTIC_CODE_BY_PREDICATE = {
+    "not_mapping": "P804_WORKER_OUTCOME_NOT_MAPPING",
+    "state_missing": "P804_WORKER_OUTCOME_STATE_MISSING",
+    "state_type": "P804_WORKER_OUTCOME_STATE_TYPE",
+    "state_unknown": "P804_WORKER_OUTCOME_STATE_UNKNOWN",
+}
 _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES = frozenset(
     {
         "P804_WORKER_FIXTURE_VALIDATE",
@@ -82,7 +100,6 @@ _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES = frozenset(
         "P804_WORKER_SESSION_RESTORE",
         "P804_WORKER_REQUEST_READ",
         "P804_WORKER_NODE_RESULTS_READ",
-        "P804_WORKER_RESULT_OUTCOME",
         "P804_WORKER_REQUEST_STATE",
         "P804_WORKER_NODE_CARDINALITY",
         "P804_WORKER_NODE_TRUTH",
@@ -95,6 +112,8 @@ _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES = frozenset(
         "P804_WORKER_MAPPING_COUNT",
         "P804_WORKER_FIXTURE_COMMIT",
     }
+) | frozenset(_WORKER_OUTCOME_DIAGNOSTIC_CODE_BY_STATE.values()) | (
+    frozenset(_WORKER_OUTCOME_SHAPE_DIAGNOSTIC_CODE_BY_PREDICATE.values())
 )
 
 
@@ -102,6 +121,24 @@ def _valid_worker_downstream_trace(value: object) -> bool:
     return (
         isinstance(value, str)
         and _CREATE_DIAGNOSTIC_TRACE_PATTERN.fullmatch(value) is not None
+    )
+
+
+def _worker_outcome_diagnostic_code(result: object) -> str | None:
+    """Classify only the fixed worker return contract without exposing its value."""
+
+    if not isinstance(result, Mapping):
+        return _WORKER_OUTCOME_SHAPE_DIAGNOSTIC_CODE_BY_PREDICATE["not_mapping"]
+    if "state" not in result:
+        return _WORKER_OUTCOME_SHAPE_DIAGNOSTIC_CODE_BY_PREDICATE["state_missing"]
+    state = result["state"]
+    if not isinstance(state, str):
+        return _WORKER_OUTCOME_SHAPE_DIAGNOSTIC_CODE_BY_PREDICATE["state_type"]
+    if state == "synthetic_verified":
+        return None
+    return _WORKER_OUTCOME_DIAGNOSTIC_CODE_BY_STATE.get(
+        state,
+        _WORKER_OUTCOME_SHAPE_DIAGNOSTIC_CODE_BY_PREDICATE["state_unknown"],
     )
 
 
@@ -500,13 +537,12 @@ def exercise_worker(
             filters={"request_global_id": request_id},
             fields=["state", "formal_bom_id", "target_version", "authority"],
         )
-    with worker_downstream_diagnostic_step(
-        "P804_WORKER_RESULT_OUTCOME", diagnostic_trace_id
-    ):
-        require(
-            result.get("state") == "synthetic_verified",
-            "P8-04 Synthetic worker outcome drifted",
-        )
+    outcome_diagnostic_code = _worker_outcome_diagnostic_code(result)
+    if outcome_diagnostic_code is not None:
+        with worker_downstream_diagnostic_step(
+            outcome_diagnostic_code, diagnostic_trace_id
+        ):
+            raise RuntimeError("P8-04 Synthetic worker outcome drifted")
     with worker_downstream_diagnostic_step(
         "P804_WORKER_REQUEST_STATE", diagnostic_trace_id
     ):

@@ -476,16 +476,13 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.LEGACY_COLLECTION_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED)
-        self.assertEqual(
-            module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
-            {
+        fixed_stages = {
                 "P804_WORKER_FIXTURE_VALIDATE",
                 "P804_WORKER_REQUESTER_SESSION",
                 "P804_WORKER_PROCESS_OUTBOX",
                 "P804_WORKER_SESSION_RESTORE",
                 "P804_WORKER_REQUEST_READ",
                 "P804_WORKER_NODE_RESULTS_READ",
-                "P804_WORKER_RESULT_OUTCOME",
                 "P804_WORKER_REQUEST_STATE",
                 "P804_WORKER_NODE_CARDINALITY",
                 "P804_WORKER_NODE_TRUTH",
@@ -497,7 +494,26 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 "P804_WORKER_ADAPTER_COUNT",
                 "P804_WORKER_MAPPING_COUNT",
                 "P804_WORKER_FIXTURE_COMMIT",
-            },
+        }
+        outcome_codes = {
+            "P804_WORKER_OUTCOME_NOT_CLAIMED",
+            "P804_WORKER_OUTCOME_VALIDATED_MOCK",
+            "P804_WORKER_OUTCOME_QUEUED",
+            "P804_WORKER_OUTCOME_PROCESSING",
+            "P804_WORKER_OUTCOME_PARTIALLY_SUCCEEDED",
+            "P804_WORKER_OUTCOME_SUCCEEDED",
+            "P804_WORKER_OUTCOME_FAILED_RETRYABLE",
+            "P804_WORKER_OUTCOME_FAILED_FINAL",
+            "P804_WORKER_OUTCOME_UNCERTAIN_AFTER_TIMEOUT",
+            "P804_WORKER_OUTCOME_MAPPING_CONFLICT",
+            "P804_WORKER_OUTCOME_NOT_MAPPING",
+            "P804_WORKER_OUTCOME_STATE_MISSING",
+            "P804_WORKER_OUTCOME_STATE_TYPE",
+            "P804_WORKER_OUTCOME_STATE_UNKNOWN",
+        }
+        self.assertEqual(
+            module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
+            fixed_stages | outcome_codes,
         )
         exercise = self.source.split("def exercise_worker(", 1)[1].split(
             "\ndef ", 1
@@ -505,11 +521,66 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         local_runner = self.source.split("def run_local_bench_fixture(", 1)[1].split(
             "\ndef ", 1
         )[0]
-        for code in module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES:
+        for code in fixed_stages:
             context = local_runner if code == "P804_WORKER_FIXTURE_COMMIT" else exercise
             with self.subTest(code=code):
                 self.assertEqual(context.count(f'"{code}"'), 1)
                 self.assertEqual(self.source.count(f'"{code}"'), 2)
+        for code in outcome_codes:
+            with self.subTest(code=code):
+                self.assertEqual(self.source.count(f'"{code}"'), 1)
+        self.assertNotIn("P804_WORKER_RESULT_OUTCOME", self.source)
+
+    def test_worker_outcome_diagnostic_classifies_every_fixed_state_and_shape(self):
+        module = self.module
+        expected = {
+            "not_claimed": "P804_WORKER_OUTCOME_NOT_CLAIMED",
+            "validated_mock": "P804_WORKER_OUTCOME_VALIDATED_MOCK",
+            "queued": "P804_WORKER_OUTCOME_QUEUED",
+            "processing": "P804_WORKER_OUTCOME_PROCESSING",
+            "partially_succeeded": "P804_WORKER_OUTCOME_PARTIALLY_SUCCEEDED",
+            "succeeded": "P804_WORKER_OUTCOME_SUCCEEDED",
+            "failed_retryable": "P804_WORKER_OUTCOME_FAILED_RETRYABLE",
+            "failed_final": "P804_WORKER_OUTCOME_FAILED_FINAL",
+            "uncertain_after_timeout": "P804_WORKER_OUTCOME_UNCERTAIN_AFTER_TIMEOUT",
+            "mapping_conflict": "P804_WORKER_OUTCOME_MAPPING_CONFLICT",
+        }
+        self.assertEqual(module._WORKER_OUTCOME_DIAGNOSTIC_CODE_BY_STATE, expected)
+        for state, code in expected.items():
+            with self.subTest(state=state):
+                self.assertEqual(
+                    module._worker_outcome_diagnostic_code(
+                        {"state": state, "privateId": "private-business-value"}
+                    ),
+                    code,
+                )
+        self.assertIsNone(
+            module._worker_outcome_diagnostic_code(
+                {"state": "synthetic_verified", "privateId": "private-business-value"}
+            )
+        )
+        for result, code in (
+            ([], "P804_WORKER_OUTCOME_NOT_MAPPING"),
+            ({"privateId": "private-business-value"}, "P804_WORKER_OUTCOME_STATE_MISSING"),
+            ({"state": 1}, "P804_WORKER_OUTCOME_STATE_TYPE"),
+            ({"state": "private-business-value"}, "P804_WORKER_OUTCOME_STATE_UNKNOWN"),
+        ):
+            with self.subTest(code=code):
+                diagnostic = module._worker_outcome_diagnostic_code(result)
+                self.assertEqual(diagnostic, code)
+                self.assertNotIn("private-business-value", diagnostic)
+
+    def test_worker_outcome_is_first_checked_before_retained_truth_and_replay(self):
+        exercise = self.source.split("def exercise_worker(", 1)[1].split(
+            "\ndef ", 1
+        )[0]
+        outcome = exercise.index("_worker_outcome_diagnostic_code(result)")
+        request_state = exercise.index('"P804_WORKER_REQUEST_STATE"')
+        replay = exercise.index('"P804_WORKER_TERMINAL_REPLAY"')
+        self.assertLess(outcome, request_state)
+        self.assertLess(outcome, replay)
+        self.assertEqual(exercise.count("_worker_outcome_diagnostic_code(result)"), 1)
+        self.assertEqual(exercise.count("raise RuntimeError(\"P8-04 Synthetic worker outcome drifted\")"), 1)
 
     def test_worker_downstream_step_records_only_closed_tuple_and_reraises(self):
         records: list[dict[str, object]] = []

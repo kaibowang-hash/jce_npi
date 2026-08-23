@@ -375,3 +375,24 @@ reader. Every unsafe, absent or ambiguous record returns the original constant.
 All create, Item, replay and legacy diagnostic activations remain closed; no
 worker, repository, adapter, response, permission, transaction, Schema,
 ownership or Gate semantics are modified.
+
+The exact checkpoint SHA `0991fadac593293edfdbf400ead389cea87912a2`
+passes ordinary run `32551563566`. Its one controlled diagnostic dispatch
+`32627638792` passes preflight `97165352387`; runtime `97165383949` emits one
+safe tuple: `P804_WORKER_RESULT_OUTCOME / RuntimeError /
+trace-8581818caa345745a9538106039fefed`. The worker call, requester-session
+restore and raw request and node-result reads completed before the sole returned
+state predicate failed. No request-state, node-truth, replay, recoverability or
+count assertion ran. Because the worker's response-safe contract has several
+non-throwing states, no product symbol is uniquely proven. This worker cycle is
+frozen at `diagnostic 1/1`, `repair 0/1`, `final 0/1`.
+
+The separate outcome-predicate subcycle begins at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. A verifier-only four-path checkpoint maps each fixed
+return state and each non-mapping, missing-state, wrong-type or unknown-state
+shape to one mutually exclusive allowlisted code. Synthetic verification
+success records nothing. Exact trace correlation and the existing strict
+mirrored-log reader permit only code, `RuntimeError` and trace; no actual state,
+identifier, count, response body, exception message or stack is read or
+displayed. Worker, repository, runtime fixture and adapter product paths remain
+unchanged.

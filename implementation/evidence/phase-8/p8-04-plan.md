@@ -849,3 +849,25 @@ constant. Failed child stdout and stderr remain unread, and no response,
 status, ID, actor, payload, hash, path, exception message or stack is emitted.
 No worker, repository, adapter, API, permission, transaction, Schema,
 ownership or Gate behavior changes.
+
+The exact checkpoint SHA `0991fadac593293edfdbf400ead389cea87912a2`
+passes ordinary run `32551563566`. Its sole controlled diagnostic dispatch
+`32627638792` passes preflight `97165352387`; runtime `97165383949` returns
+exactly `P804_WORKER_RESULT_OUTCOME / RuntimeError /
+trace-8581818caa345745a9538106039fefed`. The ordered fixture proves worker
+processing, requester-session restoration and the raw request and node-result
+reads completed before the fixed returned-state predicate failed. Request-state,
+node-truth, terminal replay, recoverability and count predicates did not run.
+The worker contract still has multiple non-throwing return states, so this
+evidence cannot authorize a product repair. The worker-downstream cycle is
+frozen at `diagnostic 1/1`, `repair 0/1`, `final 0/1`.
+
+An independent outcome-predicate subcycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its four-path verifier-only checkpoint replaces the
+generic outcome stage with mutually exclusive allowlisted codes for every
+fixed worker return state and for non-mapping, missing-state, wrong-type and
+unknown-state shapes. `synthetic_verified` remains the zero-diagnostic success
+path. Only the code, fixed `RuntimeError` class and exact validated trace can
+cross the strict mirrored-log reader; the actual state, IDs, counts, body,
+message and stack remain unread and unrendered. Product worker, repository,
+runtime fixture and adapter behavior remain unchanged.
