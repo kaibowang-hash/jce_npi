@@ -4587,3 +4587,30 @@ repeat or rewrite it merely to restore context. See
   with an AST call-chain detector that recognizes `frappe` to `db` to `sql`.
   It adds no scanner ignore, weakens no repository rule and changes no product
   behavior. Checkpoint 2 remains closed pending a new exact-SHA ordinary PASS.
+
+## 2026-08-24 P8-05 checkpoint 1 PASS; checkpoint 2 awaits product CI
+
+- The narrow repository-test remediation exact SHA
+  `db0cb846589816dc55002b8a002914aedced9fb2` passes ordinary CI
+  `32660953137`: repository `97246942405`, frontend `97246942329`, secret
+  `97246942233` and unchanged governed visual `97246942321` all pass;
+  controlled lanes correctly skip because checkpoint 1 activates no route,
+  persistent business row, worker, adapter, fixture or external transport.
+- Checkpoint 1 is sealed in
+  `implementation/evidence/phase-8/p8-05-domain-metadata-checkpoint.md`.
+  Separate create/update domains, the closed default-disabled profile,
+  additive contracts, guarded shared Outbox schema-3/support metadata and
+  direct translations are proven while P6 v1, Item and MBOM branches remain
+  unchanged.
+- Standing continuous-delivery authority activates only checkpoint 2: fixed
+  Project-first list/detail/create/update routes, exact Tooling Master/
+  physical Set/binding/Revision/acceptance and mapping/profile locks,
+  operation-bound actor idempotency and one atomic request + guarded Outbox +
+  stream guard + audit transaction. Response follows commit, enqueue follows
+  commit, replay does not enqueue and Mock creates no Outbox.
+- The checkpoint 2 candidate awaits affected checks and its exact-SHA ordinary
+  CI. Checkpoint 3 worker/adapter/attempt/result/mapping execution, checkpoint
+  4 UI, actual Sandbox/production facts, generic P8-07 operations and P8-06/
+  P8-08/P8-09 remain inactive. The controller marker is:
+  `P8-05 checkpoint 1 PASS; checkpoint 2 awaits exact-SHA ordinary CI`.
+  There is no Hard Blocker and no user action is required.

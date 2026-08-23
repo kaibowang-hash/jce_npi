@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-23T18:35:39Z`
+Updated: `2026-08-23T20:13:00Z`
 
 ## Active hard blockers
 
@@ -15,7 +15,8 @@ Runtime artifact `9496708366` has digest
 exact topology/mapping expectations, partial/uncertain truth, claim recovery,
 terminal replay, submitted protection, zero formal Mock/synthetic mapping,
 zero production traffic and cleanup pass. P8-05 frozen-plan SHA `937c5d72`
-passes ordinary CI `32656436943`; checkpoint 1 is implemented and awaits its
+passes ordinary CI `32656436943`; remediated checkpoint 1 SHA `db0cb846`
+passes ordinary CI `32660953137`. Checkpoint 2 is implemented and awaits its
 own exact-SHA ordinary CI. No user action, login or frontend operation is
 required.
 
@@ -23,7 +24,8 @@ required.
 
 None. P8-04 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-05 checkpoint 1 changes no runtime behavior. Production
+authoritative. P8-05 checkpoint 2 stops before worker/adapter execution and
+target contact. Production
 adapters, formal Item/BOM/Asset
 mapping from Mock or synthetic proof, Item/MBOM/Asset/quality production
 writes, P8-06 through P8-09 and the P8-07 operations/replay/reconciliation
@@ -44,19 +46,20 @@ credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-## Current authoritative blocker state — 2026-08-23T18:35:39Z
+## Current authoritative blocker state — 2026-08-23T20:13:00Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-04 exact final SHA `ca72dece` passes ordinary `32651139504` and final
   unchanged Level 3 `32651903846`; the release review reports no P0/P1/P2.
 - P8-05 audit is frozen in `p8-05-plan.md`, and exact frozen-plan SHA
-  `937c5d72` passes ordinary CI `32656436943`. Checkpoint 1 implements only
-  behavior-free domains/contracts/guarded metadata and awaits exact-SHA
-  ordinary CI; checkpoint 2 remains closed.
+  `937c5d72` passes ordinary CI `32656436943`. Remediated checkpoint 1 SHA
+  `db0cb846` passes ordinary CI `32660953137`. Checkpoint 2 implements only
+  Project-first fixed commands and atomic request/Outbox/audit behavior and
+  awaits exact-SHA ordinary CI; checkpoint 3 remains closed.
 - Missing ERPNext Asset customization, naming/category/location/maintenance/
   service-scope and authenticated Sandbox facts are scoped external holds.
-  NPI acceptance is not ERP approval. No route, worker, default/networked
-  adapter or formal synthetic mapping is authorized; production traffic,
+  NPI acceptance is not ERP approval. No worker, default/networked adapter,
+  target network or formal synthetic mapping is authorized; production traffic,
   P8-06 through P8-09 and P8-07 manual operations remain inactive.
 
 ## Historical recovery

@@ -315,12 +315,48 @@ class Phase6ToolingAcceptanceApiTest(unittest.TestCase):
             ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/asset-requests", "get_tool_asset_requests"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/asset-requests", "create_tool_asset_request"),
             ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/asset-requests/{ASSET_REQUEST_ID}", "get_tool_asset_request"),
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/asset-execution-requests", "get_tool_asset_execution_requests"),
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/asset-execution-requests/{ASSET_REQUEST_ID}", "get_tool_asset_execution_request"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/asset-execution-requests:create", "create_tool_asset_execution_request"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/asset-execution-requests:update", "update_tool_asset_execution_request"),
         )
         for method, path, suffix in cases:
             with self.subTest(path=path):
                 self.frappe.local.request = types.SimpleNamespace(path=path, method=method)
                 self.router.route_request()
                 self.assertTrue(self.frappe.local.form_dict.cmd.endswith(suffix))
+                if "asset-execution-requests" in path:
+                    route_params = self.frappe.flags.npi_route_params
+                    self.assertEqual(route_params["project_id"], PROJECT_ID)
+                    self.assertEqual(
+                        route_params["tooling_master_id"],
+                        MASTER_ID,
+                    )
+                    self.assertEqual(route_params["tooling_set_id"], SET_ID)
+                    if path.endswith(f"/{ASSET_REQUEST_ID}"):
+                        self.assertEqual(
+                            route_params["tool_asset_execution_request_id"],
+                            ASSET_REQUEST_ID,
+                        )
+
+        execution_base = f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/asset-execution-requests"
+        for method, path in (
+            ("POST", execution_base),
+            ("PUT", execution_base),
+            ("PATCH", execution_base),
+            ("DELETE", execution_base),
+            ("POST", f"{execution_base}/{ASSET_REQUEST_ID}"),
+            ("POST", f"{execution_base}:retry"),
+            ("POST", f"{execution_base}:reconcile"),
+            ("POST", f"{execution_base}:create/extra"),
+        ):
+            with self.subTest(method=method, path=path):
+                self.frappe.local.request = types.SimpleNamespace(path=path, method=method)
+                self.router.route_request()
+                self.assertEqual(
+                    self.frappe.local.form_dict.cmd,
+                    "npi_core.bff.route_not_found",
+                )
 
         self.frappe.conf.npi_p6_06_routes_disabled = True
         self.frappe.local.request = types.SimpleNamespace(path=cases[0][1], method="GET")

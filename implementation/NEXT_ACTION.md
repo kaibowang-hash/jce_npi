@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
+`IN_PROGRESS_CHECKPOINT_2_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
 
-Recovery time: `2026-08-23T18:35:39Z`
+Recovery time: `2026-08-23T20:13:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -404,19 +404,28 @@ Tooling Set, exact Tooling/acceptance source, operation-bound idempotency,
 zero-or-one formal mapping expectation, partial/uncertain truth and P8-01
 read-only Asset projection separation.
 
-Frozen-plan SHA `937c5d72` passes ordinary CI `32656436943`. Checkpoint 1 is
-implemented as pure v2 domains/contracts/guarded metadata/translations/tests
-and now awaits its own exact-SHA ordinary CI; it activates no route, persistent
-business row, worker, adapter, mapping, network or UI.
+Frozen-plan SHA `937c5d72` passes ordinary CI `32656436943`. Remediated
+checkpoint 1 SHA `db0cb846` passes ordinary CI `32660953137`: repository
+`97246942405`, frontend `97246942329`, secret `97246942233` and unchanged
+visual `97246942321` all pass. Checkpoint 1 is sealed.
+
+Checkpoint 2 now implements only Project-first fixed list/detail/create/update
+commands, exact Tooling Master/physical Set/binding/Revision/acceptance and
+mapping/profile locks, operation-bound idempotency and one atomic request +
+guarded Outbox + stream guard + audit transaction. Commit precedes response;
+enqueue follows commit; replay does not enqueue; Mock has zero Outbox/enqueue.
+It awaits its own exact-SHA ordinary CI. Worker, adapter, network, execution
+attempt/result/mapping and UI remain closed.
 NPI acceptance evidence is not business approval, ERP approval, Asset creation
 or target success. Do not contact production ERPNext/JCE, install a Sandbox/
 default profile, infer Asset field/naming/category/location/maintenance/
 service-scope facts, weaken P6/P8-01 history, add generic P8-07 operations or
 activate P8-06/P8-08/P8-09.
 
-After checkpoint 1 exact-SHA ordinary CI passes, activate only checkpoint 2
-Project-first fixed list/detail/create/update commands and atomic request +
-Outbox + audit behavior. Worker, adapter, network and UI remain closed.
+After checkpoint 2 exact-SHA ordinary CI passes, activate only checkpoint 3
+bounded leased worker/recovery, closed default-disabled adapter registry,
+network-free synthetic proof, field/aggregate result truth and authenticated
+complete-result mapping compare-and-set. UI remains closed.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

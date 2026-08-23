@@ -128,7 +128,27 @@ class Phase6ToolingAcceptanceRepositoryTest(unittest.TestCase):
             self.assertIn(exact_marker, body)
 
     def test_runtime_slice_has_no_erp_dispatch_outbox_or_formal_target_identity(self) -> None:
-        combined = CORE + ASSET
+        legacy_names = {
+            "acceptance_asset_context",
+            "list_asset_requests",
+            "asset_request_detail",
+            "create_asset_request",
+            "_asset_requests",
+            "_asset_request_for_scope",
+            "_asset_receipt_replay",
+            "_insert_asset_receipt",
+            "_seal_asset_receipt",
+            "_insert_asset_request",
+        }
+        asset_tree = ast.parse(ASSET)
+        legacy = "\n".join(
+            source
+            for node in ast.walk(asset_tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name in legacy_names
+            if (source := ast.get_source_segment(ASSET, node)) is not None
+        )
+        combined = CORE + legacy
         for forbidden in (
             "requests.",
             "httpx.",

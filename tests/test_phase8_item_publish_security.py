@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 APP_ROOT = ROOT / "apps"
 ITEM_ROOT = APP_ROOT / "npi_integration/npi_integration/item_publish"
 MBOM_ROOT = APP_ROOT / "npi_integration/npi_integration/mbom_publish"
+TOOL_ASSET_ROOT = APP_ROOT / "npi_integration/npi_integration/tool_asset_request"
 EXPECTED_PERMISSION_CALLS = Counter(
     {
         (
@@ -36,6 +37,24 @@ EXPECTED_PERMISSION_CALLS = Counter(
             "save_mbom_support_document",
             "document",
             "save",
+        ): 1,
+        (
+            str(TOOL_ASSET_ROOT / "execution_frappe_validation.py"),
+            "insert_tool_asset_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(TOOL_ASSET_ROOT / "execution_frappe_validation.py"),
+            "save_tool_asset_support_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(TOOL_ASSET_ROOT / "execution_frappe_validation.py"),
+            "insert_tool_asset_audit_document",
+            "document",
+            "insert",
         ): 1,
     }
 )
@@ -109,7 +128,7 @@ def _scan_permission_paths(paths: list[Path] | tuple[Path, ...]):
 
 
 class Phase8ItemPublishSecurityTest(unittest.TestCase):
-    def test_ignore_permissions_is_exactly_four_controlled_calls(self) -> None:
+    def test_ignore_permissions_is_exactly_seven_controlled_calls(self) -> None:
         calls, violations = _scan_permission_paths(tuple(APP_ROOT.rglob("*.py")))
         self.assertEqual(violations, [])
         self.assertEqual(Counter(calls), EXPECTED_PERMISSION_CALLS)

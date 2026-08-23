@@ -44,7 +44,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI",
+            "IN_PROGRESS_CHECKPOINT_2_AWAITING_EXACT_SHA_ORDINARY_CI",
         )
         self.assertIn(
             "apps/npi_integration/npi_integration/tool_asset_request/**",

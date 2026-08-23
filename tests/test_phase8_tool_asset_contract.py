@@ -38,11 +38,22 @@ class Phase8ToolAssetContractTest(unittest.TestCase):
             if state.get("const") == "synthetic_verified" or "uncertain_after_timeout" in state.get("enum", []):
                 self.assertEqual(branch["then"]["properties"]["formal_asset_id"]["type"], "null")
 
-    def test_openapi_adds_components_only_without_activating_routes(self) -> None:
+    def test_openapi_activates_only_fixed_project_first_execution_routes(self) -> None:
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        self.assertNotIn("tool-asset-execution-requests", paths)
+        collection = "/projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/asset-execution-requests"
+        detail = collection + "/{toolAssetExecutionRequestId}"
+        create = collection + ":create"
+        update = collection + ":update"
+        for path in (collection, detail, create, update):
+            self.assertEqual(paths.count(f"  {path}:\n"), 1)
+        self.assertNotIn(collection + ":retry", paths)
+        self.assertNotIn(collection + ":reconcile", paths)
+        self.assertNotIn("create_or_update_tool_asset", paths[paths.index(create) :])
+        self.assertIn("operationId: createToolAssetExecutionRequest", paths)
+        self.assertIn("operationId: updateToolAssetExecutionRequest", paths)
+        self.assertIn("x-transaction-boundary: tool-asset-request-outbox-guard-audit-receipt", paths)
         schemas = OPENAPI[OPENAPI.index("  schemas:\n") :]
-        for name in ("ToolAssetExecutionOperation", "ToolAssetExecutionTargetMode", "ToolAssetExecutionSource", "ToolAssetBusinessApprovalReference", "ToolAssetMappingExpectationV2", "ToolAssetExecutionProfileReference", "ToolAssetExecutionRequestV2", "ToolAssetExecutionFieldResult"):
+        for name in ("ToolAssetExecutionOperation", "ToolAssetExecutionTargetMode", "ToolAssetExecutionSource", "ToolAssetBusinessApprovalReference", "ToolAssetMappingExpectationV2", "ToolAssetExecutionProfileReference", "ToolAssetExecutionRequestV2", "ToolAssetExecutionRequestEnvelope", "ToolAssetExecutionCollection", "CreateToolAssetExecutionCommand", "UpdateToolAssetExecutionCommand", "ToolAssetExecutionFieldResult"):
             self.assertEqual(schemas.count(f"    {name}:\n"), 1)
         block = schemas[schemas.index("    ToolAssetExecutionOperation:\n") : schemas.index("    ToolAssetFormalMappingUnavailable:\n")].casefold()
         for forbidden in ("frappe.client", "ignore_permissions", "endpoint", "credential", "submit", "move_asset", "repair_asset"):

@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-24`
 
-Status: `FROZEN — CHECKPOINT 1 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
+Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
 
 Audit base and retained P8-04 product checkpoint:
 `ca72deceab4b8e899d0da1207883887c9d30077a`
@@ -20,6 +20,11 @@ P8-05 frozen-plan transition checkpoint:
 `937c5d72c29ec189f69ea5b2384eef64847698bf`
 
 P8-05 frozen-plan ordinary CI: `32656436943` (`PASS`)
+
+P8-05 checkpoint 1 final checkpoint:
+`db0cb846589816dc55002b8a002914aedced9fb2`
+
+P8-05 checkpoint 1 ordinary CI: `32660953137` (`PASS`)
 
 Primary requirements:
 
@@ -529,9 +534,67 @@ reconciliation and rollback evidence before use.
 - P8-07 owns generic operations/DLQ/retry/replay/reconciliation and operator
   overrides. P8-06, P8-08/P8-09 and Phase 9 remain inactive.
 
-Frozen-plan SHA `937c5d72` passes exact-SHA ordinary CI `32656436943`, so
-standing continuous-delivery authority permits checkpoint 1 only. Its
-behavior-free implementation now awaits its own exact-SHA ordinary CI.
-Checkpoints 2–4 each require the previous exact-SHA ordinary CI. P8-05 remains
-in progress until final unchanged Level 3 passes; no checkpoint authorizes
-production ERPNext/JCE contact.
+Frozen-plan SHA `937c5d72` passes exact-SHA ordinary CI `32656436943`, and
+remediated checkpoint 1 SHA `db0cb846` passes ordinary CI `32660953137`.
+Standing continuous-delivery authority therefore permits checkpoint 2 only.
+Its fixed Project-first list/detail/create/update and atomic request + guarded
+Outbox + stream guard + audit implementation now awaits its own exact-SHA
+ordinary CI. Checkpoints 3–4 each require the previous exact-SHA ordinary CI.
+P8-05 remains in progress until final unchanged Level 3 passes; no checkpoint
+authorizes production ERPNext/JCE contact.
+
+## 15. Checkpoint 2 implementation candidate evidence
+
+Checkpoint 2 implements the frozen Project-first command boundary and awaits
+its own exact-SHA ordinary CI:
+
+- fixed GET collection/detail plus fixed POST `:create` / `:update` BFF and
+  domain API routes preserve exact Project, Tooling Master, physical Set and
+  request route parameters; wrong methods, generic collection writes,
+  detail writes, retry, reconcile and suffix variants fail as not found;
+- Project authorization precedes secondary identity and command-body parsing;
+  execution reads exclude external principals and command writes require the
+  internal `NPI API User` role, CSRF and exact current Project membership;
+- the repository locks the exact Master, physical Set, Set-to-Revision
+  binding, Tooling Revision and acceptance revision, then requires an exact
+  create-unmapped or update-current mapping plus P8-01 projection expectation;
+- acceptance evidence remains separate from unavailable business approval.
+  No Sandbox command can proceed without the missing approved authority, and
+  the profile resolver is default-off and fails closed when ambiguous;
+- one actor- and operation-bound transaction writes the immutable request,
+  guarded schema-3 Outbox when dispatch is explicitly allowed, physical-Set
+  stream guard, audit and sealed idempotency receipt. Commit precedes response,
+  enqueue follows commit, exact replay returns committed truth without enqueue,
+  enqueue failure retains the pending Outbox and emits one safe diagnostic,
+  and commit failure rolls back without reporting success; and
+- Mock persists only local request/audit/receipt truth with no Outbox, enqueue,
+  worker, adapter, target identifier, formal mapping, network or target effect.
+
+Changed-files to affected-tests evidence:
+
+- BFF/API/problems/OpenAPI -> fixed-route behavior, route parameters,
+  Project-first IDOR, role/CSRF, closed input, replay/status and stable problem
+  tests;
+- repository/capability helper -> exact five-parent locking, create/update
+  mapping and projection expectations, profile/approval holds, atomic write
+  order, cross-operation idempotency, datetime parsing and exact
+  `ignore_permissions` capability tests;
+- translations/generated catalog -> literal-English extraction, direct
+  no-header `zh` / `zh-TW` symmetry, generated-catalog equality and mixed-
+  language audit; and
+- predecessor security -> retained P6 combined Mock behavior and exact BFF
+  routes, all Item/MBOM suites, and the global seven-call capability allowlist
+  with no additional permission bypass.
+
+Final Level 1 results are `431/431 PASS`: Tool Asset `46/46`, P6 acceptance
+`35/35`, retained P6 Tool Asset domain `4/4`, Item `146/146`, MBOM `126/126`
+and current-task/reconciliation/localization `74/74`. Generated catalog and
+TypeScript checks pass; i18n audits `8,293` literal English sources with
+`100%` direct `zh` / `zh-TW` coverage. Focused Python compilation, JSON/YAML/
+CSV parsing, exact no-direct-SQL/network/target-call checks, controller
+verification, reconciliation and `git diff --check` pass. Post-commit manifest
+simulation accepts exactly `29` task paths and no thirtieth task path.
+
+Checkpoint 3 remains closed until this candidate's exact-SHA ordinary CI
+passes. The scoped ERPNext field/approval/Sandbox facts remain held, and no
+product code, test or evidence claims production or formal Asset acceptance.

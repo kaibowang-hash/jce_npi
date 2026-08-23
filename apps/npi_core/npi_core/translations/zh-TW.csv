@@ -8282,3 +8282,12 @@ A Tool Asset Outbox message cannot return to pending after the adapter boundary.
 A processing Tool Asset Outbox message requires an exact claim.,處理中的模具資產寄件匣訊息需要精確認領。
 Tool Asset Outbox terminal state and result reference must agree.,模具資產寄件匣終態必須與結果引用一致。
 An uncertain Tool Asset Outbox message requires a crossed adapter boundary.,不確定的模具資產寄件匣訊息必須已越過介接器邊界。
+The Tool Asset execution requester is unavailable.,模具資產執行請求者不可用。
+The exact Tool Asset execution request is unavailable.,精確的模具資產執行請求不可用。
+The exact Tool Asset execution profile is unavailable.,精確的模具資產執行設定檔不可用。
+You are not authorized to request Tool Asset execution for this Project.,您無權為此專案請求模具資產執行。
+Verified business approval is unavailable for Tool Asset execution.,模具資產執行缺少已驗證的業務核准。
+The Tooling source or Asset mapping changed. Reload it before continuing.,模具來源或資產映射已變更。請重新載入後再繼續。
+The idempotency key was already used for a different Tool Asset operation or request.,該冪等鍵已用於其他模具資產操作或請求。
+Another Tool Asset execution request is active for this physical Tooling Set.,此實體模具套已有另一個活動的模具資產執行請求。
+"Confirm the exact Tool Asset operation, source, business approval, mapping, and execution profile.",請確認精確的模具資產操作、來源、業務核准、映射和執行設定檔。

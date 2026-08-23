@@ -2,7 +2,12 @@
 
 Recorded: `2026-08-24`
 
-Status: `IMPLEMENTED — AWAITS EXACT-SHA ORDINARY CI`
+Decision: `PASS — CHECKPOINT 1; CHECKPOINT 2 AUTHORIZED`
+
+Final checkpoint 1 product SHA:
+`db0cb846589816dc55002b8a002914aedced9fb2`
+
+Checkpoint 1 ordinary CI: `32660953137` (`PASS`)
 
 Frozen-plan transition SHA:
 `937c5d72c29ec189f69ea5b2384eef64847698bf`
@@ -114,12 +119,17 @@ suites `28/28`, affected Item `146/146`, MBOM `126/126`, retained P6
 Tool Asset/acceptance `30/30`, and current-task/reconciliation units `33/33`;
 all `363/363` tests pass. The exact repository direct-SQL scan returns zero
 matches, focused compilation and `git diff --check` pass.
-Checkpoint 2 remains closed until the remediated exact SHA passes ordinary CI.
+The remediated exact SHA passes ordinary CI `32660953137`: repository
+`97246942405`, frontend `97246942329`, secret `97246942233` and unchanged
+governed visual `97246942321` all pass; controlled lanes correctly skip.
+Checkpoint 1 is sealed with product root count `0` for the scanner remediation.
 
 ## Transition boundary
 
-Checkpoint 2 remains closed until this checkpoint's exact product SHA passes
-ordinary CI. It alone may introduce Project-first fixed list/detail/create/
-update commands and atomic request + Outbox + audit behavior. Checkpoint 1 does
-not authorize persistent business rows, command routes, worker, adapter,
-network, UI, formal mapping or target activation.
+Checkpoint 2 is now active only for Project-first fixed list/detail/create/
+update commands, exact Tooling/acceptance/mapping/profile locks and atomic
+request + guarded Outbox + stream guard + audit behavior. Response and enqueue
+must follow commit; replay must not enqueue; Mock must retain zero Outbox.
+Checkpoint 3 remains closed until checkpoint 2 passes its own exact-SHA
+ordinary CI. No worker, adapter, target network, attempt/result/mapping
+execution, UI, formal mapping or production activation is authorized.

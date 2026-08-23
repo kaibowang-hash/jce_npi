@@ -58,7 +58,7 @@ class Phase8ToolAssetMetadataTest(unittest.TestCase):
 
     def test_support_controllers_require_exact_capability_and_preserve_insert_lifecycle(self) -> None:
         validation = (TOOL_ASSET_ROOT / "execution_frappe_validation.py").read_text(encoding="utf-8")
-        for marker in ("ToolAssetSupportWriteCapability", "_CURRENT_CAPABILITY", "require_tool_asset_execution_capability", "_CURRENT_CAPABILITY.reset(token)", "checkpoint 1 has no caller or write route"):
+        for marker in ("ToolAssetSupportWriteCapability", "_CURRENT_CAPABILITY", "require_tool_asset_execution_capability", "_CURRENT_CAPABILITY.reset(token)", "tool_asset_request_transaction_write", "insert_tool_asset_support_document", "insert_tool_asset_audit_document"):
             self.assertIn(marker, validation)
         base = (TOOL_ASSET_ROOT / "doctype_base.py").read_text(encoding="utf-8")
         for marker in ('self._require_write("insert")', '"in_insert"', 'self._require_write(action)', "assert_immutable_fields", "deny_tool_asset_execution_history_delete"):
@@ -167,6 +167,8 @@ class Phase8ToolAssetMetadataTest(unittest.TestCase):
         paths = [
             TOOL_ASSET_ROOT / "execution_frappe_validation.py",
             TOOL_ASSET_ROOT / "doctype_base.py",
+            TOOL_ASSET_ROOT / "problems.py",
+            ROOT / "apps/npi_integration/npi_integration/tool_asset_request_api.py",
             DOCTYPE_ROOT / "npi_tool_asset_request/npi_tool_asset_request.py",
             DOCTYPE_ROOT / "npi_tool_asset_command_idempotency/npi_tool_asset_command_idempotency.py",
             DOCTYPE_ROOT / "npi_outbox_message/npi_outbox_message.py",

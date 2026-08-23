@@ -25,18 +25,58 @@ def _is_direct_frappe_sql_call(node: ast.AST) -> bool:
 
 
 class Phase8ToolAssetSecurityTest(unittest.TestCase):
-    def test_checkpoint_one_adds_no_route_worker_adapter_or_network_import(self) -> None:
-        self.assertNotIn("ToolAssetExecutionRequestV2", API.read_text(encoding="utf-8"))
+    def test_checkpoint_two_routes_remain_closed_to_worker_adapter_network_and_direct_sql(self) -> None:
+        api_source = API.read_text(encoding="utf-8")
+        self.assertIn("create_tool_asset_execution_request", api_source)
+        self.assertIn("update_tool_asset_execution_request", api_source)
+        api_tree = ast.parse(api_source, filename=str(API))
+        api_imports = {
+            node.names[0].name
+            for node in ast.walk(api_tree)
+            if isinstance(node, (ast.Import, ast.ImportFrom)) and node.names
+        }
+        self.assertFalse({"requests", "httpx", "socket", "urllib.request"} & api_imports)
         self.assertNotIn("tool_asset_execution", HOOKS.read_text(encoding="utf-8"))
         prohibited_probe = ast.parse(".".join(("frappe", "db", "sql")) + "('select 1')")
         self.assertTrue(any(_is_direct_frappe_sql_call(node) for node in ast.walk(prohibited_probe)))
-        for path in (MODULE / "execution_domain.py", MODULE / "config.py", MODULE / "execution_frappe_validation.py", MODULE / "doctype_base.py"):
+        for path in (MODULE / "execution_domain.py", MODULE / "config.py", MODULE / "execution_frappe_validation.py", MODULE / "doctype_base.py", MODULE / "frappe_repository.py"):
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             imports = {node.names[0].name for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom)) and node.names}
             self.assertFalse({"requests", "httpx", "socket", "urllib.request"} & imports)
-            source = path.read_text(encoding="utf-8")
-            self.assertNotIn("ignore_permissions", source)
             self.assertFalse(any(_is_direct_frappe_sql_call(node) for node in ast.walk(tree)))
+
+    def test_ignore_permissions_is_capability_bound_and_cannot_reach_product_repository(self) -> None:
+        validation = MODULE / "execution_frappe_validation.py"
+        tree = ast.parse(validation.read_text(encoding="utf-8"), filename=str(validation))
+        parents: dict[ast.AST, ast.AST] = {}
+        for parent in ast.walk(tree):
+            for child in ast.iter_child_nodes(parent):
+                parents[child] = parent
+        calls = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and any(
+                keyword.arg == "ignore_permissions"
+                and isinstance(keyword.value, ast.Constant)
+                and keyword.value.value is True
+                for keyword in node.keywords
+            )
+        ]
+        self.assertEqual(len(calls), 3)
+        allowed = {
+            "insert_tool_asset_support_document",
+            "save_tool_asset_support_document",
+            "insert_tool_asset_audit_document",
+        }
+        for call in calls:
+            current: ast.AST | None = call
+            while current is not None and not isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                current = parents.get(current)
+            self.assertIsInstance(current, ast.FunctionDef)
+            self.assertIn(current.name, allowed)
+        repository = (MODULE / "frappe_repository.py").read_text(encoding="utf-8")
+        self.assertNotIn("ignore_permissions", repository)
 
     def test_no_metadata_grants_business_crud_or_installs_target_values(self) -> None:
         root = ROOT / "apps/npi_integration/npi_integration/npi_integration/doctype"

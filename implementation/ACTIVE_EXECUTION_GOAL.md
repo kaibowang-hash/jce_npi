@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-23T18:35:39Z`
+Updated: `2026-08-23T20:13:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
+- Mode: `IN_PROGRESS_CHECKPOINT_2_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,9 +18,9 @@ Updated: `2026-08-23T18:35:39Z`
   `32651903846` (`PASS — LEVEL 3` at `ca72deceab4b8e899d0da1207883887c9d30077a`;
   repository, frontend, secret, `126/126` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32656436943` (`PASS` at
-  `937c5d72c29ec189f69ea5b2384eef64847698bf`; P8-05 frozen-plan transition,
-  checkpoint 1 authorized)
+  `32660953137` (`PASS` at
+  `db0cb846589816dc55002b8a002914aedced9fb2`; P8-05 checkpoint 1,
+  checkpoint 2 authorized)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -118,13 +118,13 @@ Updated: `2026-08-23T18:35:39Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-05 — Tool Asset execution`
-  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI`)
-- Resumed product task: `P8-05` (`CHECKPOINT_1_IMPLEMENTED`)
+  (`IN_PROGRESS_CHECKPOINT_2_AWAITING_EXACT_SHA_ORDINARY_CI`)
+- Resumed product task: `P8-05` (`CHECKPOINT_2_IMPLEMENTED`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-05 CHECKPOINT 1`)
+  (`IN_PROGRESS — P8-05 CHECKPOINT 2`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -284,12 +284,15 @@ unchanged Level 3 `32651903846`; all six jobs pass and runtime artifact
 `sha256:b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`.
 Complete evidence is `implementation/evidence/phase-8/p8-04-validation.md`.
 
-Frozen-plan SHA `937c5d72` passes ordinary CI `32656436943`. The only active
-atomic scope is checkpoint 1 exact-SHA ordinary CI for the already implemented
-behavior-free Tool Asset v2 domains, contracts, default-disabled config,
-guarded shared Outbox schema-3/support metadata, direct translations and
-tests. It adds no route, business-row writer, command API, worker, adapter,
-network, UI or formal mapping. Checkpoint 2 remains closed until that CI passes.
+Frozen-plan SHA `937c5d72` passes ordinary CI `32656436943`, and remediated
+checkpoint 1 SHA `db0cb846` passes ordinary CI `32660953137`. The only active
+atomic scope is checkpoint 2 exact-SHA ordinary CI for the already implemented
+Project-first fixed list/detail/create/update boundary, exact Tooling/source/
+acceptance/mapping/profile locks and atomic request + guarded Outbox + stream
+guard + audit transaction. Response follows commit, enqueue follows commit,
+and Mock has no Outbox or enqueue. Checkpoint 3 remains closed until that CI
+passes; no worker, adapter, target network, result/mapping execution, UI or
+formal Asset truth is active.
 NPI acceptance evidence is not business/ERP approval or Asset success;
 production ERPNext/JCE, generic P8-07 operations and P8-06/P8-08/P8-09 remain
 inactive.

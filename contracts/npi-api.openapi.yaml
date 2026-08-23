@@ -5124,6 +5124,144 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/asset-execution-requests:
+    get:
+      tags: [Tooling]
+      operationId: getToolAssetExecutionRequests
+      description: Returns bounded v2 Tool Asset execution truth after Project-first authorization and exact physical-Set containment.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: acceptanceRevisionGlobalId
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolAssetExecutionCollectionResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/asset-execution-requests/{toolAssetExecutionRequestId}:
+    get:
+      tags: [Tooling]
+      operationId: getToolAssetExecutionRequest
+      description: Returns one exact immutable v2 Tool Asset execution request without exposing caller-selected target truth.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolAssetExecutionRequestId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolAssetExecutionRequestResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/asset-execution-requests:create:
+    post:
+      tags: [Tooling]
+      operationId: createToolAssetExecutionRequest
+      description: Atomically records an operation-specific create request; Mock remains network-free and Sandbox remains blocked without separate verified approval.
+      x-required-roles: [NPI API User]
+      x-transaction-boundary: tool-asset-request-outbox-guard-audit-receipt
+      x-audit-operation: tool_asset_execution.create_tool_asset.request.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolAssetExecutionCommand" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolAssetExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/asset-execution-requests:update:
+    post:
+      tags: [Tooling]
+      operationId: updateToolAssetExecutionRequest
+      description: Atomically records an operation-specific update request only against the exact server-resolved current formal Asset mapping.
+      x-required-roles: [NPI API User]
+      x-transaction-boundary: tool-asset-request-outbox-guard-audit-receipt
+      x-audit-operation: tool_asset_execution.update_tool_asset.request.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateToolAssetExecutionCommand" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolAssetExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/tooling-list:
     get:
       tags: [Tooling]
@@ -8013,6 +8151,34 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ToolAssetRequest" }
+    ToolAssetExecutionCollectionResult:
+      description: Authorized bounded Tool Asset execution request collection and server-derived command readiness
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolAssetExecutionCollection" }
+    ToolAssetExecutionRequestResult:
+      description: Authorized exact immutable Tool Asset execution request
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolAssetExecutionRequestEnvelope" }
+    ToolAssetExecutionCommandResult:
+      description: Immutable operation-specific Tool Asset request after atomic append or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolAssetExecutionRequestEnvelope" }
     PartControlledSpecificationResult:
       description: Authorized exact Part controlled-specification context
       headers:
@@ -17522,6 +17688,90 @@ components:
         payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         optimisticVersion: { type: integer, minimum: 1 }
         createdAt: { type: string, format: date-time }
+    ToolAssetExecutionRequestEnvelope:
+      type: object
+      additionalProperties: false
+      required: [requestGlobalId, request, dispatchAllowed, outboxEventId, targetIdempotencyKeyHash, semanticEffectHash]
+      properties:
+        requestGlobalId: { type: string, format: uuid }
+        request: { $ref: "#/components/schemas/ToolAssetExecutionRequestV2" }
+        dispatchAllowed: { type: boolean }
+        outboxEventId: { type: [string, "null"], format: uuid }
+        targetIdempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        semanticEffectHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolAssetExecutionPermissions:
+      type: object
+      additionalProperties: false
+      required: [canView, canCreate, canUpdate]
+      properties:
+        canView: { type: boolean, const: true }
+        canCreate: { type: boolean }
+        canUpdate: { type: boolean }
+    ToolAssetExecutionCommandContext:
+      type: object
+      additionalProperties: false
+      required: [operation, source, expectedSourceHash, approval, expectedApprovalHash, mappingExpectation, expectedMappingExpectationHash, profile, expectedProfileSnapshotHash]
+      properties:
+        operation: { $ref: "#/components/schemas/ToolAssetExecutionOperation" }
+        source: { $ref: "#/components/schemas/ToolAssetExecutionSource" }
+        expectedSourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        approval: { $ref: "#/components/schemas/ToolAssetBusinessApprovalReference" }
+        expectedApprovalHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        mappingExpectation: { $ref: "#/components/schemas/ToolAssetMappingExpectationV2" }
+        expectedMappingExpectationHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        profile: { $ref: "#/components/schemas/ToolAssetExecutionProfileReference" }
+        expectedProfileSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolAssetExecutionCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, toolingMasterGlobalId, toolingSetGlobalId, permissions, businessApproval, executionProfile, commandContexts, items]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingSetGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolAssetExecutionPermissions" }
+        businessApproval: { $ref: "#/components/schemas/ToolAssetBusinessApprovalReference" }
+        executionProfile:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolAssetExecutionProfileReference" }
+            - { type: "null" }
+        commandContexts:
+          oneOf:
+            - type: object
+              additionalProperties: false
+              properties:
+                create_tool_asset: { $ref: "#/components/schemas/ToolAssetExecutionCommandContext" }
+                update_tool_asset: { $ref: "#/components/schemas/ToolAssetExecutionCommandContext" }
+            - { type: "null" }
+        items:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolAssetExecutionRequestEnvelope" }
+    ToolAssetExecutionCommandInput:
+      type: object
+      additionalProperties: false
+      required: [acceptanceRevisionGlobalId, expectedSourceHash, expectedApprovalHash, expectedMappingExpectationHash, expectedProfileSnapshotHash, acknowledgement]
+      properties:
+        acceptanceRevisionGlobalId: { type: string, format: uuid }
+        expectedSourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedApprovalHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedMappingExpectationHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedProfileSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        acknowledgement: { type: string, minLength: 1, maxLength: 300 }
+    CreateToolAssetExecutionCommand:
+      allOf:
+        - { $ref: "#/components/schemas/ToolAssetExecutionCommandInput" }
+        - type: object
+          properties:
+            acknowledgement:
+              const: I confirm this request may create one formal ERP Asset only from the exact physical Tooling Set, separate business approval, mapping state, and execution profile.
+    UpdateToolAssetExecutionCommand:
+      allOf:
+        - { $ref: "#/components/schemas/ToolAssetExecutionCommandInput" }
+        - type: object
+          properties:
+            acknowledgement:
+              const: I confirm this request may update only the exact mapped ERP Asset from the physical Tooling Set, separate business approval, mapping state, and execution profile.
     ToolAssetExecutionFieldResult:
       type: object
       additionalProperties: false

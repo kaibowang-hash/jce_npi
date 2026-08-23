@@ -350,6 +350,26 @@ _PROJECT_TOOLING_ASSET_REQUEST_ROUTE = re.compile(
     r"(?P<tooling_master_id>[^/:]+)/asset-requests/"
     r"(?P<asset_request_id>[^/:]+)$"
 )
+_PROJECT_TOOL_ASSET_EXECUTION_REQUESTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/"
+    r"asset-execution-requests$"
+)
+_PROJECT_TOOL_ASSET_EXECUTION_REQUEST_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/"
+    r"asset-execution-requests/(?P<tool_asset_execution_request_id>[^/:]+)$"
+)
+_PROJECT_TOOL_ASSET_EXECUTION_CREATE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/"
+    r"asset-execution-requests:create$"
+)
+_PROJECT_TOOL_ASSET_EXECUTION_UPDATE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/"
+    r"asset-execution-requests:update$"
+)
 _PROJECT_TOOLING_IMPORTS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports$"
 )
@@ -1048,6 +1068,14 @@ def route_request() -> None:
                 _PROJECT_TOOLING_ASSET_REQUEST_ROUTE,
                 "npi_integration.tool_asset_request_api.get_tool_asset_request",
             ),
+            (
+                _PROJECT_TOOL_ASSET_EXECUTION_REQUESTS_ROUTE,
+                "npi_integration.tool_asset_request_api.get_tool_asset_execution_requests",
+            ),
+            (
+                _PROJECT_TOOL_ASSET_EXECUTION_REQUEST_ROUTE,
+                "npi_integration.tool_asset_request_api.get_tool_asset_execution_request",
+            ),
         )
         for route, candidate in acceptance_asset_queries:
             match = route.fullmatch(path)
@@ -1182,6 +1210,14 @@ def route_request() -> None:
             (
                 _PROJECT_TOOLING_SET_ASSET_REQUESTS_ROUTE,
                 "npi_integration.tool_asset_request_api.create_tool_asset_request",
+            ),
+            (
+                _PROJECT_TOOL_ASSET_EXECUTION_CREATE_ROUTE,
+                "npi_integration.tool_asset_request_api.create_tool_asset_execution_request",
+            ),
+            (
+                _PROJECT_TOOL_ASSET_EXECUTION_UPDATE_ROUTE,
+                "npi_integration.tool_asset_request_api.update_tool_asset_execution_request",
             ),
         )
         for route, candidate in acceptance_asset_commands:
@@ -1999,6 +2035,10 @@ def _p6_06_routes_disabled(command: str | None) -> bool:
         "npi_integration.tool_asset_request_api.get_tool_asset_requests",
         "npi_integration.tool_asset_request_api.get_tool_asset_request",
         "npi_integration.tool_asset_request_api.create_tool_asset_request",
+        "npi_integration.tool_asset_request_api.get_tool_asset_execution_requests",
+        "npi_integration.tool_asset_request_api.get_tool_asset_execution_request",
+        "npi_integration.tool_asset_request_api.create_tool_asset_execution_request",
+        "npi_integration.tool_asset_request_api.update_tool_asset_execution_request",
     }
 
 
@@ -2304,6 +2344,16 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _PROJECT_TOOLING_MANUFACTURING_PLANS_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_MANUFACTURING_PLAN_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_MANUFACTURING_OBSERVATIONS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "GET" and (
+        _PROJECT_TOOL_ASSET_EXECUTION_REQUESTS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOL_ASSET_EXECUTION_REQUEST_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "POST" and (
+        _PROJECT_TOOL_ASSET_EXECUTION_CREATE_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOL_ASSET_EXECUTION_UPDATE_ROUTE.fullmatch(path) is not None
     ):
         return True
     if (
