@@ -230,6 +230,14 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
             "adapter.call",
         ):
             self.assertNotIn(forbidden, combined)
+        diagnostics = (MBOM_ROOT / "diagnostics.py").read_text(encoding="utf-8")
+        worker_repository = (MBOM_ROOT / "worker_repository.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("MBOM_PROCESS_VALIDATION_DIAGNOSTIC_CODES", diagnostics)
+        self.assertIn("mbom_process_validation_step", worker_repository)
+        self.assertNotIn("requests" + ".", diagnostics.casefold())
+        self.assertNotIn("httpx" + ".", diagnostics.casefold())
         api = ROOT / "apps/npi_integration/npi_integration/mbom_publish_api.py"
         self.assertTrue(api.is_file())
         api_source = api.read_text(encoding="utf-8")

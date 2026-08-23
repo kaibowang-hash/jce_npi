@@ -17,6 +17,7 @@ from .adapters import (
     MbomAdapterNodeCommand,
 )
 from .config import MbomExecutionProfile
+from .diagnostics import mbom_process_validation_step
 from .domain import (
     MBOM_PUBLISH_OPERATION,
     MBOM_PUBLISH_SCHEMA_VERSION,
@@ -238,7 +239,10 @@ class FrappeMbomPublishWorkerRepository:
 
         with mbom_claim_write(route.service_actor_user_id) as capability:
             if previous_attempt is not None and not recovered_after_boundary:
-                save_mbom_support_document(previous_attempt, capability=capability)
+                with mbom_process_validation_step(
+                    "P804_PROCESS_CLAIM_PREVIOUS_ATTEMPT_SAVE"
+                ):
+                    save_mbom_support_document(previous_attempt, capability=capability)
             outbox.state = "processing"
             outbox.disposition = (
                 "recover_uncertain" if recovered_after_boundary else "processing"
@@ -250,34 +254,42 @@ class FrappeMbomPublishWorkerRepository:
                 outbox.attempt_count = attempt_number
                 outbox.mbom_last_attempt_global_id = str(command.attempt_global_id)
                 outbox.adapter_boundary_crossed = 0
-                _insert_attempt(outbox, value, command, token, claimed_at, capability)
+                with mbom_process_validation_step(
+                    "P804_PROCESS_CLAIM_ATTEMPT_INSERT"
+                ):
+                    _insert_attempt(outbox, value, command, token, claimed_at, capability)
             outbox.last_error_code = None
             outbox.last_error_at = None
             outbox.mbom_result_global_id = None
-            save_mbom_support_document(outbox, capability=capability)
+            with mbom_process_validation_step("P804_PROCESS_CLAIM_OUTBOX_SAVE"):
+                save_mbom_support_document(outbox, capability=capability)
             if value.state is MbomPublishRequestState.QUEUED:
                 request.state = MbomPublishRequestState.PROCESSING.value
                 request.optimistic_version = int(_value(request, "optimistic_version") or 0) + 1
                 request.updated_at = _database_datetime(claimed_at)
-                save_mbom_support_document(request, capability=capability)
+                with mbom_process_validation_step("P804_PROCESS_CLAIM_REQUEST_SAVE"):
+                    save_mbom_support_document(request, capability=capability)
             for node in _locked_assembly_nodes(value.global_id):
                 if str(_value(node, "state")) == "queued":
                     node.state = "processing"
                     node.optimistic_version = int(_value(node, "optimistic_version") or 0) + 1
                     node.updated_at = _database_datetime(claimed_at)
-                    save_mbom_support_document(node, capability=capability)
-            _set_guard_active(guard, value, "processing", claimed_at, capability)
-            _append_audit(
-                value,
-                "mbom_publish.claim_recovered" if expired else "mbom_publish.claim",
-                "processing",
-                {
-                    "attemptGlobalId": str(command.attempt_global_id),
-                    "attemptNumber": attempt_number,
-                    "expiredRecovery": expired,
-                    "recoveredAfterAdapterBoundary": recovered_after_boundary,
-                },
-            )
+                    with mbom_process_validation_step("P804_PROCESS_CLAIM_NODE_SAVE"):
+                        save_mbom_support_document(node, capability=capability)
+            with mbom_process_validation_step("P804_PROCESS_CLAIM_GUARD_SAVE"):
+                _set_guard_active(guard, value, "processing", claimed_at, capability)
+            with mbom_process_validation_step("P804_PROCESS_CLAIM_AUDIT_APPEND"):
+                _append_audit(
+                    value,
+                    "mbom_publish.claim_recovered" if expired else "mbom_publish.claim",
+                    "processing",
+                    {
+                        "attemptGlobalId": str(command.attempt_global_id),
+                        "attemptNumber": attempt_number,
+                        "expiredRecovery": expired,
+                        "recoveredAfterAdapterBoundary": recovered_after_boundary,
+                    },
+                )
         return ClaimedMbomPublishMessage(
             outbox_event_id,
             value.global_id,
@@ -335,17 +347,20 @@ class FrappeMbomPublishWorkerRepository:
         with mbom_claim_write(claim.service_actor_user_id) as capability:
             outbox.adapter_boundary_crossed = 1
             outbox.disposition = "adapter_boundary_crossed"
-            save_mbom_support_document(outbox, capability=capability)
+            with mbom_process_validation_step("P804_PROCESS_BOUNDARY_OUTBOX_SAVE"):
+                save_mbom_support_document(outbox, capability=capability)
             attempt.adapter_boundary_crossed = 1
             attempt.transport_disposition = "adapter_boundary_crossed"
             _set_attempt_snapshot(attempt)
-            save_mbom_support_document(attempt, capability=capability)
-            _append_audit_from_claim(
-                claim,
-                "mbom_publish.adapter_boundary",
-                "crossed",
-                {"crossedAt": _utc_text(crossed)},
-            )
+            with mbom_process_validation_step("P804_PROCESS_BOUNDARY_ATTEMPT_SAVE"):
+                save_mbom_support_document(attempt, capability=capability)
+            with mbom_process_validation_step("P804_PROCESS_BOUNDARY_AUDIT_APPEND"):
+                _append_audit_from_claim(
+                    claim,
+                    "mbom_publish.adapter_boundary",
+                    "crossed",
+                    {"crossedAt": _utc_text(crossed)},
+                )
         return True
 
     def seal_result(
@@ -484,34 +499,38 @@ class FrappeMbomPublishWorkerRepository:
                 "observedAt": _utc_text(observed_at),
             }
             result_hash = canonical_hash(result_snapshot)
-            insert_mbom_support_document(
-                frappe.get_doc(
-                    {
-                        "doctype": "NPI MBOM Publish Result",
-                        "global_id": str(result_id),
-                        "request_global_id": str(claim.request_global_id),
-                        "outbox_event_id": str(claim.outbox_event_id),
-                        "attempt_global_id": str(claim.command.attempt_global_id),
-                        "attempt_number": claim.command.attempt_number,
-                        "source_hash": claim.command.source_hash,
-                        "topology_hash": claim.command.topology_hash,
-                        "item_mapping_set_hash": claim.command.item_mapping_set_hash,
-                        "mbom_mapping_set_hash": claim.command.mbom_mapping_set_hash,
-                        "state": aggregate_state.value,
-                        "authority": aggregate_authority.value,
-                        "response_authenticated": int(
-                            all(item.response_authenticated for item in final_values)
-                        ),
-                        "response_hash": result.response_hash,
-                        "fault_kind": _aggregate_fault(final_values).value,
-                        "node_result_set_hash": node_set_hash,
-                        "result_snapshot": result_snapshot,
-                        "result_hash": result_hash,
-                        "observed_at": _database_datetime(observed_at),
-                    }
-                ),
-                capability=capability,
-            )
+            with mbom_process_validation_step("P804_PROCESS_SEAL_RESULT_INSERT"):
+                insert_mbom_support_document(
+                    frappe.get_doc(
+                        {
+                            "doctype": "NPI MBOM Publish Result",
+                            "global_id": str(result_id),
+                            "request_global_id": str(claim.request_global_id),
+                            "outbox_event_id": str(claim.outbox_event_id),
+                            "attempt_global_id": str(claim.command.attempt_global_id),
+                            "attempt_number": claim.command.attempt_number,
+                            "source_hash": claim.command.source_hash,
+                            "topology_hash": claim.command.topology_hash,
+                            "item_mapping_set_hash": claim.command.item_mapping_set_hash,
+                            "mbom_mapping_set_hash": claim.command.mbom_mapping_set_hash,
+                            "state": aggregate_state.value,
+                            "authority": aggregate_authority.value,
+                            "response_authenticated": int(
+                                all(
+                                    item.response_authenticated
+                                    for item in final_values
+                                )
+                            ),
+                            "response_hash": result.response_hash,
+                            "fault_kind": _aggregate_fault(final_values).value,
+                            "node_result_set_hash": node_set_hash,
+                            "result_snapshot": result_snapshot,
+                            "result_hash": result_hash,
+                            "observed_at": _database_datetime(observed_at),
+                        }
+                    ),
+                    capability=capability,
+                )
 
             # Insert the aggregate Result before its linked node children. The
             # hashes were computed first, so link validation and immutable
@@ -522,8 +541,11 @@ class FrappeMbomPublishWorkerRepository:
                 )
                 if canonical_hash(snapshot) != node_hash:
                     raise RuntimeError("MBOM node result snapshot drifted before insert.")
-                insert_mbom_support_document(
-                    frappe.get_doc(
+                with mbom_process_validation_step(
+                    "P804_PROCESS_SEAL_NODE_RESULT_INSERT"
+                ):
+                    insert_mbom_support_document(
+                        frappe.get_doc(
                         {
                             "doctype": "NPI MBOM Publish Node Result",
                             "global_id": str(node_result_id),
@@ -549,9 +571,9 @@ class FrappeMbomPublishWorkerRepository:
                             "node_result_hash": node_hash,
                             "observed_at": _database_datetime(observed_at),
                         }
-                    ),
-                    capability=capability,
-                )
+                        ),
+                        capability=capability,
+                    )
 
             advanced = 0
             for final, (
@@ -568,34 +590,40 @@ class FrappeMbomPublishWorkerRepository:
                         MbomResultAuthority.SYNTHETIC,
                         MbomResultAuthority.AUTHORITATIVE_SANDBOX,
                     }:
-                        if _record_mapping_observation(
-                            value=value,
-                            claim=claim,
-                            profile=profile,
-                            result_id=result_id,
-                            node_result_id=node_id,
-                            node_result_hash=node_hash,
-                            observation=original,
-                            expectation=expectation,
-                            current_head=head,
-                            disposition=disposition,
-                            now=observed_at,
-                            capability=capability,
+                        with mbom_process_validation_step(
+                            "P804_PROCESS_SEAL_MAPPING_WRITE"
                         ):
-                            advanced += 1
+                            if _record_mapping_observation(
+                                value=value,
+                                claim=claim,
+                                profile=profile,
+                                result_id=result_id,
+                                node_result_id=node_id,
+                                node_result_hash=node_hash,
+                                observation=original,
+                                expectation=expectation,
+                                current_head=head,
+                                disposition=disposition,
+                                now=observed_at,
+                                capability=capability,
+                            ):
+                                advanced += 1
                 node.state = final.state.value
                 node.result_global_id = str(node_id)
                 node.optimistic_version = int(_value(node, "optimistic_version") or 0) + 1
                 node.updated_at = _database_datetime(observed_at)
-                save_mbom_support_document(node, capability=capability)
+                with mbom_process_validation_step("P804_PROCESS_SEAL_NODE_SAVE"):
+                    save_mbom_support_document(node, capability=capability)
 
             _finish_attempt(attempt, result, aggregate_state, observed_at)
-            save_mbom_support_document(attempt, capability=capability)
+            with mbom_process_validation_step("P804_PROCESS_SEAL_ATTEMPT_SAVE"):
+                save_mbom_support_document(attempt, capability=capability)
             request.state = aggregate_state.value
             request.result_global_id = str(result_id)
             request.optimistic_version = int(_value(request, "optimistic_version") or 0) + 1
             request.updated_at = _database_datetime(observed_at)
-            save_mbom_support_document(request, capability=capability)
+            with mbom_process_validation_step("P804_PROCESS_SEAL_REQUEST_SAVE"):
+                save_mbom_support_document(request, capability=capability)
             outbox.state = _outbox_state(aggregate_state)
             outbox.disposition = result.transport_disposition
             outbox.mbom_result_global_id = str(result_id)
@@ -604,19 +632,24 @@ class FrappeMbomPublishWorkerRepository:
                 _database_datetime(observed_at) if result.safe_error_code else None
             )
             outbox.lease_expires_at = None
-            save_mbom_support_document(outbox, capability=capability)
-            _set_guard_terminal(guard, value, aggregate_state.value, observed_at, capability)
-            _append_audit(
-                value,
-                "mbom_publish.result_observed",
-                aggregate_state.value,
-                {
-                    "attemptGlobalId": str(claim.command.attempt_global_id),
-                    "nodeResultSetHash": node_set_hash,
-                    "resultGlobalId": str(result_id),
-                    "resultHash": result_hash,
-                },
-            )
+            with mbom_process_validation_step("P804_PROCESS_SEAL_OUTBOX_SAVE"):
+                save_mbom_support_document(outbox, capability=capability)
+            with mbom_process_validation_step("P804_PROCESS_SEAL_GUARD_SAVE"):
+                _set_guard_terminal(
+                    guard, value, aggregate_state.value, observed_at, capability
+                )
+            with mbom_process_validation_step("P804_PROCESS_SEAL_AUDIT_APPEND"):
+                _append_audit(
+                    value,
+                    "mbom_publish.result_observed",
+                    aggregate_state.value,
+                    {
+                        "attemptGlobalId": str(claim.command.attempt_global_id),
+                        "nodeResultSetHash": node_set_hash,
+                        "resultGlobalId": str(result_id),
+                        "resultHash": result_hash,
+                    },
+                )
         return MbomPublishWorkerOutcome(
             claim.outbox_event_id,
             claim.request_global_id,

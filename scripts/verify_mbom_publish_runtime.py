@@ -39,7 +39,8 @@ MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED = False
 MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED = False
 MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED = False
 MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED = False
-MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED = True
+MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED = False
+MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED = True
 _CREATE_FAILURE_MESSAGE = "P8-04 Synthetic command did not create one queued batch"
 _WORKER_FAILURE_MESSAGE = "P8-04 Bench fixture failed"
 _CREATE_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
@@ -172,6 +173,32 @@ _WORKER_POST_MANIFEST_DIAGNOSTIC_CODES = (
     _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES - _WORKER_POST_MANIFEST_CLOSED_CODES
 )
 _WORKER_POST_COMMAND_HASH_DIAGNOSTIC_CODES = _WORKER_POST_MANIFEST_DIAGNOSTIC_CODES
+_PROCESS_VALIDATION_STAGE_CODES = frozenset(
+    {
+        "P804_PROCESS_CLAIM_PREVIOUS_ATTEMPT_SAVE",
+        "P804_PROCESS_CLAIM_ATTEMPT_INSERT",
+        "P804_PROCESS_CLAIM_OUTBOX_SAVE",
+        "P804_PROCESS_CLAIM_REQUEST_SAVE",
+        "P804_PROCESS_CLAIM_NODE_SAVE",
+        "P804_PROCESS_CLAIM_GUARD_SAVE",
+        "P804_PROCESS_CLAIM_AUDIT_APPEND",
+        "P804_PROCESS_BOUNDARY_OUTBOX_SAVE",
+        "P804_PROCESS_BOUNDARY_ATTEMPT_SAVE",
+        "P804_PROCESS_BOUNDARY_AUDIT_APPEND",
+        "P804_PROCESS_SEAL_RESULT_INSERT",
+        "P804_PROCESS_SEAL_NODE_RESULT_INSERT",
+        "P804_PROCESS_SEAL_MAPPING_WRITE",
+        "P804_PROCESS_SEAL_NODE_SAVE",
+        "P804_PROCESS_SEAL_ATTEMPT_SAVE",
+        "P804_PROCESS_SEAL_REQUEST_SAVE",
+        "P804_PROCESS_SEAL_OUTBOX_SAVE",
+        "P804_PROCESS_SEAL_GUARD_SAVE",
+        "P804_PROCESS_SEAL_AUDIT_APPEND",
+    }
+)
+_PROCESS_VALIDATION_DIAGNOSTIC_CODES = (
+    _WORKER_POST_COMMAND_HASH_DIAGNOSTIC_CODES | _PROCESS_VALIDATION_STAGE_CODES
+)
 
 
 def _valid_worker_downstream_trace(value: object) -> bool:
@@ -182,17 +209,20 @@ def _valid_worker_downstream_trace(value: object) -> bool:
 
 
 def _active_worker_diagnostic_codes() -> frozenset[str]:
+    configured: list[frozenset[str]] = []
+    if MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED:
+        configured.append(_PROCESS_VALIDATION_DIAGNOSTIC_CODES)
     if MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED:
-        return _WORKER_NOT_CLAIMED_DIAGNOSTIC_CODES
+        configured.append(_WORKER_NOT_CLAIMED_DIAGNOSTIC_CODES)
     if MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED:
-        return _WORKER_POST_DATETIME_DIAGNOSTIC_CODES
+        configured.append(_WORKER_POST_DATETIME_DIAGNOSTIC_CODES)
     if MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED:
-        return _WORKER_POST_MANIFEST_DIAGNOSTIC_CODES
+        configured.append(_WORKER_POST_MANIFEST_DIAGNOSTIC_CODES)
     if MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED:
-        return _WORKER_POST_COMMAND_HASH_DIAGNOSTIC_CODES
+        configured.append(_WORKER_POST_COMMAND_HASH_DIAGNOSTIC_CODES)
     if MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED:
-        return _WORKER_DOWNSTREAM_DIAGNOSTIC_CODES
-    return frozenset()
+        configured.append(_WORKER_DOWNSTREAM_DIAGNOSTIC_CODES)
+    return configured[0] if len(configured) == 1 else frozenset()
 
 
 def _worker_outcome_diagnostic_code(result: object) -> str | None:
@@ -217,6 +247,8 @@ def _worker_outcome_diagnostic_code(result: object) -> str | None:
 def worker_downstream_diagnostic_step(
     code: str,
     trace_id: str,
+    *,
+    inner_recorded_state: dict[str, object] | None = None,
 ) -> Iterator[None]:
     """Record one closed verifier stage and preserve its original failure."""
 
@@ -229,6 +261,12 @@ def worker_downstream_diagnostic_step(
                 code in _active_worker_diagnostic_codes()
                 and _valid_worker_downstream_trace(trace_id)
                 and item_runtime._TYPE_PATTERN.fullmatch(exception_type) is not None
+                and not (
+                    isinstance(inner_recorded_state, dict)
+                    and set(inner_recorded_state) == {"trace_id", "recorded"}
+                    and inner_recorded_state.get("trace_id") == trace_id
+                    and inner_recorded_state.get("recorded") is True
+                )
             ):
                 from npi_core.api import record_safe_diagnostic
 
@@ -677,6 +715,9 @@ def exercise_worker(
 ) -> dict[str, object]:
     import frappe
 
+    from npi_integration.mbom_publish.diagnostics import (
+        mbom_process_validation_diagnostics,
+    )
     from npi_integration.mbom_publish.runtime_fixture import synthetic_adapter_call_count
     from npi_integration.mbom_publish.worker import process_outbox_message
     from npi_integration.mbom_publish.worker_repository import FrappeMbomPublishWorkerRepository
@@ -707,10 +748,16 @@ def exercise_worker(
         request_id=request_id,
         diagnostic_trace_id=diagnostic_trace_id,
     )
-    with worker_downstream_diagnostic_step(
-        "P804_WORKER_PROCESS_OUTBOX", diagnostic_trace_id
-    ):
-        result = process_outbox_message(outbox_id)
+    with mbom_process_validation_diagnostics(
+        diagnostic_trace_id,
+        enabled=MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED,
+    ) as process_diagnostic_state:
+        with worker_downstream_diagnostic_step(
+            "P804_WORKER_PROCESS_OUTBOX",
+            diagnostic_trace_id,
+            inner_recorded_state=process_diagnostic_state,
+        ):
+            result = process_outbox_message(outbox_id)
     with worker_downstream_diagnostic_step(
         "P804_WORKER_SESSION_RESTORE", diagnostic_trace_id
     ):

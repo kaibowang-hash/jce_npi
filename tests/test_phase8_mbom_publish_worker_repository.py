@@ -7,6 +7,7 @@ import unittest
 from contextlib import nullcontext
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -64,16 +65,20 @@ class Phase8MbomPublishWorkerRepositoryTest(unittest.TestCase):
             "npi_core.documents.frappe_repository",
             "npi_core.foundation.audit",
             "npi_integration.mbom_publish.frappe_repository",
+            "npi_integration.mbom_publish.diagnostics",
             cls.MODULE,
         )
         cls.saved = {name: sys.modules.get(name) for name in module_names}
         sys.modules.pop(cls.MODULE, None)
+        sys.modules.pop("npi_integration.mbom_publish.diagnostics", None)
         frappe = types.ModuleType("frappe")
         frappe._ = lambda source: source
         frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         frappe.DuplicateEntryError = type("DuplicateEntryError", (Exception,), {})
         frappe.UniqueValidationError = type("UniqueValidationError", (Exception,), {})
         frappe.db = FakeDb()
+        frappe.flags = types.SimpleNamespace()
+        frappe.get_request_header = lambda _name: None
         frappe.get_doc = lambda *args, **kwargs: None
         frappe.get_all = frappe.db.get_all
         sys.modules["frappe"] = frappe
@@ -93,6 +98,9 @@ class Phase8MbomPublishWorkerRepositoryTest(unittest.TestCase):
         repository._request_value = lambda _project, row: row
         sys.modules[repository.__name__] = repository
         cls.module = importlib.import_module(cls.MODULE)
+        cls.diagnostics = importlib.import_module(
+            "npi_integration.mbom_publish.diagnostics"
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -459,6 +467,96 @@ class Phase8MbomPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(direct_sql_calls, [])
         for forbidden in ("requests.", "httpx.", "submit_bom"):
             self.assertNotIn(forbidden, source_text.casefold())
+
+    def test_process_validation_diagnostic_is_exact_inner_wins_and_dormant(self):
+        records: list[dict[str, object]] = []
+        package = types.ModuleType("npi_core")
+        package.__path__ = []
+        api = types.ModuleType("npi_core.api")
+        api.record_safe_diagnostic = lambda **values: records.append(values)
+        private = "private actor payload /tmp/secret"
+        error = type("PinnedValidationError", (Exception,), {})(private)
+
+        with patch.dict(
+            sys.modules, {"npi_core": package, "npi_core.api": api}
+        ):
+            with self.diagnostics.mbom_process_validation_diagnostics(
+                "trace-0123456789abcdef0123456789abcdef",
+                enabled=True,
+            ) as state:
+                with self.assertRaises(type(error)) as raised:
+                    with self.diagnostics.mbom_process_validation_step(
+                        "P804_PROCESS_CLAIM_OUTBOX_SAVE"
+                    ):
+                        with self.diagnostics.mbom_process_validation_step(
+                            "P804_PROCESS_CLAIM_ATTEMPT_INSERT"
+                        ):
+                            raise error
+                self.assertTrue(state["recorded"])
+        self.assertIs(raised.exception, error)
+        self.assertEqual(
+            records,
+            [
+                {
+                    "code": "P804_PROCESS_CLAIM_ATTEMPT_INSERT",
+                    "title": "NPI MBOM publish process validation stage failed",
+                    "exception_type": "PinnedValidationError",
+                    "trace_id": "trace-0123456789abcdef0123456789abcdef",
+                }
+            ],
+        )
+        self.assertNotIn("private", str(records))
+        self.assertFalse(
+            hasattr(
+                self.module.frappe.flags,
+                "npi_p804_mbom_process_validation_diagnostic",
+            )
+        )
+
+        for trace_id, enabled, code in (
+            ("trace-private", True, "P804_PROCESS_CLAIM_OUTBOX_SAVE"),
+            ("trace-0123456789abcdef0123456789abcdef", False, "P804_PROCESS_CLAIM_OUTBOX_SAVE"),
+            ("trace-0123456789abcdef0123456789abcdef", 1, "P804_PROCESS_CLAIM_OUTBOX_SAVE"),
+            ("trace-0123456789abcdef0123456789abcdef", True, "P804_PROCESS_NOT_ALLOWED"),
+        ):
+            with self.subTest(trace_id=trace_id, enabled=enabled, code=code):
+                records.clear()
+                with self.diagnostics.mbom_process_validation_diagnostics(
+                    trace_id, enabled=enabled
+                ):
+                    with self.assertRaises(type(error)) as closed:
+                        with self.diagnostics.mbom_process_validation_step(code):
+                            raise error
+                self.assertIs(closed.exception, error)
+                self.assertEqual(records, [])
+
+    def test_real_claim_write_wrapper_records_exact_boundary_without_extra_write(self):
+        records: list[dict[str, object]] = []
+        package = types.ModuleType("npi_core")
+        package.__path__ = []
+        api = types.ModuleType("npi_core.api")
+        api.record_safe_diagnostic = lambda **values: records.append(values)
+        error = type("PinnedValidationError", (Exception,), {})("private business value")
+        self.outbox.state = "pending"
+        self.request.state = MbomPublishRequestState.QUEUED.value
+
+        def fail_outbox_save(doc, **_kwargs):
+            self.saves.append(doc)
+            if doc is self.outbox:
+                raise error
+
+        self.patch("save_mbom_support_document", fail_outbox_save)
+        with patch.dict(
+            sys.modules, {"npi_core": package, "npi_core.api": api}
+        ), self.diagnostics.mbom_process_validation_diagnostics(
+            "trace-0123456789abcdef0123456789abcdef", enabled=True
+        ), self.assertRaises(type(error)) as raised:
+            self.repository.claim(self.route.outbox_event_id, now=NOW)
+        self.assertIs(raised.exception, error)
+        self.assertEqual(self.inserts, ["attempt"])
+        self.assertEqual(self.saves, [self.outbox])
+        self.assertEqual(records[0]["code"], "P804_PROCESS_CLAIM_OUTBOX_SAVE")
+        self.assertNotIn("private", str(records))
 
     def test_result_parent_precedes_node_children_and_mapping_writes(self):
         import ast

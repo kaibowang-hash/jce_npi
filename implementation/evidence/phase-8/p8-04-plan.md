@@ -1082,3 +1082,34 @@ unchanged. All prior diagnostic flags are false; only
 repository, runtime fixture, adapter, response, API, permission, transaction,
 Schema, ownership and Gate paths have zero diff, and every historical cycle
 counter remains immutable.
+
+The post-command-hash checkpoint exact SHA
+`21a3bf494a93a7e03980c6c6e1cc0bbd894c0ba3` passes ordinary run
+`32646456847` (frontend `97211353083`, governed visual `97211352936`,
+repository `97211353001`, secret scan `97211353018`). Its sole controlled
+diagnostic dispatch `32647298499` passes preflight `97213386742`; runtime
+`97213419528` emits exactly `P804_WORKER_PROCESS_OUTBOX / ValidationError /
+trace-086268ae7a9659128c23db24a7438b41`. The tuple proves the failure remains
+inside the composite worker call, but plain Frappe `ValidationError` can be
+raised by multiple ordered Document lifecycle writes in claim,
+adapter-boundary marking, result seal or recovery. Link, mandatory, immutable,
+domain-contract and post-child failures have distinct exception types or
+later lexical boundaries, but the remaining lifecycle sites cannot be safely
+distinguished without reading the prohibited exception message. Product
+repair is therefore not authorized. This cycle is frozen at `diagnostic 1/1`,
+`repair 0/1`, `final 0/1`.
+
+An independent process-validation subcycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its response-neutral checkpoint gives each existing
+claim, boundary and seal lifecycle write context one fixed
+`P804_PROCESS_*` code. The wrappers do not change values, ordering,
+capabilities, transactions or exception identity. Only the first controlled
+Synthetic worker call activates the exact validated HTTP trace; request-local
+state accepts at most the innermost record, restores in `finally`, and leaves
+ordinary requests inert. The parent retains the existing strict mirrored-log
+reader, constant fallback and unread failed-child stdout/stderr. The existing
+outer process code is emitted only when no inner product boundary recorded.
+All historical activations, including the post-command-hash flag, are false;
+only `MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED=True` for this bounded
+subcycle. No API, permission, Schema, ownership, response, write value,
+transaction or Gate contract changes.

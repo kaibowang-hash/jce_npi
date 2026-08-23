@@ -475,7 +475,8 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED)
-        self.assertTrue(module.MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -576,14 +577,71 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             post_manifest_stages,
         )
         self.assertEqual(len(post_manifest_stages), 29)
+        process_validation_stages = {
+            "P804_PROCESS_CLAIM_PREVIOUS_ATTEMPT_SAVE",
+            "P804_PROCESS_CLAIM_ATTEMPT_INSERT",
+            "P804_PROCESS_CLAIM_OUTBOX_SAVE",
+            "P804_PROCESS_CLAIM_REQUEST_SAVE",
+            "P804_PROCESS_CLAIM_NODE_SAVE",
+            "P804_PROCESS_CLAIM_GUARD_SAVE",
+            "P804_PROCESS_CLAIM_AUDIT_APPEND",
+            "P804_PROCESS_BOUNDARY_OUTBOX_SAVE",
+            "P804_PROCESS_BOUNDARY_ATTEMPT_SAVE",
+            "P804_PROCESS_BOUNDARY_AUDIT_APPEND",
+            "P804_PROCESS_SEAL_RESULT_INSERT",
+            "P804_PROCESS_SEAL_NODE_RESULT_INSERT",
+            "P804_PROCESS_SEAL_MAPPING_WRITE",
+            "P804_PROCESS_SEAL_NODE_SAVE",
+            "P804_PROCESS_SEAL_ATTEMPT_SAVE",
+            "P804_PROCESS_SEAL_REQUEST_SAVE",
+            "P804_PROCESS_SEAL_OUTBOX_SAVE",
+            "P804_PROCESS_SEAL_GUARD_SAVE",
+            "P804_PROCESS_SEAL_AUDIT_APPEND",
+        }
+        self.assertEqual(
+            module._PROCESS_VALIDATION_STAGE_CODES,
+            process_validation_stages,
+        )
+        diagnostics_tree = ast.parse(SERVER_DIAGNOSTICS.read_text(encoding="utf-8"))
+        diagnostics_assignment = next(
+            node
+            for node in diagnostics_tree.body
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name)
+                and target.id == "MBOM_PROCESS_VALIDATION_DIAGNOSTIC_CODES"
+                for target in node.targets
+            )
+        )
+        self.assertIsInstance(diagnostics_assignment.value, ast.Call)
+        diagnostics_values = diagnostics_assignment.value.args[0]
+        self.assertIsInstance(diagnostics_values, ast.Set)
+        self.assertEqual(
+            {
+                item.value
+                for item in diagnostics_values.elts
+                if isinstance(item, ast.Constant) and isinstance(item.value, str)
+            },
+            process_validation_stages,
+        )
+        self.assertEqual(
+            module._PROCESS_VALIDATION_DIAGNOSTIC_CODES,
+            post_manifest_stages | process_validation_stages,
+        )
         self.assertEqual(
             module._active_worker_diagnostic_codes(),
-            post_manifest_stages,
+            post_manifest_stages | process_validation_stages,
         )
         with patch.object(
             module,
-            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
             False,
+        ):
+            self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
+        with patch.object(
+            module,
+            "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
+            True,
         ):
             self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
         with patch.object(
@@ -593,6 +651,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             module,
             "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            module,
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertEqual(
@@ -606,6 +668,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             module,
             "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            module,
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertEqual(
@@ -647,6 +713,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             module,
             "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            module,
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.assertEqual(
                 module._active_worker_diagnostic_codes()
@@ -654,6 +724,13 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 post_datetime_stages,
             )
         self.assertNotIn("P804_WORKER_RESULT_OUTCOME", self.source)
+        repository_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/mbom_publish/worker_repository.py"
+        ).read_text(encoding="utf-8")
+        for code in process_validation_stages:
+            with self.subTest(process_validation_code=code):
+                self.assertEqual(repository_source.count(f'"{code}"'), 1)
 
     def test_worker_outcome_diagnostic_classifies_every_fixed_state_and_shape(self):
         module = self.module
@@ -869,6 +946,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 module,
                 "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
                 True,
+            ), patch.object(
+                module,
+                "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
+                False,
             ):
                 if failure is None:
                     module._verify_not_claimed_preconditions(
@@ -930,6 +1011,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             self.module,
             "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
             True,
+        ), patch.object(
+            self.module,
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
+            False,
         ), self.assertRaises(RuntimeError) as raised:
             with self.module.worker_downstream_diagnostic_step(
                 "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID
@@ -959,6 +1044,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 self.module,
                 "MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED",
                 True,
+            ), patch.object(
+                self.module,
+                "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
+                False,
             ), self.assertRaises(RuntimeError) as post_datetime:
                 with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
                     raise original
@@ -975,6 +1064,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 self.module,
                 "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
                 True,
+            ), patch.object(
+                self.module,
+                "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
+                False,
             ), self.assertRaises(RuntimeError) as post_manifest_closed:
                 with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
                     raise original
@@ -998,7 +1091,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 {"npi_core": package, "npi_core.api": api},
             ), patch.object(
                 self.module,
-                "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+                "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
                 True,
             ), self.assertRaises(RuntimeError) as post_command_hash_active:
                 with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
@@ -1035,6 +1128,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                 self.module,
                 "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
                 enabled,
+            ), patch.object(
+                self.module,
+                "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
+                False,
             ), patch.dict(
                 sys.modules,
                 {"npi_core": package, "npi_core.api": api},
@@ -1055,6 +1152,59 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('"diagnostic_trace_id": diagnostic_trace_id', segment)
         self.assertNotIn("X-Trace-ID", segment)
         self.assertNotIn("headers", segment)
+
+    def test_process_validation_scope_is_exact_first_process_only(self):
+        exercise = self.source.split("def exercise_worker(", 1)[1].split(
+            "\ndef ", 1
+        )[0]
+        self.assertEqual(exercise.count("mbom_process_validation_diagnostics("), 1)
+        self.assertEqual(exercise.count("inner_recorded_state="), 1)
+        first_process = exercise.index("process_outbox_message(outbox_id)")
+        restore = exercise.index('"P804_WORKER_SESSION_RESTORE"')
+        replay = exercise.rindex("process_outbox_message(outbox_id)")
+        scope = exercise.index("mbom_process_validation_diagnostics(")
+        self.assertLess(scope, first_process)
+        self.assertLess(first_process, restore)
+        self.assertLess(restore, replay)
+
+    def test_inner_process_record_suppresses_outer_tuple_only_for_exact_state(self):
+        records: list[dict[str, object]] = []
+        package = types.ModuleType("npi_core")
+        package.__path__ = []
+        api = types.ModuleType("npi_core.api")
+        api.record_safe_diagnostic = lambda **values: records.append(values)
+        private = RuntimeError("private actor payload /tmp/secret")
+
+        with patch.dict(
+            sys.modules, {"npi_core": package, "npi_core.api": api}
+        ), self.assertRaises(RuntimeError) as raised:
+            with self.module.worker_downstream_diagnostic_step(
+                "P804_WORKER_PROCESS_OUTBOX",
+                _TRACE_ID,
+                inner_recorded_state={"trace_id": _TRACE_ID, "recorded": True},
+            ):
+                raise private
+        self.assertIs(raised.exception, private)
+        self.assertEqual(records, [])
+
+        for state in (
+            {"trace_id": _TRACE_ID, "recorded": False},
+            {"trace_id": "trace-ffffffffffffffffffffffffffffffff", "recorded": True},
+            {"trace_id": _TRACE_ID, "recorded": True, "private": "value"},
+        ):
+            records.clear()
+            with self.subTest(state=state), patch.dict(
+                sys.modules, {"npi_core": package, "npi_core.api": api}
+            ), self.assertRaises(RuntimeError) as outer:
+                with self.module.worker_downstream_diagnostic_step(
+                    "P804_WORKER_PROCESS_OUTBOX",
+                    _TRACE_ID,
+                    inner_recorded_state=state,
+                ):
+                    raise private
+            self.assertIs(outer.exception, private)
+            self.assertEqual(len(records), 1)
+            self.assertNotIn("private", str(records))
 
     def test_worker_log_reader_requires_one_exact_logical_record(self):
         module = self.module
@@ -1079,7 +1229,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                     path.write_text("prior safe log\n", encoding="utf-8")
                 with patch.object(
                     module,
-                    "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+                    "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
                     True,
                 ), patch.object(
                     module.item_runtime,
@@ -1109,6 +1259,15 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         expected = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
         self.assertEqual(read([valid]), expected)
         self.assertEqual(read([valid], [valid]), expected)
+        process_valid = {
+            **valid,
+            "code": "P804_PROCESS_CLAIM_OUTBOX_SAVE",
+            "exceptionType": "ValidationError",
+        }
+        self.assertEqual(
+            read([process_valid]),
+            ("ValidationError", "P804_PROCESS_CLAIM_OUTBOX_SAVE", _TRACE_ID),
+        )
         self.assertIsNone(read([valid, valid]))
         self.assertIsNone(
             read([valid], [{**valid, "code": "P804_WORKER_SESSION_RESTORE"}])
@@ -1137,7 +1296,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         diagnostic = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
         with patch.object(
             self.module,
-            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
             True,
         ), patch.object(
             self.module.item_runtime,
@@ -1191,7 +1350,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
 
         with patch.object(
             self.module,
-            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
             True,
         ), patch.object(
             self.module.item_runtime,
@@ -1219,6 +1378,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.module,
             "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.module,
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.module.item_runtime,
@@ -1269,6 +1432,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.module,
             "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.module,
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.module,

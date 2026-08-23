@@ -43,6 +43,32 @@ MBOM_CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
 MBOM_CREATE_SERVER_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 MBOM_CREATE_SERVER_DIAGNOSTIC_SCOPE = "p804-mbom-create-v1"
 _DIAGNOSTIC_FLAG = "npi_p804_mbom_create_diagnostic"
+MBOM_PROCESS_VALIDATION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P804_PROCESS_CLAIM_PREVIOUS_ATTEMPT_SAVE",
+        "P804_PROCESS_CLAIM_ATTEMPT_INSERT",
+        "P804_PROCESS_CLAIM_OUTBOX_SAVE",
+        "P804_PROCESS_CLAIM_REQUEST_SAVE",
+        "P804_PROCESS_CLAIM_NODE_SAVE",
+        "P804_PROCESS_CLAIM_GUARD_SAVE",
+        "P804_PROCESS_CLAIM_AUDIT_APPEND",
+        "P804_PROCESS_BOUNDARY_OUTBOX_SAVE",
+        "P804_PROCESS_BOUNDARY_ATTEMPT_SAVE",
+        "P804_PROCESS_BOUNDARY_AUDIT_APPEND",
+        "P804_PROCESS_SEAL_RESULT_INSERT",
+        "P804_PROCESS_SEAL_NODE_RESULT_INSERT",
+        "P804_PROCESS_SEAL_MAPPING_WRITE",
+        "P804_PROCESS_SEAL_NODE_SAVE",
+        "P804_PROCESS_SEAL_ATTEMPT_SAVE",
+        "P804_PROCESS_SEAL_REQUEST_SAVE",
+        "P804_PROCESS_SEAL_OUTBOX_SAVE",
+        "P804_PROCESS_SEAL_GUARD_SAVE",
+        "P804_PROCESS_SEAL_AUDIT_APPEND",
+    }
+)
+_PROCESS_VALIDATION_DIAGNOSTIC_FLAG = (
+    "npi_p804_mbom_process_validation_diagnostic"
+)
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
 
@@ -118,6 +144,92 @@ def _record_mbom_create_server_failure(code: str, error: Exception) -> None:
 
 def _diagnostic_state() -> dict[str, object] | None:
     state = getattr(frappe.flags, _DIAGNOSTIC_FLAG, None)
+    if (
+        not isinstance(state, dict)
+        or set(state) != {"trace_id", "recorded"}
+        or not isinstance(state.get("trace_id"), str)
+        or _TRACE_PATTERN.fullmatch(str(state["trace_id"])) is None
+        or type(state.get("recorded")) is not bool
+    ):
+        return None
+    return state
+
+
+@contextmanager
+def mbom_process_validation_diagnostics(
+    trace_id: object,
+    *,
+    enabled: bool,
+) -> Iterator[dict[str, object] | None]:
+    """Enable one exact-trace worker validation scope without changing behavior."""
+
+    state = (
+        {"trace_id": trace_id, "recorded": False}
+        if enabled is True
+        and isinstance(trace_id, str)
+        and _TRACE_PATTERN.fullmatch(trace_id) is not None
+        else None
+    )
+    try:
+        flags = frappe.flags
+        missing = object()
+        previous = getattr(flags, _PROCESS_VALIDATION_DIAGNOSTIC_FLAG, missing)
+        setattr(flags, _PROCESS_VALIDATION_DIAGNOSTIC_FLAG, state)
+    except Exception:
+        yield None
+        return
+    try:
+        yield state
+    finally:
+        try:
+            if previous is missing:
+                delattr(flags, _PROCESS_VALIDATION_DIAGNOSTIC_FLAG)
+            else:
+                setattr(flags, _PROCESS_VALIDATION_DIAGNOSTIC_FLAG, previous)
+        except Exception:
+            pass
+
+
+@contextmanager
+def mbom_process_validation_step(code: str) -> Iterator[None]:
+    """Record one innermost validation write boundary and re-raise unchanged."""
+
+    try:
+        yield
+    except Exception as error:
+        _record_mbom_process_validation_failure(code, error)
+        raise
+
+
+def _record_mbom_process_validation_failure(code: str, error: Exception) -> None:
+    """Record only the allowlisted code, exception class, and exact trace."""
+
+    try:
+        state = _process_validation_diagnostic_state()
+        exception_type = type(error).__name__
+        if (
+            state is None
+            or state["recorded"] is True
+            or code not in MBOM_PROCESS_VALIDATION_DIAGNOSTIC_CODES
+            or _TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["recorded"] = True
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=code,
+            title="NPI MBOM publish process validation stage failed",
+            exception_type=exception_type,
+            trace_id=str(state["trace_id"]),
+        )
+    except Exception:
+        # Diagnostics must never replace the original worker failure.
+        pass
+
+
+def _process_validation_diagnostic_state() -> dict[str, object] | None:
+    state = getattr(frappe.flags, _PROCESS_VALIDATION_DIAGNOSTIC_FLAG, None)
     if (
         not isinstance(state, dict)
         or set(state) != {"trace_id", "recorded"}

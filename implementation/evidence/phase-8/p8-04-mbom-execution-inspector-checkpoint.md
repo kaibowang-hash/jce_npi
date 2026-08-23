@@ -578,3 +578,33 @@ are unchanged. Every earlier activation is false; only
 repository, fixture, adapter, response, API, permission, transaction, Schema,
 ownership and Gate paths remain untouched, with all historical counters
 immutable.
+
+Checkpoint SHA `21a3bf494a93a7e03980c6c6e1cc0bbd894c0ba3` passes ordinary
+run `32646456847`: frontend `97211353083`, visual `97211352936`, repository
+`97211353001` and secret scan `97211353018`. The only controlled diagnostic
+run `32647298499` passes preflight `97213386742`; runtime `97213419528`
+returns the safe tuple `P804_WORKER_PROCESS_OUTBOX / ValidationError /
+trace-086268ae7a9659128c23db24a7438b41`. This is after the closed manifest and
+command-hash repairs and before every post-child verifier predicate.
+
+The exception class rules out Link, mandatory, immutable and domain-contract
+sources, but multiple Frappe Document lifecycle writes remain inside the same
+process boundary: claim Attempt/Outbox/Request/Node/Guard/Audit, boundary
+Outbox/Attempt/Audit, and seal/recovery Result/Node Result/mapping/current
+documents/Guard/Audit. Their order is fixed, yet their common exception class
+cannot identify the first failing symbol without prohibited message or
+business data. No product repair is justified. The post-command-hash cycle is
+frozen at `diagnostic 1/1`, `repair 0/1`, `final 0/1`.
+
+The separate process-validation subcycle begins at `diagnostic 0/1`, `repair
+0/1`, `final 0/1`. One fixed code corresponds to each existing lexical write
+context. A validated exact trace enables request-local state only around the
+first Synthetic process call; the innermost context records at most one exact
+three-key safe tuple, the same exception is rethrown, and state is restored in
+`finally`. If an inner record exists the verifier suppresses its composite
+outer tuple; otherwise the old constant-safe process boundary remains. The
+strict mirrored reader, failed-child stdout/stderr prohibition, response and
+transaction behavior are unchanged. All prior Item and MBOM diagnostic flags
+are false; only `MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED=True` is
+temporarily active. Product worker ordering, write values, API, permission,
+Schema, ownership and Gate behavior are unchanged.
