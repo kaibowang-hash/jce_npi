@@ -4478,3 +4478,38 @@ repeat or rewrite it merely to restore context. See
 - This run is harness evidence and consumes no additional diagnostic or
   product repair. Final Level 3 and Site dispatch remain closed pending a new
   exact-SHA ordinary CI PASS.
+
+## 2026-08-23 P8-04 Level 3 PASS; P8-05 audit active
+
+- Exact final P8-04 product SHA
+  `ca72deceab4b8e899d0da1207883887c9d30077a` passes ordinary CI
+  `32651139504`: secret `97222817515`, repository `97222817676` (`2,299`
+  tracked Python tests), frontend `97222817695` (`1,046` unit and `450` E2E)
+  and visual `97222817696` (`126/126`) all pass; controlled lanes correctly
+  skip.
+- Final unchanged Level 3 `32651903846` passes frontend `97224725000`, visual
+  `97224725065`, repository `97224725099`, secret `97224725138`, controlled
+  preflight `97226433521` and cumulative disposable Site `97226462865`.
+  Runtime artifact `9496708366` has digest
+  `sha256:b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`
+  and records `scope=p5-01-through-p8-04` with
+  `predecessor_scope=p5-01-through-p8-03`. Complete evidence is
+  `implementation/evidence/phase-8/p8-04-validation.md`.
+- `INT-004` is technically verified for the MBOM execution foundation while
+  production/Sandbox mapping remains held. Only the Item and MBOM technical
+  portions of `FR-DS-013` are verified; production/Sandbox mapping and the
+  whole requirement remain held.
+- All Item and MBOM diagnostic activations are false. Production ERPNext/JCE,
+  actual BOM mapping facts, generic P8-07 operations and P8-06 through P8-09
+  remain inactive.
+- Standing continuous-delivery authority activates only the P8-05
+  requirement/domain/existing-capability/security audit for `INT-005` and
+  `FR-TL-011..016`. It must freeze one physical Tooling Set to zero-or-one
+  formal ERP Asset mapping, operation-specific create/update commands,
+  immutable source and expected target version, partial/uncertain truth and
+  read-only Asset/location/maintenance observations. NPI acceptance evidence
+  is not ERP approval or Asset success.
+- `P8_05_PRODUCT_CODE_AUTHORIZED_FALSE` remains mandatory until
+  `implementation/evidence/phase-8/p8-05-plan.md` is frozen and its transition
+  exact-SHA ordinary CI passes. The controller marker is:
+  `P8-04 Level 3 PASS; P8-05 audit active`. There is no Hard Blocker.

@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-04 CHECKPOINT 3 PASS; CHECKPOINT 4 IMPLEMENTED, AWAITING EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-04 LEVEL 3 PASS; P8-05 AUDIT ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -432,12 +432,26 @@ resolution, actor-bound idempotency and atomic request + nodes + Outbox +
 audit with enqueue after commit are sealed in
 `implementation/evidence/phase-8/p8-04-command-outbox-checkpoint.md`.
 
-Standing authority now activates checkpoint 3 only: bounded leased recovery,
-immutable attempts, a closed default-disabled adapter registry, disposable
-network-free synthetic proof, aggregate/per-node result truth and authenticated
-per-node mapping compare-and-set. Its candidate awaits affected checks and
-exact-SHA ordinary CI; UI and production target effects remain inactive.
-Actual ERPNext method/field/UOM/alternate/effectivity/routing mapping,
-submitted-BOM successor policy and Sandbox/production activation remain held.
-`NFR-INT-001` full operations/DLQ/manual replay/reconciliation remains P8-07.
-P8-05 through P8-09 and production ERPNext/JCE remain inactive.
+P8-04 then passes ordinary CI `32651139504` and final unchanged Level 3
+`32651903846` at exact product checkpoint `ca72dece`. The cumulative Site
+proves migrations, exact topology and mapping expectations, request/Outbox/
+attempt/result/mapping separation, claim recovery, terminal replay, submitted
+protection, partial and uncertain truth, zero formal mapping from Mock or
+synthetic evidence, zero production traffic and cleanup. Complete evidence is
+`implementation/evidence/phase-8/p8-04-validation.md`.
+
+`INT-004` is technically verified for the MBOM execution foundation while
+production/Sandbox mapping remains held. The Item and MBOM technical portions
+of `FR-DS-013` are verified, but production/Sandbox mapping and the whole
+requirement remain held; this is not complete production acceptance.
+
+Standing authority activates only the bounded P8-05 requirement/domain/
+existing-capability/security audit for `INT-005` and `FR-TL-011..016`. It must
+freeze one physical Tooling Set to zero-or-one formal ERP Asset mapping,
+separate create/update operations, immutable source and expected target
+version, partial/uncertain result truth and read-only observed Asset, location
+and maintenance boundaries. NPI acceptance evidence is not ERP approval or
+Asset success. No P8-05 product code is authorized before the audit plan and
+its exact-SHA ordinary CI pass. `NFR-INT-001` generic operations/DLQ/manual
+replay/reconciliation remains P8-07. P8-06 through P8-09 and production
+ERPNext/JCE remain inactive.

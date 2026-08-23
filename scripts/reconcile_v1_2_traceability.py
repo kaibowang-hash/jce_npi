@@ -413,10 +413,18 @@ P8_03_COMPLETED_ALLOCATION = {
     "INT-003": "TECHNICAL_VERIFIED_ITEM_EXECUTION_FOUNDATION_PRODUCTION_SANDBOX_MAPPING_HELD",
     "FR-DS-013": "TECHNICAL_VERIFIED_ITEM_PORTION_MBOM_AND_PRODUCTION_SANDBOX_MAPPING_HELD",
 }
-P8_04_AUDIT_EVIDENCE = (
+P8_04_COMPLETED_EVIDENCE = (
     "implementation/evidence/phase-8/p8-04-plan.md",
+    "implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-8/p8-04-command-outbox-checkpoint.md",
+    "implementation/evidence/phase-8/p8-04-worker-adapter-result-checkpoint.md",
+    "implementation/evidence/phase-8/p8-04-mbom-execution-inspector-checkpoint.md",
+    "implementation/evidence/phase-8/p8-04-validation.md",
 )
-P8_04_AUDIT_REQUIREMENTS = {"INT-004", "FR-DS-013"}
+P8_04_COMPLETED_ALLOCATION = {
+    "INT-004": "TECHNICAL_VERIFIED_MBOM_EXECUTION_FOUNDATION_PRODUCTION_SANDBOX_MAPPING_HELD",
+    "FR-DS-013": "TECHNICAL_VERIFIED_ITEM_AND_MBOM_PORTIONS_PRODUCTION_SANDBOX_MAPPING_AND_WHOLE_REQUIREMENT_HELD",
+}
 P8_ANCHOR_ALLOCATION = {
     "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
     "P8-02": {"FR-PM-002", "INT-002"},
@@ -931,15 +939,17 @@ def _expanded_rows(
             dict.fromkeys((*evidence, *P8_03_COMPLETED_EVIDENCE))
         )
 
-    for requirement_id in P8_04_AUDIT_REQUIREMENTS:
+    for requirement_id, status in P8_04_COMPLETED_ALLOCATION.items():
         row = expanded_by_id[requirement_id]
+        row["phase"] = "8"
+        row["status"] = status
         evidence = [
             value.strip()
             for value in row["evidence"].split(";")
             if value.strip()
         ]
         row["evidence"] = "; ".join(
-            dict.fromkeys((*evidence, *P8_04_AUDIT_EVIDENCE))
+            dict.fromkeys((*evidence, *P8_04_COMPLETED_EVIDENCE))
         )
 
     return expanded

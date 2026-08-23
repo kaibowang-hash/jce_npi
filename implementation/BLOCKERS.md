@@ -1,38 +1,31 @@
 # Blockers
 
-Updated: `2026-08-21T16:39:02Z`
+Updated: `2026-08-23T17:04:04Z`
 
 ## Active hard blockers
 
-None. P8-03 passes at exact final product SHA
-`c11d97cc4e26cd3961d7927608eb2510f6411269`. Ordinary CI `32479492064`
-passes secret `96762610233`, frontend `96762610332`, visual `96762610399` and
-repository `96762610789`. Final Level 3 `32480568505` passes secret
-`96765813580`, frontend `96765813706`, repository `96765813720`, visual
-`96765813721`, preflight `96768967388` and cumulative Site `96769017531`.
-Runtime artifact `9446493624` has digest
-`sha256:3206cbe1c263a40c88f88f6c9dedf0e42bede597c3d123958fbe37269bff448e`;
-migrations twice, stream conflicts, uncertainty/no redispatch, cross-process
-replay, strict legacy read-only/non-claimable behavior, zero Mock mapping,
-zero production traffic and cleanup pass. P8-04 checkpoint 3 exact SHA
-`93823e3` passes ordinary CI `32506591419`; checkpoint 4 is active for only
-the dense trilingual MBOM execution inspector and guarded request action. No user action,
-login or frontend operation is
-required.
+None. P8-04 passes at exact final product SHA
+`ca72deceab4b8e899d0da1207883887c9d30077a`. Ordinary CI `32651139504`
+passes secret `97222817515`, repository `97222817676`, frontend `97222817695`
+and `126/126` visual `97222817696`. Final Level 3 `32651903846` passes
+frontend `97224725000`, visual `97224725065`, repository `97224725099`, secret
+`97224725138`, preflight `97226433521` and cumulative Site `97226462865`.
+Runtime artifact `9496708366` has digest
+`sha256:b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`;
+exact topology/mapping expectations, partial/uncertain truth, claim recovery,
+terminal replay, submitted protection, zero formal Mock/synthetic mapping,
+zero production traffic and cleanup pass. Only the bounded P8-05 Tool Asset
+audit is active. No user action, login or frontend operation is required.
 
 ## Active recovery
 
-None. P8-03 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
+None. P8-04 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-04 audit is frozen in
-`implementation/evidence/phase-8/p8-04-plan.md`; checkpoint 1 is sealed in
-`implementation/evidence/phase-8/p8-04-domain-metadata-checkpoint.md`.
-Checkpoint 3 installs no default/networked/production profile. Checkpoint 4
-adds no target network path and awaits its own exact-SHA ordinary CI.
-Production adapters, formal Item/BOM mapping
-from Mock or synthetic proof, Item/MBOM/Asset/quality production writes,
-P8-05 through P8-09 and the P8-07 operations/replay/reconciliation surface
-remain inactive.
+authoritative. P8-05 changes no product behavior until its audit plan and
+transition ordinary CI pass. Production adapters, formal Item/BOM/Asset
+mapping from Mock or synthetic proof, Item/MBOM/Asset/quality production
+writes, P8-06 through P8-09 and the P8-07 operations/replay/reconciliation
+surface remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -43,24 +36,26 @@ actuals, stability policy, readiness/release, the external Released Trial
 Summary event/projection under `DR-REC-009`, form mapping, signature,
 retention and copy policy under `DR-REC-003` and `DR-REC-004`, and G7/ERP/
 production print authority remain scoped holds, not global Hard Blockers. The
-latest complete Level 3 is `32480568505` at
-`c11d97cc4e26cd3961d7927608eb2510f6411269`. Production ERPNext/JCE endpoints,
+latest complete Level 3 is `32651903846` at
+`ca72deceab4b8e899d0da1207883887c9d30077a`. Production ERPNext/JCE endpoints,
 credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-## Current authoritative blocker state — 2026-08-21T16:39:02Z
+## Current authoritative blocker state — 2026-08-23T17:04:04Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
-- P8-03 exact final SHA `c11d97c` passes ordinary `32479492064` and final
-  unchanged Level 3 `32480568505`; the release review reports no P0/P1/P2.
-- P8-04 checkpoint 3 SHA `93823e3` passes ordinary CI `32506591419`.
-  Checkpoint 4 dense trilingual execution inspector and guarded request action
-  are active and await affected checks plus exact-SHA ordinary CI.
-- Missing ERPNext BOM customization, naming/routing/service-scope and
-  authenticated Sandbox facts are scoped external holds. No default/networked
-  adapter or formal synthetic mapping is authorized; production traffic, P8-05
-  through P8-09 and P8-07 manual operations remain inactive.
+- P8-04 exact final SHA `ca72dece` passes ordinary `32651139504` and final
+  unchanged Level 3 `32651903846`; the release review reports no P0/P1/P2.
+- P8-05 is planning/audit-only. The next action freezes one physical Tooling
+  Set to zero-or-one Asset mapping, create/update command authority, exact
+  source/expected target version, partial/uncertain truth and read-only Asset,
+  location and maintenance observation boundaries.
+- Missing ERPNext Asset customization, naming/category/location/maintenance/
+  service-scope and authenticated Sandbox facts are scoped external holds.
+  NPI acceptance is not ERP approval. No P8-05 product code, default/networked
+  adapter or formal synthetic mapping is authorized; production traffic,
+  P8-06 through P8-09 and P8-07 manual operations remain inactive.
 
 ## Historical recovery
 

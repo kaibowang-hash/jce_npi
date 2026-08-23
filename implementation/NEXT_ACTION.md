@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P8-04`
+`IN_PROGRESS_AUDIT — P8-05`
 
-Recovery time: `2026-08-21T18:11:41Z`
+Recovery time: `2026-08-23T17:04:04Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -229,6 +229,21 @@ P8-04 checkpoint 2 final product checkpoint:
 P8-04 checkpoint 2 ordinary CI:
 `32500465488` (`PASS`)
 
+P8-04 checkpoint 3 final product checkpoint:
+`93823e35b2dbec2aa48e364e46c9abad350443c5`
+
+P8-04 checkpoint 3 ordinary CI:
+`32506591419` (`PASS`)
+
+P8-04 final product checkpoint and P8-05 audit base:
+`ca72deceab4b8e899d0da1207883887c9d30077a`
+
+P8-04 final ordinary CI:
+`32651139504`
+
+P8-04 final Level 3 workflow:
+`32651903846`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -372,20 +387,30 @@ Item/MBOM mapping-set expectations are immutable. ERPNext retains formal BOM
 ID/version/submitted state/routing ownership; P8-04 never submits or
 overwrites a submitted BOM and preserves per-node partial/uncertain truth.
 
-P8-04 is `IN_PROGRESS_CHECKPOINT_4`. Exact checkpoint 3 SHA `93823e3` passes
-ordinary CI `32506591419`: repository `96848025053`, frontend `96848024686`,
-secret `96848024933` and unchanged `123/123` visual `96848024903` pass.
-Complete checkpoint 3 evidence is
-`implementation/evidence/phase-8/p8-04-worker-adapter-result-checkpoint.md`.
-Checkpoint 4 is the only active scope: the dense trilingual EBOM MBOM
-execution inspector, strict exact-request read projection, truthful aggregate
-and per-assembly states, one guarded primary request action and three affected
-fixed-Linux baselines. The implementation candidate must pass affected checks
-and exact-SHA ordinary CI before final Level 3 activates. Do not contact
-production ERPNext/JCE, install a Sandbox/default profile, infer BOM
-field/naming/routing/service-scope facts, overwrite a submitted BOM, treat
-Mock/synthetic/HTTP acceptance/partial/timeout as formal success, add retry/
-reconcile/submit or generic P8-07 operations, or activate P8-05 through P8-09.
+P8-04 passes at exact final product SHA `ca72dece`. Ordinary CI `32651139504`
+passes secret `97222817515`, repository `97222817676`, frontend `97222817695`
+and `126/126` visual `97222817696`. Final unchanged Level 3 `32651903846`
+passes frontend `97224725000`, visual `97224725065`, repository `97224725099`,
+secret `97224725138`, preflight `97226433521` and cumulative Site
+`97226462865`. Runtime artifact `9496708366` has digest
+`sha256:b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`.
+Complete evidence is `implementation/evidence/phase-8/p8-04-validation.md`.
+
+Execute only the P8-05 requirement/domain/existing-capability/security audit
+for `INT-005` and `FR-TL-011..016`. Freeze one physical Tooling Set to
+zero-or-one formal ERP Asset mapping; separate operation-specific create and
+update authority; exact immutable Tooling source and expected target version;
+actor/trace/idempotency; partial and uncertain truth; read-only observed Asset,
+location and maintenance truth; permissions, migration, rollback, tests and
+Level 3 impact in `implementation/evidence/phase-8/p8-05-plan.md`.
+
+NPI acceptance evidence is not ERP approval, Asset creation or target success.
+P8-05 product code is not authorized until the frozen plan transition passes
+exact-SHA ordinary CI. Do not contact production ERPNext/JCE, install a
+Sandbox/default profile, infer Asset field/naming/category/location/
+maintenance/service-scope facts, treat Mock/synthetic/HTTP acceptance/partial/
+timeout as formal success, add generic P8-07 operations or activate P8-06
+through P8-09.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

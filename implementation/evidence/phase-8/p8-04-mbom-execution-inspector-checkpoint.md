@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-22`
 
-Status: `FINAL LEVEL 3 NARROWING — SERVER CREATE DIAGNOSTIC ACTIVE`
+Status: `PASS — EXACT-SHA ORDINARY CI AND FINAL LEVEL 3 COMPLETE; ALL DIAGNOSTICS CLOSED`
 
 ## Scope and truth boundary
 
@@ -635,3 +635,26 @@ for every terminal MBOM v2 state, while any one-field partial clear remains a
 `repair 1/1`, `final 0/1`; its activation and every other diagnostic flag are
 false, the safe mechanism remains dormant, and all prior cycle histories stay
 immutable.
+
+## Terminal exact-SHA evidence
+
+Final product checkpoint
+`ca72deceab4b8e899d0da1207883887c9d30077a` passes ordinary CI
+`32651139504` and final unchanged Level 3 `32651903846`. The final workflow
+passes frontend `97224725000`, `126/126` visual `97224725065`, repository
+`97224725099`, secret `97224725138`, controlled preflight `97226433521` and
+cumulative disposable Site `97226462865`.
+
+Runtime artifact `9496708366` has ZIP SHA-256
+`b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`
+and records `scope=p5-01-through-p8-04` with
+`predecessor_scope=p5-01-through-p8-03`. Visual artifact `9496465159` has ZIP
+SHA-256
+`e38676ac10cc45934e67e171a84f2ddb241922d5250d22bfe8054e4bafb445db`;
+Gitleaks artifact `9496416881` has ZIP SHA-256
+`afbcd2f1ff759c9af139f51a31599bf415bce765d2a5e5a73683d1a3c0a02346`.
+All Item and MBOM response-neutral diagnostic activations are false. Historical
+diagnostic and repair counters above remain immutable; the final
+process-validation cycle closes at `diagnostic 1/1`, `repair 1/1`,
+`final 1/1`. Complete release evidence is
+`implementation/evidence/phase-8/p8-04-validation.md`.

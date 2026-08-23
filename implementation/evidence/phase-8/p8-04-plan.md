@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-21`
 
-Status: `FROZEN — AUDIT-PLAN AND CHECKPOINTS 1–3 EXACT-SHA ORDINARY CI PASS; CHECKPOINT 4 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
+Status: `PASS — CHECKPOINTS 1–4, EXACT-SHA ORDINARY CI AND FINAL LEVEL 3 COMPLETE`
 
 Frozen plan/task-manifest checkpoint:
 `171a183009b10eb4c1d8f7135b635ca1537afd27`
@@ -16,6 +16,16 @@ Audit base and retained P8-03 product checkpoint:
 P8-03 final ordinary pull-request CI: `32479492064` (`PASS`)
 
 P8-03 final unchanged Level 3: `32480568505` (`PASS`)
+
+Final P8-04 product checkpoint:
+`ca72deceab4b8e899d0da1207883887c9d30077a`
+
+Final P8-04 ordinary CI: `32651139504` (`PASS`)
+
+Final P8-04 unchanged Level 3: `32651903846` (`PASS`)
+
+Complete validation:
+`implementation/evidence/phase-8/p8-04-validation.md`
 
 Primary requirements:
 
