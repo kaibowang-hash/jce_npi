@@ -442,3 +442,26 @@ The not-claimed cycle is `diagnostic 1/1`, `repair 1/1`, `final 0/1`, all
 historical counters are immutable, and
 `MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED=False` leaves the safe mechanism dormant
 with every other diagnostic activation also closed.
+
+The repaired exact SHA `0c791527aff847dcf22d54397b387b0f83595e5a`
+passes ordinary run `32631727051`. Its sole unchanged Level 3 dispatch
+`32632309098` passes repository `97176820194`, frontend `97176820204`, secret
+scan `97176820250`, governed visual `97176820219` and preflight `97178317375`.
+Runtime `97178343650` passes create and the repaired Request reconstruction
+boundary before the response-safe `exercise_worker` constant fails. The
+runtime artifact is not produced, the disposable Site is cleaned, and the only
+run artifacts are visual evidence and secret-scan SARIF. No safe tuple can
+distinguish the remaining pre-process or worker contexts. The not-claimed
+cycle is therefore immutable at `diagnostic 1/1`, `repair 1/1`, `final 1/1`.
+
+The separate post-datetime worker cycle begins at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. A four-path verifier-only checkpoint activates an
+exact union of existing codes: seventeen fixed worker stages, fourteen outcome
+classifiers and the nine precondition stages after Request reconstruction. It
+adds no diagnostic code and excludes the five closed Outbox/Request stages.
+All earlier diagnostic flags remain false; only the new post-datetime flag is
+temporarily true. Exact trace correlation, mirrored-log fail-closed rules,
+same-exception propagation, reversible actor scope and unread failed-child
+stdout/stderr are unchanged. Product worker, repository, runtime fixture,
+adapter, API, permission, transaction, Schema, ownership and Gate paths remain
+untouched.

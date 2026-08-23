@@ -473,6 +473,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         module = self.module
         self.assertFalse(module.MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -537,9 +538,25 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             module._WORKER_NOT_CLAIMED_PRECONDITION_CODES,
             not_claimed_stages,
         )
+        closed_request_stages = {
+            "P804_NOT_CLAIMED_OUTBOX_READ",
+            "P804_NOT_CLAIMED_OUTBOX_CONTRACT",
+            "P804_NOT_CLAIMED_REQUEST_LINK",
+            "P804_NOT_CLAIMED_REQUEST_READ",
+            "P804_NOT_CLAIMED_REQUEST_REBUILD",
+        }
+        post_datetime_stages = not_claimed_stages - closed_request_stages
+        self.assertEqual(
+            module._WORKER_POST_DATETIME_PRECONDITION_CODES,
+            post_datetime_stages,
+        )
+        self.assertEqual(
+            module._WORKER_POST_DATETIME_DIAGNOSTIC_CODES,
+            fixed_stages | outcome_codes | post_datetime_stages,
+        )
         self.assertEqual(
             module._active_worker_diagnostic_codes(),
-            frozenset(),
+            fixed_stages | outcome_codes | post_datetime_stages,
         )
         exercise = self.source.split("def exercise_worker(", 1)[1].split(
             "\ndef ", 1
@@ -561,7 +578,15 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         for code in not_claimed_stages:
             with self.subTest(code=code):
                 self.assertEqual(preconditions.count(f'"{code}"'), 1)
-                self.assertEqual(self.source.count(f'"{code}"'), 2)
+                self.assertEqual(
+                    self.source.count(f'"{code}"'),
+                    3 if code in post_datetime_stages else 2,
+                )
+        self.assertEqual(
+            module._active_worker_diagnostic_codes()
+            - module._WORKER_DOWNSTREAM_DIAGNOSTIC_CODES,
+            post_datetime_stages,
+        )
         self.assertNotIn("P804_WORKER_RESULT_OUTCOME", self.source)
 
     def test_worker_outcome_diagnostic_classifies_every_fixed_state_and_shape(self):
@@ -859,6 +884,33 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         for forbidden in ("private actor", "payload", "/tmp/private"):
             self.assertNotIn(forbidden, str(records))
 
+        for code in sorted(self.module._WORKER_POST_DATETIME_PRECONDITION_CODES):
+            records.clear()
+            with self.subTest(post_datetime_code=code), patch.dict(
+                sys.modules,
+                {"npi_core": package, "npi_core.api": api},
+            ), self.assertRaises(RuntimeError) as post_datetime:
+                with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
+                    raise original
+            self.assertIs(post_datetime.exception, original)
+            self.assertEqual(records[0]["code"], code)
+            self.assertNotIn("private", str(records))
+
+        closed_request_codes = (
+            self.module._WORKER_NOT_CLAIMED_PRECONDITION_CODES
+            - self.module._WORKER_POST_DATETIME_PRECONDITION_CODES
+        )
+        for code in sorted(closed_request_codes):
+            records.clear()
+            with self.subTest(closed_request_code=code), patch.dict(
+                sys.modules,
+                {"npi_core": package, "npi_core.api": api},
+            ), self.assertRaises(RuntimeError) as closed_request:
+                with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
+                    raise original
+            self.assertIs(closed_request.exception, original)
+            self.assertEqual(records, [])
+
         for enabled, code, trace_id in (
             (False, "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID),
             (True, "P804_WORKER_NOT_ALLOWED", _TRACE_ID),
@@ -1040,7 +1092,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             successful_run.call_args.kwargs["stderr"],
             self.module.subprocess.DEVNULL,
         )
-        cursor_reader.assert_not_called()
+        cursor_reader.assert_called_once()
 
     def test_worker_fixture_commit_stage_records_and_preserves_commit_failure(self):
         records: list[dict[str, object]] = []

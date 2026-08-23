@@ -921,3 +921,27 @@ The not-claimed cycle is now `diagnostic 1/1`, `repair 1/1`, `final 0/1`;
 `MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED=False` and every prior diagnostic remains
 closed while the response-neutral mechanism stays dormant. All earlier cycle
 counters remain immutable.
+
+The repaired exact SHA `0c791527aff847dcf22d54397b387b0f83595e5a`
+passes ordinary run `32631727051`. Its sole unchanged final Level 3 dispatch
+`32632309098` passes repository `97176820194`, frontend `97176820204`, secret
+scan `97176820250`, governed visual `97176820219` and controlled preflight
+`97178317375`. Controlled runtime `97178343650` passes create and the repaired
+Request reconstruction boundary, then stops at the constant-safe
+`exercise_worker` child failure. Runtime result and upload steps are skipped;
+the disposable Site is cleaned, and the only artifacts are the governed visual
+evidence and secret-scan SARIF. No response-safe tuple remains available, so a
+product symbol cannot be inferred. The not-claimed cycle is frozen at
+`diagnostic 1/1`, `repair 1/1`, `final 1/1`.
+
+An independent post-datetime worker cycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its four-path verifier-only checkpoint reuses the
+existing seventeen fixed worker stages, fourteen outcome classifiers and nine
+post-reconstruction precondition codes. It adds no `P804_*` code and explicitly
+excludes the already closed Outbox read/contract and Request Link/read/rebuild
+stages. All historical create, worker, outcome and not-claimed activations stay
+false; only `MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED=True`. Exact trace,
+strict mirrored-log validation, same-exception rethrow, actor-scope restoration
+and unread failed-child stdout/stderr remain unchanged. Product worker,
+repository, fixture, adapter, API, permission, transaction, Schema, ownership
+and Gate behavior have no diff.
