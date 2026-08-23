@@ -5,6 +5,7 @@ from frappe import _
 from frappe.model.document import Document
 
 from npi_core.documents.frappe_validation import (
+    assert_immutable_fields,
     canonical_json,
     canonical_uuid,
     frappe_utc_datetime_text,
@@ -31,6 +32,7 @@ from npi_integration.tool_asset_request.execution_domain import (
 from npi_integration.tool_asset_request.execution_frappe_validation import (
     deny_tool_asset_execution_history_delete,
     deny_tool_asset_execution_history_update,
+    require_tool_asset_execution_capability,
     require_tool_asset_execution_request_write,
 )
 
@@ -45,14 +47,15 @@ class NPIToolAssetRequest(Document):
     def before_insert(self) -> None:
         if self._is_execution_v2():
             require_tool_asset_execution_request_write()
+            require_tool_asset_execution_capability("NPI Tool Asset Request", "insert")
         else:
             require_tool_asset_request_write()
 
     def before_save(self) -> None:
         if self._is_execution_v2():
             require_tool_asset_execution_request_write()
-            if self.get_doc_before_save() is not None:
-                deny_tool_asset_execution_history_update()
+            action = "insert" if getattr(getattr(self, "flags", None), "in_insert", False) else "save"
+            require_tool_asset_execution_capability("NPI Tool Asset Request", action)
             return
         require_tool_asset_request_write()
         if self.get_doc_before_save() is not None:
@@ -171,8 +174,10 @@ class NPIToolAssetRequest(Document):
         return int(getattr(self, "schema_version", 0) or 0) == TOOL_ASSET_EXECUTION_SCHEMA_VERSION or getattr(self, "operation", None) in TOOL_ASSET_EXECUTION_OPERATIONS
 
     def _validate_execution_v2(self) -> None:
-        if self.get_doc_before_save() is not None:
-            deny_tool_asset_execution_history_update()
+        previous = self.get_doc_before_save()
+        if previous is not None:
+            assert_immutable_fields(self, previous, _EXECUTION_IMMUTABLE_FIELDS)
+            _require_execution_transition(str(previous.execution_state), str(self.execution_state))
         if int(self.schema_version or 0) != TOOL_ASSET_EXECUTION_SCHEMA_VERSION or self.api_version != TOOL_ASSET_EXECUTION_API_VERSION or self.operation not in TOOL_ASSET_EXECUTION_OPERATIONS:
             frappe.throw(_("The Tool Asset execution request version or operation is invalid."), frappe.ValidationError)
         source = json_object(self.source_snapshot, _("Exact Tool Asset Source Snapshot"))
@@ -200,7 +205,7 @@ class NPIToolAssetRequest(Document):
             "operation": self.operation,
             "tenantId": self.tenant_id,
             "projectGlobalId": self.project_global_id,
-            "state": self.execution_state,
+            "state": request.get("state"),
             "actorUserId": self.actor_user_id,
             "requestId": self.request_id,
             "traceId": self.trace_id,
@@ -227,6 +232,34 @@ class NPIToolAssetRequest(Document):
         self.approval_snapshot = canonical_json(approval)
         self.mapping_expectation_snapshot = canonical_json(expectation)
         self.request_snapshot = canonical_json(request)
+
+
+_EXECUTION_IMMUTABLE_FIELDS = (
+    "global_id", "tenant_id", "project_global_id", "tooling_master_global_id",
+    "tooling_set_global_id", "tooling_revision_global_id",
+    "acceptance_revision_global_id", "schema_version", "api_version", "operation",
+    "source_stream_key_hash", "source_snapshot", "source_hash", "approval_snapshot",
+    "approval_hash", "mapping_expectation_snapshot", "mapping_expectation_hash",
+    "profile_id", "profile_version", "execution_target_mode", "environment_code",
+    "profile_snapshot_hash", "projection_policy_id", "projection_policy_version",
+    "projection_policy_hash", "dispatch_allowed", "outbox_event_id",
+    "target_idempotency_key_hash", "semantic_effect_hash", "payload_hash",
+    "request_snapshot", "actor_user_id", "request_id", "trace_id",
+    "idempotency_key_hash", "created_at",
+)
+
+_EXECUTION_TRANSITIONS = {
+    "queued": frozenset({"queued", "processing", "failed_final"}),
+    "processing": frozenset({
+        "processing", "synthetic_verified", "partially_succeeded", "succeeded",
+        "failed_retryable", "failed_final", "uncertain_after_timeout", "mapping_conflict",
+    }),
+}
+
+
+def _require_execution_transition(previous: str, current: str) -> None:
+    if current not in _EXECUTION_TRANSITIONS.get(previous, frozenset({previous})):
+        frappe.throw(_("The Tool Asset execution request state transition is invalid."), frappe.ValidationError)
 
 
 def _require_exact_input(value) -> None:

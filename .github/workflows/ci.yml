@@ -284,7 +284,7 @@ jobs:
     # Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-06 Production transition
     # scope=p5-01-through-p7-06
     # predecessor_scope=p5-01-through-p7-05
-    name: P5 controlled runtime through P8-04 MBOM command and Outbox worker
+    name: P5 controlled runtime through P8-05 Tool Asset command and Outbox worker
     needs: controlled_preflight
     if: github.event_name == 'workflow_dispatch' && !cancelled() && (inputs.gate_mode == 'level_3' || inputs.gate_mode == 'level_2_controlled') && needs.controlled_preflight.result == 'success'
     runs-on: ubuntu-latest
@@ -308,7 +308,7 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify cumulative P5 through P8-04 MBOM integration runtime
+      - name: Verify cumulative P5 through P8-05 Tool Asset integration runtime
         run: bash scripts/verify-frappe-runtime.sh --projection-only
       - name: Record controlled runtime result
         run: |
@@ -321,8 +321,8 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p8-04\n'
-            printf 'predecessor_scope=p5-01-through-p8-03\n'
+            printf 'scope=p5-01-through-p8-05\n'
+            printf 'predecessor_scope=p5-01-through-p8-04\n'
             printf 'p7_scope=p5-01-through-p7-07\n'
             printf 'p7_predecessor_scope=p5-01-through-p7-06\n'
             printf 'p6_scope=p5-01-through-p6-08\n'

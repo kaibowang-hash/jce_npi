@@ -469,6 +469,38 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
         for forbidden in ("endpoint", "credential", "password", "api_key"):
             self.assertNotIn(forbidden, serialized)
 
+    def test_public_request_keeps_immutable_snapshot_and_projects_current_execution_truth(self) -> None:
+        request = self.request(ToolAssetExecutionTargetMode.SYNTHETIC)
+        snapshot = request.canonical_mapping()
+        result_global_id = uid(31)
+        row = types.SimpleNamespace(
+            global_id=str(request.global_id),
+            request_snapshot=snapshot,
+            payload_hash=request.payload_hash,
+            source_hash=request.source.source_hash,
+            execution_state=ToolAssetExecutionRequestState.SYNTHETIC_VERIFIED.value,
+            optimistic_version=3,
+            dispatch_allowed=0,
+            outbox_event_id=str(uid(30)),
+            target_idempotency_key_hash="b" * 64,
+            semantic_effect_hash="c" * 64,
+            result_global_id=str(result_global_id),
+        )
+
+        public = self.repository.FrappeToolAssetRequestRepository._execution_request_public(
+            row
+        )
+
+        self.assertEqual(snapshot["state"], ToolAssetExecutionRequestState.QUEUED.value)
+        self.assertEqual(
+            public["request"]["state"],
+            ToolAssetExecutionRequestState.SYNTHETIC_VERIFIED.value,
+        )
+        self.assertEqual(public["request"]["optimisticVersion"], 3)
+        self.assertEqual(public["request"]["payloadHash"], request.payload_hash)
+        self.assertEqual(public["resultGlobalId"], str(result_global_id))
+        self.assertEqual(snapshot, request.canonical_mapping())
+
 
 if __name__ == "__main__":
     unittest.main()

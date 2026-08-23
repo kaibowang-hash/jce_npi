@@ -25,7 +25,7 @@ def _is_direct_frappe_sql_call(node: ast.AST) -> bool:
 
 
 class Phase8ToolAssetSecurityTest(unittest.TestCase):
-    def test_checkpoint_two_routes_remain_closed_to_worker_adapter_network_and_direct_sql(self) -> None:
+    def test_checkpoint_three_worker_is_closed_default_off_network_free_and_direct_sql_free(self) -> None:
         api_source = API.read_text(encoding="utf-8")
         self.assertIn("create_tool_asset_execution_request", api_source)
         self.assertIn("update_tool_asset_execution_request", api_source)
@@ -36,10 +36,13 @@ class Phase8ToolAssetSecurityTest(unittest.TestCase):
             if isinstance(node, (ast.Import, ast.ImportFrom)) and node.names
         }
         self.assertFalse({"requests", "httpx", "socket", "urllib.request"} & api_imports)
-        self.assertNotIn("tool_asset_execution", HOOKS.read_text(encoding="utf-8"))
+        hooks = HOOKS.read_text(encoding="utf-8")
+        self.assertIn("recover_tool_asset_outbox_messages", hooks)
+        self.assertIn("npi_tool_asset_execution_profile_resolver", hooks)
+        self.assertIn("npi_tool_asset_adapter_registry", hooks)
         prohibited_probe = ast.parse(".".join(("frappe", "db", "sql")) + "('select 1')")
         self.assertTrue(any(_is_direct_frappe_sql_call(node) for node in ast.walk(prohibited_probe)))
-        for path in (MODULE / "execution_domain.py", MODULE / "config.py", MODULE / "execution_frappe_validation.py", MODULE / "doctype_base.py", MODULE / "frappe_repository.py"):
+        for path in (MODULE / "execution_domain.py", MODULE / "config.py", MODULE / "execution_frappe_validation.py", MODULE / "doctype_base.py", MODULE / "frappe_repository.py", MODULE / "adapters.py", MODULE / "worker.py", MODULE / "worker_repository.py", MODULE / "runtime_fixture.py"):
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             imports = {node.names[0].name for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom)) and node.names}
             self.assertFalse({"requests", "httpx", "socket", "urllib.request"} & imports)

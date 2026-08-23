@@ -1486,7 +1486,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         ):
             self.assertIn(marker, shell)
 
-    def test_workflow_governs_p8_04_visual_and_current_runtime_scope(self):
+    def test_workflow_retains_p8_04_visual_as_predecessor_runtime_scope(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         visual_spec = "tests/e2e/p8-04-mbom-publish-live.spec.ts"
         self.assertEqual(workflow.count(visual_spec), 2)
@@ -1495,16 +1495,16 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             workflow,
         )
         self.assertIn(
-            "P5 controlled runtime through P8-04 MBOM command and Outbox worker",
+            "P5 controlled runtime through P8-05 Tool Asset command and Outbox worker",
             workflow,
         )
         self.assertIn(
-            "Verify cumulative P5 through P8-04 MBOM integration runtime",
+            "Verify cumulative P5 through P8-05 Tool Asset integration runtime",
             workflow,
         )
-        self.assertIn("printf 'scope=p5-01-through-p8-04\\n'", workflow)
+        self.assertIn("printf 'scope=p5-01-through-p8-05\\n'", workflow)
         self.assertIn(
-            "printf 'predecessor_scope=p5-01-through-p8-03\\n'", workflow
+            "printf 'predecessor_scope=p5-01-through-p8-04\\n'", workflow
         )
         self.assertIn(
             "bash scripts/verify-frappe-runtime.sh --projection-only", workflow

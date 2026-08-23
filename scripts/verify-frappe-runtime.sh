@@ -910,6 +910,7 @@ projection_route_disable_config_changed=false
 inbound_project_runtime_environment_active=false
 item_publish_runtime_environment_active=false
 mbom_publish_runtime_environment_active=false
+tool_asset_runtime_environment_active=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -1429,6 +1430,10 @@ cleanup() {
   if [[ "${mbom_publish_runtime_environment_active}" == true ]]; then
     clear_mbom_publish_runtime_environment
     mbom_publish_runtime_environment_active=false
+  fi
+  if [[ "${tool_asset_runtime_environment_active}" == true ]]; then
+    clear_tool_asset_runtime_environment
+    tool_asset_runtime_environment_active=false
   fi
   if [[ "${route_disable_config_changed}" == true ]]; then
     if ! restore_p405_route_switch; then
@@ -3071,6 +3076,44 @@ run_mbom_publish_runtime_verifier() {
   )
 }
 
+export_tool_asset_runtime_environment() {
+  export NPI_TOOL_ASSET_RUNTIME_MARKER=npi-one-tool-asset-disposable-v1
+  export NPI_TOOL_ASSET_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
+  export NPI_TOOL_ASSET_REQUESTER_USER="${item_publish_runtime_actor}"
+  export NPI_TOOL_ASSET_WORKER_USER="${inbound_project_runtime_actor}"
+}
+
+clear_tool_asset_runtime_environment() {
+  unset \
+    NPI_TOOL_ASSET_RUNTIME_MARKER \
+    NPI_TOOL_ASSET_RUNTIME_PROJECT_ID \
+    NPI_TOOL_ASSET_REQUESTER_USER \
+    NPI_TOOL_ASSET_WORKER_USER
+}
+
+run_tool_asset_runtime_verifier() {
+  local mode="$1"
+  (
+    unset FRAPPE_DB_HOST FRAPPE_DB_PORT FRAPPE_DB_SOCKET FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD NPI_DATABASE_ROOT_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    if [[ "${mode}" == "disabled" ]]; then
+      clear_tool_asset_runtime_environment
+      exec python "${repo_root}/scripts/verify_tool_asset_execution_runtime.py" \
+        --base-url "${base_url}" --disabled-probe
+    fi
+    export_tool_asset_runtime_environment
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_tool_asset_execution_runtime.py" \
+        --base-url "${base_url}"
+    fi
+    echo "Unknown Tool Asset runtime verification mode." >&2
+    exit 2
+  )
+}
+
 verify_tooling_import_runtime_log_redaction() {
   local marker
   for marker in \
@@ -4104,6 +4147,27 @@ if [[ "${verification_mode}" == "all" ||
   fi
   if ! run_mbom_publish_runtime_verifier fresh; then
     echo "Local Frappe MBOM publish worker runtime verification failed." >&2
+    report_item_publish_runtime_failure
+    exit 1
+  fi
+  # P8-05 reuses only retained P6 Tooling evidence and disposable actors. Its
+  # operation-specific registry remains independently default-disabled and the
+  # sole fixture is network-free Synthetic proof with no formal Asset identity.
+  if ! run_tool_asset_runtime_verifier disabled; then
+    echo "Local Frappe Tool Asset default-disabled probe failed." >&2
+    report_item_publish_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  export_tool_asset_runtime_environment
+  tool_asset_runtime_environment_active=true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_item_publish_runtime_failure
+    exit 1
+  fi
+  if ! run_tool_asset_runtime_verifier fresh; then
+    echo "Local Frappe Tool Asset worker runtime verification failed." >&2
     report_item_publish_runtime_failure
     exit 1
   fi

@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
+`IN_PROGRESS_CHECKPOINT_3_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
 
 Recovery time: `2026-08-23T20:13:00Z`
 
@@ -409,23 +409,21 @@ checkpoint 1 SHA `db0cb846` passes ordinary CI `32660953137`: repository
 `97246942405`, frontend `97246942329`, secret `97246942233` and unchanged
 visual `97246942321` all pass. Checkpoint 1 is sealed.
 
-Checkpoint 2 now implements only Project-first fixed list/detail/create/update
-commands, exact Tooling Master/physical Set/binding/Revision/acceptance and
-mapping/profile locks, operation-bound idempotency and one atomic request +
-guarded Outbox + stream guard + audit transaction. Commit precedes response;
-enqueue follows commit; replay does not enqueue; Mock has zero Outbox/enqueue.
-It awaits its own exact-SHA ordinary CI. Worker, adapter, network, execution
-attempt/result/mapping and UI remain closed.
+Checkpoint 2 SHA `d20b4a3` passes ordinary CI `32664440277`. Checkpoint 3 now
+implements only the bounded leased worker/recovery, immutable attempts,
+operation-specific closed adapter registry, network-free disposable synthetic
+proof, field/aggregate result truth and authenticated complete-result mapping
+compare-and-set. It awaits its own exact-SHA ordinary CI. UI and target network
+remain closed.
 NPI acceptance evidence is not business approval, ERP approval, Asset creation
 or target success. Do not contact production ERPNext/JCE, install a Sandbox/
 default profile, infer Asset field/naming/category/location/maintenance/
 service-scope facts, weaken P6/P8-01 history, add generic P8-07 operations or
 activate P8-06/P8-08/P8-09.
 
-After checkpoint 2 exact-SHA ordinary CI passes, activate only checkpoint 3
-bounded leased worker/recovery, closed default-disabled adapter registry,
-network-free synthetic proof, field/aggregate result truth and authenticated
-complete-result mapping compare-and-set. UI remains closed.
+After checkpoint 3 exact-SHA ordinary CI passes, activate only checkpoint 4
+trilingual Tool Asset execution inspector. No UI work is authorized before
+that exact-SHA PASS.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

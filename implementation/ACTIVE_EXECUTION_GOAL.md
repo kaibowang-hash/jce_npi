@@ -4,7 +4,7 @@ Updated: `2026-08-23T20:13:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
+- Mode: `IN_PROGRESS_CHECKPOINT_3_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,9 +18,9 @@ Updated: `2026-08-23T20:13:00Z`
   `32651903846` (`PASS — LEVEL 3` at `ca72deceab4b8e899d0da1207883887c9d30077a`;
   repository, frontend, secret, `126/126` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32660953137` (`PASS` at
-  `db0cb846589816dc55002b8a002914aedced9fb2`; P8-05 checkpoint 1,
-  checkpoint 2 authorized)
+  `32664440277` (`PASS` at
+  `d20b4a3bba67ae333e161295fe1155211375f013`; P8-05 checkpoint 2,
+  checkpoint 3 authorized)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -118,13 +118,13 @@ Updated: `2026-08-23T20:13:00Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-05 — Tool Asset execution`
-  (`IN_PROGRESS_CHECKPOINT_2_AWAITING_EXACT_SHA_ORDINARY_CI`)
-- Resumed product task: `P8-05` (`CHECKPOINT_2_IMPLEMENTED`)
+  (`IN_PROGRESS_CHECKPOINT_3_AWAITING_EXACT_SHA_ORDINARY_CI`)
+- Resumed product task: `P8-05` (`CHECKPOINT_3_IMPLEMENTED`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-05 CHECKPOINT 2`)
+  (`IN_PROGRESS — P8-05 CHECKPOINT 3`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 

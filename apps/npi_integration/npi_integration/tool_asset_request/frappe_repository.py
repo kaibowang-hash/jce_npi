@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
@@ -947,13 +947,19 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
             or str(row.source_hash) != request.source.source_hash
         ):
             raise RuntimeError("Persisted Tool Asset execution request is invalid.")
+        current = replace(
+            request,
+            state=ToolAssetExecutionRequestState(str(row.execution_state)),
+            optimistic_version=int(row.optimistic_version or 0),
+        )
         return {
             "requestGlobalId": str(request.global_id),
-            "request": request.canonical_mapping(),
+            "request": current.canonical_mapping(),
             "dispatchAllowed": bool(row.dispatch_allowed),
             "outboxEventId": str(row.outbox_event_id) if row.outbox_event_id else None,
             "targetIdempotencyKeyHash": str(row.target_idempotency_key_hash),
             "semanticEffectHash": str(row.semantic_effect_hash),
+            "resultGlobalId": str(row.result_global_id) if row.result_global_id else None,
         }
 
     @staticmethod

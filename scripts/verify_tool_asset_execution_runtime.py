@@ -1,0 +1,162 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import tempfile
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any, Mapping
+from uuid import UUID
+
+import verify_document_runtime as document_runtime
+import verify_tooling_acceptance_runtime as tooling_runtime
+from verify_frappe_runtime import login, require, secret_from_environment, validate_local_fixture_inputs
+from verify_project_runtime import bootstrap_csrf
+
+ROOT = Path(__file__).resolve().parents[1]
+BENCH_PATH = ROOT / "tmp" / "frappe-bench"
+SITE_NAME = document_runtime.SITE_NAME
+FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
+ACTOR_USER = tooling_runtime.ACTOR_USER
+RUNTIME_MARKER = "npi-one-tool-asset-disposable-v1"
+ACKNOWLEDGEMENT = (
+    "I confirm this request may create one formal ERP Asset only from the exact "
+    "physical Tooling Set, separate business approval, mapping state, and execution profile."
+)
+
+
+def execution_path(project_id: str, master_id: str, set_id: str, suffix: str = "") -> str:
+    return f"/api/npi/v1/projects/{project_id}/tooling/{master_id}/sets/{set_id}/asset-execution-requests{suffix}"
+
+
+def execution_request(opener, base_url, path, *, method="GET", payload=None, csrf_token=None, idempotency_key=None, query_key="query"):
+    headers = document_runtime.command_headers(csrf_token, idempotency_key) if idempotency_key else document_runtime.query_headers(f"p805-{query_key}")
+    result = document_runtime.request(opener, base_url, path, method=method, payload=payload, request_headers=headers)
+    require(result.headers.get("X-Request-ID") == headers["X-Request-ID"], "P8-05 request identity was not echoed")
+    require(result.headers.get("Cache-Control") == "private, no-store", "P8-05 response cache control drifted")
+    return result
+
+
+def _retained_context(administrator, base_url):
+    context, _first, second, _legacy = tooling_runtime.replay_context(administrator, base_url)
+    return context, second
+
+
+def _assert_no_formal_target(value: object) -> None:
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            if key in {"formalAssetId", "targetVersion"}:
+                require(nested is None, "P8-05 Synthetic proof claimed formal Asset truth")
+            _assert_no_formal_target(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            _assert_no_formal_target(nested)
+
+
+def run_disabled_probe(base_url: str, fixture_password: str) -> dict[str, object]:
+    administrator = login(base_url, "Administrator", secret_from_environment("NPI_RUNTIME_ADMINISTRATOR_PASSWORD"))
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    context, _acceptance = _retained_context(administrator, base_url)
+    result = execution_request(actor, base_url, execution_path(str(context["projectId"]), str(context["masterId"]), str(context["toolingSetId"])), query_key="disabled")
+    require(result.status == 200 and result.body.get("items") == [] and result.body.get("executionProfile") is None and result.body.get("commandContexts") is None, "P8-05 default-disabled collection drifted")
+    return {"defaultDisabled": True, "networkContactCount": 0}
+
+
+def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
+    administrator = login(base_url, "Administrator", secret_from_environment("NPI_RUNTIME_ADMINISTRATOR_PASSWORD"))
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
+    context, acceptance = _retained_context(administrator, base_url)
+    project_id, master_id, set_id = (str(context[name]) for name in ("projectId", "masterId", "toolingSetId"))
+    require(os.environ.get("NPI_TOOL_ASSET_RUNTIME_PROJECT_ID") == project_id and os.environ.get("NPI_TOOL_ASSET_REQUESTER_USER") == ACTOR_USER and os.environ.get("NPI_TOOL_ASSET_WORKER_USER") not in {None, "", ACTOR_USER}, "P8-05 runtime actors are not exactly bound")
+    path = execution_path(project_id, master_id, set_id)
+    listed = execution_request(actor, base_url, path, query_key="enabled")
+    contexts = listed.body.get("commandContexts")
+    create = contexts.get("create_tool_asset") if isinstance(contexts, dict) else None
+    require(listed.status == 200 and listed.body.get("items") == [] and isinstance(create, dict) and listed.body.get("executionProfile", {}).get("targetMode") == "synthetic", "P8-05 disposable command context is unavailable")
+    source = create.get("source")
+    require(isinstance(source, dict) and source.get("acceptanceRevisionGlobalId") == acceptance.get("globalId"), "P8-05 retained acceptance binding drifted")
+    created = execution_request(actor, base_url, execution_path(project_id, master_id, set_id, ":create"), method="POST", csrf_token=csrf, idempotency_key=f"p8-05-synthetic-{FIXTURE_RUN_ID}", payload={"acceptanceRevisionGlobalId":source["acceptanceRevisionGlobalId"], "expectedSourceHash":create["expectedSourceHash"], "expectedApprovalHash":create["expectedApprovalHash"], "expectedMappingExpectationHash":create["expectedMappingExpectationHash"], "expectedProfileSnapshotHash":create["expectedProfileSnapshotHash"], "acknowledgement":ACKNOWLEDGEMENT})
+    request_id, outbox_id = created.body.get("requestGlobalId"), created.body.get("outboxEventId")
+    require(created.status == 201 and created.body.get("request", {}).get("state") == "queued" and str(UUID(request_id)) == request_id and str(UUID(outbox_id)) == outbox_id, "P8-05 Synthetic command did not create one queued request")
+    exercised = run_bench_fixture("exercise_worker", {"fixture_run_id":FIXTURE_RUN_ID, "project_id":project_id, "request_id":request_id, "outbox_id":outbox_id})
+    require(exercised == {"adapterCalls":1, "fieldResultCount":5, "mappingHeadCount":0, "recoverableCount":0, "syntheticVerified":True, "terminalReplayNotClaimed":True}, "P8-05 worker durability proof drifted")
+    detail = execution_request(actor, base_url, execution_path(project_id, master_id, set_id, f"/{request_id}"), query_key="terminal")
+    require(detail.status == 200 and detail.body.get("request", {}).get("state") == "synthetic_verified", "P8-05 terminal Synthetic truth is unavailable")
+    _assert_no_formal_target(detail.body)
+    return {"adapterCalls":1, "fieldResultCount":5, "mappingHeadCount":0, "networkContactCount":0, "syntheticVerified":True}
+
+
+def exercise_worker(fixture_run_id: str, project_id: str, request_id: str, outbox_id: str) -> dict[str, object]:
+    import frappe
+    from npi_integration.tool_asset_request.runtime_fixture import synthetic_adapter_call_count
+    from npi_integration.tool_asset_request.worker import process_outbox_message
+    from npi_integration.tool_asset_request.worker_repository import FrappeToolAssetWorkerRepository
+
+    require(fixture_run_id == FIXTURE_RUN_ID and all(str(UUID(value)) == value for value in (project_id, request_id, outbox_id)), "P8-05 worker fixture identity drifted")
+    result = process_outbox_message(outbox_id)
+    request = frappe.get_doc("NPI Tool Asset Request", request_id)
+    fields = frappe.get_all("NPI Tool Asset Field Result", filters={"request_global_id":request_id}, fields=["state", "authority"])
+    require(result.get("state") == "synthetic_verified" and str(request.execution_state) == "synthetic_verified" and len(fields) == 5 and all(row.get("state") == "synthetic_verified" and row.get("authority") == "synthetic" for row in fields), "P8-05 Synthetic field truth drifted")
+    replay = process_outbox_message(outbox_id)
+    recoverable = FrappeToolAssetWorkerRepository().recoverable_outbox_event_ids(now=datetime.now(UTC))
+    return {"adapterCalls":synthetic_adapter_call_count(), "fieldResultCount":len(fields), "mappingHeadCount":frappe.db.count("NPI Tool Asset Mapping Head", {"project_global_id":project_id}), "recoverableCount":sum(str(value) == outbox_id for value in recoverable), "syntheticVerified":True, "terminalReplayNotClaimed":replay.get("state") == "not_claimed"}
+
+
+def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(ROOT) + (os.pathsep + environment["PYTHONPATH"] if environment.get("PYTHONPATH") else "")
+    for variable in ("NPI_RUNTIME_ADMINISTRATOR_PASSWORD", "NPI_RUNTIME_FIXTURE_PASSWORD", "NPI_ADMINISTRATOR_PASSWORD", "NPI_DATABASE_ROOT_PASSWORD"):
+        environment.pop(variable, None)
+    with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as output:
+        completed = subprocess.run([str(BENCH_PATH / "env/bin/python"), str(Path(__file__).resolve()), "--bench-fixture", method, "--fixture-kwargs", json.dumps(kwargs, separators=(",", ":"), sort_keys=True)], cwd=BENCH_PATH / "sites", env=environment, check=False, stdout=output, stderr=subprocess.DEVNULL, text=True)
+        require(completed.returncode == 0, "P8-05 Bench fixture failed")
+        output.seek(0)
+        lines = [line for line in output if line.strip()]
+    result = json.loads(lines[-1]) if lines else None
+    require(isinstance(result, dict), "P8-05 Bench fixture result is invalid")
+    return result
+
+
+def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
+    import frappe
+    require(method == "exercise_worker", "P8-05 Bench fixture is unavailable")
+    frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
+    frappe.connect()
+    try:
+        document_runtime._validated_runtime_site()
+        frappe.set_user(ACTOR_USER)
+        result = exercise_worker(**kwargs)
+        frappe.db.commit()
+        print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+    except Exception:
+        frappe.db.rollback()
+        raise
+    finally:
+        frappe.destroy()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--base-url")
+    parser.add_argument("--disabled-probe", action="store_true")
+    parser.add_argument("--bench-fixture")
+    parser.add_argument("--fixture-kwargs")
+    arguments = parser.parse_args()
+    if arguments.bench_fixture:
+        require(arguments.base_url is None and arguments.fixture_kwargs is not None and not arguments.disabled_probe, "P8-05 fixture invocation drifted")
+        kwargs = json.loads(arguments.fixture_kwargs)
+        require(isinstance(kwargs, dict), "P8-05 fixture arguments are invalid")
+        run_local_bench_fixture(arguments.bench_fixture, kwargs)
+        return
+    require(arguments.base_url is not None and FIXTURE_RUN_ID != "0"*32, "P8-05 runtime invocation is incomplete")
+    base_url = validate_local_fixture_inputs(arguments.base_url, "Administrator", ACTOR_USER)
+    password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
+    result = run_disabled_probe(base_url, password) if arguments.disabled_probe else run_fresh(base_url, password)
+    print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()

@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-24`
 
-Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
+Status: `FROZEN — CHECKPOINTS 1–2 PASS; CHECKPOINT 3 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
 
 Audit base and retained P8-04 product checkpoint:
 `ca72deceab4b8e899d0da1207883887c9d30077a`
@@ -25,6 +25,11 @@ P8-05 checkpoint 1 final checkpoint:
 `db0cb846589816dc55002b8a002914aedced9fb2`
 
 P8-05 checkpoint 1 ordinary CI: `32660953137` (`PASS`)
+
+P8-05 checkpoint 2 final checkpoint:
+`d20b4a3bba67ae333e161295fe1155211375f013`
+
+P8-05 checkpoint 2 ordinary CI: `32664440277` (`PASS`)
 
 Primary requirements:
 
@@ -542,6 +547,16 @@ Outbox + stream guard + audit implementation now awaits its own exact-SHA
 ordinary CI. Checkpoints 3–4 each require the previous exact-SHA ordinary CI.
 P8-05 remains in progress until final unchanged Level 3 passes; no checkpoint
 authorizes production ERPNext/JCE contact.
+
+Checkpoint 2 exact product SHA `d20b4a3bba67ae333e161295fe1155211375f013`
+passes ordinary CI `32664440277` (repository `97255552087`, frontend
+`97255551972`, secret `97255552048`, visual `97255552051`; controlled jobs
+correctly skipped). Standing authority therefore activates checkpoint 3. The
+checkpoint 3 candidate adds only the bounded leased worker, closed operation-
+specific adapter registry, network-free disposable synthetic proof, immutable
+attempt/field/aggregate result truth and authenticated complete-result mapping
+CAS described above. Checkpoint 4 remains closed until checkpoint 3 exact-SHA
+ordinary CI passes.
 
 ## 15. Checkpoint 2 implementation candidate evidence
 

@@ -4614,3 +4614,19 @@ repeat or rewrite it merely to restore context. See
   P8-08/P8-09 remain inactive. The controller marker is:
   `P8-05 checkpoint 1 PASS; checkpoint 2 awaits exact-SHA ordinary CI`.
   There is no Hard Blocker and no user action is required.
+
+## 2026-08-24 P8-05 checkpoint 2 PASS; checkpoint 3 awaits product CI
+
+- Exact checkpoint 2 SHA `d20b4a3bba67ae333e161295fe1155211375f013`
+  passes ordinary CI `32664440277`: repository `97255552087`, frontend
+  `97255551972`, secret `97255552048` and visual `97255552051` pass;
+  controlled lanes correctly skip before the disposable worker checkpoint.
+- Standing authority activates only checkpoint 3. The candidate implements
+  bounded pending/expired leases, immutable attempts, commit-before-adapter
+  boundary, operation-specific closed registry, network-free synthetic proof,
+  field/aggregate partial and uncertain truth, terminal replay and exact
+  authenticated complete-result mapping CAS.
+- Actual ERPNext method/fields/location/maintenance, business approval source,
+  Sandbox and production remain closed. Checkpoint 4 UI remains inactive until
+  this candidate passes its exact-SHA ordinary CI. Controller marker:
+  `P8-05 checkpoint 2 PASS; checkpoint 3 awaits exact-SHA ordinary CI`.

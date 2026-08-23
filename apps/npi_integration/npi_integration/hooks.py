@@ -19,6 +19,7 @@ scheduler_events = {
         "npi_integration.inbound_project.worker.recover_inbound_project_receipts",
         "npi_integration.item_publish.worker.recover_item_publish_outbox_messages",
         "npi_integration.mbom_publish.worker.recover_mbom_publish_outbox_messages",
+        "npi_integration.tool_asset_request.worker.recover_tool_asset_outbox_messages",
     ]
 }
 
@@ -49,4 +50,13 @@ npi_mbom_publish_profile_resolver = (
 )
 npi_mbom_publish_adapter_registry = (
     "npi_integration.mbom_publish.runtime_fixture.resolve_adapter_registry"
+)
+
+# P8-05 is inert outside its exact disposable marker. The registry contains
+# only operation-specific, network-free synthetic create/update adapters.
+npi_tool_asset_execution_profile_resolver = (
+    "npi_integration.tool_asset_request.runtime_fixture.resolve_profile"
+)
+npi_tool_asset_adapter_registry = (
+    "npi_integration.tool_asset_request.runtime_fixture.resolve_adapter_registry"
 )

@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '137b63e838b1f84d';
+export const catalogVersion = '851e4e2355ada3ac';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -7233,6 +7233,7 @@ export const catalogs = {
     "The template version identity is invalid.": "模板版本身份无效。",
     "The terminal lock event does not match its acquisition event.": "终止锁事件与其获取事件不匹配。",
     "The Tool Asset command receipt identity cannot be changed.": "模具资产命令回执身份不可更改。",
+    "The Tool Asset execution request state transition is invalid.": "模具资产执行请求状态转换无效。",
     "The Tool Asset execution request version or operation is invalid.": "模具资产执行请求版本或操作无效。",
     "The Tool Asset execution requester is unavailable.": "模具资产执行请求者不可用。",
     "The Tool Asset Outbox envelope version or operation is invalid.": "模具资产发件箱信封版本或操作无效。",
@@ -15528,6 +15529,7 @@ export const catalogs = {
     "The template version identity is invalid.": "範本版本身分無效。",
     "The terminal lock event does not match its acquisition event.": "終止鎖事件與其取得事件不相符。",
     "The Tool Asset command receipt identity cannot be changed.": "模具資產命令回執身分不可變更。",
+    "The Tool Asset execution request state transition is invalid.": "模具資產執行請求狀態轉換無效。",
     "The Tool Asset execution request version or operation is invalid.": "模具資產執行請求版本或操作無效。",
     "The Tool Asset execution requester is unavailable.": "模具資產執行請求者不可用。",
     "The Tool Asset Outbox envelope version or operation is invalid.": "模具資產寄件匣信封版本或操作無效。",

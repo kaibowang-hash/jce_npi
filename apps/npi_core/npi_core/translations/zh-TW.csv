@@ -8291,3 +8291,4 @@ The Tooling source or Asset mapping changed. Reload it before continuing.,模具
 The idempotency key was already used for a different Tool Asset operation or request.,該冪等鍵已用於其他模具資產操作或請求。
 Another Tool Asset execution request is active for this physical Tooling Set.,此實體模具套已有另一個活動的模具資產執行請求。
 "Confirm the exact Tool Asset operation, source, business approval, mapping, and execution profile.",請確認精確的模具資產操作、來源、業務核准、映射和執行設定檔。
+The Tool Asset execution request state transition is invalid.,模具資產執行請求狀態轉換無效。

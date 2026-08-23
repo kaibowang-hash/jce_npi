@@ -53,6 +53,32 @@ _REQUEST_WRITES = frozenset(
         ("NPI Outbox Message", "insert"),
     }
 )
+_CLAIM_WRITES = frozenset(
+    {
+        ("NPI Tool Asset Request", "save"),
+        ("NPI Tool Asset Attempt", "insert"),
+        ("NPI Tool Asset Attempt", "save"),
+        ("NPI Tool Asset Stream Guard", "save"),
+        ("NPI Outbox Message", "save"),
+    }
+)
+_RESULT_WRITES = frozenset(
+    {
+        ("NPI Tool Asset Request", "save"),
+        ("NPI Tool Asset Attempt", "save"),
+        ("NPI Tool Asset Result", "insert"),
+        ("NPI Tool Asset Field Result", "insert"),
+        ("NPI Tool Asset Mapping Observation", "insert"),
+        ("NPI Tool Asset Mapping Head", "insert"),
+        ("NPI Tool Asset Mapping Head", "save"),
+        ("NPI Tool Asset Stream Guard", "save"),
+        ("NPI Outbox Message", "save"),
+    }
+)
+
+
+class ToolAssetServiceActorUnavailable(RuntimeError):
+    """Raised when the frozen Tool Asset service actor cannot be entered."""
 
 
 def require_tool_asset_execution_request_write() -> None:
@@ -144,6 +170,43 @@ def tool_asset_request_transaction_write(
         yield capability
 
 
+def validate_tool_asset_service_actor(actor_user_id: str) -> None:
+    _require_internal_service_actor(actor_user_id)
+
+
+@contextmanager
+def tool_asset_service_actor_scope(service_actor_user_id: str) -> Iterator[None]:
+    try:
+        _require_internal_service_actor(service_actor_user_id)
+    except (RuntimeError, ValueError) as error:
+        raise ToolAssetServiceActorUnavailable("The frozen Tool Asset service actor is unavailable.") from error
+    session = getattr(frappe, "session", None)
+    previous = getattr(session, "user", None)
+    set_user = getattr(frappe, "set_user", None)
+    if not isinstance(previous, str) or not previous or not callable(set_user):
+        raise ToolAssetServiceActorUnavailable("The Tool Asset worker user context is unavailable.")
+    switched = previous != service_actor_user_id
+    if switched:
+        set_user(service_actor_user_id)
+    try:
+        yield
+    finally:
+        if switched:
+            set_user(previous)
+
+
+@contextmanager
+def tool_asset_claim_write(service_actor_user_id: str) -> Iterator[ToolAssetSupportWriteCapability]:
+    with _tool_asset_support_write(service_actor_user_id, "claim", _CLAIM_WRITES) as capability, _flag_scope(AUDIT_APPEND_FLAG):
+        yield capability
+
+
+@contextmanager
+def tool_asset_result_transaction_write(service_actor_user_id: str) -> Iterator[ToolAssetSupportWriteCapability]:
+    with _tool_asset_support_write(service_actor_user_id, "result", _RESULT_WRITES) as capability, _flag_scope(AUDIT_APPEND_FLAG):
+        yield capability
+
+
 def insert_tool_asset_support_document(
     document: Any,
     *,
@@ -220,6 +283,20 @@ def _require_requester(requester_user_id: str) -> None:
         or "NPI API User" not in set(get_roles(requester_user_id) or ())
     ):
         frappe.throw(_("The Tool Asset execution requester is unavailable."), frappe.PermissionError)
+
+
+def _require_internal_service_actor(actor_user_id: str) -> None:
+    if not isinstance(actor_user_id, str) or not actor_user_id or actor_user_id.casefold() in {"guest", "administrator"}:
+        raise RuntimeError("Tool Asset service actor is invalid.")
+    get_value = getattr(getattr(frappe, "db", None), "get_value", None)
+    get_roles = getattr(frappe, "get_roles", None)
+    if not callable(get_value) or not callable(get_roles):
+        raise RuntimeError("Tool Asset service actor lookup is unavailable.")
+    user = get_value("User", actor_user_id, ["enabled", "user_type"], as_dict=True)
+    enabled = user.get("enabled") if isinstance(user, dict) else getattr(user, "enabled", None)
+    user_type = user.get("user_type") if isinstance(user, dict) else getattr(user, "user_type", None)
+    if not user or int(enabled or 0) != 1 or str(user_type) != "System User" or "NPI API User" not in set(get_roles(actor_user_id) or ()):
+        raise RuntimeError("Tool Asset service actor is unavailable.")
 
 
 @contextmanager
