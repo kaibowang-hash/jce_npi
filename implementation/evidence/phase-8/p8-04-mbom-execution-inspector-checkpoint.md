@@ -490,3 +490,26 @@ The post-datetime cycle is `diagnostic 1/1`, `repair 1/1`, `final 0/1`.
 `MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED=False`; every other Item and
 MBOM diagnostic activation is also false, with the response-neutral mechanism
 dormant. All earlier cycle histories and counters remain immutable.
+
+The manifest repair SHA `e48994fca14c9bed9e5ae3080ad4c8197d9ce753`
+passes ordinary run `32638946914` with secret `97192919516`, repository
+`97192919570`, frontend `97192919621` and visual `97192919710`. Its only Level
+3 run `32639690073` passes secret `97194754224`, repository `97194754335`,
+frontend `97194754259`, visual `97194754129` and preflight `97196322166`.
+Runtime `97196350465` passes tool, Bench and disposable Site initialization,
+then the cumulative verifier observes only a nonzero `exercise_worker` child.
+Failed-child output is not read, the runtime result/artifact is absent, cleanup
+passes, and only visual artifact `9493314488` and SARIF `9493260870` exist.
+No safe tuple supports a product repair. The post-datetime cycle is immutable
+at `diagnostic 1/1`, `repair 1/1`, `final 1/1`.
+
+The separate post-manifest worker cycle begins at `diagnostic 0/1`, `repair
+0/1`, `final 0/1`. Its verifier-only checkpoint temporarily activates exactly
+twenty-nine existing codes: fifteen fixed contexts from process-Outbox through
+fixture commit and fourteen outcome state/shape classifications. It adds no
+code and excludes the already closed fixture validation, requester session,
+all not-claimed preconditions and all create contexts. Exact trace, strict
+mirrored-log validation, same-exception propagation, constant-safe fallback
+and unread failed-child stdout/stderr are unchanged. Product worker,
+repository, fixture, adapter, API, permission, transaction, Schema, ownership
+and Gate paths have zero diff; all prior cycle counters remain immutable.

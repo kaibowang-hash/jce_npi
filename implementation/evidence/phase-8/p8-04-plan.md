@@ -977,3 +977,33 @@ before any write. The post-datetime cycle is now `diagnostic 1/1`, `repair
 1/1`, `final 0/1`; `MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED=False` and
 all other Item and MBOM diagnostic activations remain false. Historical cycle
 counters are immutable and the response-neutral mechanism remains dormant.
+
+The manifest repair exact SHA
+`e48994fca14c9bed9e5ae3080ad4c8197d9ce753` passes ordinary run
+`32638946914`: secret scan `97192919516`, repository `97192919570`, frontend
+`97192919621` and governed visual `97192919710` pass. Its sole unchanged Level
+3 dispatch `32639690073` passes secret scan `97194754224`, repository
+`97194754335`, frontend `97194754259`, governed visual `97194754129` and
+controlled preflight `97196322166`. Controlled runtime `97196350465` passes
+exact tools, pinned Bench and disposable Site setup, then its cumulative
+verifier stops at the `exercise_worker` child. The parent safe frames prove a
+nonzero child exit before any post-child predicate; failed-child stdout and
+stderr remain unread. Runtime result and upload are skipped, cleanup passes,
+and the only artifacts are governed visual evidence `9493314488` and secret
+scan SARIF `9493260870`. No response-safe tuple identifies a product symbol.
+The post-datetime cycle is therefore frozen at `diagnostic 1/1`, `repair 1/1`,
+`final 1/1`.
+
+An independent post-manifest worker cycle starts at `diagnostic 0/1`, `repair
+0/1`, `final 0/1`. The manifest-only repair cannot affect the fixture identity,
+requester session or the nine already proven request/Outbox/actor/route/guard
+tail predicates. Its four-path verifier checkpoint adds no diagnostic code and
+temporarily enables exactly twenty-nine existing codes: the fifteen fixed
+stages from `P804_WORKER_PROCESS_OUTBOX` through fixture commit, plus all
+fourteen worker outcome state/shape codes. It explicitly excludes the closed
+fixture/requester stages, every not-claimed precondition and all create codes.
+Exact shared-response trace correlation, one logical strict mirrored-log
+record, same-exception rethrow, constant fallback and unread failed-child
+stdout/stderr remain unchanged. No product worker, repository, runtime fixture,
+adapter, response, API, permission, transaction, Schema, ownership or Gate
+path changes. All earlier cycle histories and counters remain immutable.

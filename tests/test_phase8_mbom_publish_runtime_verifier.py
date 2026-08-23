@@ -474,6 +474,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(module.MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -554,7 +555,26 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             module._WORKER_POST_DATETIME_DIAGNOSTIC_CODES,
             fixed_stages | outcome_codes | post_datetime_stages,
         )
-        self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
+        closed_post_manifest_stages = {
+            "P804_WORKER_FIXTURE_VALIDATE",
+            "P804_WORKER_REQUESTER_SESSION",
+        }
+        post_manifest_stages = (
+            fixed_stages | outcome_codes
+        ) - closed_post_manifest_stages
+        self.assertEqual(
+            module._WORKER_POST_MANIFEST_CLOSED_CODES,
+            closed_post_manifest_stages,
+        )
+        self.assertEqual(
+            module._WORKER_POST_MANIFEST_DIAGNOSTIC_CODES,
+            post_manifest_stages,
+        )
+        self.assertEqual(len(post_manifest_stages), 29)
+        self.assertEqual(
+            module._active_worker_diagnostic_codes(),
+            post_manifest_stages,
+        )
         with patch.object(
             module,
             "MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED",
@@ -574,7 +594,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             context = local_runner if code == "P804_WORKER_FIXTURE_COMMIT" else exercise
             with self.subTest(code=code):
                 self.assertEqual(context.count(f'"{code}"'), 1)
-                self.assertEqual(self.source.count(f'"{code}"'), 2)
+                self.assertEqual(
+                    self.source.count(f'"{code}"'),
+                    3 if code in closed_post_manifest_stages else 2,
+                )
         for code in outcome_codes:
             with self.subTest(code=code):
                 self.assertEqual(self.source.count(f'"{code}"'), 1)
@@ -911,6 +934,42 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             self.assertEqual(records[0]["code"], code)
             self.assertNotIn("private", str(records))
 
+        for code in sorted(self.module._WORKER_POST_MANIFEST_CLOSED_CODES):
+            records.clear()
+            with self.subTest(post_manifest_closed_code=code), patch.dict(
+                sys.modules,
+                {"npi_core": package, "npi_core.api": api},
+            ), self.assertRaises(RuntimeError) as post_manifest_closed:
+                with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
+                    raise original
+            self.assertIs(post_manifest_closed.exception, original)
+            self.assertEqual(records, [])
+
+        with patch.dict(
+            sys.modules,
+            {"npi_core": package, "npi_core.api": api},
+        ):
+            with self.module.worker_downstream_diagnostic_step(
+                "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID
+            ):
+                pass
+        self.assertEqual(records, [])
+
+        for code in sorted(self.module._WORKER_POST_MANIFEST_DIAGNOSTIC_CODES):
+            records.clear()
+            with self.subTest(post_manifest_active_code=code), patch.dict(
+                sys.modules,
+                {"npi_core": package, "npi_core.api": api},
+            ), self.assertRaises(RuntimeError) as post_manifest_active:
+                with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
+                    raise original
+            self.assertIs(post_manifest_active.exception, original)
+            self.assertEqual(len(records), 1)
+            self.assertEqual(records[0]["code"], code)
+            self.assertEqual(records[0]["exception_type"], "RuntimeError")
+            self.assertEqual(records[0]["trace_id"], _TRACE_ID)
+            self.assertNotIn("private", str(records))
+
         closed_request_codes = (
             self.module._WORKER_NOT_CLAIMED_PRECONDITION_CODES
             - self.module._WORKER_POST_DATETIME_PRECONDITION_CODES
@@ -982,10 +1041,6 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                     module.item_runtime,
                     "BENCH_PATH",
                     bench_path,
-                ), patch.object(
-                    module,
-                    "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
-                    True,
                 ):
                     cursors = module.item_runtime._replay_diagnostic_log_cursors()
                     for path, source_records in zip(
@@ -1003,16 +1058,16 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                     )
 
         valid = {
-            "code": "P804_NOT_CLAIMED_OUTBOX_READ",
+            "code": "P804_WORKER_PROCESS_OUTBOX",
             "exceptionType": "RuntimeError",
             "traceId": _TRACE_ID,
         }
-        expected = ("RuntimeError", "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID)
+        expected = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
         self.assertEqual(read([valid]), expected)
         self.assertEqual(read([valid], [valid]), expected)
         self.assertIsNone(read([valid, valid]))
         self.assertIsNone(
-            read([valid], [{**valid, "code": "P804_NOT_CLAIMED_REQUEST_READ"}])
+            read([valid], [{**valid, "code": "P804_WORKER_SESSION_RESTORE"}])
         )
         for records in (
             [],
@@ -1035,15 +1090,11 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             "outbox_id": private,
             "diagnostic_trace_id": _TRACE_ID,
         }
-        diagnostic = ("RuntimeError", "P804_NOT_CLAIMED_OUTBOX_READ", _TRACE_ID)
+        diagnostic = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
         with patch.object(
             self.module.item_runtime,
             "_replay_diagnostic_log_cursors",
             return_value={"logs/npi_core.log": 0},
-        ), patch.object(
-            self.module,
-            "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
-            True,
         ), patch.object(
             self.module,
             "_sanitized_worker_downstream_diagnostic",
@@ -1062,7 +1113,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             str(raised.exception),
             "P8-04 Bench fixture failed "
-            "[diagnostic_code=P804_NOT_CLAIMED_OUTBOX_READ; "
+            "[diagnostic_code=P804_WORKER_PROCESS_OUTBOX; "
             f"exception_type=RuntimeError; trace_id={_TRACE_ID}]",
         )
         self.assertNotIn(private, str(raised.exception))
@@ -1107,7 +1158,27 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             successful_run.call_args.kwargs["stderr"],
             self.module.subprocess.DEVNULL,
         )
-        cursor_reader.assert_not_called()
+        cursor_reader.assert_called_once()
+
+        with patch.object(
+            self.module,
+            "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.module.item_runtime,
+            "_replay_diagnostic_log_cursors",
+        ) as dormant_cursor_reader, patch.object(
+            self.module.subprocess,
+            "run",
+            side_effect=complete_successfully,
+        ):
+            self.assertEqual(
+                self.module.run_bench_fixture(
+                    "exercise_worker", {"diagnostic_trace_id": _TRACE_ID}
+                ),
+                expected,
+            )
+        dormant_cursor_reader.assert_not_called()
 
     def test_worker_fixture_commit_stage_records_and_preserves_commit_failure(self):
         records: list[dict[str, object]] = []
