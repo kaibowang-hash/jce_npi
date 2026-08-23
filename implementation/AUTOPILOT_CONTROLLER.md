@@ -4569,3 +4569,21 @@ repeat or rewrite it merely to restore context. See
 - Checkpoint 2 remains closed until the exact checkpoint 1 product SHA passes
   ordinary CI. Controller marker:
   `P8-05 audit-plan CI PASS; checkpoint 1 awaits exact-SHA ordinary CI`.
+
+## 2026-08-24 P8-05 checkpoint 1 repository scanner self-trigger
+
+- Exact checkpoint 1 SHA
+  `d58330657aaf6ce6a7f102c64d575d334d209b4d` ordinary CI
+  `32660062523` runs all `2,328` repository tests successfully, then repository
+  job `97244729912` fails because the direct-SQL repository scanner matches
+  the negative test's own combined prohibited literal in
+  `tests/test_phase8_tool_asset_security.py`.
+- Exact scope review proves that this test assertion is the only Tool Asset
+  checkpoint match; the product modules contain no direct Frappe SQL call.
+  Secret `97244729913`, governed visual `97244730002` and frontend
+  `97244730081` pass. This is a scanner harness root and product root count is
+  `0`.
+- The bounded remediation replaces only the negative test's combined literal
+  with an AST call-chain detector that recognizes `frappe` to `db` to `sql`.
+  It adds no scanner ignore, weakens no repository rule and changes no product
+  behavior. Checkpoint 2 remains closed pending a new exact-SHA ordinary PASS.

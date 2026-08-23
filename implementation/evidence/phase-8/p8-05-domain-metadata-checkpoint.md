@@ -95,6 +95,27 @@ Final Level 1 results:
 The Python Level 1 total is `363/363 PASS`. No test, threshold, permission,
 contract, ownership or production boundary was weakened.
 
+## Ordinary CI scanner harness remediation
+
+Exact checkpoint SHA `d58330657aaf6ce6a7f102c64d575d334d209b4d`
+ordinary CI `32660062523` executes all `2,328` repository tests successfully,
+then repository job `97244729912` fails because the direct-SQL scanner matches
+the negative security test's own combined prohibited literal. Exact scope
+review finds no direct Frappe SQL call in the Tool Asset product modules.
+Secret job `97244729913`, visual job `97244730002` and frontend job
+`97244730081` pass.
+
+This is a scanner harness failure with product root count `0`. The remediation
+uses an AST call-chain predicate in the security test, proves that the
+predicate detects the prohibited shape, and retains the exact zero-direct-SQL
+product requirement without an ignore, scanner, threshold or product change.
+Remediation Level 1 repeats the focused security suite `3/3`, all Tool Asset
+suites `28/28`, affected Item `146/146`, MBOM `126/126`, retained P6
+Tool Asset/acceptance `30/30`, and current-task/reconciliation units `33/33`;
+all `363/363` tests pass. The exact repository direct-SQL scan returns zero
+matches, focused compilation and `git diff --check` pass.
+Checkpoint 2 remains closed until the remediated exact SHA passes ordinary CI.
+
 ## Transition boundary
 
 Checkpoint 2 remains closed until this checkpoint's exact product SHA passes
