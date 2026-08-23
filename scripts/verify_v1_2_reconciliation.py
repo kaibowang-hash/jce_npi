@@ -354,6 +354,18 @@ EXPECTED_P8_04_COMPLETED_ALLOCATION = {
     "INT-004": "TECHNICAL_VERIFIED_MBOM_EXECUTION_FOUNDATION_PRODUCTION_SANDBOX_MAPPING_HELD",
     "FR-DS-013": "TECHNICAL_VERIFIED_ITEM_AND_MBOM_PORTIONS_PRODUCTION_SANDBOX_MAPPING_AND_WHOLE_REQUIREMENT_HELD",
 }
+EXPECTED_P8_05_AUDIT_EVIDENCE = {
+    "implementation/evidence/phase-8/p8-05-plan.md",
+}
+EXPECTED_P8_05_AUDIT_REQUIREMENTS = {
+    "INT-005",
+    "FR-TL-011",
+    "FR-TL-012",
+    "FR-TL-013",
+    "FR-TL-014",
+    "FR-TL-015",
+    "FR-TL-016",
+}
 EXPECTED_P8_CARRIED_FOUNDATIONS = {
     "FR-DS-013": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "FR-TL-008": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
@@ -2088,6 +2100,10 @@ def verify_trace_sets() -> None:
             EXPECTED_P8_04_COMPLETED_EVIDENCE
             if requirement_id in EXPECTED_P8_04_COMPLETED_ALLOCATION
             else set()
+        ) | (
+            EXPECTED_P8_05_AUDIT_EVIDENCE
+            if requirement_id in EXPECTED_P8_05_AUDIT_REQUIREMENTS
+            else set()
         )
         if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
@@ -2197,6 +2213,10 @@ def verify_trace_sets() -> None:
             EXPECTED_P8_04_COMPLETED_EVIDENCE
             if requirement_id in EXPECTED_P8_04_COMPLETED_ALLOCATION
             else set()
+        ) | (
+            EXPECTED_P8_05_AUDIT_EVIDENCE
+            if requirement_id in EXPECTED_P8_05_AUDIT_REQUIREMENTS
+            else set()
         )
         if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
@@ -2262,6 +2282,10 @@ def verify_trace_sets() -> None:
         ) | (
             EXPECTED_P8_04_COMPLETED_EVIDENCE
             if requirement_id in EXPECTED_P8_04_COMPLETED_ALLOCATION
+            else set()
+        ) | (
+            EXPECTED_P8_05_AUDIT_EVIDENCE
+            if requirement_id in EXPECTED_P8_05_AUDIT_REQUIREMENTS
             else set()
         )
         if actual_evidence != permitted_evidence:
@@ -2350,6 +2374,11 @@ def verify_trace_sets() -> None:
                 | (
                     EXPECTED_P8_04_COMPLETED_EVIDENCE
                     if requirement_id in EXPECTED_P8_04_COMPLETED_ALLOCATION
+                    else set()
+                )
+                | (
+                    EXPECTED_P8_05_AUDIT_EVIDENCE
+                    if requirement_id in EXPECTED_P8_05_AUDIT_REQUIREMENTS
                     else set()
                 )
                 if completed_trace
@@ -2442,6 +2471,13 @@ def verify_trace_sets() -> None:
                 raise ReconciliationVerificationError(
                     f"{requirement_id} lacks the P8-04 completion evidence"
                 )
+            if (
+                requirement_id in EXPECTED_P8_05_AUDIT_REQUIREMENTS
+                and not EXPECTED_P8_05_AUDIT_EVIDENCE.issubset(evidence)
+            ):
+                raise ReconciliationVerificationError(
+                    f"{requirement_id} lacks the P8-05 audit evidence"
+                )
 
     for requirement_id, expected_trace in {
         **EXPECTED_P8_CARRIED_FOUNDATIONS,
@@ -2495,6 +2531,13 @@ def verify_trace_sets() -> None:
         ):
             raise ReconciliationVerificationError(
                 f"{requirement_id} lacks the P8-04 completion evidence"
+            )
+        if (
+            requirement_id in EXPECTED_P8_05_AUDIT_REQUIREMENTS
+            and not EXPECTED_P8_05_AUDIT_EVIDENCE.issubset(evidence)
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} lacks the P8-05 audit evidence"
             )
         missing_evidence = sorted(
             path for path in evidence if "/" in path and not (ROOT / path).is_file()

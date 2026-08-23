@@ -39,12 +39,22 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-06")
         self.assertIn(
-            "P8_05_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_THE_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_ORDINARY_CI",
+            "P8_05_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_FROZEN_PLAN_EXACT_SHA_ORDINARY_CI_PASSES",
             value["frozen_invariants"],
         )
-        self.assertFalse(
-            any(path.startswith(("apps/", "frontend/", "contracts/")) for path in value["allowed_paths"])
+        self.assertEqual(
+            value["status"],
+            "IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI",
         )
+        self.assertIn(
+            "apps/npi_integration/npi_integration/tool_asset_request/**",
+            value["allowed_paths"],
+        )
+        self.assertIn(
+            "contracts/integration-event.schema.json",
+            value["allowed_paths"],
+        )
+        self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
         source = MANIFEST.read_text(encoding="utf-8")

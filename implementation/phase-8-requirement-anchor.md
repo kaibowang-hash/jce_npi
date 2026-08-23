@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-04 LEVEL 3 PASS; P8-05 AUDIT ACTIVE**
+Status: **IN PROGRESS — P8-05 AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
 
 Anchor date: 2026-08-16
 
@@ -445,13 +445,14 @@ production/Sandbox mapping remains held. The Item and MBOM technical portions
 of `FR-DS-013` are verified, but production/Sandbox mapping and the whole
 requirement remain held; this is not complete production acceptance.
 
-Standing authority activates only the bounded P8-05 requirement/domain/
-existing-capability/security audit for `INT-005` and `FR-TL-011..016`. It must
-freeze one physical Tooling Set to zero-or-one formal ERP Asset mapping,
-separate create/update operations, immutable source and expected target
-version, partial/uncertain result truth and read-only observed Asset, location
-and maintenance boundaries. NPI acceptance evidence is not ERP approval or
-Asset success. No P8-05 product code is authorized before the audit plan and
-its exact-SHA ordinary CI pass. `NFR-INT-001` generic operations/DLQ/manual
-replay/reconciliation remains P8-07. P8-06 through P8-09 and production
-ERPNext/JCE remain inactive.
+The bounded P8-05 audit passes and is frozen in
+`implementation/evidence/phase-8/p8-05-plan.md`. It preserves P6
+`create_or_update_tool_asset` v1 rows as immutable Mock preparation history
+and defines separate v2 `create_tool_asset` / `update_tool_asset` operations,
+one physical Tooling Set to zero-or-one formal Asset, exact source and mapping/
+target-version expectations, acceptance-evidence versus business-approval
+separation, partial/uncertain result truth and P8-01 read-only Asset/location/
+maintenance ownership. Product code remains unauthorized until the frozen
+plan transition exact-SHA ordinary CI passes. `NFR-INT-001` generic operations/
+DLQ/manual replay/reconciliation remains P8-07. P8-06, P8-08/P8-09 and
+production ERPNext/JCE remain inactive.

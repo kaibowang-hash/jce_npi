@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-05`
+`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-05`
 
-Recovery time: `2026-08-23T17:04:04Z`
+Recovery time: `2026-08-23T17:45:53Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -396,21 +396,23 @@ secret `97224725138`, preflight `97226433521` and cumulative Site
 `sha256:b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`.
 Complete evidence is `implementation/evidence/phase-8/p8-04-validation.md`.
 
-Execute only the P8-05 requirement/domain/existing-capability/security audit
-for `INT-005` and `FR-TL-011..016`. Freeze one physical Tooling Set to
-zero-or-one formal ERP Asset mapping; separate operation-specific create and
-update authority; exact immutable Tooling source and expected target version;
-actor/trace/idempotency; partial and uncertain truth; read-only observed Asset,
-location and maintenance truth; permissions, migration, rollback, tests and
-Level 3 impact in `implementation/evidence/phase-8/p8-05-plan.md`.
+The bounded P8-05 audit passes and is frozen in
+`implementation/evidence/phase-8/p8-05-plan.md`. It preserves P6 v1 combined
+Mock drafts as immutable preparation history and defines separate v2
+`create_tool_asset` / `update_tool_asset` operations over one exact physical
+Tooling Set, exact Tooling/acceptance source, operation-bound idempotency,
+zero-or-one formal mapping expectation, partial/uncertain truth and P8-01
+read-only Asset projection separation.
 
-NPI acceptance evidence is not ERP approval, Asset creation or target success.
-P8-05 product code is not authorized until the frozen plan transition passes
-exact-SHA ordinary CI. Do not contact production ERPNext/JCE, install a
-Sandbox/default profile, infer Asset field/naming/category/location/
-maintenance/service-scope facts, treat Mock/synthetic/HTTP acceptance/partial/
-timeout as formal success, add generic P8-07 operations or activate P8-06
-through P8-09.
+Checkpoint 1 remains unauthorized until this plan/task-manifest transition
+passes exact-SHA ordinary CI. After that PASS, implement only the pure v2
+domains/contracts/guarded metadata/translations/tests listed in checkpoint 1;
+activate no route, persistent v2 behavior, worker, adapter, mapping or UI.
+NPI acceptance evidence is not business approval, ERP approval, Asset creation
+or target success. Do not contact production ERPNext/JCE, install a Sandbox/
+default profile, infer Asset field/naming/category/location/maintenance/
+service-scope facts, weaken P6/P8-01 history, add generic P8-07 operations or
+activate P8-06/P8-08/P8-09.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

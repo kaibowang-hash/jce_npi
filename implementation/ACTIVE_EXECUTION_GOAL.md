@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-23T17:04:04Z`
+Updated: `2026-08-23T17:45:53Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P8-05`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,8 +18,9 @@ Updated: `2026-08-23T17:04:04Z`
   `32651903846` (`PASS — LEVEL 3` at `ca72deceab4b8e899d0da1207883887c9d30077a`;
   repository, frontend, secret, `126/126` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32651139504` (`PASS` at
-  `ca72deceab4b8e899d0da1207883887c9d30077a`; P8-04 final)
+  `32654431690` (`PASS` at
+  `d54b0d71e63fd8a02b294135b5dd879aac16946c`; P8-04 closeout and P8-05
+  audit-only activation)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

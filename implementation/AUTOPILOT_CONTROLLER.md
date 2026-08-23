@@ -4513,3 +4513,34 @@ repeat or rewrite it merely to restore context. See
   `implementation/evidence/phase-8/p8-05-plan.md` is frozen and its transition
   exact-SHA ordinary CI passes. The controller marker is:
   `P8-04 Level 3 PASS; P8-05 audit active`. There is no Hard Blocker.
+
+## 2026-08-24 P8-05 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI
+
+- P8-04 closeout/P8-05 audit checkpoint
+  `d54b0d71e63fd8a02b294135b5dd879aac16946c` passes ordinary CI
+  `32654431690`: visual `97230884629`, frontend `97230884687`, repository
+  `97230884708` and secret `97230884716` pass; controlled lanes correctly
+  skip.
+- The bounded audit is frozen in
+  `implementation/evidence/phase-8/p8-05-plan.md`. Existing P6
+  `create_or_update_tool_asset` v1 rows remain immutable local Mock preparation
+  history with approval unavailable, dispatch prohibited and no Outbox,
+  attempt, target ID or mapping.
+- P8-05 v2 freezes separate `create_tool_asset` and `update_tool_asset`
+  operations and operation-bound idempotency. Create requires exact unmapped
+  truth; update requires one exact current formal mapping and target version.
+  One physical Tooling Set is the sole zero-or-one mapping subject.
+- Immutable NPI acceptance evidence is not business approval, ERP approval or
+  target success. P8-01 remains the only read-only owner-facing Asset status,
+  location and maintenance projection. P8-05 cannot mutate those ERP-owned
+  facts or infer approval from projection/HTTP/Mock/synthetic truth.
+- Checkpoint 1 is pure domain/contract/guarded metadata only. It may activate
+  automatically only after this plan/task-manifest exact SHA passes ordinary
+  CI. Until then `P8_05_PRODUCT_CODE_AUTHORIZED_FALSE` remains mandatory and
+  no route, persistent v2 row, worker, adapter, mapping or UI behavior is
+  authorized.
+- Production ERPNext/JCE, actual Asset method/field/category/company/location/
+  naming/depreciation/maintenance/approval mappings, Sandbox profile, P8-06,
+  P8-08/P8-09 and generic P8-07 operations remain held. There is no global
+  Hard Blocker. Controller marker:
+  `P8-05 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI`.

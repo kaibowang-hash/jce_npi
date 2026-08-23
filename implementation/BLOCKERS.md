@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-23T17:04:04Z`
+Updated: `2026-08-23T17:45:53Z`
 
 ## Active hard blockers
 
@@ -14,8 +14,9 @@ Runtime artifact `9496708366` has digest
 `sha256:b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`;
 exact topology/mapping expectations, partial/uncertain truth, claim recovery,
 terminal replay, submitted protection, zero formal Mock/synthetic mapping,
-zero production traffic and cleanup pass. Only the bounded P8-05 Tool Asset
-audit is active. No user action, login or frontend operation is required.
+zero production traffic and cleanup pass. The bounded P8-05 Tool Asset audit
+passes and its frozen checkpoint-1 plan awaits exact-SHA ordinary CI. No user
+action, login or frontend operation is required.
 
 ## Active recovery
 
@@ -42,15 +43,16 @@ credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-## Current authoritative blocker state — 2026-08-23T17:04:04Z
+## Current authoritative blocker state — 2026-08-23T17:45:53Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-04 exact final SHA `ca72dece` passes ordinary `32651139504` and final
   unchanged Level 3 `32651903846`; the release review reports no P0/P1/P2.
-- P8-05 is planning/audit-only. The next action freezes one physical Tooling
-  Set to zero-or-one Asset mapping, create/update command authority, exact
-  source/expected target version, partial/uncertain truth and read-only Asset,
-  location and maintenance observation boundaries.
+- P8-05 audit is frozen in `p8-05-plan.md`: one physical Tooling Set maps to
+  zero-or-one Asset; v2 create/update operations and idempotency are separate;
+  acceptance evidence is not business/ERP approval; P8-01 remains the only
+  read-only Asset status/location/maintenance projection owner. Checkpoint 1
+  remains unauthorized until the plan-transition exact-SHA ordinary CI passes.
 - Missing ERPNext Asset customization, naming/category/location/maintenance/
   service-scope and authenticated Sandbox facts are scoped external holds.
   NPI acceptance is not ERP approval. No P8-05 product code, default/networked
