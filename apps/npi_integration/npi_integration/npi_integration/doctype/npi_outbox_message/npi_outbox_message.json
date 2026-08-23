@@ -7,7 +7,7 @@
   "autoname": "field:event_id",
   "track_changes": 0,
   "read_only": 1,
-  "search_fields": "event_type,request_global_id,mbom_request_global_id,project_global_id,state,trace_id",
+  "search_fields": "event_type,request_global_id,mbom_request_global_id,tool_asset_request_global_id,project_global_id,state,trace_id",
   "fields": [
     {"fieldname": "event_id", "fieldtype": "Data", "label": "Event ID", "reqd": 1, "unique": 1, "read_only": 1},
     {"fieldname": "event_type", "fieldtype": "Data", "label": "Event Type", "reqd": 1, "read_only": 1},
@@ -53,7 +53,12 @@
     {"fieldname": "mbom_mapping_set_hash", "fieldtype": "Data", "label": "MBOM Mapping Set Hash", "read_only": 1},
     {"fieldname": "mbom_node_manifest_hash", "fieldtype": "Data", "label": "MBOM Node Manifest Hash", "read_only": 1},
     {"fieldname": "mbom_last_attempt_global_id", "fieldtype": "Link", "label": "Last MBOM Publish Attempt", "options": "NPI MBOM Publish Attempt", "read_only": 1},
-    {"fieldname": "mbom_result_global_id", "fieldtype": "Link", "label": "MBOM Publish Result", "options": "NPI MBOM Publish Result", "read_only": 1}
+    {"fieldname": "mbom_result_global_id", "fieldtype": "Link", "label": "MBOM Publish Result", "options": "NPI MBOM Publish Result", "read_only": 1},
+    {"fieldname": "tool_asset_request_global_id", "fieldtype": "Link", "label": "Tool Asset Execution Request", "options": "NPI Tool Asset Request", "read_only": 1, "search_index": 1},
+    {"fieldname": "tooling_set_global_id", "fieldtype": "Link", "label": "Tooling Set", "options": "NPI Tooling Set", "read_only": 1},
+    {"fieldname": "tool_asset_mapping_expectation_hash", "fieldtype": "Data", "label": "Tool Asset Mapping Expectation Hash", "read_only": 1},
+    {"fieldname": "tool_asset_last_attempt_global_id", "fieldtype": "Link", "label": "Last Tool Asset Attempt", "options": "NPI Tool Asset Attempt", "read_only": 1},
+    {"fieldname": "tool_asset_result_global_id", "fieldtype": "Link", "label": "Tool Asset Result", "options": "NPI Tool Asset Result", "read_only": 1}
   ],
   "permissions": [{"role": "System Manager", "read": 1}]
 }

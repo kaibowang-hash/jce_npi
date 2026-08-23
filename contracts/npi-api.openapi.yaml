@@ -17410,6 +17410,129 @@ components:
           items:
             type: string
             enum: [tooling_master_title, physical_set_serial, tooling_requirement_kind, source_tooling_revision, acceptance_evidence_reference]
+    ToolAssetExecutionOperation:
+      type: string
+      enum: [create_tool_asset, update_tool_asset]
+    ToolAssetExecutionTargetMode:
+      type: string
+      enum: [mock, synthetic, sandbox]
+    ToolAssetExecutionSource:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, tenantId, projectGlobalId, toolingMasterGlobalId, toolingMasterTitle, toolingMasterSnapshotHash, toolingSetGlobalId, toolingSetPhysicalSerial, toolingSetSnapshotHash, toolingRequirementKind, setRevisionBindingGlobalId, setRevisionBindingSnapshotHash, toolingRevisionGlobalId, toolingRevisionNumber, toolingRevisionLabel, toolingRevisionSnapshotHash, acceptanceRevisionGlobalId, acceptanceGlobalId, acceptanceVersion, acceptancePredecessorGlobalId, acceptancePredecessorSnapshotHash, acceptanceSnapshotHash, acceptedAt, ownedFieldsManifest, sourceStreamKeyHash, sourceHash]
+      properties:
+        schemaVersion: { type: integer, const: 2 }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingMasterTitle: { type: string, minLength: 1, maxLength: 140 }
+        toolingMasterSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingSetGlobalId: { type: string, format: uuid }
+        toolingSetPhysicalSerial: { type: string, minLength: 1, maxLength: 80 }
+        toolingSetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRequirementKind: { type: string, enum: [new_tool, customer_owned_intake, copy_or_additional_set, modification, repair, capacity_need] }
+        setRevisionBindingGlobalId: { type: string, format: uuid }
+        setRevisionBindingSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionNumber: { type: integer, minimum: 1 }
+        toolingRevisionLabel: { type: string, minLength: 1, maxLength: 40 }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        acceptanceRevisionGlobalId: { type: string, format: uuid }
+        acceptanceGlobalId: { type: string, format: uuid }
+        acceptanceVersion: { type: integer, minimum: 1 }
+        acceptancePredecessorGlobalId: { type: [string, "null"], format: uuid }
+        acceptancePredecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        acceptanceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        acceptedAt: { type: string, format: date-time }
+        ownedFieldsManifest:
+          type: array
+          minItems: 5
+          maxItems: 5
+          uniqueItems: true
+          items:
+            type: string
+            enum: [tooling_master_title, physical_set_serial, tooling_requirement_kind, source_tooling_revision, acceptance_evidence_reference]
+        sourceStreamKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolAssetBusinessApprovalReference:
+      type: object
+      additionalProperties: false
+      required: [state, policyId, policyVersion, policyHash, evidenceReference, evidenceHash]
+      properties:
+        state: { type: string, enum: [unavailable, verified] }
+        policyId: { type: [string, "null"], maxLength: 128 }
+        policyVersion: { type: [integer, "null"], minimum: 1 }
+        policyHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        evidenceReference: { type: [string, "null"], maxLength: 140 }
+        evidenceHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+      allOf:
+        - if: { properties: { state: { const: unavailable } }, required: [state] }
+          then: { properties: { policyId: { type: "null" }, policyVersion: { type: "null" }, policyHash: { type: "null" }, evidenceReference: { type: "null" }, evidenceHash: { type: "null" } } }
+        - if: { properties: { state: { const: verified } }, required: [state] }
+          then: { properties: { policyId: { type: string }, policyVersion: { type: integer }, policyHash: { type: string }, evidenceReference: { type: string }, evidenceHash: { type: string } } }
+    ToolAssetMappingExpectationV2:
+      type: object
+      additionalProperties: false
+      required: [operation, sourceStreamKeyHash, mappingVersion, formalAssetId, targetVersion, observationHash]
+      properties:
+        operation: { $ref: "#/components/schemas/ToolAssetExecutionOperation" }
+        sourceStreamKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        mappingVersion: { type: integer, minimum: 0 }
+        formalAssetId: { type: [string, "null"], maxLength: 140 }
+        targetVersion: { type: [string, "null"], maxLength: 140 }
+        observationHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+      allOf:
+        - if: { properties: { operation: { const: create_tool_asset } }, required: [operation] }
+          then: { properties: { mappingVersion: { const: 0 }, formalAssetId: { type: "null" }, targetVersion: { type: "null" }, observationHash: { type: "null" } } }
+        - if: { properties: { operation: { const: update_tool_asset } }, required: [operation] }
+          then: { properties: { mappingVersion: { minimum: 1 }, formalAssetId: { type: string, minLength: 1 }, targetVersion: { type: string, minLength: 1 }, observationHash: { type: string } } }
+    ToolAssetExecutionProfileReference:
+      type: object
+      additionalProperties: false
+      required: [profileId, profileVersion, targetMode, environmentCode, projectionPolicyId, projectionPolicyVersion, projectionPolicyHash, snapshotHash]
+      properties:
+        profileId: { type: string, minLength: 1, maxLength: 128 }
+        profileVersion: { type: integer, minimum: 1 }
+        targetMode: { $ref: "#/components/schemas/ToolAssetExecutionTargetMode" }
+        environmentCode: { type: string, minLength: 1, maxLength: 64 }
+        projectionPolicyId: { type: string, minLength: 1, maxLength: 128 }
+        projectionPolicyVersion: { type: integer, minimum: 1 }
+        projectionPolicyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolAssetExecutionRequestV2:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, apiVersion, globalId, operation, tenantId, projectGlobalId, source, approval, mappingExpectation, profile, state, actorUserId, requestId, traceId, idempotencyKeyHash, payloadHash, optimisticVersion, createdAt]
+      properties:
+        schemaVersion: { type: integer, const: 2 }
+        apiVersion: { type: string, const: npi.erp-tool-asset.v1 }
+        globalId: { type: string, format: uuid }
+        operation: { $ref: "#/components/schemas/ToolAssetExecutionOperation" }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        source: { $ref: "#/components/schemas/ToolAssetExecutionSource" }
+        approval: { $ref: "#/components/schemas/ToolAssetBusinessApprovalReference" }
+        mappingExpectation: { $ref: "#/components/schemas/ToolAssetMappingExpectationV2" }
+        profile: { $ref: "#/components/schemas/ToolAssetExecutionProfileReference" }
+        state: { type: string, enum: [validated_mock, queued, processing, synthetic_verified, partially_succeeded, succeeded, failed_retryable, failed_final, uncertain_after_timeout, mapping_conflict] }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        idempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        optimisticVersion: { type: integer, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+    ToolAssetExecutionFieldResult:
+      type: object
+      additionalProperties: false
+      required: [fieldCode, state, authority, responseAuthenticated, responseHash, faultKind]
+      properties:
+        fieldCode: { type: string, minLength: 1, maxLength: 128 }
+        state: { type: string, enum: [synthetic_verified, succeeded_authoritative, failed_retryable, failed_final, uncertain_after_timeout, observed_conflict] }
+        authority: { type: string, enum: [none, synthetic, authoritative_sandbox] }
+        responseAuthenticated: { type: boolean }
+        responseHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        faultKind: { type: string, enum: [none, source_conflict, approval_unavailable, stale_mapping, timeout_after_possible_commit, rate_limited, target_server_error, business_validation, response_contract_invalid, response_authentication_invalid, target_unavailable] }
     ToolAssetFormalMappingUnavailable:
       type: object
       additionalProperties: false

@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-05 AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-05 CHECKPOINT 1 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI**
 
 Anchor date: 2026-08-16
 
@@ -452,7 +452,10 @@ and defines separate v2 `create_tool_asset` / `update_tool_asset` operations,
 one physical Tooling Set to zero-or-one formal Asset, exact source and mapping/
 target-version expectations, acceptance-evidence versus business-approval
 separation, partial/uncertain result truth and P8-01 read-only Asset/location/
-maintenance ownership. Product code remains unauthorized until the frozen
-plan transition exact-SHA ordinary CI passes. `NFR-INT-001` generic operations/
-DLQ/manual replay/reconciliation remains P8-07. P8-06, P8-08/P8-09 and
-production ERPNext/JCE remain inactive.
+maintenance ownership. Frozen-plan SHA `937c5d72` passes ordinary CI
+`32656436943`. Checkpoint 1 implements only pure domains, closed default-
+disabled config, additive contracts, guarded metadata and translations; it
+opens no route, persistent business writer, worker, adapter, network or UI and
+awaits its own exact-SHA ordinary CI. `NFR-INT-001` generic operations/DLQ/
+manual replay/reconciliation remains P8-07. P8-06, P8-08/P8-09 and production
+ERPNext/JCE remain inactive.

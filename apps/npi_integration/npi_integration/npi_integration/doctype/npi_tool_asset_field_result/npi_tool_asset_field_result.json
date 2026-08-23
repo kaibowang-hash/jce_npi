@@ -1,0 +1,21 @@
+{
+  "doctype":"DocType","name":"NPI Tool Asset Field Result","module":"NPI Integration","custom":0,"allow_rename":0,"autoname":"field:global_id","track_changes":0,"read_only":1,
+  "search_fields":"request_global_id,field_code,state,fault_kind",
+  "fields":[
+    {"fieldname":"global_id","fieldtype":"Data","label":"Global ID","reqd":1,"unique":1,"read_only":1},
+    {"fieldname":"request_global_id","fieldtype":"Link","label":"Tool Asset Execution Request","options":"NPI Tool Asset Request","reqd":1,"read_only":1},
+    {"fieldname":"result_global_id","fieldtype":"Link","label":"Tool Asset Result","options":"NPI Tool Asset Result","reqd":1,"read_only":1},
+    {"fieldname":"attempt_global_id","fieldtype":"Link","label":"Tool Asset Attempt","options":"NPI Tool Asset Attempt","reqd":1,"read_only":1},
+    {"fieldname":"field_code","fieldtype":"Data","label":"Tool Asset Field Code","reqd":1,"read_only":1},
+    {"fieldname":"state","fieldtype":"Select","label":"Tool Asset Field Result State","options":"synthetic_verified\nsucceeded_authoritative\nfailed_retryable\nfailed_final\nuncertain_after_timeout\nobserved_conflict","reqd":1,"read_only":1},
+    {"fieldname":"authority","fieldtype":"Select","label":"Tool Asset Result Authority","options":"none\nsynthetic\nauthoritative_sandbox","reqd":1,"read_only":1},
+    {"fieldname":"response_authenticated","fieldtype":"Check","label":"Response Authenticated","default":"0","read_only":1},
+    {"fieldname":"response_hash","fieldtype":"Data","label":"Target Response Hash","reqd":1,"read_only":1},
+    {"fieldname":"fault_kind","fieldtype":"Data","label":"Tool Asset Fault Kind","reqd":1,"read_only":1},
+    {"fieldname":"observation_hash","fieldtype":"Data","label":"Tool Asset Field Observation Hash","reqd":1,"read_only":1},
+    {"fieldname":"field_result_snapshot","fieldtype":"JSON","label":"Tool Asset Field Result Snapshot","reqd":1,"read_only":1},
+    {"fieldname":"field_result_hash","fieldtype":"Data","label":"Tool Asset Field Result Hash","reqd":1,"read_only":1},
+    {"fieldname":"observed_at","fieldtype":"Datetime","label":"Observed At","reqd":1,"read_only":1}
+  ],
+  "permissions":[{"role":"System Manager","read":1,"write":0,"create":0,"delete":0,"export":0,"print":0,"email":0},{"role":"NPI API User","read":0,"write":0,"create":0,"delete":0,"export":0,"print":0,"email":0}]
+}

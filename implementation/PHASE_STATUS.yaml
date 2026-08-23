@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-23T17:45:53Z'
+updated_at: '2026-08-23T18:35:39Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-05
-current_task_status: IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI
-current_task_completed_stage: P8_05_AUDIT_PLAN_FROZEN
-current_task_next_stage: P8_05_CHECKPOINT_1_PURE_DOMAIN_CONTRACT_METADATA
-current_task_next_stage_status: AWAITS_PLAN_EXACT_SHA_ORDINARY_CI_PRODUCT_CODE_AUTHORIZED_FALSE
+current_task_status: IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI
+current_task_completed_stage: P8_05_AUDIT_PLAN_CI_PASS_CHECKPOINT_1_IMPLEMENTED
+current_task_next_stage: P8_05_CHECKPOINT_2_PROJECT_FIRST_COMMAND_OUTBOX
+current_task_next_stage_status: CLOSED_UNTIL_CHECKPOINT_1_EXACT_SHA_ORDINARY_CI_PASS
 resumed_product_task: P8-05
-resumed_product_task_status: AWAITS_AUDIT_CI
+resumed_product_task_status: CHECKPOINT_1_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY_CI
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -2384,7 +2384,7 @@ p8_04:
 p8_05:
   task: P8-05
   controller_task: P8-05_TOOL_ASSET_EXECUTION
-  status: IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI
+  status: IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI
   phase: 8
   milestone: M7-05
   requirements:
@@ -2398,10 +2398,12 @@ p8_05:
   predecessor_product_checkpoint: ca72deceab4b8e899d0da1207883887c9d30077a
   audit_base_checkpoint: ca72deceab4b8e899d0da1207883887c9d30077a
   audit: PASS_FROZEN
-  product_code_authorized: false
-  product_code_changed: false
-  current_stage: FROZEN_PLAN_EXACT_SHA_ORDINARY_CI
-  next_stage_after_pass: CHECKPOINT_1_PURE_DOMAIN_CONTRACT_METADATA
+  audit_plan_checkpoint: 937c5d72c29ec189f69ea5b2384eef64847698bf
+  audit_plan_ordinary_ci: 32656436943
+  product_code_authorized: true
+  product_code_changed: true
+  current_stage: CHECKPOINT_1_PURE_DOMAIN_CONTRACT_METADATA_AWAITING_EXACT_SHA_ORDINARY_CI
+  next_stage_after_pass: CHECKPOINT_2_PROJECT_FIRST_COMMAND_OUTBOX
   physical_mapping_rule: ONE_PHYSICAL_TOOLING_SET_TO_ZERO_OR_ONE_FORMAL_ERP_ASSET
   operation_rule: CREATE_AND_UPDATE_ARE_OPERATION_SPECIFIC_NOT_GENERIC_CRUD
   ownership_rule: ERP_ASSET_LOCATION_MOVEMENT_MAINTENANCE_AND_VERSION_OWNED_BY_ERPNEXT
@@ -2422,6 +2424,7 @@ p8_05:
     - implementation/evidence/phase-8/p8-00-validation.md
     - implementation/evidence/phase-8/p8-04-validation.md
     - implementation/evidence/phase-8/p8-05-plan.md
+    - implementation/evidence/phase-8/p8-05-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

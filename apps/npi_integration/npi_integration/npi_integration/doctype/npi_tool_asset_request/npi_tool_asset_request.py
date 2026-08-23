@@ -20,6 +20,19 @@ from npi_integration.tool_asset_request.frappe_validation import (
     deny_tool_asset_history_update,
     require_tool_asset_request_write,
 )
+from npi_integration.tool_asset_request.execution_domain import (
+    TOOL_ASSET_EXECUTION_API_VERSION,
+    TOOL_ASSET_EXECUTION_OPERATIONS,
+    TOOL_ASSET_EXECUTION_SCHEMA_VERSION,
+    ToolAssetExecutionContractError,
+    canonical_hash,
+    tool_asset_execution_request_from_mapping,
+)
+from npi_integration.tool_asset_request.execution_frappe_validation import (
+    deny_tool_asset_execution_history_delete,
+    deny_tool_asset_execution_history_update,
+    require_tool_asset_execution_request_write,
+)
 
 
 class NPIToolAssetRequest(Document):
@@ -30,14 +43,35 @@ class NPIToolAssetRequest(Document):
         self.name = self.global_id
 
     def before_insert(self) -> None:
-        require_tool_asset_request_write()
+        if self._is_execution_v2():
+            require_tool_asset_execution_request_write()
+        else:
+            require_tool_asset_request_write()
 
     def before_save(self) -> None:
+        if self._is_execution_v2():
+            require_tool_asset_execution_request_write()
+            if self.get_doc_before_save() is not None:
+                deny_tool_asset_execution_history_update()
+            return
         require_tool_asset_request_write()
         if self.get_doc_before_save() is not None:
             deny_tool_asset_history_update()
 
     def before_validate(self) -> None:
+        if self._is_execution_v2():
+            for fieldname, label in (
+                ("global_id", _("Global ID")),
+                ("project_global_id", _("Project Global ID")),
+                ("tooling_master_global_id", _("Tooling Master Global ID")),
+                ("tooling_set_global_id", _("Tooling Set Global ID")),
+                ("tooling_revision_global_id", _("Tooling Revision Global ID")),
+                ("acceptance_revision_global_id", _("Acceptance Evidence Revision Global ID")),
+                ("request_id", _("Request ID")),
+            ):
+                setattr(self, fieldname, canonical_uuid(getattr(self, fieldname), label))
+            self.tenant_id = tenant_text(self.tenant_id)
+            return
         for fieldname, label in (
             ("global_id", _("Global ID")),
             ("project_global_id", _("Project Global ID")),
@@ -51,6 +85,9 @@ class NPIToolAssetRequest(Document):
         self.tenant_id = tenant_text(self.tenant_id)
 
     def validate(self) -> None:
+        if self._is_execution_v2():
+            self._validate_execution_v2()
+            return
         if self.get_doc_before_save() is not None:
             deny_tool_asset_history_update()
         supplied = json_object(self.request_snapshot, _("Tool Asset Request Snapshot"))
@@ -125,7 +162,71 @@ class NPIToolAssetRequest(Document):
         self.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
 
     def on_trash(self) -> None:
-        deny_tool_asset_history_delete(self)
+        if self._is_execution_v2():
+            deny_tool_asset_execution_history_delete()
+        else:
+            deny_tool_asset_history_delete(self)
+
+    def _is_execution_v2(self) -> bool:
+        return int(getattr(self, "schema_version", 0) or 0) == TOOL_ASSET_EXECUTION_SCHEMA_VERSION or getattr(self, "operation", None) in TOOL_ASSET_EXECUTION_OPERATIONS
+
+    def _validate_execution_v2(self) -> None:
+        if self.get_doc_before_save() is not None:
+            deny_tool_asset_execution_history_update()
+        if int(self.schema_version or 0) != TOOL_ASSET_EXECUTION_SCHEMA_VERSION or self.api_version != TOOL_ASSET_EXECUTION_API_VERSION or self.operation not in TOOL_ASSET_EXECUTION_OPERATIONS:
+            frappe.throw(_("The Tool Asset execution request version or operation is invalid."), frappe.ValidationError)
+        source = json_object(self.source_snapshot, _("Exact Tool Asset Source Snapshot"))
+        approval = json_object(self.approval_snapshot, _("Tool Asset Business Approval Snapshot"))
+        expectation = json_object(self.mapping_expectation_snapshot, _("Tool Asset Mapping Expectation Snapshot"))
+        request = json_object(self.request_snapshot, _("Tool Asset Request Snapshot"))
+        try:
+            rebuilt = tool_asset_execution_request_from_mapping(request)
+        except ToolAssetExecutionContractError:
+            frappe.throw(_("Tool Asset execution request fields do not match the exact snapshot."), frappe.ValidationError)
+        if rebuilt.canonical_mapping() != request:
+            frappe.throw(_("Tool Asset execution request fields do not match the exact snapshot."), frappe.ValidationError)
+        for supplied, expected, label in (
+            (self.source_hash, canonical_hash(source), _("Tool Asset Source Hash")),
+            (self.approval_hash, canonical_hash(approval), _("Tool Asset Business Approval Hash")),
+            (self.mapping_expectation_hash, canonical_hash(expectation), _("Tool Asset Mapping Expectation Hash")),
+            (self.payload_hash, request.get("payloadHash"), _("Tool Asset Request Payload Hash")),
+        ):
+            if lowercase_sha256(supplied, label) != expected:
+                frappe.throw(_("{field} does not match.").format(field=label), frappe.ValidationError)
+        exact = {
+            "schemaVersion": TOOL_ASSET_EXECUTION_SCHEMA_VERSION,
+            "apiVersion": TOOL_ASSET_EXECUTION_API_VERSION,
+            "globalId": self.global_id,
+            "operation": self.operation,
+            "tenantId": self.tenant_id,
+            "projectGlobalId": self.project_global_id,
+            "state": self.execution_state,
+            "actorUserId": self.actor_user_id,
+            "requestId": self.request_id,
+            "traceId": self.trace_id,
+            "idempotencyKeyHash": self.idempotency_key_hash,
+            "payloadHash": self.payload_hash,
+            "optimisticVersion": int(self.optimistic_version or 0),
+        }
+        if any(request.get(name) != value for name, value in exact.items()) or request.get("source") != source or request.get("approval") != approval or request.get("mappingExpectation") != expectation:
+            frappe.throw(_("Tool Asset execution request fields do not match the exact snapshot."), frappe.ValidationError)
+        if source.get("sourceStreamKeyHash") != self.source_stream_key_hash or source.get("sourceHash") != self.source_hash or source.get("toolingSetGlobalId") != self.tooling_set_global_id:
+            frappe.throw(_("Tool Asset execution source fields do not match the exact physical Set."), frappe.ValidationError)
+        if expectation.get("operation") != self.operation or expectation.get("sourceStreamKeyHash") != self.source_stream_key_hash:
+            frappe.throw(_("Tool Asset mapping expectation does not match the exact operation."), frappe.ValidationError)
+        profile = request.get("profile")
+        if not isinstance(profile, dict) or (
+            profile.get("profileId"), profile.get("profileVersion"), profile.get("targetMode"), profile.get("environmentCode"), profile.get("projectionPolicyId"), profile.get("projectionPolicyVersion"), profile.get("projectionPolicyHash"), profile.get("snapshotHash")
+        ) != (
+            self.profile_id, int(self.profile_version or 0), self.execution_target_mode, self.environment_code, self.projection_policy_id, int(self.projection_policy_version or 0), self.projection_policy_hash, self.profile_snapshot_hash
+        ):
+            frappe.throw(_("Tool Asset execution profile fields do not match the exact snapshot."), frappe.ValidationError)
+        if self.execution_target_mode == "mock" and (bool(self.dispatch_allowed) or self.outbox_event_id or self.result_global_id or self.execution_state != "validated_mock"):
+            frappe.throw(_("Mock Tool Asset execution must remain undispatched and non-authoritative."), frappe.ValidationError)
+        self.source_snapshot = canonical_json(source)
+        self.approval_snapshot = canonical_json(approval)
+        self.mapping_expectation_snapshot = canonical_json(expectation)
+        self.request_snapshot = canonical_json(request)
 
 
 def _require_exact_input(value) -> None:

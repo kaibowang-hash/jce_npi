@@ -42,6 +42,18 @@ from npi_integration.mbom_publish.frappe_validation import (
     deny_outbox_operation_conversion,
     require_mbom_outbox_write,
 )
+from npi_integration.tool_asset_request.execution_domain import (
+    TOOL_ASSET_EXECUTION_API_VERSION,
+    TOOL_ASSET_EXECUTION_OPERATIONS,
+    TOOL_ASSET_OUTBOX_SCHEMA_VERSION,
+    TOOL_ASSET_REQUEST_EVENT_TYPE,
+)
+from npi_integration.tool_asset_request.execution_frappe_validation import (
+    deny_tool_asset_execution_history_delete,
+    deny_tool_asset_execution_history_update,
+    deny_tool_asset_outbox_conversion,
+    require_tool_asset_execution_outbox_write,
+)
 
 
 _ITEM_STATES = {
@@ -87,6 +99,17 @@ _MBOM_TERMINAL_STATES = frozenset(
         "mapping_conflict",
     }
 )
+_TOOL_ASSET_STATES = {
+    "pending": frozenset({"processing", "failed_final"}),
+    "processing": frozenset({"pending", "partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain", "mapping_conflict"}),
+    "partially_succeeded": frozenset(),
+    "succeeded": frozenset(),
+    "failed_retryable": frozenset(),
+    "failed_final": frozenset(),
+    "uncertain": frozenset(),
+    "mapping_conflict": frozenset(),
+}
+_TOOL_ASSET_TERMINAL_STATES = frozenset({"partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain", "mapping_conflict"})
 _V1_FIELDS = (
     "schema_version",
     "operation",
@@ -152,23 +175,44 @@ _IMMUTABLE_V2_FIELDS = (
     "payload",
     *_V2_FIELDS,
 )
+_V3_FIELDS = (
+    "schema_version", "operation", "tenant_id", "project_global_id",
+    "tool_asset_request_global_id", "tooling_set_global_id", "profile_id",
+    "profile_version", "profile_snapshot_hash", "source_stream_key_hash",
+    "source_hash", "tool_asset_mapping_expectation_hash", "actor_user_id",
+    "service_actor_user_id", "request_id", "idempotency_key_hash",
+    "target_idempotency_key_hash", "semantic_effect_hash", "event_snapshot_hash",
+)
+_IMMUTABLE_V3_FIELDS = (
+    "event_id", "event_type", "global_id", "object_version", "trace_id",
+    "payload_hash", "payload", *_V3_FIELDS,
+)
 
 
 class NPIOutboxMessage(Document):
-    """Durable support projection with isolated Item-v1 and MBOM-v2 branches."""
+    """Durable support projection with isolated Item-v1, MBOM-v2 and Tool-Asset-v3 branches."""
 
     def autoname(self) -> None:
         self.event_id = canonical_uuid(self.event_id, _("Event ID"))
         self.name = self.event_id
 
     def before_insert(self) -> None:
-        if self._is_mbom_v2():
+        if self._is_tool_asset_v3():
+            require_tool_asset_execution_outbox_write()
+        elif self._is_mbom_v2():
             require_mbom_outbox_write()
         elif self._is_item_v1():
             require_item_outbox_write()
 
     def before_save(self) -> None:
         previous = self.get_doc_before_save()
+        if previous is not None and self._was_tool_asset_v3(previous) != self._is_tool_asset_v3() and (self._was_tool_asset_v3(previous) or self._is_tool_asset_v3()):
+            deny_tool_asset_outbox_conversion()
+        if self._is_tool_asset_v3() or (previous is not None and self._was_tool_asset_v3(previous)):
+            require_tool_asset_execution_outbox_write()
+            if previous is not None and self._was_tool_asset_v3(previous) and previous.state in _TOOL_ASSET_TERMINAL_STATES:
+                deny_tool_asset_execution_history_update()
+            return
         if previous is not None and (
             (self._was_item_v1(previous) and self._is_mbom_v2())
             or (self._was_mbom_v2(previous) and self._is_item_v1())
@@ -192,6 +236,23 @@ class NPIOutboxMessage(Document):
                 deny_item_history_update()
 
     def before_validate(self) -> None:
+        if self._is_tool_asset_v3():
+            for fieldname, label in (
+                ("event_id", _("Event ID")),
+                ("global_id", _("Global ID")),
+                ("project_global_id", _("Project Global ID")),
+                ("tool_asset_request_global_id", _("Tool Asset Execution Request")),
+                ("tooling_set_global_id", _("Tooling Set")),
+                ("request_id", _("Request ID")),
+            ):
+                setattr(self, fieldname, canonical_uuid(getattr(self, fieldname), label))
+            if self.tool_asset_last_attempt_global_id:
+                self.tool_asset_last_attempt_global_id = canonical_uuid(self.tool_asset_last_attempt_global_id, _("Last Tool Asset Attempt"))
+            if self.tool_asset_result_global_id:
+                self.tool_asset_result_global_id = canonical_uuid(self.tool_asset_result_global_id, _("Tool Asset Result"))
+            if self.claim_token:
+                self.claim_token = canonical_uuid(self.claim_token, _("Tool Asset Outbox Claim Token"))
+            return
         if self._is_mbom_v2():
             for fieldname, label in (
                 ("event_id", _("Event ID")),
@@ -248,6 +309,11 @@ class NPIOutboxMessage(Document):
 
     def validate(self) -> None:
         previous = self.get_doc_before_save()
+        if self._is_tool_asset_v3():
+            self._validate_tool_asset_v3(previous)
+            return
+        if previous is not None and self._was_tool_asset_v3(previous):
+            deny_tool_asset_outbox_conversion()
         if self._is_mbom_v2():
             self._validate_mbom_v2(previous)
             return
@@ -375,7 +441,9 @@ class NPIOutboxMessage(Document):
         self._validate_state_shape()
 
     def on_trash(self) -> None:
-        if self._is_mbom_v2():
+        if self._is_tool_asset_v3():
+            deny_tool_asset_execution_history_delete()
+        elif self._is_mbom_v2():
             deny_mbom_history_delete()
         else:
             deny_item_history_delete()
@@ -388,6 +456,9 @@ class NPIOutboxMessage(Document):
             int(self.schema_version or 0) == MBOM_PUBLISH_SCHEMA_VERSION
             or self.event_type == MBOM_REQUEST_EVENT_TYPE
         )
+
+    def _is_tool_asset_v3(self) -> bool:
+        return int(self.schema_version or 0) == TOOL_ASSET_OUTBOX_SCHEMA_VERSION or self.event_type == TOOL_ASSET_REQUEST_EVENT_TYPE
 
     @staticmethod
     def _was_item_v1(document: object) -> bool:
@@ -402,6 +473,101 @@ class NPIOutboxMessage(Document):
             == MBOM_PUBLISH_SCHEMA_VERSION
             or getattr(document, "event_type", None) == MBOM_REQUEST_EVENT_TYPE
         )
+
+    @staticmethod
+    def _was_tool_asset_v3(document: object) -> bool:
+        return int(getattr(document, "schema_version", 0) or 0) == TOOL_ASSET_OUTBOX_SCHEMA_VERSION or getattr(document, "event_type", None) == TOOL_ASSET_REQUEST_EVENT_TYPE
+
+    def _validate_tool_asset_v3(self, previous: object | None) -> None:
+        if previous is not None:
+            if not self._was_tool_asset_v3(previous):
+                deny_tool_asset_outbox_conversion()
+            if getattr(previous, "state", None) in _TOOL_ASSET_TERMINAL_STATES:
+                deny_tool_asset_execution_history_update()
+            assert_immutable_fields(self, previous, _IMMUTABLE_V3_FIELDS)
+            validate_one_way_transition(previous.state, self.state, allowed=_TOOL_ASSET_STATES, label=_("Tool Asset Outbox Message"))
+            if int(self.attempt_count or 0) < int(previous.attempt_count or 0):
+                frappe.throw(_("Tool Asset Outbox attempt count cannot decrease."), frappe.ValidationError)
+            if bool(previous.adapter_boundary_crossed) and not bool(self.adapter_boundary_crossed):
+                frappe.throw(_("The adapter boundary cannot be cleared after it is crossed."), frappe.ValidationError)
+        if int(self.schema_version or 0) != TOOL_ASSET_OUTBOX_SCHEMA_VERSION or self.event_type != TOOL_ASSET_REQUEST_EVENT_TYPE or self.operation not in TOOL_ASSET_EXECUTION_OPERATIONS or positive_integer(self.object_version, _("Object Version")) != 1:
+            frappe.throw(_("The Tool Asset Outbox envelope version or operation is invalid."), frappe.ValidationError)
+        self.tenant_id = tenant_text(self.tenant_id)
+        self.trace_id = required_text(self.trace_id, _("Trace ID"), 128)
+        self.actor_user_id = actor_text(self.actor_user_id, _("Actor User ID"))
+        self.service_actor_user_id = actor_text(self.service_actor_user_id, _("Service Actor User ID"))
+        self.profile_id = required_text(self.profile_id, _("Tool Asset Execution Profile ID"), 128)
+        self.profile_version = positive_integer(self.profile_version, _("Tool Asset Execution Profile Version"))
+        for fieldname, label in (
+            ("profile_snapshot_hash", _("Tool Asset Execution Profile Snapshot Hash")),
+            ("source_stream_key_hash", _("Tool Asset Source Stream Key Hash")),
+            ("source_hash", _("Tool Asset Source Hash")),
+            ("tool_asset_mapping_expectation_hash", _("Tool Asset Mapping Expectation Hash")),
+            ("idempotency_key_hash", _("Idempotency Key Hash")),
+            ("target_idempotency_key_hash", _("Target Idempotency Key Hash")),
+            ("semantic_effect_hash", _("Semantic Target Effect Hash")),
+            ("payload_hash", _("Payload Hash")),
+        ):
+            setattr(self, fieldname, lowercase_sha256(getattr(self, fieldname), label))
+        payload = json_object(self.payload, _("Payload"))
+        if canonical_hash(payload) != self.payload_hash:
+            frappe.throw(_("The Tool Asset Outbox payload hash does not match its exact fields."), frappe.ValidationError)
+        expected_event_hash = canonical_hash({
+            "schemaVersion": TOOL_ASSET_OUTBOX_SCHEMA_VERSION,
+            "apiVersion": TOOL_ASSET_EXECUTION_API_VERSION,
+            "eventId": self.event_id,
+            "eventType": self.event_type,
+            "globalId": self.global_id,
+            "objectVersion": 1,
+            "tenantId": self.tenant_id,
+            "projectGlobalId": self.project_global_id,
+            "toolAssetRequestGlobalId": self.tool_asset_request_global_id,
+            "toolingSetGlobalId": self.tooling_set_global_id,
+            "operation": self.operation,
+            "profileId": self.profile_id,
+            "profileVersion": self.profile_version,
+            "profileSnapshotHash": self.profile_snapshot_hash,
+            "sourceStreamKeyHash": self.source_stream_key_hash,
+            "sourceHash": self.source_hash,
+            "mappingExpectationHash": self.tool_asset_mapping_expectation_hash,
+            "actorUserId": self.actor_user_id,
+            "serviceActorUserId": self.service_actor_user_id,
+            "requestId": self.request_id,
+            "traceId": self.trace_id,
+            "idempotencyKeyHash": self.idempotency_key_hash,
+            "targetIdempotencyKeyHash": self.target_idempotency_key_hash,
+            "semanticEffectHash": self.semantic_effect_hash,
+            "payloadHash": self.payload_hash,
+        })
+        if lowercase_sha256(self.event_snapshot_hash, _("Tool Asset Outbox Event Snapshot Hash")) != expected_event_hash:
+            frappe.throw(_("The Tool Asset Outbox event snapshot hash does not match its fields."), frappe.ValidationError)
+        self.payload = canonical_json(payload)
+        self.attempt_count = nonnegative_integer(self.attempt_count or 0, _("Attempt Count"))
+        claim_values = (self.claim_token, self.claimed_at, self.lease_expires_at)
+        if any(claim_values) != all(claim_values):
+            frappe.throw(_("Tool Asset Outbox claim fields must be present together."), frappe.ValidationError)
+        if self.claimed_at:
+            claimed_at = utc_datetime_text(self.claimed_at, _("Claimed At"))
+            expires_at = utc_datetime_text(self.lease_expires_at, _("Lease Expires At"))
+            if expires_at <= claimed_at:
+                frappe.throw(_("Tool Asset Outbox lease expiry must follow claim time."), frappe.ValidationError)
+            self.claimed_at = frappe_utc_datetime_text(claimed_at, _("Claimed At"))
+            self.lease_expires_at = frappe_utc_datetime_text(expires_at, _("Lease Expires At"))
+        terminal = self.state in _TOOL_ASSET_TERMINAL_STATES
+        if self.state not in _TOOL_ASSET_STATES:
+            frappe.throw(_("The Tool Asset Outbox state shape is invalid."), frappe.ValidationError)
+        if self.state == "pending" and any(claim_values):
+            frappe.throw(_("A pending Tool Asset Outbox message cannot retain a live claim."), frappe.ValidationError)
+        if self.state == "pending" and self.adapter_boundary_crossed:
+            frappe.throw(_("A Tool Asset Outbox message cannot return to pending after the adapter boundary."), frappe.ValidationError)
+        if self.state == "processing" and not all(claim_values):
+            frappe.throw(_("A processing Tool Asset Outbox message requires an exact claim."), frappe.ValidationError)
+        if terminal != bool(self.tool_asset_result_global_id):
+            frappe.throw(_("Tool Asset Outbox terminal state and result reference must agree."), frappe.ValidationError)
+        if terminal and not all(claim_values):
+            frappe.throw(_("Terminal Tool Asset Outbox truth requires complete claim and result history."), frappe.ValidationError)
+        if self.state == "uncertain" and not self.adapter_boundary_crossed:
+            frappe.throw(_("An uncertain Tool Asset Outbox message requires a crossed adapter boundary."), frappe.ValidationError)
 
     def _validate_mbom_v2(self, previous: object | None) -> None:
         if previous is not None:

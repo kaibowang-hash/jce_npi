@@ -993,6 +993,54 @@ objects:
       response_and_seal: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [NPI_ONE_TOOL_ASSET_REQUEST_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
       raw_idempotency_key: {owner: REQUEST_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
 
+  ToolAssetExecutionRequest:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND
+    erp_view: execution_intent_only
+    fields:
+      exact_project_master_physical_set_binding_revision_and_acceptance_source: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      business_approval_reference: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: REFERENCE_ONLY, conflict: UNAVAILABLE_UNTIL_EXPLICITLY_RESOLVED}
+      create_unmapped_or_update_exact_mapping_expectation: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_EXPECTATION}
+      profile_actor_trace_idempotency_and_state: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY_AND_ONE_WAY_TRANSITION}
+      formal_asset_identity_version_lifecycle_location_maintenance_repair_and_spares: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  ToolAssetExecutionOutboxMessage:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: command_envelope_only
+    fields:
+      immutable_schema_version_3_operation_request_profile_source_mapping_and_actor_envelope: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_SNAPSHOT}
+      claim_lease_attempt_count_and_safe_disposition: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE], direction: NONE, conflict: LEASE_AND_ONE_WAY_TRANSITION}
+      raw_credentials_request_headers_and_exception_text: {owner: TRANSIENT_TRANSPORT_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
+  ToolAssetExecutionAttempt:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: none
+    fields:
+      immutable_request_claim_operation_source_mapping_profile_and_target_idempotency: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_IDENTITY}
+      adapter_boundary_transport_hash_fault_and_reconciliation_truth: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: ONE_WAY_SEAL}
+
+  ToolAssetExecutionResult:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: observed_result_only
+    fields:
+      request_event_attempt_source_mapping_and_response_binding: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      aggregate_and_field_authority_fault_partial_and_uncertain_truth: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY}
+      formal_asset_id_and_target_version: {owner: ERPNEXT, editable_in: [FUTURE_APPROVED_TOOL_ASSET_SANDBOX_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_COMPLETE_RESULT_ONLY}
+
+  ToolAssetMappingObservation:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: read_only_mapping_observation
+    fields:
+      physical_set_request_attempt_result_and_previous_mapping_binding: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      authority_disposition_response_and_observed_mapping_hash: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY_OBSERVATION}
+
+  ToolAssetMappingHead:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: read_only_mapping_pointer
+    fields:
+      project_physical_set_and_source_stream_identity: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_authoritative_observation_formal_asset_target_version_and_mapping_version: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE], direction: ERPNEXT_TO_NPI, conflict: COMPARE_AND_SET}
+      partial_uncertain_mock_and_synthetic_results: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_ADVANCE_MAPPING}
+
   ToolAssetProjection:
     owner_system: ERPNEXT
     npi_view: read_only

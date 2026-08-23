@@ -4544,3 +4544,28 @@ repeat or rewrite it merely to restore context. See
   P8-08/P8-09 and generic P8-07 operations remain held. There is no global
   Hard Blocker. Controller marker:
   `P8-05 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI`.
+
+## 2026-08-24 P8-05 audit-plan CI PASS; checkpoint 1 awaits product CI
+
+- Exact frozen-plan/task-manifest SHA
+  `937c5d72c29ec189f69ea5b2384eef64847698bf` passes ordinary CI
+  `32656436943`: secret `97235796099`, visual `97235796223`, frontend
+  `97235796241` and repository `97235796253` pass; controlled lanes correctly
+  skip because the plan transition activates no runtime behavior.
+- Standing continuous-delivery authority activates only checkpoint 1. The
+  candidate adds pure separate create/update v2 source, approval, mapping,
+  profile, state, fault, result and CAS domains; closed default-disabled
+  profile configuration; additive event/OpenAPI/ownership contracts; isolated
+  shared Outbox schema-3 and guarded Tool Asset support metadata; direct
+  `zh`/`zh-TW` translations and focused tests.
+- No route, persistent business row, command API, worker, adapter, network,
+  UI, formal Asset mapping or target activation is introduced. P6 combined v1
+  Mock history, P8-01 read-only Asset projection and Item/MBOM Outbox branches
+  remain unchanged.
+- Actual ERPNext Asset method/field/Company/Category/Location/naming/
+  depreciation/maintenance/approval facts and authenticated Sandbox remain
+  scoped holds. Production ERPNext/JCE, P8-06, P8-08/P8-09 and generic P8-07
+  operations remain prohibited.
+- Checkpoint 2 remains closed until the exact checkpoint 1 product SHA passes
+  ordinary CI. Controller marker:
+  `P8-05 audit-plan CI PASS; checkpoint 1 awaits exact-SHA ordinary CI`.

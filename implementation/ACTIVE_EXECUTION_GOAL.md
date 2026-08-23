@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-23T17:45:53Z`
+Updated: `2026-08-23T18:35:39Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-05`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,9 +18,9 @@ Updated: `2026-08-23T17:45:53Z`
   `32651903846` (`PASS — LEVEL 3` at `ca72deceab4b8e899d0da1207883887c9d30077a`;
   repository, frontend, secret, `126/126` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32654431690` (`PASS` at
-  `d54b0d71e63fd8a02b294135b5dd879aac16946c`; P8-04 closeout and P8-05
-  audit-only activation)
+  `32656436943` (`PASS` at
+  `937c5d72c29ec189f69ea5b2384eef64847698bf`; P8-05 frozen-plan transition,
+  checkpoint 1 authorized)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -118,13 +118,13 @@ Updated: `2026-08-23T17:45:53Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-05 — Tool Asset execution`
-  (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P8-05` (`ACTIVE_AUDIT_ONLY`)
+  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI`)
+- Resumed product task: `P8-05` (`CHECKPOINT_1_IMPLEMENTED`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-05 AUDIT`)
+  (`IN_PROGRESS — P8-05 CHECKPOINT 1`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -284,16 +284,15 @@ unchanged Level 3 `32651903846`; all six jobs pass and runtime artifact
 `sha256:b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`.
 Complete evidence is `implementation/evidence/phase-8/p8-04-validation.md`.
 
-The only active atomic scope is the P8-05 requirement/domain/existing-
-capability/security audit for `INT-005` and `FR-TL-011..016`. It must freeze
-one physical Tooling Set to zero-or-one formal ERP Asset mapping, distinct
-operation-specific create/update authority, immutable Tooling source and
-expected target version, partial/uncertain truth, read-only observed Asset/
-location/maintenance data, permission, migration, rollback, tests and Level 3
-impact in `implementation/evidence/phase-8/p8-05-plan.md`. NPI acceptance
-evidence is not ERP approval or Asset success. No P8-05 product code is
-authorized before the frozen-plan transition ordinary CI. Production
-ERPNext/JCE, generic P8-07 operations and P8-06 through P8-09 remain inactive.
+Frozen-plan SHA `937c5d72` passes ordinary CI `32656436943`. The only active
+atomic scope is checkpoint 1 exact-SHA ordinary CI for the already implemented
+behavior-free Tool Asset v2 domains, contracts, default-disabled config,
+guarded shared Outbox schema-3/support metadata, direct translations and
+tests. It adds no route, business-row writer, command API, worker, adapter,
+network, UI or formal mapping. Checkpoint 2 remains closed until that CI passes.
+NPI acceptance evidence is not business/ERP approval or Asset success;
+production ERPNext/JCE, generic P8-07 operations and P8-06/P8-08/P8-09 remain
+inactive.
 There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged

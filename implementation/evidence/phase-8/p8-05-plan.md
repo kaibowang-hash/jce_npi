@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-24`
 
-Status: `FROZEN — CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI`
+Status: `FROZEN — CHECKPOINT 1 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
 
 Audit base and retained P8-04 product checkpoint:
 `ca72deceab4b8e899d0da1207883887c9d30077a`
@@ -15,6 +15,11 @@ P8-04 closeout and P8-05 audit checkpoint:
 `d54b0d71e63fd8a02b294135b5dd879aac16946c`
 
 P8-04 closeout/P8-05 audit ordinary CI: `32654431690` (`PASS`)
+
+P8-05 frozen-plan transition checkpoint:
+`937c5d72c29ec189f69ea5b2384eef64847698bf`
+
+P8-05 frozen-plan ordinary CI: `32656436943` (`PASS`)
 
 Primary requirements:
 
@@ -383,7 +388,7 @@ success, and no such profile/evidence is installed by P8-05.
 
 - Add separate create/update operation, exact source/approval/mapping/profile,
   request/state/fault/result/field-result/CAS domains; additive v2 events,
-  OpenAPI and ownership contracts; guarded Tool Asset Outbox v2 branch and
+  OpenAPI and ownership contracts; guarded shared Outbox schema-3 Tool Asset branch and
   request/idempotency/stream/attempt/result/field-result/mapping metadata;
   direct translations.
 - Retain exact hydration and rejection for every P6 v1 combined Mock row.
@@ -524,9 +529,9 @@ reconciliation and rollback evidence before use.
 - P8-07 owns generic operations/DLQ/retry/replay/reconciliation and operator
   overrides. P8-06, P8-08/P8-09 and Phase 9 remain inactive.
 
-Standing continuous-delivery authority permits checkpoint 1 only after this
-frozen plan transition passes exact-SHA ordinary CI. Until then
-`product_code_authorized=false`, and only controller/trace/evidence changes are
-allowed. Checkpoints 2–4 each require the previous exact-SHA ordinary CI. P8-05
-remains in progress until final unchanged Level 3 passes; no checkpoint
-authorizes production ERPNext/JCE contact.
+Frozen-plan SHA `937c5d72` passes exact-SHA ordinary CI `32656436943`, so
+standing continuous-delivery authority permits checkpoint 1 only. Its
+behavior-free implementation now awaits its own exact-SHA ordinary CI.
+Checkpoints 2–4 each require the previous exact-SHA ordinary CI. P8-05 remains
+in progress until final unchanged Level 3 passes; no checkpoint authorizes
+production ERPNext/JCE contact.

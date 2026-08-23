@@ -8181,3 +8181,104 @@ Authenticated authoritative Sandbox mapping,已驗證的權威沙箱映射
 Formal BOM ID,正式 BOM 識別碼
 Synthetic evidence; no formal identity,合成證據；無正式識別
 No authoritative MBOM mapping,無權威MBOM映射
+Active Tool Asset Execution Request,目前作用中的模具資產執行請求
+Active Tool Asset Execution State,目前作用中的模具資產執行狀態
+Current Tool Asset Mapping Observation,目前模具資產映射觀察
+Current Tool Asset Mapping Observation Hash,目前模具資產映射觀察雜湊
+Exact Tool Asset Adapter Request Snapshot,精確模具資產介接器請求快照
+Exact Tool Asset Source Snapshot,精確模具資產來源快照
+Last Tool Asset Attempt,上次模具資產嘗試
+Last Tool Asset Execution Request,上次模具資產執行請求
+Last Tool Asset Execution State,上次模具資產執行狀態
+Mock Tool Asset execution must remain undispatched and non-authoritative.,模擬模具資產執行必須保持未派送且非權威。
+NPI Tool Asset Attempt,NPI 模具資產嘗試
+NPI Tool Asset Field Result,NPI 模具資產欄位結果
+NPI Tool Asset Mapping Head,NPI 模具資產映射頭
+NPI Tool Asset Mapping Observation,NPI 模具資產映射觀察
+NPI Tool Asset Result,NPI 模具資產結果
+NPI Tool Asset Stream Guard,NPI 模具資產串流守衛
+Observed Formal Asset ID,觀測到的正式資產識別碼
+"Outbox messages cannot be converted between Item, MBOM and Tool Asset execution.",寄件匣訊息不能在物料、MBOM 與模具資產執行之間轉換。
+Previous Formal Asset ID,先前正式資產識別碼
+Previous Target Version,先前目標版本
+Previous Tool Asset Mapping Version,先前模具資產映射版本
+Previous Tool Asset Observation Hash,先前模具資產觀測雜湊
+Select the operation-specific Tool Asset execution command.,請選擇操作專用的模具資產執行命令。
+Terminal Tool Asset Outbox truth requires complete claim and result history.,終態模具資產寄件匣真值需要完整的認領與結果歷史。
+The Tool Asset Outbox envelope version or operation is invalid.,模具資產寄件匣信封版本或操作無效。
+The Tool Asset Outbox event snapshot hash does not match its fields.,模具資產寄件匣事件快照雜湊與其欄位不相符。
+The Tool Asset Outbox payload hash does not match its exact fields.,模具資產寄件匣承載內容雜湊與其精確欄位不相符。
+The Tool Asset Outbox state shape is invalid.,模具資產寄件匣狀態結構無效。
+The Tool Asset execution request version or operation is invalid.,模具資產執行請求版本或操作無效。
+This Tool Asset support record is outside the active execution capability.,此模具資產支援記錄超出作用中執行能力範圍。
+Tool Asset Adapter Request Snapshot Hash,模具資產介接器請求快照雜湊
+Tool Asset Attempt,模具資產嘗試
+Tool Asset Attempt Hash,模具資產嘗試雜湊
+Tool Asset Attempt Number,模具資產嘗試編號
+Tool Asset Attempt Snapshot,模具資產嘗試快照
+Tool Asset Attempt State,模具資產嘗試狀態
+Tool Asset Business Approval Hash,模具資產業務核准雜湊
+Tool Asset Business Approval Snapshot,模具資產業務核准快照
+Tool Asset Dispatch Allowed,允許模具資產派送
+Tool Asset Environment Code,模具資產環境代碼
+Tool Asset Execution Operation,模具資產執行操作
+Tool Asset Execution Profile ID,模具資產執行設定檔識別碼
+Tool Asset Execution Profile Snapshot Hash,模具資產執行設定檔快照雜湊
+Tool Asset Execution Profile Version,模具資產執行設定檔版本
+Tool Asset Execution Request,模具資產執行請求
+Tool Asset Execution Request State,模具資產執行請求狀態
+Tool Asset Execution Target Mode,模具資產執行目標模式
+Tool Asset Fault Kind,模具資產故障類型
+Tool Asset Field Code,模具資產欄位代碼
+Tool Asset Field Observation Hash,模具資產欄位觀測雜湊
+Tool Asset Field Result Hash,模具資產欄位結果雜湊
+Tool Asset Field Result Set Hash,模具資產欄位結果集雜湊
+Tool Asset Field Result Snapshot,模具資產欄位結果快照
+Tool Asset Field Result State,模具資產欄位結果狀態
+Tool Asset Mapping Disposition,模具資產映射處置
+Tool Asset Mapping Expectation Hash,模具資產映射預期雜湊
+Tool Asset Mapping Expectation Snapshot,模具資產映射預期快照
+Tool Asset Mapping Head Hash,模具資產映射頭雜湊
+Tool Asset Mapping Head Snapshot,模具資產映射頭快照
+Tool Asset Mapping Observation Hash,模具資產映射觀察雜湊
+Tool Asset Mapping Observation Snapshot,模具資產映射觀察快照
+Tool Asset Mapping Version,模具資產映射版本
+Tool Asset Outbox Claim Token,模具資產寄件匣認領權杖
+Tool Asset Outbox Event ID,模具資產寄件匣事件識別碼
+Tool Asset Outbox Event Snapshot Hash,模具資產寄件匣事件快照雜湊
+Tool Asset Outbox Message,模具資產寄件匣訊息
+Tool Asset Outbox attempt count cannot decrease.,模具資產寄件匣嘗試次數不能減少。
+Tool Asset Projection Policy Hash,模具資產投影原則雜湊
+Tool Asset Projection Policy ID,模具資產投影原則識別碼
+Tool Asset Projection Policy Version,模具資產投影原則版本
+Tool Asset Result,模具資產結果
+Tool Asset Result Authority,模具資產結果權威性
+Tool Asset Result Hash,模具資產結果雜湊
+Tool Asset Result Snapshot,模具資產結果快照
+Tool Asset Result State,模具資產結果狀態
+Tool Asset Source Hash,模具資產來源雜湊
+Tool Asset Source Stream Key Hash,模具資產來源串流鍵雜湊
+Tool Asset execution Outbox messages can only be changed by the controlled execution service.,模具資產執行寄件匣訊息只能由受控執行服務變更。
+Tool Asset execution attempts can only be changed by the controlled execution service.,模具資產執行嘗試只能由受控執行服務變更。
+Tool Asset execution history cannot be changed.,模具資產執行歷史不可變更。
+Tool Asset execution history cannot be deleted.,模具資產執行歷史不可刪除。
+Tool Asset execution idempotency records can only be changed through an authorized NPI command.,模具資產執行冪等記錄只能透過已授權的 NPI 命令變更。
+Tool Asset execution profile fields do not match the exact snapshot.,模具資產執行設定檔欄位與精確快照不相符。
+Tool Asset execution request fields do not match the exact snapshot.,模具資產執行請求欄位與精確快照不相符。
+Tool Asset execution requests can only be changed through an authorized NPI command.,模具資產執行請求只能透過已授權的 NPI 命令變更。
+Tool Asset execution results can only be appended by the controlled execution service.,模具資產執行結果只能由受控執行服務附加。
+Tool Asset execution source fields do not match the exact physical Set.,模具資產執行來源欄位與精確實體模具套不相符。
+Tool Asset execution stream guards can only be changed by the controlled execution service.,模具資產執行串流守衛只能由受控執行服務變更。
+Tool Asset mapping expectation does not match the exact operation.,模具資產映射預期與精確操作不相符。
+Tool Asset mapping records can only be changed by the controlled execution service.,模具資產映射記錄只能由受控執行服務變更。
+advance,推進
+expectation_conflict,預期衝突
+target_identity_conflict,目標身分衝突
+result_not_complete,結果不完整
+Tool Asset Outbox claim fields must be present together.,模具資產寄件匣認領欄位必須同時存在。
+Tool Asset Outbox lease expiry must follow claim time.,模具資產寄件匣租約到期時間必須晚於認領時間。
+A pending Tool Asset Outbox message cannot retain a live claim.,待處理的模具資產寄件匣訊息不能保留作用中認領。
+A Tool Asset Outbox message cannot return to pending after the adapter boundary.,模具資產寄件匣訊息越過介接器邊界後不能返回待處理狀態。
+A processing Tool Asset Outbox message requires an exact claim.,處理中的模具資產寄件匣訊息需要精確認領。
+Tool Asset Outbox terminal state and result reference must agree.,模具資產寄件匣終態必須與結果引用一致。
+An uncertain Tool Asset Outbox message requires a crossed adapter boundary.,不確定的模具資產寄件匣訊息必須已越過介接器邊界。

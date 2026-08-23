@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-23T17:45:53Z`
+Updated: `2026-08-23T18:35:39Z`
 
 ## Active hard blockers
 
@@ -14,16 +14,17 @@ Runtime artifact `9496708366` has digest
 `sha256:b681b8fc70b8be0bd8887f323d5d914139e61635eca0e2b28d32b32d87170f35`;
 exact topology/mapping expectations, partial/uncertain truth, claim recovery,
 terminal replay, submitted protection, zero formal Mock/synthetic mapping,
-zero production traffic and cleanup pass. The bounded P8-05 Tool Asset audit
-passes and its frozen checkpoint-1 plan awaits exact-SHA ordinary CI. No user
-action, login or frontend operation is required.
+zero production traffic and cleanup pass. P8-05 frozen-plan SHA `937c5d72`
+passes ordinary CI `32656436943`; checkpoint 1 is implemented and awaits its
+own exact-SHA ordinary CI. No user action, login or frontend operation is
+required.
 
 ## Active recovery
 
 None. P8-04 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-05 changes no product behavior until its audit plan and
-transition ordinary CI pass. Production adapters, formal Item/BOM/Asset
+authoritative. P8-05 checkpoint 1 changes no runtime behavior. Production
+adapters, formal Item/BOM/Asset
 mapping from Mock or synthetic proof, Item/MBOM/Asset/quality production
 writes, P8-06 through P8-09 and the P8-07 operations/replay/reconciliation
 surface remain inactive.
@@ -43,19 +44,18 @@ credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-## Current authoritative blocker state — 2026-08-23T17:45:53Z
+## Current authoritative blocker state — 2026-08-23T18:35:39Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-04 exact final SHA `ca72dece` passes ordinary `32651139504` and final
   unchanged Level 3 `32651903846`; the release review reports no P0/P1/P2.
-- P8-05 audit is frozen in `p8-05-plan.md`: one physical Tooling Set maps to
-  zero-or-one Asset; v2 create/update operations and idempotency are separate;
-  acceptance evidence is not business/ERP approval; P8-01 remains the only
-  read-only Asset status/location/maintenance projection owner. Checkpoint 1
-  remains unauthorized until the plan-transition exact-SHA ordinary CI passes.
+- P8-05 audit is frozen in `p8-05-plan.md`, and exact frozen-plan SHA
+  `937c5d72` passes ordinary CI `32656436943`. Checkpoint 1 implements only
+  behavior-free domains/contracts/guarded metadata and awaits exact-SHA
+  ordinary CI; checkpoint 2 remains closed.
 - Missing ERPNext Asset customization, naming/category/location/maintenance/
   service-scope and authenticated Sandbox facts are scoped external holds.
-  NPI acceptance is not ERP approval. No P8-05 product code, default/networked
+  NPI acceptance is not ERP approval. No route, worker, default/networked
   adapter or formal synthetic mapping is authorized; production traffic,
   P8-06 through P8-09 and P8-07 manual operations remain inactive.
 

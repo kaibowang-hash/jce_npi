@@ -21,6 +21,14 @@ from npi_integration.tool_asset_request.frappe_validation import (
     deny_tool_asset_history_delete,
     require_tool_asset_request_write,
 )
+from npi_integration.tool_asset_request.execution_domain import (
+    TOOL_ASSET_EXECUTION_OPERATIONS,
+    TOOL_ASSET_EXECUTION_SCHEMA_VERSION,
+)
+from npi_integration.tool_asset_request.execution_frappe_validation import (
+    deny_tool_asset_execution_history_delete,
+    require_tool_asset_execution_idempotency_write,
+)
 
 
 class NPIToolAssetCommandIdempotency(Document):
@@ -29,10 +37,16 @@ class NPIToolAssetCommandIdempotency(Document):
         self.name = self.global_id
 
     def before_insert(self) -> None:
-        require_tool_asset_request_write()
+        if self._is_execution_v2():
+            require_tool_asset_execution_idempotency_write()
+        else:
+            require_tool_asset_request_write()
 
     def before_save(self) -> None:
-        require_tool_asset_request_write()
+        if self._is_execution_v2():
+            require_tool_asset_execution_idempotency_write()
+        else:
+            require_tool_asset_request_write()
 
     def before_validate(self) -> None:
         self.global_id = canonical_uuid(self.global_id, _("Global ID"))
@@ -43,7 +57,16 @@ class NPIToolAssetCommandIdempotency(Document):
     def validate(self) -> None:
         self.receipt_key = required_text(self.receipt_key, _("Receipt Key"), maximum=255)
         self.actor_user_id = required_text(self.actor_user_id, _("Actor User ID"), maximum=254)
-        if self.operation != TOOL_ASSET_OPERATION:
+        if self._is_execution_v2():
+            if int(self.schema_version or 0) != TOOL_ASSET_EXECUTION_SCHEMA_VERSION or self.operation not in TOOL_ASSET_EXECUTION_OPERATIONS:
+                frappe.throw(_("Select the operation-specific Tool Asset execution command."), frappe.ValidationError)
+            for fieldname, label in (
+                ("source_stream_key_hash", _("Tool Asset Source Stream Key Hash")),
+                ("profile_snapshot_hash", _("Tool Asset Execution Profile Snapshot Hash")),
+                ("mapping_expectation_hash", _("Tool Asset Mapping Expectation Hash")),
+            ):
+                setattr(self, fieldname, lowercase_sha256(getattr(self, fieldname), label))
+        elif self.operation != TOOL_ASSET_OPERATION:
             frappe.throw(_("Select the operation-specific Tool Asset command."), frappe.ValidationError)
         self.idempotency_key_hash = lowercase_sha256(self.idempotency_key_hash, _("Idempotency Key Hash"))
         self.payload_hash = lowercase_sha256(self.payload_hash, _("Tool Asset Request Payload Hash"))
@@ -52,8 +75,9 @@ class NPIToolAssetCommandIdempotency(Document):
         before = self.get_doc_before_save()
         if before is not None:
             immutable = (
-                "global_id", "receipt_key", "tenant_id", "project_global_id", "actor_user_id",
-                "operation", "idempotency_key_hash", "payload_hash",
+                "global_id", "schema_version", "receipt_key", "tenant_id", "project_global_id", "actor_user_id",
+                "operation", "idempotency_key_hash", "payload_hash", "source_stream_key_hash",
+                "profile_snapshot_hash", "mapping_expectation_hash",
             )
             if any(getattr(before, name) != getattr(self, name) for name in immutable) or utc_datetime_text(before.created_at, _("Created At")) != created_at:
                 frappe.throw(_("The Tool Asset command receipt identity cannot be changed."), frappe.PermissionError)
@@ -70,7 +94,7 @@ class NPIToolAssetCommandIdempotency(Document):
                     "tenant_id": self.tenant_id,
                     "project_global_id": self.project_global_id,
                     "actor_user_id": self.actor_user_id,
-                    "operation": TOOL_ASSET_OPERATION,
+                    "operation": self.operation,
                 },
                 _("The sealed Tool Asset request is unavailable."),
                 extra_fields=("payload_hash",),
@@ -85,4 +109,10 @@ class NPIToolAssetCommandIdempotency(Document):
             frappe.throw(_("An unsealed Tool Asset command receipt cannot contain a response."), frappe.ValidationError)
 
     def on_trash(self) -> None:
-        deny_tool_asset_history_delete(self)
+        if self._is_execution_v2():
+            deny_tool_asset_execution_history_delete()
+        else:
+            deny_tool_asset_history_delete(self)
+
+    def _is_execution_v2(self) -> bool:
+        return int(getattr(self, "schema_version", 0) or 0) == TOOL_ASSET_EXECUTION_SCHEMA_VERSION or getattr(self, "operation", None) in TOOL_ASSET_EXECUTION_OPERATIONS

@@ -10,6 +10,7 @@
   "search_fields": "receipt_key,actor_user_id,request_global_id",
   "fields": [
     {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "schema_version", "fieldtype": "Int", "label": "Schema Version", "read_only": 1},
     {"fieldname": "receipt_key", "fieldtype": "Data", "label": "Receipt Key", "reqd": 1, "unique": 1, "read_only": 1},
     {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
     {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
@@ -17,6 +18,9 @@
     {"fieldname": "operation", "fieldtype": "Data", "label": "Tool Asset Operation", "reqd": 1, "read_only": 1},
     {"fieldname": "idempotency_key_hash", "fieldtype": "Data", "label": "Idempotency Key Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "payload_hash", "fieldtype": "Data", "label": "Tool Asset Request Payload Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_stream_key_hash", "fieldtype": "Data", "label": "Tool Asset Source Stream Key Hash", "read_only": 1},
+    {"fieldname": "profile_snapshot_hash", "fieldtype": "Data", "label": "Tool Asset Execution Profile Snapshot Hash", "read_only": 1},
+    {"fieldname": "mapping_expectation_hash", "fieldtype": "Data", "label": "Tool Asset Mapping Expectation Hash", "read_only": 1},
     {"fieldname": "request_global_id", "fieldtype": "Link", "label": "Tool Asset Request Global ID", "options": "NPI Tool Asset Request", "read_only": 1},
     {"fieldname": "response_payload", "fieldtype": "JSON", "label": "Sealed Response Payload", "read_only": 1},
     {"fieldname": "response_hash", "fieldtype": "Data", "label": "Sealed Response Hash", "read_only": 1},

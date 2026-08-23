@@ -39,12 +39,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-06")
         self.assertIn(
-            "P8_05_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_FROZEN_PLAN_EXACT_SHA_ORDINARY_CI_PASSES",
+            "P8_05_FROZEN_PLAN_EXACT_SHA_ORDINARY_CI_32656436943_PASSED",
             value["frozen_invariants"],
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI",
+            "IN_PROGRESS_CHECKPOINT_1_AWAITING_EXACT_SHA_ORDINARY_CI",
         )
         self.assertIn(
             "apps/npi_integration/npi_integration/tool_asset_request/**",
