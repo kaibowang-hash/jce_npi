@@ -1113,3 +1113,32 @@ All historical activations, including the post-command-hash flag, are false;
 only `MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED=True` for this bounded
 subcycle. No API, permission, Schema, ownership, response, write value,
 transaction or Gate contract changes.
+
+The checkpoint exact SHA `252de2d2b23c9befa53cda5094feb3251669cb53`
+passes ordinary run `32648989576`: frontend `97217545696` (450/450),
+governed visual `97217545813` (126/126), repository `97217545840` and secret
+scan `97217545798`. Its sole controlled diagnostic dispatch `32649838147`
+passes preflight `97219594298`; runtime `97219642744` returns exactly
+`P804_PROCESS_SEAL_OUTBOX_SAVE / ValidationError /
+trace-ec7ae150832552358974c4cd2f9d7650`. No exception message, persisted value,
+identifier, body or stack was read or exposed.
+
+The unique first predicate is the MBOM v2 Outbox complete-claim invariant.
+`seal_result` reached the terminal Outbox save after preserving `claim_token`
+and `claimed_at` but clearing only `lease_expires_at`; the controller checks
+the three claim fields together before terminal result consistency, so this
+partial tuple necessarily raises `ValidationError`. Previous processing
+state, immutable fields, adapter boundary, event payload/hash, result Link,
+Select value and write capability are either already proven or have distinct
+exception classes and cannot be this first failure.
+
+The product repair removes only that terminal `lease_expires_at` clear and
+therefore retains the complete historical claim tuple. It does not clear any
+other field or change claim/recovery eligibility, lease acquisition, write
+order, transaction, controller, DocType, API, permission, Schema or ownership
+semantics; terminal Outbox states remain non-claimable and non-recoverable.
+All terminal MBOM v2 states now validate with a complete tuple and still fail
+closed for every partial tuple. The process-validation cycle is now
+`diagnostic 1/1`, `repair 1/1`, `final 0/1`. Its activation is false, the
+response-neutral mechanism remains dormant, and every earlier cycle history
+and counter remains immutable.

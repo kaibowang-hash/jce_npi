@@ -476,7 +476,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(module.MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED)
-        self.assertTrue(module.MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -630,20 +630,26 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             module._active_worker_diagnostic_codes(),
-            post_manifest_stages | process_validation_stages,
+            frozenset(),
         )
         with patch.object(
             module,
             "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
-            False,
+            True,
         ):
-            self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
+            self.assertEqual(
+                module._active_worker_diagnostic_codes(),
+                post_manifest_stages | process_validation_stages,
+            )
         with patch.object(
             module,
             "MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED",
             True,
         ):
-            self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
+            self.assertEqual(
+                module._active_worker_diagnostic_codes(),
+                module._WORKER_NOT_CLAIMED_DIAGNOSTIC_CODES,
+            )
         with patch.object(
             module,
             "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
@@ -1177,6 +1183,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
 
         with patch.dict(
             sys.modules, {"npi_core": package, "npi_core.api": api}
+        ), patch.object(
+            self.module,
+            "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
+            True,
         ), self.assertRaises(RuntimeError) as raised:
             with self.module.worker_downstream_diagnostic_step(
                 "P804_WORKER_PROCESS_OUTBOX",
@@ -1195,6 +1205,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             records.clear()
             with self.subTest(state=state), patch.dict(
                 sys.modules, {"npi_core": package, "npi_core.api": api}
+            ), patch.object(
+                self.module,
+                "MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED",
+                True,
             ), self.assertRaises(RuntimeError) as outer:
                 with self.module.worker_downstream_diagnostic_step(
                     "P804_WORKER_PROCESS_OUTBOX",

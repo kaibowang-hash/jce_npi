@@ -15,10 +15,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "apps/npi_core"), str(ROOT / "apps/npi_integration")]
 
 from npi_integration.mbom_publish.domain import (  # noqa: E402
+    MbomMappingDisposition,
     MbomPublishRequestState,
     MbomTargetMode,
     create_mbom_publish_request,
     synthetic_item_readiness,
+)
+from npi_integration.mbom_publish.adapters import (  # noqa: E402
+    failed_before_mbom_adapter_boundary_result,
 )
 from tests.test_phase8_mbom_publish_adapters import command  # noqa: E402
 from tests.test_phase8_mbom_publish_domain import expectations, profile, source  # noqa: E402
@@ -557,6 +561,113 @@ class Phase8MbomPublishWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(self.saves, [self.outbox])
         self.assertEqual(records[0]["code"], "P804_PROCESS_CLAIM_OUTBOX_SAVE")
         self.assertNotIn("private", str(records))
+
+    def test_real_seal_retains_complete_claim_and_saves_outbox_once_in_order(self):
+        frozen = command()
+        result = failed_before_mbom_adapter_boundary_result(
+            command=frozen,
+            safe_error_code="MBOM_PUBLISH_TEST_BOUNDARY",
+        )
+        self.outbox.doctype = "NPI Outbox Message"
+        self.outbox.claimed_at = NOW - timedelta(minutes=1)
+        self.request.doctype = "NPI MBOM Publish Request"
+        self.attempt.doctype = "NPI MBOM Publish Attempt"
+        self.nodes = [
+            types.SimpleNamespace(
+                doctype="NPI MBOM Publish Node",
+                global_id=str(node.node_global_id),
+                stable_line_key=node.stable_line_key,
+                state="processing",
+                optimistic_version=1,
+            )
+            for node in frozen.nodes
+        ]
+        claim = self.module.ClaimedMbomPublishMessage(
+            self.route.outbox_event_id,
+            self.value.global_id,
+            self.value.source.tenant_id,
+            self.value.source.project_global_id,
+            "trace-p804-worker-repository",
+            UUID(self.outbox.claim_token),
+            self.outbox.lease_expires_at,
+            frozen,
+            self.value.profile,
+            "worker@example.invalid",
+            False,
+            False,
+        )
+        claim_fields = (
+            self.outbox.claim_token,
+            self.outbox.claimed_at,
+            self.outbox.lease_expires_at,
+        )
+        order: list[str] = []
+
+        def get_doc(value):
+            return types.SimpleNamespace(**value)
+
+        original_get_doc = self.module.frappe.get_doc
+        self.addCleanup(setattr, self.module.frappe, "get_doc", original_get_doc)
+        self.module.frappe.get_doc = get_doc
+        self.patch(
+            "_required_current_claim",
+            lambda _claim: (self.outbox, self.request, self.attempt, self.guard),
+        )
+        self.patch("_existing_result", lambda _result_id: None)
+        self.patch("_locked_assembly_nodes", lambda _request: tuple(self.nodes))
+        self.patch("_locked_current_mapping", lambda *_args: (None, None))
+        self.patch(
+            "classify_mapping_observation",
+            lambda **_kwargs: MbomMappingDisposition.RESULT_NOT_SUCCESS,
+        )
+        self.patch("mbom_result_transaction_write", lambda _actor: nullcontext(object()))
+        self.patch(
+            "insert_mbom_support_document",
+            lambda document, **_kwargs: order.append(f"insert:{document.doctype}"),
+        )
+        self.patch(
+            "save_mbom_support_document",
+            lambda document, **_kwargs: order.append(f"save:{document.doctype}"),
+        )
+        self.patch("_record_mapping_observation", lambda **_kwargs: False)
+        self.patch(
+            "_set_guard_terminal",
+            lambda *_args: order.append("save:NPI MBOM Publish Stream Guard"),
+        )
+        self.patch("_append_audit", lambda *_args, **_kwargs: order.append("insert:NPI Audit Event"))
+
+        outcome = self.repository.seal_result(
+            claim,
+            profile=None,
+            result=result,
+            now=NOW,
+        )
+
+        self.assertEqual(outcome.state, MbomPublishRequestState.FAILED_FINAL.value)
+        self.assertEqual(
+            (
+                self.outbox.claim_token,
+                self.outbox.claimed_at,
+                self.outbox.lease_expires_at,
+            ),
+            claim_fields,
+        )
+        self.assertEqual(order.count("save:NPI Outbox Message"), 1)
+        self.assertEqual(
+            order,
+            [
+                "insert:NPI MBOM Publish Result",
+                "insert:NPI MBOM Publish Node Result",
+                "insert:NPI MBOM Publish Node Result",
+                "save:NPI MBOM Publish Node",
+                "save:NPI MBOM Publish Node",
+                "save:NPI MBOM Publish Attempt",
+                "save:NPI MBOM Publish Request",
+                "save:NPI Outbox Message",
+                "save:NPI MBOM Publish Stream Guard",
+                "insert:NPI Audit Event",
+            ],
+        )
 
     def test_result_parent_precedes_node_children_and_mapping_writes(self):
         import ast

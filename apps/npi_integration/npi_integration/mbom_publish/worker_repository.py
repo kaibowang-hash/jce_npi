@@ -631,7 +631,6 @@ class FrappeMbomPublishWorkerRepository:
             outbox.last_error_at = (
                 _database_datetime(observed_at) if result.safe_error_code else None
             )
-            outbox.lease_expires_at = None
             with mbom_process_validation_step("P804_PROCESS_SEAL_OUTBOX_SAVE"):
                 save_mbom_support_document(outbox, capability=capability)
             with mbom_process_validation_step("P804_PROCESS_SEAL_GUARD_SAVE"):

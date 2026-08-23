@@ -608,3 +608,30 @@ transaction behavior are unchanged. All prior Item and MBOM diagnostic flags
 are false; only `MBOM_PROCESS_VALIDATION_DIAGNOSTICS_ENABLED=True` is
 temporarily active. Product worker ordering, write values, API, permission,
 Schema, ownership and Gate behavior are unchanged.
+
+Checkpoint SHA `252de2d2b23c9befa53cda5094feb3251669cb53` passes ordinary
+run `32648989576` with frontend `97217545696` (450/450), visual
+`97217545813` (126/126), repository `97217545840` and secret scan
+`97217545798`. The one controlled dispatch `32649838147` passes preflight
+`97219594298`; runtime `97219642744` yields the sole safe tuple
+`P804_PROCESS_SEAL_OUTBOX_SAVE / ValidationError /
+trace-ec7ae150832552358974c4cd2f9d7650`. No prohibited diagnostic content was
+read or rendered.
+
+The tuple maps to exactly one lexical lifecycle save. Immediately before it,
+terminal sealing retained `claim_token` and `claimed_at` while clearing only
+`lease_expires_at`. The MBOM v2 Outbox controller's first applicable predicate
+requires the claim fields to be either all present or all absent, making this
+partial tuple the unique `ValidationError`; all earlier predicates are proven
+true or use other exception classes, and the later result/state checks are not
+reached.
+
+The repair deletes only that lease clear, preserving the complete historical
+claim tuple through the single terminal Outbox save. It changes no other
+field, write order, claim/recovery eligibility, controller, Schema, API,
+permission, transaction or ownership behavior. Complete claim history passes
+for every terminal MBOM v2 state, while any one-field partial clear remains a
+`ValidationError`. This process-validation cycle is `diagnostic 1/1`,
+`repair 1/1`, `final 0/1`; its activation and every other diagnostic flag are
+false, the safe mechanism remains dormant, and all prior cycle histories stay
+immutable.

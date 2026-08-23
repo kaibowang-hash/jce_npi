@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import ast
 import csv
+import importlib.util
 import json
 import re
+import sys
+import types
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -198,6 +202,154 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
         self.assertNotIn("Item Outbox Event Snapshot Hash", strings("_validate_mbom_v2"))
         self.assertEqual(strings("validate").count("Item Outbox Event Snapshot Hash"), 1)
         self.assertNotIn("MBOM Outbox Event Snapshot Hash", strings("validate"))
+
+    def test_mbom_terminal_outbox_requires_and_accepts_complete_claim_history(self) -> None:
+        validation_error = type("PinnedValidationError", (Exception,), {})
+        permission_error = type("PinnedPermissionError", (Exception,), {})
+        frappe = types.ModuleType("frappe")
+        frappe._ = lambda source: source
+        frappe.ValidationError = validation_error
+        frappe.PermissionError = permission_error
+
+        def throw(message, error_type):
+            raise error_type(message)
+
+        frappe.throw = throw
+        frappe_model = types.ModuleType("frappe.model")
+        frappe_document = types.ModuleType("frappe.model.document")
+        frappe_document.Document = object
+        core_validation = types.ModuleType("npi_core.documents.frappe_validation")
+        core_validation.actor_text = lambda value, _label: value
+        core_validation.assert_immutable_fields = lambda *_args: None
+        core_validation.canonical_json = lambda value: json.dumps(
+            value, separators=(",", ":"), sort_keys=True
+        )
+        core_validation.canonical_uuid = lambda value, _label: value
+        core_validation.frappe_utc_datetime_text = lambda value, _label: value
+        core_validation.json_object = lambda value, _label: value
+        core_validation.lowercase_sha256 = lambda value, _label: value
+        core_validation.nonnegative_integer = lambda value, _label: int(value)
+        core_validation.positive_integer = lambda value, _label: int(value)
+        core_validation.required_text = lambda value, _label, _maximum: value
+        core_validation.tenant_text = lambda value: value
+        core_validation.utc_datetime_text = lambda value, _label: value
+        item_domain = types.ModuleType("npi_integration.item_publish.domain")
+        item_domain.ITEM_PUBLISH_OPERATION = "item.publish"
+        item_domain.ITEM_PUBLISH_SCHEMA_VERSION = 1
+        item_domain.ITEM_REQUEST_EVENT_TYPE = "item.publish.requested"
+        item_domain.canonical_hash = lambda _value: "h" * 64
+        item_validation = types.ModuleType(
+            "npi_integration.item_publish.frappe_validation"
+        )
+        item_validation.deny_item_history_delete = lambda: None
+        item_validation.deny_item_history_update = lambda: None
+        item_validation.deny_legacy_outbox_promotion = lambda: None
+        item_validation.require_item_outbox_write = lambda: None
+
+        def transition(before, after, *, allowed, label):
+            if after != before and after not in allowed.get(before, frozenset()):
+                frappe.throw(label, validation_error)
+
+        item_validation.validate_one_way_transition = transition
+        mbom_domain = types.ModuleType("npi_integration.mbom_publish.domain")
+        mbom_domain.MBOM_PUBLISH_OPERATION = "mbom.publish"
+        mbom_domain.MBOM_PUBLISH_SCHEMA_VERSION = 2
+        mbom_domain.MBOM_REQUEST_EVENT_TYPE = "mbom.publish.requested"
+        mbom_validation = types.ModuleType(
+            "npi_integration.mbom_publish.frappe_validation"
+        )
+        mbom_validation.deny_mbom_history_delete = lambda: None
+        mbom_validation.deny_mbom_history_update = lambda: None
+        mbom_validation.deny_outbox_operation_conversion = lambda: None
+        mbom_validation.require_mbom_outbox_write = lambda: None
+        modules = {
+            "frappe": frappe,
+            "frappe.model": frappe_model,
+            "frappe.model.document": frappe_document,
+            "npi_core.documents.frappe_validation": core_validation,
+            "npi_integration.item_publish.domain": item_domain,
+            "npi_integration.item_publish.frappe_validation": item_validation,
+            "npi_integration.mbom_publish.domain": mbom_domain,
+            "npi_integration.mbom_publish.frappe_validation": mbom_validation,
+        }
+        path = DOCTYPE_ROOT / "npi_outbox_message/npi_outbox_message.py"
+        spec = importlib.util.spec_from_file_location(
+            "p804_terminal_outbox_contract", path
+        )
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        controller = importlib.util.module_from_spec(spec)
+        with patch.dict(sys.modules, modules):
+            spec.loader.exec_module(controller)
+
+        previous = types.SimpleNamespace(
+            schema_version=2,
+            event_type="mbom.publish.requested",
+            state="processing",
+            attempt_count=1,
+            adapter_boundary_crossed=1,
+        )
+        terminal_states = (
+            "partially_succeeded",
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "uncertain",
+            "mapping_conflict",
+        )
+
+        def terminal(state):
+            value = controller.NPIOutboxMessage()
+            for fieldname, field_value in {
+                "schema_version": 2,
+                "event_type": "mbom.publish.requested",
+                "operation": "mbom.publish",
+                "object_version": 1,
+                "event_id": "event",
+                "global_id": "global",
+                "tenant_id": "tenant",
+                "project_global_id": "project",
+                "mbom_request_global_id": "request",
+                "request_id": "request-command",
+                "trace_id": "trace-p804-terminal",
+                "profile_id": "profile",
+                "profile_version": 1,
+                "actor_user_id": "publisher@example.invalid",
+                "service_actor_user_id": "worker@example.invalid",
+                "profile_snapshot_hash": "h" * 64,
+                "source_stream_key_hash": "h" * 64,
+                "source_hash": "h" * 64,
+                "mbom_topology_hash": "h" * 64,
+                "item_mapping_set_hash": "h" * 64,
+                "mbom_mapping_set_hash": "h" * 64,
+                "mbom_node_manifest_hash": "h" * 64,
+                "idempotency_key_hash": "h" * 64,
+                "target_idempotency_key_hash": "h" * 64,
+                "semantic_effect_hash": "h" * 64,
+                "payload_hash": "h" * 64,
+                "event_snapshot_hash": "h" * 64,
+                "payload": {},
+                "attempt_count": 1,
+                "claim_token": "claim",
+                "claimed_at": "2026-08-21 17:00:00",
+                "lease_expires_at": "2026-08-21 17:05:00",
+                "adapter_boundary_crossed": 1,
+                "state": state,
+                "mbom_result_global_id": "result",
+            }.items():
+                setattr(value, fieldname, field_value)
+            return value
+
+        for state in terminal_states:
+            with self.subTest(state=state):
+                terminal(state)._validate_mbom_v2(previous)
+        for missing in ("claim_token", "claimed_at", "lease_expires_at"):
+            with self.subTest(partial_claim_missing=missing), self.assertRaises(
+                validation_error
+            ):
+                value = terminal("succeeded")
+                setattr(value, missing, None)
+                value._validate_mbom_v2(previous)
 
     def test_checkpoint_three_adds_only_closed_worker_and_network_free_fixture(self) -> None:
         files = {path.name for path in MBOM_ROOT.glob("*.py")}
