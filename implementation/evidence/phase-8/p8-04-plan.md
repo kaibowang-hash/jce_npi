@@ -1007,3 +1007,38 @@ record, same-exception rethrow, constant fallback and unread failed-child
 stdout/stderr remain unchanged. No product worker, repository, runtime fixture,
 adapter, response, API, permission, transaction, Schema, ownership or Gate
 path changes. All earlier cycle histories and counters remain immutable.
+
+The post-manifest checkpoint exact SHA
+`bb06f558496490f0b228fa5e179c535f191b87e9` passes ordinary run
+`32641066055`. Its sole controlled diagnostic dispatch `32641810681` passes
+preflight `97199946736`; runtime `97199986356` emits exactly
+`P804_WORKER_PROCESS_OUTBOX / MbomPublishContractError /
+trace-9425e5977d7f55f69e7c402a4b5798c9`. The fresh read-only preconditions and
+the repaired assembly-only command manifest complete before the unchanged
+worker call.
+
+Static and pure-fixture cross-proof isolates the next first source. Claim
+constructs the command successfully, then changes the persisted Request from
+`queued` to `processing` while correctly retaining its immutable create-time
+`payload_hash`. Before any adapter call, `mark_adapter_boundary` reconstructs
+the current Request. The domain previously recalculated that immutable hash
+from the public payload including the mutable current state, so the first
+`processing` reconstruction deterministically raised the observed contract
+type. Claim writes and commits cannot raise this domain exception; the fixed
+Synthetic profile and registry construct and resolve successfully, and no
+later adapter, classification, result, seal or recovery boundary is reached.
+The earlier tests only rehydrated a Mock Request or retained the create-time
+state, so this exact lifecycle transition was absent.
+
+The bounded repair keeps the public payload and API current state unchanged
+and never updates the persisted hash. A private command-hash payload normalizes
+only state to its create-time value (`validated_mock` for Mock, `queued` for an
+executable request), leaving the initial hash bit-for-bit unchanged and every
+other immutable command field covered. All legal executable states now
+rehydrate against the same frozen command hash; immutable-field tampering still
+fails closed. No API, permission, transaction, Schema, ownership, claim,
+lease, adapter or worker-order behavior changes. The post-manifest cycle is
+now `diagnostic 1/1`, `repair 1/1`, `final 0/1`;
+`MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED=False` and every other Item and
+MBOM diagnostic activation remains false. The response-neutral mechanism stays
+dormant and all historical cycle counters remain immutable.

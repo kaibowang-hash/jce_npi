@@ -300,6 +300,7 @@ class Phase8MbomPublishDomainTest(unittest.TestCase):
         )
         self.assertEqual(mock.state, MbomPublishRequestState.VALIDATED_MOCK)
         self.assertFalse(mock.dispatch_allowed)
+        self.assertEqual(mock.payload_hash, canonical_hash(mock.payload()))
         with self.assertRaisesRegex(MbomPublishContractError, "Mock MBOM"):
             mock.event_payload()
         synthetic = create_mbom_publish_request(
@@ -334,6 +335,40 @@ class Phase8MbomPublishDomainTest(unittest.TestCase):
                 MbomPublishContractError
             ):
                 replace(synthetic, **changes)
+
+    def test_request_payload_hash_stays_bound_to_create_command_across_legal_states(
+        self,
+    ) -> None:
+        source_value = source()
+        created = create_mbom_publish_request(
+            source=source_value,
+            item_readiness=synthetic_item_readiness(source_value),
+            mbom_expectations=expectations(source_value),
+            profile=profile(MbomTargetMode.SYNTHETIC),
+            actor_user_id="engineer@example.invalid",
+            service_actor_user_id="worker@example.invalid",
+            request_id=uid(34),
+            trace_id="trace-mbom-domain-state-hash",
+            idempotency_key_hash="d" * 64,
+            global_id=uid(35),
+            created_at=NOW,
+        )
+        self.assertEqual(created.state, MbomPublishRequestState.QUEUED)
+        self.assertEqual(created.payload_hash, canonical_hash(created.payload()))
+
+        legal_states = tuple(
+            state
+            for state in MbomPublishRequestState
+            if state is not MbomPublishRequestState.VALIDATED_MOCK
+        )
+        for state in legal_states:
+            with self.subTest(state=state):
+                rehydrated = replace(created, state=state)
+                self.assertEqual(rehydrated.payload_hash, created.payload_hash)
+                self.assertEqual(rehydrated.payload()["state"], state.value)
+
+        with self.assertRaises(MbomPublishContractError):
+            replace(created, trace_id="trace-mbom-domain-state-hash-tampered")
 
     def test_submitted_expectation_and_no_assembly_block_executable_request(self) -> None:
         value = source()

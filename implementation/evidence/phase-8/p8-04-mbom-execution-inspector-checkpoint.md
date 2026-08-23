@@ -513,3 +513,31 @@ mirrored-log validation, same-exception propagation, constant-safe fallback
 and unread failed-child stdout/stderr are unchanged. Product worker,
 repository, fixture, adapter, API, permission, transaction, Schema, ownership
 and Gate paths have zero diff; all prior cycle counters remain immutable.
+
+Checkpoint SHA `bb06f558496490f0b228fa5e179c535f191b87e9` passes ordinary
+run `32641066055`. The one diagnostic dispatch `32641810681` passes preflight
+`97199946736`; runtime `97199986356` emits only
+`P804_WORKER_PROCESS_OUTBOX / MbomPublishContractError /
+trace-9425e5977d7f55f69e7c402a4b5798c9`. Fresh preconditions and the repaired
+assembly-only command manifest have already completed before this boundary.
+
+The first-source proof is the Request lifecycle transition. Claim successfully
+constructs the frozen command and writes `queued` to `processing`, retaining
+the immutable create-time `payload_hash`. `mark_adapter_boundary` then performs
+the first current Request reconstruction before adapter entry. The domain had
+recalculated the immutable hash from the public payload including current
+state, so `processing` could never match the create-time `queued` hash and the
+observed contract exception was deterministic. Claim persistence cannot emit
+this domain type, the fixed Synthetic profile and registry resolve, and all
+adapter, classification, seal and recovery code is later in lexical order.
+
+The product repair adds only a private command-hash payload that normalizes
+state to its creation value: Mock remains `validated_mock` and every executable
+request hashes as `queued`. The public payload and API still expose current
+state; the create-time hash is bit-for-bit unchanged and is never rewritten;
+all other immutable fields remain hash-bound and tampering fails closed. No
+DocType, response, API, permission, transaction, Schema, ownership, claim,
+lease, adapter or worker-order contract changes. This post-manifest cycle is
+`diagnostic 1/1`, `repair 1/1`, `final 0/1`. Its temporary activation is now
+false, all other diagnostic flags remain false, the safe reader stays dormant,
+and earlier cycle histories are unchanged.

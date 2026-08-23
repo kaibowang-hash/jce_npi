@@ -776,7 +776,7 @@ class MbomPublishRequest:
             "created_at",
             _aware_utc(self.created_at, "request.createdAt"),
         )
-        expected_payload_hash = canonical_hash(self.payload())
+        expected_payload_hash = canonical_hash(self._command_hash_payload())
         if self.payload_hash and _hash(
             self.payload_hash,
             "request.payloadHash",
@@ -809,6 +809,16 @@ class MbomPublishRequest:
             "dispatchAllowed": self.dispatch_allowed,
             "createdAt": _utc_text(self.created_at),
         }
+
+    def _command_hash_payload(self) -> dict[str, object]:
+        """Return the immutable create-time payload used by ``payload_hash``."""
+
+        initial_state = (
+            MbomPublishRequestState.VALIDATED_MOCK
+            if self.profile.target_mode is MbomTargetMode.MOCK
+            else MbomPublishRequestState.QUEUED
+        )
+        return {**self.payload(), "state": initial_state.value}
 
     def event_payload(self) -> dict[str, object]:
         if not self.dispatch_allowed or self.profile.target_mode is MbomTargetMode.MOCK:

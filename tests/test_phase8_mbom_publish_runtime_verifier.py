@@ -474,7 +474,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(module.MBOM_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED)
-        self.assertTrue(module.MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -571,10 +571,16 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             post_manifest_stages,
         )
         self.assertEqual(len(post_manifest_stages), 29)
-        self.assertEqual(
-            module._active_worker_diagnostic_codes(),
-            post_manifest_stages,
-        )
+        self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
+        with patch.object(
+            module,
+            "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertEqual(
+                module._active_worker_diagnostic_codes(),
+                post_manifest_stages,
+            )
         with patch.object(
             module,
             "MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED",
@@ -939,6 +945,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(post_manifest_closed_code=code), patch.dict(
                 sys.modules,
                 {"npi_core": package, "npi_core.api": api},
+            ), patch.object(
+                self.module,
+                "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+                True,
             ), self.assertRaises(RuntimeError) as post_manifest_closed:
                 with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
                     raise original
@@ -960,6 +970,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(post_manifest_active_code=code), patch.dict(
                 sys.modules,
                 {"npi_core": package, "npi_core.api": api},
+            ), patch.object(
+                self.module,
+                "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+                True,
             ), self.assertRaises(RuntimeError) as post_manifest_active:
                 with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
                     raise original
@@ -1038,6 +1052,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_text("prior safe log\n", encoding="utf-8")
                 with patch.object(
+                    module,
+                    "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+                    True,
+                ), patch.object(
                     module.item_runtime,
                     "BENCH_PATH",
                     bench_path,
@@ -1092,6 +1110,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         }
         diagnostic = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
         with patch.object(
+            self.module,
+            "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
             self.module.item_runtime,
             "_replay_diagnostic_log_cursors",
             return_value={"logs/npi_core.log": 0},
@@ -1142,6 +1164,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             return SimpleNamespace(returncode=0)
 
         with patch.object(
+            self.module,
+            "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
             self.module.item_runtime,
             "_replay_diagnostic_log_cursors",
             return_value={"logs/npi_core.log": 0},

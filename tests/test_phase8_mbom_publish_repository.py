@@ -21,12 +21,14 @@ from npi_integration.mbom_publish.domain import (  # noqa: E402
     ItemReadinessDisposition,
     MbomExecutionProfileReference,
     MbomMappingExpectation,
+    MbomPublishContractError,
     MbomPublishRequestState,
     MbomResultAuthority,
     MbomTargetMode,
     MbomTargetSubmissionState,
     canonical_hash,
     create_mbom_publish_request,
+    synthetic_item_readiness,
 )
 
 
@@ -473,6 +475,108 @@ class Phase8MbomPublishRepositoryTest(unittest.TestCase):
         self.assertEqual(self.repository._request_value(project, row), value)
         row.project_global_id = str(uid(99))
         with self.assertRaises(RuntimeError):
+            self.repository._request_value(project, row)
+
+    def test_executable_request_roundtrip_preserves_command_hash_across_current_state(
+        self,
+    ) -> None:
+        project = types.SimpleNamespace(tenant_id="tenant-a", global_id=uid(1))
+        source = self.repository._source_from_phase5(project, phase5_request())
+        profile = MbomExecutionProfileReference(
+            "mbom-synthetic-v1",
+            1,
+            MbomTargetMode.SYNTHETIC,
+            "disposable-test",
+            "projection-v1",
+            1,
+            "7" * 64,
+            "8" * 64,
+        )
+        readiness = synthetic_item_readiness(source)
+        expectations = tuple(
+            MbomMappingExpectation(
+                source.assembly_source_key(key),
+                key,
+                0,
+                MbomTargetSubmissionState.UNMAPPED_CREATE,
+            )
+            for key in source.assembly_line_keys
+        )
+        created = create_mbom_publish_request(
+            source=source,
+            item_readiness=readiness,
+            mbom_expectations=expectations,
+            profile=profile,
+            actor_user_id="publisher@example.invalid",
+            service_actor_user_id="worker@example.invalid",
+            request_id=uid(32),
+            trace_id="trace-p804-executable-roundtrip",
+            idempotency_key_hash="b" * 64,
+            global_id=uid(33),
+            created_at=datetime(2026, 8, 21, 15, 0, tzinfo=UTC),
+        )
+        row = types.SimpleNamespace(
+            global_id=str(created.global_id),
+            tenant_id=source.tenant_id,
+            project_global_id=str(source.project_global_id),
+            phase5_publish_request_global_id=str(source.phase5_publish_request_global_id),
+            ebom_global_id=str(source.ebom_global_id),
+            source_snapshot=source.canonical_mapping(),
+            item_readiness_snapshot=json.dumps(
+                [item.canonical_mapping() for item in readiness]
+            ),
+            mbom_expectation_snapshot=json.dumps(
+                [item.canonical_mapping() for item in expectations]
+            ),
+            item_mapping_set_hash=created.item_mapping_set_hash,
+            mbom_mapping_set_hash=created.mbom_mapping_set_hash,
+            profile_id=profile.profile_id,
+            profile_version=profile.profile_version,
+            target_mode=profile.target_mode.value,
+            environment_code=profile.environment_code,
+            projection_policy_id=profile.projection_policy_id,
+            projection_policy_version=profile.projection_policy_version,
+            projection_policy_hash=profile.projection_policy_hash,
+            profile_snapshot_hash=profile.snapshot_hash,
+            actor_user_id=created.actor_user_id,
+            service_actor_user_id=created.service_actor_user_id,
+            request_id=str(created.request_id),
+            trace_id=created.trace_id,
+            idempotency_key_hash=created.idempotency_key_hash,
+            target_idempotency_key_hash=created.target_idempotency_key_hash,
+            semantic_effect_hash=created.semantic_effect_hash,
+            state=created.state.value,
+            dispatch_allowed=1,
+            payload_hash=created.payload_hash,
+            created_at=created.created_at,
+        )
+
+        for state in (
+            MbomPublishRequestState.QUEUED,
+            MbomPublishRequestState.PROCESSING,
+            MbomPublishRequestState.SYNTHETIC_VERIFIED,
+            MbomPublishRequestState.PARTIALLY_SUCCEEDED,
+            MbomPublishRequestState.SUCCEEDED,
+            MbomPublishRequestState.FAILED_RETRYABLE,
+            MbomPublishRequestState.FAILED_FINAL,
+            MbomPublishRequestState.UNCERTAIN_AFTER_TIMEOUT,
+            MbomPublishRequestState.MAPPING_CONFLICT,
+        ):
+            with self.subTest(state=state):
+                row.state = state.value
+                value = self.repository._request_value(project, row)
+                response = self.repository.FrappeMbomPublishRepository._response_from_value(
+                    value,
+                    uid(34),
+                    value.created_at,
+                )
+                self.assertEqual(value.payload_hash, created.payload_hash)
+                self.assertEqual(value.payload()["state"], state.value)
+                self.assertEqual(response["request"]["state"], state.value)
+                self.assertEqual(response["request"]["payloadHash"], created.payload_hash)
+
+        row.trace_id = "trace-p804-executable-roundtrip-tampered"
+        with self.assertRaises(MbomPublishContractError):
             self.repository._request_value(project, row)
 
     def test_request_insert_serializes_array_json_for_pinned_frappe_roundtrip(self) -> None:
