@@ -1042,3 +1042,43 @@ now `diagnostic 1/1`, `repair 1/1`, `final 0/1`;
 `MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED=False` and every other Item and
 MBOM diagnostic activation remains false. The response-neutral mechanism stays
 dormant and all historical cycle counters remain immutable.
+
+The command-hash repair exact SHA
+`5e666590639f80241ee46bf83bc1e74b82d78646` passes ordinary run
+`32643166338` on attempt 2. Attempt 1 passes repository `97203285111`, secret
+scan `97203285045` and the 126-case governed visual matrix `97203285107`; its
+only failure is the unchanged P7-05 readiness-loading five-second transient in
+frontend `97203284990` after 449 other cases pass. The authorized same-run,
+same-SHA failed-job-only attempt 2 passes frontend `97205282400` with 450/450,
+while repository `97205283338`, secret scan `97205296094` and visual
+`97205283082` remain successful. No code, timeout, retry, baseline, threshold
+or product repair changes in that confirmation.
+
+Its sole final Level 3 dispatch `32644931325` passes repository `97207634855`,
+frontend `97207634903`, governed visual `97207634916`, secret scan
+`97207634948` and controlled preflight `97209223909`. Controlled runtime
+`97209246692` passes pinned tools, Bench and disposable Site initialization,
+then the cumulative verifier observes only a nonzero `exercise_worker` child.
+The safe parent raises the fixed `P8-04 Bench fixture failed` constant before
+any post-child predicate; child stdout and stderr remain unread. Result and
+controlled artifact upload are skipped, cleanup passes, and the run contains
+only governed visual artifact `9494661303` and secret scan SARIF `9494601987`.
+No allowlisted tuple proves another product symbol. The post-manifest cycle is
+therefore frozen at `diagnostic 1/1`, `repair 1/1`, `final 1/1`.
+
+An independent post-command-hash worker cycle begins at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its four-path verifier-only checkpoint adds no
+diagnostic code and temporarily enables the same twenty-nine existing codes:
+the fifteen fixed contexts from `P804_WORKER_PROCESS_OUTBOX` through fixture
+commit and all fourteen worker outcome state/shape classifications. The
+already closed fixture/requester contexts, every not-claimed precondition and
+all create codes remain excluded. `PROCESS_OUTBOX` stays active because the
+two closed product predicates share that composite lexical boundary and no
+existing narrower code can safely identify the next first source. Exact
+shared-response trace correlation, strict one-logical-record mirrored reader,
+same-exception rethrow, constant fallback and unread failed-child output remain
+unchanged. All prior diagnostic flags are false; only
+`MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED=True`. Product worker,
+repository, runtime fixture, adapter, response, API, permission, transaction,
+Schema, ownership and Gate paths have zero diff, and every historical cycle
+counter remains immutable.

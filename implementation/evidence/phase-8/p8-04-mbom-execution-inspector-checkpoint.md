@@ -541,3 +541,40 @@ lease, adapter or worker-order contract changes. This post-manifest cycle is
 `diagnostic 1/1`, `repair 1/1`, `final 0/1`. Its temporary activation is now
 false, all other diagnostic flags remain false, the safe reader stays dormant,
 and earlier cycle histories are unchanged.
+
+The command-hash repair SHA
+`5e666590639f80241ee46bf83bc1e74b82d78646` passes ordinary run
+`32643166338` on attempt 2. Attempt 1 passes repository `97203285111`, secret
+scan `97203285045` and governed visual `97203285107`; only the unchanged P7-05
+readiness-loading five-second transient fails frontend `97203284990` after 449
+other cases pass. The authorized same-run, same-SHA failed-job-only attempt 2
+passes frontend `97205282400` with 450/450; repository `97205283338`, secret
+scan `97205296094` and visual `97205283082` remain successful. No product,
+test threshold, retry, timeout or baseline change is involved.
+
+The only final Level 3 dispatch `32644931325` passes repository `97207634855`,
+frontend `97207634903`, visual `97207634916`, secret scan `97207634948` and
+preflight `97209223909`. Runtime `97209246692` passes exact tools, Bench and
+disposable Site initialization, then stops at the `exercise_worker` child.
+The parent exposes only the fixed failure constant, does not read child stdout
+or stderr and cannot reach any post-child predicate. Runtime result/upload is
+skipped, cleanup passes, and only visual artifact `9494661303` and SARIF
+`9494601987` exist. No safe tuple permits another product repair. The
+post-manifest history is frozen at `diagnostic 1/1`, `repair 1/1`, `final
+1/1`.
+
+The separate post-command-hash worker cycle starts at `diagnostic 0/1`,
+`repair 0/1`, `final 0/1`. Its four-path verifier checkpoint reuses exactly the
+existing twenty-nine post-manifest codes: fifteen fixed contexts from
+process-Outbox through fixture commit plus fourteen outcome classifiers. It
+adds no code and excludes fixture/requester, all not-claimed preconditions and
+all create contexts. `P804_WORKER_PROCESS_OUTBOX` must remain active because
+the closed manifest and command-hash predicates are inside that composite
+lexical context and no existing finer stage can identify a later first source.
+Exact trace, strict mirrored-log folding, same-exception propagation,
+constant-safe fallback, actor-scope restoration and unread failed-child output
+are unchanged. Every earlier activation is false; only
+`MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED=True`. Product worker,
+repository, fixture, adapter, response, API, permission, transaction, Schema,
+ownership and Gate paths remain untouched, with all historical counters
+immutable.

@@ -475,6 +475,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(module.MBOM_NOT_CLAIMED_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.MBOM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.item_runtime.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
@@ -570,12 +571,29 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             module._WORKER_POST_MANIFEST_DIAGNOSTIC_CODES,
             post_manifest_stages,
         )
+        self.assertEqual(
+            module._WORKER_POST_COMMAND_HASH_DIAGNOSTIC_CODES,
+            post_manifest_stages,
+        )
         self.assertEqual(len(post_manifest_stages), 29)
-        self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
+        self.assertEqual(
+            module._active_worker_diagnostic_codes(),
+            post_manifest_stages,
+        )
+        with patch.object(
+            module,
+            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            False,
+        ):
+            self.assertEqual(module._active_worker_diagnostic_codes(), frozenset())
         with patch.object(
             module,
             "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
             True,
+        ), patch.object(
+            module,
+            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.assertEqual(
                 module._active_worker_diagnostic_codes(),
@@ -585,6 +603,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             module,
             "MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED",
             True,
+        ), patch.object(
+            module,
+            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.assertEqual(
                 module._active_worker_diagnostic_codes(),
@@ -621,6 +643,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
             module,
             "MBOM_POST_DATETIME_WORKER_DIAGNOSTICS_ENABLED",
             True,
+        ), patch.object(
+            module,
+            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.assertEqual(
                 module._active_worker_diagnostic_codes()
@@ -967,17 +993,17 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
 
         for code in sorted(self.module._WORKER_POST_MANIFEST_DIAGNOSTIC_CODES):
             records.clear()
-            with self.subTest(post_manifest_active_code=code), patch.dict(
+            with self.subTest(post_command_hash_active_code=code), patch.dict(
                 sys.modules,
                 {"npi_core": package, "npi_core.api": api},
             ), patch.object(
                 self.module,
-                "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+                "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
                 True,
-            ), self.assertRaises(RuntimeError) as post_manifest_active:
+            ), self.assertRaises(RuntimeError) as post_command_hash_active:
                 with self.module.worker_downstream_diagnostic_step(code, _TRACE_ID):
                     raise original
-            self.assertIs(post_manifest_active.exception, original)
+            self.assertIs(post_command_hash_active.exception, original)
             self.assertEqual(len(records), 1)
             self.assertEqual(records[0]["code"], code)
             self.assertEqual(records[0]["exception_type"], "RuntimeError")
@@ -1053,7 +1079,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
                     path.write_text("prior safe log\n", encoding="utf-8")
                 with patch.object(
                     module,
-                    "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+                    "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
                     True,
                 ), patch.object(
                     module.item_runtime,
@@ -1111,7 +1137,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         diagnostic = ("RuntimeError", "P804_WORKER_PROCESS_OUTBOX", _TRACE_ID)
         with patch.object(
             self.module,
-            "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
             True,
         ), patch.object(
             self.module.item_runtime,
@@ -1165,7 +1191,7 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
 
         with patch.object(
             self.module,
-            "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
             True,
         ), patch.object(
             self.module.item_runtime,
@@ -1189,6 +1215,10 @@ class Phase8MbomPublishRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             self.module,
             "MBOM_POST_MANIFEST_WORKER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.module,
+            "MBOM_POST_COMMAND_HASH_WORKER_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.module.item_runtime,
