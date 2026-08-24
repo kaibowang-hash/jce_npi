@@ -54,6 +54,7 @@ BINDING_KEY = f"p6-03-runtime-r1-{FIXTURE_RUN_ID}-set-binding"
 BINDING_CONFLICT_KEY = f"p6-03-runtime-r1-{FIXTURE_RUN_ID}-set-binding-conflict"
 PART_TITLE = "Synthetic P6-03 controlled Part"
 RETAINED_MASTER_TITLE = "Synthetic shared front housing tool"
+RETAINED_PART_TITLE = "Synthetic front housing revised"
 ABSENT_PROJECT_ID = "00000000-0000-4000-8000-000000000001"
 ABSENT_OBJECT_ID = "00000000-0000-4000-8000-000000000002"
 
@@ -137,6 +138,28 @@ def exact_retained_master(values: object, project_id: str) -> dict[str, object]:
             and value.get("originatingProjectGlobalId") == project_id
         ],
         "P6-03 retained Tooling Master",
+    )
+
+
+def exact_retained_part(values: object, project_id: str) -> dict[str, object]:
+    require(
+        isinstance(values, list),
+        "P6-03 retained P6-01 Part collection drifted",
+    )
+    return predecessor.exact_single(
+        [
+            value
+            for value in values
+            if isinstance(value, dict)
+            and value.get("title") == RETAINED_PART_TITLE
+            and value.get("originatingProjectGlobalId") == project_id
+            and isinstance(value.get("currentRevision"), dict)
+            and value["currentRevision"].get("partGlobalId")
+            == value.get("globalId")
+            and value["currentRevision"].get("revisionNumber") == 2
+            and value["currentRevision"].get("revisionLabel") == "B"
+        ],
+        "retained P6-01 Part",
     )
 
 
@@ -643,8 +666,7 @@ def project_context(
         exact_retained_master(workspace.body.get("masters"), project_id).get("globalId"),
         "P6-03 Tooling Master",
     )
-    retained_parts = [item for item in workspace.body.get("parts", []) if item.get("title") != PART_TITLE]
-    retained_part = predecessor.exact_single(retained_parts, "retained P6-01 Part")
+    retained_part = exact_retained_part(workspace.body.get("parts"), project_id)
     retained_revision_rows = predecessor.rows(
         administrator,
         base_url,

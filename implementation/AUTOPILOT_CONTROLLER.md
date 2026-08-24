@@ -4712,3 +4712,26 @@ repeat or rewrite it merely to restore context. See
   counter and changes no product, permission, transaction, Schema, ownership,
   profile, diagnostic activation or target behavior. Affected/full ordinary
   CI must pass before the sole predecessor-cycle final Gate can resume.
+
+## 2026-08-24 P8-05 final retained-Part verifier remediation
+
+- Exact Master harness checkpoint
+  `154a70058011727b3585f81f3c800aaae77804c0` passes ordinary CI
+  `32691391426`. The sole unchanged final run `32692105056` passes repository,
+  frontend, secret, governed visual and controlled preflight. Controlled
+  runtime `97329247216` proceeds past the exact Master selector and stops in
+  the Tool Asset default-disabled probe at the next fixed P6-03 verifier
+  boundary, `P6-01 retained P6-01 Part cardinality drifted`.
+- P6-07 intentionally persists controlled imported engineering Part targets
+  for execution, retry, replay and reconciliation evidence. P8-01 already
+  identifies the original P6-01 Part by exact revised fixture title,
+  originating Project and current-revision self/version/label predicates. The
+  older P6-03 verifier only excluded its own dedicated Part and therefore fed
+  later retained targets into an unfiltered uniqueness assertion.
+- The bounded same-cycle harness remediation applies the proven P8-01
+  predicates before the unchanged `exact_single`. It deletes no P6-07 target;
+  missing, duplicate, malformed, wrong-Project and revision-mismatched
+  originals remain constant-safe with no row-value leak. This consumes no
+  product or diagnostic counter and changes no product, permission,
+  transaction, Schema, ownership, profile or target behavior. Exact-SHA
+  ordinary CI is required before the sole final Gate may resume.

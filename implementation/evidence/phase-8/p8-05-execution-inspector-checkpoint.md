@@ -169,3 +169,21 @@ Canonical Linux/amd64 SHA-256 evidence:
   without row-value leakage. This is harness remediation and consumes no
   product repair or diagnostic allowance. Product, runtime profile and all
   diagnostic activations remain unchanged and closed.
+
+### Final retained-Part verifier remediation
+
+- Exact Master harness checkpoint
+  `154a70058011727b3585f81f3c800aaae77804c0` passes ordinary CI
+  `32691391426`. Final run `32692105056` passes every job except controlled
+  runtime `97329247216`, which proceeds past the repaired Master selector and
+  stops at the inherited P6-03 retained-Part cardinality assertion during the
+  default-disabled probe. P8-05 fresh/product execution has not started.
+- P6-07 deliberately retains imported engineering Part targets for its
+  successful execution, retry, replay and reconciliation proof. P8-01 already
+  distinguishes the original P6-01 Part by exact revised fixture title,
+  originating Project and current-revision self/version/label predicates.
+- The verifier-only correction applies those same predicates before the
+  unchanged uniqueness check. It preserves every P6-07 target; missing,
+  duplicate, malformed, wrong-Project and revision-mismatched originals fail
+  closed with no row-value disclosure. Product code, profile, diagnostics,
+  permission, transaction, Schema, ownership and target behavior are unchanged.

@@ -731,3 +731,22 @@ no row value is emitted. This changes no product, API, permission,
 transaction, Schema, ownership, runtime profile or target behavior and does
 not consume a product repair counter. A new exact-SHA ordinary CI is required
 before the predecessor cycle's sole final unchanged Level 3 may resume.
+
+Exact harness checkpoint `154a70058011727b3585f81f3c800aaae77804c0`
+passes ordinary CI `32691391426`. Its sole final Level 3 `32692105056` passes
+repository, frontend, secret, governed visual and controlled preflight. The
+controlled runtime `97329247216` proves the exact retained Master selection,
+then stops at the next inherited P6-03 assertion:
+`P6-01 retained P6-01 Part cardinality drifted`, still within the Tool Asset
+default-disabled probe and before any P8-05 product execution.
+
+P6-07 intentionally creates and retains controlled imported engineering Part
+targets for successful-job, retry, replay and reconciliation evidence. P8-01
+already selects the original P6-01 Part by exact revised fixture title,
+originating Project and current-revision self/version/label truth. The older
+P6-03 verifier excluded only its own dedicated Part, so later P6-07 target
+Parts remained in the unfiltered uniqueness input. The second bounded harness
+remediation reuses the proven P8-01 predicates before `exact_single`; imported
+targets remain intact and missing, duplicate, malformed, wrong-Project or
+revision-mismatched originals fail constant-safe without row-value leakage.
+No product counter, diagnostic activation or external authority changes.

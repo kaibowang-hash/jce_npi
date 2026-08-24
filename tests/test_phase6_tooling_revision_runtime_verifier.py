@@ -264,6 +264,68 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
                     module.exact_retained_master(values, project_id)
                 self.assertNotIn(sentinel, str(raised.exception))
 
+    def test_retained_part_selection_tolerates_imported_target_parts(self) -> None:
+        module = self.module
+        project_id = "10000000-0000-4000-8000-000000000001"
+        original = {
+            "globalId": "20000000-0000-4000-8000-000000000002",
+            "title": module.RETAINED_PART_TITLE,
+            "originatingProjectGlobalId": project_id,
+            "currentRevision": {
+                "partGlobalId": "20000000-0000-4000-8000-000000000002",
+                "revisionNumber": 2,
+                "revisionLabel": "B",
+            },
+        }
+        imported_targets = [
+            {
+                "globalId": f"30000000-0000-4000-8000-00000000000{index}",
+                "title": f"Synthetic corrected part {index}",
+                "originatingProjectGlobalId": project_id,
+                "currentRevision": {},
+            }
+            for index in (3, 4)
+        ]
+
+        self.assertIs(
+            module.exact_retained_part([*imported_targets, object(), original], project_id),
+            original,
+        )
+
+    def test_retained_part_selection_fails_closed_without_leaking_rows(self) -> None:
+        module = self.module
+        project_id = "10000000-0000-4000-8000-000000000001"
+        sentinel = "PRIVATE-PART-VALUE"
+        original = {
+            "globalId": sentinel,
+            "title": module.RETAINED_PART_TITLE,
+            "originatingProjectGlobalId": project_id,
+            "currentRevision": {
+                "partGlobalId": sentinel,
+                "revisionNumber": 2,
+                "revisionLabel": "B",
+            },
+        }
+        wrong_project = dict(original, originatingProjectGlobalId="other-project")
+        wrong_self = dict(original, currentRevision=dict(original["currentRevision"], partGlobalId="other"))
+        wrong_version = dict(original, currentRevision=dict(original["currentRevision"], revisionNumber=1))
+        wrong_label = dict(original, currentRevision=dict(original["currentRevision"], revisionLabel="A"))
+        cases = (
+            None,
+            [],
+            [original, dict(original)],
+            [{"globalId": sentinel}],
+            [wrong_project],
+            [wrong_self],
+            [wrong_version],
+            [wrong_label],
+        )
+        for values in cases:
+            with self.subTest(values_type=type(values).__name__):
+                with self.assertRaises(RuntimeError) as raised:
+                    module.exact_retained_part(values, project_id)
+                self.assertNotIn(sentinel, str(raised.exception))
+
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:
         required = (
             "tooling_revision_route_switch_state",
