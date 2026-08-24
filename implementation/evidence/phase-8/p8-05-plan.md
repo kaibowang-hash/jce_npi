@@ -823,3 +823,28 @@ checks with no unavailable-or-available fallback. Product, API, permission,
 transaction, Schema, ownership, runtime profile and target behavior are
 unchanged, and the same-cycle diagnostic, repair and final counters do not
 change.
+
+## 21. Tool Asset requester export harness remediation
+
+Exact Asset-projection proof `3e4b57f39267577911fa0d69a9f2d17e2e91ae8b`
+passes ordinary CI `32704209380`. Same-cycle final Level 3 `32705616597`
+passes every non-runtime lane and controlled preflight. Controlled runtime
+`97368465747` crosses retained dual-projection and default-disabled truth, then
+stops before the first command at the fixed runtime-actor binding predicate.
+
+The three ordered subpredicates have a unique static result. The captured
+Project and retained P6 Tooling Project share the same Document fixture
+identity. The worker is a distinct, enabled P8-02 internal NPI API actor. The
+requester export alone used the P8-03 Document/Item actor even though the
+Tool Asset verifier, profile and permission path require the retained enabled
+P6 manufacturing actor. No preceding P5–P8-04 fixture deletes, disables or
+rewrites that P6 actor.
+
+The verifier-only harness correction binds the requester environment to the
+exact existing P6 actor formula. It adds no fallback and does not accept either
+actor: wrong Project, wrong requester, missing/empty worker and requester-equal
+worker all remain fixed failures before command access. Product requester and
+service-actor enabled/role/session validation and exact profile membership are
+unchanged. This modifies no product, user, role, permission, transaction,
+Schema, ownership, adapter, target or Gate behavior and consumes no diagnostic,
+product-repair or final counter.

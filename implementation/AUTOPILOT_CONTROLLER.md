@@ -4807,3 +4807,28 @@ repeat or rewrite it merely to restore context. See
   permission, transaction, Schema, ownership, profile, target or Gate rule
   changes; same-cycle diagnostic, product-repair and final counters remain
   immutable.
+
+## 2026-08-24 P8-05 Tool Asset requester export harness correction
+
+- Exact Asset-projection verifier checkpoint
+  `3e4b57f39267577911fa0d69a9f2d17e2e91ae8b` passes ordinary CI
+  `32704209380`. Same-cycle final Level 3 `32705616597` passes repository,
+  frontend, secret, governed visual and controlled preflight. Controlled
+  runtime job `97368465747` passes the retained dual projection and
+  default-disabled checks, then stops before the first Tool Asset command at
+  the fixed `P8-05 runtime actors are not exactly bound` verifier boundary.
+- Static ordered cross-proof proves a harness export mismatch. The retained
+  Project variable and exact P6 Tooling context resolve the same Document
+  fixture Project. The worker variable is the distinct, enabled internal
+  P8-02 actor. The requester export alone incorrectly reused the P8-03
+  Document/Item actor instead of the retained enabled P6 manufacturing actor
+  that the Tool Asset API and profile require.
+- The bounded correction changes only the shell requester binding to the exact
+  existing P6 actor formula. The verifier still rejects wrong Project,
+  requester, missing/empty worker and requester-equal worker before any
+  command. Product requester/service-actor session, enabled-user and role
+  checks remain unchanged and the profile retains exact requester and worker
+  separation. No user, role, permission, product, API, transaction, Schema,
+  ownership, adapter, target or Gate behavior changes. This is same-cycle
+  harness remediation and does not change diagnostic, product-repair or final
+  counters.

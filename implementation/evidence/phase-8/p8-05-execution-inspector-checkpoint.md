@@ -247,3 +247,23 @@ Canonical Linux/amd64 SHA-256 evidence:
   product, API, permission, transaction, Schema, ownership, profile, external
   contact or Gate standard changes; historical cycle counters remain
   immutable.
+
+### Tool Asset requester export harness correction
+
+- Exact Asset-projection checkpoint
+  `3e4b57f39267577911fa0d69a9f2d17e2e91ae8b` passes ordinary CI
+  `32704209380`. Same-cycle final `32705616597` passes repository, frontend,
+  secret, governed visual and controlled preflight; controlled runtime
+  `97368465747` stops before the first Tool Asset command at the exact runtime
+  actor-binding guard.
+- The retained Project binding and distinct internal worker are statically
+  correct. The sole false subpredicate is the shell's requester export, which
+  reused the P8-03 Document/Item actor rather than the retained enabled P6
+  manufacturing actor already required by the Tool Asset verifier and
+  profile. Earlier fixture stages do not mutate that actor.
+- The correction changes only that environment binding to the exact P6 actor
+  formula. Wrong Project/requester/worker bindings still fail before command
+  access; exact profile membership and product session/enabled/role checks are
+  unchanged. No product, user, role, permission, transaction, Schema,
+  ownership, adapter, external contact or Gate standard changes. Same-cycle
+  counters remain immutable.

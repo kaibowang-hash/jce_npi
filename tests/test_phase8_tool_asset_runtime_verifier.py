@@ -34,6 +34,152 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         for marker in ("run_tool_asset_runtime_verifier disabled", "run_tool_asset_runtime_verifier fresh", "NPI_TOOL_ASSET_RUNTIME_MARKER=npi-one-tool-asset-disposable-v1", "verify_tool_asset_execution_runtime.py"):
             self.assertIn(marker, shell)
 
+    def test_shell_binds_exact_retained_p6_requester_and_distinct_worker(self):
+        shell = (ROOT / "scripts" / "verify-frappe-runtime.sh").read_text(
+            encoding="utf-8"
+        )
+        expected_requester = (
+            f"npi-tooling-manufacturing-{self.verifier.FIXTURE_RUN_ID[:12]}-"
+            "manager@example.invalid"
+        )
+        self.assertEqual(self.verifier.ACTOR_USER, expected_requester)
+        self.assertIn(
+            'tool_asset_runtime_requester="npi-tooling-manufacturing-'
+            '${document_runtime_run_id:0:12}-manager@example.invalid"',
+            shell,
+        )
+        export_source = shell[
+            shell.index("export_tool_asset_runtime_environment() {") :
+            shell.index("\n}\n\nclear_tool_asset_runtime_environment()")
+        ]
+        self.assertIn(
+            'NPI_TOOL_ASSET_REQUESTER_USER="${tool_asset_runtime_requester}"',
+            export_source,
+        )
+        self.assertIn(
+            'NPI_TOOL_ASSET_WORKER_USER="${inbound_project_runtime_actor}"',
+            export_source,
+        )
+        self.assertNotIn("item_publish_runtime_actor", export_source)
+        self.assertNotEqual(
+            expected_requester,
+            f"npi-inbound-{self.verifier.FIXTURE_RUN_ID[:12]}@example.invalid",
+        )
+
+    def test_retained_requester_is_enabled_internal_and_not_cleaned_up(self):
+        manufacturing = (
+            ROOT / "scripts/verify_tooling_manufacturing_runtime.py"
+        ).read_text(encoding="utf-8")
+        prepare = manufacturing[
+            manufacturing.index("def prepare_manufacturing_actor(") :
+            manufacturing.index("\ndef active_member(")
+        ]
+        for marker in (
+            '"enabled": 1',
+            '"user_type": "System User"',
+            '{"role": "NPI API User"}',
+            '{"role": "System Manager"}',
+            'data.get("enabled") == 1',
+            'data.get("user_type") == "System User"',
+            '{"NPI API User", "System Manager"} <= roles',
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, prepare)
+        self.assertNotIn("delete_disposable_user", prepare)
+        shell = (ROOT / "scripts" / "verify-frappe-runtime.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertLess(
+            shell.index("run_tooling_manufacturing_runtime_verifier fresh"),
+            shell.index("run_tool_asset_runtime_verifier fresh"),
+        )
+
+    def test_runtime_actor_predicates_fail_before_command_without_relaxation(self):
+        project_id = str(UUID(int=1))
+        context = {
+            "projectId": project_id,
+            "masterId": str(UUID(int=2)),
+            "toolingSetId": str(UUID(int=3)),
+        }
+        worker = "npi-inbound-worker@example.invalid"
+        valid = {
+            "NPI_TOOL_ASSET_RUNTIME_PROJECT_ID": project_id,
+            "NPI_TOOL_ASSET_REQUESTER_USER": self.verifier.ACTOR_USER,
+            "NPI_TOOL_ASSET_WORKER_USER": worker,
+        }
+        invalid = {
+            "project": {**valid, "NPI_TOOL_ASSET_RUNTIME_PROJECT_ID": str(UUID(int=4))},
+            "requester": {**valid, "NPI_TOOL_ASSET_REQUESTER_USER": "different@example.invalid"},
+            "worker-missing": {
+                key: value
+                for key, value in valid.items()
+                if key != "NPI_TOOL_ASSET_WORKER_USER"
+            },
+            "worker-empty": {**valid, "NPI_TOOL_ASSET_WORKER_USER": ""},
+            "worker-equals-requester": {
+                **valid,
+                "NPI_TOOL_ASSET_WORKER_USER": self.verifier.ACTOR_USER,
+            },
+        }
+        for name, environment in invalid.items():
+            with self.subTest(name=name), patch.dict(
+                os.environ, environment, clear=True
+            ), patch.object(
+                self.verifier,
+                "secret_from_environment",
+                return_value="administrator-password",
+            ), patch.object(self.verifier, "login", return_value=object()), patch.object(
+                self.verifier, "bootstrap_csrf", return_value="csrf"
+            ), patch.object(
+                self.verifier, "_retained_context", return_value=(context, {})
+            ), patch.object(self.verifier, "execution_request") as request:
+                with self.assertRaisesRegex(
+                    RuntimeError, "^P8-05 runtime actors are not exactly bound$"
+                ):
+                    self.verifier.run_fresh(
+                        "http://127.0.0.1:8003", "fixture-password"
+                    )
+                request.assert_not_called()
+
+        class CommandBoundaryReached(Exception):
+            pass
+
+        with patch.dict(os.environ, valid, clear=True), patch.object(
+            self.verifier,
+            "secret_from_environment",
+            return_value="administrator-password",
+        ), patch.object(
+            self.verifier, "login", return_value=object()
+        ), patch.object(
+            self.verifier, "bootstrap_csrf", return_value="csrf"
+        ), patch.object(
+            self.verifier, "_retained_context", return_value=(context, {})
+        ), patch.object(
+            self.verifier,
+            "execution_request",
+            side_effect=CommandBoundaryReached,
+        ) as request:
+            with self.assertRaises(CommandBoundaryReached):
+                self.verifier.run_fresh(
+                    "http://127.0.0.1:8003", "fixture-password"
+                )
+            request.assert_called_once()
+
+    def test_runtime_profile_preserves_exact_requester_and_service_actor(self):
+        environment = {
+            "NPI_TOOL_ASSET_RUNTIME_MARKER": "npi-one-tool-asset-disposable-v1",
+            "NPI_TOOL_ASSET_REQUESTER_USER": self.verifier.ACTOR_USER,
+            "NPI_TOOL_ASSET_WORKER_USER": "npi-inbound-worker@example.invalid",
+        }
+        with patch.dict(os.environ, environment, clear=True):
+            profile = self.fixture.resolve_profile("tenant-a", str(UUID(int=1)))
+        self.assertIsNotNone(profile)
+        self.assertEqual(profile.requester_user_ids, (self.verifier.ACTOR_USER,))
+        self.assertEqual(
+            profile.service_actor_user_id,
+            "npi-inbound-worker@example.invalid",
+        )
+
     def test_synthetic_adapter_preserves_operation_and_returns_no_formal_identity(self):
         from tests.test_phase8_tool_asset_adapters import command
         with patch.dict(os.environ, self.environment, clear=True):

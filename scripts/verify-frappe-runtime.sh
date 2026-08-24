@@ -1806,6 +1806,7 @@ fi
 inbound_project_runtime_actor="npi-inbound-${document_runtime_run_id:0:12}@example.invalid"
 inbound_project_runtime_owner="npi-owner-${document_runtime_run_id:0:12}@example.invalid"
 item_publish_runtime_actor="npi-document-${document_runtime_run_id:0:20}-baseline@example.invalid"
+tool_asset_runtime_requester="npi-tooling-manufacturing-${document_runtime_run_id:0:12}-manager@example.invalid"
 item_publish_runtime_project_id=""
 item_publish_runtime_legacy_request_id=""
 item_publish_runtime_legacy_node_id=""
@@ -3079,7 +3080,7 @@ run_mbom_publish_runtime_verifier() {
 export_tool_asset_runtime_environment() {
   export NPI_TOOL_ASSET_RUNTIME_MARKER=npi-one-tool-asset-disposable-v1
   export NPI_TOOL_ASSET_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
-  export NPI_TOOL_ASSET_REQUESTER_USER="${item_publish_runtime_actor}"
+  export NPI_TOOL_ASSET_REQUESTER_USER="${tool_asset_runtime_requester}"
   export NPI_TOOL_ASSET_WORKER_USER="${inbound_project_runtime_actor}"
 }
 
