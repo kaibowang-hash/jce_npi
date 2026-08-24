@@ -5077,3 +5077,34 @@ repeat or rewrite it merely to restore context. See
   transaction, Schema, ownership, adapter, target and Gate semantics are
   unchanged.
 - Controller marker: `P8-05 final held; Tooling Revision capability temporal harness remediation awaits Level 1`.
+
+## 2026-08-24 P8-05 post-revision-capability final cycle
+
+- Verifier-only remediation SHA
+  `93f2eb426285d9659036beee8542b8355956c899` passes exact ordinary CI
+  `32752050312`: frontend `97511036074`, secret scan `97511036317`, governed
+  visual `97511036345` and repository `97511036955` pass; controlled jobs are
+  correctly skipped for ordinary CI.
+- The historical post-query cycle remains immutable at diagnostic `1/1`,
+  product repair `0/1`, final `1/1`. Controlled run `32748023307` and runtime
+  job `97502584172` remain its consumed final evidence. The closed temporal
+  verifier root and its ordinary proof do not reclassify or reopen that run.
+- A separate `post-revision-capability` cycle starts at diagnostic `0/1`,
+  product repair `0/1`, final `0/1`. It changes no diagnostic activation,
+  runtime, test, product, API, permission, transaction, Schema, ownership,
+  adapter, target or Gate behavior.
+- After this durable checkpoint passes its own exact-SHA ordinary CI, the sole
+  authorized action is one diagnostics-off unchanged Level 3 dispatch with
+  `gate_mode=level_3` and that exact ordinary run ID. No Level 2 shortcut,
+  rerun or other workflow is allowed. Preflight must prove local and origin
+  exact SHA equality, every Item/MBOM/P6-06/Tool Asset diagnostic false, task
+  paths and index clean, and unrelated local changes preserved.
+- PASS requires repository, frontend, secret scan, the complete governed
+  visual matrix, controlled preflight and cumulative P5-through-P8-05 runtime.
+  The runtime must cross the three repaired revision-capability assertions and
+  complete the distinct disposable Set/Acceptance, Tool Asset request and
+  Outbox worker, terminal replay, zero formal Asset ID, zero mapping head and
+  network-free Synthetic proof. A failure consumes this cycle's final `1/1`;
+  only its first safe boundary may be read, and a new opaque root must open a
+  later independent cycle rather than authorize a guessed repair.
+- Controller marker: `P8-05 final held; post-revision-capability cycle 0/1,0/1,0/1 active`.

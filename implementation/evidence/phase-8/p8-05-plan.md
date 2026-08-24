@@ -1108,3 +1108,34 @@ construction and the Tool Asset request/Outbox/worker proof did not run. The
 post-query cycle remains immutable at diagnostic `1/1`, product repair `0/1`,
 final `1/1`. This verifier-only correction does not change product, API,
 permission, transaction, Schema, ownership, adapter, target or Gate behavior.
+
+## 31. Post-revision-capability final cycle
+
+Verifier-only remediation SHA
+`93f2eb426285d9659036beee8542b8355956c899` passes exact ordinary CI
+`32752050312`: frontend `97511036074`, secret scan `97511036317`, governed
+visual `97511036345` and repository `97511036955` are successful. Ordinary
+controlled jobs are correctly skipped.
+
+The post-query cycle is immutable at diagnostic `1/1`, product repair `0/1`,
+final `1/1`; its final run `32748023307` and runtime job `97502584172` remain
+consumed evidence. The temporal verifier correction does not reopen that
+cycle. A distinct `post-revision-capability` cycle begins at diagnostic `0/1`,
+product repair `0/1`, final `0/1`, with all diagnostics still false and no
+product, runtime, test, API, permission, transaction, Schema, ownership,
+adapter, target or Gate change.
+
+The durable checkpoint must first pass one exact-SHA ordinary CI. The new
+cycle then permits exactly one unchanged `gate_mode=level_3` dispatch reusing
+that ordinary run ID. Level 2 shortcuts, reruns and other workflows are not
+allowed. Local/origin equality, diagnostics-off state, task/index cleanliness
+and unrelated-change preservation are mandatory preconditions.
+
+PASS requires all ordinary-equivalent jobs, the complete governed visual
+matrix, controlled preflight and the cumulative P5-through-P8-05 disposable
+runtime. The runtime must cross all three revision-capability assertions and
+complete the distinct disposable Set/Acceptance, Tool Asset request and
+Outbox worker, terminal replay, zero formal Asset identity, zero mapping head
+and network-free Synthetic evidence. FAIL freezes final `1/1`; only the first
+safe boundary may be inspected, and any new opaque root requires another
+independent bounded cycle.

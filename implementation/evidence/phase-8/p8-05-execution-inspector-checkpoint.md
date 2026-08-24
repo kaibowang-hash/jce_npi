@@ -458,3 +458,26 @@ Canonical Linux/amd64 SHA-256 evidence:
   `0/1`, final `1/1`. This is a bounded verifier-only harness correction; all
   diagnostic activations remain false and product/runtime semantics are
   unchanged.
+
+### Post-revision-capability final cycle
+
+- Remediation SHA `93f2eb426285d9659036beee8542b8355956c899`
+  passes ordinary `32752050312`: frontend `97511036074`, secret scan
+  `97511036317`, governed visual `97511036345` and repository `97511036955`
+  pass; controlled jobs skip as required for ordinary CI.
+- The historical post-query cycle remains diagnostic `1/1`, product repair
+  `0/1`, final `1/1`; run `32748023307`/job `97502584172` stays consumed and
+  immutable. The verifier remediation does not reopen it.
+- The independent `post-revision-capability` cycle starts diagnostic `0/1`,
+  product repair `0/1`, final `0/1`. Diagnostics remain false and there is no
+  runtime, test, product, API, permission, transaction, Schema, ownership,
+  adapter, target or Gate change.
+- After this exact durable checkpoint's ordinary CI passes, only one
+  diagnostics-off `gate_mode=level_3` dispatch reusing that run ID is allowed.
+  It must pass every repository/frontend/secret/visual/preflight job and the
+  cumulative runtime through the repaired revision capability, distinct
+  disposable Tool Asset request/Outbox worker, terminal replay, zero formal
+  Asset ID, zero mapping head and network-free Synthetic proof.
+- Failure freezes final `1/1` and authorizes only first-safe-boundary readback;
+  it cannot authorize rerun, shortcut or guessed repair. PASS proceeds to the
+  P8-05 release-gate review.
