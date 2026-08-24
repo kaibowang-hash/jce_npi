@@ -5134,3 +5134,32 @@ repeat or rewrite it merely to restore context. See
   repair `0/1`, final `1/1`. The verifier correction neither reopens nor reruns
   that consumed cycle and requires a later durable cycle decision.
 - Controller marker: `P8-05 final held; disposable Engineering Part verifier correction awaits Level 1`.
+
+## 2026-08-25 P8-05 post-requirement-part-revision final cycle
+
+- Verifier-only correction SHA
+  `9aac7bd0184a3c08e2c5e1d0577467bac6cec265` passes exact ordinary CI
+  `32760161981`: repository `97536861375`, frontend `97536861638`, governed
+  visual `97536861679` and secret scan `97536861710` are successful;
+  controlled jobs are correctly skipped for ordinary CI.
+- The `post-revision-capability` cycle remains immutable at diagnostic `0/1`,
+  product repair `0/1`, final `1/1`. Its consumed run `32756343623` and runtime
+  job `97528344980` remain historical evidence; the verifier correction and
+  ordinary PASS do not reopen it.
+- A distinct `post-requirement-part-revision` cycle starts at diagnostic `0/1`,
+  product repair `0/1`, final `0/1`. All Item, MBOM, P6-06, Tool Asset and
+  historical diagnostics remain false. No runtime, test, product, API,
+  permission, transaction, Schema, ownership, adapter or target change is
+  authorized by this durable checkpoint.
+- After this checkpoint passes its own exact-SHA ordinary CI, the sole
+  authorized workflow is one diagnostics-off unchanged Level 3 dispatch with
+  `gate_mode=level_3` and that ordinary run ID. No Level 2 shortcut, rerun or
+  other workflow is allowed. Local/origin equality, all-diagnostics-false,
+  clean task paths/index and preservation of unrelated changes are mandatory.
+- PASS requires all ordinary-equivalent jobs, governed visual evidence,
+  controlled preflight and the cumulative runtime to cross the corrected
+  Requirement and Applicability, then complete the disposable Set, Revision
+  binding, Acceptance, Tool Asset request, atomic Outbox, worker execution,
+  terminal replay, zero formal Asset IDs and zero mapping head. Failure freezes
+  final `1/1` and permits only first-safe-boundary readback.
+- Controller marker: `P8-05 final held; post-requirement-part-revision cycle 0/1,0/1,0/1 active`.

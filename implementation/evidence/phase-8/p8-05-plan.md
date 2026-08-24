@@ -1170,3 +1170,33 @@ This consumes no product repair and changes no product, API, contract,
 permission, transaction, Schema, ownership, adapter, target, diagnostic or
 Gate behavior. A later durable checkpoint must open any further final cycle;
 this correction does not rerun or reopen the consumed final dispatch.
+
+## 33. Post-requirement-part-revision final cycle
+
+Verifier-only correction SHA
+`9aac7bd0184a3c08e2c5e1d0577467bac6cec265` passes exact ordinary CI
+`32760161981`: repository `97536861375`, frontend `97536861638`, governed
+visual `97536861679` and secret scan `97536861710` pass. The ordinary
+controlled preflight and runtime jobs are correctly skipped.
+
+The `post-revision-capability` cycle is immutable at diagnostic `0/1`, product
+repair `0/1`, final `1/1`; run `32756343623` and runtime job `97528344980`
+remain consumed evidence. The successful verifier correction does not reopen
+or reclassify that cycle. A distinct `post-requirement-part-revision` cycle
+begins at diagnostic `0/1`, product repair `0/1`, final `0/1`. All diagnostics
+remain false and this durable state transition changes no runtime, test,
+product, API, permission, transaction, Schema, ownership, adapter or target.
+
+The new cycle permits exactly one diagnostics-off unchanged
+`gate_mode=level_3` dispatch reusing ordinary `32760161981`. Level 2 shortcuts,
+reruns and other workflows are forbidden. Local/origin exact-SHA equality,
+all-diagnostics-false state, clean task paths/index and preservation of
+unrelated changes are required preconditions.
+
+PASS requires every ordinary-equivalent job, the complete governed visual
+matrix, controlled preflight and cumulative P5-through-P8-05 runtime. The
+runtime must cross the corrected disposable Requirement and Applicability and
+then complete the physical Set, exact Revision binding, Acceptance, Tool Asset
+request, atomic Outbox, leased worker, terminal replay, zero formal Asset IDs
+and zero mapping head. A failure consumes final `1/1`; only its first safe
+boundary may be read, without rerun or guessed repair.

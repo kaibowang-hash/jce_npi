@@ -505,3 +505,26 @@ Canonical Linux/amd64 SHA-256 evidence:
   repair `0/1`, final `1/1`. This verifier-only correction consumes no product
   repair and changes no product, API, permission, transaction, Schema,
   ownership, adapter, target, diagnostic or Gate behavior.
+
+### Post-requirement-part-revision final cycle
+
+- Correction SHA `9aac7bd0184a3c08e2c5e1d0577467bac6cec265`
+  passes ordinary `32760161981`: repository `97536861375`, frontend
+  `97536861638`, governed visual `97536861679` and secret scan `97536861710`
+  pass; controlled jobs skip as required for ordinary CI.
+- The `post-revision-capability` cycle is frozen at diagnostic `0/1`, product
+  repair `0/1`, final `1/1`; run `32756343623` and runtime `97528344980` remain
+  immutable. A separate `post-requirement-part-revision` cycle starts
+  diagnostic `0/1`, product repair `0/1`, final `0/1` with every diagnostic
+  activation false.
+- This cycle authorizes one diagnostics-off unchanged Level 3 using ordinary
+  `32760161981`, only after local/origin equality and clean task/index checks.
+  No shortcut, rerun or other workflow is authorized.
+- PASS requires the runtime to cross Requirement and Applicability with the
+  strict current Engineering Part Revision, then complete the disposable Set,
+  binding, Acceptance, request, Outbox, worker, terminal replay, zero formal
+  Asset IDs and zero mapping head. Failure freezes final `1/1` and permits only
+  first-safe-boundary readback.
+- No CURRENT_TASK, runtime, test, product, API, permission, transaction,
+  Schema, ownership, adapter or target change is part of this durable
+  checkpoint.
