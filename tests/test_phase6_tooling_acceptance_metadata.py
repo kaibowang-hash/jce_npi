@@ -1,16 +1,27 @@
 from __future__ import annotations
 
 import ast
+import copy
 import csv
+import importlib.util
 import json
+import sys
+import types
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CORE_DOCTYPE = ROOT / "apps/npi_core/npi_core/npi_core/doctype"
 INTEGRATION_DOCTYPE = ROOT / "apps/npi_integration/npi_integration/npi_integration/doctype"
 TRANSLATIONS = ROOT / "apps/npi_core/npi_core/translations"
+ASSET_RECEIPT_CONTROLLER = (
+    INTEGRATION_DOCTYPE
+    / "npi_tool_asset_command_idempotency"
+    / "npi_tool_asset_command_idempotency.py"
+)
 
 
 class Phase6ToolingAcceptanceMetadataTest(unittest.TestCase):
@@ -85,6 +96,194 @@ class Phase6ToolingAcceptanceMetadataTest(unittest.TestCase):
         self.assertIn('"tooling_acceptance_evidence.create": "tooling_acceptance_evidence_revision"', source)
         asset = self.fields(self.load(INTEGRATION_DOCTYPE, "npi_tool_asset_command_idempotency"))
         self.assertEqual(asset["request_global_id"].get("options"), "NPI Tool Asset Request")
+
+    def test_legacy_receipt_normalizes_frappe_int_storage_without_weakening_identity(self) -> None:
+        class PinnedPermissionError(RuntimeError):
+            pass
+
+        class PinnedValidationError(RuntimeError):
+            pass
+
+        class StubDocument:
+            def __init__(self) -> None:
+                self.flags = SimpleNamespace(in_insert=False)
+                self._before = None
+                self._stored = None
+                self.save_calls = 0
+
+            def get_doc_before_save(self):
+                return self._before
+
+            def _storage_snapshot(self):
+                snapshot = copy.copy(self)
+                snapshot.schema_version = int(self.schema_version or 0)
+                snapshot._before = None
+                snapshot._stored = None
+                return snapshot
+
+            def insert(self):
+                self.before_insert()
+                self.flags.in_insert = True
+                self.before_validate()
+                self.validate()
+                self.before_save()
+                self.flags.in_insert = False
+                self._stored = self._storage_snapshot()
+                return self
+
+            def save(self):
+                self._before = copy.copy(self._stored)
+                self.before_validate()
+                self.validate()
+                self.before_save()
+                self._stored = self._storage_snapshot()
+                self.save_calls += 1
+                return self
+
+        frappe = types.ModuleType("frappe")
+        frappe.flags = SimpleNamespace(npi_tool_asset_request_write=False)
+        frappe.PermissionError = PinnedPermissionError
+        frappe.ValidationError = PinnedValidationError
+        frappe._ = lambda value: value
+
+        def throw(message, exception):
+            raise exception(message)
+
+        frappe.throw = throw
+        frappe_model = types.ModuleType("frappe.model")
+        frappe_document = types.ModuleType("frappe.model.document")
+        frappe_document.Document = StubDocument
+
+        core_validation = types.ModuleType("npi_core.documents.frappe_validation")
+        core_validation.canonical_json = lambda value: json.dumps(
+            value, sort_keys=True, separators=(",", ":")
+        )
+        core_validation.canonical_uuid = lambda value, _label: value
+        core_validation.json_object = lambda value, _label: (
+            value if isinstance(value, dict) else json.loads(value)
+        )
+        core_validation.lowercase_sha256 = lambda value, _label: value
+        core_validation.optional_uuid = lambda value, _label: value
+        core_validation.require_exact_parent = lambda *_args, **_kwargs: SimpleNamespace(
+            payload_hash="a" * 64
+        )
+        core_validation.required_text = lambda value, _label, **_kwargs: value
+        core_validation.tenant_text = lambda value: value
+        core_validation.utc_datetime_text = lambda value, _label: str(value)
+
+        tooling_domain = types.ModuleType("npi_core.tooling.domain")
+        tooling_domain.sha256_json = lambda _value: "h" * 64
+        legacy_domain = types.ModuleType("npi_integration.tool_asset_request.domain")
+        legacy_domain.TOOL_ASSET_OPERATION = "create_or_update_tool_asset"
+        legacy_validation = types.ModuleType(
+            "npi_integration.tool_asset_request.frappe_validation"
+        )
+
+        def require_legacy_write() -> None:
+            if not frappe.flags.npi_tool_asset_request_write:
+                frappe.throw("closed", frappe.PermissionError)
+
+        legacy_validation.require_tool_asset_request_write = require_legacy_write
+        legacy_validation.deny_tool_asset_history_delete = lambda _document: None
+        execution_domain = types.ModuleType(
+            "npi_integration.tool_asset_request.execution_domain"
+        )
+        execution_domain.TOOL_ASSET_EXECUTION_SCHEMA_VERSION = 2
+        execution_domain.TOOL_ASSET_EXECUTION_OPERATIONS = (
+            "create_tool_asset",
+            "update_tool_asset",
+        )
+        execution_validation = types.ModuleType(
+            "npi_integration.tool_asset_request.execution_frappe_validation"
+        )
+        execution_validation.require_tool_asset_execution_idempotency_write = (
+            lambda: None
+        )
+        execution_validation.deny_tool_asset_execution_history_delete = lambda: None
+        modules = {
+            "frappe": frappe,
+            "frappe.model": frappe_model,
+            "frappe.model.document": frappe_document,
+            "npi_core.documents.frappe_validation": core_validation,
+            "npi_core.tooling.domain": tooling_domain,
+            "npi_integration.tool_asset_request.domain": legacy_domain,
+            "npi_integration.tool_asset_request.frappe_validation": legacy_validation,
+            "npi_integration.tool_asset_request.execution_domain": execution_domain,
+            "npi_integration.tool_asset_request.execution_frappe_validation": execution_validation,
+        }
+        spec = importlib.util.spec_from_file_location(
+            "npi_integration.p606_tool_asset_receipt_controller",
+            ASSET_RECEIPT_CONTROLLER,
+        )
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        loaded = importlib.util.module_from_spec(spec)
+        with patch.dict(sys.modules, modules):
+            spec.loader.exec_module(loaded)
+
+        def receipt(*, schema_version=None, operation=None):
+            document = loaded.NPIToolAssetCommandIdempotency()
+            document.global_id = "10000000-0000-4000-8000-000000000001"
+            document.schema_version = schema_version
+            document.receipt_key = "receipt"
+            document.tenant_id = "tenant"
+            document.project_global_id = "20000000-0000-4000-8000-000000000002"
+            document.actor_user_id = "actor@example.invalid"
+            document.operation = operation or legacy_domain.TOOL_ASSET_OPERATION
+            document.idempotency_key_hash = "b" * 64
+            document.payload_hash = "a" * 64
+            document.source_stream_key_hash = "c" * 64
+            document.profile_snapshot_hash = "d" * 64
+            document.mapping_expectation_hash = "e" * 64
+            document.request_global_id = None
+            document.response_payload = None
+            document.response_hash = None
+            document.sealed = 0
+            document.created_at = "2026-08-24 00:00:00"
+            document.updated_at = document.created_at
+            return document
+
+        outside = receipt()
+        with self.assertRaises(PinnedPermissionError):
+            outside.insert()
+
+        frappe.flags.npi_tool_asset_request_write = True
+        outside.insert()
+        frappe.flags.npi_tool_asset_request_write = False
+        with self.assertRaises(PinnedPermissionError):
+            outside.save()
+
+        frappe.flags.npi_tool_asset_request_write = True
+        document = receipt().insert()
+        stored = document._stored
+        document.request_global_id = "30000000-0000-4000-8000-000000000003"
+        document.response_payload = {
+            "globalId": document.request_global_id,
+            "payloadHash": document.payload_hash,
+        }
+        document.response_hash = "h" * 64
+        document.sealed = 1
+        document.save()
+        self.assertIsNone(document.schema_version)
+        self.assertEqual(stored.schema_version, 0)
+        self.assertEqual(document.save_calls, 1)
+
+        for before_schema, current_schema, operation in (
+            (0, 2, "create_tool_asset"),
+            (2, 0, legacy_domain.TOOL_ASSET_OPERATION),
+        ):
+            with self.subTest(
+                before_schema=before_schema,
+                current_schema=current_schema,
+            ):
+                tampered = receipt(
+                    schema_version=current_schema,
+                    operation=operation,
+                )
+                tampered._before = copy.copy(tampered)
+                tampered._before.schema_version = before_schema
+                with self.assertRaises(PinnedPermissionError):
+                    tampered.validate()
 
     def test_all_new_visible_sources_have_direct_symmetric_translations(self) -> None:
         sources: set[str] = set()

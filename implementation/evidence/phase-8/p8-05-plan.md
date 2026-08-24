@@ -683,3 +683,24 @@ type and extra-key fail-closed behavior. Server diagnostic code, API,
 repository, response, permission, transaction and product behavior are
 unchanged. A new diagnostic dispatch is prohibited until this checkpoint
 passes affected Level 1 and exact-SHA ordinary CI.
+
+The corrected diagnostic dispatch `32687547589` / controlled job
+`97315303938` emitted exactly
+`P805_P606_ASSET_RECEIPT_SEAL / PermissionError /
+trace-094ac4bd2cf15cac884914224d752ba1`. Static execution-order and pinned
+Frappe v15 storage cross-proof uniquely locate the first failure in the shared
+receipt controller's new raw immutable comparison: a legacy P6 receipt omits
+the additive Int `schema_version`, so the same in-memory document retains
+`None` while Frappe persists and reloads database truth as `0`. The seal save
+therefore compared `None` with `0` and raised before any sealed-response
+predicate. The legacy write flag remains active around insert, request, audit
+and seal; permissions, links and the P8-05 execution capability are not the
+root.
+
+The predecessor cycle is now diagnostic `1/1`, uniquely proved product repair
+`1/1`, final `0/1`. The bounded repair treats only `None` and `0` as the same
+legacy storage representation for immutable `schema_version`; nonzero changes,
+all other raw immutable fields, the one-way seal, validation ordering,
+capability and transaction boundaries remain unchanged. The temporary parent
+activation is closed. Diagnostic run `32686039575` remains immutable harness
+failure evidence and consumes no product counter.

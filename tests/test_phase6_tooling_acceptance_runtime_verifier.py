@@ -199,6 +199,7 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
             trace_id,
         )
         with (
+            patch.object(module, "P606_ASSET_CREATE_DIAGNOSTICS_ENABLED", True),
             patch.object(module.item_runtime, "_replay_diagnostic_log_cursors", return_value={"cursor": 0}),
             patch.object(module.document_runtime, "request", return_value=result) as request,
             patch.object(
@@ -337,6 +338,7 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
         )
         failure.headers["X-Request-ID"] = headers["X-Request-ID"]
         with (
+            patch.object(module, "P606_ASSET_CREATE_DIAGNOSTICS_ENABLED", True),
             patch.object(module.item_runtime, "_replay_diagnostic_log_cursors", return_value=None),
             patch.object(module.document_runtime, "request", return_value=failure),
             patch.object(module.item_runtime, "_sanitized_server_log_diagnostic", return_value=None),
@@ -349,6 +351,41 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
                     module.ASSET_REQUEST_KEY, asset_create_diagnostic=True,
                 )
         self.assertNotIn("body-value", str(raised.exception))
+
+    def test_asset_create_diagnostic_is_dormant_by_default(self) -> None:
+        module = self.module
+        self.assertFalse(module.P606_ASSET_CREATE_DIAGNOSTICS_ENABLED)
+        path = module.asset_request_command_path(
+            "10000000-0000-4000-8000-000000000001",
+            "20000000-0000-4000-8000-000000000002",
+            "30000000-0000-4000-8000-000000000003",
+        )
+        failure = SimpleNamespace(
+            status=500,
+            headers={},
+            body={"private": "must not leak"},
+            trace_id="trace-" + "e" * 32,
+        )
+        with (
+            patch.object(module.predecessor, "tooling_request", return_value=failure) as predecessor,
+            patch.object(module.item_runtime, "_replay_diagnostic_log_cursors") as cursors,
+            patch.object(module.document_runtime, "request") as direct,
+            patch.object(module.item_runtime, "_sanitized_server_log_diagnostic") as reader,
+        ):
+            with self.assertRaises(RuntimeError):
+                module.command(
+                    object(),
+                    "http://127.0.0.1:8003",
+                    "csrf",
+                    path,
+                    {},
+                    module.ASSET_REQUEST_KEY,
+                    asset_create_diagnostic=True,
+                )
+        predecessor.assert_called_once()
+        cursors.assert_not_called()
+        direct.assert_not_called()
+        reader.assert_not_called()
 
     def test_asset_create_diagnostic_allowlist_has_one_product_context_per_code(self) -> None:
         module = self.module

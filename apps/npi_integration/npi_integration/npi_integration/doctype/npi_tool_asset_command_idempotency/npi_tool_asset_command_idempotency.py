@@ -75,11 +75,15 @@ class NPIToolAssetCommandIdempotency(Document):
         before = self.get_doc_before_save()
         if before is not None:
             immutable = (
-                "global_id", "schema_version", "receipt_key", "tenant_id", "project_global_id", "actor_user_id",
+                "global_id", "receipt_key", "tenant_id", "project_global_id", "actor_user_id",
                 "operation", "idempotency_key_hash", "payload_hash", "source_stream_key_hash",
                 "profile_snapshot_hash", "mapping_expectation_hash",
             )
-            if any(getattr(before, name) != getattr(self, name) for name in immutable) or utc_datetime_text(before.created_at, _("Created At")) != created_at:
+            if (
+                int(before.schema_version or 0) != int(self.schema_version or 0)
+                or any(getattr(before, name) != getattr(self, name) for name in immutable)
+                or utc_datetime_text(before.created_at, _("Created At")) != created_at
+            ):
                 frappe.throw(_("The Tool Asset command receipt identity cannot be changed."), frappe.PermissionError)
             if int(before.sealed or 0) == 1:
                 frappe.throw(_("A sealed Tool Asset command receipt cannot be changed."), frappe.PermissionError)

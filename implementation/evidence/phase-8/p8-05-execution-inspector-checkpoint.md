@@ -125,3 +125,29 @@ Canonical Linux/amd64 SHA-256 evidence:
   scope and trace correlation, single logical mirrored record acceptance,
   duplicate/divergent/invalid fail-closed behavior and the no-leak boundary.
   Server/product/API/permission/transaction/Schema/ownership code is unchanged.
+
+### P6-06 predecessor receipt-seal product repair
+
+- With the reader labels corrected, diagnostic run `32687547589`, controlled
+  job `97315303938`, emits the sole tuple
+  `P805_P606_ASSET_RECEIPT_SEAL / PermissionError /
+  trace-094ac4bd2cf15cac884914224d752ba1`.
+- The first-source cross-proof is deterministic: the legacy P6 insert leaves
+  additive Int `schema_version` absent on the same in-memory receipt, Frappe
+  v15 serializes that value as database `0`, and the seal save reloads `0` as
+  its before-document. P8-05 had added `schema_version` to a raw immutable
+  tuple, so `None != 0` raised before sealed-response validation. The receipt
+  insert already passed; the seal remains inside the same legacy write scope,
+  and DocType permissions are unchanged, excluding capability and permission
+  drift.
+- Product repair `1/1` normalizes only the immutable schema comparison through
+  `int(value or 0)`. It does not change persisted values, Schema, API,
+  permission, ownership, transaction order, raw comparison of every other
+  immutable field or the one-way seal. Pinned lifecycle coverage locks the
+  same-object `None` to database-`0` insert/seal path, nonzero schema tampering
+  and the closed write scope. Repository coverage retains receipt, request,
+  audit and one-save seal ordering with no manual commit or rollback.
+- The predecessor cycle is diagnostic `1/1`, repair `1/1`, final `0/1`.
+  `P606_ASSET_CREATE_DIAGNOSTICS_ENABLED` is false; the safe mechanism remains
+  dormant. The earlier reader run remains harness-only history and no prior
+  P8-05 cycle counter is reopened.

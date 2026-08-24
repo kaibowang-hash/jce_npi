@@ -129,6 +129,23 @@ class Phase6ToolingAcceptanceRepositoryTest(unittest.TestCase):
             '"targetResultState": "not_requested"',
         ):
             self.assertIn(exact_marker, body)
+        self.assertNotIn(".commit(", body)
+        self.assertNotIn(".rollback(", body)
+
+        seal = method(ASSET, ASSET_TREE, "_seal_asset_receipt")
+        mutations = (
+            "receipt.request_global_id =",
+            "receipt.response_payload =",
+            "receipt.response_hash =",
+            "receipt.sealed = 1",
+            "receipt.updated_at =",
+            "receipt.save()",
+        )
+        positions = [seal.index(marker) for marker in mutations]
+        self.assertEqual(positions, sorted(positions))
+        self.assertEqual(seal.count("receipt.save()"), 1)
+        self.assertNotIn(".commit(", seal)
+        self.assertNotIn(".rollback(", seal)
 
     def test_asset_create_diagnostic_stages_are_unique_and_inner_write_boundaries_win(self) -> None:
         body = method(ASSET, ASSET_TREE, "create_asset_request")
