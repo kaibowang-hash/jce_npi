@@ -102,6 +102,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         self.frappe.local = types.SimpleNamespace(
             response=types.SimpleNamespace(http_status_code=200),
             request=types.SimpleNamespace(method="GET"),
+            form_dict={},
         )
         self.frappe.get_request_header = lambda name: self.headers.get(name)
         self.frappe.get_hooks = lambda _name: []
@@ -204,10 +205,15 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             if self.saved[name] is not None:
                 sys.modules[name] = self.saved[name]
 
-    @staticmethod
-    def _reject(allowed: frozenset[str], fields: dict[str, object]) -> None:
-        if set(fields) - set(allowed):
-            raise AssertionError("unexpected field")
+    def _reject(
+        self,
+        allowed: frozenset[str],
+        fields: dict[str, object],
+    ) -> None:
+        field_names = set(self.frappe.local.form_dict)
+        field_names.update(fields)
+        if field_names - set(allowed) - {"cmd"}:
+            raise self.api.RequestValidationFailed()
 
     @staticmethod
     def _require(required: frozenset[str], fields: dict[str, object]) -> None:
@@ -315,6 +321,79 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         self.api.get_tool_asset_execution_request()
         self.assertEqual(self.repository.calls[-1][0], "detail")
         self.assertEqual(str(self.repository.calls[-1][1][-1]), REQUEST)
+
+    def test_collection_normalizes_only_its_named_frappe_query_field(self) -> None:
+        self.assertEqual(
+            self.api._EXECUTION_LIST_FIELDS,
+            frozenset({"acceptanceRevisionGlobalId"}),
+        )
+        command = (
+            "npi_integration.tool_asset_request_api."
+            "get_tool_asset_execution_requests"
+        )
+        self.frappe.local.form_dict = {
+            "cmd": command,
+            "acceptanceRevisionGlobalId": ACCEPTANCE,
+        }
+        self.api.get_tool_asset_execution_requests(
+            acceptanceRevisionGlobalId=ACCEPTANCE,
+            cmd=command,
+        )
+        self.assertEqual(self.repository.calls[-1][0], "list")
+
+        self.api._execution_query_context(
+            {
+                "cmd": command,
+                "acceptanceRevisionGlobalId": ACCEPTANCE,
+            },
+            allowed_fields=self.api._EXECUTION_LIST_FIELDS,
+        )
+
+        for form_fields, keyword_fields in (
+            (
+                {
+                    "cmd": command,
+                    "acceptanceRevisionGlobalId": ACCEPTANCE,
+                    "unexpected": "wrong",
+                },
+                {},
+            ),
+            (
+                {
+                    "cmd": command,
+                    "acceptanceRevisionGlobalId": ACCEPTANCE,
+                },
+                {"unexpected": "wrong"},
+            ),
+            (
+                {
+                    "cmd": command,
+                    "acceptanceRevisionGlobalID": ACCEPTANCE,
+                },
+                {},
+            ),
+        ):
+            with self.subTest(
+                form_fields=tuple(form_fields),
+                keyword_fields=tuple(keyword_fields),
+            ):
+                self.frappe.local.form_dict = form_fields
+                with self.assertRaises(self.api.RequestValidationFailed):
+                    self.api.get_tool_asset_execution_requests(
+                        acceptanceRevisionGlobalId=ACCEPTANCE,
+                        **keyword_fields,
+                    )
+
+    def test_detail_keeps_query_fields_closed(self) -> None:
+        self.frappe.local.form_dict = {
+            "cmd": (
+                "npi_integration.tool_asset_request_api."
+                "get_tool_asset_execution_request"
+            ),
+            "acceptanceRevisionGlobalId": ACCEPTANCE,
+        }
+        with self.assertRaises(self.api.RequestValidationFailed):
+            self.api.get_tool_asset_execution_request()
 
     def test_command_context_diagnostic_is_exact_scope_same_exception_and_restored(self) -> None:
         diagnostics = importlib.import_module(

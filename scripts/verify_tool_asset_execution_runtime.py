@@ -28,7 +28,7 @@ ACKNOWLEDGEMENT = (
     "I confirm this request may create one formal ERP Asset only from the exact "
     "physical Tooling Set, separate business approval, mapping state, and execution profile."
 )
-TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = True
+TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = False
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE = "p805-tool-asset-command-context-v1"
 _TOOL_ASSET_CONTEXT_PARENT_CODES = frozenset(

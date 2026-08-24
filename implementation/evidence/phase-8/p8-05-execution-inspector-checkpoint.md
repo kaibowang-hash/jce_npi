@@ -366,3 +366,24 @@ Canonical Linux/amd64 SHA-256 evidence:
   business value, identifier, count, actor, message or stack is exposed; no
   product write/order, permission, transaction, API contract, Schema,
   ownership, adapter, target or Gate semantics change.
+
+### Command-context HTTP-boundary repair
+
+- Exact diagnostic checkpoint `b38f3cf9f419c82b3552bdd5fd4dd58e5c182632`
+  passes ordinary `32727690270`. Controlled run `32729074121`, runtime job
+  `97437071555`, emits only
+  `P805_TOOL_ASSET_CONTEXT_REQUEST_FIELDS / RequestValidationFailed /
+  trace-606876fcd3af5fe2bd258f8c8a8c94df`.
+- Pinned Frappe preserves the named collection query field in `form_dict` as
+  it binds the same field to the whitelisted handler argument. The unique
+  stage then passed an empty allowed set to the shared unexpected-field
+  checker. The BFF keeps route parameters outside `form_dict`, the framework
+  transport field is already handled centrally, and verifier tests lock the
+  sole exact query, eliminating verifier, route, header and extra-field roots.
+- Product repair `1/1` permits only `acceptanceRevisionGlobalId` on this list
+  wrapper. The detail wrapper remains empty-query, unknown fields remain
+  `RequestValidationFailed`, and shared request security is unchanged.
+- `TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED=False`; no scope is sent and no log
+  reader is used in normal runtime. Dormant response-neutral diagnostics stay
+  covered. The cycle is diagnostic `1/1`, repair `1/1`, final `0/1` pending
+  exact-SHA ordinary and unchanged Level 3 proof.

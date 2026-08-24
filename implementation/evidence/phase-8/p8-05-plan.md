@@ -985,3 +985,32 @@ apply. No response body, status value, business value, identifier, count,
 actor, exception message or stack is inspected or emitted. Product writes,
 call order, permission, transaction, API contracts, Schema, ownership,
 profile, adapter, target and Gate behavior remain unchanged.
+
+## 27. Command-context HTTP-boundary product repair
+
+HTTP-boundary checkpoint `b38f3cf9f419c82b3552bdd5fd4dd58e5c182632`
+passes ordinary CI `32727690270`. Its sole controlled diagnostic run
+`32729074121`, runtime job `97437071555`, yields the unique safe tuple
+`P805_TOOL_ASSET_CONTEXT_REQUEST_FIELDS / RequestValidationFailed /
+trace-606876fcd3af5fe2bd258f8c8a8c94df`.
+
+The stage contains one expression: the collection wrapper's unexpected-field
+check. Pinned Frappe calls the whitelisted method from the complete
+`form_dict`; its named query parameter is therefore both bound to the handler
+argument and still visible to the shared field checker. The wrapper passed an
+empty allowed set even though `acceptanceRevisionGlobalId` is its sole public
+query field. BFF route parameters are held separately, the existing transport
+field remains excluded by the shared helper, and the verifier already proves
+an exact GET path with exactly that one URL-encoded query. The root is thus the
+product wrapper's endpoint-specific normalization, not a verifier query,
+route, header or authorization defect.
+
+Repair `1/1` supplies the exact collection-only allowed set. The detail route
+still supplies an empty set; unknown or additional business fields still
+raise `RequestValidationFailed`; shared transport and security logic is not
+relaxed. The diagnostic activation returns to `False`, while the strict
+response-neutral mechanisms remain dormant. There is no API contract,
+permission, Project-first authorization, transaction, Schema, ownership,
+repository, adapter, target or Gate change. This cycle is now diagnostic
+`1/1`, repair `1/1`, final `0/1`, pending exact-SHA ordinary and unchanged
+final proof.

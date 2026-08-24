@@ -4952,3 +4952,30 @@ repeat or rewrite it merely to restore context. See
   permission, transaction, API contract, Schema, ownership, adapter, target
   or Gate change.
 - Controller marker: `P8-05 final held; command-context-http-boundary diagnostic 0/1 active`.
+
+## 2026-08-24 P8-05 command-context HTTP-boundary product repair
+
+- Exact checkpoint `b38f3cf9f419c82b3552bdd5fd4dd58e5c182632`
+  passes ordinary CI `32727690270`. Its sole controlled diagnostic
+  `32729074121`, runtime job `97437071555`, returns exactly
+  `P805_TOOL_ASSET_CONTEXT_REQUEST_FIELDS / RequestValidationFailed /
+  trace-606876fcd3af5fe2bd258f8c8a8c94df`.
+- The unique lexical boundary is the collection query's call to
+  `reject_unexpected_request_fields`. Pinned Frappe dispatch retains the named
+  query parameter in `form_dict` while passing it to the named handler
+  argument. The endpoint supplied an empty allowed set, so its own public
+  `acceptanceRevisionGlobalId` field was rejected. The BFF stores route
+  parameters separately, `cmd` remains the existing transport exception, and
+  the runtime request is already locked to the exact GET path and sole query;
+  no verifier query defect or second candidate remains.
+- Product repair `1/1` allows only `acceptanceRevisionGlobalId` for the
+  collection wrapper. Detail remains query-closed and every unknown business
+  field remains fail-closed through the unchanged shared helper and transport
+  rules. Authentication, Project-first authorization, route parsing,
+  repository reads, response, permission, transaction, Schema, ownership,
+  adapter, target and Gate semantics do not change.
+- Temporary command-context activation is closed. The response-neutral server
+  and parent mechanisms remain dormant for regression coverage and emit no
+  scope or log read in normal runtime.
+- The HTTP-boundary cycle is diagnostic `1/1`, repair `1/1`, final `0/1`.
+- Controller marker: `P8-05 final held; command-context HTTP-boundary repair 1/1 awaits exact-SHA ordinary proof`.

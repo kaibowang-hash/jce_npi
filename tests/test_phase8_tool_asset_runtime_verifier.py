@@ -166,7 +166,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 )
             request.assert_called_once()
 
-    def test_enabled_collection_binds_exact_acceptance_query_and_strict_context(self):
+    def test_enabled_collection_binds_exact_query_with_diagnostics_dormant(self):
+        self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
         project_id = str(UUID(int=1))
         master_id = str(UUID(int=2))
         set_id = str(UUID(int=3))
@@ -239,9 +240,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 {
                     "method": "GET",
                     "query_key": "enabled",
-                    "diagnostic_scope": (
-                        self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
-                    ),
+                    "diagnostic_scope": None,
                 },
             )
 
@@ -292,14 +291,16 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "_retained_context",
             return_value=(context, acceptance),
         ), patch.object(
-            self.verifier,
-            "execution_request",
-            side_effect=(listed, PostReached),
+            self.verifier.item_runtime,
+            "_replay_diagnostic_log_cursors",
+        ) as cursor_reader, patch.object(
+            self.verifier, "execution_request", side_effect=(listed, PostReached)
         ) as request:
             with self.assertRaises(PostReached):
                 self.verifier.run_fresh(
                     "http://127.0.0.1:8003", "fixture-password"
                 )
+            cursor_reader.assert_not_called()
             first_args, first_kwargs = request.call_args_list[0]
             split = urlsplit(first_args[2])
             self.assertEqual(
@@ -315,9 +316,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 {
                     "method": "GET",
                     "query_key": "enabled",
-                    "diagnostic_scope": (
-                        self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
-                    ),
+                    "diagnostic_scope": None,
                 },
             )
             self.assertEqual(request.call_count, 2)
@@ -329,6 +328,14 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.assertEqual(post_kwargs["method"], "POST")
 
     def test_command_context_diagnostic_is_ordered_trace_bound_and_value_free(self):
+        self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
+        self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = True
+        self.addCleanup(
+            setattr,
+            self.verifier,
+            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            False,
+        )
         trace_id = "trace-" + "a" * 32
         secret = "private-command-context-value"
         create = {"opaque": secret}
@@ -487,6 +494,14 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 self.assertEqual(source.count(f'"{code}"'), 1)
 
     def test_http_failure_classes_are_closed_value_free_and_always_read_server_log(self):
+        self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
+        self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = True
+        self.addCleanup(
+            setattr,
+            self.verifier,
+            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            False,
+        )
         trace_id = "trace-" + "c" * 32
         secret = "private-http-status-value"
         cases = (

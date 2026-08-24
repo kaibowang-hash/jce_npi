@@ -62,6 +62,7 @@ _EXECUTION_FIELDS = frozenset(
         "acknowledgement",
     }
 )
+_EXECUTION_LIST_FIELDS = frozenset({"acceptanceRevisionGlobalId"})
 _CREATE_EXECUTION_ACKNOWLEDGEMENT = (
     "I confirm this request may create one formal ERP Asset only from the exact "
     "physical Tooling Set, separate business approval, mapping state, and execution profile."
@@ -331,7 +332,10 @@ def get_tool_asset_execution_requests(
             acceptanceRevisionGlobalId,
         ):
             request_id, repository, project_id, master_id, tooling_set_id = (
-                _execution_query_context(request_fields)
+                _execution_query_context(
+                    request_fields,
+                    allowed_fields=_EXECUTION_LIST_FIELDS,
+                )
             )
             with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_QUERY_PARSE"):
                 acceptance_revision_id = (
@@ -377,7 +381,10 @@ def get_tool_asset_execution_request(
 
     def handle() -> dict[str, Any]:
         request_id, repository, project_id, master_id, tooling_set_id = (
-            _execution_query_context(request_fields)
+            _execution_query_context(
+                request_fields,
+                allowed_fields=frozenset(),
+            )
         )
         response = repository.execution_request_detail(
             project_id,
@@ -570,6 +577,8 @@ def _execution_command(
 
 def _execution_query_context(
     request_fields: dict[str, Any],
+    *,
+    allowed_fields: frozenset[str],
 ) -> tuple[str, _Repository, UUID, UUID, UUID]:
     with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_ROUTES_ENABLED"):
         require_tooling_acceptance_assets_routes_enabled()
@@ -590,7 +599,7 @@ def _execution_query_context(
         if not repository.authorize_scope(project_id):
             raise ToolAssetExecutionUnavailable()
     with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_REQUEST_FIELDS"):
-        reject_unexpected_request_fields(frozenset(), request_fields)
+        reject_unexpected_request_fields(allowed_fields, request_fields)
     with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_MASTER_ROUTE"):
         master_id = _opaque_route_uuid("tooling_master_id")
     with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_SET_ROUTE"):
