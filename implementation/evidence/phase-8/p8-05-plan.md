@@ -750,3 +750,18 @@ remediation reuses the proven P8-01 predicates before `exact_single`; imported
 targets remain intact and missing, duplicate, malformed, wrong-Project or
 revision-mismatched originals fail constant-safe without row-value leakage.
 No product counter, diagnostic activation or external authority changes.
+
+Final run `32694547012` / controlled runtime `97335728724` exposed a defect
+in that second verifier remediation itself: initial P6-03 fresh setup failed
+before P6-07 because the workspace Part response does not project
+`originatingProjectGlobalId`. This is harness regression evidence only and
+does not consume a product, diagnostic or final counter.
+
+The corrected stable predicate exactly reuses the full P8-01 containment
+chain. It derives linked Part IDs from applicability rows whose
+`projectGlobalId` and `toolingMasterGlobalId` match the Project-first context
+and selected original Master, then requires the original revised title and
+current-revision self/version/label truth before `exact_single`. It works for
+the initial projection, which has no Part origin field, and excludes later
+P6-07 target Parts without deleting them. Missing, duplicate, malformed,
+wrong-edge or revision-mismatched truth remains constant-safe and value-free.

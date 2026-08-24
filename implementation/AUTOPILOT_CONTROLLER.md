@@ -4735,3 +4735,21 @@ repeat or rewrite it merely to restore context. See
   product or diagnostic counter and changes no product, permission,
   transaction, Schema, ownership, profile or target behavior. Exact-SHA
   ordinary CI is required before the sole final Gate may resume.
+
+## 2026-08-24 P8-05 initial-projection retained-Part harness correction
+
+- Final run `32694547012` passes secret, repository, frontend, governed visual
+  and controlled preflight. Controlled runtime `97335728724` stops during
+  initial P6-03 fresh context in the new retained-Part selector, before P6-07
+  and all P8 execution. The workspace Part response does not project
+  `originatingProjectGlobalId`, so the direct field predicate introduced by
+  the preceding harness remediation cannot match. This is harness regression
+  evidence and consumes no product, diagnostic or final counter.
+- The bounded correction uses the P8-01-established containment chain instead:
+  derive linked Part IDs only from exact Project/Master applicability edges,
+  then apply original title plus current-revision self/version/label predicates
+  before the unchanged uniqueness assertion. This works in initial and later
+  retained projections, preserves all P6-07 targets and keeps missing,
+  duplicate, malformed, wrong-edge and revision-mismatched truth constant-safe
+  without value disclosure. Product, permission, transaction, Schema,
+  ownership, profile and target behavior remain unchanged.

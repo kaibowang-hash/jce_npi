@@ -187,3 +187,17 @@ Canonical Linux/amd64 SHA-256 evidence:
   duplicate, malformed, wrong-Project and revision-mismatched originals fail
   closed with no row-value disclosure. Product code, profile, diagnostics,
   permission, transaction, Schema, ownership and target behavior are unchanged.
+
+### Initial-projection retained-Part harness correction
+
+- Final run `32694547012`, controlled runtime `97335728724`, fails during the
+  initial P6-03 fresh context rather than a later P8-05 boundary. The newly
+  added direct Part `originatingProjectGlobalId` predicate cannot match because
+  that field is not present in the workspace Part response. This is a verifier
+  harness regression and changes no cycle counter or product conclusion.
+- The corrected selector derives Project containment from the exact
+  Project/Master applicability edge already proven by P8-01, then applies the
+  exact original title and current-revision self/version/label predicates.
+  Initial no-origin projection and later retained-target projection are both
+  covered; P6-07 targets remain intact and every missing, duplicate,
+  malformed, wrong-edge or revision mismatch stays fail-closed and value-safe.

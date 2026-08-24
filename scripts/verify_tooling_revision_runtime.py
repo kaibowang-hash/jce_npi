@@ -141,18 +141,32 @@ def exact_retained_master(values: object, project_id: str) -> dict[str, object]:
     )
 
 
-def exact_retained_part(values: object, project_id: str) -> dict[str, object]:
+def exact_retained_part(
+    values: object,
+    applicability: object,
+    project_id: str,
+    master_id: str,
+) -> dict[str, object]:
     require(
-        isinstance(values, list),
+        isinstance(values, list) and isinstance(applicability, list),
         "P6-03 retained P6-01 Part collection drifted",
     )
+    linked_part_ids = {
+        str(value["part"]["partGlobalId"])
+        for value in applicability
+        if isinstance(value, dict)
+        and value.get("projectGlobalId") == project_id
+        and value.get("toolingMasterGlobalId") == master_id
+        and isinstance(value.get("part"), dict)
+        and isinstance(value["part"].get("partGlobalId"), str)
+    }
     return predecessor.exact_single(
         [
             value
             for value in values
             if isinstance(value, dict)
             and value.get("title") == RETAINED_PART_TITLE
-            and value.get("originatingProjectGlobalId") == project_id
+            and value.get("globalId") in linked_part_ids
             and isinstance(value.get("currentRevision"), dict)
             and value["currentRevision"].get("partGlobalId")
             == value.get("globalId")
@@ -666,7 +680,12 @@ def project_context(
         exact_retained_master(workspace.body.get("masters"), project_id).get("globalId"),
         "P6-03 Tooling Master",
     )
-    retained_part = exact_retained_part(workspace.body.get("parts"), project_id)
+    retained_part = exact_retained_part(
+        workspace.body.get("parts"),
+        workspace.body.get("applicability"),
+        project_id,
+        master_id,
+    )
     retained_revision_rows = predecessor.rows(
         administrator,
         base_url,

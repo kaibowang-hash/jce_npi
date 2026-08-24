@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import inspect
 import os
 import sys
 import unittest
@@ -267,10 +268,10 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
     def test_retained_part_selection_tolerates_imported_target_parts(self) -> None:
         module = self.module
         project_id = "10000000-0000-4000-8000-000000000001"
+        master_id = "50000000-0000-4000-8000-000000000005"
         original = {
             "globalId": "20000000-0000-4000-8000-000000000002",
             "title": module.RETAINED_PART_TITLE,
-            "originatingProjectGlobalId": project_id,
             "currentRevision": {
                 "partGlobalId": "20000000-0000-4000-8000-000000000002",
                 "revisionNumber": 2,
@@ -281,49 +282,95 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
             {
                 "globalId": f"30000000-0000-4000-8000-00000000000{index}",
                 "title": f"Synthetic corrected part {index}",
-                "originatingProjectGlobalId": project_id,
                 "currentRevision": {},
             }
             for index in (3, 4)
         ]
+        applicability = [
+            {
+                "projectGlobalId": project_id,
+                "toolingMasterGlobalId": master_id,
+                "part": {"partGlobalId": original["globalId"]},
+            }
+        ]
 
         self.assertIs(
-            module.exact_retained_part([*imported_targets, object(), original], project_id),
+            module.exact_retained_part(
+                [*imported_targets, object(), original],
+                applicability,
+                project_id,
+                master_id,
+            ),
             original,
         )
+        self.assertNotIn(
+            "originatingProjectGlobalId",
+            inspect.getsource(module.exact_retained_part),
+        )
+
+    def test_retained_part_selector_matches_the_workspace_source_contract(self) -> None:
+        repository = (
+            ROOT / "apps/npi_core/npi_core/tooling/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        source = repository[
+            repository.index("    def _part_response(") : repository.index(
+                "    def _revision_response("
+            )
+        ]
+        for field in ("globalId", "title", "version", "currentRevision", "source"):
+            with self.subTest(field=field):
+                self.assertIn(f'"{field}"', source)
+        self.assertNotIn("originatingProjectGlobalId", source)
 
     def test_retained_part_selection_fails_closed_without_leaking_rows(self) -> None:
         module = self.module
         project_id = "10000000-0000-4000-8000-000000000001"
+        master_id = "50000000-0000-4000-8000-000000000005"
         sentinel = "PRIVATE-PART-VALUE"
         original = {
             "globalId": sentinel,
             "title": module.RETAINED_PART_TITLE,
-            "originatingProjectGlobalId": project_id,
             "currentRevision": {
                 "partGlobalId": sentinel,
                 "revisionNumber": 2,
                 "revisionLabel": "B",
             },
         }
-        wrong_project = dict(original, originatingProjectGlobalId="other-project")
+        exact_edge = {
+            "projectGlobalId": project_id,
+            "toolingMasterGlobalId": master_id,
+            "part": {"partGlobalId": sentinel},
+        }
+        wrong_project = dict(exact_edge, projectGlobalId="other-project")
+        wrong_master = dict(exact_edge, toolingMasterGlobalId="other-master")
         wrong_self = dict(original, currentRevision=dict(original["currentRevision"], partGlobalId="other"))
         wrong_version = dict(original, currentRevision=dict(original["currentRevision"], revisionNumber=1))
         wrong_label = dict(original, currentRevision=dict(original["currentRevision"], revisionLabel="A"))
         cases = (
-            None,
-            [],
-            [original, dict(original)],
-            [{"globalId": sentinel}],
-            [wrong_project],
-            [wrong_self],
-            [wrong_version],
-            [wrong_label],
+            (None, [exact_edge]),
+            ([], [exact_edge]),
+            ([original], None),
+            ([original, dict(original)], [exact_edge]),
+            ([{"globalId": sentinel}], [exact_edge]),
+            ([original], [wrong_project]),
+            ([original], [wrong_master]),
+            ([original], [{"part": sentinel}]),
+            ([wrong_self], [exact_edge]),
+            ([wrong_version], [exact_edge]),
+            ([wrong_label], [exact_edge]),
         )
-        for values in cases:
-            with self.subTest(values_type=type(values).__name__):
+        for values, applicability in cases:
+            with self.subTest(
+                values_type=type(values).__name__,
+                applicability_type=type(applicability).__name__,
+            ):
                 with self.assertRaises(RuntimeError) as raised:
-                    module.exact_retained_part(values, project_id)
+                    module.exact_retained_part(
+                        values,
+                        applicability,
+                        project_id,
+                        master_id,
+                    )
                 self.assertNotIn(sentinel, str(raised.exception))
 
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:

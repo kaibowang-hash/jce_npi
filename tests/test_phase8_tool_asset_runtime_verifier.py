@@ -73,6 +73,21 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("exact_retained_master", revision)
         self.assertIn("exact_retained_part", revision)
         self.assertIn("originatingProjectGlobalId", revision)
+        retained_part_source = revision[
+            revision.index("def exact_retained_part(") : revision.index("\ndef command(")
+        ]
+        self.assertNotIn("originatingProjectGlobalId", retained_part_source)
+        project_context_source = revision[
+            revision.index("def project_context(") : revision.index("\ndef dedicated_part_context(")
+        ]
+        self.assertLess(
+            project_context_source.index("exact_retained_master("),
+            project_context_source.index("exact_retained_part("),
+        )
+        self.assertIn(
+            'workspace.body.get("applicability")',
+            project_context_source,
+        )
 
 
 if __name__ == "__main__":
