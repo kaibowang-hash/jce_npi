@@ -669,3 +669,17 @@ changes no response, permission, transaction, ownership, Schema, worker,
 adapter or target behavior and discloses no status, body, business value,
 identity, hash, actor, message or stack. Product repair remains prohibited
 until one tuple uniquely proves a root.
+
+Diagnostic dispatch `32686039575` / controlled job `97311234126` reached the
+safe mirrored reader, but the new parent verifier destructured its established
+`(exception_type, code, trace)` return contract as `(code, exception_type,
+trace)`. It therefore rendered the two labels in reverse. This is a bounded
+verifier harness failure, not product evidence: predecessor-cycle diagnostic,
+repair and final counters remain `0/1`, `0/1`, `0/1`.
+
+The response-neutral remediation corrects only that parent tuple unpacking and
+locks single/mirrored success plus duplicate, divergent, wrong-trace, invalid-
+type and extra-key fail-closed behavior. Server diagnostic code, API,
+repository, response, permission, transaction and product behavior are
+unchanged. A new diagnostic dispatch is prohibited until this checkpoint
+passes affected Level 1 and exact-SHA ordinary CI.

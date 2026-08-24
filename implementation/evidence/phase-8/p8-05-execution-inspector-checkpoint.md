@@ -113,3 +113,15 @@ Canonical Linux/amd64 SHA-256 evidence:
   cycle is diagnostic `0/1`, repair `0/1`, final `0/1`; its temporary
   response-neutral activation is not product repair evidence and grants no
   ERPNext, permission, transaction, Schema, ownership or Gate authority.
+
+### P6-06 diagnostic reader harness remediation
+
+- Diagnostic run `32686039575`, controlled job `97311234126`, is harness-only
+  failure evidence: the parent reversed the existing strict reader's
+  `(exception_type, code, trace)` tuple labels. It does not consume the
+  predecessor product diagnostic or repair allowance and proves no product
+  root.
+- The minimal correction is verifier/test/evidence only. It preserves exact
+  scope and trace correlation, single logical mirrored record acceptance,
+  duplicate/divergent/invalid fail-closed behavior and the no-leak boundary.
+  Server/product/API/permission/transaction/Schema/ownership code is unchanged.

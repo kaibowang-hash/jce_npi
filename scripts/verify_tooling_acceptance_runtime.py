@@ -217,7 +217,7 @@ def command(
             allowed_codes=_P606_ASSET_CREATE_DIAGNOSTIC_CODES,
         )
         if diagnostic is not None:
-            code, exception_type, trace_id = diagnostic
+            exception_type, code, trace_id = diagnostic
             raise RuntimeError(
                 "P6-06 Tool Asset predecessor command failed "
                 f"[diagnostic_code={code}; exception_type={exception_type}; "

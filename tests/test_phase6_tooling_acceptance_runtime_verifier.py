@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -192,8 +194,8 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
             trace_id=trace_id,
         )
         tuple_value = (
-            "P805_P606_ASSET_REQUEST_INSERT",
             "ValidationError",
+            "P805_P606_ASSET_REQUEST_INSERT",
             trace_id,
         )
         with (
@@ -234,6 +236,69 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertNotIn("must not leak", str(raised.exception))
         self.assertNotIn("500", str(raised.exception))
+
+    def test_asset_create_reader_accepts_one_logical_record_and_rejects_ambiguity(self) -> None:
+        module = self.module
+        trace_id = "trace-" + "c" * 32
+        code = "P805_P606_ASSET_REQUEST_INSERT"
+        valid = {
+            "code": code,
+            "exceptionType": "ValidationError",
+            "traceId": trace_id,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            bench = Path(directory).resolve()
+            with patch.object(module.item_runtime, "BENCH_PATH", bench):
+                paths = module.item_runtime._replay_diagnostic_log_paths()
+
+                def prepare() -> dict[str, int]:
+                    for path in paths:
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_text("prior\n", encoding="utf-8")
+                    cursors = module.item_runtime._replay_diagnostic_log_cursors()
+                    self.assertIsNotNone(cursors)
+                    return cursors or {}
+
+                def read(cursors):
+                    return module.item_runtime._sanitized_server_log_diagnostic(
+                        trace_id,
+                        cursors,
+                        code_prefix="P805_P606_ASSET_",
+                        allowed_codes=module._P606_ASSET_CREATE_DIAGNOSTIC_CODES,
+                    )
+
+                cursors = prepare()
+                with paths[0].open("a", encoding="utf-8") as stream:
+                    stream.write(json.dumps(valid) + "\n")
+                self.assertEqual(read(cursors), ("ValidationError", code, trace_id))
+
+                cursors = prepare()
+                for path in paths:
+                    with path.open("a", encoding="utf-8") as stream:
+                        stream.write(json.dumps(valid) + "\n")
+                self.assertEqual(read(cursors), ("ValidationError", code, trace_id))
+
+                cursors = prepare()
+                with paths[0].open("a", encoding="utf-8") as stream:
+                    stream.write(json.dumps(valid) + "\n" + json.dumps(valid) + "\n")
+                self.assertIsNone(read(cursors))
+
+                cursors = prepare()
+                different = {**valid, "code": "P805_P606_ASSET_RECEIPT_SEAL"}
+                for path, record in zip(paths, (valid, different), strict=True):
+                    with path.open("a", encoding="utf-8") as stream:
+                        stream.write(json.dumps(record) + "\n")
+                self.assertIsNone(read(cursors))
+
+                for invalid in (
+                    {**valid, "traceId": "trace-" + "d" * 32},
+                    {**valid, "exceptionType": "invalid type"},
+                    {**valid, "private": "must-not-leak"},
+                ):
+                    cursors = prepare()
+                    with paths[0].open("a", encoding="utf-8") as stream:
+                        stream.write(json.dumps(invalid) + "\n")
+                    self.assertIsNone(read(cursors))
 
     def test_asset_create_diagnostic_is_bounded_off_and_constant_on_reader_failure(self) -> None:
         module = self.module
