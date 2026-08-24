@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import tempfile
 import urllib.parse
@@ -12,6 +13,7 @@ from typing import Any, Mapping
 from uuid import UUID
 
 import verify_document_runtime as document_runtime
+import verify_item_publish_runtime as item_runtime
 import verify_tooling_acceptance_runtime as tooling_runtime
 from verify_frappe_runtime import login, require, secret_from_environment, validate_local_fixture_inputs
 from verify_project_runtime import bootstrap_csrf
@@ -26,18 +28,145 @@ ACKNOWLEDGEMENT = (
     "I confirm this request may create one formal ERP Asset only from the exact "
     "physical Tooling Set, separate business approval, mapping state, and execution profile."
 )
+TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = True
+_TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE = "p805-tool-asset-command-context-v1"
+_TOOL_ASSET_CONTEXT_PARENT_CODES = frozenset(
+    {
+        "P805_TOOL_ASSET_CONTEXT_STATUS",
+        "P805_TOOL_ASSET_CONTEXT_ITEMS",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE",
+        "P805_TOOL_ASSET_CONTEXT_TARGET_MODE",
+    }
+)
+_TOOL_ASSET_CONTEXT_SERVER_CODES = frozenset(
+    {
+        "P805_TOOL_ASSET_CONTEXT_QUERY_PARSE",
+        "P805_TOOL_ASSET_CONTEXT_PROFILE_RESOLVE",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_SOURCE",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_PROFILE_BINDING",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_AUTHORITY",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_SANDBOX_GUARD",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_REQUEST_BUILD",
+    }
+)
+_TOOL_ASSET_CONTEXT_FAILURE = "P8-05 disposable command context is unavailable"
+_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 
 
 def execution_path(project_id: str, master_id: str, set_id: str, suffix: str = "") -> str:
     return f"/api/npi/v1/projects/{project_id}/tooling/{master_id}/sets/{set_id}/asset-execution-requests{suffix}"
 
 
-def execution_request(opener, base_url, path, *, method="GET", payload=None, csrf_token=None, idempotency_key=None, query_key="query"):
-    headers = document_runtime.command_headers(csrf_token, idempotency_key) if idempotency_key else document_runtime.query_headers(f"p805-{query_key}")
-    result = document_runtime.request(opener, base_url, path, method=method, payload=payload, request_headers=headers)
-    require(result.headers.get("X-Request-ID") == headers["X-Request-ID"], "P8-05 request identity was not echoed")
-    require(result.headers.get("Cache-Control") == "private, no-store", "P8-05 response cache control drifted")
+def execution_request(
+    opener,
+    base_url,
+    path,
+    *,
+    method="GET",
+    payload=None,
+    csrf_token=None,
+    idempotency_key=None,
+    query_key="query",
+    diagnostic_scope=None,
+):
+    headers = (
+        document_runtime.command_headers(csrf_token, idempotency_key)
+        if idempotency_key
+        else document_runtime.query_headers(f"p805-{query_key}")
+    )
+    if diagnostic_scope is not None:
+        parsed = urllib.parse.urlsplit(path)
+        query = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+        require(
+            diagnostic_scope == _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+            and method == "GET"
+            and payload is None
+            and csrf_token is None
+            and idempotency_key is None
+            and query_key == "enabled"
+            and re.fullmatch(
+                r"/api/npi/v1/projects/[^/]+/tooling/[^/]+/sets/[^/]+/asset-execution-requests",
+                parsed.path,
+            )
+            is not None
+            and len(query) == 1
+            and query[0][0] == "acceptanceRevisionGlobalId"
+            and bool(query[0][1]),
+            _TOOL_ASSET_CONTEXT_FAILURE,
+        )
+        headers[_TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER] = diagnostic_scope
+    result = document_runtime.request(
+        opener,
+        base_url,
+        path,
+        method=method,
+        payload=payload,
+        request_headers=headers,
+    )
+    require(
+        result.headers.get("X-Request-ID") == headers["X-Request-ID"],
+        "P8-05 request identity was not echoed",
+    )
+    require(
+        result.headers.get("Cache-Control") == "private, no-store",
+        "P8-05 response cache control drifted",
+    )
     return result
+
+
+def _command_context_failure_message(result, cursors) -> str | None:
+    if result.status != 200:
+        code = "P805_TOOL_ASSET_CONTEXT_STATUS"
+    else:
+        body = result.body if isinstance(result.body, dict) else {}
+        contexts = body.get("commandContexts")
+        create = (
+            contexts.get("create_tool_asset")
+            if isinstance(contexts, dict)
+            else None
+        )
+        profile = body.get("executionProfile")
+        if body.get("items") != []:
+            code = "P805_TOOL_ASSET_CONTEXT_ITEMS"
+        elif not isinstance(create, dict):
+            code = "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE"
+        elif (
+            not isinstance(profile, dict)
+            or profile.get("targetMode") != "synthetic"
+        ):
+            code = "P805_TOOL_ASSET_CONTEXT_TARGET_MODE"
+        else:
+            return None
+    if not TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED:
+        return _TOOL_ASSET_CONTEXT_FAILURE
+    trace_id = getattr(result, "trace_id", None)
+    if (
+        code not in _TOOL_ASSET_CONTEXT_PARENT_CODES
+        or not isinstance(trace_id, str)
+        or _TRACE_PATTERN.fullmatch(trace_id) is None
+    ):
+        return _TOOL_ASSET_CONTEXT_FAILURE
+    if code == "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE":
+        diagnostic = item_runtime._sanitized_server_log_diagnostic(
+            trace_id,
+            cursors,
+            code_prefix="P805_TOOL_ASSET_CONTEXT_",
+            allowed_codes=_TOOL_ASSET_CONTEXT_SERVER_CODES,
+        )
+        if diagnostic is not None:
+            exception_type, server_code, validated_trace = diagnostic
+            return (
+                "P8-05 disposable command context is unavailable "
+                f"[diagnostic_code={server_code}; "
+                f"exception_type={exception_type}; trace_id={validated_trace}]"
+            )
+    return (
+        "P8-05 disposable command context is unavailable "
+        f"[diagnostic_code={code}; exception_type=RuntimeError; "
+        f"trace_id={trace_id}]"
+    )
 
 
 def _retained_context(administrator, base_url):
@@ -85,16 +214,27 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     query = urllib.parse.urlencode(
         {"acceptanceRevisionGlobalId": acceptance.get("globalId")}
     )
+    cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
+        else None
+    )
     listed = execution_request(
         actor,
         base_url,
         f"{path}?{query}",
         method="GET",
         query_key="enabled",
+        diagnostic_scope=(
+            _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+            if TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
+            else None
+        ),
     )
+    failure = _command_context_failure_message(listed, cursors)
+    require(failure is None, failure or _TOOL_ASSET_CONTEXT_FAILURE)
     contexts = listed.body.get("commandContexts")
     create = contexts.get("create_tool_asset") if isinstance(contexts, dict) else None
-    require(listed.status == 200 and listed.body.get("items") == [] and isinstance(create, dict) and listed.body.get("executionProfile", {}).get("targetMode") == "synthetic", "P8-05 disposable command context is unavailable")
     source = create.get("source")
     require(isinstance(source, dict) and source.get("acceptanceRevisionGlobalId") == acceptance.get("globalId"), "P8-05 retained acceptance binding drifted")
     created = execution_request(actor, base_url, execution_path(project_id, master_id, set_id, ":create"), method="POST", csrf_token=csrf, idempotency_key=f"p8-05-synthetic-{FIXTURE_RUN_ID}", payload={"acceptanceRevisionGlobalId":source["acceptanceRevisionGlobalId"], "expectedSourceHash":create["expectedSourceHash"], "expectedApprovalHash":create["expectedApprovalHash"], "expectedMappingExpectationHash":create["expectedMappingExpectationHash"], "expectedProfileSnapshotHash":create["expectedProfileSnapshotHash"], "acknowledgement":ACKNOWLEDGEMENT})

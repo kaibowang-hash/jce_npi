@@ -26,6 +26,8 @@ from npi_core.tooling.domain import ToolingUnavailable
 from npi_integration.tool_asset_request.diagnostics import (
     p606_asset_create_diagnostics,
     p606_asset_create_step,
+    tool_asset_context_diagnostics,
+    tool_asset_context_step,
 )
 from npi_integration.tool_asset_request.problems import ToolAssetExecutionUnavailable
 
@@ -324,26 +326,32 @@ def get_tool_asset_execution_requests(
     headers = {"X-Request-ID": response_request_id()}
 
     def handle() -> dict[str, Any]:
-        request_id, repository, project_id, master_id, tooling_set_id = (
-            _execution_query_context(request_fields)
-        )
-        response = repository.list_execution_requests(
-            project_id,
-            master_id,
-            tooling_set_id,
-            acceptance_revision_id=(
-                _uuid(
-                    acceptanceRevisionGlobalId,
-                    "acceptanceRevisionGlobalId",
+        with tool_asset_context_diagnostics(
+            current_trace_id.get(),
+            acceptanceRevisionGlobalId,
+        ):
+            request_id, repository, project_id, master_id, tooling_set_id = (
+                _execution_query_context(request_fields)
+            )
+            with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_QUERY_PARSE"):
+                acceptance_revision_id = (
+                    _uuid(
+                        acceptanceRevisionGlobalId,
+                        "acceptanceRevisionGlobalId",
+                    )
+                    if acceptanceRevisionGlobalId is not None
+                    else None
                 )
-                if acceptanceRevisionGlobalId is not None
-                else None
-            ),
-        )
-        if response is None:
-            raise ToolAssetExecutionUnavailable()
-        headers["X-Request-ID"] = request_id
-        return _execution_response(response)
+            response = repository.list_execution_requests(
+                project_id,
+                master_id,
+                tooling_set_id,
+                acceptance_revision_id=acceptance_revision_id,
+            )
+            if response is None:
+                raise ToolAssetExecutionUnavailable()
+            headers["X-Request-ID"] = request_id
+            return _execution_response(response)
 
     return frappe_domain_call(
         handle,

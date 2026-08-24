@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "apps/npi_core"), str(ROOT / "apps/npi_integration")]
 
 from tests.test_phase8_tool_asset_domain import NOW, profile, source, uid  # noqa: E402
+from tests.test_phase8_tool_asset_config import base as profile_base  # noqa: E402
+from npi_integration.tool_asset_request.config import ToolAssetExecutionProfile  # noqa: E402
 from npi_integration.tool_asset_request.execution_domain import (  # noqa: E402
     ToolAssetApprovalState,
     ToolAssetBusinessApprovalReference,
@@ -241,6 +243,198 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
             getattr(caught.exception, "code", None),
             "TOOL_ASSET_EXECUTION_STATE_CONFLICT",
         )
+
+    def test_command_context_diagnostic_stages_are_unique_same_exception_and_read_only(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        source_text = (
+            ROOT
+            / "apps/npi_integration/npi_integration/tool_asset_request/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        repository_codes = (
+            "P805_TOOL_ASSET_CONTEXT_PROFILE_RESOLVE",
+            "P805_TOOL_ASSET_CONTEXT_CREATE_SOURCE",
+            "P805_TOOL_ASSET_CONTEXT_CREATE_PROFILE_BINDING",
+            "P805_TOOL_ASSET_CONTEXT_CREATE_AUTHORITY",
+            "P805_TOOL_ASSET_CONTEXT_CREATE_SANDBOX_GUARD",
+            "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
+            "P805_TOOL_ASSET_CONTEXT_CREATE_REQUEST_BUILD",
+        )
+        for code in repository_codes:
+            with self.subTest(code=code):
+                self.assertEqual(source_text.count(f'"{code}"'), 1)
+                self.assertIn(code, diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_CODES)
+
+        project = types.SimpleNamespace(
+            tenant_id="tenant-synthetic",
+            global_id=uid(1),
+        )
+        expected = ToolAssetMappingExpectation(
+            ToolAssetExecutionOperation.CREATE,
+            source().source_stream_key_hash,
+            0,
+        )
+
+        def configured_repository():
+            repository = self.bare_repository()
+            writes: list[str] = []
+            repository._execution_source = lambda *_args, **_kwargs: source()
+            repository._current_actor_member = lambda _project: object()
+            repository._mapping_expectation = lambda *_args, **_kwargs: expected
+            repository._new_uuid = lambda: uid(20)
+            repository._now = lambda: NOW
+            repository._diagnostic_writes = writes
+            repository._insert_execution_request = (
+                lambda *_args, **_kwargs: writes.append("request")
+            )
+            repository._insert_execution_outbox = (
+                lambda *_args, **_kwargs: writes.append("outbox")
+            )
+            repository._append_execution_audit = (
+                lambda *_args, **_kwargs: writes.append("audit")
+            )
+            return repository
+
+        def configured_profile(mode: ToolAssetExecutionTargetMode):
+            values = profile_base(mode)
+            if mode is ToolAssetExecutionTargetMode.SYNTHETIC:
+                values.update(
+                    {
+                        "environment_code": "disposable-test",
+                        "allowed_operations": (
+                            "create_tool_asset",
+                            "update_tool_asset",
+                        ),
+                        "adapter_resolver": "npi_integration.synthetic_adapter",
+                        "synthetic_test_only": True,
+                        "disposable_runtime_marker": True,
+                    }
+                )
+            elif mode is ToolAssetExecutionTargetMode.SANDBOX:
+                values.update(
+                    {
+                        "environment_code": "sandbox",
+                        "allowed_operations": (
+                            "create_tool_asset",
+                            "update_tool_asset",
+                        ),
+                        "adapter_resolver": "npi_integration.sandbox_adapter",
+                        "base_url": "https://sandbox.erpnext.example.invalid",
+                        "allowed_hostnames": (
+                            "sandbox.erpnext.example.invalid",
+                        ),
+                        "secret_reference": "secrets/tool-asset-sandbox",
+                        "response_authentication": "hmac-sha256-v1",
+                        "connect_timeout_seconds": 5,
+                        "read_timeout_seconds": 30,
+                        "non_production_attested": True,
+                    }
+                )
+            return ToolAssetExecutionProfile(**values)
+
+        def invoke(repository, selected_profile):
+            return repository._build_execution_request(
+                project,
+                uid(2),
+                uid(3),
+                uid(6),
+                selected_profile,
+                ToolAssetExecutionOperation.CREATE,
+                idempotency_key_hash="a" * 64,
+                lock=False,
+            )
+
+        original = RuntimeError("private command context value")
+        cases = []
+
+        repository = configured_repository()
+        repository._execution_source = lambda *_args, **_kwargs: (_ for _ in ()).throw(original)
+        cases.append(("P805_TOOL_ASSET_CONTEXT_CREATE_SOURCE", repository, configured_profile(ToolAssetExecutionTargetMode.SYNTHETIC), None))
+
+        repository = configured_repository()
+        mismatched = replace(
+            configured_profile(ToolAssetExecutionTargetMode.SYNTHETIC),
+            tenant_id="other-tenant",
+        )
+        cases.append(("P805_TOOL_ASSET_CONTEXT_CREATE_PROFILE_BINDING", repository, mismatched, "ToolAssetExecutionProfileUnavailable"))
+
+        repository = configured_repository()
+        repository._current_actor_member = lambda _project: None
+        cases.append(("P805_TOOL_ASSET_CONTEXT_CREATE_AUTHORITY", repository, configured_profile(ToolAssetExecutionTargetMode.SYNTHETIC), "ToolAssetExecutionAuthorityUnavailable"))
+
+        repository = configured_repository()
+        cases.append(("P805_TOOL_ASSET_CONTEXT_CREATE_SANDBOX_GUARD", repository, configured_profile(ToolAssetExecutionTargetMode.SANDBOX), "ToolAssetExecutionApprovalUnavailable"))
+
+        repository = configured_repository()
+        repository._mapping_expectation = lambda *_args, **_kwargs: (_ for _ in ()).throw(original)
+        cases.append(("P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING", repository, configured_profile(ToolAssetExecutionTargetMode.SYNTHETIC), None))
+
+        repository = configured_repository()
+        repository._new_uuid = lambda: (_ for _ in ()).throw(original)
+        cases.append(("P805_TOOL_ASSET_CONTEXT_CREATE_REQUEST_BUILD", repository, configured_profile(ToolAssetExecutionTargetMode.SYNTHETIC), None))
+
+        for code, repository, selected_profile, expected_type in cases:
+            records: list[tuple[str, Exception]] = []
+            with self.subTest(code=code), patch.object(
+                diagnostics,
+                "_record_context_failure",
+                side_effect=lambda observed_code, error: records.append(
+                    (observed_code, error)
+                ),
+            ):
+                with self.assertRaises(Exception) as caught:
+                    invoke(repository, selected_profile)
+            self.assertEqual([value[0] for value in records], [code])
+            self.assertIs(records[0][1], caught.exception)
+            if expected_type is None:
+                self.assertIs(caught.exception, original)
+            else:
+                self.assertEqual(type(caught.exception).__name__, expected_type)
+            self.assertEqual(repository._diagnostic_writes, [])
+
+        repository = configured_repository()
+        repository._mapping_expectation = lambda *_args, **_kwargs: (_ for _ in ()).throw(original)
+        records = []
+        with patch.object(
+            diagnostics,
+            "_record_context_failure",
+            side_effect=lambda code, error: records.append((code, error)),
+        ):
+            with self.assertRaises(RuntimeError) as caught:
+                repository._build_execution_request(
+                    project,
+                    uid(2),
+                    uid(3),
+                    uid(6),
+                    configured_profile(ToolAssetExecutionTargetMode.SYNTHETIC),
+                    ToolAssetExecutionOperation.UPDATE,
+                    idempotency_key_hash="a" * 64,
+                    lock=False,
+                )
+        self.assertIs(caught.exception, original)
+        self.assertEqual(records, [])
+        self.assertEqual(repository._diagnostic_writes, [])
+
+        repository = configured_repository()
+        repository._authorized_project = lambda _project_id: project
+        repository._master_for_project = lambda *_args: object()
+        repository._tooling_set_for_project = lambda *_args: object()
+        repository._read_execution_profile = lambda _project: (_ for _ in ()).throw(original)
+        records = []
+        with patch.object(
+            diagnostics,
+            "_record_context_failure",
+            side_effect=lambda code, error: records.append((code, error)),
+        ):
+            with self.assertRaises(RuntimeError) as caught:
+                repository.list_execution_requests(uid(1), uid(2), uid(3))
+        self.assertIs(caught.exception, original)
+        self.assertEqual(
+            records,
+            [("P805_TOOL_ASSET_CONTEXT_PROFILE_RESOLVE", original)],
+        )
+        self.assertEqual(repository._diagnostic_writes, [])
 
     def test_atomic_execution_write_order_and_mock_zero_dispatch(self) -> None:
         repository = self.bare_repository()

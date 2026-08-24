@@ -286,3 +286,25 @@ Canonical Linux/amd64 SHA-256 evidence:
   independently, and prove POST is reached only after all pass. This changes
   no product/API/permission/transaction/Schema/ownership/profile/adapter/
   target behavior and consumes no diagnostic, product-repair or final counter.
+
+### Independent command-context diagnostic checkpoint
+
+- Exact enabled-query SHA `bbc787c78601e97c91a54cb5f81216a61fc7e0f3`
+  passes ordinary CI `32713228802`. Final `32714624286` passes every
+  non-runtime job and controlled preflight; controlled runtime
+  `97396526892` crosses the exact acceptance query and stops at the same
+  compound disposable command-context predicate before the first command.
+- The four ordered response predicates and eight possible server query/build
+  boundaries are not statically unique, so repair remains forbidden. A new
+  bounded cycle starts diagnostic `0/1`, repair `0/1`, final `0/1`; historical
+  cycle counters remain immutable.
+- Only the versioned exact-scope GET with the sole retained acceptance query
+  activates observation. Parent output is restricted to one of four fixed
+  response codes or, for create-shape only, one of eight strict mirrored-log
+  server codes, plus a class name and exact validated trace. It emits no
+  response/body/status value, business value, ID, count, actor, profile,
+  exception message or stack. Server observation is innermost-one-record,
+  same-exception and request-local/finally restored. Success and all default,
+  wrong-scope or invalid-trace paths are response-neutral. Product, write
+  order, permission, transaction, Schema, ownership, adapter and Gate code are
+  unchanged.

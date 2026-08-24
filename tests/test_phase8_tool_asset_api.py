@@ -5,11 +5,15 @@ import sys
 import types
 import unittest
 from contextvars import ContextVar
+from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 from uuid import UUID
 
 
 sys.path[:0] = ["apps/npi_core", "apps/npi_integration"]
+
+ROOT = Path(__file__).resolve().parents[1]
 
 PROJECT = "00000000-0000-4000-8000-00000000a501"
 MASTER = "00000000-0000-4000-8000-00000000a502"
@@ -59,6 +63,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         "npi_core.project.domain",
         "npi_core.request_security",
         "npi_core.tooling.domain",
+        "npi_integration.tool_asset_request.diagnostics",
         "npi_integration.tool_asset_request.problems",
         "npi_integration.tool_asset_request.frappe_repository",
         "npi_integration.tool_asset_request_api",
@@ -94,7 +99,8 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         )
         self.frappe.session = types.SimpleNamespace(user="engineer@example.invalid")
         self.frappe.local = types.SimpleNamespace(
-            response=types.SimpleNamespace(http_status_code=200)
+            response=types.SimpleNamespace(http_status_code=200),
+            request=types.SimpleNamespace(method="GET"),
         )
         self.frappe.get_request_header = lambda name: self.headers.get(name)
         self.frappe.get_hooks = lambda _name: []
@@ -308,6 +314,225 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         self.api.get_tool_asset_execution_request()
         self.assertEqual(self.repository.calls[-1][0], "detail")
         self.assertEqual(str(self.repository.calls[-1][1][-1]), REQUEST)
+
+    def test_command_context_diagnostic_is_exact_scope_same_exception_and_restored(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        source_text = (
+            ROOT
+            / "apps/npi_integration/npi_integration/tool_asset_request_api.py"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(
+            source_text.count('"P805_TOOL_ASSET_CONTEXT_QUERY_PARSE"'),
+            1,
+        )
+        trace_id = "trace-" + "a" * 32
+        secret = "private-query-value"
+        original = RuntimeError(secret)
+        self.headers[diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+        )
+        self.frappe.local.request.args = {
+            "acceptanceRevisionGlobalId": ACCEPTANCE,
+        }
+        token = self.api.current_trace_id.set(trace_id)
+        try:
+            with patch.object(
+                self.api,
+                "_execution_query_context",
+                return_value=(
+                    REQUEST,
+                    self.repository,
+                    UUID(PROJECT),
+                    UUID(MASTER),
+                    UUID(TOOLING_SET),
+                ),
+            ), patch.object(self.api, "_uuid", side_effect=original):
+                with self.assertRaises(RuntimeError) as caught:
+                    self.api.get_tool_asset_execution_requests(
+                        acceptanceRevisionGlobalId=ACCEPTANCE
+                    )
+            self.assertIs(caught.exception, original)
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(len(self.diagnostics), 1)
+        self.assertEqual(
+            {
+                key: self.diagnostics[0][key]
+                for key in ("code", "exception_type", "trace_id")
+            },
+            {
+                "code": "P805_TOOL_ASSET_CONTEXT_QUERY_PARSE",
+                "exception_type": "RuntimeError",
+                "trace_id": trace_id,
+            },
+        )
+        self.assertNotIn(secret, repr(self.diagnostics))
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                "npi_p805_tool_asset_context_diagnostic",
+            )
+        )
+
+        for name, scope, candidate_trace, method in (
+            ("missing", None, trace_id, "GET"),
+            ("wrong", "wrong-scope", trace_id, "GET"),
+            (
+                "invalid-trace",
+                diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE,
+                "trace-invalid",
+                "GET",
+            ),
+            (
+                "wrong-method",
+                diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE,
+                trace_id,
+                "POST",
+            ),
+        ):
+            with self.subTest(name=name):
+                self.diagnostics.clear()
+                if scope is None:
+                    self.headers.pop(
+                        diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER,
+                        None,
+                    )
+                else:
+                    self.headers[
+                        diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER
+                    ] = scope
+                self.frappe.local.request.method = method
+                self.frappe.local.request.args = {
+                    "acceptanceRevisionGlobalId": ACCEPTANCE,
+                }
+                token = self.api.current_trace_id.set(candidate_trace)
+                try:
+                    with patch.object(
+                        self.api,
+                        "_execution_query_context",
+                        return_value=(
+                            REQUEST,
+                            self.repository,
+                            UUID(PROJECT),
+                            UUID(MASTER),
+                            UUID(TOOLING_SET),
+                        ),
+                    ), patch.object(self.api, "_uuid", side_effect=original):
+                        with self.assertRaises(RuntimeError) as caught:
+                            self.api.get_tool_asset_execution_requests(
+                                acceptanceRevisionGlobalId=ACCEPTANCE
+                            )
+                    self.assertIs(caught.exception, original)
+                finally:
+                    self.api.current_trace_id.reset(token)
+                self.assertEqual(self.diagnostics, [])
+                self.assertFalse(
+                    hasattr(
+                        self.frappe.flags,
+                        "npi_p805_tool_asset_context_diagnostic",
+                    )
+                )
+
+        self.headers[diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+        )
+        self.frappe.local.request.method = "GET"
+        for query in (
+            {},
+            {"acceptanceRevisionGlobalId": "wrong"},
+            {
+                "acceptanceRevisionGlobalId": ACCEPTANCE,
+                "extra": "wrong",
+            },
+        ):
+            with self.subTest(query=query):
+                self.diagnostics.clear()
+                self.frappe.local.request.args = query
+                token = self.api.current_trace_id.set(trace_id)
+                try:
+                    with patch.object(
+                        self.api,
+                        "_execution_query_context",
+                        return_value=(
+                            REQUEST,
+                            self.repository,
+                            UUID(PROJECT),
+                            UUID(MASTER),
+                            UUID(TOOLING_SET),
+                        ),
+                    ), patch.object(self.api, "_uuid", side_effect=original):
+                        with self.assertRaises(RuntimeError) as caught:
+                            self.api.get_tool_asset_execution_requests(
+                                acceptanceRevisionGlobalId=ACCEPTANCE
+                            )
+                    self.assertIs(caught.exception, original)
+                finally:
+                    self.api.current_trace_id.reset(token)
+                self.assertEqual(self.diagnostics, [])
+
+        self.frappe.local.request.args = {
+            "acceptanceRevisionGlobalId": ACCEPTANCE,
+        }
+        self.diagnostics.clear()
+        token = self.api.current_trace_id.set(trace_id)
+        try:
+            inner = RuntimeError(secret)
+            with self.assertRaises(RuntimeError) as caught:
+                with diagnostics.tool_asset_context_diagnostics(
+                    trace_id,
+                    ACCEPTANCE,
+                ), diagnostics.tool_asset_context_step(
+                    "P805_TOOL_ASSET_CONTEXT_CREATE_SOURCE"
+                ):
+                    with diagnostics.tool_asset_context_step(
+                        "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING"
+                    ):
+                        raise inner
+            self.assertIs(caught.exception, inner)
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(
+            [record["code"] for record in self.diagnostics],
+            ["P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING"],
+        )
+        self.assertNotIn(secret, repr(self.diagnostics))
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                "npi_p805_tool_asset_context_diagnostic",
+            )
+        )
+
+    def test_command_context_diagnostic_preserves_success_response(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        without_scope = self.api.get_tool_asset_execution_requests(
+            acceptanceRevisionGlobalId=ACCEPTANCE
+        )
+        self.headers[diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+        )
+        self.frappe.local.request.args = {
+            "acceptanceRevisionGlobalId": ACCEPTANCE,
+        }
+        token = self.api.current_trace_id.set("trace-" + "b" * 32)
+        try:
+            with_scope = self.api.get_tool_asset_execution_requests(
+                acceptanceRevisionGlobalId=ACCEPTANCE
+            )
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(with_scope, without_scope)
+        self.assertEqual(self.diagnostics, [])
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                "npi_p805_tool_asset_context_diagnostic",
+            )
+        )
 
     def test_profile_resolver_is_default_off_and_ambiguous_hooks_fail_closed(self) -> None:
         self.assertIsNone(self.api._configured_execution_profile("tenant", UUID(PROJECT)))

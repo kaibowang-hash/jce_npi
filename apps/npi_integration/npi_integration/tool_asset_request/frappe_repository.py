@@ -26,7 +26,10 @@ from npi_integration.tool_asset_request.domain import (
     create_mock_tool_asset_request,
     tool_asset_request_from_snapshot,
 )
-from npi_integration.tool_asset_request.diagnostics import p606_asset_create_step
+from npi_integration.tool_asset_request.diagnostics import (
+    p606_asset_create_step,
+    tool_asset_context_step,
+)
 from npi_integration.tool_asset_request.frappe_validation import (
     tool_asset_request_write,
 )
@@ -329,7 +332,10 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         )
         if master is None or tooling_set is None:
             return None
-        profile = self._read_execution_profile(project)
+        with tool_asset_context_step(
+            "P805_TOOL_ASSET_CONTEXT_PROFILE_RESOLVE"
+        ):
+            profile = self._read_execution_profile(project)
         context = None
         if acceptance_revision_id is not None and profile is not None:
             contexts: dict[str, object] = {}
@@ -888,50 +894,78 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         idempotency_key_hash: str,
         lock: bool,
     ) -> ToolAssetExecutionRequest:
-        source = self._execution_source(
-            project,
-            tooling_master_id,
-            tooling_set_id,
-            acceptance_revision_id,
-            lock=lock,
-        )
+        create_operation = operation is ToolAssetExecutionOperation.CREATE
+        with tool_asset_context_step(
+            "P805_TOOL_ASSET_CONTEXT_CREATE_SOURCE",
+            create_operation=create_operation,
+        ):
+            source = self._execution_source(
+                project,
+                tooling_master_id,
+                tooling_set_id,
+                acceptance_revision_id,
+                lock=lock,
+            )
         approval = ToolAssetBusinessApprovalReference(
             ToolAssetApprovalState.UNAVAILABLE
         )
-        if profile.tenant_id != source.tenant_id or profile.project_global_id != str(source.project_global_id):
-            raise ToolAssetExecutionProfileUnavailable()
-        if profile.target_mode is ToolAssetExecutionTargetMode.MOCK:
-            permitted = profile.permits(self.actor)
-        else:
-            permitted = profile.permits(self.actor, operation.value)
-        if not permitted or self._current_actor_member(project) is None:
-            raise ToolAssetExecutionAuthorityUnavailable()
-        if profile.target_mode is ToolAssetExecutionTargetMode.SANDBOX:
-            raise ToolAssetExecutionApprovalUnavailable()
-        expectation = self._mapping_expectation(
-            project,
-            tooling_master_id,
-            source,
-            operation,
-            lock=lock,
-        )
-        return ToolAssetExecutionRequest(
-            global_id=self._new_uuid(),
-            source=source,
-            approval=approval,
-            mapping_expectation=expectation,
-            profile=profile.reference,
-            state=(
-                ToolAssetExecutionRequestState.VALIDATED_MOCK
-                if profile.target_mode is ToolAssetExecutionTargetMode.MOCK
-                else ToolAssetExecutionRequestState.QUEUED
-            ),
-            actor_user_id=self.actor,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-            idempotency_key_hash=idempotency_key_hash,
-            created_at=self._now(),
-        )
+        with tool_asset_context_step(
+            "P805_TOOL_ASSET_CONTEXT_CREATE_PROFILE_BINDING",
+            create_operation=create_operation,
+        ):
+            if (
+                profile.tenant_id != source.tenant_id
+                or profile.project_global_id != str(source.project_global_id)
+            ):
+                raise ToolAssetExecutionProfileUnavailable()
+        with tool_asset_context_step(
+            "P805_TOOL_ASSET_CONTEXT_CREATE_AUTHORITY",
+            create_operation=create_operation,
+        ):
+            if profile.target_mode is ToolAssetExecutionTargetMode.MOCK:
+                permitted = profile.permits(self.actor)
+            else:
+                permitted = profile.permits(self.actor, operation.value)
+            if not permitted or self._current_actor_member(project) is None:
+                raise ToolAssetExecutionAuthorityUnavailable()
+        with tool_asset_context_step(
+            "P805_TOOL_ASSET_CONTEXT_CREATE_SANDBOX_GUARD",
+            create_operation=create_operation,
+        ):
+            if profile.target_mode is ToolAssetExecutionTargetMode.SANDBOX:
+                raise ToolAssetExecutionApprovalUnavailable()
+        with tool_asset_context_step(
+            "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
+            create_operation=create_operation,
+        ):
+            expectation = self._mapping_expectation(
+                project,
+                tooling_master_id,
+                source,
+                operation,
+                lock=lock,
+            )
+        with tool_asset_context_step(
+            "P805_TOOL_ASSET_CONTEXT_CREATE_REQUEST_BUILD",
+            create_operation=create_operation,
+        ):
+            return ToolAssetExecutionRequest(
+                global_id=self._new_uuid(),
+                source=source,
+                approval=approval,
+                mapping_expectation=expectation,
+                profile=profile.reference,
+                state=(
+                    ToolAssetExecutionRequestState.VALIDATED_MOCK
+                    if profile.target_mode is ToolAssetExecutionTargetMode.MOCK
+                    else ToolAssetExecutionRequestState.QUEUED
+                ),
+                actor_user_id=self.actor,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+                idempotency_key_hash=idempotency_key_hash,
+                created_at=self._now(),
+            )
 
     def _execution_source(
         self,

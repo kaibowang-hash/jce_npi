@@ -4857,3 +4857,26 @@ repeat or rewrite it merely to restore context. See
   API, permission, transaction, Schema, ownership, profile, adapter, target or
   Gate behavior changes. This is same-cycle verifier harness remediation and
   changes no diagnostic, product-repair or final counter.
+
+## 2026-08-24 P8-05 command-context diagnostic checkpoint active
+
+- Exact enabled-query SHA `bbc787c78601e97c91a54cb5f81216a61fc7e0f3`
+  passes ordinary `32713228802`. Final `32714624286` passes secret, visual,
+  frontend, repository and controlled preflight, then controlled runtime
+  `97396526892` stops at the same compound disposable command-context guard
+  after the sole acceptance query and before the first Tool Asset command.
+- The ordered response and server-build predicates remain non-unique without
+  observing values. Repair is prohibited. A distinct serial command-context
+  cycle is diagnostic `0/1`, repair `0/1`, final `0/1`; all prior cycle
+  counters are frozen and immutable.
+- The checkpoint temporarily activates only the exact versioned scope on the
+  fixed GET collection route and sole retained acceptance query. Four parent
+  codes cover status/items/create-shape/target-mode; create-shape alone may
+  use the existing strict mirrored reader for eight unique server codes.
+  Output is only code, class name and validated exact trace. Missing/invalid
+  evidence is constant-safe; body, status value, business values, IDs, counts,
+  actor, message and stack remain unreadable. The server rethrows the same
+  exception after at most one innermost safe record and restores request-local
+  state. No product write/order, permission, transaction, API, Schema,
+  ownership, adapter, target or Gate behavior is changed.
+- Controller marker: `P8-05 final held; independent command-context diagnostic checkpoint active`.

@@ -873,3 +873,34 @@ mandatory predicates; tests prove no POST occurs if any fails. No product,
 API, permission, transaction, Schema, ownership, runtime profile, adapter,
 external contact or Gate standard changes. Same-cycle counters remain
 immutable.
+
+## 23. Command-context response-neutral diagnostic checkpoint
+
+Exact enabled-query checkpoint `bbc787c78601e97c91a54cb5f81216a61fc7e0f3`
+passes ordinary CI `32713228802`. Its unchanged final Level 3
+`32714624286` passes secret `97393140525`, governed visual `97393140672`,
+frontend `97393140721`, repository `97393140797` and controlled preflight
+`97396465261`. Controlled runtime `97396526892` crosses the corrected exact
+acceptance query but stops at the same compound disposable command-context
+boundary before the first Tool Asset command.
+
+Static evidence cannot safely distinguish the four ordered response
+predicates or, when the create context is absent, the eight server-side query
+and create-build boundaries. No product repair is authorized. An independent
+serial command-context cycle therefore starts at diagnostic `0/1`, repair
+`0/1`, final `0/1`; all earlier P8-05 and predecessor cycle counters remain
+immutable.
+
+The temporary verifier-only activation sends a versioned scope header only on
+the exact GET collection route with the sole retained
+`acceptanceRevisionGlobalId` query. The parent classifies only status, exact
+empty items, create-context shape and exact Synthetic target mode. Only the
+create-shape boundary may consult the existing strict mirrored-log reader for
+one of eight unique lexical server stages. All output is limited to an
+allowlisted code, exception class and validated `HttpResult.trace_id`.
+Missing or invalid trace/log evidence remains constant-safe; no HTTP body,
+status value, business value, ID, count, actor, exception message or stack is
+emitted. The innermost server stage records at most once and rethrows the same
+exception, request-local state is restored, and success is response-equivalent.
+No write, call order, permission, transaction, API, Schema, ownership,
+profile, adapter, target or Gate behavior changes.

@@ -196,14 +196,20 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "NPI_TOOL_ASSET_WORKER_USER": "npi-inbound-worker@example.invalid",
         }
         invalid_responses = {
-            "status": types.SimpleNamespace(status=503, body=valid_body),
+            "status": types.SimpleNamespace(
+                status=503,
+                body=valid_body,
+                trace_id=None,
+            ),
             "items": types.SimpleNamespace(
                 status=200,
                 body={**valid_body, "items": [{}]},
+                trace_id=None,
             ),
             "create-context": types.SimpleNamespace(
                 status=200,
                 body={**valid_body, "commandContexts": None},
+                trace_id=None,
             ),
             "target-profile": types.SimpleNamespace(
                 status=200,
@@ -211,6 +217,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     **valid_body,
                     "executionProfile": {"targetMode": "sandbox"},
                 },
+                trace_id=None,
             ),
         }
 
@@ -227,7 +234,16 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 parse_qsl(split.query, keep_blank_values=True),
                 [("acceptanceRevisionGlobalId", acceptance_id)],
             )
-            self.assertEqual(kwargs, {"method": "GET", "query_key": "enabled"})
+            self.assertEqual(
+                kwargs,
+                {
+                    "method": "GET",
+                    "query_key": "enabled",
+                    "diagnostic_scope": (
+                        self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+                    ),
+                },
+            )
 
         object_actor = object()
         for name, response in invalid_responses.items():
@@ -295,7 +311,14 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 [("acceptanceRevisionGlobalId", acceptance_id)],
             )
             self.assertEqual(
-                first_kwargs, {"method": "GET", "query_key": "enabled"}
+                first_kwargs,
+                {
+                    "method": "GET",
+                    "query_key": "enabled",
+                    "diagnostic_scope": (
+                        self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+                    ),
+                },
             )
             self.assertEqual(request.call_count, 2)
             post_args, post_kwargs = request.call_args_list[1]
@@ -304,6 +327,210 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 self.verifier.execution_path(project_id, master_id, set_id, ":create"),
             )
             self.assertEqual(post_kwargs["method"], "POST")
+
+    def test_command_context_diagnostic_is_ordered_trace_bound_and_value_free(self):
+        trace_id = "trace-" + "a" * 32
+        secret = "private-command-context-value"
+        create = {"opaque": secret}
+        valid = {
+            "items": [],
+            "commandContexts": {"create_tool_asset": create},
+            "executionProfile": {"targetMode": "synthetic"},
+        }
+        cases = (
+            (
+                "P805_TOOL_ASSET_CONTEXT_STATUS",
+                types.SimpleNamespace(status=503, body=valid, trace_id=trace_id),
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_ITEMS",
+                types.SimpleNamespace(
+                    status=200,
+                    body={**valid, "items": [{"opaque": secret}]},
+                    trace_id=trace_id,
+                ),
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE",
+                types.SimpleNamespace(
+                    status=200,
+                    body={**valid, "commandContexts": None},
+                    trace_id=trace_id,
+                ),
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_TARGET_MODE",
+                types.SimpleNamespace(
+                    status=200,
+                    body={
+                        **valid,
+                        "executionProfile": {"targetMode": secret},
+                    },
+                    trace_id=trace_id,
+                ),
+            ),
+        )
+        for code, result in cases:
+            with self.subTest(code=code), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=None,
+            ) as reader:
+                message = self.verifier._command_context_failure_message(
+                    result,
+                    {"logs/bench.log": 0},
+                )
+                self.assertIn(f"diagnostic_code={code}", message)
+                self.assertIn("exception_type=RuntimeError", message)
+                self.assertIn(f"trace_id={trace_id}", message)
+                self.assertNotIn(secret, message)
+                self.assertEqual(
+                    reader.call_count,
+                    int(code == "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE"),
+                )
+
+        create_shape = cases[2][1]
+        server_tuple = (
+            "ToolAssetExecutionStateConflict",
+            "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
+            trace_id,
+        )
+        with patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+            return_value=server_tuple,
+        ) as reader:
+            message = self.verifier._command_context_failure_message(
+                create_shape,
+                {"logs/bench.log": 0},
+            )
+        self.assertIn("diagnostic_code=P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING", message)
+        self.assertIn("exception_type=ToolAssetExecutionStateConflict", message)
+        self.assertNotIn(secret, message)
+        self.assertEqual(
+            reader.call_args.kwargs,
+            {
+                "code_prefix": "P805_TOOL_ASSET_CONTEXT_",
+                "allowed_codes": self.verifier._TOOL_ASSET_CONTEXT_SERVER_CODES,
+            },
+        )
+
+        for invalid_trace in (None, "trace-invalid", secret):
+            with self.subTest(trace=invalid_trace), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+            ) as reader:
+                invalid = types.SimpleNamespace(
+                    status=200,
+                    body={**valid, "commandContexts": None},
+                    trace_id=invalid_trace,
+                )
+                self.assertEqual(
+                    self.verifier._command_context_failure_message(invalid, {}),
+                    self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
+                )
+                reader.assert_not_called()
+
+        success = types.SimpleNamespace(status=200, body=valid, trace_id=trace_id)
+        with patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as reader:
+            self.assertIsNone(
+                self.verifier._command_context_failure_message(success, {})
+            )
+            reader.assert_not_called()
+
+        with patch.object(
+            self.verifier,
+            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as reader:
+            self.assertEqual(
+                self.verifier._command_context_failure_message(
+                    create_shape,
+                    {"logs/bench.log": 0},
+                ),
+                self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
+            )
+            reader.assert_not_called()
+
+    def test_enabled_request_adds_only_exact_diagnostic_scope_header(self):
+        response = types.SimpleNamespace(
+            status=200,
+            body={},
+            headers={
+                "X-Request-ID": "p805-enabled",
+                "Cache-Control": "private, no-store",
+            },
+        )
+        with patch.object(
+            self.verifier.document_runtime,
+            "query_headers",
+            return_value={"X-Request-ID": "p805-enabled"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=response,
+        ) as request:
+            self.verifier.execution_request(
+                object(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/fixed/tooling/fixed/sets/fixed/asset-execution-requests?acceptanceRevisionGlobalId=fixed",
+                method="GET",
+                query_key="enabled",
+                diagnostic_scope=(
+                    self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+                ),
+            )
+        headers = request.call_args.kwargs["request_headers"]
+        self.assertEqual(
+            headers,
+            {
+                "X-Request-ID": "p805-enabled",
+                "X-NPI-Diagnostic-Scope": "p805-tool-asset-command-context-v1",
+            },
+        )
+
+        invalid_requests = (
+            {
+                "path": "/api/npi/v1/projects/fixed/asset-execution-requests?acceptanceRevisionGlobalId=fixed",
+                "method": "GET",
+                "query_key": "enabled",
+            },
+            {
+                "path": "/api/npi/v1/projects/fixed/tooling/fixed/sets/fixed/asset-execution-requests?acceptanceRevisionGlobalId=fixed",
+                "method": "POST",
+                "query_key": "enabled",
+            },
+            {
+                "path": "/api/npi/v1/projects/fixed/tooling/fixed/sets/fixed/asset-execution-requests?acceptanceRevisionGlobalId=fixed&extra=wrong",
+                "method": "GET",
+                "query_key": "enabled",
+            },
+            {
+                "path": "/api/npi/v1/projects/fixed/tooling/fixed/sets/fixed/asset-execution-requests?acceptanceRevisionGlobalId=fixed",
+                "method": "GET",
+                "query_key": "wrong",
+            },
+        )
+        for request_values in invalid_requests:
+            with self.subTest(request_values=request_values):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
+                ):
+                    self.verifier.execution_request(
+                        object(),
+                        "http://127.0.0.1:8003",
+                        diagnostic_scope=(
+                            self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+                        ),
+                        **request_values,
+                    )
 
     def test_runtime_profile_preserves_exact_requester_and_service_actor(self):
         environment = {
