@@ -321,15 +321,18 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         *,
         acceptance_revision_id: UUID | None = None,
     ) -> dict[str, Any] | None:
-        project = self._authorized_project(project_id)
+        with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_PROJECT_RESOLVE"):
+            project = self._authorized_project(project_id)
         if project is None:
             return None
-        master = self._master_for_project(project, tooling_master_id)
-        tooling_set = self._tooling_set_for_project(
-            project,
-            tooling_master_id,
-            tooling_set_id,
-        )
+        with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_MASTER_RESOLVE"):
+            master = self._master_for_project(project, tooling_master_id)
+        with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_SET_RESOLVE"):
+            tooling_set = self._tooling_set_for_project(
+                project,
+                tooling_master_id,
+                tooling_set_id,
+            )
         if master is None or tooling_set is None:
             return None
         with tool_asset_context_step(
@@ -356,32 +359,48 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
                     )
                 except (NpiProblem, RuntimeError, ValueError):
                     continue
-                contexts[operation.value] = self._command_context_payload(value)
+                with tool_asset_context_step(
+                    "P805_TOOL_ASSET_CONTEXT_CREATE_PROJECT",
+                    create_operation=(
+                        operation is ToolAssetExecutionOperation.CREATE
+                    ),
+                ):
+                    contexts[operation.value] = self._command_context_payload(value)
             context = contexts or None
-        rows = self._bounded_documents(
-            "NPI Tool Asset Request",
-            filters={
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-                "tooling_master_global_id": str(tooling_master_id),
-                "tooling_set_global_id": str(tooling_set_id),
-                "schema_version": TOOL_ASSET_EXECUTION_SCHEMA_VERSION,
-            },
-            order_by="created_at desc, global_id asc",
-            maximum=_MAX_REQUESTS,
-        )
-        return {
-            "projectGlobalId": str(project.global_id),
-            "toolingMasterGlobalId": str(tooling_master_id),
-            "toolingSetGlobalId": str(tooling_set_id),
-            "permissions": self._execution_permissions(project, profile),
-            "businessApproval": ToolAssetBusinessApprovalReference(
-                ToolAssetApprovalState.UNAVAILABLE
-            ).canonical_mapping(),
-            "executionProfile": profile.reference.canonical_mapping() if profile else None,
-            "commandContexts": context,
-            "items": [self._execution_request_public(row) for row in rows],
-        }
+        with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_REQUEST_ROWS"):
+            rows = self._bounded_documents(
+                "NPI Tool Asset Request",
+                filters={
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                    "tooling_master_global_id": str(tooling_master_id),
+                    "tooling_set_global_id": str(tooling_set_id),
+                    "schema_version": TOOL_ASSET_EXECUTION_SCHEMA_VERSION,
+                },
+                order_by="created_at desc, global_id asc",
+                maximum=_MAX_REQUESTS,
+            )
+        with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_PERMISSIONS"):
+            permissions = self._execution_permissions(project, profile)
+        with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_PROFILE_RESPONSE"):
+            profile_response = (
+                profile.reference.canonical_mapping() if profile else None
+            )
+        with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_ITEM_PROJECT"):
+            items = [self._execution_request_public(row) for row in rows]
+        with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_RESPONSE_BUILD"):
+            return {
+                "projectGlobalId": str(project.global_id),
+                "toolingMasterGlobalId": str(tooling_master_id),
+                "toolingSetGlobalId": str(tooling_set_id),
+                "permissions": permissions,
+                "businessApproval": ToolAssetBusinessApprovalReference(
+                    ToolAssetApprovalState.UNAVAILABLE
+                ).canonical_mapping(),
+                "executionProfile": profile_response,
+                "commandContexts": context,
+                "items": items,
+            }
 
     def execution_request_detail(
         self,

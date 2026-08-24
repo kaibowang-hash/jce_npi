@@ -4,6 +4,7 @@ import importlib
 import sys
 import types
 import unittest
+from contextlib import ExitStack
 from contextvars import ContextVar
 from pathlib import Path
 from typing import Any
@@ -327,6 +328,26 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             source_text.count('"P805_TOOL_ASSET_CONTEXT_QUERY_PARSE"'),
             1,
         )
+        api_codes = (
+            "P805_TOOL_ASSET_CONTEXT_ROUTES_ENABLED",
+            "P805_TOOL_ASSET_CONTEXT_AUTHENTICATED_USER",
+            "P805_TOOL_ASSET_CONTEXT_PRINCIPAL_RESOLVE",
+            "P805_TOOL_ASSET_CONTEXT_PRINCIPAL_INTERNAL",
+            "P805_TOOL_ASSET_CONTEXT_REQUEST_ID",
+            "P805_TOOL_ASSET_CONTEXT_REPOSITORY_INIT",
+            "P805_TOOL_ASSET_CONTEXT_PROJECT_ROUTE",
+            "P805_TOOL_ASSET_CONTEXT_PROJECT_AUTHORIZE",
+            "P805_TOOL_ASSET_CONTEXT_REQUEST_FIELDS",
+            "P805_TOOL_ASSET_CONTEXT_MASTER_ROUTE",
+            "P805_TOOL_ASSET_CONTEXT_SET_ROUTE",
+            "P805_TOOL_ASSET_CONTEXT_REPOSITORY_LIST",
+            "P805_TOOL_ASSET_CONTEXT_RESPONSE_AVAILABLE",
+            "P805_TOOL_ASSET_CONTEXT_RESPONSE_SERIALIZE",
+        )
+        for code in api_codes:
+            with self.subTest(code=code):
+                self.assertEqual(source_text.count(f'"{code}"'), 1)
+                self.assertIn(code, diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_CODES)
         trace_id = "trace-" + "a" * 32
         secret = "private-query-value"
         original = RuntimeError(secret)
@@ -375,6 +396,199 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
                 "npi_p805_tool_asset_context_diagnostic",
             )
         )
+
+    def test_unstaged_command_context_boundaries_record_innermost_same_exception_without_writes(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        trace_id = "trace-" + "d" * 32
+        secret = "private-command-context-boundary"
+        self.headers[diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+        )
+        self.frappe.local.request.method = "GET"
+        self.frappe.local.request.args = {
+            "acceptanceRevisionGlobalId": ACCEPTANCE,
+        }
+
+        def route_failure(target: str, error: Exception):
+            values = {
+                "project_id": UUID(PROJECT),
+                "tooling_master_id": UUID(MASTER),
+                "tooling_set_id": UUID(TOOLING_SET),
+            }
+
+            def resolve(name: str):
+                if name == target:
+                    raise error
+                return values[name]
+
+            return resolve
+
+        original = RuntimeError(secret)
+        cases = (
+            (
+                "P805_TOOL_ASSET_CONTEXT_ROUTES_ENABLED",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.api,
+                        "require_tooling_acceptance_assets_routes_enabled",
+                        side_effect=original,
+                    )
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_AUTHENTICATED_USER",
+                lambda stack: stack.enter_context(
+                    patch.object(self.api, "authenticated_user", side_effect=original)
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_PRINCIPAL_RESOLVE",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.api, "authenticated_principal", side_effect=original
+                    )
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_PRINCIPAL_INTERNAL",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.api,
+                        "authenticated_principal",
+                        return_value=types.SimpleNamespace(is_external=True),
+                    )
+                ),
+                None,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_REQUEST_ID",
+                lambda stack: stack.enter_context(
+                    patch.object(self.api, "_request_id", side_effect=original)
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_REPOSITORY_INIT",
+                lambda stack: stack.enter_context(
+                    patch.object(self.api, "_new_repository", side_effect=original)
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_PROJECT_ROUTE",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.api,
+                        "_opaque_route_uuid",
+                        side_effect=route_failure("project_id", original),
+                    )
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_PROJECT_AUTHORIZE",
+                lambda stack: stack.enter_context(
+                    patch.object(self.repository, "authorize_scope", side_effect=original)
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_REQUEST_FIELDS",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.api,
+                        "reject_unexpected_request_fields",
+                        side_effect=original,
+                    )
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_MASTER_ROUTE",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.api,
+                        "_opaque_route_uuid",
+                        side_effect=route_failure("tooling_master_id", original),
+                    )
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_SET_ROUTE",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.api,
+                        "_opaque_route_uuid",
+                        side_effect=route_failure("tooling_set_id", original),
+                    )
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_REPOSITORY_LIST",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.repository,
+                        "list_execution_requests",
+                        side_effect=original,
+                    )
+                ),
+                original,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_RESPONSE_AVAILABLE",
+                lambda stack: stack.enter_context(
+                    patch.object(
+                        self.repository, "list_execution_requests", return_value=None
+                    )
+                ),
+                None,
+            ),
+            (
+                "P805_TOOL_ASSET_CONTEXT_RESPONSE_SERIALIZE",
+                lambda stack: stack.enter_context(
+                    patch.object(self.api, "_execution_response", side_effect=original)
+                ),
+                original,
+            ),
+        )
+        for code, install, expected in cases:
+            with self.subTest(code=code):
+                self.diagnostics.clear()
+                self.events.clear()
+                token = self.api.current_trace_id.set(trace_id)
+                try:
+                    with ExitStack() as stack:
+                        install(stack)
+                        with self.assertRaises(Exception) as caught:
+                            self.api.get_tool_asset_execution_requests(
+                                acceptanceRevisionGlobalId=ACCEPTANCE
+                            )
+                finally:
+                    self.api.current_trace_id.reset(token)
+                if expected is not None:
+                    self.assertIs(caught.exception, expected)
+                self.assertEqual(
+                    [record["code"] for record in self.diagnostics],
+                    [code],
+                )
+                self.assertNotIn(secret, repr(self.diagnostics))
+                self.assertNotIn("commit", self.events)
+                self.assertNotIn("enqueue", self.events)
+                self.assertNotIn("create", self.events)
+                self.assertNotIn("update", self.events)
+                self.assertFalse(
+                    hasattr(
+                        self.frappe.flags,
+                        "npi_p805_tool_asset_context_diagnostic",
+                    )
+                )
 
         for name, scope, candidate_trace, method in (
             ("missing", None, trace_id, "GET"),

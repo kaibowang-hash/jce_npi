@@ -33,7 +33,11 @@ _TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE = "p805-tool-asset-command-context-v1"
 _TOOL_ASSET_CONTEXT_PARENT_CODES = frozenset(
     {
-        "P805_TOOL_ASSET_CONTEXT_STATUS",
+        "P805_TOOL_ASSET_CONTEXT_HTTP_AUTHORIZATION_CLASS",
+        "P805_TOOL_ASSET_CONTEXT_HTTP_NOT_FOUND_CLASS",
+        "P805_TOOL_ASSET_CONTEXT_HTTP_CLIENT_CLASS",
+        "P805_TOOL_ASSET_CONTEXT_HTTP_SERVER_CLASS",
+        "P805_TOOL_ASSET_CONTEXT_HTTP_OTHER_CLASS",
         "P805_TOOL_ASSET_CONTEXT_ITEMS",
         "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE",
         "P805_TOOL_ASSET_CONTEXT_TARGET_MODE",
@@ -41,7 +45,22 @@ _TOOL_ASSET_CONTEXT_PARENT_CODES = frozenset(
 )
 _TOOL_ASSET_CONTEXT_SERVER_CODES = frozenset(
     {
+        "P805_TOOL_ASSET_CONTEXT_ROUTES_ENABLED",
+        "P805_TOOL_ASSET_CONTEXT_AUTHENTICATED_USER",
+        "P805_TOOL_ASSET_CONTEXT_PRINCIPAL_RESOLVE",
+        "P805_TOOL_ASSET_CONTEXT_PRINCIPAL_INTERNAL",
+        "P805_TOOL_ASSET_CONTEXT_REQUEST_ID",
+        "P805_TOOL_ASSET_CONTEXT_REPOSITORY_INIT",
+        "P805_TOOL_ASSET_CONTEXT_PROJECT_ROUTE",
+        "P805_TOOL_ASSET_CONTEXT_PROJECT_AUTHORIZE",
+        "P805_TOOL_ASSET_CONTEXT_REQUEST_FIELDS",
+        "P805_TOOL_ASSET_CONTEXT_MASTER_ROUTE",
+        "P805_TOOL_ASSET_CONTEXT_SET_ROUTE",
         "P805_TOOL_ASSET_CONTEXT_QUERY_PARSE",
+        "P805_TOOL_ASSET_CONTEXT_REPOSITORY_LIST",
+        "P805_TOOL_ASSET_CONTEXT_PROJECT_RESOLVE",
+        "P805_TOOL_ASSET_CONTEXT_MASTER_RESOLVE",
+        "P805_TOOL_ASSET_CONTEXT_SET_RESOLVE",
         "P805_TOOL_ASSET_CONTEXT_PROFILE_RESOLVE",
         "P805_TOOL_ASSET_CONTEXT_CREATE_SOURCE",
         "P805_TOOL_ASSET_CONTEXT_CREATE_PROFILE_BINDING",
@@ -49,6 +68,14 @@ _TOOL_ASSET_CONTEXT_SERVER_CODES = frozenset(
         "P805_TOOL_ASSET_CONTEXT_CREATE_SANDBOX_GUARD",
         "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
         "P805_TOOL_ASSET_CONTEXT_CREATE_REQUEST_BUILD",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_PROJECT",
+        "P805_TOOL_ASSET_CONTEXT_REQUEST_ROWS",
+        "P805_TOOL_ASSET_CONTEXT_PERMISSIONS",
+        "P805_TOOL_ASSET_CONTEXT_PROFILE_RESPONSE",
+        "P805_TOOL_ASSET_CONTEXT_ITEM_PROJECT",
+        "P805_TOOL_ASSET_CONTEXT_RESPONSE_BUILD",
+        "P805_TOOL_ASSET_CONTEXT_RESPONSE_AVAILABLE",
+        "P805_TOOL_ASSET_CONTEXT_RESPONSE_SERIALIZE",
     }
 )
 _TOOL_ASSET_CONTEXT_FAILURE = "P8-05 disposable command context is unavailable"
@@ -118,7 +145,7 @@ def execution_request(
 
 def _command_context_failure_message(result, cursors) -> str | None:
     if result.status != 200:
-        code = "P805_TOOL_ASSET_CONTEXT_STATUS"
+        code = _http_status_diagnostic_code(result.status)
     else:
         body = result.body if isinstance(result.body, dict) else {}
         contexts = body.get("commandContexts")
@@ -148,10 +175,9 @@ def _command_context_failure_message(result, cursors) -> str | None:
         or _TRACE_PATTERN.fullmatch(trace_id) is None
     ):
         return _TOOL_ASSET_CONTEXT_FAILURE
-    if code in {
-        "P805_TOOL_ASSET_CONTEXT_STATUS",
-        "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE",
-    }:
+    if code.startswith("P805_TOOL_ASSET_CONTEXT_HTTP_") or code == (
+        "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE"
+    ):
         diagnostic = item_runtime._sanitized_server_log_diagnostic(
             trace_id,
             cursors,
@@ -170,6 +196,20 @@ def _command_context_failure_message(result, cursors) -> str | None:
         f"[diagnostic_code={code}; exception_type=RuntimeError; "
         f"trace_id={trace_id}]"
     )
+
+
+def _http_status_diagnostic_code(status: object) -> str:
+    """Classify a non-success response without exposing its actual status."""
+
+    if status in {401, 403}:
+        return "P805_TOOL_ASSET_CONTEXT_HTTP_AUTHORIZATION_CLASS"
+    if status == 404:
+        return "P805_TOOL_ASSET_CONTEXT_HTTP_NOT_FOUND_CLASS"
+    if isinstance(status, int) and 400 <= status < 500:
+        return "P805_TOOL_ASSET_CONTEXT_HTTP_CLIENT_CLASS"
+    if isinstance(status, int) and 500 <= status < 600:
+        return "P805_TOOL_ASSET_CONTEXT_HTTP_SERVER_CLASS"
+    return "P805_TOOL_ASSET_CONTEXT_HTTP_OTHER_CLASS"
 
 
 def _retained_context(administrator, base_url):

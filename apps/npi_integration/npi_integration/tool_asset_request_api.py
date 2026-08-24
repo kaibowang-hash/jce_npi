@@ -342,16 +342,25 @@ def get_tool_asset_execution_requests(
                     if acceptanceRevisionGlobalId is not None
                     else None
                 )
-            response = repository.list_execution_requests(
-                project_id,
-                master_id,
-                tooling_set_id,
-                acceptance_revision_id=acceptance_revision_id,
-            )
-            if response is None:
-                raise ToolAssetExecutionUnavailable()
+            with tool_asset_context_step(
+                "P805_TOOL_ASSET_CONTEXT_REPOSITORY_LIST"
+            ):
+                response = repository.list_execution_requests(
+                    project_id,
+                    master_id,
+                    tooling_set_id,
+                    acceptance_revision_id=acceptance_revision_id,
+                )
+            with tool_asset_context_step(
+                "P805_TOOL_ASSET_CONTEXT_RESPONSE_AVAILABLE"
+            ):
+                if response is None:
+                    raise ToolAssetExecutionUnavailable()
             headers["X-Request-ID"] = request_id
-            return _execution_response(response)
+            with tool_asset_context_step(
+                "P805_TOOL_ASSET_CONTEXT_RESPONSE_SERIALIZE"
+            ):
+                return _execution_response(response)
 
     return frappe_domain_call(
         handle,
@@ -562,23 +571,36 @@ def _execution_command(
 def _execution_query_context(
     request_fields: dict[str, Any],
 ) -> tuple[str, _Repository, UUID, UUID, UUID]:
-    require_tooling_acceptance_assets_routes_enabled()
-    actor = authenticated_user()
-    principal = authenticated_principal(actor)
-    if principal.is_external:
-        raise PermissionDenied()
-    request_id = _request_id()
-    repository = _new_repository(principal, request_id)
-    project_id = _opaque_route_uuid("project_id")
-    if not repository.authorize_scope(project_id):
-        raise ToolAssetExecutionUnavailable()
-    reject_unexpected_request_fields(frozenset(), request_fields)
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_ROUTES_ENABLED"):
+        require_tooling_acceptance_assets_routes_enabled()
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_AUTHENTICATED_USER"):
+        actor = authenticated_user()
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_PRINCIPAL_RESOLVE"):
+        principal = authenticated_principal(actor)
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_PRINCIPAL_INTERNAL"):
+        if principal.is_external:
+            raise PermissionDenied()
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_REQUEST_ID"):
+        request_id = _request_id()
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_REPOSITORY_INIT"):
+        repository = _new_repository(principal, request_id)
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_PROJECT_ROUTE"):
+        project_id = _opaque_route_uuid("project_id")
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_PROJECT_AUTHORIZE"):
+        if not repository.authorize_scope(project_id):
+            raise ToolAssetExecutionUnavailable()
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_REQUEST_FIELDS"):
+        reject_unexpected_request_fields(frozenset(), request_fields)
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_MASTER_ROUTE"):
+        master_id = _opaque_route_uuid("tooling_master_id")
+    with tool_asset_context_step("P805_TOOL_ASSET_CONTEXT_SET_ROUTE"):
+        tooling_set_id = _opaque_route_uuid("tooling_set_id")
     return (
         request_id,
         repository,
         project_id,
-        _opaque_route_uuid("tooling_master_id"),
-        _opaque_route_uuid("tooling_set_id"),
+        master_id,
+        tooling_set_id,
     )
 
 

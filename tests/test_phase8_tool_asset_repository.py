@@ -4,7 +4,7 @@ import importlib
 import sys
 import types
 import unittest
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -253,6 +253,9 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
             / "apps/npi_integration/npi_integration/tool_asset_request/frappe_repository.py"
         ).read_text(encoding="utf-8")
         repository_codes = (
+            "P805_TOOL_ASSET_CONTEXT_PROJECT_RESOLVE",
+            "P805_TOOL_ASSET_CONTEXT_MASTER_RESOLVE",
+            "P805_TOOL_ASSET_CONTEXT_SET_RESOLVE",
             "P805_TOOL_ASSET_CONTEXT_PROFILE_RESOLVE",
             "P805_TOOL_ASSET_CONTEXT_CREATE_SOURCE",
             "P805_TOOL_ASSET_CONTEXT_CREATE_PROFILE_BINDING",
@@ -260,6 +263,12 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
             "P805_TOOL_ASSET_CONTEXT_CREATE_SANDBOX_GUARD",
             "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
             "P805_TOOL_ASSET_CONTEXT_CREATE_REQUEST_BUILD",
+            "P805_TOOL_ASSET_CONTEXT_CREATE_PROJECT",
+            "P805_TOOL_ASSET_CONTEXT_REQUEST_ROWS",
+            "P805_TOOL_ASSET_CONTEXT_PERMISSIONS",
+            "P805_TOOL_ASSET_CONTEXT_PROFILE_RESPONSE",
+            "P805_TOOL_ASSET_CONTEXT_ITEM_PROJECT",
+            "P805_TOOL_ASSET_CONTEXT_RESPONSE_BUILD",
         )
         for code in repository_codes:
             with self.subTest(code=code):
@@ -411,6 +420,152 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
                     ToolAssetExecutionOperation.UPDATE,
                     idempotency_key_hash="a" * 64,
                     lock=False,
+                )
+        self.assertIs(caught.exception, original)
+        self.assertEqual(records, [])
+        self.assertEqual(repository._diagnostic_writes, [])
+
+    def test_command_context_read_projection_boundaries_are_unique_same_exception_and_zero_write(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        original = RuntimeError("private read projection value")
+        project = types.SimpleNamespace(
+            tenant_id="tenant-synthetic",
+            global_id=uid(1),
+        )
+
+        def configured_repository():
+            repository = self.bare_repository()
+            repository._diagnostic_writes = []
+            repository._authorized_project = lambda _project_id: project
+            repository._master_for_project = lambda *_args: object()
+            repository._tooling_set_for_project = lambda *_args: object()
+            repository._read_execution_profile = lambda _project: None
+            repository._bounded_documents = lambda *_args, **_kwargs: []
+            repository._execution_permissions = lambda *_args: {}
+            repository._execution_request_public = lambda _row: {}
+            return repository
+
+        cases = []
+        repository = configured_repository()
+        repository._authorized_project = lambda _project_id: (_ for _ in ()).throw(
+            original
+        )
+        cases.append(("P805_TOOL_ASSET_CONTEXT_PROJECT_RESOLVE", repository, None))
+
+        repository = configured_repository()
+        repository._master_for_project = lambda *_args: (_ for _ in ()).throw(
+            original
+        )
+        cases.append(("P805_TOOL_ASSET_CONTEXT_MASTER_RESOLVE", repository, None))
+
+        repository = configured_repository()
+        repository._tooling_set_for_project = lambda *_args: (_ for _ in ()).throw(
+            original
+        )
+        cases.append(("P805_TOOL_ASSET_CONTEXT_SET_RESOLVE", repository, None))
+
+        repository = configured_repository()
+        repository._read_execution_profile = lambda _project: object()
+        repository._build_execution_request = lambda *_args, **_kwargs: object()
+        repository._command_context_payload = lambda _value: (
+            _ for _ in ()
+        ).throw(original)
+        cases.append(("P805_TOOL_ASSET_CONTEXT_CREATE_PROJECT", repository, None))
+
+        repository = configured_repository()
+        repository._bounded_documents = lambda *_args, **_kwargs: (
+            _ for _ in ()
+        ).throw(original)
+        cases.append(("P805_TOOL_ASSET_CONTEXT_REQUEST_ROWS", repository, None))
+
+        repository = configured_repository()
+        repository._execution_permissions = lambda *_args: (_ for _ in ()).throw(
+            original
+        )
+        cases.append(("P805_TOOL_ASSET_CONTEXT_PERMISSIONS", repository, None))
+
+        repository = configured_repository()
+        repository._read_execution_profile = lambda _project: types.SimpleNamespace(
+            reference=types.SimpleNamespace(
+                canonical_mapping=lambda: (_ for _ in ()).throw(original)
+            )
+        )
+        cases.append(("P805_TOOL_ASSET_CONTEXT_PROFILE_RESPONSE", repository, None))
+
+        repository = configured_repository()
+        repository._bounded_documents = lambda *_args, **_kwargs: [object()]
+        repository._execution_request_public = lambda _row: (_ for _ in ()).throw(
+            original
+        )
+        cases.append(("P805_TOOL_ASSET_CONTEXT_ITEM_PROJECT", repository, None))
+
+        repository = configured_repository()
+        cases.append(
+            (
+                "P805_TOOL_ASSET_CONTEXT_RESPONSE_BUILD",
+                repository,
+                patch.object(
+                    self.repository,
+                    "ToolAssetBusinessApprovalReference",
+                    side_effect=original,
+                ),
+            )
+        )
+
+        for code, repository, module_patch in cases:
+            records: list[tuple[str, Exception]] = []
+            with self.subTest(code=code), patch.object(
+                diagnostics,
+                "_record_context_failure",
+                side_effect=lambda observed_code, error: records.append(
+                    (observed_code, error)
+                ),
+            ):
+                if module_patch is None:
+                    context = nullcontext()
+                else:
+                    context = module_patch
+                with context:
+                    with self.assertRaises(RuntimeError) as caught:
+                        repository.list_execution_requests(
+                            uid(1),
+                            uid(2),
+                            uid(3),
+                            acceptance_revision_id=(
+                                uid(6)
+                                if code
+                                == "P805_TOOL_ASSET_CONTEXT_CREATE_PROJECT"
+                                else None
+                            ),
+                        )
+            self.assertIs(caught.exception, original)
+            self.assertEqual(records, [(code, original)])
+            self.assertEqual(repository._diagnostic_writes, [])
+
+        repository = configured_repository()
+        repository._read_execution_profile = lambda _project: object()
+
+        def update_only_build(*args, **_kwargs):
+            operation = args[5]
+            if operation is ToolAssetExecutionOperation.CREATE:
+                raise RuntimeError("closed create context")
+            return object()
+
+        repository._build_execution_request = update_only_build
+        repository._command_context_payload = lambda _value: (
+            _ for _ in ()
+        ).throw(original)
+        records = []
+        with patch.object(
+            diagnostics,
+            "_record_context_failure",
+            side_effect=lambda code, error: records.append((code, error)),
+        ):
+            with self.assertRaises(RuntimeError) as caught:
+                repository.list_execution_requests(
+                    uid(1), uid(2), uid(3), acceptance_revision_id=uid(6)
                 )
         self.assertIs(caught.exception, original)
         self.assertEqual(records, [])

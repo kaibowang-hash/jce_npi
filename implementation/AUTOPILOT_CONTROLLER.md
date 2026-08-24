@@ -4925,3 +4925,30 @@ repeat or rewrite it merely to restore context. See
 - No CURRENT_TASK, runtime, test, product, API, permission, transaction,
   Schema, ownership, adapter, target or Gate behavior changes.
 - Controller marker: `P8-05 final held; command-context-status-stage diagnostic 0/1 active`.
+
+## 2026-08-24 P8-05 command-context HTTP-boundary subcycle active
+
+- Durable status-stage checkpoint `a7a74ac19e8a57092a27a4c6d9bb8cfc69db2172`
+  passes ordinary CI `32723750666`. Its sole controlled diagnostic
+  `32724859319`, runtime job `97423819933`, returns only the parent tuple
+  `P805_TOOL_ASSET_CONTEXT_STATUS / RuntimeError /
+  trace-73d2232109735af5a2bae6b434ee3c6e`; the strict mirrored reader finds no
+  trusted server tuple.
+- The command-context-status-stage cycle is frozen at diagnostic `1/1`, repair
+  `0/1`, final `0/1`. Absence of a trusted record cannot distinguish
+  pre-handler/scope-log activation from the unstaged API and read-projection
+  boundaries, so it authorizes no repair.
+- An independent `command-context-http-boundary` cycle starts at diagnostic
+  `0/1`, repair `0/1`, final `0/1`. Parent observation classifies non-success
+  responses into fixed authorization/not-found/client/server/other codes
+  without emitting the actual status. Every non-success class consults the
+  strict exact-trace mirrored reader; a trusted server tuple wins and `None`
+  falls back to the fixed parent class.
+- Newly observed server contexts each name one lexical read-only API or
+  repository boundary. The existing exact GET/query scope, request-local
+  one-record/innermost rule, same-exception rethrow and finally restoration
+  remain unchanged. No response body, status value, business value, ID,
+  count, actor, message or stack is read or emitted. There is no write/order,
+  permission, transaction, API contract, Schema, ownership, adapter, target
+  or Gate change.
+- Controller marker: `P8-05 final held; command-context-http-boundary diagnostic 0/1 active`.

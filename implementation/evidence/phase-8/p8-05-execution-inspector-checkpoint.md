@@ -343,3 +343,26 @@ Canonical Linux/amd64 SHA-256 evidence:
   response. Symbol-level execution-order proof remains mandatory. Product,
   runtime, tests, permission, transaction, Schema, ownership and target
   behavior remain unchanged.
+
+### Independent command-context HTTP-boundary subcycle
+
+- Durable status-stage SHA `a7a74ac19e8a57092a27a4c6d9bb8cfc69db2172`
+  passes ordinary `32723750666`. Controlled run `32724859319`, runtime job
+  `97423819933`, yields only the parent
+  `P805_TOOL_ASSET_CONTEXT_STATUS / RuntimeError /
+  trace-73d2232109735af5a2bae6b434ee3c6e`; no strict mirrored server tuple is
+  trusted.
+- The status-stage cycle freezes at diagnostic `1/1`, repair `0/1`, final
+  `0/1`. Because no tuple cannot uniquely separate pre-handler/scope-log
+  activation from unstaged read boundaries, repair remains prohibited.
+- A distinct `command-context-http-boundary` cycle begins at diagnostic
+  `0/1`, repair `0/1`, final `0/1`. Parent output uses only fixed HTTP class
+  codes with `RuntimeError` and the exact validated trace. All non-success
+  classes consult the strict mirrored reader; a valid server tuple wins and
+  absent evidence falls back to the parent class.
+- New server codes each guard one lexical API/query/repository/response
+  context with the unchanged exact scope, innermost one-record behavior,
+  same-exception rethrow and finally restoration. No status value, body,
+  business value, identifier, count, actor, message or stack is exposed; no
+  product write/order, permission, transaction, API contract, Schema,
+  ownership, adapter, target or Gate semantics change.

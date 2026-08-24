@@ -958,3 +958,30 @@ proof that the same exception caused the HTTP status. Any tuple must undergo
 ordered symbol-level cross-proof before a product repair is authorized. No
 body, status value, business value, identifier, count, actor, exception
 message or stack may be inspected or emitted.
+
+## 26. Command-context HTTP-boundary diagnostic subcycle
+
+Durable status-stage SHA `a7a74ac19e8a57092a27a4c6d9bb8cfc69db2172`
+passes ordinary CI `32723750666`. The sole controlled diagnostic
+`32724859319`, runtime `97423819933`, yields only
+`P805_TOOL_ASSET_CONTEXT_STATUS / RuntimeError /
+trace-73d2232109735af5a2bae6b434ee3c6e`; its strict mirrored reader returns no
+trusted server tuple. The status-stage cycle is therefore immutable at
+diagnostic `1/1`, repair `0/1`, final `0/1`, and no product repair is allowed.
+
+The missing tuple leaves pre-handler/scope-log activation and the previously
+unstaged API/repository read boundaries non-unique. A new independent
+`command-context-http-boundary` subcycle starts at diagnostic `0/1`, repair
+`0/1`, final `0/1`. Fixed parent codes distinguish only authorization,
+not-found, other client, server and other response classes; they never expose
+the actual status. Every non-success class uses the existing exact-trace
+strict mirrored reader, where a valid server tuple wins and `None` retains the
+parent class.
+
+Each new server code wraps exactly one lexical query-context, repository read
+or response-construction boundary. The same versioned exact GET/query scope,
+innermost one-record state, same-exception propagation and finally restoration
+apply. No response body, status value, business value, identifier, count,
+actor, exception message or stack is inspected or emitted. Product writes,
+call order, permission, transaction, API contracts, Schema, ownership,
+profile, adapter, target and Gate behavior remain unchanged.

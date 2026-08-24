@@ -339,7 +339,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         }
         cases = (
             (
-                "P805_TOOL_ASSET_CONTEXT_STATUS",
+                "P805_TOOL_ASSET_CONTEXT_HTTP_SERVER_CLASS",
                 types.SimpleNamespace(status=503, body=valid, trace_id=trace_id),
             ),
             (
@@ -388,10 +388,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     reader.call_count,
                     int(
                         code
-                        in {
-                            "P805_TOOL_ASSET_CONTEXT_STATUS",
-                            "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE",
-                        }
+                        == "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE"
+                        or code.startswith("P805_TOOL_ASSET_CONTEXT_HTTP_")
                     ),
                 )
 
@@ -464,6 +462,104 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             )
             reader.assert_not_called()
 
+    def test_server_reader_allowlist_exactly_matches_unique_lexical_contexts(self):
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        self.assertEqual(
+            self.verifier._TOOL_ASSET_CONTEXT_SERVER_CODES,
+            diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_CODES,
+        )
+        source = "\n".join(
+            (
+                (
+                    ROOT
+                    / "apps/npi_integration/npi_integration/tool_asset_request_api.py"
+                ).read_text(encoding="utf-8"),
+                (
+                    ROOT
+                    / "apps/npi_integration/npi_integration/tool_asset_request/frappe_repository.py"
+                ).read_text(encoding="utf-8"),
+            )
+        )
+        for code in self.verifier._TOOL_ASSET_CONTEXT_SERVER_CODES:
+            with self.subTest(code=code):
+                self.assertEqual(source.count(f'"{code}"'), 1)
+
+    def test_http_failure_classes_are_closed_value_free_and_always_read_server_log(self):
+        trace_id = "trace-" + "c" * 32
+        secret = "private-http-status-value"
+        cases = (
+            (401, "P805_TOOL_ASSET_CONTEXT_HTTP_AUTHORIZATION_CLASS"),
+            (403, "P805_TOOL_ASSET_CONTEXT_HTTP_AUTHORIZATION_CLASS"),
+            (404, "P805_TOOL_ASSET_CONTEXT_HTTP_NOT_FOUND_CLASS"),
+            (409, "P805_TOOL_ASSET_CONTEXT_HTTP_CLIENT_CLASS"),
+            (503, "P805_TOOL_ASSET_CONTEXT_HTTP_SERVER_CLASS"),
+            (302, "P805_TOOL_ASSET_CONTEXT_HTTP_OTHER_CLASS"),
+            (700, "P805_TOOL_ASSET_CONTEXT_HTTP_OTHER_CLASS"),
+        )
+        for status, code in cases:
+            result = types.SimpleNamespace(
+                status=status,
+                body={"opaque": secret},
+                trace_id=trace_id,
+            )
+            with self.subTest(code=code), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=None,
+            ) as reader:
+                message = self.verifier._command_context_failure_message(
+                    result,
+                    {"logs/bench.log": 0},
+                )
+            self.assertIn(f"diagnostic_code={code}", message)
+            self.assertIn("exception_type=RuntimeError", message)
+            self.assertIn(f"trace_id={trace_id}", message)
+            self.assertNotIn(secret, message)
+            self.assertNotIn(str(status), message)
+            reader.assert_called_once_with(
+                trace_id,
+                {"logs/bench.log": 0},
+                code_prefix="P805_TOOL_ASSET_CONTEXT_",
+                allowed_codes=self.verifier._TOOL_ASSET_CONTEXT_SERVER_CODES,
+            )
+
+        server_tuple = (
+            "PermissionDenied",
+            "P805_TOOL_ASSET_CONTEXT_PROJECT_AUTHORIZE",
+            trace_id,
+        )
+        with patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+            return_value=server_tuple,
+        ):
+            message = self.verifier._command_context_failure_message(
+                types.SimpleNamespace(status=403, body={}, trace_id=trace_id),
+                {},
+            )
+        self.assertIn(
+            "diagnostic_code=P805_TOOL_ASSET_CONTEXT_PROJECT_AUTHORIZE",
+            message,
+        )
+        self.assertIn("exception_type=PermissionDenied", message)
+
+        status_result = types.SimpleNamespace(
+            status=503,
+            body={"opaque": secret},
+            trace_id=trace_id,
+        )
+        create_shape_result = types.SimpleNamespace(
+            status=200,
+            body={
+                "items": [],
+                "commandContexts": None,
+                "executionProfile": {"targetMode": "synthetic"},
+            },
+            trace_id=trace_id,
+        )
+
         with patch.object(
             self.verifier,
             "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
@@ -474,7 +570,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ) as reader:
             self.assertEqual(
                 self.verifier._command_context_failure_message(
-                    status,
+                    status_result,
                     {"logs/bench.log": 0},
                 ),
                 self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
@@ -491,7 +587,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ) as reader:
             self.assertEqual(
                 self.verifier._command_context_failure_message(
-                    create_shape,
+                    create_shape_result,
                     {"logs/bench.log": 0},
                 ),
                 self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
