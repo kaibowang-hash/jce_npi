@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-24`
 
-Status: `FROZEN — CHECKPOINTS 1–3 PASS; CHECKPOINT 4 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
+Status: `FROZEN — CHECKPOINTS 1–4 ORDINARY PASS; FINAL HELD AT P6-06 PREDECESSOR DIAGNOSTIC`
 
 Audit base and retained P8-04 product checkpoint:
 `ca72deceab4b8e899d0da1207883887c9d30077a`
@@ -651,3 +651,21 @@ authorized task paths and rejects any thirty-third path. Exact image hashes and
 the full changed-files-to-tests mapping are retained in
 `p8-05-execution-inspector-checkpoint.md`. The checkpoint still awaits its own
 exact-SHA ordinary CI before final unchanged Level 3 can start.
+
+## 17. Final runtime predecessor diagnostic cycle
+
+Checkpoint 4 exact SHA `3d35d6860e63478bc12fde9a0426d0ea00c8b31e`
+passes ordinary CI `32680231720`. The sole final dispatch `32682520429`
+passes all non-runtime lanes and controlled preflight, but controlled runtime
+job `97303507677` receives an opaque HTTP 500 at the P6-06 predecessor Mock
+Asset-create POST before any P8-03 through P8-05 runtime stage. That final
+allowance is immutable `1/1` and proves no product root.
+
+Standing serial recovery opens a distinct P6-06 predecessor Asset-create
+cycle at diagnostic `0/1`, repair `0/1`, final `0/1`. The bounded checkpoint
+temporarily activates only the exact synthetic POST/key scope and records one
+allowlisted lexical stage, exception class and exact validated trace. It
+changes no response, permission, transaction, ownership, Schema, worker,
+adapter or target behavior and discloses no status, body, business value,
+identity, hash, actor, message or stack. Product repair remains prohibited
+until one tuple uniquely proves a root.

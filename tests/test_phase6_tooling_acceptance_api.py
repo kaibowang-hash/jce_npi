@@ -6,6 +6,7 @@ import sys
 import types
 import unittest
 from typing import Any
+from unittest.mock import patch
 
 
 sys.path[:0] = ["apps/npi_core", "apps/npi_integration"]
@@ -89,6 +90,7 @@ class Phase6ToolingAcceptanceApiTest(unittest.TestCase):
         "frappe.sessions",
         "npi_core.api",
         "npi_core.request_security",
+        "npi_integration.tool_asset_request.diagnostics",
         "npi_integration.tool_asset_request_api",
         "npi_core.bff",
     )
@@ -307,6 +309,125 @@ class Phase6ToolingAcceptanceApiTest(unittest.TestCase):
         self.assertEqual(self.frappe.local.response.http_status_code, 500)
         self.assertEqual(self.frappe.db.rollback_count, 1)
         self.assertNotEqual(result, self.request_response)
+
+    def test_asset_create_diagnostic_is_exact_scoped_response_neutral_and_restored(self) -> None:
+        diagnostic = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        trace_id = "trace-" + "a" * 32
+        self.headers["X-Trace-ID"] = trace_id
+        self.repository.create_asset_request = lambda *_args, **_kwargs: (
+            types.SimpleNamespace(
+                response=copy.deepcopy(self.request_response),
+                replayed="private business value",
+            )
+        )
+        self.headers[diagnostic.P606_ASSET_CREATE_DIAGNOSTIC_HEADER] = (
+            diagnostic.P606_ASSET_CREATE_DIAGNOSTIC_SCOPE
+        )
+        token = self.api.current_trace_id.set(trace_id)
+        records: list[dict[str, object]] = []
+        try:
+            with patch(
+                "npi_core.api.record_safe_diagnostic",
+                side_effect=lambda **values: records.append(values),
+            ):
+                result = self.call(self.api.create_tool_asset_request, self.payload())
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        stage_records = [
+            record
+            for record in records
+            if str(record.get("code", "")).startswith("P805_P606_ASSET_")
+        ]
+        self.assertEqual(
+            stage_records,
+            [
+                {
+                    "code": "P805_P606_ASSET_OUTCOME_VALIDATE",
+                    "title": "NPI predecessor Tool Asset create stage failed",
+                    "exception_type": "RuntimeError",
+                    "trace_id": trace_id,
+                }
+            ],
+        )
+        self.assertNotIn("private business value", repr(records))
+        self.assertFalse(
+            hasattr(self.frappe.flags, "npi_p805_p606_asset_create_diagnostic")
+        )
+
+        for scope, candidate_trace in (
+            (None, trace_id),
+            ("wrong-scope", trace_id),
+            (diagnostic.P606_ASSET_CREATE_DIAGNOSTIC_SCOPE, "invalid-trace"),
+        ):
+            with self.subTest(scope=scope, trace=candidate_trace):
+                if scope is None:
+                    self.headers.pop(
+                        diagnostic.P606_ASSET_CREATE_DIAGNOSTIC_HEADER, None
+                    )
+                else:
+                    self.headers[
+                        diagnostic.P606_ASSET_CREATE_DIAGNOSTIC_HEADER
+                    ] = scope
+                self.headers["X-Trace-ID"] = candidate_trace
+                records.clear()
+                token = self.api.current_trace_id.set(candidate_trace)
+                try:
+                    with patch(
+                        "npi_core.api.record_safe_diagnostic",
+                        side_effect=lambda **values: records.append(values),
+                    ):
+                        retry = self.call(
+                            self.api.create_tool_asset_request, self.payload()
+                        )
+                finally:
+                    self.api.current_trace_id.reset(token)
+                self.assertEqual(
+                    {key: value for key, value in retry.items() if key != "traceId"},
+                    {key: value for key, value in result.items() if key != "traceId"},
+                )
+                self.assertFalse(
+                    any(
+                        str(record.get("code", "")).startswith(
+                            "P805_P606_ASSET_"
+                        )
+                        for record in records
+                    )
+                )
+
+    def test_asset_create_diagnostic_records_innermost_once_and_rethrows_same_object(self) -> None:
+        diagnostic = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        trace_id = "trace-" + "b" * 32
+        self.headers[diagnostic.P606_ASSET_CREATE_DIAGNOSTIC_HEADER] = (
+            diagnostic.P606_ASSET_CREATE_DIAGNOSTIC_SCOPE
+        )
+        records: list[dict[str, object]] = []
+        original = ValueError("private request identity")
+        with patch(
+            "npi_core.api.record_safe_diagnostic",
+            side_effect=lambda **values: records.append(values),
+        ):
+            with self.assertRaises(ValueError) as raised:
+                with diagnostic.p606_asset_create_diagnostics(trace_id):
+                    with diagnostic.p606_asset_create_step(
+                        "P805_P606_ASSET_TRANSACTION_SCOPE"
+                    ):
+                        with diagnostic.p606_asset_create_step(
+                            "P805_P606_ASSET_REQUEST_INSERT"
+                        ):
+                            raise original
+        self.assertIs(raised.exception, original)
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["code"], "P805_P606_ASSET_REQUEST_INSERT")
+        self.assertEqual(records[0]["trace_id"], trace_id)
+        self.assertNotIn("private request identity", repr(records))
+        self.assertFalse(
+            hasattr(self.frappe.flags, "npi_p805_p606_asset_create_diagnostic")
+        )
 
     def test_bff_maps_only_exact_methods_and_independent_switch_fails_closed(self) -> None:
         cases = (

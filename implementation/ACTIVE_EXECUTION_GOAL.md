@@ -4,13 +4,13 @@ Updated: `2026-08-23T20:13:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
+- Mode: `IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT — P8-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `ca72deceab4b8e899d0da1207883887c9d30077a` (pushed; P8-04
-  `PASS_LEVEL_3`; P8-05 audit base)
+  `3d35d6860e63478bc12fde9a0426d0ea00c8b31e` (pushed; P8-05 checkpoint 4
+  ordinary PASS; final held at the P6-06 predecessor boundary)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
@@ -18,9 +18,9 @@ Updated: `2026-08-23T20:13:00Z`
   `32651903846` (`PASS — LEVEL 3` at `ca72deceab4b8e899d0da1207883887c9d30077a`;
   repository, frontend, secret, `126/126` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32667224305` (`PASS` at
-  `17406118f2a771644c90ca00272a247f40b1b5b7`; P8-05 checkpoint 3,
-  checkpoint 4 authorized)
+  `32680231720` (`PASS` at
+  `3d35d6860e63478bc12fde9a0426d0ea00c8b31e`; P8-05 checkpoint 4,
+  final Level 3 `32682520429` held at the P6-06 predecessor boundary)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -118,7 +118,7 @@ Updated: `2026-08-23T20:13:00Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-05 — Tool Asset execution`
-  (`IN_PROGRESS_CHECKPOINT_4_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY_CI`)
+  (`IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT`)
 - Resumed product task: `P8-05` (`CHECKPOINT_4_IMPLEMENTED`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`

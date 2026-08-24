@@ -172,6 +172,138 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
         self.assertIs(result, raw)
         self.assertEqual(request.call_args.kwargs["query_key"], "p606-acceptance")
 
+    def test_asset_create_diagnostic_uses_exact_shared_trace_and_safe_reader(self) -> None:
+        module = self.module
+        path = module.asset_request_command_path(
+            "10000000-0000-4000-8000-000000000001",
+            "20000000-0000-4000-8000-000000000002",
+            "30000000-0000-4000-8000-000000000003",
+        )
+        trace_id = "trace-" + "a" * 32
+        result = SimpleNamespace(
+            status=500,
+            headers={
+                "X-Request-ID": module.document_runtime.fixture_request_id(
+                    module.ASSET_REQUEST_KEY
+                ),
+                "Cache-Control": "private, no-store",
+            },
+            body={"private": "must not leak"},
+            trace_id=trace_id,
+        )
+        tuple_value = (
+            "P805_P606_ASSET_REQUEST_INSERT",
+            "ValidationError",
+            trace_id,
+        )
+        with (
+            patch.object(module.item_runtime, "_replay_diagnostic_log_cursors", return_value={"cursor": 0}),
+            patch.object(module.document_runtime, "request", return_value=result) as request,
+            patch.object(
+                module.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=tuple_value,
+            ) as reader,
+        ):
+            with self.assertRaisesRegex(
+                RuntimeError,
+                r"diagnostic_code=P805_P606_ASSET_REQUEST_INSERT; "
+                r"exception_type=ValidationError; trace_id=trace-[a-f0-9]{32}",
+            ) as raised:
+                module.command(
+                    object(),
+                    "http://127.0.0.1:8003",
+                    "csrf",
+                    path,
+                    {"private": "must not leak"},
+                    module.ASSET_REQUEST_KEY,
+                    asset_create_diagnostic=True,
+                )
+        headers = request.call_args.kwargs["request_headers"]
+        self.assertEqual(
+            headers[module._P606_ASSET_CREATE_DIAGNOSTIC_HEADER],
+            module._P606_ASSET_CREATE_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(reader.call_args.args[:2], (trace_id, {"cursor": 0}))
+        self.assertEqual(
+            reader.call_args.kwargs,
+            {
+                "code_prefix": "P805_P606_ASSET_",
+                "allowed_codes": module._P606_ASSET_CREATE_DIAGNOSTIC_CODES,
+            },
+        )
+        self.assertNotIn("must not leak", str(raised.exception))
+        self.assertNotIn("500", str(raised.exception))
+
+    def test_asset_create_diagnostic_is_bounded_off_and_constant_on_reader_failure(self) -> None:
+        module = self.module
+        valid_path = module.asset_request_command_path(
+            "10000000-0000-4000-8000-000000000001",
+            "20000000-0000-4000-8000-000000000002",
+            "30000000-0000-4000-8000-000000000003",
+        )
+        failure = SimpleNamespace(
+            status=500,
+            headers={"X-Request-ID": "untrusted", "Cache-Control": "private, no-store"},
+            body={"secret": "body-value"},
+            trace_id=None,
+        )
+        for enabled, key, path in (
+            (False, module.ASSET_REQUEST_KEY, valid_path),
+            (True, "different-key", valid_path),
+            (True, module.ASSET_REQUEST_KEY, "/wrong/path"),
+        ):
+            with self.subTest(enabled=enabled, key=key, path=path):
+                with (
+                    patch.object(module, "P606_ASSET_CREATE_DIAGNOSTICS_ENABLED", enabled),
+                    patch.object(module.predecessor, "tooling_request", return_value=failure) as predecessor,
+                    patch.object(module.document_runtime, "request") as direct,
+                ):
+                    with self.assertRaises(RuntimeError):
+                        module.command(
+                            object(), "http://127.0.0.1:8003", "csrf", path, {}, key,
+                            asset_create_diagnostic=True,
+                        )
+                predecessor.assert_called_once()
+                direct.assert_not_called()
+
+        headers = module.document_runtime.command_headers(
+            "csrf", module.ASSET_REQUEST_KEY
+        )
+        failure.headers["X-Request-ID"] = headers["X-Request-ID"]
+        with (
+            patch.object(module.item_runtime, "_replay_diagnostic_log_cursors", return_value=None),
+            patch.object(module.document_runtime, "request", return_value=failure),
+            patch.object(module.item_runtime, "_sanitized_server_log_diagnostic", return_value=None),
+        ):
+            with self.assertRaisesRegex(
+                RuntimeError, "^P6-06 Tool Asset predecessor command failed$"
+            ) as raised:
+                module.command(
+                    object(), "http://127.0.0.1:8003", "csrf", valid_path, {},
+                    module.ASSET_REQUEST_KEY, asset_create_diagnostic=True,
+                )
+        self.assertNotIn("body-value", str(raised.exception))
+
+    def test_asset_create_diagnostic_allowlist_has_one_product_context_per_code(self) -> None:
+        module = self.module
+        api_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/tool_asset_request_api.py"
+        ).read_text(encoding="utf-8")
+        repository_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/tool_asset_request/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(len(module._P606_ASSET_CREATE_DIAGNOSTIC_CODES), 20)
+        for code in module._P606_ASSET_CREATE_DIAGNOSTIC_CODES:
+            with self.subTest(code=code):
+                self.assertEqual((api_source + repository_source).count(f'"{code}"'), 1)
+        self.assertNotIn("result.body", self.source[
+            self.source.index("if result.status != 201 and diagnostic_active"):
+            self.source.index("require(\n        result.status == 201")
+        ])
+
     def test_project_context_binds_customer_owned_set_revision_and_master(self) -> None:
         module = self.module
         context = self.context()

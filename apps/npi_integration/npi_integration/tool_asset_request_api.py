@@ -23,6 +23,10 @@ from npi_core.request_security import (
     response_request_id,
 )
 from npi_core.tooling.domain import ToolingUnavailable
+from npi_integration.tool_asset_request.diagnostics import (
+    p606_asset_create_diagnostics,
+    p606_asset_create_step,
+)
 from npi_integration.tool_asset_request.problems import ToolAssetExecutionUnavailable
 
 
@@ -222,72 +226,87 @@ def create_tool_asset_request(
     }
 
     def handle() -> dict[str, Any]:
-        require_tooling_acceptance_assets_routes_enabled()
-        actor = authenticated_user()
-        require_csrf_token()
-        principal = authenticated_principal(actor)
-        if principal.is_external or "System Manager" not in principal.roles:
-            raise PermissionDenied()
-        request_id = _request_id()
-        repository = _new_repository(principal, request_id)
-        project_id = _opaque_route_uuid("project_id")
-        master_id = _opaque_route_uuid("tooling_master_id")
-        if not repository.authorize_scope(project_id, master_id, administer=True):
-            raise ToolingUnavailable()
-        reject_unexpected_request_fields(_CREATE_FIELDS, request_fields)
-        require_request_fields(_CREATE_FIELDS, request_fields)
-        if targetMode != "mock":
-            raise _field("targetMode", _("Select a supported value."))
-        if acknowledgement != _ACKNOWLEDGEMENT:
-            raise _field(
-                "acknowledgement",
-                _("Confirm the exact local Mock-only boundary."),
+        with p606_asset_create_diagnostics(current_trace_id.get()):
+            with p606_asset_create_step("P805_P606_ASSET_COMMAND_CONTEXT"):
+                require_tooling_acceptance_assets_routes_enabled()
+                actor = authenticated_user()
+                require_csrf_token()
+                principal = authenticated_principal(actor)
+                if principal.is_external or "System Manager" not in principal.roles:
+                    raise PermissionDenied()
+            with p606_asset_create_step("P805_P606_ASSET_REPOSITORY_INIT"):
+                request_id = _request_id()
+                repository = _new_repository(principal, request_id)
+                project_id = _opaque_route_uuid("project_id")
+                master_id = _opaque_route_uuid("tooling_master_id")
+                if not repository.authorize_scope(
+                    project_id, master_id, administer=True
+                ):
+                    raise ToolingUnavailable()
+            with p606_asset_create_step("P805_P606_ASSET_INPUT_PARSE"):
+                reject_unexpected_request_fields(_CREATE_FIELDS, request_fields)
+                require_request_fields(_CREATE_FIELDS, request_fields)
+                if targetMode != "mock":
+                    raise _field("targetMode", _("Select a supported value."))
+                if acknowledgement != _ACKNOWLEDGEMENT:
+                    raise _field(
+                        "acknowledgement",
+                        _("Confirm the exact local Mock-only boundary."),
+                    )
+                tooling_set_id = _opaque_route_uuid("tooling_set_id")
+                values = {
+                    "idempotency_key_hash": actor_idempotency_key_hash(
+                        actor,
+                        frappe.get_request_header("Idempotency-Key"),
+                    ),
+                    "acceptance_revision_id": _uuid(
+                        acceptanceRevisionGlobalId,
+                        "acceptanceRevisionGlobalId",
+                    ),
+                    "acceptance_version": _positive(
+                        acceptanceVersion, "acceptanceVersion"
+                    ),
+                    "acceptance_snapshot_hash": _sha256(
+                        acceptanceSnapshotHash,
+                        "acceptanceSnapshotHash",
+                    ),
+                    "expected_master_snapshot_hash": _sha256(
+                        expectedToolingMasterSnapshotHash,
+                        "expectedToolingMasterSnapshotHash",
+                    ),
+                    "expected_set_snapshot_hash": _sha256(
+                        expectedToolingSetSnapshotHash,
+                        "expectedToolingSetSnapshotHash",
+                    ),
+                    "expected_binding_snapshot_hash": _sha256(
+                        expectedBindingSnapshotHash,
+                        "expectedBindingSnapshotHash",
+                    ),
+                    "expected_revision_number": _positive(
+                        expectedToolingRevisionNumber,
+                        "expectedToolingRevisionNumber",
+                    ),
+                    "expected_revision_snapshot_hash": _sha256(
+                        expectedToolingRevisionSnapshotHash,
+                        "expectedToolingRevisionSnapshotHash",
+                    ),
+                }
+            outcome = repository.create_asset_request(
+                project_id,
+                master_id,
+                tooling_set_id,
+                **values,
             )
-        outcome = repository.create_asset_request(
-            project_id,
-            master_id,
-            _opaque_route_uuid("tooling_set_id"),
-            idempotency_key_hash=actor_idempotency_key_hash(
-                actor,
-                frappe.get_request_header("Idempotency-Key"),
-            ),
-            acceptance_revision_id=_uuid(
-                acceptanceRevisionGlobalId,
-                "acceptanceRevisionGlobalId",
-            ),
-            acceptance_version=_positive(acceptanceVersion, "acceptanceVersion"),
-            acceptance_snapshot_hash=_sha256(
-                acceptanceSnapshotHash,
-                "acceptanceSnapshotHash",
-            ),
-            expected_master_snapshot_hash=_sha256(
-                expectedToolingMasterSnapshotHash,
-                "expectedToolingMasterSnapshotHash",
-            ),
-            expected_set_snapshot_hash=_sha256(
-                expectedToolingSetSnapshotHash,
-                "expectedToolingSetSnapshotHash",
-            ),
-            expected_binding_snapshot_hash=_sha256(
-                expectedBindingSnapshotHash,
-                "expectedBindingSnapshotHash",
-            ),
-            expected_revision_number=_positive(
-                expectedToolingRevisionNumber,
-                "expectedToolingRevisionNumber",
-            ),
-            expected_revision_snapshot_hash=_sha256(
-                expectedToolingRevisionSnapshotHash,
-                "expectedToolingRevisionSnapshotHash",
-            ),
-        )
-        if outcome is None:
-            raise ToolingUnavailable()
-        if type(outcome.replayed) is not bool or not isinstance(outcome.response, dict):
-            raise RuntimeError("The Tool Asset command result is invalid.")
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
-        return outcome.response
+            with p606_asset_create_step("P805_P606_ASSET_OUTCOME_VALIDATE"):
+                if outcome is None:
+                    raise ToolingUnavailable()
+                if type(outcome.replayed) is not bool or not isinstance(
+                    outcome.response, dict
+                ):
+                    raise RuntimeError("The Tool Asset command result is invalid.")
+                headers["X-Request-ID"] = request_id
+                headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+                return outcome.response
 
     return frappe_domain_call(
         handle,

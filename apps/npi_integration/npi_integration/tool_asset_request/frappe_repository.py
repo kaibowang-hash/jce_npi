@@ -26,6 +26,7 @@ from npi_integration.tool_asset_request.domain import (
     create_mock_tool_asset_request,
     tool_asset_request_from_snapshot,
 )
+from npi_integration.tool_asset_request.diagnostics import p606_asset_create_step
 from npi_integration.tool_asset_request.frappe_validation import (
     tool_asset_request_write,
 )
@@ -164,135 +165,149 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         expected_revision_number: int,
         expected_revision_snapshot_hash: str,
     ) -> ToolAssetCommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
+        with p606_asset_create_step("P805_P606_ASSET_PROJECT_LOCK"):
+            project = self._locked_authorized_project(project_id)
         if project is None:
             return None
-        master = self._master_for_project(project, tooling_master_id)
-        tooling_set = self._tooling_set_for_project(
-            project,
-            tooling_master_id,
-            tooling_set_id,
-        )
-        if (
-            master is None
-            or str(master.snapshot_hash) != expected_master_snapshot_hash
-            or tooling_set is None
-            or tooling_set.snapshot_hash != expected_set_snapshot_hash
-        ):
-            raise ToolingReferenceUnavailable()
-        binding = self._binding_for_set(project, tooling_set)
-        if binding is None or binding.snapshot_hash != expected_binding_snapshot_hash:
-            raise ToolingReferenceUnavailable()
-        tooling_revision = self._tooling_revision_for_project(
-            project,
-            binding.tooling_revision_global_id,
-            tooling_master_id=tooling_master_id,
-        )
-        if (
-            tooling_revision is None
-            or tooling_revision.revision_number != expected_revision_number
-            or tooling_revision.snapshot_hash != expected_revision_snapshot_hash
-        ):
-            raise ToolingReferenceUnavailable()
-        acceptance = self._acceptance_revision_for_project(
-            project,
-            tooling_master_id,
-            acceptance_revision_id,
-        )
-        if (
-            acceptance is None
-            or acceptance.acceptance_version != acceptance_version
-            or acceptance.snapshot_hash != acceptance_snapshot_hash
-            or acceptance.tooling_set_global_id != tooling_set.global_id
-            or acceptance.tooling_set_snapshot_hash != tooling_set.snapshot_hash
-            or acceptance.set_revision_binding_global_id != binding.global_id
-            or acceptance.set_revision_binding_snapshot_hash != binding.snapshot_hash
-            or acceptance.tooling_revision_global_id != tooling_revision.global_id
-            or acceptance.tooling_revision_number != tooling_revision.revision_number
-            or acceptance.tooling_revision_snapshot_hash != tooling_revision.snapshot_hash
-        ):
-            raise ToolingReferenceUnavailable()
-        request_input = ToolAssetRequestInput(
-            project_global_id=project_id,
-            tooling_master_global_id=tooling_master_id,
-            tooling_master_title=str(master.title),
-            tooling_master_snapshot_hash=str(master.snapshot_hash),
-            tooling_set_global_id=tooling_set.global_id,
-            tooling_set_physical_serial=tooling_set.physical_serial,
-            tooling_set_snapshot_hash=tooling_set.snapshot_hash,
-            tooling_requirement_kind=tooling_set.requirement_kind,
-            set_revision_binding_global_id=binding.global_id,
-            set_revision_binding_snapshot_hash=binding.snapshot_hash,
-            tooling_revision_global_id=tooling_revision.global_id,
-            tooling_revision_number=tooling_revision.revision_number,
-            tooling_revision_label=tooling_revision.revision_label,
-            tooling_revision_snapshot_hash=tooling_revision.snapshot_hash,
-            acceptance_revision_global_id=acceptance.global_id,
-            acceptance_version=acceptance.acceptance_version,
-            acceptance_snapshot_hash=acceptance.snapshot_hash,
-        )
-        payload_hash = sha256_json(
-            {
-                "apiVersion": "npi.tooling-asset.v1",
-                "operation": TOOL_ASSET_OPERATION,
-                "targetMode": "mock",
-                "requestInput": request_input.snapshot_payload(),
-            }
-        )
-        receipt_key = sha256_json(
-            {
-                "tenantId": str(project.tenant_id),
-                "projectGlobalId": str(project.global_id),
-                "actorUserId": self.actor.casefold(),
-                "operation": TOOL_ASSET_OPERATION,
-                "idempotencyKeyHash": idempotency_key_hash,
-            }
-        )
-        replay = self._asset_receipt_replay(
-            project,
-            receipt_key=receipt_key,
-            idempotency_key_hash=idempotency_key_hash,
-            payload_hash=payload_hash,
-        )
-        if replay is not None:
-            return ToolAssetCommandOutcome(replay, replayed=True)
-        now = self._now()
-        value = create_mock_tool_asset_request(
-            tenant_id=str(project.tenant_id),
-            request_input=request_input,
-            actor_user_id=self.actor,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-            idempotency_key_hash=idempotency_key_hash,
-            created_at=now,
-            global_id=self._new_uuid(),
-        )
-        if value.payload_hash != payload_hash:
-            raise RuntimeError("The Tool Asset request payload integrity drifted.")
-        response = value.public_dict()
-        with tool_asset_request_write():
-            receipt = self._insert_asset_receipt(
+        with p606_asset_create_step("P805_P606_ASSET_MASTER_RESOLVE"):
+            master = self._master_for_project(project, tooling_master_id)
+            if master is None or str(master.snapshot_hash) != expected_master_snapshot_hash:
+                raise ToolingReferenceUnavailable()
+        with p606_asset_create_step("P805_P606_ASSET_SET_RESOLVE"):
+            tooling_set = self._tooling_set_for_project(
+                project,
+                tooling_master_id,
+                tooling_set_id,
+            )
+            if tooling_set is None or tooling_set.snapshot_hash != expected_set_snapshot_hash:
+                raise ToolingReferenceUnavailable()
+        with p606_asset_create_step("P805_P606_ASSET_BINDING_RESOLVE"):
+            binding = self._binding_for_set(project, tooling_set)
+            if binding is None or binding.snapshot_hash != expected_binding_snapshot_hash:
+                raise ToolingReferenceUnavailable()
+        with p606_asset_create_step("P805_P606_ASSET_REVISION_RESOLVE"):
+            tooling_revision = self._tooling_revision_for_project(
+                project,
+                binding.tooling_revision_global_id,
+                tooling_master_id=tooling_master_id,
+            )
+            if (
+                tooling_revision is None
+                or tooling_revision.revision_number != expected_revision_number
+                or tooling_revision.snapshot_hash != expected_revision_snapshot_hash
+            ):
+                raise ToolingReferenceUnavailable()
+        with p606_asset_create_step("P805_P606_ASSET_ACCEPTANCE_RESOLVE"):
+            acceptance = self._acceptance_revision_for_project(
+                project,
+                tooling_master_id,
+                acceptance_revision_id,
+            )
+            if (
+                acceptance is None
+                or acceptance.acceptance_version != acceptance_version
+                or acceptance.snapshot_hash != acceptance_snapshot_hash
+                or acceptance.tooling_set_global_id != tooling_set.global_id
+                or acceptance.tooling_set_snapshot_hash != tooling_set.snapshot_hash
+                or acceptance.set_revision_binding_global_id != binding.global_id
+                or acceptance.set_revision_binding_snapshot_hash != binding.snapshot_hash
+                or acceptance.tooling_revision_global_id != tooling_revision.global_id
+                or acceptance.tooling_revision_number != tooling_revision.revision_number
+                or acceptance.tooling_revision_snapshot_hash
+                != tooling_revision.snapshot_hash
+            ):
+                raise ToolingReferenceUnavailable()
+        with p606_asset_create_step("P805_P606_ASSET_INPUT_BUILD"):
+            request_input = ToolAssetRequestInput(
+                project_global_id=project_id,
+                tooling_master_global_id=tooling_master_id,
+                tooling_master_title=str(master.title),
+                tooling_master_snapshot_hash=str(master.snapshot_hash),
+                tooling_set_global_id=tooling_set.global_id,
+                tooling_set_physical_serial=tooling_set.physical_serial,
+                tooling_set_snapshot_hash=tooling_set.snapshot_hash,
+                tooling_requirement_kind=tooling_set.requirement_kind,
+                set_revision_binding_global_id=binding.global_id,
+                set_revision_binding_snapshot_hash=binding.snapshot_hash,
+                tooling_revision_global_id=tooling_revision.global_id,
+                tooling_revision_number=tooling_revision.revision_number,
+                tooling_revision_label=tooling_revision.revision_label,
+                tooling_revision_snapshot_hash=tooling_revision.snapshot_hash,
+                acceptance_revision_global_id=acceptance.global_id,
+                acceptance_version=acceptance.acceptance_version,
+                acceptance_snapshot_hash=acceptance.snapshot_hash,
+            )
+        with p606_asset_create_step("P805_P606_ASSET_PAYLOAD_BUILD"):
+            payload_hash = sha256_json(
+                {
+                    "apiVersion": "npi.tooling-asset.v1",
+                    "operation": TOOL_ASSET_OPERATION,
+                    "targetMode": "mock",
+                    "requestInput": request_input.snapshot_payload(),
+                }
+            )
+            receipt_key = sha256_json(
+                {
+                    "tenantId": str(project.tenant_id),
+                    "projectGlobalId": str(project.global_id),
+                    "actorUserId": self.actor.casefold(),
+                    "operation": TOOL_ASSET_OPERATION,
+                    "idempotencyKeyHash": idempotency_key_hash,
+                }
+            )
+        with p606_asset_create_step("P805_P606_ASSET_RECEIPT_REPLAY"):
+            replay = self._asset_receipt_replay(
                 project,
                 receipt_key=receipt_key,
                 idempotency_key_hash=idempotency_key_hash,
                 payload_hash=payload_hash,
-                now=now,
             )
-            self._insert_asset_request(value)
-            self._append_audit(
-                operation="tooling_asset_request.create",
-                global_id=value.global_id,
-                object_version=1,
-                summary={
-                    "toolingSetGlobalId": str(tooling_set.global_id),
-                    "acceptanceRevisionGlobalId": str(acceptance.global_id),
-                    "targetMode": "mock",
-                    "dispatchState": "prohibited",
-                    "targetResultState": "not_requested",
-                    "snapshotHash": value.snapshot_hash,
-                },
+        if replay is not None:
+            return ToolAssetCommandOutcome(replay, replayed=True)
+        with p606_asset_create_step("P805_P606_ASSET_DOMAIN_BUILD"):
+            now = self._now()
+            value = create_mock_tool_asset_request(
+                tenant_id=str(project.tenant_id),
+                request_input=request_input,
+                actor_user_id=self.actor,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+                idempotency_key_hash=idempotency_key_hash,
+                created_at=now,
+                global_id=self._new_uuid(),
             )
-            self._seal_asset_receipt(receipt, value, response, now)
+            if value.payload_hash != payload_hash:
+                raise RuntimeError("The Tool Asset request payload integrity drifted.")
+        with p606_asset_create_step("P805_P606_ASSET_RESPONSE_BUILD"):
+            response = value.public_dict()
+        with p606_asset_create_step("P805_P606_ASSET_TRANSACTION_SCOPE"):
+            with tool_asset_request_write():
+                with p606_asset_create_step("P805_P606_ASSET_RECEIPT_INSERT"):
+                    receipt = self._insert_asset_receipt(
+                        project,
+                        receipt_key=receipt_key,
+                        idempotency_key_hash=idempotency_key_hash,
+                        payload_hash=payload_hash,
+                        now=now,
+                    )
+                with p606_asset_create_step("P805_P606_ASSET_REQUEST_INSERT"):
+                    self._insert_asset_request(value)
+                with p606_asset_create_step("P805_P606_ASSET_AUDIT_APPEND"):
+                    self._append_audit(
+                        operation="tooling_asset_request.create",
+                        global_id=value.global_id,
+                        object_version=1,
+                        summary={
+                            "toolingSetGlobalId": str(tooling_set.global_id),
+                            "acceptanceRevisionGlobalId": str(acceptance.global_id),
+                            "targetMode": "mock",
+                            "dispatchState": "prohibited",
+                            "targetResultState": "not_requested",
+                            "snapshotHash": value.snapshot_hash,
+                        },
+                    )
+                with p606_asset_create_step("P805_P606_ASSET_RECEIPT_SEAL"):
+                    self._seal_asset_receipt(receipt, value, response, now)
         return ToolAssetCommandOutcome(response)
 
     def list_execution_requests(

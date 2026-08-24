@@ -42,11 +42,36 @@ class Phase8ToolAssetSecurityTest(unittest.TestCase):
         self.assertIn("npi_tool_asset_adapter_registry", hooks)
         prohibited_probe = ast.parse(".".join(("frappe", "db", "sql")) + "('select 1')")
         self.assertTrue(any(_is_direct_frappe_sql_call(node) for node in ast.walk(prohibited_probe)))
-        for path in (MODULE / "execution_domain.py", MODULE / "config.py", MODULE / "execution_frappe_validation.py", MODULE / "doctype_base.py", MODULE / "frappe_repository.py", MODULE / "adapters.py", MODULE / "worker.py", MODULE / "worker_repository.py", MODULE / "runtime_fixture.py"):
+        for path in (MODULE / "execution_domain.py", MODULE / "config.py", MODULE / "execution_frappe_validation.py", MODULE / "doctype_base.py", MODULE / "diagnostics.py", MODULE / "frappe_repository.py", MODULE / "adapters.py", MODULE / "worker.py", MODULE / "worker_repository.py", MODULE / "runtime_fixture.py"):
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             imports = {node.names[0].name for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom)) and node.names}
             self.assertFalse({"requests", "httpx", "socket", "urllib.request"} & imports)
             self.assertFalse(any(_is_direct_frappe_sql_call(node) for node in ast.walk(tree)))
+
+    def test_predecessor_diagnostic_is_response_neutral_and_value_closed(self) -> None:
+        source = (MODULE / "diagnostics.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        records = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "record_safe_diagnostic"
+        ]
+        self.assertEqual(len(records), 1)
+        self.assertEqual(
+            {keyword.arg for keyword in records[0].keywords},
+            {"code", "title", "exception_type", "trace_id"},
+        )
+        for forbidden in (
+            "str(error)",
+            "repr(error)",
+            "traceback",
+            "request_fields",
+            "payload_hash",
+            "asset_id",
+        ):
+            self.assertNotIn(forbidden, source)
 
     def test_ignore_permissions_is_capability_bound_and_cannot_reach_product_repository(self) -> None:
         validation = MODULE / "execution_frappe_validation.py"

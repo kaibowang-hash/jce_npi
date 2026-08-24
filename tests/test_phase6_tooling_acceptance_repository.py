@@ -15,6 +15,9 @@ CORE = CORE_PATH.read_text(encoding="utf-8")
 ASSET = ASSET_PATH.read_text(encoding="utf-8")
 CORE_TREE = ast.parse(CORE)
 ASSET_TREE = ast.parse(ASSET)
+DIAGNOSTICS_PATH = (
+    ROOT / "apps/npi_integration/npi_integration/tool_asset_request/diagnostics.py"
+)
 
 
 def method(source: str, tree: ast.AST, name: str) -> str:
@@ -126,6 +129,46 @@ class Phase6ToolingAcceptanceRepositoryTest(unittest.TestCase):
             '"targetResultState": "not_requested"',
         ):
             self.assertIn(exact_marker, body)
+
+    def test_asset_create_diagnostic_stages_are_unique_and_inner_write_boundaries_win(self) -> None:
+        body = method(ASSET, ASSET_TREE, "create_asset_request")
+        codes = (
+            "P805_P606_ASSET_PROJECT_LOCK",
+            "P805_P606_ASSET_MASTER_RESOLVE",
+            "P805_P606_ASSET_SET_RESOLVE",
+            "P805_P606_ASSET_BINDING_RESOLVE",
+            "P805_P606_ASSET_REVISION_RESOLVE",
+            "P805_P606_ASSET_ACCEPTANCE_RESOLVE",
+            "P805_P606_ASSET_INPUT_BUILD",
+            "P805_P606_ASSET_PAYLOAD_BUILD",
+            "P805_P606_ASSET_RECEIPT_REPLAY",
+            "P805_P606_ASSET_DOMAIN_BUILD",
+            "P805_P606_ASSET_RESPONSE_BUILD",
+            "P805_P606_ASSET_TRANSACTION_SCOPE",
+            "P805_P606_ASSET_RECEIPT_INSERT",
+            "P805_P606_ASSET_REQUEST_INSERT",
+            "P805_P606_ASSET_AUDIT_APPEND",
+            "P805_P606_ASSET_RECEIPT_SEAL",
+        )
+        for code in codes:
+            with self.subTest(code=code):
+                self.assertEqual(body.count(f'"{code}"'), 1)
+        transaction = body.index('"P805_P606_ASSET_TRANSACTION_SCOPE"')
+        ordered = [
+            body.index(f'"P805_P606_ASSET_{suffix}"', transaction)
+            for suffix in (
+                "RECEIPT_INSERT",
+                "REQUEST_INSERT",
+                "AUDIT_APPEND",
+                "RECEIPT_SEAL",
+            )
+        ]
+        self.assertEqual(ordered, sorted(ordered))
+        diagnostics = DIAGNOSTICS_PATH.read_text(encoding="utf-8")
+        self.assertIn('state["recorded"] = True', diagnostics)
+        self.assertIn("raise\n", diagnostics)
+        for forbidden in ("str(error)", "repr(error)", "traceback", "payload="):
+            self.assertNotIn(forbidden, diagnostics)
 
     def test_runtime_slice_has_no_erp_dispatch_outbox_or_formal_target_identity(self) -> None:
         legacy_names = {

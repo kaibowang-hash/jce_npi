@@ -4663,3 +4663,29 @@ repeat or rewrite it merely to restore context. See
   tolerance, threshold or Darwin evidence. Exact `32`-path manifest simulation,
   i18n `8,341` source coverage and current/reconciliation checks pass; ordinary
   CI and final Level 3 remain undispatched.
+
+## 2026-08-24 P8-05 final held; P6-06 predecessor asset-create diagnostic checkpoint active
+
+- Exact checkpoint 4 SHA `3d35d6860e63478bc12fde9a0426d0ea00c8b31e`
+  passes ordinary CI `32680231720`. Final Level 3 run `32682520429` passes
+  repository, frontend, secret, `129/129` visual and controlled preflight,
+  then controlled runtime job `97303507677` reaches the P6-06 predecessor
+  Mock Asset-create POST and receives an opaque HTTP 500 before retained
+  context, replay or any P8-03/P8-04/P8-05 runtime stage.
+- Product source comparison and available artifacts cannot uniquely select a
+  first failing P6 repository predicate. The P8-05 final dispatch is frozen at
+  `1/1`; it does not authorize a repair. A distinct serial predecessor cycle
+  starts at diagnostic `0/1`, repair `0/1`, final `0/1`.
+- This checkpoint adds only an exact-scope, exact-trace, response-neutral
+  diagnostic for the fixed P6 Mock Asset POST and exact synthetic
+  idempotency key. Twenty allowlisted codes each name one lexical API or
+  repository boundary; the innermost failure writes at most one three-key
+  safe record and rethrows the same exception. Missing, invalid, duplicate,
+  mismatched or unallowlisted log evidence stays constant-safe.
+- The parent verifier reads only the existing strict mirrored-log reader and
+  centralized `HttpResult.trace_id`. It never emits HTTP status, response
+  body, business values, IDs, hashes, actor, target, exception message or
+  stack. Default or wrong scope has zero behavior change. No permission,
+  transaction, Schema, ownership, API response, worker, adapter or Gate rule
+  changes; no ERPNext/JCE/Sandbox contact is authorized.
+- Controller marker: `P8-05 final held; P6-06 predecessor asset-create diagnostic checkpoint active`.

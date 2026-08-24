@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import urllib.request
 from pathlib import Path
@@ -10,6 +11,7 @@ from typing import Any
 from uuid import UUID
 
 import verify_document_runtime as document_runtime
+import verify_item_publish_runtime as item_runtime
 import verify_tooling_engineering_controls_runtime as predecessor
 from verify_frappe_runtime import (
     delete_disposable_user,
@@ -68,6 +70,41 @@ ACCEPTANCE_DOCTYPE = "NPI Tooling Acceptance Evidence Revision"
 ASSET_REQUEST_DOCTYPE = "NPI Tool Asset Request"
 ASSET_RECEIPT_DOCTYPE = "NPI Tool Asset Command Idempotency"
 ACCEPTANCE_RECEIPT_DOCTYPE = "NPI Tooling Command Idempotency"
+P606_ASSET_CREATE_DIAGNOSTICS_ENABLED = True
+_P606_ASSET_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_P606_ASSET_CREATE_DIAGNOSTIC_SCOPE = "p805-p606-asset-create-v1"
+_P606_ASSET_CREATE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P805_P606_ASSET_COMMAND_CONTEXT",
+        "P805_P606_ASSET_INPUT_PARSE",
+        "P805_P606_ASSET_REPOSITORY_INIT",
+        "P805_P606_ASSET_PROJECT_LOCK",
+        "P805_P606_ASSET_MASTER_RESOLVE",
+        "P805_P606_ASSET_SET_RESOLVE",
+        "P805_P606_ASSET_BINDING_RESOLVE",
+        "P805_P606_ASSET_REVISION_RESOLVE",
+        "P805_P606_ASSET_ACCEPTANCE_RESOLVE",
+        "P805_P606_ASSET_INPUT_BUILD",
+        "P805_P606_ASSET_PAYLOAD_BUILD",
+        "P805_P606_ASSET_RECEIPT_REPLAY",
+        "P805_P606_ASSET_DOMAIN_BUILD",
+        "P805_P606_ASSET_RESPONSE_BUILD",
+        "P805_P606_ASSET_TRANSACTION_SCOPE",
+        "P805_P606_ASSET_RECEIPT_INSERT",
+        "P805_P606_ASSET_REQUEST_INSERT",
+        "P805_P606_ASSET_AUDIT_APPEND",
+        "P805_P606_ASSET_RECEIPT_SEAL",
+        "P805_P606_ASSET_OUTCOME_VALIDATE",
+    }
+)
+_UUID_PATH_SEGMENT = (
+    r"[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-"
+    r"[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+)
+_ASSET_CREATE_PATH_PATTERN = re.compile(
+    rf"^/api/npi/v1/projects/{_UUID_PATH_SEGMENT}/tooling/"
+    rf"{_UUID_PATH_SEGMENT}/sets/{_UUID_PATH_SEGMENT}/asset-requests$"
+)
 
 
 def acceptance_path(project_id: str, master_id: str) -> str:
@@ -127,16 +164,66 @@ def command(
     path: str,
     payload: dict[str, object],
     key: str,
+    *,
+    asset_create_diagnostic: bool = False,
 ):
-    result = tooling_request(
-        opener,
-        base_url,
-        path,
-        method="POST",
-        payload=payload,
-        csrf_token=csrf_token,
-        idempotency_key=key,
+    diagnostic_active = (
+        P606_ASSET_CREATE_DIAGNOSTICS_ENABLED
+        and asset_create_diagnostic
+        and key == ASSET_REQUEST_KEY
+        and _ASSET_CREATE_PATH_PATTERN.fullmatch(path) is not None
     )
+    cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if diagnostic_active
+        else None
+    )
+    if diagnostic_active:
+        headers = document_runtime.command_headers(csrf_token, key)
+        headers[_P606_ASSET_CREATE_DIAGNOSTIC_HEADER] = (
+            _P606_ASSET_CREATE_DIAGNOSTIC_SCOPE
+        )
+        result = document_runtime.request(
+            opener,
+            base_url,
+            path,
+            method="POST",
+            payload=payload,
+            request_headers=headers,
+        )
+        require(
+            result.headers.get("X-Request-ID") == headers["X-Request-ID"],
+            "P6-06 predecessor request identity was not echoed",
+        )
+        require(
+            result.headers.get("Cache-Control") == "private, no-store",
+            "P6-06 predecessor cache control drifted",
+        )
+    else:
+        result = tooling_request(
+            opener,
+            base_url,
+            path,
+            method="POST",
+            payload=payload,
+            csrf_token=csrf_token,
+            idempotency_key=key,
+        )
+    if result.status != 201 and diagnostic_active:
+        diagnostic = item_runtime._sanitized_server_log_diagnostic(
+            result.trace_id,
+            cursors,
+            code_prefix="P805_P606_ASSET_",
+            allowed_codes=_P606_ASSET_CREATE_DIAGNOSTIC_CODES,
+        )
+        if diagnostic is not None:
+            code, exception_type, trace_id = diagnostic
+            raise RuntimeError(
+                "P6-06 Tool Asset predecessor command failed "
+                f"[diagnostic_code={code}; exception_type={exception_type}; "
+                f"trace_id={trace_id}]"
+            )
+        raise RuntimeError("P6-06 Tool Asset predecessor command failed")
     require(
         result.status == 201,
         (
@@ -1126,6 +1213,7 @@ def run_fresh(
         asset_create_path,
         asset_request_payload(context, second),
         ASSET_REQUEST_KEY,
+        asset_create_diagnostic=True,
     )
     asset_request = assert_asset_request(
         request_result.body,

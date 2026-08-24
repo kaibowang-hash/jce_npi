@@ -44,7 +44,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_4_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY_CI",
+            "IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT",
         )
         self.assertIn(
             "P8_05_CHECKPOINT_3_EXACT_SHA_ORDINARY_CI_32667224305_PASSED",
@@ -52,6 +52,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertIn(
             "apps/npi_integration/npi_integration/tool_asset_request/**",
+            value["allowed_paths"],
+        )
+        self.assertIn(
+            "scripts/verify_tooling_acceptance_runtime.py",
             value["allowed_paths"],
         )
         self.assertIn(

@@ -101,3 +101,15 @@ Canonical Linux/amd64 SHA-256 evidence:
 - P8-06, P8-08/P8-09 and generic P8-07 retry/replay/reconciliation remain
   inactive. Final unchanged Level 3 remains closed until this checkpoint's
   exact-SHA ordinary CI passes.
+
+## Controlled final recovery status
+
+- Exact checkpoint 4 SHA `3d35d6860e63478bc12fde9a0426d0ea00c8b31e`
+  passes ordinary CI `32680231720`.
+- Final Level 3 run `32682520429` passes repository, frontend, secret,
+  `129/129` visual and controlled preflight; controlled runtime job
+  `97303507677` stops at the P6-06 predecessor Mock Asset-create HTTP 500.
+- That P8-05 final cycle is frozen `1/1`. A separate predecessor narrowing
+  cycle is diagnostic `0/1`, repair `0/1`, final `0/1`; its temporary
+  response-neutral activation is not product repair evidence and grants no
+  ERPNext, permission, transaction, Schema, ownership or Gate authority.

@@ -1,9 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
+`IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT — P8-05`
 
 Recovery time: `2026-08-23T20:13:00Z`
+
+Current atomic action: commit only the response-neutral P6-06 predecessor
+Asset-create diagnostic checkpoint after Level 1 passes, then wait for its
+exact-SHA ordinary CI before one controlled diagnostic Site. Final P8-05
+Level 3 run `32682520429` remains immutable failed evidence; no product repair
+is authorized by its opaque HTTP 500.
 
 Required branch:
 `codex/npi-v1.2-implementation`
