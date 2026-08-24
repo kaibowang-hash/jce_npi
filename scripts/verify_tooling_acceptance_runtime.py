@@ -6,6 +6,8 @@ import os
 import re
 import subprocess
 import urllib.request
+from datetime import UTC, date, datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -37,6 +39,66 @@ FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
 TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = predecessor.ACTOR_USER
 ExpectedErpProjectionMode = predecessor.ExpectedErpProjectionMode
+
+
+class ExpectedAssetProjectionMode(str, Enum):
+    UNAVAILABLE = "unavailable"
+    AVAILABLE = "available"
+
+
+_ASSET_PROJECTION_UNAVAILABLE = {
+    "sourceSystem": "ERPNEXT",
+    "editableIn": "ERPNEXT",
+    "state": "unavailable",
+    "reasonCode": "erp_asset_projection_unavailable",
+    "mappingCardinality": "zero_or_one_per_physical_set",
+}
+_ASSET_PROJECTION_AVAILABLE_KEYS = frozenset(
+    {
+        "sourceSystem",
+        "editableIn",
+        "state",
+        "mappingCardinality",
+        "toolingSetGlobalId",
+        "mappingVersion",
+        "formalAssetId",
+        "targetVersion",
+        "assetState",
+        "currentLocation",
+        "shotCount",
+        "expectedLifeShots",
+        "maintenanceDue",
+        "movements",
+        "repairs",
+        "spares",
+        "observationGlobalId",
+        "observationHash",
+        "observedAt",
+    }
+)
+_ASSET_MOVEMENT_KEYS = frozenset(
+    {
+        "globalId",
+        "actionKind",
+        "fromLocation",
+        "toLocation",
+        "occurredAt",
+        "sourceObjectId",
+    }
+)
+_ASSET_REPAIR_KEYS = frozenset(
+    {"globalId", "summary", "downtimeHours", "completedAt", "sourceObjectId"}
+)
+_ASSET_SPARE_KEYS = frozenset(
+    {
+        "formalItemId",
+        "description",
+        "stockOnHand",
+        "minimumStock",
+        "unit",
+        "supplierId",
+    }
+)
 UNRELATED_USER = (
     f"npi-tooling-acceptance-{FIXTURE_RUN_ID[:12]}-unrelated@example.invalid"
 )
@@ -255,6 +317,152 @@ def require_hash(value: object, label: str) -> str:
         f"{label} hash drifted",
     )
     return value
+
+
+def _is_uuid(value: object) -> bool:
+    try:
+        return isinstance(value, str) and str(UUID(value)) == value
+    except (ValueError, TypeError, AttributeError):
+        return False
+
+
+def _is_hash(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _is_nonempty_text(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _is_iso_date(value: object) -> bool:
+    if value is None:
+        return True
+    try:
+        return isinstance(value, str) and date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
+def _is_utc_datetime(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return (
+        parsed.tzinfo is not None
+        and parsed.utcoffset() is not None
+        and parsed.astimezone(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
+        == value
+    )
+
+
+def _is_asset_movement(value: object) -> bool:
+    return (
+        isinstance(value, dict)
+        and set(value) == _ASSET_MOVEMENT_KEYS
+        and _is_uuid(value.get("globalId"))
+        and value.get("actionKind") in {"move", "loan", "return", "archive", "scrap"}
+        and (
+            value.get("fromLocation") is None
+            or _is_nonempty_text(value.get("fromLocation"))
+        )
+        and (
+            value.get("toLocation") is None
+            or _is_nonempty_text(value.get("toLocation"))
+        )
+        and _is_utc_datetime(value.get("occurredAt"))
+        and _is_nonempty_text(value.get("sourceObjectId"))
+    )
+
+
+def _is_asset_repair(value: object) -> bool:
+    return (
+        isinstance(value, dict)
+        and set(value) == _ASSET_REPAIR_KEYS
+        and _is_uuid(value.get("globalId"))
+        and _is_nonempty_text(value.get("summary"))
+        and _is_nonempty_text(value.get("downtimeHours"))
+        and _is_utc_datetime(value.get("completedAt"))
+        and _is_nonempty_text(value.get("sourceObjectId"))
+    )
+
+
+def _is_asset_spare(value: object) -> bool:
+    return (
+        isinstance(value, dict)
+        and set(value) == _ASSET_SPARE_KEYS
+        and _is_nonempty_text(value.get("formalItemId"))
+        and _is_nonempty_text(value.get("description"))
+        and _is_nonempty_text(value.get("stockOnHand"))
+        and _is_nonempty_text(value.get("minimumStock"))
+        and _is_nonempty_text(value.get("unit"))
+        and (
+            value.get("supplierId") is None
+            or _is_nonempty_text(value.get("supplierId"))
+        )
+    )
+
+
+def assert_asset_projection(
+    value: object,
+    *,
+    tooling_set_id: object,
+    expected_mode: ExpectedAssetProjectionMode,
+) -> None:
+    require(
+        isinstance(expected_mode, ExpectedAssetProjectionMode),
+        "P6-06 expected ERP Asset projection mode is invalid",
+    )
+    if expected_mode is ExpectedAssetProjectionMode.UNAVAILABLE:
+        require(
+            value == _ASSET_PROJECTION_UNAVAILABLE,
+            "P6-06 unavailable ERP Asset projection truth drifted",
+        )
+        return
+    require(
+        isinstance(value, dict)
+        and set(value) == _ASSET_PROJECTION_AVAILABLE_KEYS
+        and value.get("sourceSystem") == "ERPNEXT"
+        and value.get("editableIn") == "ERPNEXT"
+        and value.get("state") == "available"
+        and value.get("mappingCardinality") == "zero_or_one_per_physical_set"
+        and value.get("toolingSetGlobalId") == tooling_set_id
+        and type(value.get("mappingVersion")) is int
+        and value["mappingVersion"] > 0
+        and _is_nonempty_text(value.get("formalAssetId"))
+        and _is_nonempty_text(value.get("targetVersion"))
+        and _is_nonempty_text(value.get("assetState"))
+        and _is_nonempty_text(value.get("currentLocation"))
+        and type(value.get("shotCount")) is int
+        and value["shotCount"] >= 0
+        and (
+            value.get("expectedLifeShots") is None
+            or (
+                type(value.get("expectedLifeShots")) is int
+                and value["expectedLifeShots"] > 0
+            )
+        )
+        and _is_iso_date(value.get("maintenanceDue"))
+        and isinstance(value.get("movements"), list)
+        and len(value["movements"]) <= 200
+        and all(_is_asset_movement(item) for item in value["movements"])
+        and isinstance(value.get("repairs"), list)
+        and len(value["repairs"]) <= 200
+        and all(_is_asset_repair(item) for item in value["repairs"])
+        and isinstance(value.get("spares"), list)
+        and len(value["spares"]) <= 500
+        and all(_is_asset_spare(item) for item in value["spares"])
+        and _is_uuid(value.get("observationGlobalId"))
+        and _is_hash(value.get("observationHash"))
+        and _is_utc_datetime(value.get("observedAt")),
+        "P6-06 confirmed ERP Asset projection truth drifted",
+    )
 
 
 def rows(administrator, base_url: str, doctype: str, filters, fields=None):
@@ -693,6 +901,9 @@ def assert_acceptance_context(
     context: dict[str, object],
     acceptance_count: int,
     request_count: int,
+    expected_asset_projection_mode: ExpectedAssetProjectionMode = (
+        ExpectedAssetProjectionMode.UNAVAILABLE
+    ),
 ) -> dict[str, object]:
     require(result.status == 200, "P6-06 acceptance/Asset context query failed")
     value = result.body
@@ -713,16 +924,13 @@ def assert_acceptance_context(
         == {
             "state": "unavailable",
             "reasonCode": "tooling_acceptance_policy_unavailable",
-        }
-        and value.get("assetProjection")
-        == {
-            "sourceSystem": "ERPNEXT",
-            "editableIn": "ERPNEXT",
-            "state": "unavailable",
-            "reasonCode": "erp_asset_projection_unavailable",
-            "mappingCardinality": "zero_or_one_per_physical_set",
         },
-        "P6-06 permissions, approval, or ERP projection truth drifted",
+        "P6-06 identity, permissions, or approval truth drifted",
+    )
+    assert_asset_projection(
+        value.get("assetProjection") if isinstance(value, dict) else None,
+        tooling_set_id=context["toolingSetId"],
+        expected_mode=expected_asset_projection_mode,
     )
     require(
         isinstance(value.get("acceptanceRevisions"), list)
@@ -1339,6 +1547,9 @@ def replay_context(
     expected_erp_projection_mode: ExpectedErpProjectionMode = (
         ExpectedErpProjectionMode.UNAVAILABLE
     ),
+    expected_asset_projection_mode: ExpectedAssetProjectionMode = (
+        ExpectedAssetProjectionMode.UNAVAILABLE
+    ),
 ):
     context = project_context(
         administrator,
@@ -1355,6 +1566,7 @@ def replay_context(
         context=context,
         acceptance_count=2,
         request_count=1,
+        expected_asset_projection_mode=expected_asset_projection_mode,
     )
     first, second = retained["acceptanceRevisions"]
     asset_request = retained["assetRequests"][0]

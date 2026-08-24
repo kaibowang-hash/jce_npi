@@ -4777,3 +4777,33 @@ repeat or rewrite it merely to restore context. See
   permission, transaction, Schema, ownership, runtime profile and target
   behavior are unchanged; diagnostic, product-repair and final counters do not
   change.
+
+## 2026-08-24 P8-05 retained Asset-projection temporal harness correction
+
+- Exact cost-projection harness checkpoint
+  `43f442ce9eb6e72b237b013eeedcb869c4271a76` passes ordinary CI
+  `32699651339`. Same-cycle unchanged final Level 3 `32700730677` passes
+  repository `97351515617`, frontend `97351515348`, secret `97351515604`,
+  governed visual `97351515508` and controlled preflight `97353329760`.
+  Controlled runtime job `97353390700` reaches the P8-05 default-disabled
+  probe after the repaired retained procurement-cost assertion and stops at
+  the inherited P6-06 compound acceptance-context assertion.
+- Ordered cross-proof excludes identity, permission and business-approval
+  drift. The Project/Master context has already passed the retained P6/P8-01
+  chain; the Administrator permission projection is fixed and unchanged; and
+  business approval remains the exact closed unavailable truth. P8-01 has
+  already created and replay-verified the exact retained Tooling Set's
+  read-only ERPNEXT Asset projection. P8-05 Synthetic execution has zero
+  mapping heads and cannot replace that projection. The only first-false
+  predicate is therefore the old unavailable-only Asset projection equality.
+- The same-cycle verifier-only remediation adds an independent closed Asset
+  projection mode. P6 fresh/replay defaults remain strict unavailable. Only
+  the P8-05 retained context explicitly requests both procurement-cost and
+  Asset available truth. The available Asset branch requires exact closed
+  shape, ERPNEXT read-only ownership, exact Tooling Set and 0/1 mapping
+  cardinality, nonempty typed confirmed fields and constant-safe errors.
+  Project/Master identity, permissions, business approval and retained
+  acceptance/request cardinalities are never OR-relaxed. No product, API,
+  permission, transaction, Schema, ownership, profile, target or Gate rule
+  changes; same-cycle diagnostic, product-repair and final counters remain
+  immutable.

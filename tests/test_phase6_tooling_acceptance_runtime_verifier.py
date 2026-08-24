@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
+import inspect
 import json
 import os
 import sys
@@ -9,6 +11,7 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+from uuid import UUID
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -100,6 +103,240 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
             "acceptanceVersion": version,
             "snapshotHash": str(version) * 64,
         }
+
+    def available_asset_projection(self) -> dict[str, object]:
+        return {
+            "sourceSystem": "ERPNEXT",
+            "editableIn": "ERPNEXT",
+            "state": "available",
+            "mappingCardinality": "zero_or_one_per_physical_set",
+            "toolingSetGlobalId": self.context()["toolingSetId"],
+            "mappingVersion": 1,
+            "formalAssetId": "ASSET-CONFIRMED-001",
+            "targetVersion": "sandbox-asset-v1",
+            "assetState": "active",
+            "currentLocation": "Confirmed location",
+            "shotCount": 12,
+            "expectedLifeShots": 100000,
+            "maintenanceDue": "2026-12-01",
+            "movements": [
+                {
+                    "globalId": "a0000000-0000-4000-8000-000000000001",
+                    "actionKind": "move",
+                    "fromLocation": "A",
+                    "toLocation": "B",
+                    "occurredAt": "2026-08-01T01:02:03Z",
+                    "sourceObjectId": "MOVE-CONFIRMED-1",
+                }
+            ],
+            "repairs": [
+                {
+                    "globalId": "b0000000-0000-4000-8000-000000000002",
+                    "summary": "Confirmed repair",
+                    "downtimeHours": "4",
+                    "completedAt": "2026-08-02T01:02:03Z",
+                    "sourceObjectId": "REPAIR-CONFIRMED-1",
+                }
+            ],
+            "spares": [
+                {
+                    "formalItemId": "ITEM-CONFIRMED-1",
+                    "description": "Confirmed spare",
+                    "stockOnHand": "2",
+                    "minimumStock": "1",
+                    "unit": "EA",
+                    "supplierId": None,
+                }
+            ],
+            "observationGlobalId": "c0000000-0000-4000-8000-000000000003",
+            "observationHash": "1" * 64,
+            "observedAt": "2026-08-03T01:02:03Z",
+        }
+
+    def acceptance_context_value(self, projection: object) -> dict[str, object]:
+        context = self.context()
+        return {
+            "projectGlobalId": context["projectId"],
+            "toolingMasterGlobalId": context["masterId"],
+            "permissions": {
+                "view": True,
+                "recordEvidence": True,
+                "prepareMockAssetRequest": True,
+                "approveAcceptance": False,
+                "dispatchAssetRequest": False,
+                "editErpProjection": False,
+            },
+            "businessApproval": {
+                "state": "unavailable",
+                "reasonCode": "tooling_acceptance_policy_unavailable",
+            },
+            "assetProjection": projection,
+            "acceptanceRevisions": [{}, {}],
+            "assetRequests": [{}],
+        }
+
+    def test_acceptance_context_uses_independent_closed_asset_projection_modes(self) -> None:
+        module = self.module
+        self.assertIs(
+            inspect.signature(module.assert_acceptance_context)
+            .parameters["expected_asset_projection_mode"]
+            .default,
+            module.ExpectedAssetProjectionMode.UNAVAILABLE,
+        )
+        self.assertIs(
+            inspect.signature(module.replay_context)
+            .parameters["expected_asset_projection_mode"]
+            .default,
+            module.ExpectedAssetProjectionMode.UNAVAILABLE,
+        )
+        unavailable = self.acceptance_context_value(
+            copy.deepcopy(module._ASSET_PROJECTION_UNAVAILABLE)
+        )
+        available = self.acceptance_context_value(self.available_asset_projection())
+        for value, mode in (
+            (unavailable, module.ExpectedAssetProjectionMode.UNAVAILABLE),
+            (available, module.ExpectedAssetProjectionMode.AVAILABLE),
+        ):
+            with self.subTest(mode=mode):
+                result = module.assert_acceptance_context(
+                    SimpleNamespace(status=200, body=value),
+                    context=self.context(),
+                    acceptance_count=2,
+                    request_count=1,
+                    expected_asset_projection_mode=mode,
+                )
+                self.assertIs(result, value)
+
+        with self.assertRaisesRegex(
+            RuntimeError, "^P6-06 expected ERP Asset projection mode is invalid$"
+        ):
+            module.assert_acceptance_context(
+                SimpleNamespace(status=200, body=unavailable),
+                context=self.context(),
+                acceptance_count=2,
+                request_count=1,
+                expected_asset_projection_mode="available",
+            )
+
+    def test_replay_context_explicitly_forwards_asset_projection_mode(self) -> None:
+        module = self.module
+        context = self.context()
+        retained = {
+            "acceptanceRevisions": [self.acceptance(1), self.acceptance(2)],
+            "assetRequests": [{}],
+        }
+        with (
+            patch.object(module, "project_context", return_value=context),
+            patch.object(module, "tooling_request", return_value=object()),
+            patch.object(
+                module,
+                "assert_acceptance_context",
+                return_value=retained,
+            ) as acceptance_context,
+            patch.object(module, "assert_acceptance_revision"),
+            patch.object(module, "assert_asset_request"),
+        ):
+            result = module.replay_context(
+                object(),
+                "http://127.0.0.1:8003",
+                expected_asset_projection_mode=(
+                    module.ExpectedAssetProjectionMode.AVAILABLE
+                ),
+            )
+        self.assertEqual(result, (context, *retained["acceptanceRevisions"], {}))
+        self.assertIs(
+            acceptance_context.call_args.kwargs["expected_asset_projection_mode"],
+            module.ExpectedAssetProjectionMode.AVAILABLE,
+        )
+
+    def test_available_asset_projection_is_strict_and_constant_safe(self) -> None:
+        module = self.module
+        cases = {}
+        for name, mutate in (
+            ("extra", lambda value: value.update({"privateValue": "must-not-leak"})),
+            (
+                "wrong-set",
+                lambda value: value.update(
+                    {"toolingSetGlobalId": str(UUID(int=99))}
+                ),
+            ),
+            ("mapping-bool", lambda value: value.update({"mappingVersion": True})),
+            ("shot-bool", lambda value: value.update({"shotCount": True})),
+            (
+                "movement-shape",
+                lambda value: value["movements"][0].update(
+                    {"privateValue": "must-not-leak"}
+                ),
+            ),
+            (
+                "repair-type",
+                lambda value: value["repairs"][0].update({"downtimeHours": 4}),
+            ),
+            (
+                "spare-type",
+                lambda value: value["spares"][0].update({"stockOnHand": 2}),
+            ),
+            ("observed-at", lambda value: value.update({"observedAt": "not-a-date"})),
+        ):
+            projection = self.available_asset_projection()
+            mutate(projection)
+            cases[name] = projection
+        for name, projection in cases.items():
+            with self.subTest(name=name):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "^P6-06 confirmed ERP Asset projection truth drifted$",
+                ) as raised:
+                    module.assert_acceptance_context(
+                        SimpleNamespace(
+                            status=200,
+                            body=self.acceptance_context_value(projection),
+                        ),
+                        context=self.context(),
+                        acceptance_count=2,
+                        request_count=1,
+                        expected_asset_projection_mode=(
+                            module.ExpectedAssetProjectionMode.AVAILABLE
+                        ),
+                    )
+                self.assertNotIn("must-not-leak", str(raised.exception))
+                self.assertNotIn("not-a-date", str(raised.exception))
+
+    def test_available_mode_does_not_relax_permissions_approval_or_cardinality(self) -> None:
+        module = self.module
+        for key, replacement in (
+            ("permissions", {"view": True}),
+            ("businessApproval", {"state": "approved"}),
+        ):
+            value = self.acceptance_context_value(self.available_asset_projection())
+            value[key] = replacement
+            with self.subTest(key=key), self.assertRaisesRegex(
+                RuntimeError,
+                "^P6-06 identity, permissions, or approval truth drifted$",
+            ):
+                module.assert_acceptance_context(
+                    SimpleNamespace(status=200, body=value),
+                    context=self.context(),
+                    acceptance_count=2,
+                    request_count=1,
+                    expected_asset_projection_mode=(
+                        module.ExpectedAssetProjectionMode.AVAILABLE
+                    ),
+                )
+        value = self.acceptance_context_value(self.available_asset_projection())
+        value["acceptanceRevisions"] = [{}]
+        with self.assertRaisesRegex(
+            RuntimeError, "^P6-06 retained acceptance/Asset cardinality drifted$"
+        ):
+            module.assert_acceptance_context(
+                SimpleNamespace(status=200, body=value),
+                context=self.context(),
+                acceptance_count=2,
+                request_count=1,
+                expected_asset_projection_mode=(
+                    module.ExpectedAssetProjectionMode.AVAILABLE
+                ),
+            )
 
     def test_fixture_namespace_and_scope_are_synthetic_and_bounded(self) -> None:
         module = self.module

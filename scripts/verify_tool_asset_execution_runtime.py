@@ -46,6 +46,9 @@ def _retained_context(administrator, base_url):
         expected_erp_projection_mode=(
             tooling_runtime.ExpectedErpProjectionMode.AVAILABLE
         ),
+        expected_asset_projection_mode=(
+            tooling_runtime.ExpectedAssetProjectionMode.AVAILABLE
+        ),
     )
     return context, second
 

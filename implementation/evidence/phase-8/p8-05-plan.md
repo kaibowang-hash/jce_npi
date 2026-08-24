@@ -793,3 +793,33 @@ There is no automatic unavailable-or-available fallback. No product, API,
 permission, transaction, Schema, ownership, profile, external contact or Gate
 standard changes, and the same-cycle diagnostic, repair and final counters
 remain immutable.
+
+## 20. Retained Asset-projection temporal verifier remediation
+
+Exact cost-mode checkpoint `43f442ce9eb6e72b237b013eeedcb869c4271a76`
+passes ordinary CI `32699651339`. Same-cycle final Level 3 `32700730677`
+passes repository, frontend, secret, governed visual and controlled preflight;
+controlled runtime `97353390700` proceeds through the repaired available-cost
+predicate and stops at the inherited P6-06 compound acceptance-context check
+inside the P8-05 default-disabled probe.
+
+The ordered predicate and ownership proof is unique without inspecting any
+business value. Retained Project/Master identity has already passed. The
+Administrator permission projection and unavailable business-approval shape
+are fixed and unchanged. P8-01 earlier creates and replay-verifies a confirmed
+read-only ERPNEXT Asset projection for the exact retained physical Tooling
+Set; P8-05 Synthetic execution creates zero mapping heads and cannot mutate
+that observation. Thus only the initial-era unavailable Asset projection
+equality can be false.
+
+The correction is verifier-only and introduces an independent closed
+`ExpectedAssetProjectionMode`. P6 fresh and replay default to `UNAVAILABLE`;
+only P8-05 retained explicitly requests both cost and Asset `AVAILABLE`.
+Available Asset truth must have exact outer and nested shapes, ERPNEXT
+read-only authority, exact Tooling Set, 0/1 mapping cardinality, typed nonempty
+confirmed fields and value-free constant failures. Identity, permissions,
+business approval and acceptance/request cardinalities retain their exact
+checks with no unavailable-or-available fallback. Product, API, permission,
+transaction, Schema, ownership, runtime profile and target behavior are
+unchanged, and the same-cycle diagnostic, repair and final counters do not
+change.

@@ -224,3 +224,26 @@ Canonical Linux/amd64 SHA-256 evidence:
   This same-cycle harness remediation changes no diagnostic, product-repair or
   final counter and no product, permission, transaction, Schema, ownership,
   runtime-profile or target behavior.
+
+### Retained Asset-projection temporal harness correction
+
+- Exact cost-mode checkpoint `43f442ce9eb6e72b237b013eeedcb869c4271a76`
+  passes ordinary CI `32699651339`. Same-cycle final `32700730677` passes all
+  non-runtime jobs and controlled preflight; controlled runtime
+  `97353390700` crosses the repaired cost-projection assertion and stops at
+  the P6-06 compound acceptance-context boundary in the P8-05 disabled probe.
+- Retained identity, permissions and business approval are fixed and already
+  proven. P8-01 has created and replayed the exact physical Tooling Set's
+  confirmed read-only ERPNEXT Asset projection, while P8-05 Synthetic truth
+  has zero mapping heads. The only first-false subcheck is the initial-only
+  unavailable Asset projection equality; this is temporal harness
+  compatibility, not product pollution.
+- An independent closed expected Asset projection mode leaves all P6
+  fresh/replay callers strict unavailable. Only P8-05 retained selects dual
+  available cost and Asset truth. Available Asset validation is exact-shape,
+  read-only ERPNEXT, exact-Tooling-Set, 0/1-cardinality and type strict, with
+  constant no-leak failures. Project/Master identity, permissions, approval
+  and retained cardinalities remain exact and are never OR-relaxed. No
+  product, API, permission, transaction, Schema, ownership, profile, external
+  contact or Gate standard changes; historical cycle counters remain
+  immutable.

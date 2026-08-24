@@ -107,7 +107,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             {
                 "expected_erp_projection_mode": (
                     self.verifier.tooling_runtime.ExpectedErpProjectionMode.AVAILABLE
-                )
+                ),
+                "expected_asset_projection_mode": (
+                    self.verifier.tooling_runtime.ExpectedAssetProjectionMode.AVAILABLE
+                ),
             },
         )
 
@@ -132,6 +135,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     source,
                 )
         self.assertIn("ExpectedErpProjectionMode.AVAILABLE", tool_asset)
+        self.assertIn("ExpectedAssetProjectionMode.AVAILABLE", tool_asset)
+        self.assertIn("ExpectedAssetProjectionMode.UNAVAILABLE", acceptance)
         self.assertEqual(
             sum(
                 source.count("ExpectedErpProjectionMode.AVAILABLE")
@@ -139,6 +144,23 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             ),
             1,
         )
+        self.assertEqual(tool_asset.count("ExpectedAssetProjectionMode.AVAILABLE"), 1)
+        self.assertNotIn("ExpectedAssetProjectionMode.AVAILABLE", manufacturing)
+        self.assertNotIn("ExpectedAssetProjectionMode.AVAILABLE", engineering)
+
+    def test_p8_01_replay_precedes_dual_available_p8_05_retained_probe(self):
+        shell = (ROOT / "scripts" / "verify-frappe-runtime.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertLess(
+            shell.index("run_projection_runtime_verifier replay-only"),
+            shell.index("run_tool_asset_runtime_verifier disabled"),
+        )
+        retained_source = (
+            ROOT / "scripts/verify_tool_asset_execution_runtime.py"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(retained_source.count("ExpectedErpProjectionMode.AVAILABLE"), 1)
+        self.assertEqual(retained_source.count("ExpectedAssetProjectionMode.AVAILABLE"), 1)
 
 
 if __name__ == "__main__":
