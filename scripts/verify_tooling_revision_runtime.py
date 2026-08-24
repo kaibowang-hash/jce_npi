@@ -53,6 +53,7 @@ CHAIN_STALE_KEY = f"p6-03-runtime-r1-{FIXTURE_RUN_ID}-chain-stale"
 BINDING_KEY = f"p6-03-runtime-r1-{FIXTURE_RUN_ID}-set-binding"
 BINDING_CONFLICT_KEY = f"p6-03-runtime-r1-{FIXTURE_RUN_ID}-set-binding-conflict"
 PART_TITLE = "Synthetic P6-03 controlled Part"
+RETAINED_MASTER_TITLE = "Synthetic shared front housing tool"
 ABSENT_PROJECT_ID = "00000000-0000-4000-8000-000000000001"
 ABSENT_OBJECT_ID = "00000000-0000-4000-8000-000000000002"
 
@@ -119,6 +120,23 @@ def tooling_request(*args, query_key: str = "query", **kwargs):
         *args,
         query_key=f"p603-{query_key}",
         **kwargs,
+    )
+
+
+def exact_retained_master(values: object, project_id: str) -> dict[str, object]:
+    require(
+        isinstance(values, list),
+        "P6-03 retained Tooling Master collection drifted",
+    )
+    return predecessor.exact_single(
+        [
+            value
+            for value in values
+            if isinstance(value, dict)
+            and value.get("title") == RETAINED_MASTER_TITLE
+            and value.get("originatingProjectGlobalId") == project_id
+        ],
+        "P6-03 retained Tooling Master",
     )
 
 
@@ -622,7 +640,7 @@ def project_context(
         "P6-03 predecessor workspace is unavailable",
     )
     master_id = require_uuid(
-        predecessor.exact_single(workspace.body.get("masters"), "P6-03 Master").get("globalId"),
+        exact_retained_master(workspace.body.get("masters"), project_id).get("globalId"),
         "P6-03 Tooling Master",
     )
     retained_parts = [item for item in workspace.body.get("parts", []) if item.get("title") != PART_TITLE]

@@ -214,6 +214,56 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
             "20000000-0000-4000-8000-000000000002",
         )
 
+    def test_retained_master_selection_tolerates_only_unrelated_retained_rows(self) -> None:
+        module = self.module
+        project_id = "10000000-0000-4000-8000-000000000001"
+        original = {
+            "globalId": "20000000-0000-4000-8000-000000000002",
+            "title": module.RETAINED_MASTER_TITLE,
+            "originatingProjectGlobalId": project_id,
+        }
+        formula_export_fixture = {
+            "globalId": "30000000-0000-4000-8000-000000000003",
+            "title": "=P6-08 controlled formula sentinel",
+            "originatingProjectGlobalId": project_id,
+        }
+        malformed = {"title": module.RETAINED_MASTER_TITLE}
+
+        self.assertIs(
+            module.exact_retained_master(
+                [formula_export_fixture, malformed, object(), original],
+                project_id,
+            ),
+            original,
+        )
+
+    def test_retained_master_selection_fails_closed_without_leaking_rows(self) -> None:
+        module = self.module
+        project_id = "10000000-0000-4000-8000-000000000001"
+        sentinel = "PRIVATE-MASTER-VALUE"
+        original = {
+            "globalId": sentinel,
+            "title": module.RETAINED_MASTER_TITLE,
+            "originatingProjectGlobalId": project_id,
+        }
+        cases = (
+            None,
+            [],
+            [original, dict(original)],
+            [
+                {
+                    "globalId": sentinel,
+                    "title": module.RETAINED_MASTER_TITLE,
+                    "originatingProjectGlobalId": "other-project",
+                }
+            ],
+        )
+        for values in cases:
+            with self.subTest(values_type=type(values).__name__):
+                with self.assertRaises(RuntimeError) as raised:
+                    module.exact_retained_master(values, project_id)
+                self.assertNotIn(sentinel, str(raised.exception))
+
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:
         required = (
             "tooling_revision_route_switch_state",

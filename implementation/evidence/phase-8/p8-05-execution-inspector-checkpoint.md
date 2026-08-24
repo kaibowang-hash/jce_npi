@@ -151,3 +151,21 @@ Canonical Linux/amd64 SHA-256 evidence:
   `P606_ASSET_CREATE_DIAGNOSTICS_ENABLED` is false; the safe mechanism remains
   dormant. The earlier reader run remains harness-only history and no prior
   P8-05 cycle counter is reopened.
+
+### Final retained-Master verifier remediation
+
+- Exact repair SHA `735992c1971c258089ab596ed20663606908f1f7`
+  passes ordinary CI `32688638775`. Final run `32689595411` passes every lane
+  except controlled runtime job `97322480056`, whose first boundary is the
+  Tool Asset default-disabled probe's inherited P6-03 unfiltered Master
+  cardinality assertion. No P8-05 command, worker or product write ran.
+- P6-08 deliberately retains its formula-neutralization Master for governed
+  export evidence. The original P6-01 Master is still unique by exact fixture
+  title and originating Project; P8-01 already uses that bounded selection.
+  The Tool Asset repository only reads and locks the selected Master/Set.
+- The verifier-only correction filters to the exact original fixture identity
+  before `exact_single`. It does not remove retained export evidence. Missing
+  or duplicate originals, malformed rows and wrong-Project rows fail closed
+  without row-value leakage. This is harness remediation and consumes no
+  product repair or diagnostic allowance. Product, runtime profile and all
+  diagnostic activations remain unchanged and closed.

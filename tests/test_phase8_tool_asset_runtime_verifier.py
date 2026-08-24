@@ -57,6 +57,18 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             workflow,
         )
 
+    def test_disabled_probe_runs_after_retained_p6_export_fixture(self):
+        shell = (ROOT / "scripts/verify-frappe-runtime.sh").read_text(encoding="utf-8")
+        self.assertLess(
+            shell.index("run_tooling_export_runtime_verifier replay-only"),
+            shell.index("run_tool_asset_runtime_verifier disabled"),
+        )
+        revision = (ROOT / "scripts/verify_tooling_revision_runtime.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("exact_retained_master", revision)
+        self.assertIn("originatingProjectGlobalId", revision)
+
 
 if __name__ == "__main__":
     unittest.main()

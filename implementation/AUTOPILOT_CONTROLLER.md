@@ -4689,3 +4689,26 @@ repeat or rewrite it merely to restore context. See
   transaction, Schema, ownership, API response, worker, adapter or Gate rule
   changes; no ERPNext/JCE/Sandbox contact is authorized.
 - Controller marker: `P8-05 final held; P6-06 predecessor asset-create diagnostic checkpoint active`.
+
+## 2026-08-24 P8-05 final retained-Master verifier remediation
+
+- Exact P6 predecessor repair SHA
+  `735992c1971c258089ab596ed20663606908f1f7` passes ordinary CI
+  `32688638775`. Final Level 3 `32689595411` passes repository, frontend,
+  secret, governed visual and controlled preflight; controlled runtime job
+  `97322480056` reaches the P8-05 default-disabled probe and stops at the fixed
+  inherited `P6-01 P6-03 Master cardinality drifted` verifier boundary.
+- P6-08 intentionally retains a second formula-neutralization Master for its
+  export route recovery, replay and package evidence. P8-01 already filters to
+  the exact original fixture title and originating Project. The P6-03 verifier
+  alone still asserted cardinality over every retained Master. P8-05 fresh
+  execution had not begun, and the Tool Asset repository contains no Master or
+  Set writer, uniquely excluding a product root.
+- Standing serial recovery authorizes only the verifier/test/evidence
+  compatibility remediation: filter to the exact original P6 fixture Master
+  before the unchanged fail-closed uniqueness check. The P6-08 Master is not
+  removed; missing, duplicate, malformed and wrong-Project originals remain
+  constant-safe with no row-value disclosure. This consumes no product repair
+  counter and changes no product, permission, transaction, Schema, ownership,
+  profile, diagnostic activation or target behavior. Affected/full ordinary
+  CI must pass before the sole predecessor-cycle final Gate can resume.

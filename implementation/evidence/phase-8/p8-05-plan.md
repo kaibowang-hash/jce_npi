@@ -704,3 +704,30 @@ all other raw immutable fields, the one-way seal, validation ordering,
 capability and transaction boundaries remain unchanged. The temporary parent
 activation is closed. Diagnostic run `32686039575` remains immutable harness
 failure evidence and consumes no product counter.
+
+## 18. Final retained-Master verifier remediation
+
+Exact repair SHA `735992c1971c258089ab596ed20663606908f1f7`
+passes ordinary CI `32688638775`. Final Level 3 run `32689595411` passes
+repository, frontend, secret, governed visual and controlled preflight, then
+controlled runtime job `97322480056` stops in the Tool Asset default-disabled
+probe at the fixed `P6-01 P6-03 Master cardinality drifted` verifier boundary.
+The P8-05 fresh command and worker have not run at that point.
+
+Cross-proof identifies a verifier-fixture compatibility defect. P6-08
+intentionally creates and retains a second formula-neutralization Tooling
+Master for export route recovery, replay and package evidence. P8-01 already
+selects the original retained Master by its exact synthetic title and
+originating Project, while the older P6-03 `project_context` still applied
+`exact_single` to the complete unfiltered Master collection. Tool Asset
+product code only reads and locks the exact Master and physical Set and cannot
+be the source of the additional retained row.
+
+The bounded harness remediation makes the P6-03 verifier select that exact
+original fixture title plus `originatingProjectGlobalId` before applying the
+same fail-closed uniqueness check. The P6-08 Master remains retained; missing,
+duplicate, malformed or wrong-Project original rows remain constant-safe and
+no row value is emitted. This changes no product, API, permission,
+transaction, Schema, ownership, runtime profile or target behavior and does
+not consume a product repair counter. A new exact-SHA ordinary CI is required
+before the predecessor cycle's sole final unchanged Level 3 may resume.
