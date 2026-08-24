@@ -343,12 +343,17 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         project_id = str(UUID(int=1))
         retained_master_id = str(UUID(int=2))
         retained_set_id = str(UUID(int=3))
-        engineering_revision_id = str(UUID(int=4))
+        retained_tooling_revision_id = str(UUID(int=4))
+        part_id = str(UUID(int=7))
+        part_revision_id = str(UUID(int=8))
+        existing_applicability_id = str(UUID(int=9))
+        part_context = (part_id, part_revision_id, existing_applicability_id)
+        administrator = object()
         retained = {
             "projectId": project_id,
             "masterId": retained_master_id,
             "toolingSetId": retained_set_id,
-            "engineeringRevisionId": engineering_revision_id,
+            "engineeringRevisionId": retained_tooling_revision_id,
             "member": {"globalId": str(UUID(int=5))},
             "fileEvidence": {
                 "fileRevisionGlobalId": str(UUID(int=6)),
@@ -372,7 +377,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         applicability = {
             "globalId": str(UUID(int=12)),
             "toolingMasterGlobalId": master["globalId"],
-            "part": {"globalId": engineering_revision_id},
+            "part": {"globalId": part_revision_id},
         }
         revision = {
             "globalId": str(UUID(int=13)),
@@ -393,6 +398,49 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         acceptance = {"globalId": str(UUID(int=16))}
 
+        for name, invalid_context in (
+            ("missing", None),
+            ("malformed-shape", (part_id, part_revision_id)),
+            ("malformed-revision", (part_id, None, existing_applicability_id)),
+            (
+                "reused-tooling-revision",
+                (
+                    part_id,
+                    retained_tooling_revision_id,
+                    existing_applicability_id,
+                ),
+            ),
+        ):
+            with self.subTest(part_context=name), patch.object(
+                self.verifier.tooling_revision,
+                "dedicated_part_context",
+                return_value=invalid_context,
+            ) as dedicated_part_context, patch.object(
+                self.verifier.tooling_base,
+                "command",
+            ) as command, patch.object(
+                self.verifier.tooling_revision,
+                "command",
+            ) as revision_command, patch.object(
+                self.verifier.tooling_runtime,
+                "command",
+            ) as acceptance_command:
+                with self.assertRaises(RuntimeError):
+                    self.verifier._create_disposable_execution_context(
+                        administrator,
+                        "http://127.0.0.1:8003",
+                        "csrf",
+                        retained,
+                    )
+                dedicated_part_context.assert_called_once_with(
+                    administrator,
+                    "http://127.0.0.1:8003",
+                    project_id,
+                )
+                command.assert_not_called()
+                revision_command.assert_not_called()
+                acceptance_command.assert_not_called()
+
         for name, masters in (
             ("missing", []),
             ("duplicate", [master, dict(master)]),
@@ -406,10 +454,14 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 self.verifier.tooling_base,
                 "command",
                 return_value=command_result,
-            ) as command:
+            ) as command, patch.object(
+                self.verifier.tooling_revision,
+                "dedicated_part_context",
+                return_value=part_context,
+            ):
                 with self.assertRaises(RuntimeError):
                     self.verifier._create_disposable_execution_context(
-                        object(),
+                        administrator,
                         "http://127.0.0.1:8003",
                         "csrf",
                         retained,
@@ -437,6 +489,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 {"applicability": [applicability]},
             ),
         ) as assert_workspace, patch.object(
+            self.verifier.tooling_revision,
+            "dedicated_part_context",
+            return_value=part_context,
+        ) as dedicated_part_context, patch.object(
             self.verifier.tooling_revision,
             "project_context",
             return_value=(project_id, retained_master_id, "part", (), retained_set_id, {"type": "customer", "sourceSystem": "ERPNEXT", "sourceObjectId": "SYNTHETIC"}),
@@ -468,13 +524,33 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ):
             disposable, observed_acceptance = (
                 self.verifier._create_disposable_execution_context(
-                    object(),
+                    administrator,
                     "http://127.0.0.1:8003",
                     "csrf",
                     retained,
                 )
             )
         self.assertEqual(base_command.call_count, 4)
+        dedicated_part_context.assert_called_once_with(
+            administrator,
+            "http://127.0.0.1:8003",
+            project_id,
+        )
+        requirement_payload = base_command.call_args_list[1].args[4]
+        applicability_payload = base_command.call_args_list[2].args[4]
+        self.assertEqual(
+            requirement_payload["targetPartRevisionGlobalId"],
+            part_revision_id,
+        )
+        self.assertEqual(
+            applicability_payload["partRevisionGlobalId"],
+            part_revision_id,
+        )
+        self.assertNotEqual(part_revision_id, retained_tooling_revision_id)
+        self.assertEqual(
+            disposable["engineeringRevisionId"],
+            retained_tooling_revision_id,
+        )
         self.assertEqual(assert_workspace.call_count, 3)
         expected_revision_mode = (
             self.verifier.tooling_base.ExpectedToolingRevisionCapabilityMode.AVAILABLE

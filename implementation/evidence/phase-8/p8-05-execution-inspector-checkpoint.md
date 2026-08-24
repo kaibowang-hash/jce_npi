@@ -481,3 +481,27 @@ Canonical Linux/amd64 SHA-256 evidence:
 - Failure freezes final `1/1` and authorizes only first-safe-boundary readback;
   it cannot authorize rerun, shortcut or guessed repair. PASS proceeds to the
   P8-05 release-gate review.
+
+### Disposable Engineering Part verifier correction
+
+- The sole post-revision-capability Level 3 run `32756343623` passes repository
+  `97524674080`, governed visual `97524674245`, secret scan `97524674303`,
+  frontend `97524674365` and controlled preflight `97528227277`. Controlled
+  runtime `97528344980` stops at the fixed disposable Tooling Requirement POST
+  boundary. No response body, status value, business identifier, exception
+  message or stack was inspected.
+- The verifier passed retained `engineeringRevisionId`, whose proven source is
+  the P6 Tooling Revision, into a product field that strictly requires a
+  current Project-owned Engineering Part Revision. The same wrong identity
+  would have reached the subsequent Applicability. Product validation is
+  correct and no product repair is authorized.
+- The verifier now obtains the existing strict current Engineering Part
+  context before the first disposable write, validates its Revision UUID and
+  proves it differs from retained Tooling Revision truth. Requirement target
+  and Applicability partRevision use that exact identity. Missing, malformed
+  or reused context fails before every disposable write; the retained
+  Acceptance evidence identity is preserved.
+- The post-revision-capability cycle is immutable at diagnostic `0/1`, product
+  repair `0/1`, final `1/1`. This verifier-only correction consumes no product
+  repair and changes no product, API, permission, transaction, Schema,
+  ownership, adapter, target, diagnostic or Gate behavior.

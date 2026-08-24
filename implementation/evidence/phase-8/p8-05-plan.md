@@ -1139,3 +1139,34 @@ Outbox worker, terminal replay, zero formal Asset identity, zero mapping head
 and network-free Synthetic evidence. FAIL freezes final `1/1`; only the first
 safe boundary may be inspected, and any new opaque root requires another
 independent bounded cycle.
+
+## 32. Disposable Engineering Part verifier correction
+
+The sole post-revision-capability Level 3 run `32756343623` passes repository
+`97524674080`, governed visual `97524674245`, secret scan `97524674303`,
+frontend `97524674365` and controlled preflight `97528227277`. Controlled
+runtime job `97528344980` stops at the fixed P6-01 boundary for the disposable
+customer-owned Tooling Requirement POST. No response status, body, business
+identifier, exception message or stack was inspected.
+
+Static provenance proves the verifier supplied the retained P6 Tooling
+Revision identity as `targetPartRevisionGlobalId`. The Requirement repository
+requires a current `NPI Engineering Part Revision` belonging to the exact
+Project before any write; the later Applicability requires that same Part
+Revision. The retained `engineeringRevisionId` remains the established
+Acceptance evidence input and is not a Part Revision. This is the unique
+verifier fixture root, not a product, API or permission failure.
+
+The post-revision-capability cycle is immutable at diagnostic `0/1`, product
+repair `0/1`, final `1/1`. The bounded verifier correction resolves the
+existing strict current Engineering Part context before the first disposable
+write, requires a valid UUID distinct from the retained Tooling Revision, and
+uses exactly that Part Revision for both Requirement and Applicability. A
+missing, malformed or reused context fails before Master, Requirement,
+Applicability, Set, Acceptance or worker writes. Retained Acceptance semantics
+remain unchanged.
+
+This consumes no product repair and changes no product, API, contract,
+permission, transaction, Schema, ownership, adapter, target, diagnostic or
+Gate behavior. A later durable checkpoint must open any further final cycle;
+this correction does not rerun or reopen the consumed final dispatch.

@@ -344,7 +344,28 @@ def _create_disposable_execution_context(
     retained: dict[str, object],
 ) -> tuple[dict[str, object], dict[str, object]]:
     project_id = str(retained["projectId"])
-    engineering_revision_id = str(retained["engineeringRevisionId"])
+    retained_engineering_revision_id = tooling_revision.require_uuid(
+        retained.get("engineeringRevisionId"),
+        "P8-05 retained Engineering Revision",
+    )
+    part_context = tooling_revision.dedicated_part_context(
+        administrator,
+        base_url,
+        project_id,
+    )
+    require(
+        isinstance(part_context, tuple) and len(part_context) == 3,
+        "P8-05 disposable Engineering Part context drifted",
+    )
+    _part_id, part_revision_value, _applicability_id = part_context
+    part_revision_id = tooling_revision.require_uuid(
+        part_revision_value,
+        "P8-05 disposable Engineering Part Revision",
+    )
+    require(
+        part_revision_id != retained_engineering_revision_id,
+        "P8-05 disposable Engineering Part Revision reused Tooling Revision truth",
+    )
     master_result = tooling_base.command(
         administrator,
         base_url,
@@ -387,7 +408,7 @@ def _create_disposable_execution_context(
             "kind": "customer_owned_intake",
             "title": _DISPOSABLE_REQUIREMENT_TITLE,
             "reason": "Create one isolated physical Set for disposable Asset proof.",
-            "targetPartRevisionGlobalId": engineering_revision_id,
+            "targetPartRevisionGlobalId": part_revision_id,
             "targetDate": "2027-03-15",
         },
         f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-requirement",
@@ -416,7 +437,7 @@ def _create_disposable_execution_context(
         f"/api/npi/v1/projects/{project_id}/tooling-applicabilities",
         tooling_base.applicability_payload(
             master_id,
-            engineering_revision_id,
+            part_revision_id,
             effective_from="2026-08-01",
             effective_to=None,
         ),
@@ -434,7 +455,7 @@ def _create_disposable_execution_context(
             )["applicability"]
             if value.get("toolingMasterGlobalId") == master_id
             and value.get("part", {}).get("globalId")
-            == engineering_revision_id
+            == part_revision_id
         ],
         "P8-05 disposable Tooling Applicability",
     )

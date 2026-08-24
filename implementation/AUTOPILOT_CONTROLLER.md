@@ -5108,3 +5108,29 @@ repeat or rewrite it merely to restore context. See
   only its first safe boundary may be read, and a new opaque root must open a
   later independent cycle rather than authorize a guessed repair.
 - Controller marker: `P8-05 final held; post-revision-capability cycle 0/1,0/1,0/1 active`.
+
+## 2026-08-25 P8-05 disposable Engineering Part verifier correction
+
+- The sole post-revision-capability Level 3 run `32756343623` passes repository
+  `97524674080`, governed visual `97524674245`, secret scan `97524674303`,
+  frontend `97524674365` and controlled preflight `97528227277`; controlled
+  runtime `97528344980` stops at the fixed disposable Tooling Requirement POST
+  boundary. No response status/body, business identifier, exception message
+  or stack was inspected.
+- Static provenance uniquely proves the verifier supplied the retained P6
+  Tooling Revision identity where the product requires a current Project-owned
+  Engineering Part Revision. The later Applicability used the same wrong
+  identity. Product validation remains correct; product repair stays `0/1`.
+- The verifier-only correction calls the existing strict
+  `dedicated_part_context` before the first disposable write, validates the
+  current Engineering Part Revision UUID and proves it is distinct from the
+  retained Tooling Revision. Requirement and Applicability share that exact
+  Part Revision; retained Acceptance evidence keeps its prior identity.
+- Missing, malformed or reused current Part context fails before Master,
+  Requirement, Applicability, Set, Acceptance or worker writes. No product,
+  API, permission, transaction, Schema, ownership, adapter, target, diagnostic
+  or Gate behavior changes.
+- The post-revision-capability cycle is immutable at diagnostic `0/1`, product
+  repair `0/1`, final `1/1`. The verifier correction neither reopens nor reruns
+  that consumed cycle and requires a later durable cycle decision.
+- Controller marker: `P8-05 final held; disposable Engineering Part verifier correction awaits Level 1`.
