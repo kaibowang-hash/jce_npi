@@ -29,6 +29,7 @@ ACKNOWLEDGEMENT = (
     "physical Tooling Set, separate business approval, mapping state, and execution profile."
 )
 TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = False
+POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = True
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE = "p805-tool-asset-command-context-v1"
 _TOOL_ASSET_CONTEXT_PARENT_CODES = frozenset(
@@ -80,6 +81,15 @@ _TOOL_ASSET_CONTEXT_SERVER_CODES = frozenset(
 )
 _TOOL_ASSET_CONTEXT_FAILURE = "P8-05 disposable command context is unavailable"
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+
+
+def _post_query_command_context_diagnostics_enabled() -> bool:
+    """Activate only the independent post-query diagnostic cycle."""
+
+    return (
+        POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is True
+        and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+    )
 
 
 def execution_path(project_id: str, master_id: str, set_id: str, suffix: str = "") -> str:
@@ -166,7 +176,7 @@ def _command_context_failure_message(result, cursors) -> str | None:
             code = "P805_TOOL_ASSET_CONTEXT_TARGET_MODE"
         else:
             return None
-    if not TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED:
+    if not _post_query_command_context_diagnostics_enabled():
         return _TOOL_ASSET_CONTEXT_FAILURE
     trace_id = getattr(result, "trace_id", None)
     if (
@@ -257,9 +267,12 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     query = urllib.parse.urlencode(
         {"acceptanceRevisionGlobalId": acceptance.get("globalId")}
     )
+    command_context_diagnostics_enabled = (
+        _post_query_command_context_diagnostics_enabled()
+    )
     cursors = (
         item_runtime._replay_diagnostic_log_cursors()
-        if TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
+        if command_context_diagnostics_enabled
         else None
     )
     listed = execution_request(
@@ -270,7 +283,7 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
         query_key="enabled",
         diagnostic_scope=(
             _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
-            if TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
+            if command_context_diagnostics_enabled
             else None
         ),
     )

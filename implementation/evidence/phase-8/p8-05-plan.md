@@ -1014,3 +1014,32 @@ permission, Project-first authorization, transaction, Schema, ownership,
 repository, adapter, target or Gate change. This cycle is now diagnostic
 `1/1`, repair `1/1`, final `0/1`, pending exact-SHA ordinary and unchanged
 final proof.
+
+## 28. Post-query command-context diagnostic cycle
+
+Repair exact SHA `9b36a2684e5ea20910ffdc6924177225f922abc2`
+passes ordinary `32732876172`. Its sole unchanged final Level 3
+`32734371042` passes repository `97453615222`, secret `97453615511`, governed
+visual `97453615563`, frontend `97453615727` and controlled preflight
+`97457924524`. Controlled runtime `97458015326` reaches only the constant-safe
+parent boundary `P8-05 disposable command context is unavailable`.
+
+The HTTP-boundary cycle is now immutable at diagnostic `1/1`, repair `1/1`,
+final `1/1`. The repaired request-field predicate and exact verifier query are
+excluded, but the fixed parent message cannot uniquely separate non-success,
+items, create-context shape or target-profile failure. The repository,
+projection and response boundaries after request-field normalization also
+remain possible without an exact-trace server tuple. Product repair is
+therefore prohibited.
+
+An independent `post-query-command-context` cycle opens at diagnostic `0/1`,
+repair `0/1`, final `0/1`. The historical activation stays `False`; one new
+verifier activation is `True` and is selected only while the historical flag
+is exactly false. It reuses the versioned exact GET/query scope, four ordered
+parent predicates, fixed concrete HTTP class codes, all 31 unique server codes
+and the strict mirrored-log reader. Success emits nothing; missing or invalid
+trace is constant-safe; rejected log evidence cannot become attribution.
+No response body, status value, business value, identifier, count, actor,
+exception message or stack is inspected or emitted. Product/server code,
+response, write order, permissions, transactions, Schema, ownership,
+profiles, adapters, targets and Gate rules are unchanged.

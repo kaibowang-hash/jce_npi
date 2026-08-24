@@ -4979,3 +4979,35 @@ repeat or rewrite it merely to restore context. See
   scope or log read in normal runtime.
 - The HTTP-boundary cycle is diagnostic `1/1`, repair `1/1`, final `0/1`.
 - Controller marker: `P8-05 final held; command-context HTTP-boundary repair 1/1 awaits exact-SHA ordinary proof`.
+
+## 2026-08-24 P8-05 post-query command-context diagnostic cycle
+
+- Repair SHA `9b36a2684e5ea20910ffdc6924177225f922abc2`
+  passes ordinary CI `32732876172`. Its sole unchanged final Level 3
+  `32734371042` passes repository `97453615222`, secret `97453615511`, visual
+  `97453615563`, frontend `97453615727` and controlled preflight
+  `97457924524`; controlled runtime `97458015326` stops only at the fixed
+  parent boundary `P8-05 disposable command context is unavailable`.
+- The command-context HTTP-boundary cycle is frozen and immutable at
+  diagnostic `1/1`, repair `1/1`, final `1/1`. Its request-field root is
+  closed: the exact public query is accepted while detail and all unknown
+  fields remain fail-closed.
+- The unchanged parent message proves the exact query request returned but
+  cannot distinguish the four ordered response predicates: non-success,
+  items, create-context shape and target profile. The non-success predicate
+  continues to emit only its existing fixed HTTP class code. Repository,
+  projection and response stages after the closed request-field boundary also
+  remain non-unique without a trusted exact-trace tuple, so no repair is
+  authorized.
+- A separate `post-query-command-context` cycle starts at diagnostic `0/1`,
+  repair `0/1`, final `0/1`. Only the new verifier activation is true; the
+  historical activation remains false. It reuses the exact scoped GET/query,
+  the four ordered parent predicates, existing concrete parent codes, all 31
+  server codes and the strict mirrored reader. If both activation flags are
+  true, observation fails closed rather than reopening history.
+- Output remains limited to one allowlisted code, class name and validated
+  exact trace. Body, status value, business values, IDs, count, actor,
+  exception message and stack remain unreadable. There is no product, server,
+  API, permission, transaction, Schema, ownership, adapter, target or Gate
+  change.
+- Controller marker: `P8-05 final held; post-query-command-context diagnostic 0/1 active`.

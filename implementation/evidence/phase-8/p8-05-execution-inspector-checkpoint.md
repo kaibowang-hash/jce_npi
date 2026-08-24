@@ -387,3 +387,22 @@ Canonical Linux/amd64 SHA-256 evidence:
   reader is used in normal runtime. Dormant response-neutral diagnostics stay
   covered. The cycle is diagnostic `1/1`, repair `1/1`, final `0/1` pending
   exact-SHA ordinary and unchanged Level 3 proof.
+
+### Post-query command-context diagnostic cycle
+
+- Repair SHA `9b36a2684e5ea20910ffdc6924177225f922abc2`
+  passes ordinary `32732876172`. Unchanged Level 3 `32734371042` passes five
+  non-runtime jobs; runtime `97458015326` reports only the fixed safe parent
+  boundary `P8-05 disposable command context is unavailable`.
+- The HTTP-boundary cycle freezes at diagnostic `1/1`, repair `1/1`, final
+  `1/1`. Exact query normalization is closed, while non-success, items,
+  create-shape, target-mode and the subsequent repository/response stages
+  remain non-unique. No new product repair is inferred.
+- A separate post-query cycle starts `0/1`, `0/1`, `0/1`. Only
+  `POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED=True`; the historical
+  activation remains false. Existing exact scope, ordered predicates, fixed
+  parent codes, 31 server codes and strict mirrored reader are reused without
+  product/server changes. Conflicting activations fail closed.
+- Output and log handling remain code/class/exact-trace only with all prior
+  no-body, no-status-value, no-business-value, no-ID/count/actor/message/stack
+  guarantees.

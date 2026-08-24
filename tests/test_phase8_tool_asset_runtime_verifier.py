@@ -166,8 +166,21 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 )
             request.assert_called_once()
 
-    def test_enabled_collection_binds_exact_query_with_diagnostics_dormant(self):
+    def test_enabled_collection_binds_exact_post_query_diagnostic(self):
         self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
+        self.assertTrue(
+            self.verifier.POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._post_query_command_context_diagnostics_enabled()
+        )
+        cursor_patcher = patch.object(
+            self.verifier.item_runtime,
+            "_replay_diagnostic_log_cursors",
+            return_value={},
+        )
+        cursor_reader = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
         project_id = str(UUID(int=1))
         master_id = str(UUID(int=2))
         set_id = str(UUID(int=3))
@@ -240,7 +253,9 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 {
                     "method": "GET",
                     "query_key": "enabled",
-                    "diagnostic_scope": None,
+                    "diagnostic_scope": (
+                        self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+                    ),
                 },
             )
 
@@ -271,6 +286,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                         "http://127.0.0.1:8003", "fixture-password"
                     )
                 assert_exact_collection_call(request)
+                cursor_reader.assert_called_once_with()
+                cursor_reader.reset_mock()
 
         class PostReached(Exception):
             pass
@@ -291,16 +308,13 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "_retained_context",
             return_value=(context, acceptance),
         ), patch.object(
-            self.verifier.item_runtime,
-            "_replay_diagnostic_log_cursors",
-        ) as cursor_reader, patch.object(
             self.verifier, "execution_request", side_effect=(listed, PostReached)
         ) as request:
             with self.assertRaises(PostReached):
                 self.verifier.run_fresh(
                     "http://127.0.0.1:8003", "fixture-password"
                 )
-            cursor_reader.assert_not_called()
+            cursor_reader.assert_called_once_with()
             first_args, first_kwargs = request.call_args_list[0]
             split = urlsplit(first_args[2])
             self.assertEqual(
@@ -316,7 +330,9 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 {
                     "method": "GET",
                     "query_key": "enabled",
-                    "diagnostic_scope": None,
+                    "diagnostic_scope": (
+                        self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
+                    ),
                 },
             )
             self.assertEqual(request.call_count, 2)
@@ -329,12 +345,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
     def test_command_context_diagnostic_is_ordered_trace_bound_and_value_free(self):
         self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
-        self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = True
-        self.addCleanup(
-            setattr,
-            self.verifier,
-            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
-            False,
+        self.assertTrue(
+            self.verifier.POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
         )
         trace_id = "trace-" + "a" * 32
         secret = "private-command-context-value"
@@ -477,6 +489,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.verifier._TOOL_ASSET_CONTEXT_SERVER_CODES,
             diagnostics.TOOL_ASSET_CONTEXT_DIAGNOSTIC_CODES,
         )
+        self.assertEqual(len(self.verifier._TOOL_ASSET_CONTEXT_SERVER_CODES), 31)
         source = "\n".join(
             (
                 (
@@ -495,12 +508,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
     def test_http_failure_classes_are_closed_value_free_and_always_read_server_log(self):
         self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
-        self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = True
-        self.addCleanup(
-            setattr,
-            self.verifier,
-            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
-            False,
+        self.assertTrue(
+            self.verifier.POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
         )
         trace_id = "trace-" + "c" * 32
         secret = "private-http-status-value"
@@ -577,7 +586,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
         with patch.object(
             self.verifier,
-            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -595,6 +604,26 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             self.verifier,
             "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as reader:
+            self.assertFalse(
+                self.verifier._post_query_command_context_diagnostics_enabled()
+            )
+            self.assertEqual(
+                self.verifier._command_context_failure_message(
+                    status_result,
+                    {"logs/bench.log": 0},
+                ),
+                self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
+            )
+            reader.assert_not_called()
+
+        with patch.object(
+            self.verifier,
+            "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
