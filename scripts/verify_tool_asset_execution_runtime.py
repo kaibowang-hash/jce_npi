@@ -148,7 +148,10 @@ def _command_context_failure_message(result, cursors) -> str | None:
         or _TRACE_PATTERN.fullmatch(trace_id) is None
     ):
         return _TOOL_ASSET_CONTEXT_FAILURE
-    if code == "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE":
+    if code in {
+        "P805_TOOL_ASSET_CONTEXT_STATUS",
+        "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE",
+    }:
         diagnostic = item_runtime._sanitized_server_log_diagnostic(
             trace_id,
             cursors,

@@ -386,50 +386,73 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 self.assertNotIn(secret, message)
                 self.assertEqual(
                     reader.call_count,
-                    int(code == "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE"),
+                    int(
+                        code
+                        in {
+                            "P805_TOOL_ASSET_CONTEXT_STATUS",
+                            "P805_TOOL_ASSET_CONTEXT_CREATE_SHAPE",
+                        }
+                    ),
                 )
 
+        status = cases[0][1]
         create_shape = cases[2][1]
         server_tuple = (
             "ToolAssetExecutionStateConflict",
             "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
             trace_id,
         )
-        with patch.object(
-            self.verifier.item_runtime,
-            "_sanitized_server_log_diagnostic",
-            return_value=server_tuple,
-        ) as reader:
-            message = self.verifier._command_context_failure_message(
-                create_shape,
-                {"logs/bench.log": 0},
-            )
-        self.assertIn("diagnostic_code=P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING", message)
-        self.assertIn("exception_type=ToolAssetExecutionStateConflict", message)
-        self.assertNotIn(secret, message)
-        self.assertEqual(
-            reader.call_args.kwargs,
-            {
-                "code_prefix": "P805_TOOL_ASSET_CONTEXT_",
-                "allowed_codes": self.verifier._TOOL_ASSET_CONTEXT_SERVER_CODES,
-            },
-        )
-
-        for invalid_trace in (None, "trace-invalid", secret):
-            with self.subTest(trace=invalid_trace), patch.object(
+        for result in (status, create_shape):
+            with self.subTest(server_result=result.status), patch.object(
                 self.verifier.item_runtime,
                 "_sanitized_server_log_diagnostic",
+                return_value=server_tuple,
             ) as reader:
-                invalid = types.SimpleNamespace(
-                    status=200,
-                    body={**valid, "commandContexts": None},
-                    trace_id=invalid_trace,
+                message = self.verifier._command_context_failure_message(
+                    result,
+                    {"logs/bench.log": 0},
                 )
-                self.assertEqual(
-                    self.verifier._command_context_failure_message(invalid, {}),
-                    self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
-                )
-                reader.assert_not_called()
+            self.assertIn(
+                "diagnostic_code=P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
+                message,
+            )
+            self.assertIn(
+                "exception_type=ToolAssetExecutionStateConflict",
+                message,
+            )
+            self.assertNotIn(secret, message)
+            self.assertEqual(
+                reader.call_args.kwargs,
+                {
+                    "code_prefix": "P805_TOOL_ASSET_CONTEXT_",
+                    "allowed_codes": (
+                        self.verifier._TOOL_ASSET_CONTEXT_SERVER_CODES
+                    ),
+                },
+            )
+
+        for invalid_trace in (None, "trace-invalid", secret):
+            for invalid_status in (200, 503):
+                with self.subTest(
+                    trace=invalid_trace,
+                    status=invalid_status,
+                ), patch.object(
+                    self.verifier.item_runtime,
+                    "_sanitized_server_log_diagnostic",
+                ) as reader:
+                    invalid = types.SimpleNamespace(
+                        status=invalid_status,
+                        body={**valid, "commandContexts": None},
+                        trace_id=invalid_trace,
+                    )
+                    self.assertEqual(
+                        self.verifier._command_context_failure_message(
+                            invalid,
+                            {},
+                        ),
+                        self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
+                    )
+                    reader.assert_not_called()
 
         success = types.SimpleNamespace(status=200, body=valid, trace_id=trace_id)
         with patch.object(
@@ -438,6 +461,23 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ) as reader:
             self.assertIsNone(
                 self.verifier._command_context_failure_message(success, {})
+            )
+            reader.assert_not_called()
+
+        with patch.object(
+            self.verifier,
+            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as reader:
+            self.assertEqual(
+                self.verifier._command_context_failure_message(
+                    status,
+                    {"logs/bench.log": 0},
+                ),
+                self.verifier._TOOL_ASSET_CONTEXT_FAILURE,
             )
             reader.assert_not_called()
 

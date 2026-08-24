@@ -308,3 +308,20 @@ Canonical Linux/amd64 SHA-256 evidence:
   wrong-scope or invalid-trace paths are response-neutral. Product, write
   order, permission, transaction, Schema, ownership, adapter and Gate code are
   unchanged.
+
+### Command-context STATUS reader harness remediation
+
+- Checkpoint `940f792543db8c5aae5539a5adabc1f11f14d6c9`
+  passes ordinary `32719211351`. Diagnostic run `32720631772`, controlled
+  runtime `97411186933`, emits only
+  `P805_TOOL_ASSET_CONTEXT_STATUS / RuntimeError /
+  trace-c9c0846a767a5981b43b83212f43a5b8`.
+- The parent STATUS proves no unique product source and previously skipped the
+  strict reader even though the exact scoped server request could already have
+  produced one safe allowlisted record. Product repair remains forbidden.
+- STATUS now shares CREATE_SHAPE's existing strict mirrored reader. A trusted
+  exact tuple wins; absent or rejected log evidence falls back to the known
+  parent STATUS without server attribution. Missing/invalid HttpResult trace
+  stays constant-safe and ITEMS/TARGET_MODE remain zero-reader. This is a
+  verifier-only same-cycle correction; product/server stages and diagnostic
+  `1/1`, repair `0/1`, final `0/1` counters are unchanged.

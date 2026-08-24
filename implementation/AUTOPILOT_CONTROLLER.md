@@ -4880,3 +4880,25 @@ repeat or rewrite it merely to restore context. See
   state. No product write/order, permission, transaction, API, Schema,
   ownership, adapter, target or Gate behavior is changed.
 - Controller marker: `P8-05 final held; independent command-context diagnostic checkpoint active`.
+
+## 2026-08-24 P8-05 command-context STATUS reader harness remediation
+
+- Exact checkpoint `940f792543db8c5aae5539a5adabc1f11f14d6c9`
+  passes ordinary `32719211351`. Controlled diagnostic run `32720631772`
+  passes preflight and controlled runtime `97411186933` emits the sole safe
+  parent tuple `P805_TOOL_ASSET_CONTEXT_STATUS / RuntimeError /
+  trace-c9c0846a767a5981b43b83212f43a5b8`.
+- STATUS is not a unique product root. The exact request may already have an
+  allowlisted server record, but the parent reader consulted logs only for
+  CREATE_SHAPE. A caught create-stage record also cannot by itself be treated
+  as the later HTTP failure root. Repair remains prohibited.
+- Same-cycle harness correction expands the existing strict mirrored reader
+  to STATUS and CREATE_SHAPE only. A valid exact tuple wins; rejected or absent
+  log evidence falls back to parent STATUS, while missing/invalid HttpResult
+  trace remains constant-safe without a reader call. ITEMS/TARGET_MODE never
+  read logs. No body/status value/business value/ID/count/actor/message/stack
+  is exposed, and no product/server stage, response, permission, write order,
+  transaction, Schema, ownership, adapter, target or Gate behavior changes.
+- Cycle counters remain diagnostic `1/1`, repair `0/1`, final `0/1`; this
+  verifier-only remediation consumes no product allowance.
+- Controller marker: `P8-05 final held; command-context STATUS reader remediation awaits ordinary proof`.

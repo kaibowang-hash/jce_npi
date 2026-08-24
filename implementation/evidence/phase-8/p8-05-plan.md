@@ -904,3 +904,32 @@ emitted. The innermost server stage records at most once and rethrows the same
 exception, request-local state is restored, and success is response-equivalent.
 No write, call order, permission, transaction, API, Schema, ownership,
 profile, adapter, target or Gate behavior changes.
+
+## 24. Command-context STATUS reader harness remediation
+
+Exact diagnostic checkpoint `940f792543db8c5aae5539a5adabc1f11f14d6c9`
+passes ordinary CI `32719211351`. Its sole controlled diagnostic run
+`32720631772` passes preflight `97411097423`; controlled runtime
+`97411186933` returns the safe parent tuple
+`P805_TOOL_ASSET_CONTEXT_STATUS / RuntimeError /
+trace-c9c0846a767a5981b43b83212f43a5b8`.
+
+The tuple proves only a non-success response on the exact scoped GET. It does
+not exclude an already-written safe server record because the parent reader
+was invoked only for create-shape. Static order also cannot make an existing
+create-stage record the HTTP failure root: create-stage exceptions are
+intentionally recorded and caught before later response construction. Product
+repair therefore remains prohibited.
+
+The bounded same-cycle harness remediation lets STATUS and CREATE_SHAPE, and
+only those two parent predicates, consult the existing strict mirrored-log
+reader. A valid exact-trace allowlisted tuple wins. Missing, duplicate,
+divergent, wrong-trace, disallowed or malformed evidence yields no server
+attribution and falls back to the directly proven parent STATUS tuple; a
+missing or invalid `HttpResult.trace_id` remains constant-safe without reading
+logs. ITEMS and TARGET_MODE never read logs. No body, status value, business
+value, ID, count, actor, exception message or stack is read or emitted. This
+changes no product/server diagnostic stage, response, permission, write,
+transaction, Schema, ownership, adapter, target or Gate behavior. The cycle
+remains diagnostic `1/1`, repair `0/1`, final `0/1`; the harness correction
+does not reopen or consume a product counter.
