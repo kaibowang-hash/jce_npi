@@ -157,6 +157,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.verifier, "_retained_context", return_value=(context, {})
         ), patch.object(
             self.verifier,
+            "_execution_state_snapshot",
+            return_value={"NPI Tool Asset Request": 0},
+        ), patch.object(
+            self.verifier,
             "execution_request",
             side_effect=CommandBoundaryReached,
         ) as request:
@@ -166,32 +170,34 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 )
             request.assert_called_once()
 
-    def test_enabled_collection_binds_exact_post_query_diagnostic(self):
+    def test_mapped_collection_is_read_only_before_distinct_unmapped_create(self):
         self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_query_command_context_diagnostics_enabled()
         )
-        cursor_patcher = patch.object(
-            self.verifier.item_runtime,
-            "_replay_diagnostic_log_cursors",
-            return_value={},
-        )
-        cursor_reader = cursor_patcher.start()
-        self.addCleanup(cursor_patcher.stop)
         project_id = str(UUID(int=1))
-        master_id = str(UUID(int=2))
-        set_id = str(UUID(int=3))
-        acceptance_id = str(UUID(int=4))
-        context = {
+        retained_master_id = str(UUID(int=2))
+        retained_set_id = str(UUID(int=3))
+        retained_acceptance_id = str(UUID(int=4))
+        disposable_master_id = str(UUID(int=5))
+        disposable_set_id = str(UUID(int=6))
+        disposable_acceptance_id = str(UUID(int=7))
+        retained = {
             "projectId": project_id,
-            "masterId": master_id,
-            "toolingSetId": set_id,
+            "masterId": retained_master_id,
+            "toolingSetId": retained_set_id,
         }
-        acceptance = {"globalId": acceptance_id}
-        source = {"acceptanceRevisionGlobalId": acceptance_id}
+        retained_acceptance = {"globalId": retained_acceptance_id}
+        disposable = {
+            **retained,
+            "masterId": disposable_master_id,
+            "toolingSetId": disposable_set_id,
+        }
+        disposable_acceptance = {"globalId": disposable_acceptance_id}
+        source = {"acceptanceRevisionGlobalId": disposable_acceptance_id}
         create = {
             "source": source,
             "expectedSourceHash": "a" * 64,
@@ -199,100 +205,33 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "expectedMappingExpectationHash": "c" * 64,
             "expectedProfileSnapshotHash": "d" * 64,
         }
-        valid_body = {
-            "items": [],
-            "commandContexts": {"create_tool_asset": create},
-            "executionProfile": {"targetMode": "synthetic"},
-        }
         valid_environment = {
             "NPI_TOOL_ASSET_RUNTIME_PROJECT_ID": project_id,
             "NPI_TOOL_ASSET_REQUESTER_USER": self.verifier.ACTOR_USER,
             "NPI_TOOL_ASSET_WORKER_USER": "npi-inbound-worker@example.invalid",
         }
-        invalid_responses = {
-            "status": types.SimpleNamespace(
-                status=503,
-                body=valid_body,
-                trace_id=None,
-            ),
-            "items": types.SimpleNamespace(
-                status=200,
-                body={**valid_body, "items": [{}]},
-                trace_id=None,
-            ),
-            "create-context": types.SimpleNamespace(
-                status=200,
-                body={**valid_body, "commandContexts": None},
-                trace_id=None,
-            ),
-            "target-profile": types.SimpleNamespace(
-                status=200,
-                body={
-                    **valid_body,
-                    "executionProfile": {"targetMode": "sandbox"},
-                },
-                trace_id=None,
-            ),
+        with patch.dict(os.environ, valid_environment, clear=True):
+            profile = self.verifier._expected_synthetic_profile(project_id)
+        mapped_body = {
+            "projectGlobalId": project_id,
+            "toolingMasterGlobalId": retained_master_id,
+            "toolingSetGlobalId": retained_set_id,
+            "items": [],
+            "commandContexts": None,
+            "executionProfile": profile,
         }
-
-        def assert_exact_collection_call(request) -> None:
-            self.assertEqual(request.call_count, 1)
-            args, kwargs = request.call_args
-            self.assertEqual(args[:2], (object_actor, "http://127.0.0.1:8003"))
-            split = urlsplit(args[2])
-            self.assertEqual(
-                split.path,
-                self.verifier.execution_path(project_id, master_id, set_id),
-            )
-            self.assertEqual(
-                parse_qsl(split.query, keep_blank_values=True),
-                [("acceptanceRevisionGlobalId", acceptance_id)],
-            )
-            self.assertEqual(
-                kwargs,
-                {
-                    "method": "GET",
-                    "query_key": "enabled",
-                    "diagnostic_scope": (
-                        self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
-                    ),
-                },
-            )
-
+        disposable_body = {
+            **mapped_body,
+            "toolingMasterGlobalId": disposable_master_id,
+            "toolingSetGlobalId": disposable_set_id,
+            "commandContexts": {"create_tool_asset": create},
+        }
         object_actor = object()
-        for name, response in invalid_responses.items():
-            with self.subTest(name=name), patch.dict(
-                os.environ, valid_environment, clear=True
-            ), patch.object(
-                self.verifier,
-                "secret_from_environment",
-                return_value="administrator-password",
-            ), patch.object(
-                self.verifier, "login", return_value=object_actor
-            ), patch.object(
-                self.verifier, "bootstrap_csrf", return_value="csrf"
-            ), patch.object(
-                self.verifier,
-                "_retained_context",
-                return_value=(context, acceptance),
-            ), patch.object(
-                self.verifier, "execution_request", return_value=response
-            ) as request:
-                with self.assertRaisesRegex(
-                    RuntimeError,
-                    "^P8-05 disposable command context is unavailable$",
-                ):
-                    self.verifier.run_fresh(
-                        "http://127.0.0.1:8003", "fixture-password"
-                    )
-                assert_exact_collection_call(request)
-                cursor_reader.assert_called_once_with()
-                cursor_reader.reset_mock()
-
         class PostReached(Exception):
             pass
 
-        listed = types.SimpleNamespace(status=200, body=valid_body)
+        mapped = types.SimpleNamespace(status=200, body=mapped_body)
+        listed = types.SimpleNamespace(status=200, body=disposable_body)
         with patch.dict(
             os.environ, valid_environment, clear=True
         ), patch.object(
@@ -306,48 +245,389 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "_retained_context",
-            return_value=(context, acceptance),
+            return_value=(retained, retained_acceptance),
         ), patch.object(
-            self.verifier, "execution_request", side_effect=(listed, PostReached)
-        ) as request:
+            self.verifier,
+            "_execution_state_snapshot",
+            side_effect=(
+                {"NPI Tool Asset Request": 0},
+                {"NPI Tool Asset Request": 0},
+            ),
+        ) as snapshots, patch.object(
+            self.verifier,
+            "_create_disposable_execution_context",
+            return_value=(disposable, disposable_acceptance),
+        ) as create_fixture, patch.object(
+            self.verifier.item_runtime,
+            "_replay_diagnostic_log_cursors",
+        ) as cursor_reader, patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as diagnostic_reader, patch.object(
+            self.verifier,
+            "execution_request",
+            side_effect=(mapped, listed, PostReached),
+        ), patch.object(
+            self.verifier,
+            "_assert_no_formal_target",
+        ):
             with self.assertRaises(PostReached):
                 self.verifier.run_fresh(
                     "http://127.0.0.1:8003", "fixture-password"
                 )
-            cursor_reader.assert_called_once_with()
-            first_args, first_kwargs = request.call_args_list[0]
+            self.assertEqual(snapshots.call_count, 2)
+            create_fixture.assert_called_once_with(
+                object_actor,
+                "http://127.0.0.1:8003",
+                "csrf",
+                retained,
+            )
+            cursor_reader.assert_not_called()
+            diagnostic_reader.assert_not_called()
+            first_args, first_kwargs = self.verifier.execution_request.call_args_list[0]
             split = urlsplit(first_args[2])
             self.assertEqual(
                 split.path,
-                self.verifier.execution_path(project_id, master_id, set_id),
+                self.verifier.execution_path(
+                    project_id,
+                    retained_master_id,
+                    retained_set_id,
+                ),
             )
             self.assertEqual(
                 parse_qsl(split.query, keep_blank_values=True),
-                [("acceptanceRevisionGlobalId", acceptance_id)],
+                [("acceptanceRevisionGlobalId", retained_acceptance_id)],
             )
             self.assertEqual(
                 first_kwargs,
                 {
                     "method": "GET",
-                    "query_key": "enabled",
-                    "diagnostic_scope": (
-                        self.verifier._TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
-                    ),
+                    "query_key": "enabled-retained-mapped",
                 },
             )
-            self.assertEqual(request.call_count, 2)
-            post_args, post_kwargs = request.call_args_list[1]
+            second_args, second_kwargs = self.verifier.execution_request.call_args_list[1]
+            second_split = urlsplit(second_args[2])
+            self.assertEqual(
+                second_split.path,
+                self.verifier.execution_path(
+                    project_id,
+                    disposable_master_id,
+                    disposable_set_id,
+                ),
+            )
+            self.assertEqual(
+                parse_qsl(second_split.query, keep_blank_values=True),
+                [("acceptanceRevisionGlobalId", disposable_acceptance_id)],
+            )
+            self.assertEqual(
+                second_kwargs,
+                {
+                    "method": "GET",
+                    "query_key": "enabled-disposable-unmapped",
+                },
+            )
+            self.assertEqual(self.verifier.execution_request.call_count, 3)
+            post_args, post_kwargs = self.verifier.execution_request.call_args_list[2]
             self.assertEqual(
                 post_args[2],
-                self.verifier.execution_path(project_id, master_id, set_id, ":create"),
+                self.verifier.execution_path(
+                    project_id,
+                    disposable_master_id,
+                    disposable_set_id,
+                    ":create",
+                ),
             )
             self.assertEqual(post_kwargs["method"], "POST")
 
+    def test_disposable_fixture_is_exact_distinct_and_fail_closed(self):
+        project_id = str(UUID(int=1))
+        retained_master_id = str(UUID(int=2))
+        retained_set_id = str(UUID(int=3))
+        engineering_revision_id = str(UUID(int=4))
+        retained = {
+            "projectId": project_id,
+            "masterId": retained_master_id,
+            "toolingSetId": retained_set_id,
+            "engineeringRevisionId": engineering_revision_id,
+            "member": {"globalId": str(UUID(int=5))},
+            "fileEvidence": {
+                "fileRevisionGlobalId": str(UUID(int=6)),
+                "fileOptimisticVersion": 1,
+                "frappeContentHash": "a" * 64,
+                "sha256": "b" * 64,
+            },
+        }
+        command_result = types.SimpleNamespace(body={})
+        master = {
+            "globalId": str(UUID(int=10)),
+            "title": self.verifier._DISPOSABLE_MASTER_TITLE,
+            "originatingProjectGlobalId": project_id,
+            "snapshotHash": "1" * 64,
+        }
+        requirement = {
+            "globalId": str(UUID(int=11)),
+            "title": self.verifier._DISPOSABLE_REQUIREMENT_TITLE,
+            "kind": "customer_owned_intake",
+        }
+        applicability = {
+            "globalId": str(UUID(int=12)),
+            "toolingMasterGlobalId": master["globalId"],
+            "part": {"globalId": engineering_revision_id},
+        }
+        revision = {
+            "globalId": str(UUID(int=13)),
+            "snapshotHash": "2" * 64,
+        }
+        tooling_set = {
+            "globalId": str(UUID(int=14)),
+            "physicalSerial": self.verifier._DISPOSABLE_PHYSICAL_SERIAL,
+            "requirementKind": "customer_owned_intake",
+            "snapshotHash": "3" * 64,
+        }
+        binding = {
+            "globalId": str(UUID(int=15)),
+            "snapshotHash": "4" * 64,
+        }
+        binding_result = types.SimpleNamespace(
+            body={"toolingSet": {"sourceRevision": binding}}
+        )
+        acceptance = {"globalId": str(UUID(int=16))}
+
+        for name, masters in (
+            ("missing", []),
+            ("duplicate", [master, dict(master)]),
+            ("retained-identity", [{**master, "globalId": retained_master_id}]),
+        ):
+            with self.subTest(name=name), patch.object(
+                self.verifier.tooling_base,
+                "assert_workspace",
+                return_value={"masters": masters},
+            ), patch.object(
+                self.verifier.tooling_base,
+                "command",
+                return_value=command_result,
+            ) as command:
+                with self.assertRaises(RuntimeError):
+                    self.verifier._create_disposable_execution_context(
+                        object(),
+                        "http://127.0.0.1:8003",
+                        "csrf",
+                        retained,
+                    )
+                command.assert_called_once()
+
+        with patch.object(
+            self.verifier.tooling_base,
+            "command",
+            side_effect=(command_result,) * 4,
+        ) as base_command, patch.object(
+            self.verifier.tooling_base,
+            "assert_workspace",
+            side_effect=(
+                {"masters": [master]},
+                {"requirements": [requirement]},
+                {"applicability": [applicability]},
+            ),
+        ), patch.object(
+            self.verifier.tooling_revision,
+            "project_context",
+            return_value=(project_id, retained_master_id, "part", (), retained_set_id, {"type": "customer", "sourceSystem": "ERPNEXT", "sourceObjectId": "SYNTHETIC"}),
+        ), patch.object(
+            self.verifier.tooling_revision,
+            "command",
+            side_effect=(command_result, binding_result),
+        ), patch.object(
+            self.verifier.tooling_revision,
+            "assert_revision_item",
+            return_value=revision,
+        ), patch.object(
+            self.verifier.tooling_revision,
+            "assert_set_binding",
+        ), patch.object(
+            self.verifier.tooling_base,
+            "assert_tooling_set_collection",
+            return_value={"items": [tooling_set]},
+        ), patch.object(
+            self.verifier.tooling_runtime,
+            "command",
+            return_value=types.SimpleNamespace(
+                body={"acceptanceEvidence": acceptance}
+            ),
+        ), patch.object(
+            self.verifier.tooling_runtime,
+            "assert_acceptance_revision",
+            return_value=acceptance,
+        ):
+            disposable, observed_acceptance = (
+                self.verifier._create_disposable_execution_context(
+                    object(),
+                    "http://127.0.0.1:8003",
+                    "csrf",
+                    retained,
+                )
+            )
+        self.assertEqual(base_command.call_count, 4)
+        self.assertEqual(disposable["projectId"], project_id)
+        self.assertNotEqual(disposable["masterId"], retained_master_id)
+        self.assertNotEqual(disposable["toolingSetId"], retained_set_id)
+        self.assertEqual(disposable["requirementKind"], "customer_owned_intake")
+        self.assertEqual(observed_acceptance, acceptance)
+
+    def test_execution_state_snapshot_is_count_only_and_profile_is_exact(self):
+        frappe = sys.modules["frappe"]
+        calls: list[str] = []
+        frappe.db = types.SimpleNamespace(
+            count=lambda doctype: calls.append(doctype) or len(calls)
+        )
+        snapshot = self.verifier.execution_state_snapshot(
+            self.verifier.FIXTURE_RUN_ID
+        )
+        self.assertEqual(tuple(snapshot), self.verifier._EXECUTION_STATE_DOCTYPES)
+        self.assertEqual(calls, list(self.verifier._EXECUTION_STATE_DOCTYPES))
+        self.assertTrue(all(type(value) is int for value in snapshot.values()))
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "^P8-05 execution snapshot fixture identity drifted$",
+        ):
+            self.verifier.execution_state_snapshot("wrong")
+
+        environment = {
+            "NPI_TOOL_ASSET_RUNTIME_MARKER": self.verifier.RUNTIME_MARKER,
+            "NPI_TOOL_ASSET_REQUESTER_USER": self.verifier.ACTOR_USER,
+            "NPI_TOOL_ASSET_WORKER_USER": "worker@example.invalid",
+        }
+        with patch.dict(os.environ, environment, clear=True):
+            actual = self.fixture.resolve_profile(
+                self.verifier.document_runtime.TENANT_ID,
+                str(UUID(int=1)),
+            )
+            expected = self.verifier._expected_synthetic_profile(str(UUID(int=1)))
+        self.assertIsNotNone(actual)
+        self.assertEqual(actual.reference.canonical_mapping(), expected)
+
+    def test_collection_contract_rejects_identity_items_profile_and_context_drift(self):
+        project_id = str(UUID(int=1))
+        master_id = str(UUID(int=2))
+        set_id = str(UUID(int=3))
+        environment = {
+            "NPI_TOOL_ASSET_REQUESTER_USER": self.verifier.ACTOR_USER,
+            "NPI_TOOL_ASSET_WORKER_USER": "worker@example.invalid",
+        }
+        with patch.dict(os.environ, environment, clear=True):
+            profile = self.verifier._expected_synthetic_profile(project_id)
+            base = {
+                "projectGlobalId": project_id,
+                "toolingMasterGlobalId": master_id,
+                "toolingSetGlobalId": set_id,
+                "items": [],
+                "executionProfile": profile,
+                "commandContexts": None,
+            }
+            self.verifier._assert_collection(
+                types.SimpleNamespace(status=200, body=base),
+                project_id=project_id,
+                master_id=master_id,
+                set_id=set_id,
+                command_contexts=None,
+            )
+            invalid = (
+                (503, base),
+                (200, {**base, "projectGlobalId": str(UUID(int=4))}),
+                (200, {**base, "items": [{}]}),
+                (200, {**base, "executionProfile": {**profile, "targetMode": "sandbox"}}),
+                (200, {**base, "commandContexts": {"create_tool_asset": {}}}),
+            )
+            for status, body in invalid:
+                with self.subTest(status=status, keys=tuple(body)), self.assertRaisesRegex(
+                    RuntimeError,
+                    "^P8-05 disposable command context is unavailable$",
+                ):
+                    self.verifier._assert_collection(
+                        types.SimpleNamespace(status=status, body=body),
+                        project_id=project_id,
+                        master_id=master_id,
+                        set_id=set_id,
+                        command_contexts=None,
+                    )
+
+    def test_retained_query_snapshot_drift_stops_before_disposable_fixture(self):
+        project_id = str(UUID(int=1))
+        retained = {
+            "projectId": project_id,
+            "masterId": str(UUID(int=2)),
+            "toolingSetId": str(UUID(int=3)),
+        }
+        acceptance = {"globalId": str(UUID(int=4))}
+        environment = {
+            "NPI_TOOL_ASSET_RUNTIME_PROJECT_ID": project_id,
+            "NPI_TOOL_ASSET_REQUESTER_USER": self.verifier.ACTOR_USER,
+            "NPI_TOOL_ASSET_WORKER_USER": "worker@example.invalid",
+        }
+        with patch.dict(os.environ, environment, clear=True):
+            body = {
+                "projectGlobalId": project_id,
+                "toolingMasterGlobalId": retained["masterId"],
+                "toolingSetGlobalId": retained["toolingSetId"],
+                "items": [],
+                "executionProfile": self.verifier._expected_synthetic_profile(
+                    project_id
+                ),
+                "commandContexts": None,
+            }
+            with patch.object(
+                self.verifier,
+                "secret_from_environment",
+                return_value="administrator-password",
+            ), patch.object(
+                self.verifier,
+                "login",
+                return_value=object(),
+            ), patch.object(
+                self.verifier,
+                "bootstrap_csrf",
+                return_value="csrf",
+            ), patch.object(
+                self.verifier,
+                "_retained_context",
+                return_value=(retained, acceptance),
+            ), patch.object(
+                self.verifier,
+                "_execution_state_snapshot",
+                side_effect=(
+                    {"NPI Tool Asset Request": 0},
+                    {"NPI Tool Asset Request": 1},
+                ),
+            ), patch.object(
+                self.verifier,
+                "execution_request",
+                return_value=types.SimpleNamespace(status=200, body=body),
+            ) as request, patch.object(
+                self.verifier,
+                "_create_disposable_execution_context",
+            ) as create_fixture:
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "^P8-05 retained mapped collection query changed execution truth$",
+                ):
+                    self.verifier.run_fresh(
+                        "http://127.0.0.1:8003",
+                        "fixture-password",
+                    )
+                request.assert_called_once()
+                create_fixture.assert_not_called()
+
     def test_command_context_diagnostic_is_ordered_trace_bound_and_value_free(self):
         self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
         )
+        activation = patch.object(
+            self.verifier,
+            "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            True,
+        )
+        activation.start()
+        self.addCleanup(activation.stop)
         trace_id = "trace-" + "a" * 32
         secret = "private-command-context-value"
         create = {"opaque": secret}
@@ -508,9 +788,16 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
     def test_http_failure_classes_are_closed_value_free_and_always_read_server_log(self):
         self.assertFalse(self.verifier.TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED)
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED
         )
+        activation = patch.object(
+            self.verifier,
+            "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            True,
+        )
+        activation.start()
+        self.addCleanup(activation.stop)
         trace_id = "trace-" + "c" * 32
         secret = "private-http-status-value"
         cases = (

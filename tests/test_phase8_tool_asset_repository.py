@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 import types
 import unittest
@@ -204,6 +205,44 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
         )
         self.assertEqual(create.mapping_version, 0)
 
+        repository._asset_projection = lambda *_args: types.SimpleNamespace(
+            public_dict=lambda: {
+                "state": "available",
+                "toolingSetGlobalId": str(uid(3)),
+                "mappingVersion": 1,
+                "formalAssetId": "ASSET-OBSERVED-1",
+                "targetVersion": "1",
+            }
+        )
+        with self.assertRaises(Exception) as mapped_create:
+            repository._mapping_expectation(
+                project,
+                uid(2),
+                source_value,
+                ToolAssetExecutionOperation.CREATE,
+                lock=False,
+            )
+        self.assertEqual(
+            getattr(mapped_create.exception, "code", None),
+            "TOOL_ASSET_EXECUTION_STATE_CONFLICT",
+        )
+
+        repository._asset_projection = lambda *_args: types.SimpleNamespace(
+            public_dict=lambda: {"state": "unavailable"}
+        )
+        with self.assertRaises(Exception) as missing_head:
+            repository._mapping_expectation(
+                project,
+                uid(2),
+                source_value,
+                ToolAssetExecutionOperation.UPDATE,
+                lock=False,
+            )
+        self.assertEqual(
+            getattr(missing_head.exception, "code", None),
+            "TOOL_ASSET_EXECUTION_STATE_CONFLICT",
+        )
+
         head = types.SimpleNamespace(
             mapping_version=2,
             formal_asset_id="ASSET-SANDBOX-1",
@@ -229,6 +268,21 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
         )
         self.assertEqual(update.formal_asset_id, "ASSET-SANDBOX-1")
         repository._asset_projection = lambda *_args: types.SimpleNamespace(
+            public_dict=lambda: {"state": "unavailable"}
+        )
+        with self.assertRaises(Exception) as existing_head:
+            repository._mapping_expectation(
+                project,
+                uid(2),
+                source_value,
+                ToolAssetExecutionOperation.CREATE,
+                lock=False,
+            )
+        self.assertEqual(
+            getattr(existing_head.exception, "code", None),
+            "TOOL_ASSET_EXECUTION_STATE_CONFLICT",
+        )
+        repository._asset_projection = lambda *_args: types.SimpleNamespace(
             public_dict=lambda: {"state": "available", "toolingSetGlobalId": str(uid(30))}
         )
         with self.assertRaises(Exception) as caught:
@@ -243,6 +297,68 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
             getattr(caught.exception, "code", None),
             "TOOL_ASSET_EXECUTION_STATE_CONFLICT",
         )
+
+    def test_mapping_head_missing_duplicate_and_tamper_are_fail_closed(self) -> None:
+        repository = self.bare_repository()
+        project = types.SimpleNamespace(
+            tenant_id="tenant-synthetic",
+            global_id=uid(1),
+        )
+        source_value = source()
+        frappe = self.repository.frappe
+        original_db = frappe.db
+        original_get_doc = getattr(frappe, "get_doc", None)
+        try:
+            frappe.db = types.SimpleNamespace(
+                get_value=lambda *_args, **_kwargs: None
+            )
+            frappe.get_doc = lambda *_args, **_kwargs: (_ for _ in ()).throw(
+                AssertionError("missing head must not read a document")
+            )
+            self.assertIsNone(
+                repository._mapping_head(project, source_value, lock=False)
+            )
+
+            row = types.SimpleNamespace(
+                global_id=uid(30),
+                tenant_id=project.tenant_id,
+                project_global_id=project.global_id,
+                tooling_set_global_id=source_value.tooling_set_global_id,
+                source_stream_key_hash=source_value.source_stream_key_hash,
+                mapping_version=1,
+                formal_asset_id="ASSET-SANDBOX-1",
+                target_version="1",
+                current_observation=uid(31),
+                current_observation_hash="8" * 64,
+                updated_at=NOW,
+                head_snapshot={"tampered": True},
+                head_hash="9" * 64,
+            )
+            frappe.db = types.SimpleNamespace(
+                get_value=lambda *_args, **_kwargs: str(row.global_id)
+            )
+            frappe.get_doc = lambda *_args, **_kwargs: row
+            with self.assertRaises(Exception) as tampered:
+                repository._mapping_head(project, source_value, lock=False)
+            self.assertEqual(
+                getattr(tampered.exception, "code", None),
+                "TOOL_ASSET_EXECUTION_STATE_CONFLICT",
+            )
+        finally:
+            frappe.db = original_db
+            if original_get_doc is None:
+                delattr(frappe, "get_doc")
+            else:
+                frappe.get_doc = original_get_doc
+
+        metadata_path = (
+            ROOT
+            / "apps/npi_integration/npi_integration/npi_integration/doctype"
+            / "npi_tool_asset_mapping_head/npi_tool_asset_mapping_head.json"
+        )
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        fields = {field["fieldname"]: field for field in metadata["fields"]}
+        self.assertEqual(fields["source_stream_key_hash"].get("unique"), 1)
 
     def test_command_context_diagnostic_stages_are_unique_same_exception_and_read_only(self) -> None:
         diagnostics = importlib.import_module(

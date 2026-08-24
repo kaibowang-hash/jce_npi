@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-24`
 
-Status: `IMPLEMENTED — AWAITS EXACT-SHA ORDINARY CI`
+Status: `IMPLEMENTED — FINAL HELD AT POST-QUERY MAPPED-FIXTURE REMEDIATION`
 
 ## Authorized predecessor
 
@@ -406,3 +406,32 @@ Canonical Linux/amd64 SHA-256 evidence:
 - Output and log handling remain code/class/exact-trace only with all prior
   no-body, no-status-value, no-business-value, no-ID/count/actor/message/stack
   guarantees.
+
+### Post-query mapped-fixture harness remediation
+
+- Exact post-query SHA `7dce210c95733a0f4a51ff3cca291fa4cb2a7c0d`
+  passes ordinary `32737660292`. Controlled run `32739332564`, runtime job
+  `97469915487`, emits only
+  `P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING /
+  ToolAssetExecutionStateConflict /
+  trace-187f44c7c5c3566080ea091825bb2b63`.
+- The exact retained physical Set already carries the P8-01 authoritative
+  read-only Asset projection and has no P8-05 mapping head. Product guards
+  correctly make create and update unavailable, so the list response's null
+  command context is truthful. The verifier's assumption that this retained
+  object remained createable is the unique harness root.
+- The post-query cycle freezes at diagnostic `1/1`, repair `0/1`, final
+  `0/1`. The same-cycle bounded remediation strictly validates status 200,
+  exact empty items, exact Synthetic profile and null contexts for the mapped
+  retained Set, with count-only before/after execution snapshots proving zero
+  write and zero POST.
+- Original create/worker proof moves to an independently created disposable
+  Master, physical Set, Revision binding and Acceptance. It is exact-distinct,
+  unmapped and create-only; no retained projection is cleared and no mapping
+  head is invented. Worker replay, zero formal IDs and zero mapping-head
+  assertions remain unchanged.
+- `TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED=False` and
+  `POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED=False`. The dormant
+  mechanisms remain covered and normal runtime sends no scope and reads no
+  server log. Product/API/permission/transaction/Schema/ownership/adapter/
+  target behavior is unchanged.

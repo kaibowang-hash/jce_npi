@@ -5011,3 +5011,36 @@ repeat or rewrite it merely to restore context. See
   API, permission, transaction, Schema, ownership, adapter, target or Gate
   change.
 - Controller marker: `P8-05 final held; post-query-command-context diagnostic 0/1 active`.
+
+## 2026-08-24 P8-05 post-query mapped-fixture harness remediation
+
+- Post-query checkpoint `7dce210c95733a0f4a51ff3cca291fa4cb2a7c0d`
+  passes ordinary CI `32737660292`. Its sole controlled diagnostic
+  `32739332564`, runtime job `97469915487`, yields exactly
+  `P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING / ToolAssetExecutionStateConflict /
+  trace-187f44c7c5c3566080ea091825bb2b63`.
+- The stage and ordered mapping guard are unique. P8-01 has already installed
+  the exact retained physical Set's authoritative read-only ERP Asset
+  projection, while no P8-05 mapping head exists before the first P8-05
+  command. Create correctly rejects observed mapped truth; update correctly
+  rejects the absent P8-05 head. The list projection catches both guarded
+  operations and truthfully returns `commandContexts: null`.
+- The root is the verifier's temporal fixture expectation, not product
+  mapping, approval, authority or API behavior. Product repair remains `0/1`.
+  The post-query cycle is frozen at diagnostic `1/1`, repair `0/1`, final
+  `0/1`; this bounded harness remediation does not reopen a diagnostic or
+  consume a product counter.
+- The verifier first requires the retained mapped Set to return status 200,
+  exact empty requests, the exact disposable Synthetic profile and null
+  command contexts. A before/after count-only execution snapshot proves this
+  GET performs no write and no POST follows from retained truth. It then uses
+  existing P6 APIs to create a distinct disposable Master, customer-owned
+  physical Set, Revision binding and Acceptance with no P8-01 projection or
+  P8-05 mapping head, and runs the original create-only Synthetic worker,
+  replay, zero-formal-ID and zero-mapping-head proof there.
+- No retained projection is cleared and no mapping head is fabricated.
+  Missing, duplicate, reused or tampered fixture identity and all mapping-head
+  mismatches remain fail-closed. The temporary post-query activation is
+  closed; all Tool Asset diagnostic mechanisms remain dormant and
+  response-neutral.
+- Controller marker: `P8-05 final held; post-query mapped-fixture harness remediation awaits Level 1`.

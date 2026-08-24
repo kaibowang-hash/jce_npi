@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-24`
 
-Status: `FROZEN — CHECKPOINTS 1–4 ORDINARY PASS; FINAL HELD AT P6-06 PREDECESSOR DIAGNOSTIC`
+Status: `FROZEN — CHECKPOINTS 1–4 ORDINARY PASS; FINAL HELD AT POST-QUERY MAPPED-FIXTURE REMEDIATION`
 
 Audit base and retained P8-04 product checkpoint:
 `ca72deceab4b8e899d0da1207883887c9d30077a`
@@ -1043,3 +1043,36 @@ No response body, status value, business value, identifier, count, actor,
 exception message or stack is inspected or emitted. Product/server code,
 response, write order, permissions, transactions, Schema, ownership,
 profiles, adapters, targets and Gate rules are unchanged.
+
+## 29. Post-query mapped-fixture harness remediation
+
+Post-query checkpoint `7dce210c95733a0f4a51ff3cca291fa4cb2a7c0d`
+passes ordinary CI `32737660292`. Its sole controlled diagnostic run
+`32739332564`, runtime job `97469915487`, returns the exact safe tuple
+`P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING / ToolAssetExecutionStateConflict /
+trace-187f44c7c5c3566080ea091825bb2b63`.
+
+The unique stage calls the ordered mapping-expectation guard. The retained
+physical Set already has the exact P8-01 authoritative read-only ERP Asset
+projection and has no P8-05 mapping head before the first command. Therefore
+create must reject existing observed mapping truth and update must reject the
+missing P8-05 head. The collection intentionally catches both guarded
+operations and returns `commandContexts: null`; this is the frozen product
+contract, not a product failure.
+
+The post-query cycle is immutable at diagnostic `1/1`, repair `0/1`, final
+`0/1`. A bounded verifier-only remediation first proves the retained mapped
+Set returns status 200, exact empty request items, the exact disposable
+Synthetic profile and null command contexts, with an unchanged count-only
+P8-05 execution-state snapshot and zero POST. It then constructs a distinct
+disposable Master, customer-owned physical Set, Revision binding and
+Acceptance through existing P6 APIs. That new Master has neither inherited
+P8-01 Asset projection nor a fabricated P8-05 mapping head, so only
+`create_tool_asset` may be projected and the original Synthetic worker,
+terminal replay, zero formal ID and zero mapping-head proof executes there.
+
+No product, API, permission, approval, transaction, Schema, ownership,
+projection, mapping CAS, adapter, target or Gate rule changes. Missing,
+duplicate, reused or tampered fixture identity remains fail-closed. The
+temporary post-query diagnostic activation is `False`; dormant mechanisms
+remain response-neutral. This remediation consumes no product repair.

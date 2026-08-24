@@ -15,6 +15,8 @@ from uuid import UUID
 import verify_document_runtime as document_runtime
 import verify_item_publish_runtime as item_runtime
 import verify_tooling_acceptance_runtime as tooling_runtime
+import verify_tooling_revision_runtime as tooling_revision
+import verify_tooling_runtime as tooling_base
 from verify_frappe_runtime import login, require, secret_from_environment, validate_local_fixture_inputs
 from verify_project_runtime import bootstrap_csrf
 
@@ -29,7 +31,7 @@ ACKNOWLEDGEMENT = (
     "physical Tooling Set, separate business approval, mapping state, and execution profile."
 )
 TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = False
-POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = True
+POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = False
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE = "p805-tool-asset-command-context-v1"
 _TOOL_ASSET_CONTEXT_PARENT_CODES = frozenset(
@@ -81,6 +83,23 @@ _TOOL_ASSET_CONTEXT_SERVER_CODES = frozenset(
 )
 _TOOL_ASSET_CONTEXT_FAILURE = "P8-05 disposable command context is unavailable"
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_EXECUTION_STATE_DOCTYPES = (
+    "NPI Tool Asset Request",
+    "NPI Tool Asset Command Idempotency",
+    "NPI Tool Asset Stream Guard",
+    "NPI Tool Asset Attempt",
+    "NPI Tool Asset Result",
+    "NPI Tool Asset Field Result",
+    "NPI Tool Asset Mapping Observation",
+    "NPI Tool Asset Mapping Head",
+    "NPI Outbox Message",
+    "NPI Audit Event",
+)
+_DISPOSABLE_MASTER_TITLE = f"P8-05 disposable Asset tool {FIXTURE_RUN_ID[:16]}"
+_DISPOSABLE_REQUIREMENT_TITLE = (
+    f"P8-05 disposable Asset intake {FIXTURE_RUN_ID[:16]}"
+)
+_DISPOSABLE_PHYSICAL_SERIAL = f"P8-05-ASSET-{FIXTURE_RUN_ID[:16]}"
 
 
 def _post_query_command_context_diagnostics_enabled() -> bool:
@@ -236,6 +255,282 @@ def _retained_context(administrator, base_url):
     return context, second
 
 
+def _hash(value: object) -> str:
+    import hashlib
+
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _expected_synthetic_profile(project_id: str) -> dict[str, object]:
+    policy_hash = _hash({"authority": "synthetic", "formalAssetIds": False})
+    snapshot = {
+        "profileId": "tool-asset-disposable-synthetic-v1",
+        "profileVersion": 1,
+        "tenantId": document_runtime.TENANT_ID,
+        "projectGlobalId": project_id,
+        "targetMode": "synthetic",
+        "environmentCode": "testing",
+        "requesterUserIds": [ACTOR_USER],
+        "serviceActorUserId": os.environ.get("NPI_TOOL_ASSET_WORKER_USER"),
+        "projectionPolicyId": "tool-asset-synthetic-projection-v1",
+        "projectionPolicyVersion": 1,
+        "projectionPolicyHash": policy_hash,
+        "allowedOperations": ["create_tool_asset", "update_tool_asset"],
+        "adapterResolver": (
+            "npi_integration.tool_asset_request.runtime_fixture.synthetic_adapter"
+        ),
+        "baseUrl": None,
+        "allowedHostnames": [],
+        "responseAuthentication": None,
+        "connectTimeoutSeconds": None,
+        "readTimeoutSeconds": None,
+        "nonProductionAttested": False,
+        "syntheticTestOnly": True,
+        "followRedirects": False,
+        "disposableRuntimeMarker": True,
+    }
+    return {
+        "profileId": snapshot["profileId"],
+        "profileVersion": snapshot["profileVersion"],
+        "targetMode": snapshot["targetMode"],
+        "environmentCode": snapshot["environmentCode"],
+        "projectionPolicyId": snapshot["projectionPolicyId"],
+        "projectionPolicyVersion": snapshot["projectionPolicyVersion"],
+        "projectionPolicyHash": policy_hash,
+        "snapshotHash": _hash(snapshot),
+    }
+
+
+def _execution_state_snapshot() -> dict[str, int]:
+    return run_bench_fixture(
+        "execution_state_snapshot",
+        {"fixture_run_id": FIXTURE_RUN_ID},
+    )
+
+
+def _assert_collection(
+    result,
+    *,
+    project_id: str,
+    master_id: str,
+    set_id: str,
+    command_contexts: object,
+) -> dict[str, object]:
+    require(
+        result.status == 200
+        and isinstance(result.body, dict)
+        and result.body.get("projectGlobalId") == project_id
+        and result.body.get("toolingMasterGlobalId") == master_id
+        and result.body.get("toolingSetGlobalId") == set_id
+        and result.body.get("items") == []
+        and result.body.get("executionProfile")
+        == _expected_synthetic_profile(project_id)
+        and result.body.get("commandContexts") == command_contexts,
+        _TOOL_ASSET_CONTEXT_FAILURE,
+    )
+    return result.body
+
+
+def _create_disposable_execution_context(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    retained: dict[str, object],
+) -> tuple[dict[str, object], dict[str, object]]:
+    project_id = str(retained["projectId"])
+    engineering_revision_id = str(retained["engineeringRevisionId"])
+    master_result = tooling_base.command(
+        administrator,
+        base_url,
+        csrf_token,
+        f"/api/npi/v1/projects/{project_id}/tooling-masters",
+        {"title": _DISPOSABLE_MASTER_TITLE},
+        f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-master",
+    )
+    master_workspace = tooling_base.assert_workspace(master_result, project_id)
+    master = tooling_base.exact_single(
+        [
+            value
+            for value in master_workspace["masters"]
+            if value.get("title") == _DISPOSABLE_MASTER_TITLE
+        ],
+        "P8-05 disposable Tooling Master",
+    )
+    master_id = str(master.get("globalId"))
+    require(
+        str(UUID(master_id)) == master_id
+        and master_id != str(retained["masterId"])
+        and master.get("originatingProjectGlobalId") == project_id
+        and isinstance(master.get("snapshotHash"), str)
+        and len(str(master["snapshotHash"])) == 64,
+        "P8-05 disposable Tooling Master drifted",
+    )
+
+    requirement_result = tooling_base.command(
+        administrator,
+        base_url,
+        csrf_token,
+        f"/api/npi/v1/projects/{project_id}/tooling-requirements",
+        {
+            "kind": "customer_owned_intake",
+            "title": _DISPOSABLE_REQUIREMENT_TITLE,
+            "reason": "Create one isolated physical Set for disposable Asset proof.",
+            "targetPartRevisionGlobalId": engineering_revision_id,
+            "targetDate": "2027-03-15",
+        },
+        f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-requirement",
+    )
+    requirement_workspace = tooling_base.assert_workspace(
+        requirement_result,
+        project_id,
+    )
+    requirement = tooling_base.exact_single(
+        [
+            value
+            for value in requirement_workspace["requirements"]
+            if value.get("title") == _DISPOSABLE_REQUIREMENT_TITLE
+            and value.get("kind") == "customer_owned_intake"
+        ],
+        "P8-05 disposable Tooling Requirement",
+    )
+
+    applicability_result = tooling_base.command(
+        administrator,
+        base_url,
+        csrf_token,
+        f"/api/npi/v1/projects/{project_id}/tooling-applicabilities",
+        tooling_base.applicability_payload(
+            master_id,
+            engineering_revision_id,
+            effective_from="2026-08-01",
+            effective_to=None,
+        ),
+        f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-applicability",
+    )
+    applicability = tooling_base.exact_single(
+        [
+            value
+            for value in tooling_base.assert_workspace(
+                applicability_result,
+                project_id,
+            )["applicability"]
+            if value.get("toolingMasterGlobalId") == master_id
+            and value.get("part", {}).get("globalId")
+            == engineering_revision_id
+        ],
+        "P8-05 disposable Tooling Applicability",
+    )
+    applicability_id = tooling_revision.require_uuid(
+        applicability.get("globalId"),
+        "P8-05 disposable Tooling Applicability",
+    )
+    _project, _master, _part, _revisions, _set, model_reference = (
+        tooling_revision.project_context(administrator, base_url)
+    )
+    revision_result = tooling_revision.command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_revision.revision_path(project_id, master_id),
+        tooling_revision.revision_payload(applicability_id, 1, model_reference),
+        f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-revision",
+    )
+    revision = tooling_revision.assert_revision_item(
+        revision_result.body.get("revision"),
+        master_id=master_id,
+        revision_number=1,
+    )
+    revision_id = str(revision["globalId"])
+
+    set_result = tooling_base.command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_base.tooling_set_path(project_id, master_id),
+        tooling_base.tooling_set_payload(
+            str(requirement["globalId"]),
+            _DISPOSABLE_PHYSICAL_SERIAL,
+            customer_owned=True,
+        ),
+        f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-set",
+    )
+    set_collection = tooling_base.assert_tooling_set_collection(
+        set_result,
+        project_id=project_id,
+        master_id=master_id,
+        expected_count=1,
+    )
+    tooling_set = tooling_base.exact_single(
+        [
+            value
+            for value in set_collection["items"]
+            if value.get("physicalSerial") == _DISPOSABLE_PHYSICAL_SERIAL
+        ],
+        "P8-05 disposable physical Tooling Set",
+    )
+    set_id = str(tooling_set["globalId"])
+    require(
+        set_id != str(retained["toolingSetId"])
+        and tooling_set.get("requirementKind") == "customer_owned_intake",
+        "P8-05 disposable physical Tooling Set drifted",
+    )
+    binding_result = tooling_revision.command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_revision.binding_path(project_id, master_id, set_id),
+        tooling_revision.binding_payload(revision_id),
+        f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-binding",
+    )
+    tooling_revision.assert_set_binding(
+        binding_result,
+        project_id=project_id,
+        master_id=master_id,
+        set_id=set_id,
+        revision_id=revision_id,
+    )
+    binding = binding_result.body["toolingSet"]["sourceRevision"]
+
+    disposable = dict(retained)
+    disposable.update(
+        {
+            "masterId": master_id,
+            "masterSnapshotHash": str(master["snapshotHash"]),
+            "toolingSetId": set_id,
+            "toolingSetSnapshotHash": str(tooling_set["snapshotHash"]),
+            "requirementKind": "customer_owned_intake",
+            "physicalSerial": _DISPOSABLE_PHYSICAL_SERIAL,
+            "bindingId": str(binding["globalId"]),
+            "bindingSnapshotHash": str(binding["snapshotHash"]),
+            "revisionId": revision_id,
+            "revisionNumber": 1,
+            "revisionLabel": "R1",
+            "revisionSnapshotHash": str(revision["snapshotHash"]),
+        }
+    )
+    acceptance_result = tooling_runtime.command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_runtime.acceptance_command_path(project_id, master_id),
+        tooling_runtime.acceptance_payload(disposable, version=1),
+        f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-acceptance",
+    )
+    acceptance = tooling_runtime.assert_acceptance_revision(
+        acceptance_result.body.get("acceptanceEvidence"),
+        context=disposable,
+        version=1,
+        predecessor_value=None,
+    )
+    return disposable, acceptance
+
+
 def _assert_no_formal_target(value: object) -> None:
     if isinstance(value, Mapping):
         for key, nested in value.items():
@@ -259,38 +554,80 @@ def run_disabled_probe(base_url: str, fixture_password: str) -> dict[str, object
 def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     administrator = login(base_url, "Administrator", secret_from_environment("NPI_RUNTIME_ADMINISTRATOR_PASSWORD"))
     actor = login(base_url, ACTOR_USER, fixture_password)
+    administrator_csrf = bootstrap_csrf(
+        administrator,
+        base_url,
+        "Administrator",
+    )
     csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
-    context, acceptance = _retained_context(administrator, base_url)
-    project_id, master_id, set_id = (str(context[name]) for name in ("projectId", "masterId", "toolingSetId"))
+    retained, retained_acceptance = _retained_context(administrator, base_url)
+    project_id, retained_master_id, retained_set_id = (
+        str(retained[name]) for name in ("projectId", "masterId", "toolingSetId")
+    )
     require(os.environ.get("NPI_TOOL_ASSET_RUNTIME_PROJECT_ID") == project_id and os.environ.get("NPI_TOOL_ASSET_REQUESTER_USER") == ACTOR_USER and os.environ.get("NPI_TOOL_ASSET_WORKER_USER") not in {None, "", ACTOR_USER}, "P8-05 runtime actors are not exactly bound")
+    retained_path = execution_path(project_id, retained_master_id, retained_set_id)
+    retained_query = urllib.parse.urlencode(
+        {"acceptanceRevisionGlobalId": retained_acceptance.get("globalId")}
+    )
+    before_retained_query = _execution_state_snapshot()
+    retained_listed = execution_request(
+        actor,
+        base_url,
+        f"{retained_path}?{retained_query}",
+        method="GET",
+        query_key="enabled-retained-mapped",
+    )
+    _assert_collection(
+        retained_listed,
+        project_id=project_id,
+        master_id=retained_master_id,
+        set_id=retained_set_id,
+        command_contexts=None,
+    )
+    require(
+        _execution_state_snapshot() == before_retained_query,
+        "P8-05 retained mapped collection query changed execution truth",
+    )
+
+    context, acceptance = _create_disposable_execution_context(
+        administrator,
+        base_url,
+        administrator_csrf,
+        retained,
+    )
+    master_id = str(context["masterId"])
+    set_id = str(context["toolingSetId"])
+    require(
+        master_id != retained_master_id and set_id != retained_set_id,
+        "P8-05 disposable command context reused retained mapped truth",
+    )
     path = execution_path(project_id, master_id, set_id)
     query = urllib.parse.urlencode(
         {"acceptanceRevisionGlobalId": acceptance.get("globalId")}
-    )
-    command_context_diagnostics_enabled = (
-        _post_query_command_context_diagnostics_enabled()
-    )
-    cursors = (
-        item_runtime._replay_diagnostic_log_cursors()
-        if command_context_diagnostics_enabled
-        else None
     )
     listed = execution_request(
         actor,
         base_url,
         f"{path}?{query}",
         method="GET",
-        query_key="enabled",
-        diagnostic_scope=(
-            _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
-            if command_context_diagnostics_enabled
-            else None
-        ),
+        query_key="enabled-disposable-unmapped",
     )
-    failure = _command_context_failure_message(listed, cursors)
-    require(failure is None, failure or _TOOL_ASSET_CONTEXT_FAILURE)
-    contexts = listed.body.get("commandContexts")
-    create = contexts.get("create_tool_asset") if isinstance(contexts, dict) else None
+    body = listed.body if isinstance(listed.body, dict) else {}
+    contexts = body.get("commandContexts")
+    require(
+        isinstance(contexts, dict)
+        and set(contexts) == {"create_tool_asset"}
+        and isinstance(contexts.get("create_tool_asset"), dict),
+        _TOOL_ASSET_CONTEXT_FAILURE,
+    )
+    _assert_collection(
+        listed,
+        project_id=project_id,
+        master_id=master_id,
+        set_id=set_id,
+        command_contexts=contexts,
+    )
+    create = contexts["create_tool_asset"]
     source = create.get("source")
     require(isinstance(source, dict) and source.get("acceptanceRevisionGlobalId") == acceptance.get("globalId"), "P8-05 retained acceptance binding drifted")
     created = execution_request(actor, base_url, execution_path(project_id, master_id, set_id, ":create"), method="POST", csrf_token=csrf, idempotency_key=f"p8-05-synthetic-{FIXTURE_RUN_ID}", payload={"acceptanceRevisionGlobalId":source["acceptanceRevisionGlobalId"], "expectedSourceHash":create["expectedSourceHash"], "expectedApprovalHash":create["expectedApprovalHash"], "expectedMappingExpectationHash":create["expectedMappingExpectationHash"], "expectedProfileSnapshotHash":create["expectedProfileSnapshotHash"], "acknowledgement":ACKNOWLEDGEMENT})
@@ -302,6 +639,19 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     require(detail.status == 200 and detail.body.get("request", {}).get("state") == "synthetic_verified", "P8-05 terminal Synthetic truth is unavailable")
     _assert_no_formal_target(detail.body)
     return {"adapterCalls":1, "fieldResultCount":5, "mappingHeadCount":0, "networkContactCount":0, "syntheticVerified":True}
+
+
+def execution_state_snapshot(fixture_run_id: str) -> dict[str, int]:
+    import frappe
+
+    require(
+        fixture_run_id == FIXTURE_RUN_ID,
+        "P8-05 execution snapshot fixture identity drifted",
+    )
+    return {
+        doctype: int(frappe.db.count(doctype))
+        for doctype in _EXECUTION_STATE_DOCTYPES
+    }
 
 
 def exercise_worker(fixture_run_id: str, project_id: str, request_id: str, outbox_id: str) -> dict[str, object]:
@@ -337,13 +687,20 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
 
 def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     import frappe
-    require(method == "exercise_worker", "P8-05 Bench fixture is unavailable")
+    require(
+        method in {"execution_state_snapshot", "exercise_worker"},
+        "P8-05 Bench fixture is unavailable",
+    )
     frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
     frappe.connect()
     try:
         document_runtime._validated_runtime_site()
-        frappe.set_user(ACTOR_USER)
-        result = exercise_worker(**kwargs)
+        if method == "execution_state_snapshot":
+            frappe.set_user("Administrator")
+            result = execution_state_snapshot(**kwargs)
+        else:
+            frappe.set_user(ACTOR_USER)
+            result = exercise_worker(**kwargs)
         frappe.db.commit()
         print(json.dumps(result, separators=(",", ":"), sort_keys=True))
     except Exception:
