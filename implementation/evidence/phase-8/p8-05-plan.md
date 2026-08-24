@@ -933,3 +933,28 @@ changes no product/server diagnostic stage, response, permission, write,
 transaction, Schema, ownership, adapter, target or Gate behavior. The cycle
 remains diagnostic `1/1`, repair `0/1`, final `0/1`; the harness correction
 does not reopen or consume a product counter.
+
+## 25. Command-context STATUS-stage diagnostic subcycle
+
+STATUS-reader remediation exact SHA
+`3412feb1d00ceb81f6102541bb51175ce973e14b` passes ordinary CI
+`32722130405`: frontend `97415589215`, governed visual `97415589078`,
+repository `97415589218` and secret `97415589327` all pass. The historical
+command-context parent cycle remains immutable at diagnostic `1/1`, repair
+`0/1`, final `0/1`; its valid parent STATUS tuple is not reclassified as a
+harness failure and its dispatch is not reopened.
+
+An independent `command-context-status-stage` subcycle starts at diagnostic
+`0/1`, repair `0/1`, final `0/1`. It changes no activation, scope, allowlist,
+reader, product or test code. Its sole diagnostic target is the exact scoped
+GET under the repaired STATUS-or-CREATE_SHAPE reader. A valid mirrored server
+tuple takes precedence over the parent predicate. If the strict reader returns
+`None`, the result remains the parent STATUS tuple and authorizes no repair.
+
+A server tuple proves only the first safe record produced inside that exact
+request. Because CREATE-stage exceptions are deliberately recorded before the
+existing list projection catches them, a CREATE-stage tuple is not by itself
+proof that the same exception caused the HTTP status. Any tuple must undergo
+ordered symbol-level cross-proof before a product repair is authorized. No
+body, status value, business value, identifier, count, actor, exception
+message or stack may be inspected or emitted.

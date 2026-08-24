@@ -325,3 +325,21 @@ Canonical Linux/amd64 SHA-256 evidence:
   stays constant-safe and ITEMS/TARGET_MODE remain zero-reader. This is a
   verifier-only same-cycle correction; product/server stages and diagnostic
   `1/1`, repair `0/1`, final `0/1` counters are unchanged.
+
+### Independent command-context STATUS-stage subcycle
+
+- STATUS-reader SHA `3412feb1d00ceb81f6102541bb51175ce973e14b`
+  passes ordinary `32722130405`, including frontend `97415589215`, visual
+  `97415589078`, repository `97415589218` and secret `97415589327`.
+- The valid earlier parent STATUS tuple freezes its historical cycle at
+  diagnostic `1/1`, repair `0/1`, final `0/1`. It is not harness-failure
+  evidence and the consumed dispatch is not reopened.
+- A separate `command-context-status-stage` subcycle begins at diagnostic
+  `0/1`, repair `0/1`, final `0/1`, reusing the unchanged activation, exact
+  scope, eight-code allowlist and strict reader. A valid exact mirrored tuple
+  wins; `None` falls back to parent STATUS and cannot authorize repair.
+- A caught CREATE-stage tuple proves a safe failure in command-context
+  construction, but is not automatically the cause of a later non-success
+  response. Symbol-level execution-order proof remains mandatory. Product,
+  runtime, tests, permission, transaction, Schema, ownership and target
+  behavior remain unchanged.

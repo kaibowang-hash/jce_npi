@@ -4902,3 +4902,26 @@ repeat or rewrite it merely to restore context. See
 - Cycle counters remain diagnostic `1/1`, repair `0/1`, final `0/1`; this
   verifier-only remediation consumes no product allowance.
 - Controller marker: `P8-05 final held; command-context STATUS reader remediation awaits ordinary proof`.
+
+## 2026-08-24 P8-05 command-context STATUS-stage subcycle active
+
+- STATUS-reader exact SHA `3412feb1d00ceb81f6102541bb51175ce973e14b`
+  passes ordinary CI `32722130405`: frontend `97415589215`, visual
+  `97415589078`, repository `97415589218` and secret `97415589327` pass.
+- The earlier valid parent STATUS tuple is immutable product-narrowing
+  evidence, not a harness failure. Its command-context cycle is frozen at
+  diagnostic `1/1`, repair `0/1`, final `0/1`; neither its counter nor its
+  dispatch may be reopened.
+- An independent `command-context-status-stage` subcycle starts at diagnostic
+  `0/1`, repair `0/1`, final `0/1`. It reuses the unchanged temporary
+  activation, exact GET/query scope, eight server codes and strict mirrored
+  reader. A valid exact tuple wins. A `None` result falls back to parent STATUS
+  and authorizes no repair.
+- Any CREATE-stage tuple is only the first safe record for the exact request;
+  because command-context projection catches those stage exceptions, it is not
+  automatically the cause of a later HTTP failure. Ordered symbol-level proof
+  remains required before product repair. No body, status value, business
+  value, ID, count, actor, message or stack may be read or emitted.
+- No CURRENT_TASK, runtime, test, product, API, permission, transaction,
+  Schema, ownership, adapter, target or Gate behavior changes.
+- Controller marker: `P8-05 final held; command-context-status-stage diagnostic 0/1 active`.
