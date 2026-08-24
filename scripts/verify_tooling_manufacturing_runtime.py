@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import urllib.request
+from enum import Enum
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -88,6 +89,54 @@ MANUFACTURING_PERMISSIONS = {
 }
 
 
+class ExpectedErpProjectionMode(str, Enum):
+    UNAVAILABLE = "unavailable"
+    AVAILABLE = "available"
+
+
+_ERP_PROJECTION_KEYS = frozenset(
+    {
+        "sourceSystem",
+        "editableIn",
+        "state",
+        "toolingMasterGlobalId",
+        "observedAt",
+        "targetVersion",
+        "supplier",
+        "rows",
+        "summaries",
+    }
+)
+_ERP_SUPPLIER_KEYS = frozenset(
+    {"sourceObjectId", "targetVersion", "supplierCode", "supplierName"}
+)
+_ERP_ROW_KEYS = frozenset(
+    {
+        "toolingMasterGlobalId",
+        "sourceRowId",
+        "sourceRowVersion",
+        "supplierSourceObjectId",
+        "purchaseOrderSourceId",
+        "purchaseReceiptSourceId",
+        "purchaseInvoiceSourceId",
+        "actualCostSourceId",
+        "costTypeCode",
+        "postingDate",
+        "currency",
+        "amount",
+    }
+)
+_ERP_SUMMARY_KEYS = frozenset(
+    {
+        "toolingMasterGlobalId",
+        "supplierSourceObjectId",
+        "costTypeCode",
+        "currency",
+        "amount",
+    }
+)
+
+
 def manufacturing_path(project_id: str, master_id: str, suffix: str = "") -> str:
     return (
         f"/api/npi/v1/projects/{project_id}/tooling/{master_id}/"
@@ -158,6 +207,72 @@ def unavailable(value: object, reason_code: str, label: str) -> None:
         and value.get("state") == "unavailable"
         and value.get("reasonCode") == reason_code,
         f"{label} unavailable truth drifted",
+    )
+
+
+def assert_erp_projection(
+    value: object,
+    *,
+    master_id: str,
+    expected_mode: ExpectedErpProjectionMode,
+) -> None:
+    require(
+        isinstance(expected_mode, ExpectedErpProjectionMode),
+        "P6-04 expected ERP projection mode is invalid",
+    )
+    if expected_mode is ExpectedErpProjectionMode.UNAVAILABLE:
+        unavailable(value, "erp_projection_unavailable", "ERP projection")
+        require(
+            isinstance(value, dict)
+            and value.get("sourceSystem") == "ERPNEXT"
+            and value.get("editableIn") == "ERPNEXT",
+            "P6-04 ERP ownership truth drifted",
+        )
+        return
+
+    require(
+        isinstance(value, dict)
+        and set(value) == _ERP_PROJECTION_KEYS
+        and value.get("sourceSystem") == "ERPNEXT"
+        and value.get("editableIn") == "ERPNEXT"
+        and value.get("state") == "available"
+        and value.get("toolingMasterGlobalId") == master_id
+        and isinstance(value.get("observedAt"), str)
+        and bool(value["observedAt"])
+        and isinstance(value.get("targetVersion"), str)
+        and bool(value["targetVersion"])
+        and isinstance(value.get("supplier"), dict)
+        and set(value["supplier"]) == _ERP_SUPPLIER_KEYS
+        and all(
+            isinstance(value["supplier"].get(key), str)
+            and bool(value["supplier"][key])
+            for key in _ERP_SUPPLIER_KEYS
+        )
+        and isinstance(value.get("rows"), list)
+        and bool(value["rows"])
+        and all(
+            isinstance(row, dict)
+            and set(row) == _ERP_ROW_KEYS
+            and row.get("toolingMasterGlobalId") == master_id
+            and all(
+                isinstance(row.get(key), str) and bool(row[key])
+                for key in _ERP_ROW_KEYS
+            )
+            for row in value["rows"]
+        )
+        and isinstance(value.get("summaries"), list)
+        and bool(value["summaries"])
+        and all(
+            isinstance(summary, dict)
+            and set(summary) == _ERP_SUMMARY_KEYS
+            and summary.get("toolingMasterGlobalId") == master_id
+            and all(
+                isinstance(summary.get(key), str) and bool(summary[key])
+                for key in _ERP_SUMMARY_KEYS
+            )
+            for summary in value["summaries"]
+        ),
+        "P6-04 confirmed ERP projection truth drifted",
     )
 
 
@@ -813,6 +928,9 @@ def assert_context(
     released: dict[str, object],
     tooling_revision_id: str | None,
     expected_count: int,
+    expected_erp_projection_mode: ExpectedErpProjectionMode = (
+        ExpectedErpProjectionMode.UNAVAILABLE
+    ),
 ) -> dict[str, Any]:
     require(result.status == 200, "P6-04 manufacturing context failed")
     require(
@@ -835,15 +953,10 @@ def assert_context(
         "tooling_lifecycle_policy_unavailable",
         "manufacturing authorization",
     )
-    unavailable(
+    assert_erp_projection(
         result.body.get("erpProjection"),
-        "erp_projection_unavailable",
-        "ERP projection",
-    )
-    require(
-        result.body["erpProjection"].get("sourceSystem") == "ERPNEXT"
-        and result.body["erpProjection"].get("editableIn") == "ERPNEXT",
-        "P6-04 ERP ownership truth drifted",
+        master_id=master_id,
+        expected_mode=expected_erp_projection_mode,
     )
     items = result.body.get("items")
     require(
@@ -1499,7 +1612,14 @@ def run_fresh(
     }
 
 
-def replay_context(administrator, base_url: str):
+def replay_context(
+    administrator,
+    base_url: str,
+    *,
+    expected_erp_projection_mode: ExpectedErpProjectionMode = (
+        ExpectedErpProjectionMode.UNAVAILABLE
+    ),
+):
     project_id, master_id, applicability_id, model_reference = project_context(
         administrator,
         base_url,
@@ -1541,6 +1661,7 @@ def replay_context(administrator, base_url: str):
         released=released,
         tooling_revision_id=str(revision["globalId"]),
         expected_count=2,
+        expected_erp_projection_mode=expected_erp_projection_mode,
     )
     return (
         project_id,

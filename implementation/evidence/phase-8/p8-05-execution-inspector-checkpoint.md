@@ -201,3 +201,26 @@ Canonical Linux/amd64 SHA-256 evidence:
   Initial no-origin projection and later retained-target projection are both
   covered; P6-07 targets remain intact and every missing, duplicate,
   malformed, wrong-edge or revision mismatch stays fail-closed and value-safe.
+
+### Retained ERP-projection temporal harness correction
+
+- Exact stable-Part checkpoint `3181d3b4a023ecd4aae31e16fcf0a84ebdbed483`
+  passes ordinary CI `32696041807`. Same-cycle final run `32697236054` passes
+  all non-runtime jobs and controlled preflight; controlled runtime
+  `97344193455` reaches the P8-05 default-disabled probe after fresh synthetic
+  execution and stops at the inherited P6-04 unavailable ERP-projection
+  assertion.
+- P6 fresh/replay occurs before P8-01 and correctly sees unavailable truth.
+  P8-01 then installs and replay-verifies a confirmed read-only ERPNEXT cost
+  projection for the exact retained Project and Master. P8-05 synthetic
+  execution creates no mapping head and cannot mutate that projection. The
+  later unavailable expectation is therefore uniquely a temporal verifier
+  compatibility defect, not a product write or ownership violation.
+- A closed expected-mode enum keeps unavailable as the default across all P6
+  callers. The P8-05 retained context alone explicitly requires available
+  truth, with exact outer and nested keys, ERPNEXT read-only authority, the
+  exact Master and nonempty typed supplier/row/summary facts. Malformed,
+  missing, extra or mismatched truth remains constant-safe and value-free.
+  This same-cycle harness remediation changes no diagnostic, product-repair or
+  final counter and no product, permission, transaction, Schema, ownership,
+  runtime-profile or target behavior.

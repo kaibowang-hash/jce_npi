@@ -40,7 +40,13 @@ def execution_request(opener, base_url, path, *, method="GET", payload=None, csr
 
 
 def _retained_context(administrator, base_url):
-    context, _first, second, _legacy = tooling_runtime.replay_context(administrator, base_url)
+    context, _first, second, _legacy = tooling_runtime.replay_context(
+        administrator,
+        base_url,
+        expected_erp_projection_mode=(
+            tooling_runtime.ExpectedErpProjectionMode.AVAILABLE
+        ),
+    )
     return context, second
 
 

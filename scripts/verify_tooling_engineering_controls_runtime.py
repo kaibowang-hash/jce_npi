@@ -64,6 +64,7 @@ ENGINEERING_CONTROL_PERMISSIONS = {
     "transitionGate": False,
     "transitionToolingLifecycle": False,
 }
+ExpectedErpProjectionMode = predecessor.ExpectedErpProjectionMode
 
 
 def engineering_path(project_id: str, master_id: str, suffix: str = "") -> str:
@@ -148,7 +149,14 @@ def exact_single(values, label: str):
     return predecessor.predecessor.predecessor.exact_single(values, label)
 
 
-def project_context(administrator, base_url: str) -> dict[str, object]:
+def project_context(
+    administrator,
+    base_url: str,
+    *,
+    expected_erp_projection_mode: ExpectedErpProjectionMode = (
+        ExpectedErpProjectionMode.UNAVAILABLE
+    ),
+) -> dict[str, object]:
     (
         project_id,
         master_id,
@@ -160,7 +168,11 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
         revision,
         _revision_detail,
         _manufacturing,
-    ) = predecessor.replay_context(administrator, base_url)
+    ) = predecessor.replay_context(
+        administrator,
+        base_url,
+        expected_erp_projection_mode=expected_erp_projection_mode,
+    )
     revision_id = require_uuid(revision.get("globalId"), "P6-05 Tooling Revision")
     revision_snapshot_hash = require_hash(
         revision.get("snapshotHash"),
@@ -1022,8 +1034,19 @@ def run_fresh(
     }
 
 
-def replay_context(administrator, base_url: str):
-    context = project_context(administrator, base_url)
+def replay_context(
+    administrator,
+    base_url: str,
+    *,
+    expected_erp_projection_mode: ExpectedErpProjectionMode = (
+        ExpectedErpProjectionMode.UNAVAILABLE
+    ),
+):
+    context = project_context(
+        administrator,
+        base_url,
+        expected_erp_projection_mode=expected_erp_projection_mode,
+    )
     path = engineering_path(str(context["projectId"]), str(context["masterId"]))
     retained = assert_engineering_context(
         tooling_request(administrator, base_url, path, query_key="replay-controls"),

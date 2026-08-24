@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
+import inspect
 import os
 import sys
 import unittest
@@ -185,6 +187,125 @@ class Phase6ToolingManufacturingRuntimeVerifierTest(unittest.TestCase):
             )
         self.assertIs(result, raw)
         self.assertEqual(request.call_args.kwargs["query_key"], "p604-manufacturing-list")
+
+    def _available_erp_projection(self) -> tuple[str, dict[str, object]]:
+        master_id = "10000000-0000-4000-8000-000000000001"
+        return master_id, {
+            "sourceSystem": "ERPNEXT",
+            "editableIn": "ERPNEXT",
+            "state": "available",
+            "toolingMasterGlobalId": master_id,
+            "observedAt": "2026-08-24T00:00:00+00:00",
+            "targetVersion": "sandbox-v1",
+            "supplier": {
+                "sourceObjectId": "SUPPLIER-RUNTIME-001",
+                "targetVersion": "sandbox-supplier-v1",
+                "supplierCode": "SUPPLIER-RUNTIME-001",
+                "supplierName": "Controlled Runtime Supplier",
+            },
+            "rows": [
+                {
+                    "toolingMasterGlobalId": master_id,
+                    "sourceRowId": "COST-ROW-RUNTIME-001",
+                    "sourceRowVersion": "sandbox-cost-row-v1",
+                    "supplierSourceObjectId": "SUPPLIER-RUNTIME-001",
+                    "purchaseOrderSourceId": "PO-RUNTIME-001",
+                    "purchaseReceiptSourceId": "PR-RUNTIME-001",
+                    "purchaseInvoiceSourceId": "PI-RUNTIME-001",
+                    "actualCostSourceId": "ACTUAL-COST-RUNTIME-001",
+                    "costTypeCode": "tool_build",
+                    "postingDate": "2026-08-15",
+                    "currency": "CNY",
+                    "amount": "1200.5",
+                }
+            ],
+            "summaries": [
+                {
+                    "toolingMasterGlobalId": master_id,
+                    "supplierSourceObjectId": "SUPPLIER-RUNTIME-001",
+                    "costTypeCode": "tool_build",
+                    "currency": "CNY",
+                    "amount": "1200.5",
+                }
+            ],
+        }
+
+    def test_erp_projection_mode_is_closed_and_defaults_to_unavailable(self) -> None:
+        module = self.module
+        self.assertEqual(
+            inspect.signature(module.replay_context)
+            .parameters["expected_erp_projection_mode"]
+            .default,
+            module.ExpectedErpProjectionMode.UNAVAILABLE,
+        )
+        module.assert_erp_projection(
+            {
+                "sourceSystem": "ERPNEXT",
+                "editableIn": "ERPNEXT",
+                "state": "unavailable",
+                "reasonCode": "erp_projection_unavailable",
+            },
+            master_id="10000000-0000-4000-8000-000000000001",
+            expected_mode=module.ExpectedErpProjectionMode.UNAVAILABLE,
+        )
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "^P6-04 expected ERP projection mode is invalid$",
+        ):
+            module.assert_erp_projection(
+                {},
+                master_id="10000000-0000-4000-8000-000000000001",
+                expected_mode="available",
+            )
+
+    def test_available_erp_projection_requires_exact_confirmed_read_only_truth(self) -> None:
+        module = self.module
+        master_id, projection = self._available_erp_projection()
+        module.assert_erp_projection(
+            projection,
+            master_id=master_id,
+            expected_mode=module.ExpectedErpProjectionMode.AVAILABLE,
+        )
+
+        mutations = []
+        extra = copy.deepcopy(projection)
+        extra["privateValue"] = "sentinel-business-value"
+        mutations.append(extra)
+        wrong_owner = copy.deepcopy(projection)
+        wrong_owner["sourceSystem"] = "sentinel-business-value"
+        mutations.append(wrong_owner)
+        wrong_master = copy.deepcopy(projection)
+        wrong_master["toolingMasterGlobalId"] = "20000000-0000-4000-8000-000000000002"
+        mutations.append(wrong_master)
+        empty_rows = copy.deepcopy(projection)
+        empty_rows["rows"] = []
+        mutations.append(empty_rows)
+        empty_summaries = copy.deepcopy(projection)
+        empty_summaries["summaries"] = []
+        mutations.append(empty_summaries)
+        malformed_supplier = copy.deepcopy(projection)
+        malformed_supplier["supplier"]["supplierName"] = ""
+        mutations.append(malformed_supplier)
+        malformed_row = copy.deepcopy(projection)
+        malformed_row["rows"][0]["amount"] = None
+        mutations.append(malformed_row)
+        malformed_summary = copy.deepcopy(projection)
+        malformed_summary["summaries"][0]["currency"] = ""
+        mutations.append(malformed_summary)
+
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                with self.assertRaises(RuntimeError) as raised:
+                    module.assert_erp_projection(
+                        mutation,
+                        master_id=master_id,
+                        expected_mode=module.ExpectedErpProjectionMode.AVAILABLE,
+                    )
+                self.assertEqual(
+                    str(raised.exception),
+                    "P6-04 confirmed ERP projection truth drifted",
+                )
+                self.assertNotIn("sentinel-business-value", str(raised.exception))
 
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:
         required = (

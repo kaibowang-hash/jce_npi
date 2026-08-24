@@ -36,6 +36,7 @@ RUNTIME_MARKER = document_runtime.RUNTIME_MARKER
 FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
 TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = predecessor.ACTOR_USER
+ExpectedErpProjectionMode = predecessor.ExpectedErpProjectionMode
 UNRELATED_USER = (
     f"npi-tooling-acceptance-{FIXTURE_RUN_ID[:12]}-unrelated@example.invalid"
 )
@@ -264,8 +265,21 @@ def exact_single(values, label: str):
     return predecessor.exact_single(values, label)
 
 
-def project_context(administrator, base_url: str) -> dict[str, object]:
-    context = dict(predecessor.project_context(administrator, base_url))
+def project_context(
+    administrator,
+    base_url: str,
+    *,
+    expected_erp_projection_mode: ExpectedErpProjectionMode = (
+        ExpectedErpProjectionMode.UNAVAILABLE
+    ),
+) -> dict[str, object]:
+    context = dict(
+        predecessor.project_context(
+            administrator,
+            base_url,
+            expected_erp_projection_mode=expected_erp_projection_mode,
+        )
+    )
     project_id = str(context["projectId"])
     master_id = str(context["masterId"])
     tooling_set_id = str(context["toolingSetId"])
@@ -1318,8 +1332,19 @@ def run_fresh(
     }
 
 
-def replay_context(administrator, base_url: str):
-    context = project_context(administrator, base_url)
+def replay_context(
+    administrator,
+    base_url: str,
+    *,
+    expected_erp_projection_mode: ExpectedErpProjectionMode = (
+        ExpectedErpProjectionMode.UNAVAILABLE
+    ),
+):
+    context = project_context(
+        administrator,
+        base_url,
+        expected_erp_projection_mode=expected_erp_projection_mode,
+    )
     retained = assert_acceptance_context(
         tooling_request(
             administrator,

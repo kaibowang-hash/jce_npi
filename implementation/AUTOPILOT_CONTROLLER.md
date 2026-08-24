@@ -4753,3 +4753,27 @@ repeat or rewrite it merely to restore context. See
   duplicate, malformed, wrong-edge and revision-mismatched truth constant-safe
   without value disclosure. Product, permission, transaction, Schema,
   ownership, profile and target behavior remain unchanged.
+
+## 2026-08-24 P8-05 retained ERP-projection temporal harness correction
+
+- Exact verifier checkpoint `3181d3b4a023ecd4aae31e16fcf0a84ebdbed483`
+  passes ordinary CI `32696041807`. Its same-cycle unchanged final Level 3
+  `32697236054` passes repository, frontend, secret, governed visual and
+  controlled preflight; controlled runtime job `97344193455` reaches the
+  P8-05 default-disabled probe after fresh P8-05 synthetic execution and stops
+  at the inherited P6-04 ERP-projection unavailable assertion.
+- This is a temporal verifier compatibility root, not product pollution.
+  Initial P6 fresh/replay correctly observes unavailable truth. P8-01 later
+  creates and replay-verifies a confirmed, read-only ERPNEXT procurement-cost
+  projection for the exact retained Project and Master. P8-05 synthetic
+  execution records no mapping head and cannot delete or replace that retained
+  projection, so replaying the initial-only unavailable predicate is invalid.
+- The bounded same-cycle remediation introduces a closed expected-projection
+  enum whose default remains unavailable through the P6 chain. Only the
+  P8-05 retained context explicitly requests available truth, which must have
+  exact closed keys, read-only ERPNEXT ownership, the exact Master, typed
+  nonempty supplier/rows/summaries and no leaked values. Missing, malformed,
+  extra or mismatched truth remains constant-safe. Product code, API,
+  permission, transaction, Schema, ownership, runtime profile and target
+  behavior are unchanged; diagnostic, product-repair and final counters do not
+  change.

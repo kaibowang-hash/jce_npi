@@ -765,3 +765,31 @@ current-revision self/version/label truth before `exact_single`. It works for
 the initial projection, which has no Part origin field, and excludes later
 P6-07 target Parts without deleting them. Missing, duplicate, malformed,
 wrong-edge or revision-mismatched truth remains constant-safe and value-free.
+
+## 19. Retained ERP-projection temporal verifier remediation
+
+Exact stable-Part checkpoint `3181d3b4a023ecd4aae31e16fcf0a84ebdbed483`
+passes ordinary CI `32696041807`. Same-cycle final run `32697236054` passes
+repository, frontend, secret, governed visual and controlled preflight, while
+controlled runtime job `97344193455` stops in the P8-05 default-disabled probe
+at the inherited P6-04 unavailable ERP-projection assertion. Fresh P8-05
+synthetic execution has already completed at that point.
+
+Execution-order and ownership cross-proof makes the harness root unique. P6
+fresh/replay correctly expects unavailable truth before P8-01. P8-01 later
+creates and replay-verifies a confirmed read-only ERPNEXT procurement-cost
+projection for the exact retained Project and Master. P8-05 synthetic truth
+has zero mapping heads and does not write, clear or advance that P8-01
+projection. Therefore the later retained probe must verify available truth,
+not replay the initial-only unavailable assertion.
+
+The correction uses a closed expected-projection enum. Unspecified P6 fresh
+and replay callers remain strict unavailable. Engineering and acceptance
+forward the keyword explicitly, and only the P8-05 retained caller selects
+available. The available branch requires exact closed outer and nested keys,
+read-only ERPNEXT ownership, exact retained Master, confirmed nonempty typed
+supplier, rows and summaries, and constant errors without value disclosure.
+There is no automatic unavailable-or-available fallback. No product, API,
+permission, transaction, Schema, ownership, profile, external contact or Gate
+standard changes, and the same-cycle diagnostic, repair and final counters
+remain immutable.

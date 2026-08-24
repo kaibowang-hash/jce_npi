@@ -89,6 +89,57 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             project_context_source,
         )
 
+    def test_retained_context_explicitly_requires_available_erp_projection(self):
+        retained = ({"projectId": str(UUID(int=1))}, object(), object(), object())
+        with patch.object(
+            self.verifier.tooling_runtime,
+            "replay_context",
+            return_value=retained,
+        ) as replay:
+            context, second = self.verifier._retained_context(
+                object(),
+                "http://127.0.0.1:8003",
+            )
+        self.assertIs(context, retained[0])
+        self.assertIs(second, retained[2])
+        self.assertEqual(
+            replay.call_args.kwargs,
+            {
+                "expected_erp_projection_mode": (
+                    self.verifier.tooling_runtime.ExpectedErpProjectionMode.AVAILABLE
+                )
+            },
+        )
+
+    def test_projection_mode_is_explicitly_forwarded_through_p6_chain(self):
+        manufacturing = (
+            ROOT / "scripts" / "verify_tooling_manufacturing_runtime.py"
+        ).read_text(encoding="utf-8")
+        engineering = (
+            ROOT / "scripts" / "verify_tooling_engineering_controls_runtime.py"
+        ).read_text(encoding="utf-8")
+        acceptance = (
+            ROOT / "scripts" / "verify_tooling_acceptance_runtime.py"
+        ).read_text(encoding="utf-8")
+        tool_asset = (
+            ROOT / "scripts" / "verify_tool_asset_execution_runtime.py"
+        ).read_text(encoding="utf-8")
+        for source in (manufacturing, engineering, acceptance):
+            with self.subTest(source=source[:40]):
+                self.assertIn("ExpectedErpProjectionMode.UNAVAILABLE", source)
+                self.assertIn(
+                    "expected_erp_projection_mode=expected_erp_projection_mode",
+                    source,
+                )
+        self.assertIn("ExpectedErpProjectionMode.AVAILABLE", tool_asset)
+        self.assertEqual(
+            sum(
+                source.count("ExpectedErpProjectionMode.AVAILABLE")
+                for source in (manufacturing, engineering, acceptance, tool_asset)
+            ),
+            1,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
