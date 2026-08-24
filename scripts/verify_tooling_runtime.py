@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import urllib.request
+from enum import Enum
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -116,6 +117,11 @@ _PART_CREATE_DIAGNOSTIC_CODES = frozenset(
         "P601_PART_CREATE_API_RESPONSE",
     }
 )
+
+
+class ExpectedToolingRevisionCapabilityMode(str, Enum):
+    UNAVAILABLE = "unavailable"
+    AVAILABLE = "available"
 _APPLICABILITY_CREATE_DIAGNOSTIC_CODES = frozenset(
     {
         "P601_APPLICABILITY_CREATE_COMMAND_CONTEXT",
@@ -352,6 +358,9 @@ def assert_workspace(
     project_id: str,
     *,
     create: bool = True,
+    expected_revision_mode: ExpectedToolingRevisionCapabilityMode = (
+        ExpectedToolingRevisionCapabilityMode.UNAVAILABLE
+    ),
 ) -> dict[str, Any]:
     require(result.status == 200 or result.status == 201, "P6-01 workspace failed")
     require(
@@ -383,22 +392,57 @@ def assert_workspace(
         },
         "P6-01 capability truth drifted",
     )
-    expected_downstream = {
+    require(
+        isinstance(
+            expected_revision_mode,
+            ExpectedToolingRevisionCapabilityMode,
+        ),
+        "P6-01 expected Tooling Revision capability mode is invalid",
+    )
+    downstream = result.body.get("downstream")
+    require(
+        isinstance(downstream, dict)
+        and set(downstream)
+        == {"lifecycle", "revision", "physicalSet", "trial", "erp"},
+        "P6-01 downstream keys drifted",
+    )
+    expected_unavailable = {
         "lifecycle": "lifecycle_policy_unavailable",
-        "revision": "tooling_revision_not_delivered",
         "physicalSet": "physical_set_not_delivered",
         "trial": "trial_not_delivered",
         "erp": "erp_projection_unavailable",
     }
     require(
-        {
-            name: value.get("reasonCode")
-            for name, value in result.body.get("downstream", {}).items()
-            if isinstance(value, dict) and value.get("state") == "unavailable"
-        }
-        == expected_downstream,
+        all(
+            downstream.get(name)
+            == {"state": "unavailable", "reasonCode": reason_code}
+            for name, reason_code in expected_unavailable.items()
+        ),
         "P6-01 downstream unavailable truth drifted",
     )
+    revision = downstream.get("revision")
+    if (
+        expected_revision_mode
+        is ExpectedToolingRevisionCapabilityMode.UNAVAILABLE
+    ):
+        require(
+            revision
+            == {
+                "state": "unavailable",
+                "reasonCode": "tooling_revision_not_delivered",
+            },
+            "P6-01 Tooling Revision unavailable truth drifted",
+        )
+    else:
+        require(
+            isinstance(revision, dict)
+            and set(revision) == {"state", "reasonCode", "revisionCount"}
+            and revision.get("state") == "available"
+            and revision.get("reasonCode") == "tooling_revision_available"
+            and type(revision.get("revisionCount")) is int
+            and revision["revisionCount"] >= 0,
+            "P6-01 Tooling Revision available truth drifted",
+        )
     return result.body
 
 

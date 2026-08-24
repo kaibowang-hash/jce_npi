@@ -5044,3 +5044,36 @@ repeat or rewrite it merely to restore context. See
   closed; all Tool Asset diagnostic mechanisms remain dormant and
   response-neutral.
 - Controller marker: `P8-05 final held; post-query mapped-fixture harness remediation awaits Level 1`.
+
+## 2026-08-24 P8-05 Tooling Revision capability temporal harness remediation
+
+- Exact verifier-only checkpoint `8bd6c886021f38fba57a8a1a96969b20e666c558`
+  passes ordinary CI `32744873147`. Its sole unchanged Level 3
+  `32748023307` passes repository `97498086283`, secret scan `97498086637`,
+  governed visual `97498086710`, frontend `97498086761` and controlled
+  preflight `97502370255`; controlled runtime `97502584172` stops at the
+  fixed verifier boundary `P6-01 downstream unavailable truth drifted`.
+- The failure is uniquely temporal and verifier-only. The P6-01 workspace
+  assertion defaults to the revision-route-disabled truth. P6 fresh and its
+  recovered/replay proof deliberately keep that route disabled, while P6-03
+  and later retained phases legitimately enable the route. At the P8-05
+  disposable fixture boundary, the four lifecycle/physical-Set/trial/ERP
+  entries remain exactly unavailable and only the Tooling Revision capability
+  is now the closed available shape.
+- The verifier adds a closed expected Tooling Revision capability mode.
+  `UNAVAILABLE` remains the P6 default. Only the three P8-05 disposable
+  workspace assertions explicitly select `AVAILABLE`; both modes require the
+  exact downstream keys and exact state/reason shapes, with a non-negative
+  integer revision count for available truth. Invalid, extra or mismatched
+  truth remains fail-closed; no permissive fallback is introduced.
+- The P8-05 default-disabled probe and retained mapped read passed. The
+  disposable Master command returned before the temporal assertion failed;
+  requirement/applicability/Set/Acceptance and Tool Asset request, Outbox and
+  worker execution were not reached. The disposable Site is the only affected
+  runtime and no production or Sandbox target was contacted.
+- The post-query cycle remains immutable at diagnostic `1/1`, product repair
+  `0/1`, final `1/1`. This bounded harness remediation does not consume a
+  product repair or reopen a diagnostic cycle. Product, API, permission,
+  transaction, Schema, ownership, adapter, target and Gate semantics are
+  unchanged.
+- Controller marker: `P8-05 final held; Tooling Revision capability temporal harness remediation awaits Level 1`.

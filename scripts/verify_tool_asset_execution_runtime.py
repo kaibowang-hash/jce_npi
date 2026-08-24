@@ -353,7 +353,13 @@ def _create_disposable_execution_context(
         {"title": _DISPOSABLE_MASTER_TITLE},
         f"p8-05-{FIXTURE_RUN_ID}-asset-disposable-master",
     )
-    master_workspace = tooling_base.assert_workspace(master_result, project_id)
+    master_workspace = tooling_base.assert_workspace(
+        master_result,
+        project_id,
+        expected_revision_mode=(
+            tooling_base.ExpectedToolingRevisionCapabilityMode.AVAILABLE
+        ),
+    )
     master = tooling_base.exact_single(
         [
             value
@@ -389,6 +395,9 @@ def _create_disposable_execution_context(
     requirement_workspace = tooling_base.assert_workspace(
         requirement_result,
         project_id,
+        expected_revision_mode=(
+            tooling_base.ExpectedToolingRevisionCapabilityMode.AVAILABLE
+        ),
     )
     requirement = tooling_base.exact_single(
         [
@@ -419,6 +428,9 @@ def _create_disposable_execution_context(
             for value in tooling_base.assert_workspace(
                 applicability_result,
                 project_id,
+                expected_revision_mode=(
+                    tooling_base.ExpectedToolingRevisionCapabilityMode.AVAILABLE
+                ),
             )["applicability"]
             if value.get("toolingMasterGlobalId") == master_id
             and value.get("part", {}).get("globalId")

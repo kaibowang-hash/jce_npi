@@ -112,6 +112,7 @@
     "scripts/verify_tooling_manufacturing_runtime.py",
     "scripts/verify_tooling_revision_runtime.py",
     "scripts/verify_tool_asset_execution_runtime.py",
+    "scripts/verify_tooling_runtime.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
     "tests/test_phase2_foundation.py",
@@ -120,6 +121,7 @@
     "tests/test_phase6_tooling_acceptance_*.py",
     "tests/test_phase6_tooling_manufacturing_runtime_verifier.py",
     "tests/test_phase6_tooling_revision_runtime_verifier.py",
+    "tests/test_phase6_tooling_runtime_verifier.py",
     "tests/test_phase8_projection_*.py",
     "tests/test_phase8_item_publish_*.py",
     "tests/test_phase8_mbom_publish_*.py",
@@ -130,6 +132,7 @@
     "level_1": [
       ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase8_tool_asset_*.py", "-v"],
       ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase6_tooling_acceptance_*.py", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase6_tooling_runtime_verifier", "-v"],
       ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase8_item_publish_*.py"],
       ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase8_mbom_publish_*.py"],
       ["python", "scripts/verify_current_task.py"],
@@ -145,6 +148,7 @@
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
+      ["python", "-m", "unittest", "tests.test_phase6_tooling_runtime_verifier", "-v"],
       ["python", "-m", "unittest", "tests.test_phase8_tool_asset_runtime_verifier", "-v"],
       ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],

@@ -402,7 +402,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 self.verifier.tooling_base,
                 "assert_workspace",
                 return_value={"masters": masters},
-            ), patch.object(
+            ) as assert_workspace, patch.object(
                 self.verifier.tooling_base,
                 "command",
                 return_value=command_result,
@@ -415,6 +415,14 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                         retained,
                     )
                 command.assert_called_once()
+                self.assertEqual(
+                    assert_workspace.call_args.kwargs,
+                    {
+                        "expected_revision_mode": (
+                            self.verifier.tooling_base.ExpectedToolingRevisionCapabilityMode.AVAILABLE
+                        )
+                    },
+                )
 
         with patch.object(
             self.verifier.tooling_base,
@@ -428,7 +436,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 {"requirements": [requirement]},
                 {"applicability": [applicability]},
             ),
-        ), patch.object(
+        ) as assert_workspace, patch.object(
             self.verifier.tooling_revision,
             "project_context",
             return_value=(project_id, retained_master_id, "part", (), retained_set_id, {"type": "customer", "sourceSystem": "ERPNEXT", "sourceObjectId": "SYNTHETIC"}),
@@ -467,6 +475,15 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 )
             )
         self.assertEqual(base_command.call_count, 4)
+        self.assertEqual(assert_workspace.call_count, 3)
+        expected_revision_mode = (
+            self.verifier.tooling_base.ExpectedToolingRevisionCapabilityMode.AVAILABLE
+        )
+        for call in assert_workspace.call_args_list:
+            self.assertEqual(
+                call.kwargs,
+                {"expected_revision_mode": expected_revision_mode},
+            )
         self.assertEqual(disposable["projectId"], project_id)
         self.assertNotEqual(disposable["masterId"], retained_master_id)
         self.assertNotEqual(disposable["toolingSetId"], retained_set_id)
@@ -1127,6 +1144,28 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(tool_asset.count("ExpectedAssetProjectionMode.AVAILABLE"), 1)
         self.assertNotIn("ExpectedAssetProjectionMode.AVAILABLE", manufacturing)
         self.assertNotIn("ExpectedAssetProjectionMode.AVAILABLE", engineering)
+
+    def test_disposable_fixture_explicitly_uses_available_revision_capability(self):
+        tooling = (
+            ROOT / "scripts" / "verify_tooling_runtime.py"
+        ).read_text(encoding="utf-8")
+        tool_asset = (
+            ROOT / "scripts" / "verify_tool_asset_execution_runtime.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "ExpectedToolingRevisionCapabilityMode.UNAVAILABLE",
+            tooling,
+        )
+        self.assertEqual(
+            tool_asset.count(
+                "ExpectedToolingRevisionCapabilityMode.AVAILABLE"
+            ),
+            3,
+        )
+        self.assertEqual(
+            tool_asset.count("expected_revision_mode="),
+            3,
+        )
 
     def test_p8_01_replay_precedes_dual_available_p8_05_retained_probe(self):
         shell = (ROOT / "scripts" / "verify-frappe-runtime.sh").read_text(

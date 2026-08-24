@@ -1076,3 +1076,35 @@ projection, mapping CAS, adapter, target or Gate rule changes. Missing,
 duplicate, reused or tampered fixture identity remains fail-closed. The
 temporary post-query diagnostic activation is `False`; dormant mechanisms
 remain response-neutral. This remediation consumes no product repair.
+
+## 30. Tooling Revision capability temporal verifier remediation
+
+Exact verifier checkpoint `8bd6c886021f38fba57a8a1a96969b20e666c558`
+passes ordinary CI `32744873147`. Its sole unchanged Level 3 run
+`32748023307` passes repository `97498086283`, secret scan `97498086637`,
+governed visual `97498086710`, frontend `97498086761` and controlled preflight
+`97502370255`. Controlled runtime `97502584172` reaches the fixed verifier
+boundary `P6-01 downstream unavailable truth drifted`.
+
+The ordered workspace predicates prove status, top-level shape, Project
+identity and permission truth before the downstream equality. Four downstream
+entries remain statically unavailable. The only temporal entry is Tooling
+Revision: P6 fresh and its P6-01 recovered/replay caller intentionally disable
+the revision route, whereas the P6-03-through-P8 retained timeline enables it
+and projects the closed available capability. The P8-05 disposable fixture
+therefore reused a P6-fresh-only expectation; this is not product pollution.
+
+A closed `ExpectedToolingRevisionCapabilityMode` keeps `UNAVAILABLE` as the
+P6 default and permits only the three P8-05 disposable workspace assertions
+to select `AVAILABLE`. Both branches lock all five downstream keys. The four
+unchanged unavailable entries retain exact state/reason pairs; the available
+revision branch requires exact keys, state, reason and a non-negative integer
+count. Invalid modes, extra keys, booleans, negative counts and mismatched
+states or reasons fail closed. There is no OR fallback.
+
+The P8-05 disabled probe and retained mapped read passed. Only the disposable
+Master command completed before the assertion; later disposable fixture
+construction and the Tool Asset request/Outbox/worker proof did not run. The
+post-query cycle remains immutable at diagnostic `1/1`, product repair `0/1`,
+final `1/1`. This verifier-only correction does not change product, API,
+permission, transaction, Schema, ownership, adapter, target or Gate behavior.

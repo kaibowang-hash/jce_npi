@@ -78,6 +78,185 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, self.source)
 
+    def test_workspace_revision_capability_modes_are_closed(self) -> None:
+        module = self.module
+        project_id = "10000000-0000-4000-8000-000000000001"
+        base = {
+            "project": {"globalId": project_id},
+            "permissions": {
+                "view": True,
+                "createPart": True,
+                "createRequirement": True,
+                "createMaster": True,
+                "createApplicability": True,
+                "transitionLifecycle": False,
+            },
+            "masters": [],
+            "requirements": [],
+            "parts": [],
+            "applicability": [],
+            "downstream": {
+                "lifecycle": {
+                    "state": "unavailable",
+                    "reasonCode": "lifecycle_policy_unavailable",
+                },
+                "revision": {
+                    "state": "unavailable",
+                    "reasonCode": "tooling_revision_not_delivered",
+                },
+                "physicalSet": {
+                    "state": "unavailable",
+                    "reasonCode": "physical_set_not_delivered",
+                },
+                "trial": {
+                    "state": "unavailable",
+                    "reasonCode": "trial_not_delivered",
+                },
+                "erp": {
+                    "state": "unavailable",
+                    "reasonCode": "erp_projection_unavailable",
+                },
+            },
+        }
+        unavailable = SimpleNamespace(status=200, body=base)
+        self.assertIs(module.assert_workspace(unavailable, project_id), base)
+
+        available_body = {
+            **base,
+            "downstream": {
+                **base["downstream"],
+                "revision": {
+                    "state": "available",
+                    "reasonCode": "tooling_revision_available",
+                    "revisionCount": 1,
+                },
+            },
+        }
+        available = SimpleNamespace(status=201, body=available_body)
+        self.assertIs(
+            module.assert_workspace(
+                available,
+                project_id,
+                expected_revision_mode=(
+                    module.ExpectedToolingRevisionCapabilityMode.AVAILABLE
+                ),
+            ),
+            available_body,
+        )
+
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "^P6-01 expected Tooling Revision capability mode is invalid$",
+        ):
+            module.assert_workspace(
+                unavailable,
+                project_id,
+                expected_revision_mode="available",
+            )
+
+    def test_workspace_revision_modes_reject_extra_wrong_and_out_of_order_truth(self) -> None:
+        module = self.module
+        project_id = "10000000-0000-4000-8000-000000000001"
+        permissions = {
+            "view": True,
+            "createPart": True,
+            "createRequirement": True,
+            "createMaster": True,
+            "createApplicability": True,
+            "transitionLifecycle": False,
+        }
+        downstream = {
+            "lifecycle": {
+                "state": "unavailable",
+                "reasonCode": "lifecycle_policy_unavailable",
+            },
+            "revision": {
+                "state": "available",
+                "reasonCode": "tooling_revision_available",
+                "revisionCount": 0,
+            },
+            "physicalSet": {
+                "state": "unavailable",
+                "reasonCode": "physical_set_not_delivered",
+            },
+            "trial": {
+                "state": "unavailable",
+                "reasonCode": "trial_not_delivered",
+            },
+            "erp": {
+                "state": "unavailable",
+                "reasonCode": "erp_projection_unavailable",
+            },
+        }
+
+        def result(value, *, capability=permissions):
+            return SimpleNamespace(
+                status=200,
+                body={
+                    "project": {"globalId": project_id},
+                    "permissions": capability,
+                    "masters": [],
+                    "requirements": [],
+                    "parts": [],
+                    "applicability": [],
+                    "downstream": value,
+                },
+            )
+
+        malformed = (
+            {**downstream, "unexpected": {}},
+            {
+                **downstream,
+                "revision": {**downstream["revision"], "extra": True},
+            },
+            {
+                **downstream,
+                "revision": {
+                    **downstream["revision"],
+                    "reasonCode": "tooling_revision_not_delivered",
+                },
+            },
+            {
+                **downstream,
+                "revision": {**downstream["revision"], "revisionCount": True},
+            },
+            {
+                **downstream,
+                "revision": {**downstream["revision"], "revisionCount": -1},
+            },
+            {
+                **downstream,
+                "erp": {
+                    "state": "unavailable",
+                    "reasonCode": "wrong",
+                },
+            },
+        )
+        for value in malformed:
+            with self.subTest(value=value), self.assertRaises(RuntimeError):
+                module.assert_workspace(
+                    result(value),
+                    project_id,
+                    expected_revision_mode=(
+                        module.ExpectedToolingRevisionCapabilityMode.AVAILABLE
+                    ),
+                )
+
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "^P6-01 capability truth drifted$",
+        ):
+            module.assert_workspace(
+                result(
+                    {**downstream, "unexpected": {}},
+                    capability={**permissions, "createMaster": False},
+                ),
+                project_id,
+                expected_revision_mode=(
+                    module.ExpectedToolingRevisionCapabilityMode.AVAILABLE
+                ),
+            )
+
     def test_payloads_keep_distinct_part_revision_and_applicability_truth(self) -> None:
         module = self.module
         self.assertEqual(

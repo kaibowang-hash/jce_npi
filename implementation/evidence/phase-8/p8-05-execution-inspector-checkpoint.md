@@ -435,3 +435,26 @@ Canonical Linux/amd64 SHA-256 evidence:
   mechanisms remain covered and normal runtime sends no scope and reads no
   server log. Product/API/permission/transaction/Schema/ownership/adapter/
   target behavior is unchanged.
+
+### Tooling Revision capability temporal harness correction
+
+- Exact SHA `8bd6c886021f38fba57a8a1a96969b20e666c558` passes ordinary
+  `32744873147`. Final run `32748023307` passes five non-runtime jobs;
+  controlled runtime `97502584172` stops at the fixed
+  `P6-01 downstream unavailable truth drifted` verifier boundary.
+- Status, response keys, Project identity and permission predicates passed.
+  Static code proves lifecycle, physical Set, trial and ERP remain exactly
+  unavailable. Only Tooling Revision changes: P6 fresh/replay keeps the route
+  disabled, but the later retained P8-05 timeline has the revision route
+  legitimately enabled and therefore exposes the exact available capability.
+- The verifier now uses a closed expected revision-capability enum. P6 remains
+  default `UNAVAILABLE`; only the three disposable P8-05 workspace assertions
+  pass `AVAILABLE`. Exact keys/state/reason/count are required, and malformed,
+  extra, wrong or ambiguous truth remains fail-closed without OR fallback.
+- The default-disabled and retained mapped P8-05 reads passed. The disposable
+  Master command returned, but no requirement, applicability, Set, Acceptance,
+  Tool Asset request, Outbox or worker proof followed the failing assertion.
+- Post-query counters remain immutable at diagnostic `1/1`, product repair
+  `0/1`, final `1/1`. This is a bounded verifier-only harness correction; all
+  diagnostic activations remain false and product/runtime semantics are
+  unchanged.
