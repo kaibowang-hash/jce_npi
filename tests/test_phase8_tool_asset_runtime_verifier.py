@@ -51,6 +51,11 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("P5 controlled runtime through P8-05 Tool Asset command and Outbox worker", workflow)
         self.assertIn("printf 'scope=p5-01-through-p8-05\\n'", workflow)
         self.assertIn("printf 'predecessor_scope=p5-01-through-p8-04\\n'", workflow)
+        self.assertIn("tests/e2e/p8-05-tool-asset-execution-live.spec.ts", workflow)
+        self.assertIn(
+            "frontend/tests/e2e/p8-05-tool-asset-execution-live.spec.ts-snapshots/p8-05-*-linux.png",
+            workflow,
+        )
 
 
 if __name__ == "__main__":

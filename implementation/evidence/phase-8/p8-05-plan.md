@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-24`
 
-Status: `FROZEN — CHECKPOINTS 1–2 PASS; CHECKPOINT 3 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
+Status: `FROZEN — CHECKPOINTS 1–3 PASS; CHECKPOINT 4 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI`
 
 Audit base and retained P8-04 product checkpoint:
 `ca72deceab4b8e899d0da1207883887c9d30077a`
@@ -610,6 +610,44 @@ CSV parsing, exact no-direct-SQL/network/target-call checks, controller
 verification, reconciliation and `git diff --check` pass. Post-commit manifest
 simulation accepts exactly `29` task paths and no thirtieth task path.
 
-Checkpoint 3 remains closed until this candidate's exact-SHA ordinary CI
-passes. The scoped ERPNext field/approval/Sandbox facts remain held, and no
-product code, test or evidence claims production or formal Asset acceptance.
+Checkpoint 3 exact product SHA
+`17406118f2a771644c90ca00272a247f40b1b5b7` passes ordinary CI
+`32667224305` (secret `97262446040`, frontend `97262445982`, visual
+`97262446007`, repository `97262446049`; controlled jobs correctly skipped).
+Standing authority therefore activates checkpoint 4. The candidate adds only
+the strict read-only execution detail projection and the compact trilingual
+Tool Asset execution inspector in the existing acceptance/Asset workspace.
+Formal Asset identity remains withheld unless authenticated authoritative
+Sandbox result, exact current mapping head and fresh permitted P8-01
+projection all agree. Final unchanged Level 3 remains closed until checkpoint
+4 exact-SHA ordinary CI passes. The scoped ERPNext field/approval/Sandbox facts
+remain held, and no code, test or evidence claims production or formal Asset
+acceptance.
+
+## 16. Checkpoint 4 pre-commit evidence
+
+The checkpoint 4 candidate implements only the strict Tool Asset detail read
+projection and the compact trilingual execution inspector described above.
+Affected backend/controller suites pass `409/409`, focused frontend tests pass
+`21/21`, complete frontend unit tests pass `1,060/1,060`, and the complete
+non-visual browser suite passes `454/454`. The final strict P6 and P8-05 browser
+fixtures independently pass `22/22` and `4/4`.
+
+The six affected Bookworm/x64 baselines pass no-update twice consecutively,
+and a clean serial run passes the complete governed visual matrix `129/129`.
+The P6-06 images are an approved semantic composition migration caused by the
+frozen always-present inspector; the old acceptance/Mock context remains
+visible, the disabled reason is direct, and no formal Asset identifier is
+introduced. The P8-05 authoritative case alone shows the controlled fake ID
+after exact permission/current-mapping/fresh-projection agreement; synthetic
+and partial cases remain redacted. No tolerance, threshold, Darwin baseline,
+command, worker, adapter or target behavior changed.
+
+I18n audits cover `8,341` literal English sources with complete direct `zh` and
+`zh-TW` catalogs. Current-task/reconciliation, compilation, JSON/YAML/Frappe-
+CSV parsing, frontend static/a11y/boundary checks, zero-vulnerability audit and
+`git diff --check` pass. Post-commit manifest simulation accepts exactly `32`
+authorized task paths and rejects any thirty-third path. Exact image hashes and
+the full changed-files-to-tests mapping are retained in
+`p8-05-execution-inspector-checkpoint.md`. The checkpoint still awaits its own
+exact-SHA ordinary CI before final unchanged Level 3 can start.

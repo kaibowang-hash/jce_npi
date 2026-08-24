@@ -35,6 +35,7 @@ from npi_integration.tool_asset_request.execution_domain import (
     TOOL_ASSET_EXECUTION_SCHEMA_VERSION,
     TOOL_ASSET_OUTBOX_SCHEMA_VERSION,
     TOOL_ASSET_REQUEST_EVENT_TYPE,
+    TOOL_ASSET_OWNED_FIELDS,
     UPDATE_TOOL_ASSET,
     ToolAssetApprovalState,
     ToolAssetBusinessApprovalReference,
@@ -66,6 +67,7 @@ from npi_integration.tool_asset_request.problems import (
 
 
 _MAX_REQUESTS = 500
+_MAX_ATTEMPTS = 100
 ProfileResolver = Callable[[str, UUID], ToolAssetExecutionProfile | None]
 
 
@@ -387,7 +389,272 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
             request_global_id,
             lock=False,
         )
-        return self._execution_request_public(row) if row is not None else None
+        if row is None:
+            return None
+        request = tool_asset_execution_request_from_mapping(
+            _json_object(row.request_snapshot)
+        )
+        detail = self._execution_request_public(row)
+        request = replace(
+            request,
+            state=ToolAssetExecutionRequestState(str(row.execution_state)),
+            optimistic_version=int(row.optimistic_version or 0),
+        )
+        attempts = self._execution_attempts_public(request, row)
+        result, field_results = self._execution_result_public(request, row, attempts)
+        observation, current_mapping = self._execution_mapping_public(
+            project,
+            request,
+            result,
+        )
+        profile = self._read_execution_profile(project)
+        detail.update(
+            {
+                "attempts": attempts,
+                "result": result,
+                "fieldResults": field_results,
+                "mappingObservation": observation,
+                "currentMapping": current_mapping,
+                "permissions": self._execution_permissions(project, profile),
+            }
+        )
+        return detail
+
+    def _execution_attempts_public(
+        self,
+        request: ToolAssetExecutionRequest,
+        request_row: object,
+    ) -> list[dict[str, Any]]:
+        rows = self._bounded_documents(
+            "NPI Tool Asset Attempt",
+            filters={"request_global_id": str(request.global_id)},
+            order_by="attempt_number asc, global_id asc",
+            maximum=_MAX_ATTEMPTS,
+        )
+        values: list[dict[str, Any]] = []
+        seen: set[int] = set()
+        for row in rows:
+            snapshot = _json_object(row.attempt_snapshot)
+            attempt_number = int(row.attempt_number or 0)
+            expected_bindings = (
+                str(request.global_id),
+                str(request_row.outbox_event_id),
+                request.operation.value,
+                request.source.source_hash,
+                canonical_hash(request.mapping_expectation.canonical_mapping()),
+                request.profile.profile_id,
+                request.profile.profile_version,
+                request.profile.snapshot_hash,
+            )
+            actual_bindings = (
+                str(row.request_global_id),
+                str(row.outbox_event_id),
+                str(row.operation),
+                str(row.source_hash),
+                str(row.mapping_expectation_hash),
+                str(row.profile_id),
+                int(row.profile_version or 0),
+                str(row.profile_snapshot_hash),
+            )
+            if (
+                attempt_number < 1
+                or attempt_number in seen
+                or actual_bindings != expected_bindings
+                or snapshot.get("global_id") != str(row.global_id)
+                or snapshot.get("attempt_number") != attempt_number
+                or canonical_hash(snapshot) != str(row.attempt_hash)
+            ):
+                raise RuntimeError("Persisted Tool Asset attempt is invalid.")
+            seen.add(attempt_number)
+            values.append(
+                {
+                    "globalId": str(row.global_id),
+                    "attemptNumber": attempt_number,
+                    "state": str(row.state),
+                    "adapterBoundaryCrossed": bool(row.adapter_boundary_crossed),
+                    "transportDisposition": str(row.transport_disposition) if row.transport_disposition else None,
+                    "faultKind": str(row.fault_kind) if row.fault_kind else None,
+                    "reconciliationRequired": bool(row.reconciliation_required),
+                    "safeErrorCode": str(row.safe_error_code) if row.safe_error_code else None,
+                    "startedAt": _utc_text(_datetime_value(row.started_at)),
+                    "finishedAt": _utc_text(_datetime_value(row.finished_at)) if row.finished_at else None,
+                }
+            )
+        return values
+
+    def _execution_result_public(
+        self,
+        request: ToolAssetExecutionRequest,
+        request_row: object,
+        attempts: list[dict[str, Any]],
+    ) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+        result_id = getattr(request_row, "result_global_id", None)
+        if not result_id:
+            if request.state not in {
+                ToolAssetExecutionRequestState.VALIDATED_MOCK,
+                ToolAssetExecutionRequestState.QUEUED,
+                ToolAssetExecutionRequestState.PROCESSING,
+            }:
+                raise RuntimeError("Persisted Tool Asset result is unavailable.")
+            return None, []
+        try:
+            row = frappe.get_doc("NPI Tool Asset Result", str(result_id))
+        except frappe.DoesNotExistError as error:
+            raise RuntimeError("Persisted Tool Asset result is unavailable.") from error
+        snapshot = _json_object(row.result_snapshot)
+        if (
+            snapshot.get("globalId") != str(result_id)
+            or snapshot.get("requestGlobalId") != str(request.global_id)
+            or str(row.request_global_id) != str(request.global_id)
+            or str(row.state) != request.state.value
+            or canonical_hash(snapshot) != str(row.result_hash)
+            or not any(value["globalId"] == str(row.attempt_global_id) for value in attempts)
+        ):
+            raise RuntimeError("Persisted Tool Asset result is invalid.")
+        fields = self._bounded_documents(
+            "NPI Tool Asset Field Result",
+            filters={"result_global_id": str(result_id)},
+            order_by="field_code asc, global_id asc",
+            maximum=len(TOOL_ASSET_OWNED_FIELDS),
+        )
+        public_by_code: dict[str, dict[str, Any]] = {}
+        canonical_by_code: dict[str, dict[str, Any]] = {}
+        for field in fields:
+            value = _json_object(field.field_result_snapshot)
+            field_code = str(field.field_code)
+            if (
+                value.get("fieldCode") != field_code
+                or value.get("requestGlobalId") != str(request.global_id)
+                or value.get("resultGlobalId") != str(result_id)
+                or canonical_hash(value) != str(field.field_result_hash)
+            ):
+                raise RuntimeError("Persisted Tool Asset field result is invalid.")
+            if field_code in canonical_by_code:
+                raise RuntimeError("Persisted Tool Asset field result is invalid.")
+            canonical_by_code[field_code] = {
+                    key: value[key]
+                    for key in (
+                        "fieldCode",
+                        "state",
+                        "authority",
+                        "responseAuthenticated",
+                        "responseHash",
+                        "faultKind",
+                    )
+                }
+            public_by_code[field_code] = {
+                    "fieldCode": field_code,
+                    "state": str(field.state),
+                    "authority": str(field.authority),
+                    "responseAuthenticated": bool(field.response_authenticated),
+                    "faultKind": str(field.fault_kind),
+                    "observedAt": str(value["observedAt"]),
+                }
+        canonical_fields = [canonical_by_code[code] for code in TOOL_ASSET_OWNED_FIELDS if code in canonical_by_code]
+        public_fields = [public_by_code[code] for code in TOOL_ASSET_OWNED_FIELDS if code in public_by_code]
+        if (
+            tuple(value["fieldCode"] for value in canonical_fields)
+            != TOOL_ASSET_OWNED_FIELDS
+            or canonical_hash(canonical_fields) != str(row.field_result_set_hash)
+        ):
+            raise RuntimeError("Persisted Tool Asset field result set is invalid.")
+        return (
+            {
+                "globalId": str(result_id),
+                "attemptGlobalId": str(row.attempt_global_id),
+                "attemptNumber": int(row.attempt_number),
+                "operation": str(row.operation),
+                "state": str(row.state),
+                "authority": str(row.authority),
+                "responseAuthenticated": bool(row.response_authenticated),
+                "faultKind": str(row.fault_kind),
+                "observedAt": str(snapshot["observedAt"]),
+                "formalAssetId": None,
+                "targetVersion": None,
+            },
+            public_fields,
+        )
+
+    def _execution_mapping_public(
+        self,
+        project: object,
+        request: ToolAssetExecutionRequest,
+        result: dict[str, Any] | None,
+    ) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+        rows = self._bounded_documents(
+            "NPI Tool Asset Mapping Observation",
+            filters={"request_global_id": str(request.global_id)},
+            order_by="observed_at asc, global_id asc",
+            maximum=1,
+        )
+        if result is None:
+            if rows:
+                raise RuntimeError("Persisted Tool Asset mapping observation is invalid.")
+            return None, None
+        if len(rows) != 1:
+            raise RuntimeError("Persisted Tool Asset mapping observation is unavailable.")
+        row = rows[0]
+        snapshot = _json_object(row.observation_snapshot)
+        expected = (
+            str(project.tenant_id),
+            str(project.global_id),
+            str(request.source.tooling_set_global_id),
+            request.source.source_stream_key_hash,
+            str(request.global_id),
+            result["globalId"],
+            result["attemptGlobalId"],
+            request.operation.value,
+            request.source.source_hash,
+            canonical_hash(request.mapping_expectation.canonical_mapping()),
+        )
+        actual = tuple(
+            str(value)
+            for value in (
+                row.tenant_id,
+                row.project_global_id,
+                row.tooling_set_global_id,
+                row.source_stream_key_hash,
+                row.request_global_id,
+                row.result_global_id,
+                row.attempt_global_id,
+                row.operation,
+                row.source_hash,
+                row.mapping_expectation_hash,
+            )
+        )
+        if actual != tuple(str(value) for value in expected) or canonical_hash(snapshot) != str(row.observation_hash):
+            raise RuntimeError("Persisted Tool Asset mapping observation is invalid.")
+        observation = {
+            "disposition": str(row.disposition),
+            "authority": str(row.authority),
+            "responseAuthenticated": bool(row.response_authenticated),
+            "observedAt": str(snapshot["observedAt"]),
+            "previousFormalAssetId": None,
+            "previousTargetVersion": None,
+            "observedFormalAssetId": None,
+            "observedTargetVersion": None,
+        }
+        authoritative = (
+            result["state"] == ToolAssetExecutionRequestState.SUCCEEDED.value
+            and result["authority"] == "authoritative_sandbox"
+            and result["responseAuthenticated"] is True
+            and str(row.disposition) == "advance"
+        )
+        if not authoritative:
+            return observation, None
+        head = self._mapping_head(project, request.source, lock=False)
+        if head is None or str(head.current_observation) != str(row.global_id) or str(head.current_observation_hash) != str(row.observation_hash):
+            raise RuntimeError("Persisted Tool Asset current mapping is invalid.")
+        expected_head = _json_object(head.head_snapshot)
+        if canonical_hash(expected_head) != str(head.head_hash):
+            raise RuntimeError("Persisted Tool Asset current mapping is invalid.")
+        return observation, {
+            "mappingVersion": int(head.mapping_version),
+            "formalAssetId": str(head.formal_asset_id),
+            "targetVersion": str(head.target_version),
+            "observationHash": str(row.observation_hash),
+            "updatedAt": _utc_text(_datetime_value(head.updated_at)),
+        }
 
     def create_tool_asset_execution_request(
         self,

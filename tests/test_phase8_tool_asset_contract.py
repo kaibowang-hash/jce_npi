@@ -55,6 +55,26 @@ class Phase8ToolAssetContractTest(unittest.TestCase):
         schemas = OPENAPI[OPENAPI.index("  schemas:\n") :]
         for name in ("ToolAssetExecutionOperation", "ToolAssetExecutionTargetMode", "ToolAssetExecutionSource", "ToolAssetBusinessApprovalReference", "ToolAssetMappingExpectationV2", "ToolAssetExecutionProfileReference", "ToolAssetExecutionRequestV2", "ToolAssetExecutionRequestEnvelope", "ToolAssetExecutionCollection", "CreateToolAssetExecutionCommand", "UpdateToolAssetExecutionCommand", "ToolAssetExecutionFieldResult"):
             self.assertEqual(schemas.count(f"    {name}:\n"), 1)
+        for projection in (
+            "ToolAssetExecutionAttemptView",
+            "ToolAssetExecutionResultView",
+            "ToolAssetExecutionFieldResultView",
+            "ToolAssetMappingObservationView",
+            "ToolAssetCurrentMappingView",
+        ):
+            self.assertEqual(schemas.count(f"    {projection}:\n"), 1)
+        result_view = schemas[
+            schemas.index("    ToolAssetExecutionResultView:\n") :
+            schemas.index("    ToolAssetExecutionFieldResultView:\n")
+        ]
+        self.assertIn("formalAssetId: { type: \"null\" }", result_view)
+        self.assertIn("targetVersion: { type: \"null\" }", result_view)
+        current = schemas[
+            schemas.index("    ToolAssetCurrentMappingView:\n") :
+            schemas.index("    ToolAssetExecutionPermissions:\n")
+        ]
+        self.assertIn("formalAssetId: { type: string", current)
+        self.assertIn("observationHash:", current)
         block = schemas[schemas.index("    ToolAssetExecutionOperation:\n") : schemas.index("    ToolAssetFormalMappingUnavailable:\n")].casefold()
         for forbidden in ("frappe.client", "ignore_permissions", "endpoint", "credential", "submit", "move_asset", "repair_asset"):
             self.assertNotIn(forbidden, block)

@@ -33,6 +33,12 @@ import {
   toolingListPreference,
 } from "../support/tooling-list-fixture";
 import {
+  toolAssetExecutionCollection,
+  toolAssetExecutionContext,
+  toolAssetExecutionDetail,
+  toolAssetExecutionRequestId,
+} from "../support/tool-asset-execution-fixture";
+import {
   effectiveViewport,
   expectIndustrialComputedStyles,
   expectNoDocumentOverflow,
@@ -933,15 +939,42 @@ async function installSession(page: Page, locale: TestLocale): Promise<void> {
   });
 }
 
+function exactToolAssetProjectionCollection(authoritative: boolean) {
+  const collection = toolAssetProjectionCollection();
+  const item = collection.items[0];
+  if (!item?.currentTruth) {
+    throw new Error("The authoritative Tool Asset projection is required.");
+  }
+  if (!authoritative) {
+    return { ...collection, items: [], projectGlobalId: projectId };
+  }
+  const values = { ...item.currentTruth.values, toolingSetGlobalId: setId };
+  return {
+    ...collection,
+    projectGlobalId: projectId,
+    items: [
+      {
+        ...item,
+        scopeGlobalId: setId,
+        values,
+        currentTruth: { ...item.currentTruth, values },
+      },
+    ],
+  };
+}
+
 async function installApi(
   page: Page,
-  options: { acceptanceReady?: boolean; partRecorded?: boolean } = {},
+  options: {
+    acceptanceReady?: boolean;
+    authoritativeAssetProjection?: boolean;
+    partRecorded?: boolean;
+  } = {},
 ): Promise<ObservedRequest[]> {
   const observed: ObservedRequest[] = [];
   await page.route(projectEndpoint, async (route) => {
     const request = route.request();
-    const url = new URL(request.url());
-    const path = url.pathname;
+    const path = new URL(request.url()).pathname;
     observed.push({
       idempotencyKey: request.headers()["idempotency-key"],
       method: request.method(),
@@ -964,34 +997,16 @@ async function installApi(
       expect(new URL(request.url()).searchParams.get("kind")).toBe(
         "tool_asset_status",
       );
-      await fulfillJson(route, {
-        ...toolAssetProjectionCollection(),
-        items: [],
-        projectGlobalId: projectId,
-      });
+      await fulfillJson(
+        route,
+        exactToolAssetProjectionCollection(
+          options.authoritativeAssetProjection === true,
+        ),
+      );
       return;
     }
     if (path.endsWith(`/tooling/${masterId}/acceptance-assets`)) {
       await fulfillJson(route, acceptanceAssetContext());
-      return;
-    }
-    if (
-      path ===
-        `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets/${setId}/asset-execution-requests` &&
-      request.method() === "GET" &&
-      JSON.stringify([...url.searchParams.entries()]) ===
-        JSON.stringify([["acceptanceRevisionGlobalId", acceptanceRevisionId]])
-    ) {
-      await fulfillJson(route, {
-        projectGlobalId: projectId,
-        toolingMasterGlobalId: masterId,
-        toolingSetGlobalId: setId,
-        permissions: { canView: true, canCreate: false, canUpdate: false },
-        businessApproval: { state: "unavailable" },
-        executionProfile: null,
-        commandContexts: null,
-        items: [],
-      });
       return;
     }
     if (path.endsWith(`/tooling/${masterId}/acceptance-revisions`)) {
@@ -1187,596 +1202,238 @@ async function expectAxeClean(page: Page): Promise<void> {
   expect(results.violations).toEqual([]);
 }
 
-test.describe("P6-03 live immutable Tooling Revision workspace", () => {
-  for (const locale of ["en", "zh", "zh-TW"] as const) {
-    test(`renders Revision, controlled Part, process-chain and Set source truth in ${locale}`, async ({
-      page,
-    }) => {
-      await installSession(page, locale);
-      await installApi(page);
-      await openWorkspace(page, locale);
-
-      await expect(
-        page.locator("#tooling-revision-workspace").getByText("C01"),
-      ).toBeVisible();
-      await expect(page.getByText(processChainId)).toBeVisible();
-      await expectNoMixedLanguage(page, locale);
-      await expectNoDocumentOverflow(page);
-      await expectIndustrialComputedStyles(page);
-      await expectAxeClean(page);
-    });
-  }
-
-  test("records one controlled Part specification through the frozen command", async ({
-    page,
-  }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page, { partRecorded: false });
-    await page.goto(`/projects/${projectId}/tooling/${masterId}?lang=en`);
-    const open = page.getByRole("button", {
-      name: "Record controlled Part specification",
-    });
-    await expect(open).toBeVisible();
-    await open.click();
-    await page.getByLabel("Normalized value").fill("PA66");
-    await page.getByLabel("Raw source value").fill("PA66-GF30");
-    await page.getByLabel("Source object").fill("PART-SPEC-001");
-    await page
-      .getByRole("button", { name: "Record immutable specification" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith("/controlled-specification"),
-          ).length,
-      )
-      .toBe(1);
-    expect(
-      observed.find(
-        (request) =>
-          request.method === "POST" &&
-          request.path.endsWith("/controlled-specification"),
-      ),
-    ).toMatchObject({
-      payload: {
-        externalIdentities: [],
-        items: [
-          {
-            kind: "material_family",
-            normalizedValue: "PA66",
-            rawValue: "PA66-GF30",
-            sourceObjectId: "PART-SPEC-001",
-            sourceSystem: "NPI_ONE",
-          },
-        ],
+function executionDetailFixture(
+  state: "synthetic_verified" | "partially_succeeded" | "succeeded",
+) {
+  const value = toolAssetExecutionDetail(state);
+  return {
+    ...value,
+    request: {
+      ...value.request,
+      source: {
+        ...value.request.source,
+        projectGlobalId: projectId,
+        toolingMasterGlobalId: masterId,
+        toolingSetGlobalId: setId,
+        acceptanceRevisionGlobalId: acceptanceRevisionId,
       },
-    });
-  });
+    },
+  };
+}
 
-  test("creates one exact two-step process chain without guessing a predecessor", async ({
-    page,
-  }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page);
-    await openWorkspace(page, "en");
-    await page
-      .getByRole("button", { name: "Create process chain Revision" })
-      .click();
-    await page.getByLabel("Reason").last().fill("Second controlled route");
-    await page.getByLabel("Machine type").nth(0).fill("Press A");
-    await page.getByLabel("Machine type").nth(1).fill("Press B");
-    await page
-      .getByRole("button", { name: "Create immutable process chain" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith("/tooling-process-chains"),
-          ).length,
-      )
-      .toBe(1);
-    const command = observed.find(
-      (request) =>
-        request.method === "POST" &&
-        request.path.endsWith("/tooling-process-chains"),
-    );
-    expect(command?.payload).toMatchObject({
-      reason: "Second controlled route",
-      steps: [
-        { processKind: "primary_molding", stepOrder: 1 },
-        { parentStepOrder: 1, processKind: "overmold", stepOrder: 2 },
-      ],
-    });
-    expect(command?.payload).not.toHaveProperty("processChainGlobalId");
-    expect(command?.payload).not.toHaveProperty("expectedVersion");
-  });
-
-  test("binds one exact immutable Revision to one physical Set", async ({
-    page,
-  }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page);
-    await openWorkspace(page, "en");
-    await page
-      .getByRole("button", { name: "Bind source Tooling Revision" })
-      .click();
-    await page.getByLabel("Binding reason").fill("Approved immutable source");
-    await page
-      .getByRole("button", { name: "Bind exact source Revision" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter((request) =>
-            request.path.endsWith(`/sets/${setId}/revision-binding`),
-          ).length,
-      )
-      .toBe(1);
-    expect(
-      observed.find((request) =>
-        request.path.endsWith(`/sets/${setId}/revision-binding`),
-      ),
-    ).toMatchObject({
-      payload: {
-        reason: "Approved immutable source",
-        toolingRevisionGlobalId: toolingRevisionId,
-      },
-    });
-  });
-});
-
-test.describe("P6-04 live manufacturing and supplier workspace", () => {
-  for (const locale of ["en", "zh", "zh-TW"] as const) {
-    test(`renders exact plan, internal observation and explicit ERP truth in ${locale}`, async ({
-      page,
-    }) => {
-      await installSession(page, locale);
-      await installApi(page);
-      await openWorkspace(page, locale);
-      const workspace = page.locator("#tooling-manufacturing-workspace");
-      await workspace.scrollIntoViewIfNeeded();
-
-      await expect(workspace).toBeVisible();
-      await expect(
-        workspace.getByText(
-          locale === "en"
-            ? "Supplier-responsible, internally reported"
-            : locale === "zh"
-              ? "供应商负责，由内部报告"
-              : "供應商負責，由內部回報",
-        ),
-      ).toBeVisible();
-      await expect(
-        workspace.getByText(
-          locale === "en"
-            ? "ERPNext source truth is unavailable."
-            : locale === "zh"
-              ? "ERPNext 源事实不可用。"
-              : "ERPNext 來源事實不可用。",
-        ),
-      ).toBeVisible();
-      await expectNoMixedLanguage(page, locale);
-      await expectNoDocumentOverflow(page);
-      await expectIndustrialComputedStyles(page);
-      await expectAxeClean(page);
-    });
-  }
-
-  test("appends only an internal immutable plan Revision", async ({ page }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page);
-    await openWorkspace(page, "en");
-    const workspace = page.locator("#tooling-manufacturing-workspace");
-    await workspace.scrollIntoViewIfNeeded();
-    await workspace
-      .getByRole("button", { name: "Append plan Revision" })
-      .click();
-    await workspace.getByLabel("Reason").fill("Approved planning adjustment");
-    await workspace
-      .getByRole("button", { name: "Append immutable plan Revision" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith(`/tooling/${masterId}/manufacturing-plans`),
-          ).length,
-      )
-      .toBe(1);
-    const command = observed.find(
-      (request) =>
-        request.method === "POST" &&
-        request.path.endsWith(`/tooling/${masterId}/manufacturing-plans`),
-    );
-    expect(command?.payload).toMatchObject({
-      expectedVersion: 1,
-      planGlobalId: manufacturingPlanId,
-      reason: "Approved planning adjustment",
-      toolingRevisionGlobalId: toolingRevisionId,
-      toolingRevisionSnapshotHash: revision().snapshotHash,
-    });
-    expect(command?.payload).not.toHaveProperty("manufacturingApproved");
-    expect(command?.payload).not.toHaveProperty("formalSupplier");
-  });
-
-  test("records supplier progress only as an internal observation", async ({
-    page,
-  }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page);
-    await openWorkspace(page, "en");
-    const workspace = page.locator("#tooling-manufacturing-workspace");
-    await workspace.scrollIntoViewIfNeeded();
-    await workspace.getByRole("button", { name: "Record observation" }).click();
-    await workspace.getByLabel("Progress percentage").fill("65");
-    await workspace
-      .getByLabel("Observation note")
-      .fill("Supplier update recorded by internal NPI engineer");
-    await workspace
-      .getByRole("button", { name: "Record immutable observation" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith("/observations"),
-          ).length,
-      )
-      .toBe(1);
-    expect(
-      observed.find((request) => request.path.endsWith("/observations")),
-    ).toMatchObject({
-      payload: {
-        expectedVersion: 1,
-        evidence: [],
-        note: "Supplier update recorded by internal NPI engineer",
-        progressPercentage: 65,
-      },
-    });
-  });
-});
-
-test.describe("P6-05 live engineering-controls workspace", () => {
-  for (const locale of ["en", "zh", "zh-TW"] as const) {
-    test(`renders separated defect, process, capacity and ERP health truth in ${locale}`, async ({
-      page,
-    }) => {
-      await installSession(page, locale);
-      await installApi(page);
-      await openWorkspace(page, locale);
-      const workspace = page.locator("#tooling-engineering-controls-workspace");
-      await workspace.scrollIntoViewIfNeeded();
-
-      await expect(workspace).toBeVisible();
-      await expect(workspace.getByText("DEF-001")).toBeVisible();
-      await expect(
-        workspace.getByText("Nominal monthly capacity"),
-      ).toBeVisible();
-      await expect(
-        workspace.getByText("erp_shot_count_unavailable"),
-      ).toBeVisible();
-      await expect(
-        workspace.getByRole("button", { name: /Trial/u }),
-      ).toHaveCount(0);
-      await expect(
-        workspace.getByRole("button", { name: /Gate/u }),
-      ).toHaveCount(0);
-      await expectNoMixedLanguage(page, locale);
-      await expectNoDocumentOverflow(page);
-      await expectIndustrialComputedStyles(page);
-      await expectAxeClean(page);
-    });
-  }
-
-  test("appends a defect Revision without mutating Trial or Gate truth", async ({
-    page,
-  }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page);
-    await openWorkspace(page, "en");
-    const workspace = page.locator("#tooling-engineering-controls-workspace");
-    await workspace.scrollIntoViewIfNeeded();
-    await workspace
-      .getByRole("button", { name: "Append defect Revision" })
-      .click();
-    await workspace
-      .getByLabel("Tooling Defect Revision Reason")
-      .fill("Verification preparation");
-    await workspace
-      .getByRole("button", { name: "Append immutable defect Revision" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith(`/tooling/${masterId}/defect-revisions`),
-          ).length,
-      )
-      .toBe(1);
-    const command = observed.find((request) =>
-      request.path.endsWith(`/tooling/${masterId}/defect-revisions`),
-    );
-    expect(command?.payload).toMatchObject({
-      defectGlobalId: defectId,
-      expectedVersion: 1,
-      reason: "Verification preparation",
-      toolingRevisionGlobalId: toolingRevisionId,
-      toolingRevisionSnapshotHash: revision().snapshotHash,
-    });
-    expect(command?.payload).not.toHaveProperty("trialActual");
-    expect(command?.payload).not.toHaveProperty("transitionGate");
-  });
-
-  test("appends only a Customer Standard process profile", async ({ page }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page);
-    await openWorkspace(page, "en");
-    const workspace = page.locator("#tooling-engineering-controls-workspace");
-    await workspace.scrollIntoViewIfNeeded();
-    await workspace
-      .getByRole("button", { name: "Append Customer Standard Revision" })
-      .click();
-    await workspace
-      .getByLabel("Process Profile Revision Reason")
-      .fill("Controlled standard refresh");
-    await workspace
-      .getByRole("button", { name: "Append Customer Standard Revision" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith(
-                `/tooling/${masterId}/process-profile-revisions`,
-              ),
-          ).length,
-      )
-      .toBe(1);
-    const command = observed.find((request) =>
-      request.path.endsWith(`/tooling/${masterId}/process-profile-revisions`),
-    );
-    expect(command?.payload).toMatchObject({
-      expectedVersion: 1,
-      profileGlobalId: processProfileId,
-      reason: "Controlled standard refresh",
-      toolingRevisionGlobalId: toolingRevisionId,
-    });
-    expect(command?.payload).not.toHaveProperty("approvedBaseline");
-    expect(command?.payload).not.toHaveProperty("trialActual");
-  });
-
-  test("appends explicit Capacity inputs without caller-derived results", async ({
-    page,
-  }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page);
-    await openWorkspace(page, "en");
-    const workspace = page.locator("#tooling-engineering-controls-workspace");
-    await workspace.scrollIntoViewIfNeeded();
-    await workspace
-      .getByRole("button", { name: "Append Capacity Scenario Revision" })
-      .click();
-    await workspace
-      .getByLabel("Capacity Scenario Revision Reason")
-      .fill("Explicit demand adjustment");
-    await workspace
-      .getByRole("button", { name: "Append Capacity Scenario Revision" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith(
-                `/tooling/${masterId}/capacity-scenario-revisions`,
-              ),
-          ).length,
-      )
-      .toBe(1);
-    const command = observed.find((request) =>
-      request.path.endsWith(`/tooling/${masterId}/capacity-scenario-revisions`),
-    );
-    expect(command?.payload).toMatchObject({
-      expectedVersion: 1,
-      reason: "Explicit demand adjustment",
-      scenarioGlobalId: capacityScenarioId,
-      targetMonthlyAssemblyUnits: "50911.428571",
-    });
-    expect(command?.payload).not.toHaveProperty("result");
-  });
-});
-
-test.describe("P6-06 live acceptance and Asset preparation workspace", () => {
-  for (const locale of ["en", "zh", "zh-TW"] as const) {
-    test(`renders immutable acceptance, Mock axes and unavailable ERP Asset truth in ${locale}`, async ({
-      page,
-    }) => {
-      await installSession(page, locale);
-      await installApi(page, { acceptanceReady: true });
-      await openWorkspace(page, locale);
-      const workspace = page.locator("#tooling-acceptance-asset-workspace");
-      await workspace.scrollIntoViewIfNeeded();
-
-      await expect(workspace).toBeVisible();
-      await expect(
-        workspace.getByText(
-          locale === "en"
-            ? "Acceptance evidence and Asset preparation"
-            : locale === "zh"
-              ? "验收证据与资产准备"
-              : "驗收證據與資產準備",
-        ),
-      ).toBeVisible();
-      await expect(workspace.getByText("SET-REV-001").first()).toBeVisible();
-      await expect(
-        workspace.getByRole("button", { name: /approv/u }),
-      ).toHaveCount(0);
-      await expect(
-        workspace.getByRole("button", { name: /dispatch/u }),
-      ).toHaveCount(0);
-      await expect(
-        workspace.getByText(
-          locale === "en"
-            ? "No request recorded"
-            : locale === "zh"
-              ? "未记录请求"
-              : "未記錄請求",
-        ),
-      ).toBeVisible();
-      await expect(
-        workspace.getByRole("button", {
-          name:
-            locale === "en"
-              ? "Review Tool Asset request"
-              : locale === "zh"
-                ? "审查工装资产请求"
-                : "審查工裝資產請求",
-        }),
-      ).toBeDisabled();
-      await expect(workspace.getByText("ASSET-00042")).toHaveCount(0);
-      await expectNoMixedLanguage(page, locale);
-      await expectNoDocumentOverflow(page);
-      await expectIndustrialComputedStyles(page);
-      await expectAxeClean(page);
-    });
-  }
-
-  test("appends nine exact acceptance categories without approval or ERP payload", async ({
-    page,
-  }) => {
-    await installSession(page, "en");
-    const observed = await installApi(page, { acceptanceReady: true });
-    await openWorkspace(page, "en");
-    const workspace = page.locator("#tooling-acceptance-asset-workspace");
-    await workspace.scrollIntoViewIfNeeded();
-    await workspace.getByRole("button", { name: "Append Revision" }).click();
-    await workspace
-      .getByLabel("Append reason")
-      .fill("Refresh controlled acceptance evidence");
-    await workspace
-      .getByRole("button", { name: "Append evidence Revision" })
-      .click();
-
-    await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith(
-                `/tooling/${masterId}/acceptance-revisions`,
-              ),
-          ).length,
-      )
-      .toBe(1);
-    const command = observed.find((request) =>
-      request.path.endsWith(`/tooling/${masterId}/acceptance-revisions`),
-    );
-    expect(command?.payload).toMatchObject({
-      acceptanceGlobalId: acceptanceId,
-      expectedVersion: 1,
-      reason: "Refresh controlled acceptance evidence",
-      setRevisionBindingGlobalId: bindingId,
-      toolingRevisionGlobalId: toolingRevisionId,
+function executionCollectionFixture(
+  detail = executionDetailFixture("synthetic_verified"),
+) {
+  const value = toolAssetExecutionCollection(detail);
+  const context = toolAssetExecutionContext();
+  const exactContext = {
+    ...context,
+    source: {
+      ...context.source,
+      projectGlobalId: projectId,
+      toolingMasterGlobalId: masterId,
       toolingSetGlobalId: setId,
-    });
-    expect(
-      (command?.payload as { checklist?: readonly unknown[] }).checklist,
-    ).toHaveLength(9);
-    expect(command?.payload).not.toHaveProperty("approvalState");
-    expect(command?.payload).not.toHaveProperty("targetPayload");
-  });
+      acceptanceRevisionGlobalId: acceptanceRevisionId,
+    },
+  };
+  return {
+    ...value,
+    projectGlobalId: projectId,
+    toolingMasterGlobalId: masterId,
+    toolingSetGlobalId: setId,
+    commandContexts: { create_tool_asset: exactContext },
+    items: value.items.map((item) => ({
+      ...item,
+      request: { ...item.request, source: exactContext.source },
+    })),
+  };
+}
 
-  test("prepares only one acknowledged local Mock Asset request", async ({
+async function installExecutionApi(
+  page: Page,
+  state: "synthetic_verified" | "partially_succeeded" | "succeeded",
+): Promise<ObservedRequest[]> {
+  const observed: ObservedRequest[] = [];
+  const detail = executionDetailFixture(state);
+  const collection = executionCollectionFixture(detail);
+  await page.route(projectEndpoint, async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const base = `/projects/${projectId}/tooling/${masterId}/sets/${setId}/asset-execution-requests`;
+    if (!url.pathname.includes("/asset-execution-requests")) {
+      await route.fallback();
+      return;
+    }
+    observed.push({
+      idempotencyKey: request.headers()["idempotency-key"],
+      method: request.method(),
+      path: url.pathname,
+      payload: request.method() === "POST" ? request.postDataJSON() : null,
+    });
+    if (url.pathname.endsWith(base) && request.method() === "GET") {
+      expect(url.searchParams.get("acceptanceRevisionGlobalId")).toBe(
+        acceptanceRevisionId,
+      );
+      await fulfillJson(route, collection);
+      return;
+    }
+    if (
+      url.pathname.endsWith(`${base}/${toolAssetExecutionRequestId}`) &&
+      request.method() === "GET"
+    ) {
+      await fulfillJson(route, detail);
+      return;
+    }
+    if (
+      url.pathname.endsWith(`${base}:create`) &&
+      request.method() === "POST"
+    ) {
+      expect(request.headers()["x-frappe-csrf-token"]).toBe(csrfToken);
+      expect(request.headers()["idempotency-key"]).toMatch(/^tool-asset-/u);
+      const context = collection.commandContexts.create_tool_asset;
+      expect(request.postDataJSON()).toEqual({
+        acceptanceRevisionGlobalId: acceptanceRevisionId,
+        expectedSourceHash: context.expectedSourceHash,
+        expectedApprovalHash: context.expectedApprovalHash,
+        expectedMappingExpectationHash: context.expectedMappingExpectationHash,
+        expectedProfileSnapshotHash: context.expectedProfileSnapshotHash,
+        acknowledgement:
+          "I confirm this request may create one formal ERP Asset only from the exact physical Tooling Set, separate business approval, mapping state, and execution profile.",
+      });
+      await fulfillJson(route, collection.items[0], 201);
+      return;
+    }
+    throw new Error(
+      `Unhandled P8-05 browser request: ${request.method()} ${url.pathname}${url.search}`,
+    );
+  });
+  return observed;
+}
+
+async function openExecutionInspector(
+  page: Page,
+  locale: TestLocale,
+): Promise<void> {
+  await openWorkspace(page, locale);
+  const inspector = page
+    .locator("#tooling-acceptance-asset-workspace .panel")
+    .filter({
+      hasText:
+        locale === "en"
+          ? "Tool Asset execution inspector"
+          : locale === "zh"
+            ? "工装资产执行检查器"
+            : "工裝資產執行檢查器",
+    })
+    .first();
+  await inspector.scrollIntoViewIfNeeded();
+  await expect(inspector).toBeVisible();
+}
+
+test.describe("P8-05 live Tool Asset execution inspector", () => {
+  test("keeps the operation-specific command Project-first and browser target-network-free", async ({
     page,
   }) => {
     await installSession(page, "en");
-    const observed = await installApi(page, { acceptanceReady: true });
-    await openWorkspace(page, "en");
-    const workspace = page.locator("#tooling-acceptance-asset-workspace");
-    await workspace.scrollIntoViewIfNeeded();
-    await workspace
-      .getByRole("checkbox", { name: /only validates a local Mock draft/u })
-      .check();
-    await workspace
-      .getByRole("button", { name: "Prepare Mock Asset request" })
+    await installApi(page, { acceptanceReady: true });
+    const observed = await installExecutionApi(page, "synthetic_verified");
+    await openExecutionInspector(page, "en");
+    const inspector = page
+      .locator("#tooling-acceptance-asset-workspace .panel")
+      .filter({ hasText: "Tool Asset execution inspector" })
+      .first();
+    await expect(
+      inspector.locator('[data-visual-primary="true"]:visible'),
+    ).toHaveCount(1);
+    await page
+      .getByRole("button", { name: "Review Tool Asset request" })
       .click();
-
+    await expect(
+      page.getByRole("dialog", { name: "Review exact Tool Asset request" }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Request Tool Asset execution" })
+      .click();
     await expect
-      .poll(
-        () =>
-          observed.filter(
-            (request) =>
-              request.method === "POST" &&
-              request.path.endsWith(`/sets/${setId}/asset-requests`),
-          ).length,
-      )
+      .poll(() => observed.filter((item) => item.method === "POST").length)
       .toBe(1);
-    const command = observed.find((request) =>
-      request.path.endsWith(`/sets/${setId}/asset-requests`),
-    );
-    expect(command?.payload).toMatchObject({
-      acceptanceRevisionGlobalId: acceptanceRevisionId,
-      targetMode: "mock",
-    });
-    expect(command?.payload).not.toHaveProperty("approvalState");
-    expect(command?.payload).not.toHaveProperty("dispatch");
-    expect(command?.payload).not.toHaveProperty("targetPayload");
+    expect(
+      observed.every((item) => item.path.startsWith("/api/npi/v1/projects/")),
+    ).toBe(true);
+    await expectAxeClean(page);
   });
+
+  for (const state of [
+    "synthetic_verified",
+    "partially_succeeded",
+    "succeeded",
+  ] as const) {
+    test(`renders truthful ${state} state without retry, reconcile or approval controls`, async ({
+      page,
+    }) => {
+      await installSession(page, "en");
+      await installApi(page, {
+        acceptanceReady: true,
+        authoritativeAssetProjection: state === "succeeded",
+      });
+      await installExecutionApi(page, state);
+      await openExecutionInspector(page, "en");
+      const inspector = page
+        .locator("#tooling-acceptance-asset-workspace .panel")
+        .filter({ hasText: "Tool Asset execution inspector" })
+        .first();
+      await expect(
+        inspector.getByRole("button", {
+          name: /retry|reconcile|submit|approve/iu,
+        }),
+      ).toHaveCount(0);
+      if (state === "succeeded")
+        await expect(inspector.getByText("ASSET-00042")).toBeVisible();
+      else await expect(inspector.getByText("ASSET-00042")).toHaveCount(0);
+      await expectNoMixedLanguage(page, "en");
+      await expectNoDocumentOverflow(page);
+      await expectIndustrialComputedStyles(page);
+      await expectAxeClean(page);
+    });
+  }
 });
 
-const visualCases = [
+const p805Visuals = [
   {
-    height: 768,
     locale: "en",
-    name: "p6-03-tooling-revision-en-1366x768-100",
+    state: "synthetic_verified",
     width: 1366,
-    zoom: 1,
-  },
-  {
-    height: 900,
-    locale: "zh",
-    name: "p6-03-tooling-revision-zh-1440x900-125",
-    width: 1440,
+    height: 768,
     zoom: 1.25,
+    name: "p8-05-tool-asset-synthetic-en-1366x768-125",
   },
   {
-    height: 1080,
-    locale: "zh-TW",
-    name: "p6-03-tooling-revision-zh-TW-1920x1080-150",
+    locale: "zh",
+    state: "partially_succeeded",
     width: 1920,
+    height: 1080,
     zoom: 1.5,
+    name: "p8-05-tool-asset-partial-zh-1920x1080-150",
+  },
+  {
+    locale: "zh-TW",
+    state: "succeeded",
+    width: 1920,
+    height: 1080,
+    zoom: 1.25,
+    name: "p8-05-tool-asset-authoritative-zh-TW-1920x1080-125",
   },
 ] as const;
 
-test.describe("@visual P6-03 immutable Tooling Revision evidence", () => {
-  for (const visual of visualCases) {
+test.describe("@visual P8-05 Tool Asset execution inspector", () => {
+  for (const visual of p805Visuals) {
     test(visual.name, async ({ page }) => {
       await installSession(page, visual.locale);
-      await installApi(page);
+      await installApi(page, {
+        acceptanceReady: true,
+        authoritativeAssetProjection: visual.state === "succeeded",
+      });
+      await installExecutionApi(page, visual.state);
       await page.setViewportSize(
         effectiveViewport(
           { height: visual.height, width: visual.width },
@@ -1787,10 +1444,7 @@ test.describe("@visual P6-03 immutable Tooling Revision evidence", () => {
         colorScheme: "light",
         reducedMotion: "reduce",
       });
-      await openWorkspace(page, visual.locale);
-      await page
-        .locator("#tooling-revision-workspace")
-        .scrollIntoViewIfNeeded();
+      await openExecutionInspector(page, visual.locale);
       await expectNoMixedLanguage(page, visual.locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);
@@ -1804,138 +1458,5 @@ test.describe("@visual P6-03 immutable Tooling Revision evidence", () => {
         fullPage: false,
       });
     });
-  }
-});
-
-test.describe("@visual P6-04 manufacturing and supplier evidence", () => {
-  for (const visual of visualCases) {
-    test(
-      visual.name.replace("p6-03-tooling-revision", "p6-04-manufacturing"),
-      async ({ page }) => {
-        await installSession(page, visual.locale);
-        await installApi(page);
-        await page.setViewportSize(
-          effectiveViewport(
-            { height: visual.height, width: visual.width },
-            visual.zoom,
-          ),
-        );
-        await page.emulateMedia({
-          colorScheme: "light",
-          reducedMotion: "reduce",
-        });
-        await openWorkspace(page, visual.locale);
-        await page
-          .locator("#tooling-manufacturing-workspace")
-          .evaluate((element) => {
-            element.scrollIntoView({ block: "start" });
-          });
-        await expectNoMixedLanguage(page, visual.locale);
-        await expectNoDocumentOverflow(page);
-        await expectIndustrialComputedStyles(page);
-        await expectAxeClean(page);
-        await page.addStyleTag({
-          content:
-            "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
-        });
-        await page.evaluate(async () => document.fonts.ready);
-        await expect(page).toHaveScreenshot(
-          `${visual.name.replace("p6-03-tooling-revision", "p6-04-manufacturing")}.png`,
-          { fullPage: false },
-        );
-      },
-    );
-  }
-});
-
-test.describe("@visual P6-05 engineering-controls evidence", () => {
-  for (const visual of visualCases) {
-    test(
-      visual.name.replace(
-        "p6-03-tooling-revision",
-        "p6-05-engineering-controls",
-      ),
-      async ({ page }) => {
-        await installSession(page, visual.locale);
-        await installApi(page);
-        await page.setViewportSize(
-          effectiveViewport(
-            { height: visual.height, width: visual.width },
-            visual.zoom,
-          ),
-        );
-        await page.emulateMedia({
-          colorScheme: "light",
-          reducedMotion: "reduce",
-        });
-        await openWorkspace(page, visual.locale);
-        await page
-          .locator("#tooling-engineering-controls-workspace")
-          .evaluate((element) => {
-            element.scrollIntoView({ block: "start" });
-          });
-        await expectNoMixedLanguage(page, visual.locale);
-        await expectNoDocumentOverflow(page);
-        await expectIndustrialComputedStyles(page);
-        await expectAxeClean(page);
-        await page.addStyleTag({
-          content:
-            "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
-        });
-        await page.evaluate(async () => document.fonts.ready);
-        await expect(page).toHaveScreenshot(
-          `${visual.name.replace("p6-03-tooling-revision", "p6-05-engineering-controls")}.png`,
-          { fullPage: false },
-        );
-      },
-    );
-  }
-});
-
-test.describe("@visual P6-06 acceptance and Asset evidence", () => {
-  for (const visual of visualCases) {
-    test(
-      visual.name.replace("p6-03-tooling-revision", "p6-06-acceptance-assets"),
-      async ({ page }) => {
-        await installSession(page, visual.locale);
-        await installApi(page, { acceptanceReady: true });
-        await page.setViewportSize(
-          effectiveViewport(
-            { height: visual.height, width: visual.width },
-            visual.zoom,
-          ),
-        );
-        await page.emulateMedia({
-          colorScheme: "light",
-          reducedMotion: "reduce",
-        });
-        await openWorkspace(page, visual.locale);
-        await page
-          .locator(
-            "#tooling-acceptance-asset-workspace .tooling-acceptance__asset-grid",
-          )
-          .evaluate((element) => {
-            element.scrollIntoView({ block: "start" });
-          });
-        const toolAssetAction = page.locator(
-          '[data-tool-asset-request-action="true"]',
-        );
-        await toolAssetAction.scrollIntoViewIfNeeded();
-        await expect(toolAssetAction).toBeVisible();
-        await expectNoMixedLanguage(page, visual.locale);
-        await expectNoDocumentOverflow(page);
-        await expectIndustrialComputedStyles(page);
-        await expectAxeClean(page);
-        await page.addStyleTag({
-          content:
-            "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
-        });
-        await page.evaluate(async () => document.fonts.ready);
-        await expect(page).toHaveScreenshot(
-          `${visual.name.replace("p6-03-tooling-revision", "p6-06-acceptance-assets")}.png`,
-          { fullPage: false },
-        );
-      },
-    );
   }
 });

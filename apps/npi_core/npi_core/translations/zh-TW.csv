@@ -8292,3 +8292,50 @@ The idempotency key was already used for a different Tool Asset operation or req
 Another Tool Asset execution request is active for this physical Tooling Set.,此實體模具套已有另一個活動的模具資產執行請求。
 "Confirm the exact Tool Asset operation, source, business approval, mapping, and execution profile.",請確認精確的模具資產操作、來源、業務核准、映射和執行設定檔。
 The Tool Asset execution request state transition is invalid.,模具資產執行請求狀態轉換無效。
+Failed final,最終失敗
+Failed retryable,失敗可重試
+Synthetic verified,合成驗證通過
+Create formal Asset,建立正式資產
+Update formal Asset,更新正式資產
+Sandbox,沙箱
+Synthetic,合成
+Tooling Master title,工裝主資料標題
+Physical Set serial,實體套組序號
+Tooling requirement kind,工裝需求類型
+Acceptance evidence reference,驗收證據引用
+Succeeded authoritative,權威執行成功
+Observed conflict,觀測衝突
+Authoritative Sandbox,權威沙箱
+No target authority,無目標權威性
+Loading Tool Asset execution truth,正在載入工裝資產執行事實
+Tool Asset execution unavailable,工裝資產執行不可用
+A signed-in command session is required.,需要已登入的命令工作階段。
+Separate ERP business approval is unavailable.,獨立的企業資源規劃業務核准不可用。
+The Tool Asset execution profile is unavailable.,工裝資產執行設定檔不可用。
+Create and update authority conflict; no request is permitted.,建立與更新權限衝突；不允許發起請求。
+No exact create or update mapping context is available.,沒有可用的精確建立或更新映射上下文。
+You do not have permission to request this operation.,您沒有權限請求此操作。
+Execution truth,執行事實
+No request recorded,未記錄請求
+Acceptance evidence,驗收證據
+Recorded in NPI One,已記錄在 NPI One
+ERP business approval,企業資源規劃業務核准
+Formal Asset mapping,正式資產映射
+Withheld until authoritative current truth,在取得目前權威事實前隱藏
+Per-field execution results,逐欄位執行結果
+Owned field,主責欄位
+Authority,權威性
+No per-field execution result is available.,沒有可用的逐欄位執行結果。
+Request exact Tool Asset execution,請求精確工裝資產執行
+"Impact: commits one immutable create or update request and, outside Mock, one recoverable Outbox event. It does not approve, move or maintain an Asset.",影響：提交一個不可變的建立或更新請求，並在模擬之外提交一個可復原的寄件匣事件。它不會核准、移動或維護資產。
+Review Tool Asset request,審查工裝資產請求
+Review exact Tool Asset request,審查精確工裝資產請求
+Request Tool Asset execution,請求工裝資產執行
+Exact physical Tooling Set,精確實體工裝套組
+Commit one immutable operation-specific request and one recoverable Outbox event when execution is enabled.,在啟用執行時提交一個不可變的操作專用請求和一個可復原的寄件匣事件。
+"Project membership, separate business approval and exact profile requester authority are required.",需要專案成員身分、獨立業務核准和精確設定檔請求權限。
+"The request, audit, observed field truth and mapping evidence remain immutable.",請求、稽核、觀測欄位事實和映射證據保持不可變。
+"Partial, failed and uncertain truth remains visible. No retry or reconcile command is available here.",部分、失敗和不確定事實保持可見。此處不提供重試或對帳命令。
+"Actor, trace, idempotency, source and mapping expectation hashes are recorded.",記錄操作者、追蹤、冪等、來源和映射預期雜湊。
+Tool Asset execution inspector,工裝資產執行檢查器
+Select exact acceptance evidence and a physical Tooling Set to inspect execution truth.,選擇精確驗收證據和實體工裝套組以檢查執行事實。

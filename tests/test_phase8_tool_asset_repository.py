@@ -501,6 +501,124 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
         self.assertEqual(public["resultGlobalId"], str(result_global_id))
         self.assertEqual(snapshot, request.canonical_mapping())
 
+    def test_detail_projects_bounded_empty_execution_truth_without_mutation(self) -> None:
+        repository = self.bare_repository()
+        request = self.request(ToolAssetExecutionTargetMode.SYNTHETIC)
+        row = types.SimpleNamespace(
+            global_id=str(request.global_id),
+            request_snapshot=request.canonical_mapping(),
+            payload_hash=request.payload_hash,
+            source_hash=request.source.source_hash,
+            execution_state=ToolAssetExecutionRequestState.QUEUED.value,
+            optimistic_version=1,
+            dispatch_allowed=1,
+            outbox_event_id=str(uid(30)),
+            target_idempotency_key_hash="b" * 64,
+            semantic_effect_hash="c" * 64,
+            result_global_id=None,
+        )
+        project = types.SimpleNamespace(
+            tenant_id=request.source.tenant_id,
+            global_id=request.source.project_global_id,
+        )
+        repository._authorized_project = lambda _identity: project
+        repository._master_for_project = lambda *_args: object()
+        repository._tooling_set_for_project = lambda *_args: object()
+        repository._execution_request_for_scope = lambda *_args, **_kwargs: row
+        repository._bounded_documents = lambda *_args, **_kwargs: ()
+        repository._read_execution_profile = lambda _project: None
+        repository._execution_permissions = lambda *_args: {
+            "canView": True,
+            "canCreate": False,
+            "canUpdate": False,
+        }
+
+        detail = repository.execution_request_detail(
+            request.source.project_global_id,
+            request.source.tooling_master_global_id,
+            request.source.tooling_set_global_id,
+            request.global_id,
+        )
+
+        self.assertEqual(detail["attempts"], [])
+        self.assertIsNone(detail["result"])
+        self.assertEqual(detail["fieldResults"], [])
+        self.assertIsNone(detail["mappingObservation"])
+        self.assertIsNone(detail["currentMapping"])
+        self.assertEqual(detail["request"]["state"], "queued")
+
+    def test_non_authoritative_mapping_observation_withholds_all_asset_identity(self) -> None:
+        repository = self.bare_repository()
+        request = self.request(ToolAssetExecutionTargetMode.SYNTHETIC)
+        result = {
+            "globalId": str(uid(31)),
+            "attemptGlobalId": str(uid(32)),
+            "state": "synthetic_verified",
+            "authority": "synthetic",
+            "responseAuthenticated": False,
+        }
+        snapshot = {
+            "schemaVersion": 2,
+            "globalId": str(uid(33)),
+            "tenantId": request.source.tenant_id,
+            "projectGlobalId": str(request.source.project_global_id),
+            "toolingSetGlobalId": str(request.source.tooling_set_global_id),
+            "sourceStreamKeyHash": request.source.source_stream_key_hash,
+            "requestGlobalId": str(request.global_id),
+            "resultGlobalId": result["globalId"],
+            "attemptGlobalId": result["attemptGlobalId"],
+            "operation": request.operation.value,
+            "sourceHash": request.source.source_hash,
+            "mappingExpectationHash": self.repository.canonical_hash(
+                request.mapping_expectation.canonical_mapping()
+            ),
+            "previousMappingVersion": 0,
+            "previousFormalAssetId": None,
+            "previousTargetVersion": None,
+            "previousObservationHash": None,
+            "observedFormalAssetId": None,
+            "observedTargetVersion": None,
+            "authority": "synthetic",
+            "responseAuthenticated": False,
+            "responseHash": "9" * 64,
+            "disposition": "non_authoritative",
+            "observedAt": NOW.isoformat().replace("+00:00", "Z"),
+        }
+        row = types.SimpleNamespace(
+            global_id=snapshot["globalId"],
+            tenant_id=snapshot["tenantId"],
+            project_global_id=snapshot["projectGlobalId"],
+            tooling_set_global_id=snapshot["toolingSetGlobalId"],
+            source_stream_key_hash=snapshot["sourceStreamKeyHash"],
+            request_global_id=snapshot["requestGlobalId"],
+            result_global_id=snapshot["resultGlobalId"],
+            attempt_global_id=snapshot["attemptGlobalId"],
+            operation=snapshot["operation"],
+            source_hash=snapshot["sourceHash"],
+            mapping_expectation_hash=snapshot["mappingExpectationHash"],
+            disposition="non_authoritative",
+            authority="synthetic",
+            response_authenticated=0,
+            observation_snapshot=snapshot,
+            observation_hash=self.repository.canonical_hash(snapshot),
+        )
+        repository._bounded_documents = lambda *_args, **_kwargs: (row,)
+        project = types.SimpleNamespace(
+            tenant_id=request.source.tenant_id,
+            global_id=request.source.project_global_id,
+        )
+
+        observation, current = repository._execution_mapping_public(
+            project, request, result
+        )
+
+        self.assertIsNone(current)
+        self.assertIsNone(observation["previousFormalAssetId"])
+        self.assertIsNone(observation["observedFormalAssetId"])
+        row.observation_hash = "0" * 64
+        with self.assertRaisesRegex(RuntimeError, "observation is invalid"):
+            repository._execution_mapping_public(project, request, result)
+
 
 if __name__ == "__main__":
     unittest.main()

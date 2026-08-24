@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
+`IN_PROGRESS_CHECKPOINT_4_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY_CI — P8-05`
 
 Recovery time: `2026-08-23T20:13:00Z`
 
@@ -409,21 +409,28 @@ checkpoint 1 SHA `db0cb846` passes ordinary CI `32660953137`: repository
 `97246942405`, frontend `97246942329`, secret `97246942233` and unchanged
 visual `97246942321` all pass. Checkpoint 1 is sealed.
 
-Checkpoint 2 SHA `d20b4a3` passes ordinary CI `32664440277`. Checkpoint 3 now
-implements only the bounded leased worker/recovery, immutable attempts,
-operation-specific closed adapter registry, network-free disposable synthetic
-proof, field/aggregate result truth and authenticated complete-result mapping
-compare-and-set. It awaits its own exact-SHA ordinary CI. UI and target network
-remain closed.
+Checkpoint 2 SHA `d20b4a3` passes ordinary CI `32664440277`. Checkpoint 3 SHA
+`17406118` passes ordinary CI `32667224305`; it seals the bounded leased
+worker/recovery, immutable attempts, operation-specific closed adapter
+registry, network-free disposable synthetic proof, field/aggregate result
+truth and authenticated complete-result mapping compare-and-set.
+
+Checkpoint 4 now implements only the strict read-only execution detail
+projection and the compact trilingual Tool Asset execution inspector in the
+existing acceptance/Asset workspace. It keeps one visible primary Impact
+Review action, browser-zero target access and formal Asset identity withholding
+unless authenticated authoritative evidence, the exact current mapping head
+and the fresh permitted P8-01 projection agree. It awaits its own exact-SHA
+ordinary CI; final unchanged Level 3 remains closed.
 NPI acceptance evidence is not business approval, ERP approval, Asset creation
 or target success. Do not contact production ERPNext/JCE, install a Sandbox/
 default profile, infer Asset field/naming/category/location/maintenance/
 service-scope facts, weaken P6/P8-01 history, add generic P8-07 operations or
 activate P8-06/P8-08/P8-09.
 
-After checkpoint 3 exact-SHA ordinary CI passes, activate only checkpoint 4
-trilingual Tool Asset execution inspector. No UI work is authorized before
-that exact-SHA PASS.
+After checkpoint 4 exact-SHA ordinary CI passes, activate only the final
+unchanged Level 3 Gate. No P8-06, retry/reconcile/submit, target-network or
+production behavior is authorized before that Gate passes.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

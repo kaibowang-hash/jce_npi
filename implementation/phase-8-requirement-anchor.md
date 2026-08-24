@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-05 CHECKPOINT 1 PASS; CHECKPOINT 2 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-05 CHECKPOINTS 1–3 PASS; CHECKPOINT 4 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI**
 
 Anchor date: 2026-08-16
 
@@ -453,11 +453,16 @@ one physical Tooling Set to zero-or-one formal Asset, exact source and mapping/
 target-version expectations, acceptance-evidence versus business-approval
 separation, partial/uncertain result truth and P8-01 read-only Asset/location/
 maintenance ownership. Frozen-plan SHA `937c5d72` passes ordinary CI
-`32656436943`, and remediated checkpoint 1 SHA `db0cb846` passes ordinary CI
-`32660953137`. Checkpoint 2 implements only Project-first fixed list/detail/
-create/update commands, exact Tooling/acceptance/mapping/profile locks and one
-atomic request + guarded Outbox + stream guard + audit transaction; it awaits
-its own exact-SHA ordinary CI. Worker, adapter, target network, attempt/result/
-mapping execution and UI remain closed. `NFR-INT-001` generic operations/DLQ/
-manual replay/reconciliation remains P8-07. P8-06, P8-08/P8-09 and production
-ERPNext/JCE remain inactive.
+`32656436943`; remediated checkpoint 1 SHA `db0cb846` passes ordinary CI
+`32660953137`; checkpoint 2 SHA `d20b4a3` passes ordinary CI `32664440277`;
+and checkpoint 3 SHA `17406118` passes ordinary CI `32667224305`. Checkpoint 4
+now implements only the strict read-only execution detail projection and
+compact trilingual Tool Asset execution inspector inside the existing Tooling
+acceptance/Asset workspace. Formal Asset identity remains withheld unless
+authenticated authoritative evidence, the exact current mapping head and the
+fresh permitted P8-01 projection agree. Target network, Sandbox/production
+facts and retry, reconcile, submit, ERP approval, movement and maintenance
+controls remain closed. Final unchanged Level 3 waits for checkpoint 4
+exact-SHA ordinary CI. `NFR-INT-001` generic operations/DLQ/manual replay/
+reconciliation remains P8-07. P8-06, P8-08/P8-09 and production ERPNext/JCE
+remain inactive.

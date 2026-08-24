@@ -4630,3 +4630,36 @@ repeat or rewrite it merely to restore context. See
   Sandbox and production remain closed. Checkpoint 4 UI remains inactive until
   this candidate passes its exact-SHA ordinary CI. Controller marker:
   `P8-05 checkpoint 2 PASS; checkpoint 3 awaits exact-SHA ordinary CI`.
+
+## 2026-08-24 P8-05 checkpoint 3 PASS; checkpoint 4 awaits exact-SHA ordinary CI
+
+- Exact checkpoint 3 SHA `17406118f2a771644c90ca00272a247f40b1b5b7`
+  passes ordinary CI `32667224305`: repository `97262446049`, frontend
+  `97262445982`, secret `97262446040` and governed visual `97262446007` pass;
+  controlled lanes correctly skip before the final cumulative Gate.
+- Checkpoint 3 seals bounded leases and pre-boundary recovery, immutable
+  attempts, operation-specific closed adapter commands, network-free
+  synthetic execution, aggregate plus per-field partial/uncertain truth and
+  authenticated complete-result mapping compare-and-set. It installs no
+  Sandbox or production profile and contacts no target.
+- Standing authority activates only checkpoint 4. The candidate adds the
+  strict read-only execution detail projection and a compact trilingual Tool
+  Asset execution inspector inside the existing Tooling acceptance/Asset
+  workspace. It keeps one visible primary Impact Review action, browser-zero
+  target access and formal Asset identity withholding unless authenticated
+  authoritative evidence, the exact current mapping head and the fresh
+  permitted P8-01 projection agree.
+- Actual ERPNext method/fields/location/maintenance, business approval source,
+  Sandbox and production remain closed. Retry, reconcile, submit, approval,
+  movement and maintenance controls remain absent. Final unchanged Level 3 is
+  closed until this candidate passes its own exact-SHA ordinary CI. Controller
+  marker: `P8-05 checkpoint 3 PASS; checkpoint 4 awaits exact-SHA ordinary CI`.
+- Checkpoint 4 pre-commit Level 1 passes `409/409` affected backend/controller,
+  `1,060/1,060` complete frontend unit, `454/454` complete non-visual E2E and
+  `129/129` clean serial Bookworm/x64 governed visual tests. The approved
+  P6-06 three-image semantic baseline migration preserves prior acceptance and
+  Mock context, displays the default-disabled Tool Asset inspector with its
+  direct reason, introduces no formal identifier and changes no visual
+  tolerance, threshold or Darwin evidence. Exact `32`-path manifest simulation,
+  i18n `8,341` source coverage and current/reconciliation checks pass; ordinary
+  CI and final Level 3 remain undispatched.

@@ -11,6 +11,14 @@ import {
   type ToolingAcceptanceAssetDataSource,
 } from "../api/tooling-acceptance-asset-data-source";
 import {
+  confirmedToolAssetExecutionProjection,
+  LiveToolAssetExecutionDataSource,
+  type ToolAssetExecutionCollection,
+  type ToolAssetExecutionContext,
+  type ToolAssetExecutionDataSource,
+  type ToolAssetExecutionDetail,
+} from "../api/tool-asset-execution-data-source";
+import {
   TOOL_ASSET_MOCK_ACKNOWLEDGEMENT,
   toolingAcceptanceCategories,
   type CreateToolAssetRequestCommand,
@@ -32,6 +40,7 @@ import type { ReportWorkspaceDirty } from "../app/workspace-navigation";
 import { RequestFailurePanel } from "../components/problem-details-panel";
 import {
   DefinitionList,
+  ImpactReview,
   Panel,
   SemanticStatus,
 } from "../components/primitives";
@@ -84,6 +93,17 @@ interface AcceptanceDraft {
   setId: string;
   checklist: ChecklistDraft[];
 }
+
+type ExecutionResource =
+  | { kind: "loading" }
+  | {
+      kind: "loaded";
+      collection: ToolAssetExecutionCollection;
+      detail: ToolAssetExecutionDetail | null;
+    }
+  | { kind: "failed"; failure: RequestFailure };
+
+const liveToolAssetExecutionDataSource = new LiveToolAssetExecutionDataSource();
 
 function canRetry(failure: RequestFailure): boolean {
   return (
@@ -542,14 +562,431 @@ function AssetProjectionPanel({
   );
 }
 
+function executionStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: ToolAssetExecutionDetail["request"]["state"],
+): string {
+  switch (state) {
+    case "failed_final":
+      return t("Failed final");
+    case "failed_retryable":
+      return t("Failed retryable");
+    case "mapping_conflict":
+      return t("Mapping conflict");
+    case "partially_succeeded":
+      return t("Partially succeeded");
+    case "processing":
+      return t("Processing");
+    case "queued":
+      return t("Queued");
+    case "succeeded":
+      return t("Succeeded");
+    case "synthetic_verified":
+      return t("Synthetic verified");
+    case "uncertain_after_timeout":
+      return t("Uncertain after timeout");
+    case "validated_mock":
+      return t("Validated Mock");
+  }
+}
+
+function executionOperationLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  operation: "create_tool_asset" | "update_tool_asset",
+): string {
+  return operation === "create_tool_asset"
+    ? t("Create formal Asset")
+    : t("Update formal Asset");
+}
+
+function executionProfileLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  mode: "mock" | "synthetic" | "sandbox",
+): string {
+  if (mode === "sandbox") return t("Sandbox");
+  if (mode === "synthetic") return t("Synthetic");
+  return t("Mock");
+}
+
+function fieldCodeLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  code: string,
+): string {
+  if (code === "tooling_master_title") return t("Tooling Master title");
+  if (code === "physical_set_serial") return t("Physical Set serial");
+  if (code === "tooling_requirement_kind") return t("Tooling requirement kind");
+  if (code === "source_tooling_revision") return t("Source Tooling Revision");
+  return t("Acceptance evidence reference");
+}
+
+function fieldStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: string,
+): string {
+  if (state === "succeeded_authoritative") return t("Succeeded authoritative");
+  if (state === "synthetic_verified") return t("Synthetic verified");
+  if (state === "uncertain_after_timeout") return t("Uncertain after timeout");
+  if (state === "observed_conflict") return t("Observed conflict");
+  if (state === "failed_retryable") return t("Failed retryable");
+  return t("Failed final");
+}
+
+function authorityLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  authority: "none" | "synthetic" | "authoritative_sandbox",
+): string {
+  if (authority === "authoritative_sandbox") return t("Authoritative Sandbox");
+  if (authority === "synthetic") return t("Synthetic");
+  return t("No target authority");
+}
+
+function ToolAssetExecutionInspector({
+  acceptanceId,
+  assetProjectionResource,
+  dataSource,
+  masterId,
+  projectId,
+  sessionCommandContext,
+  setId,
+}: {
+  acceptanceId: string;
+  assetProjectionResource: AssetProjectionResourceState;
+  dataSource: ToolAssetExecutionDataSource;
+  masterId: string;
+  projectId: string;
+  sessionCommandContext: ReturnType<typeof useI18n>["sessionCommandContext"];
+  setId: string;
+}): React.JSX.Element {
+  const { t } = useI18n();
+  const [attempt, setAttempt] = useState(0);
+  const [resource, setResource] = useState<ExecutionResource>({
+    kind: "loading",
+  });
+  const [review, setReview] = useState<ToolAssetExecutionContext | null>(null);
+  const [commandFailure, setCommandFailure] = useState<RequestFailure | null>(
+    null,
+  );
+  const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void dataSource
+      .loadRequests(projectId, masterId, setId, acceptanceId, controller.signal)
+      .then(async (collection) => {
+        const latest = collection.items[0] ?? null;
+        const detail = latest
+          ? await dataSource.loadRequest(
+              projectId,
+              masterId,
+              setId,
+              latest.requestGlobalId,
+              controller.signal,
+            )
+          : null;
+        if (!controller.signal.aborted)
+          setResource({ kind: "loaded", collection, detail });
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted)
+          setResource({ kind: "failed", failure: toRequestFailure(error) });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [acceptanceId, attempt, dataSource, masterId, projectId, setId]);
+
+  if (resource.kind === "loading") {
+    return (
+      <div
+        aria-busy="true"
+        className="tool-asset-execution__state"
+        role="status"
+      >
+        {t("Loading Tool Asset execution truth")}
+      </div>
+    );
+  }
+  if (resource.kind === "failed") {
+    return (
+      <div className="tool-asset-execution__state">
+        <SemanticStatus
+          label={
+            resource.failure.problem?.status === 403
+              ? t("No permission")
+              : t("Tool Asset execution unavailable")
+          }
+          tone="warning"
+        />
+        <RequestFailurePanel failure={resource.failure} />
+      </div>
+    );
+  }
+  const { collection, detail } = resource;
+  const contexts = collection.commandContexts
+    ? Object.values(collection.commandContexts).filter(
+        (value): value is ToolAssetExecutionContext => Boolean(value),
+      )
+    : [];
+  const context = contexts.length === 1 ? (contexts[0] ?? null) : null;
+  const permitted =
+    context?.operation === "create_tool_asset"
+      ? collection.permissions.canCreate
+      : context?.operation === "update_tool_asset"
+        ? collection.permissions.canUpdate
+        : false;
+  const blockReason = !sessionCommandContext
+    ? t("A signed-in command session is required.")
+    : collection.businessApproval.state !== "verified"
+      ? t("Separate ERP business approval is unavailable.")
+      : collection.executionProfile === null
+        ? t("The Tool Asset execution profile is unavailable.")
+        : contexts.length > 1
+          ? t("Create and update authority conflict; no request is permitted.")
+          : !context
+            ? t("No exact create or update mapping context is available.")
+            : !permitted
+              ? t("You do not have permission to request this operation.")
+              : null;
+  const projectionItem =
+    assetProjectionResource.kind === "loaded"
+      ? (assetProjectionResource.value.items.find(
+          (item) => item.scopeGlobalId === setId,
+        ) ?? null)
+      : null;
+  const confirmedProjection = projectionItem
+    ? confirmedToolAssetProjection(projectionItem)
+    : null;
+  const currentMapping = detail
+    ? confirmedToolAssetExecutionProjection(detail, confirmedProjection)
+    : null;
+  const submit = (): void => {
+    if (!review || !sessionCommandContext) return;
+    setReview(null);
+    setProcessing(true);
+    setCommandFailure(null);
+    const controller = new AbortController();
+    void dataSource
+      .createRequest(projectId, masterId, setId, review, {
+        ...sessionCommandContext,
+        idempotencyKey: `tool-asset-${globalThis.crypto.randomUUID()}`,
+        signal: controller.signal,
+      })
+      .then(() => {
+        setProcessing(false);
+        setResource({ kind: "loading" });
+        setAttempt((value) => value + 1);
+      })
+      .catch((error: unknown) => {
+        setProcessing(false);
+        setCommandFailure(toRequestFailure(error));
+      });
+  };
+  return (
+    <div
+      className="tool-asset-execution"
+      data-tool-asset-execution-state={detail?.request.state ?? "empty"}
+    >
+      <div className="tool-asset-execution__summary">
+        <div className="tool-asset-execution__summary-item">
+          <span className="tool-asset-execution__summary-label">
+            {t("Execution truth")}
+          </span>
+          <SemanticStatus
+            label={
+              detail
+                ? executionStateLabel(t, detail.request.state)
+                : t("No request recorded")
+            }
+            tone={
+              detail?.request.state === "succeeded"
+                ? "success"
+                : detail?.request.state.startsWith("failed")
+                  ? "danger"
+                  : "neutral"
+            }
+          />
+        </div>
+        <div className="tool-asset-execution__summary-item">
+          <span className="tool-asset-execution__summary-label">
+            {t("Operation")}
+          </span>
+          <strong className="tool-asset-execution__summary-value">
+            {detail
+              ? executionOperationLabel(t, detail.request.operation)
+              : t("Not requested")}
+          </strong>
+        </div>
+        <div className="tool-asset-execution__summary-item">
+          <span className="tool-asset-execution__summary-label">
+            {t("Acceptance evidence")}
+          </span>
+          <strong className="tool-asset-execution__summary-value">
+            {t("Recorded in NPI One")}
+          </strong>
+        </div>
+        <div className="tool-asset-execution__summary-item">
+          <span className="tool-asset-execution__summary-label">
+            {t("ERP business approval")}
+          </span>
+          <strong className="tool-asset-execution__summary-value">
+            {collection.businessApproval.state === "verified"
+              ? t("Verified")
+              : t("Unavailable")}
+          </strong>
+        </div>
+        <div className="tool-asset-execution__summary-item">
+          <span className="tool-asset-execution__summary-label">
+            {t("Execution profile")}
+          </span>
+          <strong className="tool-asset-execution__summary-value">
+            {collection.executionProfile
+              ? executionProfileLabel(t, collection.executionProfile.targetMode)
+              : t("Unavailable")}
+          </strong>
+        </div>
+        <div className="tool-asset-execution__summary-item">
+          <span className="tool-asset-execution__summary-label">
+            {t("Formal Asset mapping")}
+          </span>
+          <strong
+            className="tool-asset-execution__summary-value"
+            data-language-exempt={currentMapping ? "identifier" : undefined}
+          >
+            {currentMapping?.formalAssetId ??
+              t("Withheld until authoritative current truth")}
+          </strong>
+        </div>
+      </div>
+      {detail?.fieldResults.length ? (
+        <div
+          aria-label={t("Per-field execution results")}
+          className="table-scroll"
+          tabIndex={0}
+        >
+          <table className="data-table tool-asset-execution__table">
+            <thead>
+              <tr>
+                <th className="tool-asset-execution__cell">
+                  {t("Owned field")}
+                </th>
+                <th className="tool-asset-execution__cell">
+                  {t("Execution result")}
+                </th>
+                <th className="tool-asset-execution__cell">{t("Authority")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {detail.fieldResults.map((field) => (
+                <tr key={field.fieldCode}>
+                  <td className="tool-asset-execution__cell">
+                    {fieldCodeLabel(t, field.fieldCode)}
+                  </td>
+                  <td className="tool-asset-execution__cell">
+                    <SemanticStatus
+                      label={fieldStateLabel(t, field.state)}
+                      tone={
+                        field.state === "succeeded_authoritative"
+                          ? "success"
+                          : field.state.startsWith("failed")
+                            ? "danger"
+                            : "warning"
+                      }
+                    />
+                  </td>
+                  <td className="tool-asset-execution__cell">
+                    {authorityLabel(t, field.authority)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p>{t("No per-field execution result is available.")}</p>
+      )}
+      <div className="tool-asset-execution__action">
+        <div>
+          <strong>{t("Request exact Tool Asset execution")}</strong>
+          <p>
+            {t(
+              "Impact: commits one immutable create or update request and, outside Mock, one recoverable Outbox event. It does not approve, move or maintain an Asset.",
+            )}
+          </p>
+          {blockReason ? <small>{blockReason}</small> : null}
+        </div>
+        <Button
+          data-tool-asset-request-action="true"
+          disabled={Boolean(blockReason) || processing}
+          onClick={() => {
+            if (context) setReview(context);
+          }}
+          visual="primary"
+        >
+          {t("Review Tool Asset request")}
+        </Button>
+      </div>
+      {commandFailure ? (
+        <div role="alert">
+          <SemanticStatus label={t("Command failed")} tone="danger" />
+          <RequestFailurePanel failure={commandFailure} />
+        </div>
+      ) : null}
+      {review ? (
+        <ImpactReview
+          title={t("Review exact Tool Asset request")}
+          confirmLabel={t("Request Tool Asset execution")}
+          reasonRequired={false}
+          returnFocusTarget={() =>
+            document.querySelector<HTMLElement>(
+              '[data-tool-asset-request-action="true"]',
+            )
+          }
+          onCancel={() => {
+            setReview(null);
+          }}
+          onConfirm={submit}
+          details={{
+            objectIdentity: t("Exact physical Tooling Set"),
+            version: review.expectedSourceHash,
+            impact: t(
+              "Commit one immutable operation-specific request and one recoverable Outbox event when execution is enabled.",
+            ),
+            permission: t(
+              "Project membership, separate business approval and exact profile requester authority are required.",
+            ),
+            irreversible: t(
+              "The request, audit, observed field truth and mapping evidence remain immutable.",
+            ),
+            failureHandling: t(
+              "Partial, failed and uncertain truth remains visible. No retry or reconcile command is available here.",
+            ),
+            audit: t(
+              "Actor, trace, idempotency, source and mapping expectation hashes are recorded.",
+            ),
+          }}
+          contextRows={[
+            {
+              label: t("Operation"),
+              value: executionOperationLabel(t, review.operation),
+            },
+            { label: t("Physical Set"), value: setId, exempt: "identifier" },
+          ]}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 export default function ToolingAcceptanceAssetWorkspace({
   assetProjectionDataSource = liveAssetProjectionDataSource,
+  executionDataSource = liveToolAssetExecutionDataSource,
   dataSource,
   master,
   projectId,
   reportWorkspaceDirty,
 }: {
   assetProjectionDataSource?: ToolingAcceptanceAssetDataSource | undefined;
+  executionDataSource?: ToolAssetExecutionDataSource | undefined;
   dataSource: ToolingDataSource;
   master: ToolingMasterSummaryViewModel;
   projectId: string;
@@ -1307,6 +1744,7 @@ export default function ToolingAcceptanceAssetWorkspace({
           <Button
             disabled={!canPrepareMock || !acknowledged || processing}
             onClick={submitMockRequest}
+            visual="secondary"
           >
             {t("Prepare Mock Asset request")}
           </Button>
@@ -1315,6 +1753,26 @@ export default function ToolingAcceptanceAssetWorkspace({
               "This command cannot approve Tooling, dispatch a request, contact ERPNext or create a formal Asset.",
             )}
           </small>
+        </Panel>
+
+        <Panel title={t("Tool Asset execution inspector")}>
+          {selectedAcceptance && selectedSet ? (
+            <ToolAssetExecutionInspector
+              acceptanceId={selectedAcceptance.globalId}
+              assetProjectionResource={assetProjectionResource}
+              dataSource={executionDataSource}
+              masterId={master.globalId}
+              projectId={projectId}
+              sessionCommandContext={sessionCommandContext}
+              setId={selectedSet.globalId}
+            />
+          ) : (
+            <p>
+              {t(
+                "Select exact acceptance evidence and a physical Tooling Set to inspect execution truth.",
+              )}
+            </p>
+          )}
         </Panel>
 
         <Panel title={t("ERPNext Asset projection")}>

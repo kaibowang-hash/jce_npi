@@ -9,6 +9,7 @@ import type {
   ToolingSetCollectionViewModel,
 } from "../../src/api/tooling-data-source";
 import type { ToolingAcceptanceAssetDataSource } from "../../src/api/tooling-acceptance-asset-data-source";
+import type { ToolAssetExecutionDataSource } from "../../src/api/tool-asset-execution-data-source";
 import { NpiTransportError } from "../../src/api/http";
 import ToolingAcceptanceAssetWorkspace from "../../src/pages/tooling-acceptance-asset-workspace";
 import {
@@ -21,6 +22,10 @@ import {
   toolingAcceptanceIds as ids,
 } from "../support/tooling-acceptance-fixture";
 import { renderWithLocale } from "../support/render";
+import {
+  toolAssetExecutionCollection,
+  toolAssetExecutionDetail,
+} from "../support/tool-asset-execution-fixture";
 
 function required<T>(value: T | undefined, message: string): T {
   if (value === undefined) throw new Error(message);
@@ -179,11 +184,17 @@ function renderWorkspace(
         items: [],
       }),
   },
+  executionDataSource: ToolAssetExecutionDataSource = {
+    createRequest: vi.fn(() => Promise.resolve(toolAssetExecutionDetail())),
+    loadRequest: vi.fn(() => Promise.resolve(toolAssetExecutionDetail())),
+    loadRequests: vi.fn(() => Promise.resolve(toolAssetExecutionCollection())),
+  },
 ): void {
   renderWithLocale(
     <ToolingAcceptanceAssetWorkspace
       assetProjectionDataSource={assetProjectionDataSource}
       dataSource={source}
+      executionDataSource={executionDataSource}
       master={master()}
       projectId={ids.project}
     />,
@@ -198,6 +209,53 @@ afterEach(() => {
 });
 
 describe("Tooling acceptance and Asset workspace", () => {
+  it("keeps one guarded Tool Asset primary action and separates approval from acceptance", async () => {
+    renderWorkspace(dataSource());
+    expect(
+      await screen.findByText("Tool Asset execution inspector"),
+    ).toBeVisible();
+    expect(await screen.findByText("Recorded in NPI One")).toBeVisible();
+    expect(screen.getByText("Verified")).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Review Tool Asset request" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Prepare Mock Asset request" }),
+    ).not.toHaveAttribute("variant", "primary");
+    expect(
+      screen.queryByRole("button", {
+        name: /retry|reconcile|submit|approve/iu,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["validated_mock", "Validated Mock"],
+    ["queued", "Queued"],
+    ["processing", "Processing"],
+    ["synthetic_verified", "Synthetic verified"],
+    ["partially_succeeded", "Partially succeeded"],
+    ["failed_retryable", "Failed retryable"],
+    ["failed_final", "Failed final"],
+    ["uncertain_after_timeout", "Uncertain after timeout"],
+    ["mapping_conflict", "Mapping conflict"],
+    ["succeeded", "Succeeded"],
+  ] as const)("renders explicit %s execution truth", async (state, label) => {
+    const detail = toolAssetExecutionDetail(state);
+    renderWorkspace(dataSource(), undefined, {
+      createRequest: vi.fn(() => Promise.resolve(detail)),
+      loadRequest: vi.fn(() => Promise.resolve(detail)),
+      loadRequests: vi.fn(() =>
+        Promise.resolve(toolAssetExecutionCollection(detail)),
+      ),
+    });
+    const stateLabels = await screen.findAllByText(label);
+    expect(stateLabels.length).toBeGreaterThan(0);
+    for (const stateLabel of stateLabels) expect(stateLabel).toBeVisible();
+    if (state !== "succeeded")
+      expect(screen.queryByText("ASSET-00042")).not.toBeInTheDocument();
+  });
+
   it("keeps loading, empty and read-only truth explicit", async () => {
     let resolveAcceptance:
       | ((value: ReturnType<typeof acceptanceContext>) => void)

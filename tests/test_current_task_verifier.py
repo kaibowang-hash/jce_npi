@@ -44,7 +44,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_3_AWAITING_EXACT_SHA_ORDINARY_CI",
+            "IN_PROGRESS_CHECKPOINT_4_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY_CI",
+        )
+        self.assertIn(
+            "P8_05_CHECKPOINT_3_EXACT_SHA_ORDINARY_CI_32667224305_PASSED",
+            value["frozen_invariants"],
         )
         self.assertIn(
             "apps/npi_integration/npi_integration/tool_asset_request/**",
