@@ -848,3 +848,28 @@ service-actor enabled/role/session validation and exact profile membership are
 unchanged. This modifies no product, user, role, permission, transaction,
 Schema, ownership, adapter, target or Gate behavior and consumes no diagnostic,
 product-repair or final counter.
+
+## 22. Enabled collection query harness remediation
+
+Exact requester-export checkpoint `aaa433239166e63fcf5420fc2cc003cd0bcd5680`
+passes ordinary CI `32708092916`. Same-cycle final Level 3 `32709548912`
+passes every non-runtime lane and controlled preflight; controlled runtime
+`97380802057` crosses the default-disabled collection and corrected actor
+binding, then stops before the first command at the enabled disposable-context
+predicate.
+
+The ordered subpredicates have one static harness root. The immediately prior
+default-disabled GET proves HTTP success and an exact empty execution
+collection, and the intervening server restart/profile activation performs no
+Tool Asset execution write. Repository command contexts are intentionally
+conditional on an explicit acceptance revision query. The enabled verifier
+omitted that query, so its create context is always absent even with the exact
+Synthetic profile.
+
+The verifier-only correction URL-encodes the sole retained
+`acceptanceRevisionGlobalId` query. HTTP 200, exact empty items, dictionary
+create context and exact Synthetic target mode remain four independent,
+mandatory predicates; tests prove no POST occurs if any fails. No product,
+API, permission, transaction, Schema, ownership, runtime profile, adapter,
+external contact or Gate standard changes. Same-cycle counters remain
+immutable.

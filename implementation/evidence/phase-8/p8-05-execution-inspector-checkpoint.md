@@ -267,3 +267,22 @@ Canonical Linux/amd64 SHA-256 evidence:
   unchanged. No product, user, role, permission, transaction, Schema,
   ownership, adapter, external contact or Gate standard changes. Same-cycle
   counters remain immutable.
+
+### Enabled collection query harness correction
+
+- Exact requester checkpoint `aaa433239166e63fcf5420fc2cc003cd0bcd5680`
+  passes ordinary CI `32708092916`; final `32709548912` passes all non-runtime
+  jobs and controlled preflight. Controlled runtime `97380802057` passes the
+  default-disabled and actor predicates, then stops at the enabled disposable
+  command-context guard before the first Tool Asset command.
+- The preceding disabled GET proves status 200 and exact empty items, and the
+  restart plus profile activation introduces no execution row. Product
+  repository code only exposes command contexts for an explicit acceptance
+  revision. The verifier's enabled GET omitted that query, making the create
+  context deterministically absent while leaving the Synthetic profile valid.
+- The harness now URL-encodes exactly one retained
+  `acceptanceRevisionGlobalId` query. Focused tests require status 200, exact
+  empty items, a dictionary create context and exact Synthetic profile
+  independently, and prove POST is reached only after all pass. This changes
+  no product/API/permission/transaction/Schema/ownership/profile/adapter/
+  target behavior and consumes no diagnostic, product-repair or final counter.

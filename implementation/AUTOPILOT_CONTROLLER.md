@@ -4832,3 +4832,28 @@ repeat or rewrite it merely to restore context. See
   ownership, adapter, target or Gate behavior changes. This is same-cycle
   harness remediation and does not change diagnostic, product-repair or final
   counters.
+
+## 2026-08-24 P8-05 enabled collection query harness correction
+
+- Exact requester-export checkpoint
+  `aaa433239166e63fcf5420fc2cc003cd0bcd5680` passes ordinary CI
+  `32708092916`. Same-cycle final Level 3 `32709548912` passes repository,
+  frontend, secret, governed visual and controlled preflight; controlled
+  runtime job `97380802057` passes the default-disabled and retained actor
+  checks, then stops before the first Tool Asset command at the fixed
+  `P8-05 disposable command context is unavailable` verifier boundary.
+- Ordered static cross-proof identifies a verifier-only query omission. The
+  default-disabled request has already proved HTTP success and an exact empty
+  execution collection, and no Tool Asset execution write occurs before the
+  enabled request. The repository only builds operation command contexts when
+  the collection GET supplies the retained acceptance revision query. The
+  verifier omitted that query, so the create context is deterministically
+  absent even though the disposable Synthetic profile is enabled.
+- The bounded correction adds the sole exact
+  `acceptanceRevisionGlobalId` query using the retained, already-validated
+  acceptance revision. Tests keep HTTP 200, exact empty items, dictionary
+  create context and exact Synthetic target profile as independent mandatory
+  predicates, and prove POST is unreachable unless all four pass. No product,
+  API, permission, transaction, Schema, ownership, profile, adapter, target or
+  Gate behavior changes. This is same-cycle verifier harness remediation and
+  changes no diagnostic, product-repair or final counter.

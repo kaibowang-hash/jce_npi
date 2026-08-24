@@ -6,6 +6,7 @@ import sys
 import types
 import unittest
 from pathlib import Path
+from urllib.parse import parse_qsl, urlsplit
 from unittest.mock import patch
 from uuid import UUID
 
@@ -164,6 +165,145 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     "http://127.0.0.1:8003", "fixture-password"
                 )
             request.assert_called_once()
+
+    def test_enabled_collection_binds_exact_acceptance_query_and_strict_context(self):
+        project_id = str(UUID(int=1))
+        master_id = str(UUID(int=2))
+        set_id = str(UUID(int=3))
+        acceptance_id = str(UUID(int=4))
+        context = {
+            "projectId": project_id,
+            "masterId": master_id,
+            "toolingSetId": set_id,
+        }
+        acceptance = {"globalId": acceptance_id}
+        source = {"acceptanceRevisionGlobalId": acceptance_id}
+        create = {
+            "source": source,
+            "expectedSourceHash": "a" * 64,
+            "expectedApprovalHash": "b" * 64,
+            "expectedMappingExpectationHash": "c" * 64,
+            "expectedProfileSnapshotHash": "d" * 64,
+        }
+        valid_body = {
+            "items": [],
+            "commandContexts": {"create_tool_asset": create},
+            "executionProfile": {"targetMode": "synthetic"},
+        }
+        valid_environment = {
+            "NPI_TOOL_ASSET_RUNTIME_PROJECT_ID": project_id,
+            "NPI_TOOL_ASSET_REQUESTER_USER": self.verifier.ACTOR_USER,
+            "NPI_TOOL_ASSET_WORKER_USER": "npi-inbound-worker@example.invalid",
+        }
+        invalid_responses = {
+            "status": types.SimpleNamespace(status=503, body=valid_body),
+            "items": types.SimpleNamespace(
+                status=200,
+                body={**valid_body, "items": [{}]},
+            ),
+            "create-context": types.SimpleNamespace(
+                status=200,
+                body={**valid_body, "commandContexts": None},
+            ),
+            "target-profile": types.SimpleNamespace(
+                status=200,
+                body={
+                    **valid_body,
+                    "executionProfile": {"targetMode": "sandbox"},
+                },
+            ),
+        }
+
+        def assert_exact_collection_call(request) -> None:
+            self.assertEqual(request.call_count, 1)
+            args, kwargs = request.call_args
+            self.assertEqual(args[:2], (object_actor, "http://127.0.0.1:8003"))
+            split = urlsplit(args[2])
+            self.assertEqual(
+                split.path,
+                self.verifier.execution_path(project_id, master_id, set_id),
+            )
+            self.assertEqual(
+                parse_qsl(split.query, keep_blank_values=True),
+                [("acceptanceRevisionGlobalId", acceptance_id)],
+            )
+            self.assertEqual(kwargs, {"method": "GET", "query_key": "enabled"})
+
+        object_actor = object()
+        for name, response in invalid_responses.items():
+            with self.subTest(name=name), patch.dict(
+                os.environ, valid_environment, clear=True
+            ), patch.object(
+                self.verifier,
+                "secret_from_environment",
+                return_value="administrator-password",
+            ), patch.object(
+                self.verifier, "login", return_value=object_actor
+            ), patch.object(
+                self.verifier, "bootstrap_csrf", return_value="csrf"
+            ), patch.object(
+                self.verifier,
+                "_retained_context",
+                return_value=(context, acceptance),
+            ), patch.object(
+                self.verifier, "execution_request", return_value=response
+            ) as request:
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "^P8-05 disposable command context is unavailable$",
+                ):
+                    self.verifier.run_fresh(
+                        "http://127.0.0.1:8003", "fixture-password"
+                    )
+                assert_exact_collection_call(request)
+
+        class PostReached(Exception):
+            pass
+
+        listed = types.SimpleNamespace(status=200, body=valid_body)
+        with patch.dict(
+            os.environ, valid_environment, clear=True
+        ), patch.object(
+            self.verifier,
+            "secret_from_environment",
+            return_value="administrator-password",
+        ), patch.object(
+            self.verifier, "login", return_value=object_actor
+        ), patch.object(
+            self.verifier, "bootstrap_csrf", return_value="csrf"
+        ), patch.object(
+            self.verifier,
+            "_retained_context",
+            return_value=(context, acceptance),
+        ), patch.object(
+            self.verifier,
+            "execution_request",
+            side_effect=(listed, PostReached),
+        ) as request:
+            with self.assertRaises(PostReached):
+                self.verifier.run_fresh(
+                    "http://127.0.0.1:8003", "fixture-password"
+                )
+            first_args, first_kwargs = request.call_args_list[0]
+            split = urlsplit(first_args[2])
+            self.assertEqual(
+                split.path,
+                self.verifier.execution_path(project_id, master_id, set_id),
+            )
+            self.assertEqual(
+                parse_qsl(split.query, keep_blank_values=True),
+                [("acceptanceRevisionGlobalId", acceptance_id)],
+            )
+            self.assertEqual(
+                first_kwargs, {"method": "GET", "query_key": "enabled"}
+            )
+            self.assertEqual(request.call_count, 2)
+            post_args, post_kwargs = request.call_args_list[1]
+            self.assertEqual(
+                post_args[2],
+                self.verifier.execution_path(project_id, master_id, set_id, ":create"),
+            )
+            self.assertEqual(post_kwargs["method"], "POST")
 
     def test_runtime_profile_preserves_exact_requester_and_service_actor(self):
         environment = {

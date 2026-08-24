@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import tempfile
+import urllib.parse
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Mapping
@@ -81,7 +82,16 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     project_id, master_id, set_id = (str(context[name]) for name in ("projectId", "masterId", "toolingSetId"))
     require(os.environ.get("NPI_TOOL_ASSET_RUNTIME_PROJECT_ID") == project_id and os.environ.get("NPI_TOOL_ASSET_REQUESTER_USER") == ACTOR_USER and os.environ.get("NPI_TOOL_ASSET_WORKER_USER") not in {None, "", ACTOR_USER}, "P8-05 runtime actors are not exactly bound")
     path = execution_path(project_id, master_id, set_id)
-    listed = execution_request(actor, base_url, path, query_key="enabled")
+    query = urllib.parse.urlencode(
+        {"acceptanceRevisionGlobalId": acceptance.get("globalId")}
+    )
+    listed = execution_request(
+        actor,
+        base_url,
+        f"{path}?{query}",
+        method="GET",
+        query_key="enabled",
+    )
     contexts = listed.body.get("commandContexts")
     create = contexts.get("create_tool_asset") if isinstance(contexts, dict) else None
     require(listed.status == 200 and listed.body.get("items") == [] and isinstance(create, dict) and listed.body.get("executionProfile", {}).get("targetMode") == "synthetic", "P8-05 disposable command context is unavailable")
