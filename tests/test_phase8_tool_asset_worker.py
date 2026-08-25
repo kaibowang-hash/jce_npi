@@ -56,13 +56,14 @@ class Repository:
 class Phase8ToolAssetWorkerTest(unittest.TestCase):
     def setUp(self):
         self.events = []
-        self.module_names = ("frappe", "npi_core.api", "npi_integration.tool_asset_request.execution_frappe_validation", "npi_integration.tool_asset_request.worker_repository", "npi_integration.tool_asset_request.worker")
+        self.module_names = ("frappe", "npi_core.api", "npi_integration.tool_asset_request.diagnostics", "npi_integration.tool_asset_request.execution_frappe_validation", "npi_integration.tool_asset_request.worker_repository", "npi_integration.tool_asset_request.worker")
         self.saved_modules = {name: sys.modules.get(name) for name in self.module_names}
         for name in self.module_names:
             sys.modules.pop(name, None)
         fake = types.ModuleType("frappe")
         sys.modules["frappe"] = fake
         fake.session = types.SimpleNamespace(user="requester@example.invalid")
+        fake.flags = types.SimpleNamespace()
         fake.db = types.SimpleNamespace(commit=lambda: self.events.append("commit"), rollback=lambda: self.events.append("rollback"), get_value=lambda *a, **k: {"enabled":1,"user_type":"System User"})
         fake.get_roles = lambda user: ["NPI API User"]
         fake.set_user = lambda user: (setattr(fake.session, "user", user), self.events.append(f"user:{user}"))
@@ -86,6 +87,9 @@ class Phase8ToolAssetWorkerTest(unittest.TestCase):
         repository.ToolAssetWorkerOutcome = object
         sys.modules[repository.__name__] = repository
         self.worker = importlib.import_module("npi_integration.tool_asset_request.worker")
+        self.diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
         self.repo = Repository(self)
         self.adapter = lambda value: (self.events.append("adapter"), response(value))[1]
         self.registry = ToolAssetAdapterRegistry((ToolAssetAdapterRegistration(self.repo.profile.adapter_resolver, self.repo.profile.target_mode, ToolAssetExecutionOperation.CREATE, self.adapter),))
@@ -115,6 +119,104 @@ class Phase8ToolAssetWorkerTest(unittest.TestCase):
         self.repo.claimed = False
         self.assertIsNone(self.worker._execute_worker(outbox_event_id=UUID(int=1), repository=self.repo, profile_resolver=lambda *a: self.repo.profile, registry_resolver=lambda: self.registry, clock=lambda: NOW))
         self.assertNotIn("adapter", self.events)
+
+    def test_process_stage_records_innermost_same_exception_and_restores_scope(self):
+        error = TypeError("private worker value")
+        previous_scope = object()
+        setattr(
+            sys.modules["frappe"].flags,
+            self.diagnostics._TOOL_ASSET_PROCESS_STAGE_FLAG,
+            previous_scope,
+        )
+
+        def fail_claim(*_args, **_kwargs):
+            raise error
+
+        self.repo.claim = fail_claim
+        with self.diagnostics.tool_asset_process_diagnostics(
+            "trace-0123456789abcdef0123456789abcdef",
+            enabled=True,
+        ), self.assertRaises(TypeError) as raised:
+            self.worker._execute_worker(
+                outbox_event_id=UUID(int=1),
+                repository=self.repo,
+                profile_resolver=lambda *_args: self.repo.profile,
+                registry_resolver=lambda: self.registry,
+                clock=lambda: NOW,
+            )
+        self.assertIs(raised.exception, error)
+        diagnostics = [value for value in self.events if isinstance(value, tuple) and value[0] == "diagnostic"]
+        self.assertEqual(
+            diagnostics,
+            [("diagnostic", "P805_TOOL_ASSET_PROCESS_CLAIM", "TypeError")],
+        )
+        self.assertNotIn("private worker value", repr(diagnostics))
+        self.assertIs(
+            getattr(
+                sys.modules["frappe"].flags,
+                self.diagnostics._TOOL_ASSET_PROCESS_STAGE_FLAG,
+            ),
+            previous_scope,
+        )
+
+    def test_caught_profile_failure_records_no_process_stage(self):
+        with self.diagnostics.tool_asset_process_diagnostics(
+            "trace-0123456789abcdef0123456789abcdef",
+            enabled=True,
+        ):
+            outcome = self.worker._execute_worker(
+                outbox_event_id=UUID(int=1),
+                repository=self.repo,
+                profile_resolver=lambda *_args: (_ for _ in ()).throw(
+                    TypeError("private profile value")
+                ),
+                registry_resolver=lambda: self.registry,
+                clock=lambda: NOW,
+            )
+        self.assertIsNotNone(outcome)
+        self.assertFalse(
+            any(
+                isinstance(value, tuple)
+                and value[0] == "diagnostic"
+                and str(value[1]).startswith("P805_TOOL_ASSET_PROCESS_")
+                for value in self.events
+            )
+        )
+
+    def test_recovered_first_persistence_failure_records_no_process_stage(self):
+        calls = 0
+        original = self.repo.seal_result
+
+        def recoverable(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise TypeError("private recoverable persistence value")
+            return original(*args, **kwargs)
+
+        self.repo.seal_result = recoverable
+        self.repo.recover_or_seal_result = recoverable
+        with self.diagnostics.tool_asset_process_diagnostics(
+            "trace-0123456789abcdef0123456789abcdef",
+            enabled=True,
+        ):
+            outcome = self.worker._execute_worker(
+                outbox_event_id=UUID(int=1),
+                repository=self.repo,
+                profile_resolver=lambda *_args: self.repo.profile,
+                registry_resolver=lambda: self.registry,
+                clock=lambda: NOW,
+            )
+        self.assertIsNotNone(outcome)
+        self.assertEqual(calls, 2)
+        self.assertFalse(
+            any(
+                isinstance(value, tuple)
+                and value[0] == "diagnostic"
+                and str(value[1]).startswith("P805_TOOL_ASSET_PROCESS_")
+                for value in self.events
+            )
+        )
 
 
 if __name__ == "__main__":

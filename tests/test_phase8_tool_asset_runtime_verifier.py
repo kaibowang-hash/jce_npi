@@ -220,11 +220,17 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_snapshot_tool_asset_worker_diagnostics_enabled()
+        )
+        self.assertTrue(
+            self.verifier.TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._tool_asset_process_stage_diagnostics_enabled()
         )
         project_id = str(UUID(int=1))
         retained_master_id = str(UUID(int=2))
@@ -1537,14 +1543,20 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED
         )
         self.assertFalse(
             self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_snapshot_tool_asset_worker_diagnostics_enabled()
+        )
+        self.assertTrue(
+            self.verifier.TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._tool_asset_process_stage_diagnostics_enabled()
         )
         self.assertEqual(
             len(self.verifier._TOOL_ASSET_WORKER_STAGE_CODES),
@@ -1564,7 +1576,11 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             self.verifier._active_tool_asset_worker_diagnostic_codes(),
-            self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES,
+            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+        )
+        self.assertEqual(
+            len(self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES),
+            52,
         )
         self.assertIsNone(
             self.verifier._tool_asset_worker_outcome_diagnostic_code(
@@ -1623,6 +1639,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.assertTrue(
                 self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
@@ -1670,6 +1690,18 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 self.verifier._active_tool_asset_worker_diagnostic_codes(),
                 frozenset(),
             )
+        with patch.object(
+            self.verifier,
+            "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertFalse(
+                self.verifier._tool_asset_process_stage_diagnostics_enabled()
+            )
+            self.assertEqual(
+                self.verifier._active_tool_asset_worker_diagnostic_codes(),
+                frozenset(),
+            )
 
     def test_worker_stage_records_one_safe_tuple_and_rethrows_same_exception(self):
         api = importlib.import_module("npi_core.api")
@@ -1685,6 +1717,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 self.verifier,
                 "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
                 True,
+            ), patch.object(
+                self.verifier,
+                "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+                False,
             ), patch.object(
                 api,
                 "record_safe_diagnostic",
@@ -1728,6 +1764,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
                 enabled,
             ), patch.object(
+                self.verifier,
+                "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
                 api,
                 "record_safe_diagnostic",
                 side_effect=lambda **values: records.append(values),
@@ -1747,6 +1787,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
             True,
+        ), patch.object(
+            self.verifier,
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+            False,
         ), patch.object(
             api,
             "record_safe_diagnostic",
@@ -1792,6 +1836,42 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(code=code):
                 self.assertEqual(constants.count(f'"{code}"'), 1)
 
+        diagnostics_path = (
+            ROOT
+            / "apps/npi_integration/npi_integration/tool_asset_request"
+            / "diagnostics.py"
+        )
+        diagnostics_tree = ast.parse(
+            diagnostics_path.read_text(encoding="utf-8")
+        )
+        server_codes = None
+        for node in diagnostics_tree.body:
+            if not isinstance(node, ast.Assign):
+                continue
+            if any(
+                isinstance(target, ast.Name)
+                and target.id == "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES"
+                for target in node.targets
+            ):
+                self.assertIsInstance(node.value, ast.Call)
+                server_codes = frozenset(ast.literal_eval(node.value.args[0]))
+                break
+        self.assertEqual(
+            server_codes,
+            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+        )
+        product_context = "".join(
+            (
+                ROOT
+                / "apps/npi_integration/npi_integration/tool_asset_request"
+                / name
+            ).read_text(encoding="utf-8")
+            for name in ("worker.py", "worker_repository.py")
+        )
+        for code in self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES:
+            with self.subTest(process_code=code):
+                self.assertEqual(product_context.count(f'"{code}"'), 1)
+
     def test_worker_log_reader_accepts_only_one_exact_logical_tuple(self):
         def read(
             records: list[dict[str, object]],
@@ -1834,24 +1914,19 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                                     )
                                     + "\n"
                                 )
-                    with patch.object(
-                        self.verifier,
-                        "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
-                        True,
-                    ):
-                        return self.verifier._sanitized_tool_asset_worker_diagnostic(
-                            trace_id,
-                            cursors,
-                        )
+                    return self.verifier._sanitized_tool_asset_worker_diagnostic(
+                        trace_id,
+                        cursors,
+                    )
 
         valid = {
-            "code": "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+            "code": "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
             "exceptionType": "RuntimeError",
             "traceId": _WORKER_TRACE_ID,
         }
         expected = (
             "RuntimeError",
-            "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+            "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
             _WORKER_TRACE_ID,
         )
         self.assertEqual(read([valid]), expected)
@@ -1863,7 +1938,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 [
                     {
                         **valid,
-                        "code": "P805_TOOL_ASSET_WORKER_SESSION_RESTORE",
+                        "code": "P805_TOOL_ASSET_PROCESS_CLAIM_AUDIT",
                     }
                 ],
             )
@@ -1904,14 +1979,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         }
         diagnostic = (
             "RuntimeError",
-            "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+            "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
             _WORKER_TRACE_ID,
         )
         with patch.object(
-            self.verifier,
-            "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
-            True,
-        ), patch.object(
             self.verifier.tempfile,
             "TemporaryFile",
             return_value=FailedOutput(),
@@ -1937,7 +2008,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             str(raised.exception),
             "P8-05 Bench fixture failed "
-            "[diagnostic_code=P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX; "
+            "[diagnostic_code=P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE; "
             "exception_type=RuntimeError; "
             f"trace_id={_WORKER_TRACE_ID}]",
         )
@@ -1966,7 +2037,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
         with patch.object(
             self.verifier,
-            "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.tempfile,
@@ -2002,7 +2073,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
         with patch.object(
             self.verifier,
-            "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -2031,6 +2102,15 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "\ndef run_local_bench_fixture("
         )]
         self.assertIn('"diagnostic_trace_id": created.trace_id', fresh)
+        exercise = source[source.index("def exercise_worker(") : source.index(
+            "\ndef _sanitized_tool_asset_worker_diagnostic("
+        )]
+        self.assertIn("tool_asset_process_diagnostics(", exercise)
+        self.assertIn("diagnostic_trace_id,", exercise)
+        self.assertIn(
+            "enabled=_tool_asset_process_stage_diagnostics_enabled()",
+            exercise,
+        )
         self.assertLess(
             bench.index("_replay_diagnostic_log_cursors()"),
             bench.index("subprocess.run("),

@@ -39,7 +39,8 @@ TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED = False
 POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED = False
 POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED = False
 TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED = False
-POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED = True
+POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED = False
+TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED = True
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
     "p805-tool-asset-create-response-v1"
@@ -210,6 +211,62 @@ _TOOL_ASSET_WORKER_DIAGNOSTIC_CODES = (
     | frozenset(_TOOL_ASSET_WORKER_OUTCOME_CODE_BY_STATE.values())
     | frozenset(_TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES.values())
 )
+_TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P805_TOOL_ASSET_PROCESS_ACTOR_SCOPE",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_ATTEMPT_SAVE",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_AUDIT",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_COMMIT",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_CURRENT_CLAIM",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_OUTBOX_SAVE",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_PROFILE",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_TRANSACTION",
+        "P805_TOOL_ASSET_PROCESS_CLAIM",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_ATTEMPT_BUILD",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_ATTEMPT_INSERT",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_AUDIT",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_BINDINGS",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_COMMAND_BUILD",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_COMMIT",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_EXPIRED_ATTEMPT_SAVE",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_OUTBOX",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_OUTBOX_SAVE",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_REBUILD",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_RETURN",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_TRANSACTION",
+        "P805_TOOL_ASSET_PROCESS_FAILURE_PERSIST",
+        "P805_TOOL_ASSET_PROCESS_FAILURE_RESULT",
+        "P805_TOOL_ASSET_PROCESS_RECOVERED_PERSIST",
+        "P805_TOOL_ASSET_PROCESS_RECOVERED_RESULT",
+        "P805_TOOL_ASSET_PROCESS_RECOVERY_COMMIT",
+        "P805_TOOL_ASSET_PROCESS_RESPONSE_BUILD",
+        "P805_TOOL_ASSET_PROCESS_RESULT_COMMIT",
+        "P805_TOOL_ASSET_PROCESS_RESULT_PERSIST",
+        "P805_TOOL_ASSET_PROCESS_RESULT_RECOVERY",
+        "P805_TOOL_ASSET_PROCESS_SEAL_ATTEMPT_SAVE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_AUDIT",
+        "P805_TOOL_ASSET_PROCESS_SEAL_BINDINGS",
+        "P805_TOOL_ASSET_PROCESS_SEAL_CURRENT_CLAIM",
+        "P805_TOOL_ASSET_PROCESS_SEAL_EXISTING_OUTCOME",
+        "P805_TOOL_ASSET_PROCESS_SEAL_FIELD_INSERT",
+        "P805_TOOL_ASSET_PROCESS_SEAL_GUARD",
+        "P805_TOOL_ASSET_PROCESS_SEAL_MAPPING",
+        "P805_TOOL_ASSET_PROCESS_SEAL_OUTBOX_SAVE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_OUTCOME",
+        "P805_TOOL_ASSET_PROCESS_SEAL_PREPARE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_PROFILE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_REQUEST",
+        "P805_TOOL_ASSET_PROCESS_SEAL_REQUEST_SAVE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_BUILD",
+        "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_INSERT",
+        "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_LOOKUP",
+        "P805_TOOL_ASSET_PROCESS_SEAL_TRANSACTION",
+        "P805_TOOL_ASSET_PROCESS_UNCERTAIN_RESULT",
+    }
+)
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _EXECUTION_STATE_DOCTYPES = (
     "NPI Tool Asset Request",
@@ -315,6 +372,7 @@ def _tool_asset_worker_downstream_diagnostics_enabled() -> bool:
     return (
         TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED is True
         and POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED is False
         and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
         and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
@@ -331,6 +389,24 @@ def _post_snapshot_tool_asset_worker_diagnostics_enabled() -> bool:
     return (
         POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED is True
         and TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED is False
+        and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+        and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+    )
+
+
+def _tool_asset_process_stage_diagnostics_enabled() -> bool:
+    """Activate only the independent Tool Asset process-stage cycle."""
+
+    return (
+        TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED is True
+        and POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED is False
         and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
         and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
@@ -342,14 +418,14 @@ def _post_snapshot_tool_asset_worker_diagnostics_enabled() -> bool:
 
 
 def _active_tool_asset_worker_diagnostic_codes() -> frozenset[str]:
-    return (
-        _TOOL_ASSET_WORKER_DIAGNOSTIC_CODES
-        if (
-            _tool_asset_worker_downstream_diagnostics_enabled()
-            or _post_snapshot_tool_asset_worker_diagnostics_enabled()
-        )
-        else frozenset()
-    )
+    if _tool_asset_process_stage_diagnostics_enabled():
+        return _TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES
+    if (
+        _tool_asset_worker_downstream_diagnostics_enabled()
+        or _post_snapshot_tool_asset_worker_diagnostics_enabled()
+    ):
+        return _TOOL_ASSET_WORKER_DIAGNOSTIC_CODES
+    return frozenset()
 
 
 def _valid_tool_asset_worker_trace(value: object) -> bool:
@@ -1135,6 +1211,7 @@ def exercise_worker(
     diagnostic_trace_id: str,
 ) -> dict[str, object]:
     import frappe
+    from npi_integration.tool_asset_request.diagnostics import tool_asset_process_diagnostics
     from npi_integration.tool_asset_request.runtime_fixture import synthetic_adapter_call_count
     from npi_integration.tool_asset_request.worker import process_outbox_message
     from npi_integration.tool_asset_request.worker_repository import FrappeToolAssetWorkerRepository
@@ -1164,6 +1241,9 @@ def exercise_worker(
     with tool_asset_worker_diagnostic_step(
         "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
         diagnostic_trace_id,
+    ), tool_asset_process_diagnostics(
+        diagnostic_trace_id,
+        enabled=_tool_asset_process_stage_diagnostics_enabled(),
     ):
         result = process_outbox_message(outbox_id)
     with tool_asset_worker_diagnostic_step(
@@ -1302,7 +1382,11 @@ def _sanitized_tool_asset_worker_diagnostic(
     return item_runtime._sanitized_server_log_diagnostic(
         trace_id,
         cursors,
-        code_prefix="P805_TOOL_ASSET_WORKER_",
+        code_prefix=(
+            "P805_TOOL_ASSET_PROCESS_"
+            if _tool_asset_process_stage_diagnostics_enabled()
+            else "P805_TOOL_ASSET_WORKER_"
+        ),
         allowed_codes=_active_tool_asset_worker_diagnostic_codes(),
     )
 

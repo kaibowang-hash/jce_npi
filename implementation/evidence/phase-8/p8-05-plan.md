@@ -1569,3 +1569,48 @@ Level 1 passes Tool Asset `114/114`, P6 acceptance/runtime `63/63`, Item
 `146/146`, MBOM `126/126`, and current/reconciliation `33/33`. Compile, shell
 syntax, exact-five manifest, unauthorized sixth path rejection and diff checks
 also pass.
+
+## 46. Tool Asset process-stage diagnostic cycle
+
+Post-snapshot checkpoint SHA `8376f62ec88e6be439fde49c162f24d67f17a90f`
+passes exact ordinary CI `32901049838`. Its sole controlled diagnostic Site
+`32902381446`, runtime job `97978983425`, returns exactly
+`P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX / TypeError /
+trace-217bee3b702e52be8658f9afc089cda3`. Failed-child stdout/stderr, response
+data, business values, identifiers, exception messages and stacks were not
+read or emitted.
+
+The outer process predicate remains composite. Service-route failures are
+caught as not-claimed, while profile, registry, adapter and classification
+failures are converted to explicit failed or uncertain results. A raw
+`TypeError` can still originate in actor entry, claim reads/rebuild/writes/
+return, commits, failure or uncertain result construction, adapter-boundary
+writes, terminal sealing/recovery or the response build. The tuple therefore
+does not uniquely prove a product repair.
+
+Freeze `post-snapshot-tool-asset-worker` at diagnostic `1/1`, product repair
+`0/1`, final `0/1`. Open independent `tool-asset-process-stage` at diagnostic
+`0/1`, product repair `0/1`, final `0/1`. Only
+`TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED=True`; the post-snapshot worker
+flag and every historical diagnostic activation are false.
+
+The checkpoint adds fifty-two fixed, uniquely placed process codes spanning
+actor, claim reads/build/writes/return, commit, failure conversion, boundary,
+uncertain/result persistence, terminal seal/recovery and response. The exact
+created trace is carried in request-local scope. The innermost failing context
+records at most one exact three-key safe tuple, restores prior scope in
+`finally`, and rethrows the same exception. Expected caught and recovered
+paths emit no record. No write value, order, transaction or catch behavior is
+changed.
+
+The parent keeps the established strict mirrored reader and captures cursors
+before child launch. Failed-child stderr remains discarded and stdout remains
+unread; only a successful child may parse JSON. Product response, permission,
+Schema, ownership, adapter, target and Gate behavior remain unchanged.
+
+Level 1 passes Tool Asset `118/118`, P6 tooling `355/355` plus Tool Asset
+request-domain `4/4`, Item `146/146`, MBOM `126/126`, and current-task/
+reconciliation `33/33`. The fifty-two-code lexical/equality contract, direct
+SQL/network and TODO/secret scans, `py_compile`, current/reconciliation
+scripts, exact-ten manifest with an unauthorized eleventh path rejected, and
+diff hygiene all pass.

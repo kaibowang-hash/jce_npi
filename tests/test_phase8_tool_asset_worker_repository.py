@@ -232,6 +232,67 @@ class Phase8ToolAssetWorkerRepositoryTest(unittest.TestCase):
         for marker in ("_require_bindings", "NPI Tool Asset Result", "result_global_id", "active_request_global_id", "last_request_global_id", "last_state"):
             self.assertIn(marker, source)
 
+    def test_process_stage_contexts_preserve_claim_boundary_and_seal_order(self):
+        source = inspect.getsource(self.module)
+        claim = source[source.index("    def claim(") : source.index("    @staticmethod\n    def require_execution_profile")]
+        boundary = source[source.index("    def mark_adapter_boundary(") : source.index("    def seal_result(")]
+        seal = source[source.index("    def seal_result(") : source.index("    def recover_or_seal_result(")]
+
+        def ordered(context: str, codes: tuple[str, ...]) -> None:
+            positions = [context.index(f'"{code}"') for code in codes]
+            self.assertEqual(positions, sorted(positions))
+
+        ordered(
+            claim,
+            (
+                "P805_TOOL_ASSET_PROCESS_CLAIM_OUTBOX",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_REBUILD",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_BINDINGS",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_COMMAND_BUILD",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_TRANSACTION",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_ATTEMPT_BUILD",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_ATTEMPT_INSERT",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_OUTBOX_SAVE",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_AUDIT",
+                "P805_TOOL_ASSET_PROCESS_CLAIM_RETURN",
+            ),
+        )
+        ordered(
+            boundary,
+            (
+                "P805_TOOL_ASSET_PROCESS_BOUNDARY_PROFILE",
+                "P805_TOOL_ASSET_PROCESS_BOUNDARY_CURRENT_CLAIM",
+                "P805_TOOL_ASSET_PROCESS_BOUNDARY_TRANSACTION",
+                "P805_TOOL_ASSET_PROCESS_BOUNDARY_ATTEMPT_SAVE",
+                "P805_TOOL_ASSET_PROCESS_BOUNDARY_OUTBOX_SAVE",
+                "P805_TOOL_ASSET_PROCESS_BOUNDARY_AUDIT",
+            ),
+        )
+        ordered(
+            seal,
+            (
+                "P805_TOOL_ASSET_PROCESS_SEAL_PROFILE",
+                "P805_TOOL_ASSET_PROCESS_SEAL_CURRENT_CLAIM",
+                "P805_TOOL_ASSET_PROCESS_SEAL_REQUEST",
+                "P805_TOOL_ASSET_PROCESS_SEAL_BINDINGS",
+                "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_LOOKUP",
+                "P805_TOOL_ASSET_PROCESS_SEAL_PREPARE",
+                "P805_TOOL_ASSET_PROCESS_SEAL_TRANSACTION",
+                "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_BUILD",
+                "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_INSERT",
+                "P805_TOOL_ASSET_PROCESS_SEAL_FIELD_INSERT",
+                "P805_TOOL_ASSET_PROCESS_SEAL_MAPPING",
+                "P805_TOOL_ASSET_PROCESS_SEAL_ATTEMPT_SAVE",
+                "P805_TOOL_ASSET_PROCESS_SEAL_REQUEST_SAVE",
+                "P805_TOOL_ASSET_PROCESS_SEAL_OUTBOX_SAVE",
+                "P805_TOOL_ASSET_PROCESS_SEAL_GUARD",
+                "P805_TOOL_ASSET_PROCESS_SEAL_AUDIT",
+                "P805_TOOL_ASSET_PROCESS_SEAL_OUTCOME",
+            ),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

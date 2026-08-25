@@ -130,6 +130,63 @@ TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE = (
 _TOOL_ASSET_CREATE_RESPONSE_FLAG = (
     "npi_p805_tool_asset_create_response_diagnostic"
 )
+TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P805_TOOL_ASSET_PROCESS_ACTOR_SCOPE",
+        "P805_TOOL_ASSET_PROCESS_CLAIM",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_COMMIT",
+        "P805_TOOL_ASSET_PROCESS_RECOVERED_RESULT",
+        "P805_TOOL_ASSET_PROCESS_RECOVERED_PERSIST",
+        "P805_TOOL_ASSET_PROCESS_FAILURE_RESULT",
+        "P805_TOOL_ASSET_PROCESS_FAILURE_PERSIST",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_COMMIT",
+        "P805_TOOL_ASSET_PROCESS_UNCERTAIN_RESULT",
+        "P805_TOOL_ASSET_PROCESS_RESULT_PERSIST",
+        "P805_TOOL_ASSET_PROCESS_RESULT_RECOVERY",
+        "P805_TOOL_ASSET_PROCESS_RESULT_COMMIT",
+        "P805_TOOL_ASSET_PROCESS_RECOVERY_COMMIT",
+        "P805_TOOL_ASSET_PROCESS_RESPONSE_BUILD",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_OUTBOX",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_REBUILD",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_BINDINGS",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_COMMAND_BUILD",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_TRANSACTION",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_ATTEMPT_BUILD",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_EXPIRED_ATTEMPT_SAVE",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_ATTEMPT_INSERT",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_OUTBOX_SAVE",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_AUDIT",
+        "P805_TOOL_ASSET_PROCESS_CLAIM_RETURN",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_PROFILE",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_CURRENT_CLAIM",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_TRANSACTION",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_ATTEMPT_SAVE",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_OUTBOX_SAVE",
+        "P805_TOOL_ASSET_PROCESS_BOUNDARY_AUDIT",
+        "P805_TOOL_ASSET_PROCESS_SEAL_PROFILE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_CURRENT_CLAIM",
+        "P805_TOOL_ASSET_PROCESS_SEAL_REQUEST",
+        "P805_TOOL_ASSET_PROCESS_SEAL_BINDINGS",
+        "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_LOOKUP",
+        "P805_TOOL_ASSET_PROCESS_SEAL_PREPARE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_TRANSACTION",
+        "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_BUILD",
+        "P805_TOOL_ASSET_PROCESS_SEAL_EXISTING_OUTCOME",
+        "P805_TOOL_ASSET_PROCESS_SEAL_RESULT_INSERT",
+        "P805_TOOL_ASSET_PROCESS_SEAL_FIELD_INSERT",
+        "P805_TOOL_ASSET_PROCESS_SEAL_MAPPING",
+        "P805_TOOL_ASSET_PROCESS_SEAL_ATTEMPT_SAVE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_REQUEST_SAVE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_OUTBOX_SAVE",
+        "P805_TOOL_ASSET_PROCESS_SEAL_GUARD",
+        "P805_TOOL_ASSET_PROCESS_SEAL_AUDIT",
+        "P805_TOOL_ASSET_PROCESS_SEAL_OUTCOME",
+    }
+)
+_TOOL_ASSET_PROCESS_STAGE_FLAG = "npi_p805_tool_asset_process_stage_diagnostic"
 _TOOL_ASSET_CREATE_COMMAND = (
     "npi_integration.tool_asset_request_api."
     "create_tool_asset_execution_request"
@@ -314,6 +371,72 @@ def tool_asset_create_response_step(code: str) -> Iterator[None]:
         raise
 
 
+@contextmanager
+def tool_asset_process_diagnostics(
+    trace_id: object,
+    *,
+    enabled: bool,
+) -> Iterator[None]:
+    """Enable one exact-trace request-local worker process diagnostic."""
+
+    try:
+        state = (
+            {"trace_id": trace_id, "recorded": False, "suppressed": 0}
+            if enabled is True
+            and isinstance(trace_id, str)
+            and _TRACE_PATTERN.fullmatch(trace_id) is not None
+            else None
+        )
+        flags = frappe.flags
+        missing = object()
+        previous = getattr(flags, _TOOL_ASSET_PROCESS_STAGE_FLAG, missing)
+        setattr(flags, _TOOL_ASSET_PROCESS_STAGE_FLAG, state)
+    except Exception:
+        yield
+        return
+    try:
+        yield
+    finally:
+        try:
+            if previous is missing:
+                delattr(flags, _TOOL_ASSET_PROCESS_STAGE_FLAG)
+            else:
+                setattr(flags, _TOOL_ASSET_PROCESS_STAGE_FLAG, previous)
+        except Exception:
+            pass
+
+
+@contextmanager
+def tool_asset_process_stage_step(
+    code: str,
+    *,
+    ignored: tuple[type[BaseException], ...] = (),
+) -> Iterator[None]:
+    """Record one innermost process stage and re-raise the same exception."""
+
+    try:
+        yield
+    except Exception as error:
+        if not isinstance(error, ignored):
+            _record_process_stage_failure(code, error)
+        raise
+
+
+@contextmanager
+def suppress_tool_asset_process_stage_diagnostics() -> Iterator[None]:
+    """Suppress a recoverable first persistence attempt without changing it."""
+
+    state = _process_stage_state()
+    if state is None:
+        yield
+        return
+    state["suppressed"] = int(state["suppressed"]) + 1
+    try:
+        yield
+    finally:
+        state["suppressed"] = max(0, int(state["suppressed"]) - 1)
+
+
 def _record_failure(code: str, error: Exception) -> None:
     try:
         state = _state()
@@ -383,6 +506,30 @@ def _record_create_response_failure(code: str, error: Exception) -> None:
         pass
 
 
+def _record_process_stage_failure(code: str, error: Exception) -> None:
+    try:
+        state = _process_stage_state()
+        exception_type = type(error).__name__
+        if (
+            state is None
+            or state["recorded"] is True
+            or int(state["suppressed"]) != 0
+            or code not in TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES
+            or _TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["recorded"] = True
+        _safe_record(
+            code,
+            "NPI Tool Asset worker process stage failed",
+            exception_type,
+            str(state["trace_id"]),
+        )
+    except Exception:
+        # Diagnostic observation must never replace the worker outcome.
+        pass
+
+
 def _state() -> dict[str, object] | None:
     state = getattr(frappe.flags, _DIAGNOSTIC_FLAG, None)
     if (
@@ -417,6 +564,21 @@ def _create_response_state() -> dict[str, object] | None:
         or not isinstance(state.get("trace_id"), str)
         or _TRACE_PATTERN.fullmatch(str(state["trace_id"])) is None
         or type(state.get("recorded")) is not bool
+    ):
+        return None
+    return state
+
+
+def _process_stage_state() -> dict[str, object] | None:
+    state = getattr(frappe.flags, _TOOL_ASSET_PROCESS_STAGE_FLAG, None)
+    if (
+        not isinstance(state, dict)
+        or set(state) != {"trace_id", "recorded", "suppressed"}
+        or not isinstance(state.get("trace_id"), str)
+        or _TRACE_PATTERN.fullmatch(str(state["trace_id"])) is None
+        or type(state.get("recorded")) is not bool
+        or type(state.get("suppressed")) is not int
+        or int(state["suppressed"]) < 0
     ):
         return None
     return state

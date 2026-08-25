@@ -5498,3 +5498,39 @@ repeat or rewrite it merely to restore context. See
   path rejection and diff checks.
 - Controller marker:
   `P8-05 final held; post-snapshot-tool-asset-worker diagnostic 0/1 active`.
+
+## 2026-08-26 P8-05 Tool Asset process-stage diagnostic cycle
+
+- Post-snapshot checkpoint SHA
+  `8376f62ec88e6be439fde49c162f24d67f17a90f` passes exact ordinary CI
+  `32901049838`. Its one controlled diagnostic Site `32902381446`, runtime
+  job `97978983425`, returns exactly
+  `P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX / TypeError /
+  trace-217bee3b702e52be8658f9afc089cda3`. Failed-child stdout/stderr, response
+  data, values, identifiers, exception messages and stacks were not read.
+- Service-route failures are converted to not-claimed, and profile, registry,
+  adapter and classification failures are caught and converted to explicit
+  results. The outer process context still contains multiple possible raw
+  TypeError sources across actor, claim reads/rebuild/writes/return, commits,
+  converted-result persistence, boundary, seal/recovery and response build.
+  Product repair remains unauthorized.
+- Freeze `post-snapshot-tool-asset-worker` at diagnostic `1/1`, product repair
+  `0/1`, final `0/1`. Open independent `tool-asset-process-stage` at
+  diagnostic `0/1`, product repair `0/1`, final `0/1`.
+- Only `TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED=True`; the old worker
+  flags and every historical diagnostic activation are false. Fifty-two
+  fixed codes each identify one lexical process context. Exact created trace,
+  request-local scope, innermost-one-record handling, same-exception rethrow
+  and `finally` restoration preserve caught paths, write values, ordering and
+  transactions.
+- The parent retains pre-child cursors and the strict mirrored reader. A
+  failed child keeps stderr discarded and stdout unread; successful zero-exit
+  output alone may be parsed. Product response, permission, Schema, ownership,
+  adapter, target and Gate behavior are unchanged.
+- Level 1 passes Tool Asset `118/118`, P6 tooling `355/355` plus Tool Asset
+  request-domain `4/4`, Item `146/146`, MBOM `126/126`, current-task/
+  reconciliation `33/33`, the fifty-two-code lexical/equality contract,
+  direct-SQL/network and TODO/secret scans, compile, current/reconciliation
+  scripts, exact-ten manifest and diff hygiene.
+- Controller marker:
+  `P8-05 final held; tool-asset-process-stage diagnostic 0/1 active`.

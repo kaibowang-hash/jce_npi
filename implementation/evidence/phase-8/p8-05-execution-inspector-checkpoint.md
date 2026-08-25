@@ -822,3 +822,35 @@ Canonical Linux/amd64 SHA-256 evidence:
   syntax, exact-five manifest, unauthorized sixth path rejection and diff.
 - Controller marker:
   `P8-05 final held; post-snapshot-tool-asset-worker diagnostic 0/1 active`.
+
+## Tool Asset process-stage diagnostic checkpoint
+
+- Post-snapshot checkpoint SHA
+  `8376f62ec88e6be439fde49c162f24d67f17a90f` passes ordinary
+  `32901049838`. Controlled run `32902381446`, runtime job `97978983425`,
+  emits exactly `P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX / TypeError /
+  trace-217bee3b702e52be8658f9afc089cda3`. Failed-child output, response data,
+  values, identifiers, messages and stacks were not read.
+- The outer process context is still composite. Route failures are converted
+  to not-claimed; profile, registry, adapter and classifier exceptions are
+  caught and converted. The raw TypeError remains possible across actor,
+  claim internals and commits, converted-result construction/persistence,
+  boundary, seal/recovery and response build, so repair remains prohibited.
+- Freeze `post-snapshot-tool-asset-worker` at diagnostic `1/1`, repair `0/1`,
+  final `0/1`. Open `tool-asset-process-stage` at diagnostic `0/1`, repair
+  `0/1`, final `0/1`.
+- Only the new process-stage activation is true. Fifty-two fixed codes have
+  one lexical context each across worker and repository. Exact created trace,
+  request-local scope, innermost-one-record semantics, same-exception rethrow
+  and `finally` restoration preserve all product order and values. Caught or
+  recovered paths do not emit a misleading tuple.
+- The strict mirrored reader and pre-child cursors are unchanged. Failed
+  child stderr is discarded and stdout is never read; successful child JSON
+  alone is parsed. No API, response, permission, transaction, Schema,
+  ownership, adapter, target or Gate behavior changes.
+- Level 1 passes Tool Asset `118/118`, P6 tooling `355/355` plus Tool Asset
+  request-domain `4/4`, Item `146/146`, MBOM `126/126`, current-task/
+  reconciliation `33/33`, fifty-two-code lexical/equality, security scans,
+  compile, scripts, exact-ten manifest and diff checks.
+- Controller marker:
+  `P8-05 final held; tool-asset-process-stage diagnostic 0/1 active`.

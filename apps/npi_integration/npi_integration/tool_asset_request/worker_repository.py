@@ -13,6 +13,7 @@ from npi_core.foundation.audit import create_audit_event
 
 from .adapters import ClassifiedToolAssetAdapterResult, ToolAssetAdapterCommand
 from .config import ToolAssetExecutionProfile
+from .diagnostics import tool_asset_process_stage_step
 from .execution_domain import (
     TOOL_ASSET_EXECUTION_API_VERSION,
     TOOL_ASSET_EXECUTION_SCHEMA_VERSION,
@@ -102,8 +103,9 @@ class FrappeToolAssetWorkerRepository:
 
     def claim(self, outbox_event_id: UUID, *, now: datetime, expected_route: ToolAssetExecutionRoute) -> ClaimedToolAssetMessage | None:
         now = _aware_utc(now)
-        outbox = _required_outbox(outbox_event_id, lock=True)
-        _require_tool_asset_outbox(outbox)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_OUTBOX"):
+            outbox = _required_outbox(outbox_event_id, lock=True)
+            _require_tool_asset_outbox(outbox)
         if (str(outbox.tenant_id), str(outbox.project_global_id), str(outbox.service_actor_user_id), str(outbox.trace_id)) != (expected_route.tenant_id, str(expected_route.project_global_id), expected_route.service_actor_user_id, expected_route.trace_id):
             raise RuntimeError("Tool Asset execution route changed after authorization.")
         if str(outbox.state) in _TERMINAL_STATES:
@@ -114,25 +116,29 @@ class FrappeToolAssetWorkerRepository:
         expired = str(outbox.state) == "processing" and _aware_utc(outbox.lease_expires_at) <= now
         if str(outbox.state) == "processing" and not expired:
             return None
-        request_row = _required_doc("NPI Tool Asset Request", outbox.tool_asset_request_global_id, lock=True)
-        request = _request_value(request_row)
-        _require_bindings(outbox, request_row, request)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST"):
+            request_row = _required_doc("NPI Tool Asset Request", outbox.tool_asset_request_global_id, lock=True)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_REBUILD"):
+            request = _request_value(request_row)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_BINDINGS"):
+            _require_bindings(outbox, request_row, request)
         recovered_after_boundary = bool(expired and outbox.adapter_boundary_crossed)
         attempt_number = int(outbox.attempt_count or 0) + 1
         claim_token = frappe.generate_hash(length=32)
         claim_uuid = uuid5(_RESULT_NAMESPACE, f"claim:{outbox_event_id}:{attempt_number}:{claim_token}")
         attempt_id = uuid5(_RESULT_NAMESPACE, f"attempt:{outbox_event_id}:{attempt_number}")
-        command = ToolAssetAdapterCommand(
-            request_global_id=request.global_id,
-            attempt_global_id=attempt_id,
-            attempt_number=attempt_number,
-            operation=request.operation,
-            target_idempotency_key_hash=str(outbox.target_idempotency_key_hash),
-            source_hash=request.source.source_hash,
-            mapping_expectation=request.mapping_expectation,
-            request_snapshot=request.canonical_mapping(),
-        )
-        with tool_asset_claim_write(expected_route.service_actor_user_id) as capability:
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_COMMAND_BUILD"):
+            command = ToolAssetAdapterCommand(
+                request_global_id=request.global_id,
+                attempt_global_id=attempt_id,
+                attempt_number=attempt_number,
+                operation=request.operation,
+                target_idempotency_key_hash=str(outbox.target_idempotency_key_hash),
+                source_hash=request.source.source_hash,
+                mapping_expectation=request.mapping_expectation,
+                request_snapshot=request.canonical_mapping(),
+            )
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_TRANSACTION"), tool_asset_claim_write(expected_route.service_actor_user_id) as capability:
             if expired and getattr(outbox, "tool_asset_last_attempt_global_id", None):
                 old = _required_doc("NPI Tool Asset Attempt", outbox.tool_asset_last_attempt_global_id, lock=True)
                 old.state = "uncertain" if outbox.adapter_boundary_crossed else "observed_failure"
@@ -140,35 +146,42 @@ class FrappeToolAssetWorkerRepository:
                 old.reconciliation_required = int(bool(outbox.adapter_boundary_crossed))
                 old.safe_error_code = "TOOL_ASSET_EXPIRED_AFTER_BOUNDARY" if outbox.adapter_boundary_crossed else "TOOL_ASSET_EXPIRED_BEFORE_BOUNDARY"
                 _set_attempt_snapshot(old)
-                save_tool_asset_support_document(old, capability=capability)
-            attempt = frappe.get_doc({
-                "doctype": "NPI Tool Asset Attempt", "global_id": str(attempt_id),
-                "request_global_id": str(request.global_id), "outbox_event_id": str(outbox_event_id),
-                "attempt_number": attempt_number, "claim_token": str(claim_uuid),
-                "operation": request.operation.value, "target_idempotency_key_hash": str(outbox.target_idempotency_key_hash),
-                "source_hash": request.source.source_hash,
-                "mapping_expectation_hash": canonical_hash(request.mapping_expectation.canonical_mapping()),
-                "profile_id": request.profile.profile_id, "profile_version": request.profile.profile_version,
-                "profile_snapshot_hash": request.profile.snapshot_hash, "state": "started",
-                "adapter_boundary_crossed": int(recovered_after_boundary), "request_snapshot": command.snapshot,
-                "request_snapshot_hash": command.snapshot_hash, "reconciliation_required": int(recovered_after_boundary),
-                "started_at": _db_datetime(now),
-            })
-            _set_attempt_snapshot(attempt)
-            insert_tool_asset_support_document(attempt, capability=capability)
+                with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_EXPIRED_ATTEMPT_SAVE"):
+                    save_tool_asset_support_document(old, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_ATTEMPT_BUILD"):
+                attempt = frappe.get_doc({
+                    "doctype": "NPI Tool Asset Attempt", "global_id": str(attempt_id),
+                    "request_global_id": str(request.global_id), "outbox_event_id": str(outbox_event_id),
+                    "attempt_number": attempt_number, "claim_token": str(claim_uuid),
+                    "operation": request.operation.value, "target_idempotency_key_hash": str(outbox.target_idempotency_key_hash),
+                    "source_hash": request.source.source_hash,
+                    "mapping_expectation_hash": canonical_hash(request.mapping_expectation.canonical_mapping()),
+                    "profile_id": request.profile.profile_id, "profile_version": request.profile.profile_version,
+                    "profile_snapshot_hash": request.profile.snapshot_hash, "state": "started",
+                    "adapter_boundary_crossed": int(recovered_after_boundary), "request_snapshot": command.snapshot,
+                    "request_snapshot_hash": command.snapshot_hash, "reconciliation_required": int(recovered_after_boundary),
+                    "started_at": _db_datetime(now),
+                })
+                _set_attempt_snapshot(attempt)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_ATTEMPT_INSERT"):
+                insert_tool_asset_support_document(attempt, capability=capability)
             outbox.state = "processing"
             outbox.attempt_count = attempt_number
             outbox.claim_token = str(claim_uuid)
             outbox.claimed_at = _db_datetime(now)
             outbox.lease_expires_at = _db_datetime(now + timedelta(seconds=CLAIM_LEASE_SECONDS))
             outbox.tool_asset_last_attempt_global_id = str(attempt_id)
-            save_tool_asset_support_document(outbox, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_OUTBOX_SAVE"):
+                save_tool_asset_support_document(outbox, capability=capability)
             request_row.execution_state = ToolAssetExecutionRequestState.PROCESSING.value
             request_row.optimistic_version = int(request_row.optimistic_version or 0) + 1
             request_row.updated_at = _db_datetime(now)
-            save_tool_asset_support_document(request_row, capability=capability)
-            _append_worker_audit(claim_actor=expected_route.service_actor_user_id, trace_id=expected_route.trace_id, request_global_id=request.global_id, operation="tool_asset_execution.claim", result="recovered_after_boundary" if recovered_after_boundary else "claimed", summary={"attemptNumber": attempt_number, "operation": request.operation.value}, capability=capability)
-        return ClaimedToolAssetMessage(outbox_event_id, request.global_id, expected_route.tenant_id, expected_route.project_global_id, expected_route.service_actor_user_id, expected_route.trace_id, claim_uuid, attempt_id, attempt_number, command, request, recovered_after_boundary)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE"):
+                save_tool_asset_support_document(request_row, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_AUDIT"):
+                _append_worker_audit(claim_actor=expected_route.service_actor_user_id, trace_id=expected_route.trace_id, request_global_id=request.global_id, operation="tool_asset_execution.claim", result="recovered_after_boundary" if recovered_after_boundary else "claimed", summary={"attemptNumber": attempt_number, "operation": request.operation.value}, capability=capability)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_CLAIM_RETURN"):
+            return ClaimedToolAssetMessage(outbox_event_id, request.global_id, expected_route.tenant_id, expected_route.project_global_id, expected_route.service_actor_user_id, expected_route.trace_id, claim_uuid, attempt_id, attempt_number, command, request, recovered_after_boundary)
 
     @staticmethod
     def require_execution_profile(claim: ClaimedToolAssetMessage, profile: ToolAssetExecutionProfile | None) -> ToolAssetExecutionProfile:
@@ -177,47 +190,59 @@ class FrappeToolAssetWorkerRepository:
         return profile
 
     def mark_adapter_boundary(self, claim: ClaimedToolAssetMessage, *, profile: ToolAssetExecutionProfile, now: datetime) -> bool:
-        if not isinstance(profile, ToolAssetExecutionProfile) or profile.reference != claim.request.profile:
-            raise RuntimeError("Tool Asset adapter profile changed before the boundary.")
-        outbox, attempt = _required_current_claim(claim)
-        with tool_asset_claim_write(claim.service_actor_user_id) as capability:
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_BOUNDARY_PROFILE"):
+            if not isinstance(profile, ToolAssetExecutionProfile) or profile.reference != claim.request.profile:
+                raise RuntimeError("Tool Asset adapter profile changed before the boundary.")
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_BOUNDARY_CURRENT_CLAIM"):
+            outbox, attempt = _required_current_claim(claim)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_BOUNDARY_TRANSACTION"), tool_asset_claim_write(claim.service_actor_user_id) as capability:
             outbox.adapter_boundary_crossed = 1
             attempt.adapter_boundary_crossed = 1
             _set_attempt_snapshot(attempt)
-            save_tool_asset_support_document(attempt, capability=capability)
-            save_tool_asset_support_document(outbox, capability=capability)
-            _append_worker_audit(claim_actor=claim.service_actor_user_id, trace_id=claim.trace_id, request_global_id=claim.request_global_id, operation="tool_asset_execution.adapter_boundary", result="sealed", summary={"attemptNumber": claim.attempt_number, "operation": claim.request.operation.value}, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_BOUNDARY_ATTEMPT_SAVE"):
+                save_tool_asset_support_document(attempt, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_BOUNDARY_OUTBOX_SAVE"):
+                save_tool_asset_support_document(outbox, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_BOUNDARY_AUDIT"):
+                _append_worker_audit(claim_actor=claim.service_actor_user_id, trace_id=claim.trace_id, request_global_id=claim.request_global_id, operation="tool_asset_execution.adapter_boundary", result="sealed", summary={"attemptNumber": claim.attempt_number, "operation": claim.request.operation.value}, capability=capability)
         return True
 
     def seal_result(self, claim: ClaimedToolAssetMessage, *, profile: ToolAssetExecutionProfile | None, result: ClassifiedToolAssetAdapterResult, now: datetime) -> ToolAssetWorkerOutcome:
         now = _aware_utc(now)
-        _require_result_profile(claim, profile, result)
-        outbox, attempt = _required_current_claim(claim)
-        request_row = _required_doc("NPI Tool Asset Request", claim.request_global_id, lock=True)
-        _require_bindings(outbox, request_row, claim.request)
-        result_id = deterministic_tool_asset_result_id(claim.attempt_global_id)
-        existing = _optional_doc("NPI Tool Asset Result", result_id, lock=True)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_PROFILE"):
+            _require_result_profile(claim, profile, result)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_CURRENT_CLAIM"):
+            outbox, attempt = _required_current_claim(claim)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_REQUEST"):
+            request_row = _required_doc("NPI Tool Asset Request", claim.request_global_id, lock=True)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_BINDINGS"):
+            _require_bindings(outbox, request_row, claim.request)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_RESULT_LOOKUP"):
+            result_id = deterministic_tool_asset_result_id(claim.attempt_global_id)
+            existing = _optional_doc("NPI Tool Asset Result", result_id, lock=True)
         if existing is not None:
-            return _existing_outcome(existing, claim)
-        field_payloads = [value.canonical_mapping() for value in result.fields]
-        field_set_hash = canonical_hash(field_payloads)
-        mapping_disposition = classify_mapping_result(
-            claim.request.mapping_expectation,
-            result_state=result.state,
-            authority=result.authority,
-            response_authenticated=result.authority.value == "authoritative_sandbox",
-            observed_formal_asset_id=result.formal_asset_id,
-            observed_previous_mapping_version=claim.request.mapping_expectation.mapping_version,
-        )
-        mapping_disposition = _validated_mapping_disposition(claim, mapping_disposition)
-        effective_state = (
-            ToolAssetExecutionRequestState.MAPPING_CONFLICT
-            if result.state is ToolAssetExecutionRequestState.SUCCEEDED
-            and mapping_disposition is not ToolAssetMappingDisposition.ADVANCE
-            else result.state
-        )
-        observation_id = uuid5(_OBSERVATION_NAMESPACE, str(result_id))
-        with tool_asset_result_transaction_write(claim.service_actor_user_id) as capability:
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_EXISTING_OUTCOME"):
+                return _existing_outcome(existing, claim)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_PREPARE"):
+            field_payloads = [value.canonical_mapping() for value in result.fields]
+            field_set_hash = canonical_hash(field_payloads)
+            mapping_disposition = classify_mapping_result(
+                claim.request.mapping_expectation,
+                result_state=result.state,
+                authority=result.authority,
+                response_authenticated=result.authority.value == "authoritative_sandbox",
+                observed_formal_asset_id=result.formal_asset_id,
+                observed_previous_mapping_version=claim.request.mapping_expectation.mapping_version,
+            )
+            mapping_disposition = _validated_mapping_disposition(claim, mapping_disposition)
+            effective_state = (
+                ToolAssetExecutionRequestState.MAPPING_CONFLICT
+                if result.state is ToolAssetExecutionRequestState.SUCCEEDED
+                and mapping_disposition is not ToolAssetMappingDisposition.ADVANCE
+                else result.state
+            )
+            observation_id = uuid5(_OBSERVATION_NAMESPACE, str(result_id))
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_TRANSACTION"), tool_asset_result_transaction_write(claim.service_actor_user_id) as capability:
             result_snapshot = {
                 "schemaVersion": TOOL_ASSET_EXECUTION_SCHEMA_VERSION, "globalId": str(result_id),
                 "requestGlobalId": str(claim.request_global_id), "outboxEventId": str(claim.outbox_event_id),
@@ -230,17 +255,21 @@ class FrappeToolAssetWorkerRepository:
                 "fieldResultSetHash": field_set_hash, "formalAssetId": result.formal_asset_id,
                 "targetVersion": result.target_version, "observedAt": _utc_text(now),
             }
-            result_doc = frappe.get_doc({
-                "doctype": "NPI Tool Asset Result", **_snake_result(result_snapshot),
-                "result_snapshot": result_snapshot, "result_hash": canonical_hash(result_snapshot),
-            })
-            insert_tool_asset_support_document(result_doc, capability=capability)
-            for value in result.fields:
-                field_id = deterministic_tool_asset_field_result_id(claim.attempt_global_id, value.field_code)
-                snapshot = {"schemaVersion": TOOL_ASSET_EXECUTION_SCHEMA_VERSION, "globalId": str(field_id), "requestGlobalId": str(claim.request_global_id), "resultGlobalId": str(result_id), "attemptGlobalId": str(claim.attempt_global_id), **value.canonical_mapping(), "observedAt": _utc_text(now)}
-                insert_tool_asset_support_document(frappe.get_doc({"doctype": "NPI Tool Asset Field Result", **_snake_field(snapshot), "observation_hash": canonical_hash(value.canonical_mapping()), "field_result_snapshot": snapshot, "field_result_hash": canonical_hash(snapshot)}), capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_RESULT_BUILD"):
+                result_doc = frappe.get_doc({
+                    "doctype": "NPI Tool Asset Result", **_snake_result(result_snapshot),
+                    "result_snapshot": result_snapshot, "result_hash": canonical_hash(result_snapshot),
+                })
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_RESULT_INSERT"):
+                insert_tool_asset_support_document(result_doc, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_FIELD_INSERT"):
+                for value in result.fields:
+                    field_id = deterministic_tool_asset_field_result_id(claim.attempt_global_id, value.field_code)
+                    snapshot = {"schemaVersion": TOOL_ASSET_EXECUTION_SCHEMA_VERSION, "globalId": str(field_id), "requestGlobalId": str(claim.request_global_id), "resultGlobalId": str(result_id), "attemptGlobalId": str(claim.attempt_global_id), **value.canonical_mapping(), "observedAt": _utc_text(now)}
+                    insert_tool_asset_support_document(frappe.get_doc({"doctype": "NPI Tool Asset Field Result", **_snake_field(snapshot), "observation_hash": canonical_hash(value.canonical_mapping()), "field_result_snapshot": snapshot, "field_result_hash": canonical_hash(snapshot)}), capability=capability)
             mapping_advanced = mapping_disposition is ToolAssetMappingDisposition.ADVANCE
-            self._record_mapping(claim, result, result_id, observation_id, mapping_disposition, now, capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_MAPPING"):
+                self._record_mapping(claim, result, result_id, observation_id, mapping_disposition, now, capability)
             attempt.state = _attempt_state(effective_state)
             attempt.transport_disposition = result.transport_disposition
             attempt.response_hash = result.response_hash
@@ -249,21 +278,27 @@ class FrappeToolAssetWorkerRepository:
             attempt.safe_error_code = result.safe_error_code
             attempt.finished_at = _db_datetime(now)
             _set_attempt_snapshot(attempt)
-            save_tool_asset_support_document(attempt, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_ATTEMPT_SAVE"):
+                save_tool_asset_support_document(attempt, capability=capability)
             request_row.execution_state = effective_state.value
             request_row.result_global_id = str(result_id)
             request_row.optimistic_version = int(request_row.optimistic_version or 0) + 1
             request_row.updated_at = _db_datetime(now)
-            save_tool_asset_support_document(request_row, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_REQUEST_SAVE"):
+                save_tool_asset_support_document(request_row, capability=capability)
             outbox.state = _outbox_state(effective_state)
             outbox.tool_asset_result_global_id = str(result_id)
             outbox.disposition = mapping_disposition.value
             outbox.last_error_code = result.safe_error_code
             outbox.last_error_at = _db_datetime(now) if result.safe_error_code else None
-            save_tool_asset_support_document(outbox, capability=capability)
-            _release_guard(claim, effective_state, now, capability)
-            _append_worker_audit(claim_actor=claim.service_actor_user_id, trace_id=claim.trace_id, request_global_id=claim.request_global_id, operation="tool_asset_execution.result.observe", result=effective_state.value, summary={"attemptNumber": claim.attempt_number, "disposition": mapping_disposition.value, "mappingAdvanced": mapping_advanced, "responseHash": result.response_hash}, capability=capability)
-        return ToolAssetWorkerOutcome(claim.outbox_event_id, claim.request_global_id, effective_state.value, mapping_disposition.value, mapping_advanced, result_id)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_OUTBOX_SAVE"):
+                save_tool_asset_support_document(outbox, capability=capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_GUARD"):
+                _release_guard(claim, effective_state, now, capability)
+            with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_AUDIT"):
+                _append_worker_audit(claim_actor=claim.service_actor_user_id, trace_id=claim.trace_id, request_global_id=claim.request_global_id, operation="tool_asset_execution.result.observe", result=effective_state.value, summary={"attemptNumber": claim.attempt_number, "disposition": mapping_disposition.value, "mappingAdvanced": mapping_advanced, "responseHash": result.response_hash}, capability=capability)
+        with tool_asset_process_stage_step("P805_TOOL_ASSET_PROCESS_SEAL_OUTCOME"):
+            return ToolAssetWorkerOutcome(claim.outbox_event_id, claim.request_global_id, effective_state.value, mapping_disposition.value, mapping_advanced, result_id)
 
     def recover_or_seal_result(self, claim: ClaimedToolAssetMessage, *, profile: ToolAssetExecutionProfile | None, result: ClassifiedToolAssetAdapterResult, now: datetime) -> ToolAssetWorkerOutcome:
         return self.seal_result(claim, profile=profile, result=result, now=now)
