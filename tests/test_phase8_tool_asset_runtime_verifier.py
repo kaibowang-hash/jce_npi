@@ -178,6 +178,12 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_query_command_context_diagnostics_enabled()
         )
+        self.assertTrue(
+            self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._tool_asset_create_response_diagnostics_enabled()
+        )
         project_id = str(UUID(int=1))
         retained_master_id = str(UUID(int=2))
         retained_set_id = str(UUID(int=3))
@@ -260,6 +266,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ) as create_fixture, patch.object(
             self.verifier.item_runtime,
             "_replay_diagnostic_log_cursors",
+            return_value={"logs/bench.log": 0},
         ) as cursor_reader, patch.object(
             self.verifier.item_runtime,
             "_sanitized_server_log_diagnostic",
@@ -282,7 +289,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 "csrf",
                 retained,
             )
-            cursor_reader.assert_not_called()
+            cursor_reader.assert_called_once_with()
             diagnostic_reader.assert_not_called()
             first_args, first_kwargs = self.verifier.execution_request.call_args_list[0]
             split = urlsplit(first_args[2])
@@ -338,6 +345,207 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 ),
             )
             self.assertEqual(post_kwargs["method"], "POST")
+            self.assertEqual(
+                post_kwargs["diagnostic_scope"],
+                self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE,
+            )
+
+    def test_create_response_parent_codes_are_ordered_value_free_and_server_wins(self):
+        trace_id = "trace-" + "e" * 32
+        valid = {
+            "requestGlobalId": str(UUID(int=21)),
+            "outboxEventId": str(UUID(int=22)),
+            "request": {"state": "queued"},
+        }
+        secret = "private-create-response-value"
+        cases = (
+            ("P805_TOOL_ASSET_CREATE_HTTP_STATUS", types.SimpleNamespace(status=503, body={"opaque": secret}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_BODY_SHAPE", types.SimpleNamespace(status=201, body=secret, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_REQUEST_SHAPE", types.SimpleNamespace(status=201, body={**valid, "request": secret}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_REQUEST_STATE", types.SimpleNamespace(status=201, body={**valid, "request": {"state": secret}}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_REQUEST_ID", types.SimpleNamespace(status=201, body={**valid, "requestGlobalId": secret}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_OUTBOX_ID", types.SimpleNamespace(status=201, body={**valid, "outboxEventId": secret}, trace_id=trace_id)),
+        )
+        for code, result in cases:
+            with self.subTest(code=code), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=None,
+            ) as reader:
+                message = self.verifier._tool_asset_create_response_failure_message(
+                    result,
+                    {"logs/bench.log": 0},
+                )
+            self.assertIn(f"diagnostic_code={code}", message)
+            self.assertIn("exception_type=RuntimeError", message)
+            self.assertIn(f"trace_id={trace_id}", message)
+            self.assertNotIn(secret, message)
+            self.assertNotIn("503", message)
+            reader.assert_called_once_with(
+                trace_id,
+                {"logs/bench.log": 0},
+                code_prefix="P805_TOOL_ASSET_CREATE_",
+                allowed_codes=self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+            )
+
+        with patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+            return_value=(
+                "RequestValidationFailed",
+                "P805_TOOL_ASSET_CREATE_INPUT_PARSE",
+                trace_id,
+            ),
+        ):
+            message = self.verifier._tool_asset_create_response_failure_message(
+                cases[0][1],
+                {},
+            )
+        self.assertIn("diagnostic_code=P805_TOOL_ASSET_CREATE_INPUT_PARSE", message)
+        self.assertIn("exception_type=RequestValidationFailed", message)
+        self.assertNotIn(secret, message)
+
+    def test_create_response_diagnostic_is_closed_for_success_off_and_bad_trace(self):
+        trace_id = "trace-" + "f" * 32
+        valid = {
+            "requestGlobalId": str(UUID(int=31)),
+            "outboxEventId": str(UUID(int=32)),
+            "request": {"state": "queued"},
+        }
+        with patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as reader:
+            self.assertIsNone(
+                self.verifier._tool_asset_create_response_failure_message(
+                    types.SimpleNamespace(status=201, body=valid, trace_id=trace_id),
+                    {},
+                )
+            )
+            reader.assert_not_called()
+
+        failure = types.SimpleNamespace(status=500, body={}, trace_id=trace_id)
+        with patch.object(
+            self.verifier,
+            "TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as reader:
+            self.assertEqual(
+                self.verifier._tool_asset_create_response_failure_message(failure, {}),
+                self.verifier._TOOL_ASSET_CREATE_RESPONSE_FAILURE,
+            )
+            reader.assert_not_called()
+
+        for invalid_trace in (None, "trace-invalid", "private-trace-value"):
+            with self.subTest(trace=invalid_trace), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+            ) as reader:
+                self.assertEqual(
+                    self.verifier._tool_asset_create_response_failure_message(
+                        types.SimpleNamespace(status=500, body={}, trace_id=invalid_trace),
+                        {},
+                    ),
+                    self.verifier._TOOL_ASSET_CREATE_RESPONSE_FAILURE,
+                )
+                reader.assert_not_called()
+
+    def test_create_response_scope_is_exact_and_uses_shared_http_trace_result(self):
+        payload = {
+            "acceptanceRevisionGlobalId": str(UUID(int=41)),
+            "expectedSourceHash": "a" * 64,
+            "expectedApprovalHash": "b" * 64,
+            "expectedMappingExpectationHash": "c" * 64,
+            "expectedProfileSnapshotHash": "d" * 64,
+            "acknowledgement": self.verifier.ACKNOWLEDGEMENT,
+        }
+        response = types.SimpleNamespace(
+            status=500,
+            body={},
+            trace_id="trace-" + "a" * 32,
+            headers={"X-Request-ID": "p805-create", "Cache-Control": "private, no-store"},
+        )
+        path = self.verifier.execution_path(
+            str(UUID(int=42)),
+            str(UUID(int=43)),
+            str(UUID(int=44)),
+            ":create",
+        )
+        with patch.object(
+            self.verifier.document_runtime,
+            "command_headers",
+            return_value={"X-Request-ID": "p805-create"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=response,
+        ) as request:
+            observed = self.verifier.execution_request(
+                object(),
+                "http://127.0.0.1:8003",
+                path,
+                method="POST",
+                payload=payload,
+                csrf_token="csrf",
+                idempotency_key="fixed-key",
+                diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE,
+            )
+        self.assertIs(observed, response)
+        self.assertEqual(
+            request.call_args.kwargs["request_headers"]["X-NPI-Diagnostic-Scope"],
+            "p805-tool-asset-create-response-v1",
+        )
+        source = (ROOT / "scripts/verify_tool_asset_execution_runtime.py").read_text(encoding="utf-8")
+        self.assertNotIn('headers.get("X-Trace-ID")', source)
+
+        defaults = {
+            "path": path,
+            "method": "POST",
+            "payload": payload,
+            "csrf_token": "csrf",
+            "idempotency_key": "fixed-key",
+        }
+        for change in (
+            {"method": "GET"},
+            {"path": path + "?extra=wrong"},
+            {"payload": {**payload, "extra": "wrong"}},
+            {"csrf_token": None},
+            {"idempotency_key": None},
+        ):
+            values = {**defaults, **change}
+            candidate_path = values.pop("path")
+            with self.subTest(change=change), self.assertRaisesRegex(
+                RuntimeError,
+                self.verifier._TOOL_ASSET_CREATE_RESPONSE_FAILURE,
+            ):
+                self.verifier.execution_request(
+                    object(),
+                    "http://127.0.0.1:8003",
+                    candidate_path,
+                    diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE,
+                    **values,
+                )
+
+    def test_create_response_server_allowlist_matches_unique_lexical_contexts(self):
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        self.assertEqual(
+            self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+        )
+        source = "\n".join(
+            (
+                (ROOT / "apps/npi_integration/npi_integration/tool_asset_request_api.py").read_text(encoding="utf-8"),
+                (ROOT / "apps/npi_integration/npi_integration/tool_asset_request/frappe_repository.py").read_text(encoding="utf-8"),
+            )
+        )
+        for code in diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES:
+            with self.subTest(code=code):
+                self.assertEqual(source.count(f'"{code}"'), 1)
 
     def test_disposable_fixture_is_exact_distinct_and_fail_closed(self):
         project_id = str(UUID(int=1))
@@ -1116,7 +1324,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
     def test_runtime_covers_default_off_create_worker_replay_and_zero_mapping(self):
         source = (ROOT / "scripts/verify_tool_asset_execution_runtime.py").read_text(encoding="utf-8")
-        for marker in ("run_disabled_probe", "commandContexts", '"state") == "queued"', "exercise_worker", "terminalReplayNotClaimed", "mappingHeadCount", "fieldResultCount", "_assert_no_formal_target"):
+        for marker in ("run_disabled_probe", "commandContexts", 'request.get("state") != "queued"', "exercise_worker", "terminalReplayNotClaimed", "mappingHeadCount", "fieldResultCount", "_assert_no_formal_target"):
             self.assertIn(marker, source)
         self.assertIn("stderr=subprocess.DEVNULL", source)
         self.assertIn("tempfile.TemporaryFile", source)

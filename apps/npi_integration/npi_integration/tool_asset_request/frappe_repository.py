@@ -28,6 +28,7 @@ from npi_integration.tool_asset_request.domain import (
 )
 from npi_integration.tool_asset_request.diagnostics import (
     p606_asset_create_step,
+    tool_asset_create_response_step,
     tool_asset_context_step,
 )
 from npi_integration.tool_asset_request.frappe_validation import (
@@ -741,7 +742,10 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         idempotency_key_hash: str,
         acknowledgement: str,
     ) -> ToolAssetExecutionCommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_PROJECT_LOCK"
+        ):
+            project = self._locked_authorized_project(project_id)
         if project is None:
             return None
         command_hash = canonical_hash(
@@ -769,29 +773,44 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
                 "idempotencyKeyHash": idempotency_key_hash,
             }
         )
-        receipt = self._execution_receipt(receipt_key)
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_RECEIPT_LOOKUP"
+        ):
+            receipt = self._execution_receipt(receipt_key)
         if receipt is not None:
-            return self._execution_replay_or_conflict(
-                project,
-                receipt,
-                receipt_key=receipt_key,
-                operation=operation,
-                idempotency_key_hash=idempotency_key_hash,
-                command_hash=command_hash,
-            )
-        require_mutable_project(project)
+            with tool_asset_create_response_step(
+                "P805_TOOL_ASSET_CREATE_RECEIPT_REPLAY"
+            ):
+                return self._execution_replay_or_conflict(
+                    project,
+                    receipt,
+                    receipt_key=receipt_key,
+                    operation=operation,
+                    idempotency_key_hash=idempotency_key_hash,
+                    command_hash=command_hash,
+                )
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_PROJECT_MUTABLE"
+        ):
+            require_mutable_project(project)
         try:
-            profile = self._required_execution_profile(project)
-            value = self._build_execution_request(
-                project,
-                tooling_master_id,
-                tooling_set_id,
-                acceptance_revision_id,
-                profile,
-                operation,
-                idempotency_key_hash=idempotency_key_hash,
-                lock=True,
-            )
+            with tool_asset_create_response_step(
+                "P805_TOOL_ASSET_CREATE_PROFILE_RESOLVE"
+            ):
+                profile = self._required_execution_profile(project)
+            with tool_asset_create_response_step(
+                "P805_TOOL_ASSET_CREATE_REQUEST_BUILD"
+            ):
+                value = self._build_execution_request(
+                    project,
+                    tooling_master_id,
+                    tooling_set_id,
+                    acceptance_revision_id,
+                    profile,
+                    operation,
+                    idempotency_key_hash=idempotency_key_hash,
+                    lock=True,
+                )
         except ToolAssetExecutionProfileUnavailable as problem:
             return ToolAssetExecutionCommandOutcome(problem=problem)
         except ToolAssetExecutionApprovalUnavailable as problem:
@@ -800,16 +819,20 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
             return ToolAssetExecutionCommandOutcome(problem=problem)
         except (ToolAssetExecutionStateConflict, ToolAssetExecutionUnavailable) as problem:
             return ToolAssetExecutionCommandOutcome(problem=problem)
-        if (
-            value.source.source_hash != expected_source_hash
-            or canonical_hash(value.approval.canonical_mapping()) != expected_approval_hash
-            or canonical_hash(value.mapping_expectation.canonical_mapping())
-            != expected_mapping_expectation_hash
-            or value.profile.snapshot_hash != expected_profile_snapshot_hash
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_HASH_COMPARE"
         ):
-            return ToolAssetExecutionCommandOutcome(
-                problem=ToolAssetExecutionStateConflict()
-            )
+            if (
+                value.source.source_hash != expected_source_hash
+                or canonical_hash(value.approval.canonical_mapping())
+                != expected_approval_hash
+                or canonical_hash(value.mapping_expectation.canonical_mapping())
+                != expected_mapping_expectation_hash
+                or value.profile.snapshot_hash != expected_profile_snapshot_hash
+            ):
+                return ToolAssetExecutionCommandOutcome(
+                    problem=ToolAssetExecutionStateConflict()
+                )
         dispatch_allowed = value.profile.target_mode is not ToolAssetExecutionTargetMode.MOCK
         outbox_event_id = self._new_uuid() if dispatch_allowed else None
         target_key_hash = canonical_hash(
@@ -838,68 +861,96 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
             "targetIdempotencyKeyHash": target_key_hash,
             "semanticEffectHash": semantic_effect_hash,
         }
-        with tool_asset_request_transaction_write(self.actor) as capability:
-            guard = None
-            if dispatch_allowed:
-                guard = self._locked_execution_stream_guard(
-                    project,
-                    value,
-                    capability=capability,
-                )
-                if getattr(guard, "active_request_global_id", None):
-                    return ToolAssetExecutionCommandOutcome(
-                        problem=ToolAssetExecutionStreamActive()
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_TRANSACTION_SCOPE"
+        ):
+            with tool_asset_request_transaction_write(self.actor) as capability:
+                guard = None
+                if dispatch_allowed:
+                    with tool_asset_create_response_step(
+                        "P805_TOOL_ASSET_CREATE_STREAM_GUARD"
+                    ):
+                        guard = self._locked_execution_stream_guard(
+                            project,
+                            value,
+                            capability=capability,
+                        )
+                        if getattr(guard, "active_request_global_id", None):
+                            return ToolAssetExecutionCommandOutcome(
+                                problem=ToolAssetExecutionStreamActive()
+                            )
+                with tool_asset_create_response_step(
+                    "P805_TOOL_ASSET_CREATE_REQUEST_INSERT"
+                ):
+                    self._insert_execution_request(
+                        value,
+                        outbox_event_id=outbox_event_id,
+                        target_idempotency_key_hash=target_key_hash,
+                        semantic_effect_hash=semantic_effect_hash,
+                        capability=capability,
                     )
-            self._insert_execution_request(
-                value,
-                outbox_event_id=outbox_event_id,
-                target_idempotency_key_hash=target_key_hash,
-                semantic_effect_hash=semantic_effect_hash,
-                capability=capability,
-            )
-            if outbox_event_id is not None:
-                self._insert_execution_outbox(
-                    project,
-                    value,
-                    event_id=outbox_event_id,
-                    target_idempotency_key_hash=target_key_hash,
-                    semantic_effect_hash=semantic_effect_hash,
-                    capability=capability,
-                )
-                self._activate_execution_stream_guard(
-                    guard,
-                    value,
-                    target_idempotency_key_hash=target_key_hash,
-                    capability=capability,
-                )
-            self._append_execution_audit(
-                operation=f"tool_asset_execution.{operation.value}.request.create",
-                global_id=value.global_id,
-                object_version=1,
-                result=value.state.value,
-                summary={
-                    "sourceStreamKeyHash": value.source.source_stream_key_hash,
-                    "sourceHash": value.source.source_hash,
-                    "profileId": value.profile.profile_id,
-                    "profileVersion": value.profile.profile_version,
-                    "requestPayloadHash": value.payload_hash,
-                    "outboxEventId": str(outbox_event_id) if outbox_event_id else None,
-                },
-                capability=capability,
-            )
-            self._insert_execution_receipt(
-                project,
-                value,
-                receipt_key=receipt_key,
-                command_hash=command_hash,
+                if outbox_event_id is not None:
+                    with tool_asset_create_response_step(
+                        "P805_TOOL_ASSET_CREATE_OUTBOX_INSERT"
+                    ):
+                        self._insert_execution_outbox(
+                            project,
+                            value,
+                            event_id=outbox_event_id,
+                            target_idempotency_key_hash=target_key_hash,
+                            semantic_effect_hash=semantic_effect_hash,
+                            capability=capability,
+                        )
+                    with tool_asset_create_response_step(
+                        "P805_TOOL_ASSET_CREATE_GUARD_ACTIVATE"
+                    ):
+                        self._activate_execution_stream_guard(
+                            guard,
+                            value,
+                            target_idempotency_key_hash=target_key_hash,
+                            capability=capability,
+                        )
+                with tool_asset_create_response_step(
+                    "P805_TOOL_ASSET_CREATE_AUDIT_APPEND"
+                ):
+                    self._append_execution_audit(
+                        operation=(
+                            f"tool_asset_execution.{operation.value}.request.create"
+                        ),
+                        global_id=value.global_id,
+                        object_version=1,
+                        result=value.state.value,
+                        summary={
+                            "sourceStreamKeyHash": value.source.source_stream_key_hash,
+                            "sourceHash": value.source.source_hash,
+                            "profileId": value.profile.profile_id,
+                            "profileVersion": value.profile.profile_version,
+                            "requestPayloadHash": value.payload_hash,
+                            "outboxEventId": (
+                                str(outbox_event_id) if outbox_event_id else None
+                            ),
+                        },
+                        capability=capability,
+                    )
+                with tool_asset_create_response_step(
+                    "P805_TOOL_ASSET_CREATE_RECEIPT_INSERT"
+                ):
+                    self._insert_execution_receipt(
+                        project,
+                        value,
+                        receipt_key=receipt_key,
+                        command_hash=command_hash,
+                        response=response,
+                        capability=capability,
+                    )
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_OUTCOME_BUILD"
+        ):
+            return ToolAssetExecutionCommandOutcome(
                 response=response,
-                capability=capability,
+                should_enqueue=dispatch_allowed,
+                outbox_event_id=outbox_event_id,
             )
-        return ToolAssetExecutionCommandOutcome(
-            response=response,
-            should_enqueue=dispatch_allowed,
-            outbox_event_id=outbox_event_id,
-        )
 
     def _build_execution_request(
         self,
@@ -917,6 +968,8 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         with tool_asset_context_step(
             "P805_TOOL_ASSET_CONTEXT_CREATE_SOURCE",
             create_operation=create_operation,
+        ), tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_SOURCE"
         ):
             source = self._execution_source(
                 project,
@@ -931,6 +984,8 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         with tool_asset_context_step(
             "P805_TOOL_ASSET_CONTEXT_CREATE_PROFILE_BINDING",
             create_operation=create_operation,
+        ), tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_PROFILE_BINDING"
         ):
             if (
                 profile.tenant_id != source.tenant_id
@@ -940,6 +995,8 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         with tool_asset_context_step(
             "P805_TOOL_ASSET_CONTEXT_CREATE_AUTHORITY",
             create_operation=create_operation,
+        ), tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_AUTHORITY"
         ):
             if profile.target_mode is ToolAssetExecutionTargetMode.MOCK:
                 permitted = profile.permits(self.actor)
@@ -950,12 +1007,16 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         with tool_asset_context_step(
             "P805_TOOL_ASSET_CONTEXT_CREATE_SANDBOX_GUARD",
             create_operation=create_operation,
+        ), tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_SANDBOX_GUARD"
         ):
             if profile.target_mode is ToolAssetExecutionTargetMode.SANDBOX:
                 raise ToolAssetExecutionApprovalUnavailable()
         with tool_asset_context_step(
             "P805_TOOL_ASSET_CONTEXT_CREATE_MAPPING",
             create_operation=create_operation,
+        ), tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_MAPPING"
         ):
             expectation = self._mapping_expectation(
                 project,
@@ -967,6 +1028,8 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
         with tool_asset_context_step(
             "P805_TOOL_ASSET_CONTEXT_CREATE_REQUEST_BUILD",
             create_operation=create_operation,
+        ), tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_DOMAIN_BUILD"
         ):
             return ToolAssetExecutionRequest(
                 global_id=self._new_uuid(),

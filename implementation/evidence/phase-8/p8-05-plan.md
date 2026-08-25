@@ -1200,3 +1200,41 @@ then complete the physical Set, exact Revision binding, Acceptance, Tool Asset
 request, atomic Outbox, leased worker, terminal replay, zero formal Asset IDs
 and zero mapping head. A failure consumes final `1/1`; only its first safe
 boundary may be read, without rerun or guessed repair.
+
+## 34. Tool Asset create-response diagnostic cycle
+
+Durable checkpoint `29957d7226130c69dd14ec6314af5ff122b8f415`
+passes exact ordinary CI `32762106318`. Its sole unchanged Level 3 run
+`32763677243` passes repository, frontend, secret scan, governed visual and
+controlled preflight. Controlled runtime job `97551595519` stops at the fixed
+parent boundary `P8-05 Synthetic command did not create one queued request`.
+The corrected Requirement and Applicability, disposable physical Set, exact
+Revision binding, Acceptance and create command context all completed first.
+
+The parent predicate is ordered but compound: non-201 response, non-object
+body, missing request shape, non-queued request state, noncanonical request
+identity and noncanonical Outbox identity remain distinct possible first
+boundaries. The POST repeats authentication, CSRF, Project containment,
+approval/profile/source/mapping validation, atomic request/Outbox/guard/audit/
+receipt writes, commit and response serialization. Static evidence cannot
+select one product root. The `post-requirement-part-revision` cycle is therefore
+immutable at diagnostic `0/1`, product repair `0/1`, final `1/1`; no repair or
+rerun is authorized from that parent failure.
+
+A distinct `tool-asset-create-response` cycle begins at diagnostic `0/1`,
+product repair `0/1`, final `0/1`. Only its exact synthetic create POST sends
+the versioned diagnostic scope, and the temporary verifier activation is
+`True`; every historical diagnostic activation remains `False`. Six ordered
+parent codes use only the shared validated `HttpResult.trace_id`. Unique API
+and repository stages record at most one innermost three-key safe record and
+rethrow the same exception. The strict mirrored-log reader accepts only the
+exact trace and allowlist; a trusted server tuple wins, otherwise the fixed
+parent tuple is retained.
+
+The checkpoint does not inspect or emit response status values, bodies,
+business values, identifiers, counts, actor, hashes, profiles, exception
+messages or stacks. The enqueue-after-commit recovery catch remains outside
+stage instrumentation. Success emits nothing; missing/invalid trace and
+invalid/duplicate/mismatched log evidence fail closed. No response, write
+value/order, permission, transaction, API, Schema, ownership, worker, adapter,
+target or Gate behavior changes.

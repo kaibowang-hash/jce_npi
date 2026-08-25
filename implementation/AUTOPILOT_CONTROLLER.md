@@ -5163,3 +5163,27 @@ repeat or rewrite it merely to restore context. See
   terminal replay, zero formal Asset IDs and zero mapping head. Failure freezes
   final `1/1` and permits only first-safe-boundary readback.
 - Controller marker: `P8-05 final held; post-requirement-part-revision cycle 0/1,0/1,0/1 active`.
+
+## 2026-08-25 P8-05 Tool Asset create-response diagnostic cycle
+
+- Exact SHA `29957d7226130c69dd14ec6314af5ff122b8f415` passes ordinary
+  `32762106318`. Sole unchanged Level 3 `32763677243` passes all non-runtime
+  jobs; controlled runtime `97551595519` stops at the fixed queued-request
+  response boundary after the corrected disposable context is built.
+- The `post-requirement-part-revision` cycle freezes at diagnostic `0/1`,
+  product repair `0/1`, final `1/1`. Non-success, body/request shape, queued
+  state and two canonical identity predicates plus the POST server path remain
+  non-unique. No product repair, rerun or guessed attribution is allowed.
+- A distinct `tool-asset-create-response` cycle starts diagnostic `0/1`,
+  product repair `0/1`, final `0/1`. Only the exact synthetic create POST may
+  activate its versioned scope. Six ordered parent codes use shared validated
+  `HttpResult.trace_id`; unique API/repository stages produce at most one
+  innermost allowlisted record, rethrow unchanged and restore request-local
+  state. Strict mirrored evidence wins only when exact; otherwise the fixed
+  parent tuple remains.
+- Diagnostic output is limited to code, exception class and exact trace. It
+  cannot expose status/body/business values/identifiers/count/actor/hash/
+  profile/message/stack, cannot wrap enqueue recovery, and cannot change
+  response, writes/order, permissions, transaction, API, Schema, ownership,
+  worker, adapter, target or Gate behavior.
+- Controller marker: `P8-05 final held; tool-asset-create-response diagnostic 0/1 active`.

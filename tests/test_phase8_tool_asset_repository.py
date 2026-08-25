@@ -541,6 +541,119 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
         self.assertEqual(records, [])
         self.assertEqual(repository._diagnostic_writes, [])
 
+    def test_create_response_repository_stages_are_unique_same_exception_and_zero_write(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        source_text = (
+            ROOT
+            / "apps/npi_integration/npi_integration/tool_asset_request/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        repository_codes = (
+            "P805_TOOL_ASSET_CREATE_PROJECT_LOCK",
+            "P805_TOOL_ASSET_CREATE_RECEIPT_LOOKUP",
+            "P805_TOOL_ASSET_CREATE_RECEIPT_REPLAY",
+            "P805_TOOL_ASSET_CREATE_PROJECT_MUTABLE",
+            "P805_TOOL_ASSET_CREATE_PROFILE_RESOLVE",
+            "P805_TOOL_ASSET_CREATE_REQUEST_BUILD",
+            "P805_TOOL_ASSET_CREATE_HASH_COMPARE",
+            "P805_TOOL_ASSET_CREATE_TRANSACTION_SCOPE",
+            "P805_TOOL_ASSET_CREATE_STREAM_GUARD",
+            "P805_TOOL_ASSET_CREATE_REQUEST_INSERT",
+            "P805_TOOL_ASSET_CREATE_OUTBOX_INSERT",
+            "P805_TOOL_ASSET_CREATE_GUARD_ACTIVATE",
+            "P805_TOOL_ASSET_CREATE_AUDIT_APPEND",
+            "P805_TOOL_ASSET_CREATE_RECEIPT_INSERT",
+            "P805_TOOL_ASSET_CREATE_OUTCOME_BUILD",
+            "P805_TOOL_ASSET_CREATE_SOURCE",
+            "P805_TOOL_ASSET_CREATE_PROFILE_BINDING",
+            "P805_TOOL_ASSET_CREATE_AUTHORITY",
+            "P805_TOOL_ASSET_CREATE_SANDBOX_GUARD",
+            "P805_TOOL_ASSET_CREATE_MAPPING",
+            "P805_TOOL_ASSET_CREATE_DOMAIN_BUILD",
+        )
+        for code in repository_codes:
+            with self.subTest(code=code):
+                self.assertEqual(source_text.count(f'"{code}"'), 1)
+                self.assertIn(
+                    code,
+                    diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+                )
+
+        project = types.SimpleNamespace(
+            tenant_id="tenant-synthetic",
+            global_id=uid(1),
+        )
+        repository = self.bare_repository()
+        writes: list[str] = []
+        repository._execution_source = lambda *_args, **_kwargs: source()
+        repository._current_actor_member = lambda _project: object()
+        original = RuntimeError("private-create-mapping-value")
+        repository._mapping_expectation = lambda *_args, **_kwargs: (
+            (_ for _ in ()).throw(original)
+        )
+        repository._new_uuid = lambda: writes.append("uuid")
+        repository._now = lambda: NOW
+        selected_profile = ToolAssetExecutionProfile(
+            **{
+                **profile_base(ToolAssetExecutionTargetMode.SYNTHETIC),
+                "environment_code": "disposable-test",
+                "allowed_operations": (
+                    "create_tool_asset",
+                    "update_tool_asset",
+                ),
+                "adapter_resolver": "npi_integration.synthetic_adapter",
+                "synthetic_test_only": True,
+                "disposable_runtime_marker": True,
+            }
+        )
+        records: list[tuple[str, Exception]] = []
+        with patch.object(
+            diagnostics,
+            "_record_create_response_failure",
+            side_effect=lambda code, error: records.append((code, error)),
+        ):
+            with self.assertRaises(RuntimeError) as caught:
+                repository._build_execution_request(
+                    project,
+                    uid(2),
+                    uid(3),
+                    uid(6),
+                    selected_profile,
+                    ToolAssetExecutionOperation.CREATE,
+                    idempotency_key_hash="a" * 64,
+                    lock=False,
+                )
+        self.assertIs(caught.exception, original)
+        self.assertEqual(
+            [code for code, _error in records],
+            ["P805_TOOL_ASSET_CREATE_MAPPING"],
+        )
+        self.assertTrue(all(error is original for _code, error in records))
+        self.assertEqual(writes, [])
+
+        recorded: list[str] = []
+        with patch.object(
+            diagnostics,
+            "_record_create_response_failure",
+            side_effect=lambda code, _error: recorded.append(code),
+        ):
+            with self.assertRaises(RuntimeError):
+                with diagnostics.tool_asset_create_response_step(
+                    "P805_TOOL_ASSET_CREATE_REQUEST_BUILD"
+                ):
+                    with diagnostics.tool_asset_create_response_step(
+                        "P805_TOOL_ASSET_CREATE_MAPPING"
+                    ):
+                        raise original
+        self.assertEqual(
+            recorded,
+            [
+                "P805_TOOL_ASSET_CREATE_MAPPING",
+                "P805_TOOL_ASSET_CREATE_REQUEST_BUILD",
+            ],
+        )
+
     def test_command_context_read_projection_boundaries_are_unique_same_exception_and_zero_write(self) -> None:
         diagnostics = importlib.import_module(
             "npi_integration.tool_asset_request.diagnostics"

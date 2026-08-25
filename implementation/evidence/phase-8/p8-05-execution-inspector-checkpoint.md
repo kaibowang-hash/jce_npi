@@ -528,3 +528,29 @@ Canonical Linux/amd64 SHA-256 evidence:
 - No CURRENT_TASK, runtime, test, product, API, permission, transaction,
   Schema, ownership, adapter or target change is part of this durable
   checkpoint.
+
+### Tool Asset create-response diagnostic checkpoint
+
+- Exact durable SHA `29957d7226130c69dd14ec6314af5ff122b8f415`
+  passes ordinary `32762106318`. Sole Level 3 `32763677243` passes every
+  non-runtime job; runtime `97551595519` stops at the fixed queued-request
+  parent boundary after the disposable Requirement, Applicability, Set,
+  binding, Acceptance and command context completed.
+- The consumed `post-requirement-part-revision` cycle freezes at diagnostic
+  `0/1`, product repair `0/1`, final `1/1`. The parent boundary cannot
+  distinguish six ordered response predicates or the repeated POST API and
+  repository pipeline, so product repair remains prohibited.
+- Independent `tool-asset-create-response` starts diagnostic `0/1`, product
+  repair `0/1`, final `0/1`. One exact synthetic POST scope is temporarily
+  active; historical diagnostics remain false. Six parent codes and unique
+  API/repository stages correlate only through the shared exact trace and the
+  strict mirrored-log reader. Server evidence wins only when fully valid;
+  otherwise the constant parent tuple remains.
+- Safe records contain only diagnostic code, exception class and validated
+  trace. Status/body/value/identifier/count/actor/hash/profile/message/stack
+  disclosure is forbidden. Innermost one-record, same-exception rethrow,
+  finally restoration, response equivalence and zero extra writes are locked
+  by tests. Enqueue-after-commit recovery is not wrapped.
+- Product, API response, permission, transaction, Schema, ownership, worker,
+  adapter, target and Gate semantics are unchanged. Controller marker:
+  `P8-05 final held; tool-asset-create-response diagnostic 0/1 active`.

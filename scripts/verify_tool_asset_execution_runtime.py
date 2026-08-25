@@ -12,6 +12,12 @@ from pathlib import Path
 from typing import Any, Mapping
 from uuid import UUID
 
+from npi_integration.tool_asset_request.diagnostics import (
+    TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+    TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER,
+    TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE,
+)
+
 import verify_document_runtime as document_runtime
 import verify_item_publish_runtime as item_runtime
 import verify_tooling_acceptance_runtime as tooling_runtime
@@ -32,6 +38,7 @@ ACKNOWLEDGEMENT = (
 )
 TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = False
 POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = False
+TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED = True
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE = "p805-tool-asset-command-context-v1"
 _TOOL_ASSET_CONTEXT_PARENT_CODES = frozenset(
@@ -82,6 +89,19 @@ _TOOL_ASSET_CONTEXT_SERVER_CODES = frozenset(
     }
 )
 _TOOL_ASSET_CONTEXT_FAILURE = "P8-05 disposable command context is unavailable"
+_TOOL_ASSET_CREATE_RESPONSE_PARENT_CODES = frozenset(
+    {
+        "P805_TOOL_ASSET_CREATE_HTTP_STATUS",
+        "P805_TOOL_ASSET_CREATE_BODY_SHAPE",
+        "P805_TOOL_ASSET_CREATE_REQUEST_SHAPE",
+        "P805_TOOL_ASSET_CREATE_REQUEST_STATE",
+        "P805_TOOL_ASSET_CREATE_REQUEST_ID",
+        "P805_TOOL_ASSET_CREATE_OUTBOX_ID",
+    }
+)
+_TOOL_ASSET_CREATE_RESPONSE_FAILURE = (
+    "P8-05 Synthetic command did not create one queued request"
+)
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _EXECUTION_STATE_DOCTYPES = (
     "NPI Tool Asset Request",
@@ -111,6 +131,16 @@ def _post_query_command_context_diagnostics_enabled() -> bool:
     )
 
 
+def _tool_asset_create_response_diagnostics_enabled() -> bool:
+    """Activate only the independent synthetic create-response cycle."""
+
+    return (
+        TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is True
+        and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+        and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+    )
+
+
 def execution_path(project_id: str, master_id: str, set_id: str, suffix: str = "") -> str:
     return f"/api/npi/v1/projects/{project_id}/tooling/{master_id}/sets/{set_id}/asset-execution-requests{suffix}"
 
@@ -135,24 +165,51 @@ def execution_request(
     if diagnostic_scope is not None:
         parsed = urllib.parse.urlsplit(path)
         query = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
-        require(
-            diagnostic_scope == _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE
-            and method == "GET"
-            and payload is None
-            and csrf_token is None
-            and idempotency_key is None
-            and query_key == "enabled"
-            and re.fullmatch(
-                r"/api/npi/v1/projects/[^/]+/tooling/[^/]+/sets/[^/]+/asset-execution-requests",
-                parsed.path,
+        if diagnostic_scope == _TOOL_ASSET_CONTEXT_DIAGNOSTIC_SCOPE:
+            require(
+                method == "GET"
+                and payload is None
+                and csrf_token is None
+                and idempotency_key is None
+                and query_key == "enabled"
+                and re.fullmatch(
+                    r"/api/npi/v1/projects/[^/]+/tooling/[^/]+/sets/[^/]+/asset-execution-requests",
+                    parsed.path,
+                )
+                is not None
+                and len(query) == 1
+                and query[0][0] == "acceptanceRevisionGlobalId"
+                and bool(query[0][1]),
+                _TOOL_ASSET_CONTEXT_FAILURE,
             )
-            is not None
-            and len(query) == 1
-            and query[0][0] == "acceptanceRevisionGlobalId"
-            and bool(query[0][1]),
-            _TOOL_ASSET_CONTEXT_FAILURE,
-        )
-        headers[_TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER] = diagnostic_scope
+            headers[_TOOL_ASSET_CONTEXT_DIAGNOSTIC_HEADER] = diagnostic_scope
+        else:
+            require(
+                diagnostic_scope
+                == TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+                and method == "POST"
+                and isinstance(payload, dict)
+                and set(payload)
+                == {
+                    "acceptanceRevisionGlobalId",
+                    "expectedSourceHash",
+                    "expectedApprovalHash",
+                    "expectedMappingExpectationHash",
+                    "expectedProfileSnapshotHash",
+                    "acknowledgement",
+                }
+                and isinstance(csrf_token, str)
+                and bool(csrf_token)
+                and isinstance(idempotency_key, str)
+                and bool(idempotency_key)
+                and query_key == "query"
+                and _exact_create_execution_path(parsed.path)
+                and query == [],
+                _TOOL_ASSET_CREATE_RESPONSE_FAILURE,
+            )
+            headers[TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
+                diagnostic_scope
+            )
     result = document_runtime.request(
         opener,
         base_url,
@@ -239,6 +296,69 @@ def _http_status_diagnostic_code(status: object) -> str:
     if isinstance(status, int) and 500 <= status < 600:
         return "P805_TOOL_ASSET_CONTEXT_HTTP_SERVER_CLASS"
     return "P805_TOOL_ASSET_CONTEXT_HTTP_OTHER_CLASS"
+
+
+def _tool_asset_create_response_failure_message(result, cursors) -> str | None:
+    body = result.body if isinstance(result.body, dict) else None
+    request = body.get("request") if isinstance(body, dict) else None
+    if result.status != 201:
+        code = "P805_TOOL_ASSET_CREATE_HTTP_STATUS"
+    elif body is None:
+        code = "P805_TOOL_ASSET_CREATE_BODY_SHAPE"
+    elif not isinstance(request, dict):
+        code = "P805_TOOL_ASSET_CREATE_REQUEST_SHAPE"
+    elif request.get("state") != "queued":
+        code = "P805_TOOL_ASSET_CREATE_REQUEST_STATE"
+    elif not _canonical_uuid(body.get("requestGlobalId")):
+        code = "P805_TOOL_ASSET_CREATE_REQUEST_ID"
+    elif not _canonical_uuid(body.get("outboxEventId")):
+        code = "P805_TOOL_ASSET_CREATE_OUTBOX_ID"
+    else:
+        return None
+    if not _tool_asset_create_response_diagnostics_enabled():
+        return _TOOL_ASSET_CREATE_RESPONSE_FAILURE
+    trace_id = getattr(result, "trace_id", None)
+    if (
+        code not in _TOOL_ASSET_CREATE_RESPONSE_PARENT_CODES
+        or not isinstance(trace_id, str)
+        or _TRACE_PATTERN.fullmatch(trace_id) is None
+    ):
+        return _TOOL_ASSET_CREATE_RESPONSE_FAILURE
+    diagnostic = item_runtime._sanitized_server_log_diagnostic(
+        trace_id,
+        cursors,
+        code_prefix="P805_TOOL_ASSET_CREATE_",
+        allowed_codes=TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+    )
+    if diagnostic is not None:
+        exception_type, server_code, validated_trace = diagnostic
+        return (
+            "P8-05 Synthetic command did not create one queued request "
+            f"[diagnostic_code={server_code}; "
+            f"exception_type={exception_type}; trace_id={validated_trace}]"
+        )
+    return (
+        "P8-05 Synthetic command did not create one queued request "
+        f"[diagnostic_code={code}; exception_type=RuntimeError; "
+        f"trace_id={trace_id}]"
+    )
+
+
+def _canonical_uuid(value: object) -> bool:
+    try:
+        return isinstance(value, str) and str(UUID(value)) == value
+    except (AttributeError, TypeError, ValueError):
+        return False
+
+
+def _exact_create_execution_path(path: object) -> bool:
+    if not isinstance(path, str):
+        return False
+    match = re.fullmatch(
+        r"/api/npi/v1/projects/([^/]+)/tooling/([^/]+)/sets/([^/]+)/asset-execution-requests:create",
+        path,
+    )
+    return match is not None and all(_canonical_uuid(value) for value in match.groups())
 
 
 def _retained_context(administrator, base_url):
@@ -663,9 +783,43 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     create = contexts["create_tool_asset"]
     source = create.get("source")
     require(isinstance(source, dict) and source.get("acceptanceRevisionGlobalId") == acceptance.get("globalId"), "P8-05 retained acceptance binding drifted")
-    created = execution_request(actor, base_url, execution_path(project_id, master_id, set_id, ":create"), method="POST", csrf_token=csrf, idempotency_key=f"p8-05-synthetic-{FIXTURE_RUN_ID}", payload={"acceptanceRevisionGlobalId":source["acceptanceRevisionGlobalId"], "expectedSourceHash":create["expectedSourceHash"], "expectedApprovalHash":create["expectedApprovalHash"], "expectedMappingExpectationHash":create["expectedMappingExpectationHash"], "expectedProfileSnapshotHash":create["expectedProfileSnapshotHash"], "acknowledgement":ACKNOWLEDGEMENT})
-    request_id, outbox_id = created.body.get("requestGlobalId"), created.body.get("outboxEventId")
-    require(created.status == 201 and created.body.get("request", {}).get("state") == "queued" and str(UUID(request_id)) == request_id and str(UUID(outbox_id)) == outbox_id, "P8-05 Synthetic command did not create one queued request")
+    create_cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if _tool_asset_create_response_diagnostics_enabled()
+        else None
+    )
+    created = execution_request(
+        actor,
+        base_url,
+        execution_path(project_id, master_id, set_id, ":create"),
+        method="POST",
+        csrf_token=csrf,
+        idempotency_key=f"p8-05-synthetic-{FIXTURE_RUN_ID}",
+        payload={
+            "acceptanceRevisionGlobalId": source["acceptanceRevisionGlobalId"],
+            "expectedSourceHash": create["expectedSourceHash"],
+            "expectedApprovalHash": create["expectedApprovalHash"],
+            "expectedMappingExpectationHash": create[
+                "expectedMappingExpectationHash"
+            ],
+            "expectedProfileSnapshotHash": create[
+                "expectedProfileSnapshotHash"
+            ],
+            "acknowledgement": ACKNOWLEDGEMENT,
+        },
+        diagnostic_scope=(
+            TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+            if _tool_asset_create_response_diagnostics_enabled()
+            else None
+        ),
+    )
+    create_failure = _tool_asset_create_response_failure_message(
+        created,
+        create_cursors,
+    )
+    require(create_failure is None, create_failure or _TOOL_ASSET_CREATE_RESPONSE_FAILURE)
+    request_id = str(created.body["requestGlobalId"])
+    outbox_id = str(created.body["outboxEventId"])
     exercised = run_bench_fixture("exercise_worker", {"fixture_run_id":FIXTURE_RUN_ID, "project_id":project_id, "request_id":request_id, "outbox_id":outbox_id})
     require(exercised == {"adapterCalls":1, "fieldResultCount":5, "mappingHeadCount":0, "recoverableCount":0, "syntheticVerified":True, "terminalReplayNotClaimed":True}, "P8-05 worker durability proof drifted")
     detail = execution_request(actor, base_url, execution_path(project_id, master_id, set_id, f"/{request_id}"), query_key="terminal")

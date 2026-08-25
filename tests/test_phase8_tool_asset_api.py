@@ -827,6 +827,233 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             )
         )
 
+    def test_create_response_diagnostic_is_exact_same_exception_and_restored(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/tool_asset_request_api.py"
+        ).read_text(encoding="utf-8")
+        api_codes = (
+            "P805_TOOL_ASSET_CREATE_ROUTES_ENABLED",
+            "P805_TOOL_ASSET_CREATE_AUTHENTICATED_USER",
+            "P805_TOOL_ASSET_CREATE_CSRF",
+            "P805_TOOL_ASSET_CREATE_PRINCIPAL_RESOLVE",
+            "P805_TOOL_ASSET_CREATE_PRINCIPAL_INTERNAL",
+            "P805_TOOL_ASSET_CREATE_REQUEST_ID",
+            "P805_TOOL_ASSET_CREATE_REPOSITORY_INIT",
+            "P805_TOOL_ASSET_CREATE_PROJECT_ROUTE",
+            "P805_TOOL_ASSET_CREATE_PROJECT_AUTHORIZE",
+            "P805_TOOL_ASSET_CREATE_REQUEST_FIELDS",
+            "P805_TOOL_ASSET_CREATE_INPUT_PARSE",
+            "P805_TOOL_ASSET_CREATE_OPERATION_SELECT",
+            "P805_TOOL_ASSET_CREATE_REPOSITORY_COMMAND",
+            "P805_TOOL_ASSET_CREATE_OUTCOME_VALIDATE",
+            "P805_TOOL_ASSET_CREATE_COMMIT",
+            "P805_TOOL_ASSET_CREATE_PROBLEM_RAISE",
+            "P805_TOOL_ASSET_CREATE_RESPONSE_SERIALIZE",
+            "P805_TOOL_ASSET_CREATE_OUTBOX_VALIDATE",
+            "P805_TOOL_ASSET_CREATE_DOMAIN_CALL",
+        )
+        for code in api_codes:
+            with self.subTest(code=code):
+                self.assertEqual(source.count(f'"{code}"'), 1)
+                self.assertIn(
+                    code,
+                    diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+                )
+
+        trace_id = "trace-" + "a" * 32
+        secret = "private-create-boundary"
+        original = RuntimeError(secret)
+        self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = {}
+        self.frappe.flags.npi_route_params = {
+            "project_id": PROJECT,
+            "tooling_master_id": MASTER,
+            "tooling_set_id": TOOLING_SET,
+        }
+        token = self.api.current_trace_id.set(trace_id)
+        try:
+            with patch.object(
+                self.api,
+                "authenticated_user",
+                side_effect=original,
+            ):
+                with self.assertRaises(RuntimeError) as caught:
+                    self.api.create_tool_asset_execution_request(**self.payload())
+            self.assertIs(caught.exception, original)
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(
+            [record["code"] for record in self.diagnostics],
+            ["P805_TOOL_ASSET_CREATE_AUTHENTICATED_USER"],
+        )
+        self.assertEqual(self.diagnostics[0]["exception_type"], "RuntimeError")
+        self.assertEqual(self.diagnostics[0]["trace_id"], trace_id)
+        self.assertNotIn(secret, repr(self.diagnostics))
+        self.assertNotIn("commit", self.events)
+        self.assertNotIn("enqueue", self.events)
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                "npi_p805_tool_asset_create_response_diagnostic",
+            )
+        )
+
+    def test_create_response_scope_fail_closed_and_innermost_wins(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        trace_id = "trace-" + "b" * 32
+        secret = "private-create-scope"
+        original = RuntimeError(secret)
+        self.frappe.local.request.args = {}
+        exact_route = {
+            "project_id": PROJECT,
+            "tooling_master_id": MASTER,
+            "tooling_set_id": TOOLING_SET,
+        }
+        for name, scope, method, candidate_trace, route, query in (
+            ("missing", None, "POST", trace_id, exact_route, {}),
+            ("wrong", "wrong-scope", "POST", trace_id, exact_route, {}),
+            ("method", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "GET", trace_id, exact_route, {}),
+            ("trace", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", "trace-invalid", exact_route, {}),
+            ("route", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, {**exact_route, "extra": "wrong"}, {}),
+            ("route-value", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, {**exact_route, "tooling_set_id": "wrong"}, {}),
+            ("query", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, exact_route, {"extra": "wrong"}),
+        ):
+            with self.subTest(name=name):
+                self.diagnostics.clear()
+                if scope is None:
+                    self.headers.pop(
+                        diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER,
+                        None,
+                    )
+                else:
+                    self.headers[
+                        diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER
+                    ] = scope
+                self.frappe.local.request.method = method
+                self.frappe.local.request.args = query
+                self.frappe.flags.npi_route_params = route
+                token = self.api.current_trace_id.set(candidate_trace)
+                try:
+                    with patch.object(
+                        self.api,
+                        "authenticated_user",
+                        side_effect=original,
+                    ):
+                        with self.assertRaises(RuntimeError) as caught:
+                            self.api.create_tool_asset_execution_request(
+                                **self.payload()
+                            )
+                    self.assertIs(caught.exception, original)
+                finally:
+                    self.api.current_trace_id.reset(token)
+                self.assertEqual(self.diagnostics, [])
+
+        self.diagnostics.clear()
+        self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = {}
+        self.frappe.flags.npi_route_params = exact_route
+        token = self.api.current_trace_id.set(trace_id)
+        try:
+            with patch.object(
+                self.api,
+                "authenticated_user",
+                side_effect=original,
+            ):
+                with self.assertRaises(RuntimeError) as caught:
+                    self.api.update_tool_asset_execution_request(
+                        **self.payload(operation="update_tool_asset")
+                    )
+            self.assertIs(caught.exception, original)
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(self.diagnostics, [])
+
+        self.diagnostics.clear()
+        self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = {}
+        self.frappe.flags.npi_route_params = exact_route
+        with self.assertRaises(RuntimeError) as caught:
+            with diagnostics.tool_asset_create_response_diagnostics(
+                trace_id,
+                "create_tool_asset",
+                self.payload(),
+            ), diagnostics.tool_asset_create_response_step(
+                "P805_TOOL_ASSET_CREATE_DOMAIN_CALL"
+            ):
+                with diagnostics.tool_asset_create_response_step(
+                    "P805_TOOL_ASSET_CREATE_INPUT_PARSE"
+                ):
+                    raise original
+        self.assertIs(caught.exception, original)
+        self.assertEqual(
+            [record["code"] for record in self.diagnostics],
+            ["P805_TOOL_ASSET_CREATE_INPUT_PARSE"],
+        )
+        self.assertNotIn(secret, repr(self.diagnostics))
+
+    def test_create_response_diagnostic_preserves_success_and_enqueue_boundary(self) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        without_scope = self.api.create_tool_asset_execution_request(**self.payload())
+        self.events.clear()
+        self.diagnostics.clear()
+        self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = {}
+        self.frappe.flags.npi_route_params = {
+            "project_id": PROJECT,
+            "tooling_master_id": MASTER,
+            "tooling_set_id": TOOLING_SET,
+        }
+        token = self.api.current_trace_id.set("trace-" + "c" * 32)
+        try:
+            with_scope = self.api.create_tool_asset_execution_request(
+                **self.payload()
+            )
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(with_scope, without_scope)
+        self.assertEqual(self.diagnostics, [])
+        self.assertEqual(
+            self.events[-2:],
+            ["enqueue", f"tool-asset-execution-{OUTBOX}"],
+        )
+
+        self.events.clear()
+        self.diagnostics.clear()
+        self.frappe.enqueue = lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            RuntimeError("private-enqueue-message")
+        )
+        token = self.api.current_trace_id.set("trace-" + "d" * 32)
+        try:
+            result = self.api.create_tool_asset_execution_request(**self.payload())
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(result, without_scope)
+        self.assertEqual(
+            [record["code"] for record in self.diagnostics],
+            ["TOOL_ASSET_EXECUTION_ENQUEUE_FAILED"],
+        )
+        self.assertNotIn("private-enqueue-message", repr(self.diagnostics))
+
     def test_profile_resolver_is_default_off_and_ambiguous_hooks_fail_closed(self) -> None:
         self.assertIsNone(self.api._configured_execution_profile("tenant", UUID(PROJECT)))
         self.frappe.get_hooks = lambda _name: ["a.resolver", "b.resolver"]

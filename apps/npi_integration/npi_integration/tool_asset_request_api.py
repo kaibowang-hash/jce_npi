@@ -26,6 +26,8 @@ from npi_core.tooling.domain import ToolingUnavailable
 from npi_integration.tool_asset_request.diagnostics import (
     p606_asset_create_diagnostics,
     p606_asset_create_step,
+    tool_asset_create_response_diagnostics,
+    tool_asset_create_response_step,
     tool_asset_context_diagnostics,
     tool_asset_context_step,
 )
@@ -468,88 +470,148 @@ def _execution_command(
 
     def handle() -> dict[str, Any]:
         nonlocal replayed
-        require_tooling_acceptance_assets_routes_enabled()
-        actor = authenticated_user()
-        require_csrf_token()
-        principal = authenticated_principal(actor)
-        if principal.is_external or "NPI API User" not in principal.roles:
-            raise PermissionDenied()
-        request_id = _request_id()
-        repository = _new_repository(principal, request_id)
-        project_id = _opaque_route_uuid("project_id")
-        if not repository.authorize_scope(project_id):
-            raise ToolAssetExecutionUnavailable()
-        reject_unexpected_request_fields(_EXECUTION_FIELDS, command_fields)
-        require_request_fields(_EXECUTION_FIELDS, command_fields)
-        if command_fields["acknowledgement"] != acknowledgement_expected:
-            raise _field(
-                "acknowledgement",
-                _(
-                    "Confirm the exact Tool Asset operation, source, business approval, mapping, and execution profile."
-                ),
-            )
-        values = {
-            "acceptance_revision_id": _uuid(
-                command_fields["acceptanceRevisionGlobalId"],
-                "acceptanceRevisionGlobalId",
-            ),
-            "expected_source_hash": _sha256(
-                command_fields["expectedSourceHash"],
-                "expectedSourceHash",
-            ),
-            "expected_approval_hash": _sha256(
-                command_fields["expectedApprovalHash"],
-                "expectedApprovalHash",
-            ),
-            "expected_mapping_expectation_hash": _sha256(
-                command_fields["expectedMappingExpectationHash"],
-                "expectedMappingExpectationHash",
-            ),
-            "expected_profile_snapshot_hash": _sha256(
-                command_fields["expectedProfileSnapshotHash"],
-                "expectedProfileSnapshotHash",
-            ),
-            "idempotency_key_hash": actor_idempotency_key_hash(
-                actor,
-                frappe.get_request_header("Idempotency-Key"),
-            ),
-            "acknowledgement": acknowledgement_expected,
-        }
-        if operation == "create_tool_asset":
-            method = repository.create_tool_asset_execution_request
-        elif operation == "update_tool_asset":
-            method = repository.update_tool_asset_execution_request
-        else:
-            raise RuntimeError("The Tool Asset execution operation is invalid.")
-        outcome = method(
-            project_id,
-            _opaque_route_uuid("tooling_master_id"),
-            _opaque_route_uuid("tooling_set_id"),
-            **values,
-        )
-        if outcome is None:
-            raise ToolAssetExecutionUnavailable()
-        if (
-            type(outcome.replayed) is not bool
-            or type(outcome.should_enqueue) is not bool
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_ROUTES_ENABLED"
         ):
-            raise RuntimeError("The Tool Asset execution command result is invalid.")
-        try:
-            frappe.db.commit()
-        except Exception:
+            require_tooling_acceptance_assets_routes_enabled()
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_AUTHENTICATED_USER"
+        ):
+            actor = authenticated_user()
+        with tool_asset_create_response_step("P805_TOOL_ASSET_CREATE_CSRF"):
+            require_csrf_token()
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_PRINCIPAL_RESOLVE"
+        ):
+            principal = authenticated_principal(actor)
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_PRINCIPAL_INTERNAL"
+        ):
+            if principal.is_external or "NPI API User" not in principal.roles:
+                raise PermissionDenied()
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_REQUEST_ID"
+        ):
+            request_id = _request_id()
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_REPOSITORY_INIT"
+        ):
+            repository = _new_repository(principal, request_id)
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_PROJECT_ROUTE"
+        ):
+            project_id = _opaque_route_uuid("project_id")
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_PROJECT_AUTHORIZE"
+        ):
+            if not repository.authorize_scope(project_id):
+                raise ToolAssetExecutionUnavailable()
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_REQUEST_FIELDS"
+        ):
+            reject_unexpected_request_fields(_EXECUTION_FIELDS, command_fields)
+            require_request_fields(_EXECUTION_FIELDS, command_fields)
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_INPUT_PARSE"
+        ):
+            if command_fields["acknowledgement"] != acknowledgement_expected:
+                raise _field(
+                    "acknowledgement",
+                    _(
+                        "Confirm the exact Tool Asset operation, source, business approval, mapping, and execution profile."
+                    ),
+                )
+            values = {
+                "acceptance_revision_id": _uuid(
+                    command_fields["acceptanceRevisionGlobalId"],
+                    "acceptanceRevisionGlobalId",
+                ),
+                "expected_source_hash": _sha256(
+                    command_fields["expectedSourceHash"],
+                    "expectedSourceHash",
+                ),
+                "expected_approval_hash": _sha256(
+                    command_fields["expectedApprovalHash"],
+                    "expectedApprovalHash",
+                ),
+                "expected_mapping_expectation_hash": _sha256(
+                    command_fields["expectedMappingExpectationHash"],
+                    "expectedMappingExpectationHash",
+                ),
+                "expected_profile_snapshot_hash": _sha256(
+                    command_fields["expectedProfileSnapshotHash"],
+                    "expectedProfileSnapshotHash",
+                ),
+                "idempotency_key_hash": actor_idempotency_key_hash(
+                    actor,
+                    frappe.get_request_header("Idempotency-Key"),
+                ),
+                "acknowledgement": acknowledgement_expected,
+            }
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_OPERATION_SELECT"
+        ):
+            if operation == "create_tool_asset":
+                method = repository.create_tool_asset_execution_request
+            elif operation == "update_tool_asset":
+                method = repository.update_tool_asset_execution_request
+            else:
+                raise RuntimeError(
+                    "The Tool Asset execution operation is invalid."
+                )
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_REPOSITORY_COMMAND"
+        ):
+            outcome = method(
+                project_id,
+                _opaque_route_uuid("tooling_master_id"),
+                _opaque_route_uuid("tooling_set_id"),
+                **values,
+            )
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_OUTCOME_VALIDATE"
+        ):
+            if outcome is None:
+                raise ToolAssetExecutionUnavailable()
+            if (
+                type(outcome.replayed) is not bool
+                or type(outcome.should_enqueue) is not bool
+            ):
+                raise RuntimeError(
+                    "The Tool Asset execution command result is invalid."
+                )
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_COMMIT"
+        ):
             try:
-                frappe.db.rollback()
+                frappe.db.commit()
             except Exception:
-                pass
-            raise
-        if outcome.problem is not None:
-            if not isinstance(outcome.problem, NpiProblem):
-                raise RuntimeError("The Tool Asset execution command problem is invalid.")
-            raise outcome.problem
-        response = _execution_response(outcome.response)
+                try:
+                    frappe.db.rollback()
+                except Exception:
+                    pass
+                raise
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_PROBLEM_RAISE"
+        ):
+            if outcome.problem is not None:
+                if not isinstance(outcome.problem, NpiProblem):
+                    raise RuntimeError(
+                        "The Tool Asset execution command problem is invalid."
+                    )
+                raise outcome.problem
+        with tool_asset_create_response_step(
+            "P805_TOOL_ASSET_CREATE_RESPONSE_SERIALIZE"
+        ):
+            response = _execution_response(outcome.response)
         if outcome.should_enqueue:
-            if outcome.outbox_event_id is None:
-                raise RuntimeError("The Tool Asset execution Outbox identity is unavailable.")
+            with tool_asset_create_response_step(
+                "P805_TOOL_ASSET_CREATE_OUTBOX_VALIDATE"
+            ):
+                if outcome.outbox_event_id is None:
+                    raise RuntimeError(
+                        "The Tool Asset execution Outbox identity is unavailable."
+                    )
             try:
                 _enqueue_after_commit(outcome.outbox_event_id)
             except Exception as error:
@@ -564,12 +626,19 @@ def _execution_command(
         headers["Idempotency-Replayed"] = str(replayed).lower()
         return response
 
-    result = frappe_domain_call(
-        handle,
-        cache_control="private, no-store",
-        success_status=201,
-        response_headers=headers,
-    )
+    with tool_asset_create_response_diagnostics(
+        current_trace_id.get(),
+        operation,
+        command_fields,
+    ), tool_asset_create_response_step(
+        "P805_TOOL_ASSET_CREATE_DOMAIN_CALL"
+    ):
+        result = frappe_domain_call(
+            handle,
+            cache_control="private, no-store",
+            success_status=201,
+            response_headers=headers,
+        )
     if replayed and frappe.local.response.http_status_code == 201:
         frappe.local.response.http_status_code = 200
     return result
