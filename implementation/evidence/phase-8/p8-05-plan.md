@@ -1532,3 +1532,40 @@ Level 1 passes Tool Asset `114/114`, P6 tooling `355/355` plus request-domain
 Compile, shell syntax, diagnostic-off, exact-eight manifest, unauthorized ninth
 path rejection and diff checks also pass. The repair awaits exact-SHA ordinary
 CI; no Site or final Gate has been dispatched.
+
+## 45. Post-snapshot Tool Asset worker diagnostic cycle
+
+Request-truth repair SHA `180c1d1fe763a751af9c03f029e2fade38eba500`
+passes ordinary `32896971241`. Its unchanged diagnostics-off Level 3
+`32898202901` passes visual, frontend, repository, secret scan and controlled
+preflight. Controlled runtime job `97969711766` returns only the fixed
+`P8-05 Bench fixture failed` boundary; result recording and artifact upload are
+skipped and cleanup succeeds. Failed-child stdout/stderr, response data,
+business values, identifiers, exception messages and stacks were not read.
+
+The create contract passes before child launch. Deterministic fixture identity,
+the explicit requester session and the repaired Request snapshot/live-state
+predicate are closed by unchanged inputs and the pinned lifecycle tests. The
+outer process context still spans claim commit, profile, boundary, adapter,
+classification, seal and recovery, while no parent evidence proves entry into
+the later request/field reads, outcome/truth checks, replay, recoverable proof
+or fixture commit. A new product repair would therefore be a guess.
+
+Freeze `tool-asset-worker-downstream` at `1/1`, `1/1`, `1/1`. Open independent
+`post-snapshot-tool-asset-worker` at `0/1`, `0/1`, `0/1`. Only
+`POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED=True`; the historical
+worker and all other diagnostic flags remain false. The checkpoint reuses the
+existing seventeen stage and fourteen outcome/shape codes without adding a
+code. The exact created trace and pre-child cursors feed the same safe logger
+and strict mirrored reader. Missing, duplicate, divergent, wrong-trace,
+extra-key, invalid-type or disallowed evidence falls back to the constant.
+`synthetic_verified` emits nothing. Failed child stderr remains discarded and
+stdout remains unread; successful child JSON is parsed only after zero exit.
+
+This verifier-only checkpoint changes no worker, repository, adapter, API,
+permission, transaction, Schema, ownership, target or Gate behavior.
+
+Level 1 passes Tool Asset `114/114`, P6 acceptance/runtime `63/63`, Item
+`146/146`, MBOM `126/126`, and current/reconciliation `33/33`. Compile, shell
+syntax, exact-five manifest, unauthorized sixth path rejection and diff checks
+also pass.

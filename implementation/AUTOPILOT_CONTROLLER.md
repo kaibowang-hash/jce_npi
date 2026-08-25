@@ -5461,3 +5461,40 @@ repeat or rewrite it merely to restore context. See
   manifest acceptance with a ninth unauthorized path rejected are green.
 - Controller marker:
   `P8-05 final held; worker-downstream request-truth repair 1/1 Level 1 PASS; awaits exact-SHA ordinary CI`.
+
+## 2026-08-26 P8-05 post-snapshot Tool Asset worker diagnostic cycle
+
+- Request-truth repair SHA `180c1d1fe763a751af9c03f029e2fade38eba500`
+  passes exact ordinary CI `32896971241`. Its sole diagnostics-off Level 3
+  `32898202901` passes visual `97965618353`, frontend `97965618492`,
+  repository `97965618496`, secret scan `97965618544` and controlled
+  preflight `97969615331`; controlled runtime `97969711766` stops at the fixed
+  `P8-05 Bench fixture failed` boundary. Result recording and artifact upload
+  are skipped; cleanup succeeds. Failed-child stdout/stderr, values,
+  identifiers, exception messages and stacks were not read.
+- The successful create response still precedes child launch. Exact fixture
+  identity, requester-session setup and the repaired immutable-create versus
+  live-state Request validation are closed by unchanged deterministic inputs
+  and the pinned lifecycle regressions. The outer process call still contains
+  claim commit, profile, boundary, adapter, classification, seal and recovery;
+  later read, outcome, replay, recoverable and fixture-commit contexts were not
+  reached by the parent. No one remaining product symbol is proven.
+- Freeze `tool-asset-worker-downstream` at diagnostic `1/1`, product repair
+  `1/1`, final `1/1`. Open independent
+  `post-snapshot-tool-asset-worker` at diagnostic `0/1`, product repair `0/1`,
+  final `0/1`.
+- Only `POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED=True`; the former
+  worker activation and every historical diagnostic activation are false.
+  Reuse the exact seventeen stage and fourteen outcome/shape codes, successful
+  create trace, pre-child safe-log cursors, same-exception rethrow and strict
+  mirrored reader. `synthetic_verified` remains zero-diagnostic success.
+  Failed-child stderr is discarded and stdout remains unread; zero-exit child
+  output alone may be parsed.
+- Product worker, repository, adapter, request, response, permission,
+  transaction, Schema, ownership, target and Gate behavior are unchanged.
+- Level 1 passes Tool Asset `114/114`, P6 acceptance/runtime `63/63`, Item
+  `146/146`, MBOM `126/126`, and current-task/reconciliation units `33/33`,
+  plus verifier compile, shell syntax, exact-five manifest, unauthorized sixth
+  path rejection and diff checks.
+- Controller marker:
+  `P8-05 final held; post-snapshot-tool-asset-worker diagnostic 0/1 active`.

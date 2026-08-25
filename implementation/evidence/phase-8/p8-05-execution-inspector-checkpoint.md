@@ -793,3 +793,32 @@ Canonical Linux/amd64 SHA-256 evidence:
   diagnostic-off, exact-eight manifest and diff checks.
 - Controller marker:
   `P8-05 final held; worker-downstream request-truth repair 1/1 Level 1 PASS; awaits exact-SHA ordinary CI`.
+
+## Post-snapshot Tool Asset worker diagnostic checkpoint
+
+- Request-truth repair SHA
+  `180c1d1fe763a751af9c03f029e2fade38eba500` passes ordinary
+  `32896971241`. Its diagnostics-off Level 3 `32898202901` passes visual,
+  frontend, repository, secret scan and controlled preflight; runtime job
+  `97969711766` stops at the fixed `P8-05 Bench fixture failed` boundary.
+  Result and artifact steps are skipped, cleanup succeeds, and failed-child
+  output, values, identifiers, messages and stacks were not read.
+- Successful create and child launch exclude the parent create predicates.
+  Exact fixture identity, explicit requester-session setup and the repaired
+  immutable snapshot/live-state predicate are closed. Process internals and
+  every post-process assertion remain non-unique, so product repair is held.
+- Freeze `tool-asset-worker-downstream` at diagnostic `1/1`, repair `1/1`,
+  final `1/1`. Open `post-snapshot-tool-asset-worker` at diagnostic `0/1`,
+  repair `0/1`, final `0/1`.
+- Only the new post-snapshot activation is true. The old worker activation and
+  all historical flags are false. Reuse all 17 stage and 14 outcome/shape
+  codes, exact trace, pre-child cursors, same-exception rethrow and strict
+  mirrored reader. Failed-child stderr stays discarded and stdout unread;
+  `synthetic_verified` emits no record.
+- Product worker/repository/adapter/API/permission/transaction/Schema/
+  ownership/target/Gate behavior is unchanged.
+- Level 1 passes Tool Asset `114/114`, P6 acceptance/runtime `63/63`, Item
+  `146/146`, MBOM `126/126`, current/reconciliation `33/33`, compile, shell
+  syntax, exact-five manifest, unauthorized sixth path rejection and diff.
+- Controller marker:
+  `P8-05 final held; post-snapshot-tool-asset-worker diagnostic 0/1 active`.
