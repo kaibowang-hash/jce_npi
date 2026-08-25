@@ -880,3 +880,37 @@ Canonical Linux/amd64 SHA-256 evidence:
   and diff checks.
 - Controller marker:
   `P8-05 final held; process-stage datetime repair 1/1 Level 1 PASS`.
+
+## Post-Attempt-snapshot Tool Asset process diagnostic checkpoint
+
+- Attempt datetime repair SHA
+  `722d47d42f61fbee9ad5b8152bb14c4012ad7ee3` passes ordinary
+  `32907447942`. Its sole diagnostics-off Level 3 `32908387565`, runtime job
+  `98000359305`, reaches the Bench worker child and stops at the fixed
+  `P8-05 Bench fixture failed` boundary. Result/artifact steps are skipped and
+  cleanup succeeds; failed-child output, response data, values, identifiers,
+  counts, messages and stacks were not read.
+- The previous diagnostic proved actor, normal claim and boundary
+  profile/current-claim stages. The repair closes only the hydrated Attempt
+  datetime canonicalization root. Remaining boundary saves/audit/commit,
+  adapter classification, result persistence, seal/recovery and response
+  contexts remain non-unique, so repair is prohibited.
+- Freeze `tool-asset-process-stage` at diagnostic `1/1`, repair `1/1`, final
+  `1/1`. Open independent `post-attempt-snapshot-tool-asset-process` at
+  diagnostic `0/1`, repair `0/1`, final `0/1`.
+- Only
+  `POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=True`;
+  PROCESS_STAGE and all historical flags are false. Reuse the exact existing
+  fifty-two codes, created trace, pre-child cursors, strict mirrored reader,
+  same-exception and request-local scope contracts. Failed-child stderr is
+  discarded and stdout unread; zero-exit success emits no tuple.
+- Product worker/repository/adapter/API/permission/transaction/Schema/
+  ownership/target/Gate behavior is unchanged.
+- Level 1 passes focused verifier `37/37`, complete Tool Asset `123/123`, P6
+  tooling `355/355` plus request-domain `4/4`, Item `146/146`, MBOM `126/126`,
+  and shared HTTP/current/reconciliation `39/39`. Exact-52
+  AST/equality/lexical checks, direct-SQL/target-network and weakening-marker
+  scans, compile, shell syntax, scripts, exact-five manifest with unauthorized
+  sixth rejection, and diff hygiene pass.
+- Controller marker:
+  `P8-05 final held; post-attempt-snapshot process diagnostic 0/1 active`.

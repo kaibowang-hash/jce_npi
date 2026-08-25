@@ -5564,3 +5564,39 @@ repeat or rewrite it merely to restore context. See
   current/reconciliation scripts, exact-seven manifest and diff hygiene.
 - Controller marker:
   `P8-05 final held; process-stage datetime repair 1/1 Level 1 PASS`.
+
+## 2026-08-26 P8-05 post-Attempt-snapshot process diagnostic cycle
+
+- Attempt datetime repair SHA
+  `722d47d42f61fbee9ad5b8152bb14c4012ad7ee3` passes exact ordinary CI
+  `32907447942`. Its sole diagnostics-off Level 3 `32908387565`, runtime job
+  `98000359305`, reaches the Bench worker child and stops at the fixed
+  `P8-05 Bench fixture failed` boundary. Failed-child output, response data,
+  values, identifiers, counts, exception messages and stacks were not read;
+  result/artifact steps are skipped and cleanup succeeds.
+- The former tuple proves actor, normal claim and boundary
+  profile/current-claim stages. Repair `1/1` closes only hydrated Attempt
+  datetime canonicalization. Boundary saves/audit/commit, adapter
+  classification, result persistence, seal/recovery and response remain
+  non-unique; no next product repair is authorized.
+- Freeze `tool-asset-process-stage` at diagnostic `1/1`, product repair `1/1`,
+  final `1/1`. Open independent
+  `post-attempt-snapshot-tool-asset-process` at diagnostic `0/1`, product
+  repair `0/1`, final `0/1`.
+- Only
+  `POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=True`;
+  PROCESS_STAGE and every historical diagnostic flag are false. The verifier
+  reuses the exact existing fifty-two codes, created trace, pre-child cursors,
+  strict mirrored reader, innermost-one-record, same-exception and `finally`
+  restoration contracts. Failed-child stderr remains discarded and stdout
+  unread; successful zero-exit output alone is parsed and emits no tuple.
+- Worker, repository, adapter, API, permission, transaction, Schema,
+  ownership, target and Gate behavior have zero diff.
+- Level 1 passes focused verifier `37/37`, complete Tool Asset `123/123`, P6
+  tooling `355/355` plus request-domain `4/4`, Item `146/146`, MBOM `126/126`,
+  and shared HTTP/current/reconciliation `39/39`. Exact-52
+  AST/equality/lexical checks, direct-SQL/target-network and weakening-marker
+  scans, compile, shell syntax, scripts, exact-five manifest with unauthorized
+  sixth rejection, and diff hygiene pass.
+- Controller marker:
+  `P8-05 final held; post-attempt-snapshot process diagnostic 0/1 active`.

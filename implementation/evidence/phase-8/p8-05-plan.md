@@ -1649,3 +1649,44 @@ request-domain `4/4`, Item `146/146`, MBOM `126/126`, and current-task/
 reconciliation `33/33`. All-diagnostics-off, direct-SQL/network and
 TODO/secret scans, `py_compile`, current/reconciliation scripts, exact-seven
 manifest with an unauthorized eighth path rejected, and diff hygiene pass.
+
+## 48. Post-Attempt-snapshot Tool Asset process diagnostic cycle
+
+Attempt datetime repair SHA `722d47d42f61fbee9ad5b8152bb14c4012ad7ee3`
+passes exact ordinary CI `32907447942`. Its sole diagnostics-off Level 3
+`32908387565`, runtime job `98000359305`, passes create and launches the Bench
+worker child, then stops at the fixed `P8-05 Bench fixture failed` boundary.
+The result and artifact steps are skipped, cleanup succeeds, and failed-child
+stdout/stderr, response data, business values, identifiers, counts, exception
+messages and stacks are not read or emitted.
+
+The prior tuple already proved actor entry, the normal claim reads/rebuild/
+writes/return and commit, and boundary profile/current-claim reads. The repair
+uniquely closes hydrated Attempt datetime canonicalization without changing an
+upstream input or branch. The current failure remains non-unique across the
+remaining boundary saves/audit/commit, adapter classification, result
+persistence, seal/recovery and response build. No product repair is proven.
+
+Freeze `tool-asset-process-stage` at diagnostic `1/1`, product repair `1/1`,
+final `1/1`. Open independent
+`post-attempt-snapshot-tool-asset-process` at diagnostic `0/1`, product repair
+`0/1`, final `0/1`. Only
+`POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=True`;
+`TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED` and every historical
+diagnostic activation are false.
+
+The verifier reuses the exact existing fifty-two process codes and server
+lexical contexts, successful create trace, pre-child safe-log cursors,
+request-local scope, innermost-one-record behavior, same-exception rethrow and
+strict mirrored reader. Failed-child stderr stays discarded and stdout stays
+unread; successful zero-exit child output alone may be parsed and emits no
+diagnostic. No worker, repository, adapter, API, permission, transaction,
+Schema, ownership, target or Gate behavior changes.
+
+Level 1 passes the focused verifier `37/37`, complete Tool Asset
+worker/repository/API/security/metadata suite `123/123`, P6 tooling `355/355`
+plus Tool Asset request-domain `4/4`, Item `146/146`, MBOM `126/126`, and
+shared HTTP/current-task/reconciliation `39/39`. Fifty-two-code
+AST/equality/lexical uniqueness, direct-SQL/target-network and weakening-marker
+scans, compile and shell syntax, current/reconciliation scripts, exact-five
+manifest with an unauthorized sixth path rejected, and diff hygiene pass.
