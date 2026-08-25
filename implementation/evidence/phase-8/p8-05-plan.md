@@ -1614,3 +1614,38 @@ reconciliation `33/33`. The fifty-two-code lexical/equality contract, direct
 SQL/network and TODO/secret scans, `py_compile`, current/reconciliation
 scripts, exact-ten manifest with an unauthorized eleventh path rejected, and
 diff hygiene all pass.
+
+## 47. Tool Asset boundary Attempt datetime repair
+
+Process-stage checkpoint SHA `a4f8709cf12629b267f349478a8677c68f751c83`
+passes ordinary `32904854534`. Its sole controlled diagnostic Site
+`32906055265`, runtime job `97990383427`, yields exactly
+`P805_TOOL_ASSET_PROCESS_BOUNDARY_TRANSACTION / TypeError /
+trace-dc72892e93f052daa0ad34f7290b0356` without reading failed-child output or
+exposing response data, values, identifiers, counts, messages or stacks.
+
+The same claim capability and context manager completed moments earlier.
+Boundary profile and current-claim reads passed, while every save and audit has
+a more specific inner stage. The first unwrapped call is the Attempt snapshot
+rebuild. Claim builds that snapshot from canonical database datetime strings;
+Frappe then hydrates the persisted `Datetime` fields to datetime objects.
+The boundary rebuild passed the hydrated object directly to standard JSON
+canonicalization, which cannot serialize datetime and therefore raised the
+observed TypeError before any boundary write.
+
+Product repair `1/1` normalizes only `started_at` and nonempty `finished_at`
+through the existing `_db_datetime` helper before hashing. Initial DB strings,
+naive hydrated datetimes and aware datetimes resolve to the same canonical DB
+text and hash. All other snapshot fields, transaction/capability boundaries,
+permission checks and attempt -> Outbox -> audit order remain unchanged;
+invalid datetime truth fails closed before a write.
+
+`TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED=False`; the mechanism remains
+dormant and reads no cursor/log. Freeze `tool-asset-process-stage` at
+diagnostic `1/1`, product repair `1/1`, final `0/1`.
+
+Level 1 passes Tool Asset `121/121`, P6 tooling `355/355` plus Tool Asset
+request-domain `4/4`, Item `146/146`, MBOM `126/126`, and current-task/
+reconciliation `33/33`. All-diagnostics-off, direct-SQL/network and
+TODO/secret scans, `py_compile`, current/reconciliation scripts, exact-seven
+manifest with an unauthorized eighth path rejected, and diff hygiene pass.

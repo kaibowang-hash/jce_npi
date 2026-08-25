@@ -23,6 +23,7 @@ from npi_integration.tool_asset_request.execution_domain import (  # noqa: E402
     ToolAssetExecutionTargetMode,
     ToolAssetMappingExpectation,
 )
+from tests.test_phase8_tool_asset_adapters import execution_profile  # noqa: E402
 from tests.test_phase8_tool_asset_domain import NOW, profile, source, uid  # noqa: E402
 
 
@@ -54,6 +55,155 @@ class Phase8ToolAssetWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(self.module._aware_utc("2026-08-24 10:00:00").tzinfo, UTC)
         with self.assertRaises(RuntimeError):
             self.module._aware_utc("not-a-datetime")
+
+    def _attempt(self, *, started_at, finished_at=None):
+        return types.SimpleNamespace(
+            doctype="NPI Tool Asset Attempt",
+            global_id=str(uid(41)),
+            request_global_id=str(uid(42)),
+            outbox_event_id=str(uid(43)),
+            attempt_number=1,
+            claim_token=str(uid(44)),
+            operation=ToolAssetExecutionOperation.CREATE.value,
+            target_idempotency_key_hash="a" * 64,
+            source_hash="b" * 64,
+            mapping_expectation_hash="c" * 64,
+            profile_id="synthetic-tool-asset-v1",
+            profile_version=1,
+            profile_snapshot_hash="d" * 64,
+            state="started",
+            adapter_boundary_crossed=0,
+            request_snapshot_hash="e" * 64,
+            transport_disposition=None,
+            response_hash=None,
+            fault_kind=None,
+            reconciliation_required=0,
+            safe_error_code=None,
+            started_at=started_at,
+            finished_at=finished_at,
+        )
+
+    def _boundary_claim(self):
+        exact_profile = execution_profile(ToolAssetExecutionTargetMode.SYNTHETIC)
+        claim = types.SimpleNamespace(
+            service_actor_user_id=exact_profile.service_actor_user_id,
+            trace_id="trace-p805-boundary-roundtrip",
+            request_global_id=uid(42),
+            attempt_number=1,
+            request=types.SimpleNamespace(
+                profile=exact_profile.reference,
+                operation=ToolAssetExecutionOperation.CREATE,
+            ),
+        )
+        return claim, exact_profile
+
+    def test_attempt_snapshot_normalizes_db_string_naive_and_aware_datetimes(self):
+        finished = NOW + timedelta(seconds=5)
+        variants = (
+            (
+                self.module._db_datetime(NOW),
+                self.module._db_datetime(finished),
+            ),
+            (NOW.replace(tzinfo=None), finished.replace(tzinfo=None)),
+            (NOW, finished),
+        )
+        snapshots = []
+        hashes = []
+        for started_at, finished_at in variants:
+            attempt = self._attempt(
+                started_at=started_at,
+                finished_at=finished_at,
+            )
+            self.module._set_attempt_snapshot(attempt)
+            snapshots.append(dict(attempt.attempt_snapshot))
+            hashes.append(attempt.attempt_hash)
+        self.assertEqual(snapshots[1:], snapshots[:1] * 2)
+        self.assertEqual(hashes[1:], hashes[:1] * 2)
+        self.assertEqual(snapshots[0]["started_at"], self.module._db_datetime(NOW))
+        self.assertEqual(
+            snapshots[0]["finished_at"],
+            self.module._db_datetime(finished),
+        )
+
+    def test_hydrated_boundary_preserves_attempt_outbox_audit_order(self):
+        claim, exact_profile = self._boundary_claim()
+        outbox = types.SimpleNamespace(
+            doctype="NPI Outbox Message",
+            adapter_boundary_crossed=0,
+        )
+        attempt = self._attempt(started_at=NOW.replace(tzinfo=None))
+        events = []
+
+        def save(document, **_kwargs):
+            events.append(("save", document.doctype))
+            return document
+
+        with patch.object(
+            self.module,
+            "_required_current_claim",
+            return_value=(outbox, attempt),
+        ), patch.object(
+            self.module,
+            "tool_asset_claim_write",
+            side_effect=lambda _actor: nullcontext(object()),
+        ), patch.object(
+            self.module,
+            "save_tool_asset_support_document",
+            side_effect=save,
+        ), patch.object(
+            self.module,
+            "_append_worker_audit",
+            side_effect=lambda **_kwargs: events.append(("audit", None)),
+        ):
+            sealed = self.module.FrappeToolAssetWorkerRepository().mark_adapter_boundary(
+                claim,
+                profile=exact_profile,
+                now=NOW,
+            )
+        self.assertTrue(sealed)
+        self.assertEqual(
+            events,
+            [
+                ("save", "NPI Tool Asset Attempt"),
+                ("save", "NPI Outbox Message"),
+                ("audit", None),
+            ],
+        )
+        self.assertEqual(attempt.adapter_boundary_crossed, 1)
+        self.assertEqual(outbox.adapter_boundary_crossed, 1)
+        self.assertIsInstance(attempt.attempt_snapshot["started_at"], str)
+
+    def test_invalid_hydrated_boundary_datetime_fails_before_any_write(self):
+        claim, exact_profile = self._boundary_claim()
+        outbox = types.SimpleNamespace(
+            doctype="NPI Outbox Message",
+            adapter_boundary_crossed=0,
+        )
+        attempt = self._attempt(started_at=object())
+        writes = []
+        with patch.object(
+            self.module,
+            "_required_current_claim",
+            return_value=(outbox, attempt),
+        ), patch.object(
+            self.module,
+            "tool_asset_claim_write",
+            side_effect=lambda _actor: nullcontext(object()),
+        ), patch.object(
+            self.module,
+            "save_tool_asset_support_document",
+            side_effect=lambda *_args, **_kwargs: writes.append("save"),
+        ), patch.object(
+            self.module,
+            "_append_worker_audit",
+            side_effect=lambda **_kwargs: writes.append("audit"),
+        ), self.assertRaises(RuntimeError):
+            self.module.FrappeToolAssetWorkerRepository().mark_adapter_boundary(
+                claim,
+                profile=exact_profile,
+                now=NOW,
+            )
+        self.assertEqual(writes, [])
 
     def test_recovery_selects_pending_and_only_expired_processing_without_writes(self):
         now = datetime(2026, 8, 24, 10, tzinfo=UTC)

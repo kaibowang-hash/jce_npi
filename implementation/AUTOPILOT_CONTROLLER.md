@@ -5534,3 +5534,33 @@ repeat or rewrite it merely to restore context. See
   scripts, exact-ten manifest and diff hygiene.
 - Controller marker:
   `P8-05 final held; tool-asset-process-stage diagnostic 0/1 active`.
+
+## 2026-08-26 P8-05 Tool Asset boundary Attempt datetime repair
+
+- Process-stage checkpoint SHA
+  `a4f8709cf12629b267f349478a8677c68f751c83` passes exact ordinary CI
+  `32904854534`. Its one controlled Site `32906055265`, runtime job
+  `97990383427`, returns exactly
+  `P805_TOOL_ASSET_PROCESS_BOUNDARY_TRANSACTION / TypeError /
+  trace-dc72892e93f052daa0ad34f7290b0356`. Failed-child output, response data,
+  values, identifiers, counts, messages and stacks were not read or emitted.
+- The identical service actor and claim capability context completed earlier.
+  Boundary profile and current-claim reads passed, and each save/audit has a
+  narrower stage. The first remaining call rebuilt the persisted Attempt
+  snapshot. Claim had hashed canonical DB datetime strings, but Frappe
+  rehydrated those `Datetime` fields to datetime objects; standard JSON hash
+  serialization then raised the unique TypeError before any boundary write.
+- Product repair `1/1` normalizes only `started_at` and nonempty `finished_at`
+  with existing `_db_datetime`. Initial string, naive and aware datetime forms
+  have the same snapshot/hash. Other fields, transaction/capability, permission
+  and attempt -> Outbox -> audit order do not change; invalid datetime fails
+  closed before a write.
+- `TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED=False`; dormant verification
+  reads no cursor/log. Freeze `tool-asset-process-stage` at diagnostic `1/1`,
+  product repair `1/1`, final `0/1`.
+- Level 1 passes Tool Asset `121/121`, P6 tooling `355/355` plus request-domain
+  `4/4`, Item `146/146`, MBOM `126/126`, current-task/reconciliation `33/33`,
+  all-diagnostics-off, direct-SQL/network and TODO/secret scans, compile,
+  current/reconciliation scripts, exact-seven manifest and diff hygiene.
+- Controller marker:
+  `P8-05 final held; process-stage datetime repair 1/1 Level 1 PASS`.

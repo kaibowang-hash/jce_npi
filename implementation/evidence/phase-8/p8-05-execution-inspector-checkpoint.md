@@ -854,3 +854,29 @@ Canonical Linux/amd64 SHA-256 evidence:
   compile, scripts, exact-ten manifest and diff checks.
 - Controller marker:
   `P8-05 final held; tool-asset-process-stage diagnostic 0/1 active`.
+
+## Tool Asset boundary Attempt datetime repair
+
+- Process-stage SHA `a4f8709cf12629b267f349478a8677c68f751c83`
+  passes ordinary `32904854534`. Controlled run `32906055265`, runtime job
+  `97990383427`, records only
+  `P805_TOOL_ASSET_PROCESS_BOUNDARY_TRANSACTION / TypeError /
+  trace-dc72892e93f052daa0ad34f7290b0356`.
+- Claim already proved the identical actor/capability transaction. Boundary
+  profile and current-claim reads passed; save/audit inner stages did not fire.
+  The first remaining call rebuilt the hydrated Attempt snapshot. Frappe
+  `Datetime` values were passed directly to standard JSON canonicalization,
+  producing the unique TypeError before any write.
+- Repair `1/1` normalizes only `started_at` and nonempty `finished_at` through
+  `_db_datetime` before hash. Initial string, naive and aware forms preserve
+  the exact canonical snapshot/hash. Other fields, permissions, transaction,
+  capability and attempt -> Outbox -> audit ordering are unchanged; invalid
+  time fails closed with zero write.
+- PROCESS_STAGE activation is false and dormant. Freeze this cycle at
+  diagnostic `1/1`, repair `1/1`, final `0/1`.
+- Level 1 passes Tool Asset `121/121`, P6 tooling `355/355` plus request-domain
+  `4/4`, Item `146/146`, MBOM `126/126`, current-task/reconciliation `33/33`,
+  all-diagnostics-off, security scans, compile, scripts, exact-seven manifest
+  and diff checks.
+- Controller marker:
+  `P8-05 final held; process-stage datetime repair 1/1 Level 1 PASS`.

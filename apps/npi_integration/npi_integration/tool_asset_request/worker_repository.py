@@ -494,6 +494,9 @@ def _existing_outcome(row, claim):
 
 def _set_attempt_snapshot(attempt):
     snapshot = {key: _value(attempt, key) for key in ("global_id", "request_global_id", "outbox_event_id", "attempt_number", "claim_token", "operation", "target_idempotency_key_hash", "source_hash", "mapping_expectation_hash", "profile_id", "profile_version", "profile_snapshot_hash", "state", "adapter_boundary_crossed", "request_snapshot_hash", "transport_disposition", "response_hash", "fault_kind", "reconciliation_required", "safe_error_code", "started_at", "finished_at")}
+    snapshot["started_at"] = _db_datetime(snapshot["started_at"])
+    if snapshot["finished_at"] not in (None, ""):
+        snapshot["finished_at"] = _db_datetime(snapshot["finished_at"])
     attempt.attempt_snapshot = snapshot
     attempt.attempt_hash = canonical_hash(snapshot)
 

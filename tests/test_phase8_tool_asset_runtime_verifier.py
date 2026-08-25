@@ -226,10 +226,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_snapshot_tool_asset_worker_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._tool_asset_process_stage_diagnostics_enabled()
         )
         project_id = str(UUID(int=1))
@@ -1552,10 +1552,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_snapshot_tool_asset_worker_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._tool_asset_process_stage_diagnostics_enabled()
         )
         self.assertEqual(
@@ -1576,12 +1576,24 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             self.verifier._active_tool_asset_worker_diagnostic_codes(),
-            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+            frozenset(),
         )
         self.assertEqual(
             len(self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES),
             52,
         )
+        with patch.object(
+            self.verifier,
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertTrue(
+                self.verifier._tool_asset_process_stage_diagnostics_enabled()
+            )
+            self.assertEqual(
+                self.verifier._active_tool_asset_worker_diagnostic_codes(),
+                self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+            )
         self.assertIsNone(
             self.verifier._tool_asset_worker_outcome_diagnostic_code(
                 {"state": "synthetic_verified"}
@@ -1682,6 +1694,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
             True,
+        ), patch.object(
+            self.verifier,
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+            True,
         ):
             self.assertFalse(
                 self.verifier._post_snapshot_tool_asset_worker_diagnostics_enabled()
@@ -1693,6 +1709,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             self.verifier,
             "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            self.verifier,
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
             True,
         ):
             self.assertFalse(
@@ -1914,10 +1934,15 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                                     )
                                     + "\n"
                                 )
-                    return self.verifier._sanitized_tool_asset_worker_diagnostic(
-                        trace_id,
-                        cursors,
-                    )
+                    with patch.object(
+                        self.verifier,
+                        "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+                        True,
+                    ):
+                        return self.verifier._sanitized_tool_asset_worker_diagnostic(
+                            trace_id,
+                            cursors,
+                        )
 
         valid = {
             "code": "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
@@ -1983,6 +2008,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             _WORKER_TRACE_ID,
         )
         with patch.object(
+            self.verifier,
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
             self.verifier.tempfile,
             "TemporaryFile",
             return_value=FailedOutput(),
