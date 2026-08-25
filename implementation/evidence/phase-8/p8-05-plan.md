@@ -1397,3 +1397,32 @@ mechanism neither sends scope nor reads logs. Freeze the cycle at diagnostic
 `1/1`, product repair `1/1`, final `0/1`. No repository write order, response,
 API, permission, transaction, Schema, ownership, worker, adapter, target or
 Gate contract changes.
+
+## 41. Post-source-hash Tool Asset create diagnostic cycle
+
+Source-hash repair SHA `01e34ddd3e8f3fabbda5f3a980db771a174d27d8`
+passes exact ordinary run `32880787908`. Its sole diagnostics-off Level 3
+`32882305076` passes every non-runtime job and controlled preflight. Controlled
+runtime job `97917870416` stops at the fixed queued-request parent boundary
+before the worker is invoked.
+
+Freeze `post-link-tool-asset-create` at diagnostic `1/1`, product repair `1/1`,
+final `1/1`. Both the reciprocal Outbox Link and approved source-hash roots are
+closed. Static ordering leaves later Request lifecycle, Outbox, guard, audit,
+receipt, outcome, commit and response boundaries non-unique, so no guessed
+product repair is permitted.
+
+Open independent `post-source-hash-tool-asset-create` at diagnostic `0/1`,
+product repair `0/1`, final `0/1`. Only the new verifier activation is true;
+POST_LINK and all historical diagnostics are false. The checkpoint reuses the
+exact pre-handler POST scope, exact response trace, five fixed HTTP classes,
+ordered 201 response-shape checks, all 40 unique server stages and the strict
+mirrored reader. A trusted exact-trace server tuple wins; otherwise the fixed
+parent code remains. Missing/invalid trace and malformed, duplicate or
+mismatched records fail closed.
+
+Diagnostic output is only code, exception class and validated trace. It never
+includes response status/body, business values, identifiers, count, actor,
+hash, profile, exception message or stack. Product, server, response, write
+order, API, permission, transaction, Schema, ownership, worker, adapter,
+target and Gate behavior remain unchanged.

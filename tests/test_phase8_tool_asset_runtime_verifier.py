@@ -204,6 +204,12 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_link_tool_asset_create_diagnostics_enabled()
         )
+        self.assertTrue(
+            self.verifier.POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._post_source_hash_tool_asset_create_diagnostics_enabled()
+        )
         project_id = str(UUID(int=1))
         retained_master_id = str(UUID(int=2))
         retained_set_id = str(UUID(int=3))
@@ -309,7 +315,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 "csrf",
                 retained,
             )
-            cursor_reader.assert_not_called()
+            cursor_reader.assert_called_once_with()
             diagnostic_reader.assert_not_called()
             first_args, first_kwargs = self.verifier.execution_request.call_args_list[0]
             split = urlsplit(first_args[2])
@@ -365,12 +371,15 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 ),
             )
             self.assertEqual(post_kwargs["method"], "POST")
-            self.assertIsNone(post_kwargs["diagnostic_scope"])
+            self.assertEqual(
+                post_kwargs["diagnostic_scope"],
+                self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,
+            )
 
     def test_create_response_parent_codes_are_ordered_value_free_and_server_wins(self):
         activation = patch.object(
             self.verifier,
-            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            "POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
             True,
         )
         activation.start()
@@ -422,7 +431,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "P805_TOOL_ASSET_CREATE_INPUT_PARSE",
             trace_id,
         )
-        for parent_code, result in cases[:5]:
+        for parent_code, result in cases:
             with self.subTest(server_wins=parent_code), patch.object(
                 self.verifier.item_runtime,
                 "_sanitized_server_log_diagnostic",
@@ -440,29 +449,25 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.assertNotIn(parent_code, message)
             self.assertNotIn(secret, message)
 
-    def test_post_link_activation_is_dormant_and_independent(self):
+    def test_post_source_hash_activation_is_new_only_and_history_dormant(self):
         self.assertFalse(
             self.verifier._post_link_tool_asset_create_diagnostics_enabled()
+        )
+        self.assertTrue(
+            self.verifier._post_source_hash_tool_asset_create_diagnostics_enabled()
         )
         old_flags = (
             "TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
             "TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED",
             "TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED",
+            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
             "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
             "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
         )
-        with patch.object(
-            self.verifier,
-            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
-            True,
-        ):
-            self.assertTrue(
-                self.verifier._post_link_tool_asset_create_diagnostics_enabled()
-            )
         for flag in old_flags:
             with self.subTest(flag=flag), patch.object(
                 self.verifier,
-                "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+                "POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
                 True,
             ), patch.object(
                 self.verifier,
@@ -470,14 +475,26 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 True,
             ):
                 self.assertFalse(
-                    self.verifier._post_link_tool_asset_create_diagnostics_enabled()
+                    self.verifier._post_source_hash_tool_asset_create_diagnostics_enabled()
                 )
         with patch.object(
             self.verifier,
-            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            "POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertFalse(
+                self.verifier._post_source_hash_tool_asset_create_diagnostics_enabled()
+            )
+        with patch.object(
+            self.verifier,
+            "POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertTrue(
                 self.verifier._post_link_tool_asset_create_diagnostics_enabled()
             )
 
@@ -503,7 +520,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         failure = types.SimpleNamespace(status=500, body={}, trace_id=trace_id)
         with patch.object(
             self.verifier,
-            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            "POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -645,6 +662,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
             diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+        )
+        self.assertEqual(
+            len(self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES),
+            40,
         )
         self.assertEqual(
             self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,

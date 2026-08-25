@@ -36,6 +36,7 @@ TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED = False
 TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED = False
 TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED = False
 POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED = False
+POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED = True
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
     "p805-tool-asset-create-response-v1"
@@ -194,6 +195,7 @@ def _tool_asset_create_response_diagnostics_enabled() -> bool:
         and TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
         and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
         and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
     )
@@ -207,6 +209,7 @@ def _tool_asset_create_http_boundary_diagnostics_enabled() -> bool:
         and TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
         and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
         and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
     )
@@ -220,6 +223,7 @@ def _tool_asset_create_prehandler_diagnostics_enabled() -> bool:
         and TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is False
         and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
         and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
     )
@@ -230,6 +234,21 @@ def _post_link_tool_asset_create_diagnostics_enabled() -> bool:
 
     return (
         POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is True
+        and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is False
+        and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+        and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+    )
+
+
+def _post_source_hash_tool_asset_create_diagnostics_enabled() -> bool:
+    """Activate only the independent post-source-hash create cycle."""
+
+    return (
+        POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is True
+        and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is False
@@ -412,7 +431,7 @@ def _tool_asset_create_response_failure_message(result, cursors) -> str | None:
         code = "P805_TOOL_ASSET_CREATE_OUTBOX_ID"
     else:
         return None
-    if not _post_link_tool_asset_create_diagnostics_enabled():
+    if not _post_source_hash_tool_asset_create_diagnostics_enabled():
         return _TOOL_ASSET_CREATE_RESPONSE_FAILURE
     trace_id = getattr(result, "trace_id", None)
     if (
@@ -896,7 +915,7 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     require(isinstance(source, dict) and source.get("acceptanceRevisionGlobalId") == acceptance.get("globalId"), "P8-05 retained acceptance binding drifted")
     create_cursors = (
         item_runtime._replay_diagnostic_log_cursors()
-        if _post_link_tool_asset_create_diagnostics_enabled()
+        if _post_source_hash_tool_asset_create_diagnostics_enabled()
         else None
     )
     created = execution_request(
@@ -920,7 +939,7 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
         },
         diagnostic_scope=(
             TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE
-            if _post_link_tool_asset_create_diagnostics_enabled()
+            if _post_source_hash_tool_asset_create_diagnostics_enabled()
             else None
         ),
     )

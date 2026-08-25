@@ -688,3 +688,29 @@ Canonical Linux/amd64 SHA-256 evidence:
   unchanged.
 - Controller marker:
   `P8-05 final held; post-link-tool-asset-create repair 1/1 awaits Level 1`.
+
+## Post-source-hash Tool Asset create diagnostic checkpoint
+
+- Source-hash repair SHA `01e34ddd3e8f3fabbda5f3a980db771a174d27d8`
+  passes ordinary `32880787908`. Sole diagnostics-off Level 3 `32882305076`
+  passes all non-runtime jobs and controlled preflight; controlled runtime
+  `97917870416` reaches the fixed queued-request parent boundary before worker
+  execution.
+- Freeze `post-link-tool-asset-create` at diagnostic `1/1`, product repair
+  `1/1`, final `1/1`. Reciprocal Link and source-hash roots are closed; later
+  Request, Outbox, guard, audit, receipt, outcome, commit and response sources
+  remain non-unique.
+- Open `post-source-hash-tool-asset-create` at `0/1`, `0/1`, `0/1`. Only
+  POST_SOURCE_HASH activation is true; POST_LINK and every historical
+  diagnostic activation are false.
+- Reuse the exact pre-handler scope, five fixed HTTP classes, ordered 201 shape
+  checks, complete 40-code server allowlist and strict mirrored reader. Exact
+  trusted server evidence wins; fixed parent fallback remains. Missing,
+  invalid, duplicate or mismatched evidence fails closed.
+- Output remains code, exception class and validated trace only. No status,
+  body, business value, identifier, count, actor, hash, profile, exception
+  message or stack is exposed. Product/server/API/write/permission/
+  transaction/Schema/ownership/worker/adapter/target/Gate behavior is
+  unchanged.
+- Controller marker:
+  `P8-05 final held; post-source-hash-tool-asset-create diagnostic 0/1 active`.

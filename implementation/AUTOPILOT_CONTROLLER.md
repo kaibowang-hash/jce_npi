@@ -5325,3 +5325,34 @@ repeat or rewrite it merely to restore context. See
   unchanged.
 - Controller marker:
   `P8-05 final held; post-link-tool-asset-create repair 1/1 awaits Level 1`.
+
+## 2026-08-26 P8-05 post-source-hash Tool Asset create diagnostic cycle
+
+- Source-hash repair SHA `01e34ddd3e8f3fabbda5f3a980db771a174d27d8`
+  passes exact ordinary CI `32880787908`. Its sole diagnostics-off Level 3
+  `32882305076` passes repository, frontend, visual, secret scan and controlled
+  preflight; controlled runtime job `97917870416` stops at the fixed queued-
+  request parent boundary before worker execution.
+- Freeze `post-link-tool-asset-create` at diagnostic `1/1`, product repair
+  `1/1`, final `1/1`. The reciprocal Outbox Link and approved source-hash
+  predicates are closed. The remaining request lifecycle, Outbox, guard,
+  audit, receipt, outcome, commit and response boundaries are not statically
+  unique, so another product repair is prohibited without exact evidence.
+- Open independent `post-source-hash-tool-asset-create` at diagnostic `0/1`,
+  product repair `0/1`, final `0/1`. Only
+  `POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED=True`; POST_LINK and
+  every historical Item, MBOM, P6-06, Tool Asset context and create activation
+  are false.
+- The checkpoint reuses the exact pre-handler synthetic POST scope, five
+  value-free HTTP classes, ordered 201 response-shape predicates, the complete
+  frozen 40-code server allowlist and strict exact-trace mirrored reader. A
+  trusted server tuple wins; otherwise the fixed parent code remains.
+  Missing or invalid trace and invalid, duplicate or mismatched records fail
+  closed.
+- Output remains limited to diagnostic code, exception class and validated
+  trace. Status/body/business values/identifiers/count/actor/hash/profile/
+  message/stack remain forbidden. Product, server, API, write order,
+  permission, transaction, Schema, ownership, worker, adapter, target and Gate
+  behavior are unchanged.
+- Controller marker:
+  `P8-05 final held; post-source-hash-tool-asset-create diagnostic 0/1 active`.
