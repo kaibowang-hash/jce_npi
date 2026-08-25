@@ -1315,3 +1315,30 @@ HTTP classes and strict mirrored reader. Trusted server evidence wins;
 otherwise the safe parent class remains. No response, input, permission,
 transaction, Schema, ownership, worker, adapter, target or Gate behavior is
 changed, and output remains limited to code, exception class and exact trace.
+
+## 38. Tool Asset Request reciprocal Outbox Link repair
+
+The sole create-prehandler dispatch `32870596890` passed controlled preflight
+job `97876378188`. Runtime job `97876504805` yielded exactly
+`P805_TOOL_ASSET_CREATE_REQUEST_INSERT / LinkValidationError /
+trace-34f2a48309bb58938b17fc35f6abc160`. The Request metadata has seven Link
+fields and no Dynamic Link. Project, disposable Master, physical Set, Tooling
+Revision and Acceptance Evidence Revision had already been inserted and
+strictly read, while the result Link was empty. The generated Outbox event was
+the sole absent Link because the frozen atomic order inserts the Request before
+the reciprocal Outbox row. The exact exception class proves the insert stopped
+at Frappe's pinned Link-validation boundary rather than a domain predicate.
+
+The product repair consumes this cycle's sole repair allowance. It reuses the
+proven Item/MBOM bounded forward-reference seam, scoped only to one dispatched
+execution-v2 `NPI Tool Asset Request` carrying a canonical generated Outbox
+identity. The previous document flag is restored in `finally`; wrong DocType,
+missing flags, Mock/no-Outbox, malformed identity or an insertion exception
+fails closed. No fixture or Link is fabricated and no general `ignore_links`
+or permission path is opened.
+
+Request, reciprocal Outbox, guard activation, audit and receipt retain their
+exact order and one transaction. Metadata, event and payload hashes, API,
+permission, ownership, worker, adapter, target and Gate contracts are
+unchanged. PREHANDLER activation is false and its response-neutral mechanism
+is dormant. Freeze this cycle at diagnostic `1/1`, repair `1/1`, final `0/1`.

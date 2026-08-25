@@ -619,3 +619,24 @@ Canonical Linux/amd64 SHA-256 evidence:
   equivalence, zero-extra-write and no-leak contracts remain unchanged.
 - Controller marker:
   `P8-05 final held; tool-asset-create-prehandler diagnostic 0/1 active`.
+
+## Tool Asset create pre-handler repair checkpoint
+
+- Controlled run `32870596890`, runtime job `97876504805`, produced exactly
+  `P805_TOOL_ASSET_CREATE_REQUEST_INSERT / LinkValidationError /
+  trace-34f2a48309bb58938b17fc35f6abc160` after preflight `97876378188` passed.
+- Five nonempty parent Links were already real and strictly validated; result
+  was empty. The generated Outbox event was the sole forward Link because the
+  Request must precede the reciprocal Outbox inside the same transaction.
+- The repair is bounded to an execution-v2 dispatched Tool Asset Request with
+  one canonical generated Outbox identity. It temporarily defers only that
+  circular Link check and restores the prior flag in `finally`. Wrong DocType,
+  missing flags, Mock/no-Outbox, invalid identity and exceptions fail closed.
+- Request -> Outbox -> guard -> audit -> receipt order and rollback remain
+  intact; completed rows contain two real reciprocal identities. No metadata,
+  API, permission, ownership, hash, worker, adapter, target or Gate contract is
+  changed.
+- PREHANDLER activation is false and dormant. Cycle counters are diagnostic
+  `1/1`, product repair `1/1`, final `0/1`.
+- Controller marker:
+  `P8-05 final held; tool-asset-create-prehandler repair 1/1 awaiting ordinary CI`.

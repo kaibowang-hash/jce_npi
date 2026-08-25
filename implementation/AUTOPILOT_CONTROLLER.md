@@ -5242,3 +5242,29 @@ repeat or rewrite it merely to restore context. See
   behavior. Output remains limited to code, exception class and exact trace.
 - Controller marker:
   `P8-05 final held; tool-asset-create-prehandler diagnostic 0/1 active`.
+
+### P8-05 Tool Asset create pre-handler product repair
+
+- Exact-SHA diagnostic run `32870596890` passed controlled preflight job
+  `97876378188`; runtime job `97876504805` returned exactly
+  `P805_TOOL_ASSET_CREATE_REQUEST_INSERT / LinkValidationError /
+  trace-34f2a48309bb58938b17fc35f6abc160`.
+- The Request has seven Link fields and no Dynamic Link. Project, disposable
+  Master, physical Set, Tooling Revision and Acceptance Evidence Revision were
+  already inserted and strictly read; the result Link is empty. The generated
+  Outbox event is the sole not-yet-existing Link because the required atomic
+  order inserts the Request before its reciprocal Outbox row.
+- Product repair `1/1` uses the established Item/MBOM bounded forward-reference
+  seam only for an execution-v2, dispatched `NPI Tool Asset Request` with one
+  canonical generated Outbox identity. The document's existing
+  `flags.ignore_links` value is restored in `finally`; wrong DocType, missing
+  flags, Mock/no-Outbox, invalid identity and exceptions fail closed. This is
+  not a general Link or permission bypass.
+- Request -> Outbox -> guard activation -> audit -> receipt order, one database
+  transaction, reciprocal Link metadata, hashes, API, permission, ownership,
+  worker and Gate behavior remain unchanged. The PREHANDLER activation is now
+  false; the response-neutral diagnostic mechanism remains dormant.
+- Freeze `tool-asset-create-prehandler` at diagnostic `1/1`, product repair
+  `1/1`, final `0/1`.
+- Controller marker:
+  `P8-05 final held; tool-asset-create-prehandler repair 1/1 awaiting ordinary CI`.

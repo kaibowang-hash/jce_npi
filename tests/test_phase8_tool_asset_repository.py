@@ -989,6 +989,271 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
                 request, capability=capability
             )
 
+    def test_request_outbox_forward_link_deferral_is_exact_and_restored(self) -> None:
+        validation = importlib.import_module(
+            "npi_integration.tool_asset_request.execution_frappe_validation"
+        )
+        frappe = sys.modules["frappe"]
+        frappe.db.get_value = lambda doctype, identity, field: (
+            1
+            if (doctype, identity, field)
+            == ("User", frappe.session.user, "enabled")
+            else None
+        )
+        frappe.get_roles = lambda identity: (
+            ["NPI API User"] if identity == frappe.session.user else []
+        )
+        calls: list[tuple[str, bool, bool]] = []
+        default_flags = object()
+
+        class Document:
+            def __init__(
+                self,
+                doctype: str,
+                *,
+                outbox_event_id: object = str(uid(30)),
+                flags: object = default_flags,
+                fail: Exception | None = None,
+            ) -> None:
+                self.doctype = doctype
+                self.schema_version = 2
+                self.dispatch_allowed = 1
+                self.outbox_event_id = outbox_event_id
+                self.result_global_id = None
+                self.flags = (
+                    types.SimpleNamespace(ignore_links=False)
+                    if flags is default_flags
+                    else flags
+                )
+                self.fail = fail
+
+            def insert(self, *, ignore_permissions: bool = False):
+                calls.append(
+                    (
+                        self.doctype,
+                        ignore_permissions,
+                        bool(getattr(self.flags, "ignore_links", False)),
+                    )
+                )
+                if self.fail is not None:
+                    raise self.fail
+                return self
+
+        request = Document("NPI Tool Asset Request")
+        original = RuntimeError("private forward-link failure")
+        failing = Document("NPI Tool Asset Request", fail=original)
+        with validation.tool_asset_request_transaction_write(
+            frappe.session.user
+        ) as capability:
+            validation.insert_tool_asset_support_document(
+                request,
+                capability=capability,
+                defer_request_outbox_link=True,
+            )
+            self.assertFalse(request.flags.ignore_links)
+            with self.assertRaisesRegex(RuntimeError, "exact scope"):
+                validation.insert_tool_asset_support_document(
+                    Document("NPI Outbox Message"),
+                    capability=capability,
+                    defer_request_outbox_link=True,
+                )
+            with self.assertRaisesRegex(RuntimeError, "exact scope"):
+                validation.insert_tool_asset_support_document(
+                    Document("NPI Tool Asset Request", outbox_event_id=None),
+                    capability=capability,
+                    defer_request_outbox_link=True,
+                )
+            with self.assertRaisesRegex(RuntimeError, "scope is unavailable"):
+                validation.insert_tool_asset_support_document(
+                    Document("NPI Tool Asset Request", flags=None),
+                    capability=capability,
+                    defer_request_outbox_link=True,
+                )
+            with self.assertRaises(RuntimeError) as caught:
+                validation.insert_tool_asset_support_document(
+                    failing,
+                    capability=capability,
+                    defer_request_outbox_link=True,
+                )
+        self.assertIs(caught.exception, original)
+        self.assertFalse(failing.flags.ignore_links)
+        self.assertEqual(
+            calls,
+            [
+                ("NPI Tool Asset Request", True, True),
+                ("NPI Tool Asset Request", True, True),
+            ],
+        )
+
+    def test_pinned_reciprocal_link_lifecycle_is_atomic_and_uses_real_rows(self) -> None:
+        validation = importlib.import_module(
+            "npi_integration.tool_asset_request.execution_frappe_validation"
+        )
+        frappe = sys.modules["frappe"]
+        frappe.db.get_value = lambda doctype, identity, field: (
+            1
+            if (doctype, identity, field)
+            == ("User", frappe.session.user, "enabled")
+            else None
+        )
+        frappe.get_roles = lambda identity: (
+            ["NPI API User"] if identity == frappe.session.user else []
+        )
+        value = self.request(ToolAssetExecutionTargetMode.SYNTHETIC)
+        project = types.SimpleNamespace(
+            tenant_id=value.source.tenant_id,
+            global_id=value.source.project_global_id,
+        )
+        outbox_event_id = uid(30)
+        parents = {
+            ("NPI Engineering Project", str(value.source.project_global_id)),
+            ("NPI Tooling Master", str(value.source.tooling_master_global_id)),
+            ("NPI Tooling Set", str(value.source.tooling_set_global_id)),
+            ("NPI Tooling Revision", str(value.source.tooling_revision_global_id)),
+            (
+                "NPI Tooling Acceptance Evidence Revision",
+                str(value.source.acceptance_revision_global_id),
+            ),
+        }
+        stored = set(parents)
+        documents: list[object] = []
+        events: list[str] = []
+        fail_outbox = [False]
+
+        class PinnedLinkValidationError(Exception):
+            pass
+
+        class PinnedDocument:
+            def __init__(self, mapping: dict[str, object]) -> None:
+                self.__dict__.update(mapping)
+                self.flags = types.SimpleNamespace(ignore_links=False)
+
+            def insert(self, *, ignore_permissions: bool = False):
+                self.ignore_permissions = ignore_permissions
+                events.append(str(self.doctype))
+                links = (
+                    (
+                        ("NPI Engineering Project", self.project_global_id),
+                        ("NPI Tooling Master", self.tooling_master),
+                        ("NPI Tooling Set", self.tooling_set),
+                        ("NPI Tooling Revision", self.tooling_revision),
+                        (
+                            "NPI Tooling Acceptance Evidence Revision",
+                            self.acceptance_revision,
+                        ),
+                        ("NPI Outbox Message", self.outbox_event_id),
+                    )
+                    if self.doctype == "NPI Tool Asset Request"
+                    else (
+                        ("NPI Engineering Project", self.project_global_id),
+                        ("NPI Tool Asset Request", self.tool_asset_request_global_id),
+                        ("NPI Tooling Set", self.tooling_set_global_id),
+                    )
+                )
+                if not self.flags.ignore_links and any(
+                    (doctype, str(identity)) not in stored
+                    for doctype, identity in links
+                    if identity
+                ):
+                    raise PinnedLinkValidationError
+                if self.doctype == "NPI Outbox Message" and fail_outbox[0]:
+                    raise RuntimeError("private outbox failure")
+                identity = self.global_id if self.doctype == "NPI Tool Asset Request" else self.event_id
+                stored.add((str(self.doctype), str(identity)))
+                return self
+
+        def get_doc(mapping: dict[str, object]):
+            document = PinnedDocument(mapping.copy())
+            documents.append(document)
+            return document
+
+        @contextmanager
+        def atomic_rows():
+            snapshot = set(stored)
+            try:
+                yield
+            except Exception:
+                stored.clear()
+                stored.update(snapshot)
+                raise
+
+        repository = self.bare_repository()
+        repository._service_actor_for_profile = (
+            lambda _project, _reference: "worker@example.invalid"
+        )
+        with patch.object(frappe, "get_doc", get_doc, create=True):
+            with validation.tool_asset_request_transaction_write(
+                frappe.session.user
+            ) as capability, atomic_rows():
+                repository._insert_execution_request(
+                    value,
+                    outbox_event_id=outbox_event_id,
+                    target_idempotency_key_hash="b" * 64,
+                    semantic_effect_hash="c" * 64,
+                    capability=capability,
+                )
+                repository._insert_execution_outbox(
+                    project,
+                    value,
+                    event_id=outbox_event_id,
+                    target_idempotency_key_hash="b" * 64,
+                    semantic_effect_hash="c" * 64,
+                    capability=capability,
+                )
+        request_document, outbox_document = documents
+        self.assertEqual(
+            events,
+            ["NPI Tool Asset Request", "NPI Outbox Message"],
+        )
+        self.assertFalse(request_document.flags.ignore_links)
+        self.assertFalse(outbox_document.flags.ignore_links)
+        self.assertTrue(request_document.ignore_permissions)
+        self.assertTrue(outbox_document.ignore_permissions)
+        self.assertEqual(request_document.outbox_event_id, str(outbox_event_id))
+        self.assertEqual(
+            outbox_document.tool_asset_request_global_id,
+            str(value.global_id),
+        )
+        self.assertIn(("NPI Tool Asset Request", str(value.global_id)), stored)
+        self.assertIn(("NPI Outbox Message", str(outbox_event_id)), stored)
+
+        stored.clear()
+        stored.update(parents)
+        with self.assertRaises(PinnedLinkValidationError):
+            request_document.insert(ignore_permissions=True)
+        self.assertFalse(request_document.flags.ignore_links)
+
+        stored.clear()
+        stored.update(parents)
+        documents.clear()
+        events.clear()
+        fail_outbox[0] = True
+        with patch.object(frappe, "get_doc", get_doc, create=True):
+            with self.assertRaises(RuntimeError), validation.tool_asset_request_transaction_write(
+                frappe.session.user
+            ) as capability, atomic_rows():
+                repository._insert_execution_request(
+                    value,
+                    outbox_event_id=outbox_event_id,
+                    target_idempotency_key_hash="b" * 64,
+                    semantic_effect_hash="c" * 64,
+                    capability=capability,
+                )
+                repository._insert_execution_outbox(
+                    project,
+                    value,
+                    event_id=outbox_event_id,
+                    target_idempotency_key_hash="b" * 64,
+                    semantic_effect_hash="c" * 64,
+                    capability=capability,
+                )
+        self.assertEqual(stored, parents)
+        self.assertEqual(
+            events,
+            ["NPI Tool Asset Request", "NPI Outbox Message"],
+        )
+        self.assertFalse(documents[0].flags.ignore_links)
+
     def test_request_and_outbox_persist_exact_versioned_snapshots_without_target_config(self) -> None:
         repository = self.bare_repository()
         value = self.request(ToolAssetExecutionTargetMode.SYNTHETIC)
@@ -997,6 +1262,7 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
             global_id=value.source.project_global_id,
         )
         captured: list[dict[str, object]] = []
+        deferrals: list[tuple[str, bool]] = []
 
         def get_doc(mapping: dict[str, object]):
             captured.append(mapping.copy())
@@ -1008,7 +1274,12 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
             patch.object(
                 self.repository,
                 "insert_tool_asset_support_document",
-                lambda document, *, capability: document,
+                lambda document, *, capability, defer_request_outbox_link=False: (
+                    deferrals.append(
+                        (document.doctype, defer_request_outbox_link)
+                    )
+                    or document
+                ),
             ),
         ):
             repository._insert_execution_request(
@@ -1029,8 +1300,24 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
                 semantic_effect_hash="c" * 64,
                 capability=capability,
             )
+            repository._insert_execution_request(
+                self.request(ToolAssetExecutionTargetMode.MOCK),
+                outbox_event_id=None,
+                target_idempotency_key_hash="d" * 64,
+                semantic_effect_hash="e" * 64,
+                capability=capability,
+            )
 
-        request_row, outbox_row = captured
+        request_row, outbox_row, mock_request_row = captured
+        self.assertEqual(
+            deferrals,
+            [
+                ("NPI Tool Asset Request", True),
+                ("NPI Outbox Message", False),
+                ("NPI Tool Asset Request", False),
+            ],
+        )
+        self.assertIsNone(mock_request_row["outbox_event_id"])
         self.assertEqual(request_row["schema_version"], 2)
         self.assertEqual(request_row["source_snapshot"], value.source.canonical_mapping())
         self.assertEqual(request_row["approval_snapshot"]["state"], "unavailable")

@@ -192,10 +192,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._tool_asset_create_http_boundary_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._tool_asset_create_prehandler_diagnostics_enabled()
         )
         project_id = str(UUID(int=1))
@@ -303,7 +303,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 "csrf",
                 retained,
             )
-            cursor_reader.assert_called_once_with()
+            cursor_reader.assert_not_called()
             diagnostic_reader.assert_not_called()
             first_args, first_kwargs = self.verifier.execution_request.call_args_list[0]
             split = urlsplit(first_args[2])
@@ -359,12 +359,16 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 ),
             )
             self.assertEqual(post_kwargs["method"], "POST")
-            self.assertEqual(
-                post_kwargs["diagnostic_scope"],
-                self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,
-            )
+            self.assertIsNone(post_kwargs["diagnostic_scope"])
 
     def test_create_response_parent_codes_are_ordered_value_free_and_server_wins(self):
+        activation = patch.object(
+            self.verifier,
+            "TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED",
+            True,
+        )
+        activation.start()
+        self.addCleanup(activation.stop)
         trace_id = "trace-" + "e" * 32
         valid = {
             "requestGlobalId": str(UUID(int=21)),
@@ -445,10 +449,6 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
         failure = types.SimpleNamespace(status=500, body={}, trace_id=trace_id)
         with patch.object(
-            self.verifier,
-            "TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED",
-            False,
-        ), patch.object(
             self.verifier.item_runtime,
             "_sanitized_server_log_diagnostic",
         ) as reader:

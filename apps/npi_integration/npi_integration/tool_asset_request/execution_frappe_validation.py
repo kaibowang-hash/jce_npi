@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any, Iterator
+from uuid import UUID
 
 import frappe
 from frappe import _
@@ -211,11 +212,41 @@ def insert_tool_asset_support_document(
     document: Any,
     *,
     capability: ToolAssetSupportWriteCapability,
+    defer_request_outbox_link: bool = False,
 ) -> Any:
     """Insert one exact Tool Asset support row under the active capability."""
 
     _authorize_support_write(document, "insert", capability)
-    return document.insert(ignore_permissions=True)
+    if defer_request_outbox_link:
+        outbox_event_id = getattr(document, "outbox_event_id", None)
+        try:
+            canonical_outbox_event_id = (
+                isinstance(outbox_event_id, str)
+                and str(UUID(outbox_event_id)) == outbox_event_id
+            )
+        except (AttributeError, TypeError, ValueError):
+            canonical_outbox_event_id = False
+        if (
+            str(getattr(document, "doctype", "")) != "NPI Tool Asset Request"
+            or int(getattr(document, "schema_version", 0) or 0) != 2
+            or int(getattr(document, "dispatch_allowed", 0) or 0) != 1
+            or not canonical_outbox_event_id
+            or getattr(document, "result_global_id", None) not in (None, "")
+        ):
+            raise RuntimeError(
+                "Tool Asset request Outbox link deferral is outside its exact scope."
+            )
+    flags = getattr(document, "flags", None)
+    previous_ignore_links = getattr(flags, "ignore_links", False) if flags else False
+    if defer_request_outbox_link and flags is None:
+        raise RuntimeError("Tool Asset request Outbox link scope is unavailable.")
+    if defer_request_outbox_link:
+        flags.ignore_links = True
+    try:
+        return document.insert(ignore_permissions=True)
+    finally:
+        if defer_request_outbox_link:
+            flags.ignore_links = previous_ignore_links
 
 
 def save_tool_asset_support_document(

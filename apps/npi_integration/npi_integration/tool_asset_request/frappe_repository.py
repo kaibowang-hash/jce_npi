@@ -1606,6 +1606,7 @@ class FrappeToolAssetRequestRepository(FrappeToolingRepository):
                 }
             ),
             capability=capability,
+            defer_request_outbox_link=outbox_event_id is not None,
         )
 
     def _insert_execution_outbox(
