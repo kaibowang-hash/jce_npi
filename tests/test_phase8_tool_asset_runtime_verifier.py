@@ -186,11 +186,17 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._tool_asset_create_response_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._tool_asset_create_http_boundary_diagnostics_enabled()
+        )
+        self.assertTrue(
+            self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._tool_asset_create_prehandler_diagnostics_enabled()
         )
         project_id = str(UUID(int=1))
         retained_master_id = str(UUID(int=2))
@@ -355,7 +361,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.assertEqual(post_kwargs["method"], "POST")
             self.assertEqual(
                 post_kwargs["diagnostic_scope"],
-                self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
+                self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,
             )
 
     def test_create_response_parent_codes_are_ordered_value_free_and_server_wins(self):
@@ -440,7 +446,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         failure = types.SimpleNamespace(status=500, body={}, trace_id=trace_id)
         with patch.object(
             self.verifier,
-            "TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -490,7 +496,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             self.verifier.document_runtime,
             "command_headers",
-            return_value={"X-Request-ID": "p805-create"},
+            return_value={
+                "X-Request-ID": "p805-create",
+                "X-Trace-ID": response.trace_id,
+            },
         ), patch.object(
             self.verifier.document_runtime,
             "request",
@@ -504,12 +513,16 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 payload=payload,
                 csrf_token="csrf",
                 idempotency_key="fixed-key",
-                diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
+                diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,
             )
         self.assertIs(observed, response)
         self.assertEqual(
             request.call_args.kwargs["request_headers"]["X-NPI-Diagnostic-Scope"],
-            "p805-tool-asset-create-http-boundary-v1",
+            "p805-tool-asset-create-prehandler-v1",
+        )
+        self.assertEqual(
+            request.call_args.kwargs["request_headers"]["X-Trace-ID"],
+            observed.trace_id,
         )
         source = (ROOT / "scripts/verify_tool_asset_execution_runtime.py").read_text(encoding="utf-8")
         self.assertNotIn('headers.get("X-Trace-ID")', source)
@@ -534,6 +547,19 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 ),
                 **{key: value for key, value in defaults.items() if key != "path"},
             )
+        with self.assertRaisesRegex(
+            RuntimeError,
+            self.verifier._TOOL_ASSET_CREATE_RESPONSE_FAILURE,
+        ):
+            self.verifier.execution_request(
+                object(),
+                "http://127.0.0.1:8003",
+                path,
+                diagnostic_scope=(
+                    self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
+                ),
+                **{key: value for key, value in defaults.items() if key != "path"},
+            )
         for change in (
             {"method": "GET"},
             {"path": path + "?extra=wrong"},
@@ -551,7 +577,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     object(),
                     "http://127.0.0.1:8003",
                     candidate_path,
-                    diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
+                    diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,
                     **values,
                 )
 
@@ -564,8 +590,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
         )
         self.assertEqual(
-            self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
-            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
+            self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,
+            diagnostics.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,
         )
         self.assertEqual(
             diagnostics._TOOL_ASSET_CREATE_COMMAND,

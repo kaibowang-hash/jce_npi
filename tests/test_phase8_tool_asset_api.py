@@ -872,8 +872,9 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         secret = "private-create-boundary"
         original = RuntimeError(secret)
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
-            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
+            diagnostics.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE
         )
+        self.headers["X-Trace-ID"] = trace_id
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
         self.frappe.local.form_dict = {
@@ -885,7 +886,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             "tooling_master_id": MASTER,
             "tooling_set_id": TOOLING_SET,
         }
-        token = self.api.current_trace_id.set(trace_id)
+        token = self.api.current_trace_id.set("trace-" + "0" * 32)
         try:
             with patch.object(
                 self.api,
@@ -929,13 +930,15 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             "tooling_master_id": MASTER,
             "tooling_set_id": TOOLING_SET,
         }
-        exact_scope = diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
-        for name, scope, method, candidate_trace, route, query, command in (
+        exact_scope = diagnostics.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE
+        for name, scope, method, request_trace, route, query, command in (
             ("missing", None, "POST", trace_id, exact_route, {}, CREATE_COMMAND),
-            ("old", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, exact_route, {}, CREATE_COMMAND),
+            ("old-response", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, exact_route, {}, CREATE_COMMAND),
+            ("old-http", diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE, "POST", trace_id, exact_route, {}, CREATE_COMMAND),
             ("wrong", "wrong-scope", "POST", trace_id, exact_route, {}, CREATE_COMMAND),
             ("method", exact_scope, "GET", trace_id, exact_route, {}, CREATE_COMMAND),
-            ("trace", exact_scope, "POST", "trace-invalid", exact_route, {}, CREATE_COMMAND),
+            ("trace-missing", exact_scope, "POST", None, exact_route, {}, CREATE_COMMAND),
+            ("trace-invalid", exact_scope, "POST", "trace-invalid", exact_route, {}, CREATE_COMMAND),
             ("route", exact_scope, "POST", trace_id, {**exact_route, "extra": "wrong"}, {}, CREATE_COMMAND),
             ("route-value", exact_scope, "POST", trace_id, {**exact_route, "tooling_set_id": "wrong"}, {}, CREATE_COMMAND),
             ("query", exact_scope, "POST", trace_id, exact_route, {"extra": "wrong"}, CREATE_COMMAND),
@@ -956,11 +959,15 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
                 self.frappe.local.request.method = method
                 self.frappe.local.request.args = query
                 self.frappe.flags.npi_route_params = route
+                if request_trace is None:
+                    self.headers.pop("X-Trace-ID", None)
+                else:
+                    self.headers["X-Trace-ID"] = request_trace
                 self.frappe.local.form_dict = {
                     **self.payload(),
                     **({"cmd": command} if command is not None else {}),
                 }
-                token = self.api.current_trace_id.set(candidate_trace)
+                token = self.api.current_trace_id.set("trace-" + "9" * 32)
                 try:
                     with patch.object(
                         self.api,
@@ -981,6 +988,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
             exact_scope
         )
+        self.headers["X-Trace-ID"] = trace_id
         idempotency_key = self.headers.pop("Idempotency-Key")
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
@@ -1011,6 +1019,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
             exact_scope
         )
+        self.headers["X-Trace-ID"] = trace_id
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
         self.frappe.flags.npi_route_params = exact_route
@@ -1034,8 +1043,9 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
 
         self.diagnostics.clear()
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
-            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
+            diagnostics.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE
         )
+        self.headers["X-Trace-ID"] = trace_id
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
         self.frappe.flags.npi_route_params = exact_route
@@ -1058,14 +1068,15 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
 
         self.diagnostics.clear()
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
-            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
+            diagnostics.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE
         )
+        self.headers["X-Trace-ID"] = trace_id
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
         self.frappe.flags.npi_route_params = exact_route
         with self.assertRaises(RuntimeError) as caught:
             with diagnostics.tool_asset_create_response_diagnostics(
-                trace_id,
+                None,
                 "create_tool_asset",
                 {**self.payload(), "cmd": CREATE_COMMAND},
             ), diagnostics.tool_asset_create_response_step(
@@ -1090,7 +1101,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         self.events.clear()
         self.diagnostics.clear()
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
-            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
+            diagnostics.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE
         )
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
@@ -1103,7 +1114,8 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             **self.payload(),
             "cmd": CREATE_COMMAND,
         }
-        token = self.api.current_trace_id.set("trace-" + "c" * 32)
+        self.headers["X-Trace-ID"] = "trace-" + "c" * 32
+        token = self.api.current_trace_id.set("trace-" + "0" * 32)
         try:
             with_scope = self.api.create_tool_asset_execution_request(
                 **self.payload(),
@@ -1123,7 +1135,8 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         self.frappe.enqueue = lambda *_args, **_kwargs: (_ for _ in ()).throw(
             RuntimeError("private-enqueue-message")
         )
-        token = self.api.current_trace_id.set("trace-" + "d" * 32)
+        self.headers["X-Trace-ID"] = "trace-" + "d" * 32
+        token = self.api.current_trace_id.set("trace-" + "0" * 32)
         try:
             result = self.api.create_tool_asset_execution_request(
                 **self.payload(),

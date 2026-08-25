@@ -5218,3 +5218,27 @@ repeat or rewrite it merely to restore context. See
   semantics change.
 - Controller marker:
   `P8-05 final held; tool-asset-create-http-boundary diagnostic 0/1 active`.
+
+### P8-05 Tool Asset create pre-handler diagnostic cycle
+
+- Exact-SHA ordinary run `32826127517` passed before the sole controlled
+  diagnostic dispatch `32827536675`; runtime job `97738829480` emitted the
+  safe parent tuple `P805_TOOL_ASSET_CREATE_HTTP_SERVER_CLASS / RuntimeError /
+  trace-232bf416131b56f6a1d5f85ddd5aaab3` and no trusted server tuple.
+- Static cross-proof shows the API diagnostic context was entered before
+  `execute_api` resolved the request trace into `current_trace_id`. The missing
+  server tuple therefore proves a harness activation boundary only; the
+  downstream product source remains non-unique and repair is prohibited.
+- Freeze `tool-asset-create-http-boundary` at diagnostic `1/1`, product repair
+  `0/1`, final `0/1`. Open independent `tool-asset-create-prehandler` at
+  diagnostic `0/1`, product repair `0/1`, final `0/1`.
+- Only the new exact synthetic POST scope is active. It strictly validates the
+  real `X-Trace-ID` request header directly, so absent, invalid, stale or unset
+  request context cannot activate it; the later response trace must equal that
+  same validated trace. All historical create diagnostic flags remain false.
+- The existing 40 unique server stages, five fixed HTTP classes and strict
+  mirrored-log reader are reused without changing API input, response,
+  permission, transaction, Schema, ownership, worker, adapter, target or Gate
+  behavior. Output remains limited to code, exception class and exact trace.
+- Controller marker:
+  `P8-05 final held; tool-asset-create-prehandler diagnostic 0/1 active`.

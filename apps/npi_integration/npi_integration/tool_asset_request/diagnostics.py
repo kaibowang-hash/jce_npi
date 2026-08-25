@@ -124,6 +124,9 @@ TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
 TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE = (
     "p805-tool-asset-create-http-boundary-v1"
 )
+TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE = (
+    "p805-tool-asset-create-prehandler-v1"
+)
 _TOOL_ASSET_CREATE_RESPONSE_FLAG = (
     "npi_p805_tool_asset_create_response_diagnostic"
 )
@@ -250,7 +253,7 @@ def tool_asset_context_step(
 
 @contextmanager
 def tool_asset_create_response_diagnostics(
-    trace_id: object,
+    _context_trace_id: object,
     operation: object,
     command_fields: object,
 ) -> Iterator[None]:
@@ -258,11 +261,12 @@ def tool_asset_create_response_diagnostics(
 
     try:
         request = getattr(getattr(frappe, "local", None), "request", None)
+        request_trace_id = frappe.get_request_header("X-Trace-ID")
         enabled = (
             frappe.get_request_header(
                 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER
             )
-            == TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
+            == TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE
             and getattr(request, "method", None) == "POST"
             and operation == "create_tool_asset"
             and isinstance(command_fields, dict)
@@ -274,10 +278,10 @@ def tool_asset_create_response_diagnostics(
             and bool(frappe.get_request_header("Idempotency-Key"))
         )
         state = (
-            {"trace_id": trace_id, "recorded": False}
+            {"trace_id": request_trace_id, "recorded": False}
             if enabled
-            and isinstance(trace_id, str)
-            and _TRACE_PATTERN.fullmatch(trace_id) is not None
+            and isinstance(request_trace_id, str)
+            and _TRACE_PATTERN.fullmatch(request_trace_id) is not None
             else None
         )
         flags = frappe.flags

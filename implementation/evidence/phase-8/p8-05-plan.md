@@ -1292,3 +1292,26 @@ innermost-one-record, same-exception, finally restoration, response
 equivalence, zero-extra-write and no-leak contracts remain mandatory. No API,
 permission, transaction, Schema, ownership, worker, adapter, target or Gate
 behavior changes.
+
+## 37. Tool Asset create pre-handler diagnostic cycle
+
+Exact-SHA ordinary run `32826127517` passed before the sole controlled
+diagnostic run `32827536675`. Runtime job `97738829480` produced only
+`P805_TOOL_ASSET_CREATE_HTTP_SERVER_CLASS / RuntimeError /
+trace-232bf416131b56f6a1d5f85ddd5aaab3`. The API diagnostic context is entered
+before `execute_api` resolves the real request trace into `current_trace_id`,
+so the absent server tuple uniquely identifies an activation-harness boundary
+but does not identify a product root.
+
+Freeze `tool-asset-create-http-boundary` at diagnostic `1/1`, product repair
+`0/1`, final `0/1`. Open independent `tool-asset-create-prehandler` at
+`0/1`, `0/1`, `0/1`. Only the new exact synthetic POST scope is active. It
+strictly validates the real `X-Trace-ID` request header at entry and locks the
+later response trace to exact equality; missing, malformed or stale context
+cannot activate it. Historical create activations remain false.
+
+The checkpoint reuses the existing 40 unique server stages, five fixed parent
+HTTP classes and strict mirrored reader. Trusted server evidence wins;
+otherwise the safe parent class remains. No response, input, permission,
+transaction, Schema, ownership, worker, adapter, target or Gate behavior is
+changed, and output remains limited to code, exception class and exact trace.

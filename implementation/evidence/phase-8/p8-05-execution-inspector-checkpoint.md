@@ -598,3 +598,24 @@ Canonical Linux/amd64 SHA-256 evidence:
   Schema, ownership, worker, adapter, target and Gate behavior are unchanged.
 - Controller marker:
   `P8-05 final held; tool-asset-create-http-boundary diagnostic 0/1 active`.
+
+## Tool Asset create pre-handler diagnostic checkpoint
+
+- Exact-SHA ordinary `32826127517` passed. Sole controlled run `32827536675`,
+  runtime job `97738829480`, returned the safe tuple
+  `P805_TOOL_ASSET_CREATE_HTTP_SERVER_CLASS / RuntimeError /
+  trace-232bf416131b56f6a1d5f85ddd5aaab3` with no trusted server tuple.
+- The API diagnostic context precedes `execute_api` request-trace resolution;
+  this proves a harness activation boundary only and cannot authorize product
+  repair.
+- Freeze `tool-asset-create-http-boundary` at `1/1`, `0/1`, `0/1`. Open
+  `tool-asset-create-prehandler` at `0/1`, `0/1`, `0/1`.
+- The new scope alone is active and validates the real `X-Trace-ID` header
+  directly. Missing, invalid, wrong-scope, wrong-command, method, route, query
+  or extra-field requests record nothing; later response trace equality is
+  mandatory.
+- Existing 40 server codes, five fixed HTTP classes, strict mirrored reader,
+  innermost-one-record, same-exception, finally restoration, response
+  equivalence, zero-extra-write and no-leak contracts remain unchanged.
+- Controller marker:
+  `P8-05 final held; tool-asset-create-prehandler diagnostic 0/1 active`.
