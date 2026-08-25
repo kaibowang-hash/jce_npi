@@ -5268,3 +5268,32 @@ repeat or rewrite it merely to restore context. See
   `1/1`, final `0/1`.
 - Controller marker:
   `P8-05 final held; tool-asset-create-prehandler repair 1/1 awaiting ordinary CI`.
+
+## 2026-08-26 P8-05 post-link Tool Asset create diagnostic cycle
+
+- Repair SHA `b66d97af946afb9a2f4d936953cd0214e46e51a3` passes exact
+  ordinary CI `32872788473`. Its sole diagnostics-off Level 3
+  `32874043388` passes every non-runtime job; controlled runtime
+  `97892173555` stops at the fixed queued-request parent boundary after the
+  reciprocal Outbox Link root was repaired.
+- Freeze `tool-asset-create-prehandler` at diagnostic `1/1`, product repair
+  `1/1`, final `1/1`. The exact LinkValidationError source is closed. Static
+  ordering still leaves later request insert validation, Outbox, guard, audit,
+  receipt, outcome, commit, problem and response boundaries non-unique, so no
+  further product repair is authorized from this parent failure.
+- Open independent `post-link-tool-asset-create` at diagnostic `0/1`, product
+  repair `0/1`, final `0/1`. Only its new verifier activation is true; the
+  PREHANDLER and every historical Item, MBOM, P6-06, Tool Asset context and
+  create activation remain false.
+- The checkpoint reuses the exact pre-handler POST scope, request/response
+  trace equality, five value-free HTTP classes, frozen 40-code server
+  allowlist and strict mirrored-log reader. Trusted exact-trace server evidence
+  wins; otherwise the fixed parent class remains. Missing or invalid trace and
+  invalid, duplicate or mismatched records fail closed.
+- Output remains limited to diagnostic code, exception class and exact trace.
+  No status/body/business value/identifier/count/actor/hash/profile/message/
+  stack may be inspected or emitted. Product, server, API, write order,
+  permission, transaction, Schema, ownership, worker, adapter, target and Gate
+  behavior are unchanged.
+- Controller marker:
+  `P8-05 final held; post-link-tool-asset-create diagnostic 0/1 active`.

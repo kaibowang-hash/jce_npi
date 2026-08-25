@@ -640,3 +640,27 @@ Canonical Linux/amd64 SHA-256 evidence:
   `1/1`, product repair `1/1`, final `0/1`.
 - Controller marker:
   `P8-05 final held; tool-asset-create-prehandler repair 1/1 awaiting ordinary CI`.
+
+## Post-link Tool Asset create diagnostic checkpoint
+
+- Repair SHA `b66d97af946afb9a2f4d936953cd0214e46e51a3` passes ordinary
+  `32872788473`. Final run `32874043388` passes all non-runtime jobs; runtime
+  `97892173555` reaches the fixed queued-request parent boundary after the
+  reciprocal Outbox Link repair.
+- Freeze `tool-asset-create-prehandler` at diagnostic `1/1`, product repair
+  `1/1`, final `1/1`. The repaired Link root is excluded; later request,
+  Outbox, guard, audit, receipt, outcome, commit, problem and response sources
+  remain non-unique and cannot authorize a guessed repair.
+- Open independent `post-link-tool-asset-create` at diagnostic `0/1`, product
+  repair `0/1`, final `0/1`. Only the new activation is true; PREHANDLER and
+  every historical diagnostic activation remain false.
+- Reuse the exact pre-handler scope, request/response trace equality, five
+  fixed HTTP classes, complete 40-code allowlist and strict mirrored reader.
+  Exact trusted server evidence wins; safe parent fallback remains, and
+  missing/invalid/duplicate/mismatched evidence fails closed.
+- Output is only code, exception class and exact trace. Status/body/business
+  values/identifiers/count/actor/hash/profile/message/stack stay forbidden;
+  product/server/API/write/permission/transaction/Schema/ownership/worker/
+  adapter/target/Gate behavior is unchanged.
+- Controller marker:
+  `P8-05 final held; post-link-tool-asset-create diagnostic 0/1 active`.

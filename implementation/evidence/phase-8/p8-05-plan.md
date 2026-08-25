@@ -1342,3 +1342,29 @@ exact order and one transaction. Metadata, event and payload hashes, API,
 permission, ownership, worker, adapter, target and Gate contracts are
 unchanged. PREHANDLER activation is false and its response-neutral mechanism
 is dormant. Freeze this cycle at diagnostic `1/1`, repair `1/1`, final `0/1`.
+
+## 39. Post-link Tool Asset create diagnostic cycle
+
+Repair SHA `b66d97af946afb9a2f4d936953cd0214e46e51a3` passes exact
+ordinary CI `32872788473`. Its sole unchanged diagnostics-off Level 3
+`32874043388` passes all non-runtime jobs; controlled runtime job
+`97892173555` stops at the same fixed queued-request parent boundary after the
+reciprocal Outbox Link repair. The repaired LinkValidationError source is
+therefore excluded, but the remaining downstream request, Outbox, guard,
+audit, receipt, outcome, commit, problem and response boundaries are not
+statically unique.
+
+Freeze `tool-asset-create-prehandler` at diagnostic `1/1`, product repair
+`1/1`, final `1/1`. Open a distinct `post-link-tool-asset-create` cycle at
+diagnostic `0/1`, product repair `0/1`, final `0/1`. The new verifier activation
+alone is `True`; PREHANDLER and all historical diagnostics are `False`.
+
+The bounded checkpoint reuses the proven exact synthetic POST scope, exact
+request/response trace correlation, five parent HTTP classes, all 40 unique
+server stages and the strict mirrored reader. A trusted server tuple wins;
+otherwise the fixed parent code remains. Success emits nothing, and missing or
+invalid trace plus malformed, duplicate or mismatched log evidence fails
+closed. Output contains only diagnostic code, exception class and exact trace,
+never status/body/business values/identifiers/count/actor/hash/profile/message/
+stack. Product, server, response, write order, permission, transaction, API,
+Schema, ownership, worker, adapter, target and Gate behavior are unchanged.
