@@ -32,10 +32,14 @@ ACKNOWLEDGEMENT = (
 )
 TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = False
 POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED = False
-TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED = True
+TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED = False
+TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED = True
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
     "p805-tool-asset-create-response-v1"
+)
+TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE = (
+    "p805-tool-asset-create-http-boundary-v1"
 )
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES = frozenset(
     {
@@ -133,7 +137,11 @@ _TOOL_ASSET_CONTEXT_SERVER_CODES = frozenset(
 _TOOL_ASSET_CONTEXT_FAILURE = "P8-05 disposable command context is unavailable"
 _TOOL_ASSET_CREATE_RESPONSE_PARENT_CODES = frozenset(
     {
-        "P805_TOOL_ASSET_CREATE_HTTP_STATUS",
+        "P805_TOOL_ASSET_CREATE_HTTP_AUTHORIZATION_CLASS",
+        "P805_TOOL_ASSET_CREATE_HTTP_NOT_FOUND_CLASS",
+        "P805_TOOL_ASSET_CREATE_HTTP_CLIENT_CLASS",
+        "P805_TOOL_ASSET_CREATE_HTTP_SERVER_CLASS",
+        "P805_TOOL_ASSET_CREATE_HTTP_OTHER_CLASS",
         "P805_TOOL_ASSET_CREATE_BODY_SHAPE",
         "P805_TOOL_ASSET_CREATE_REQUEST_SHAPE",
         "P805_TOOL_ASSET_CREATE_REQUEST_STATE",
@@ -178,6 +186,18 @@ def _tool_asset_create_response_diagnostics_enabled() -> bool:
 
     return (
         TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is True
+        and TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+        and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+    )
+
+
+def _tool_asset_create_http_boundary_diagnostics_enabled() -> bool:
+    """Activate only the independent synthetic create HTTP-boundary cycle."""
+
+    return (
+        TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is True
+        and TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is False
         and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
         and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
     )
@@ -228,7 +248,7 @@ def execution_request(
         else:
             require(
                 diagnostic_scope
-                == TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+                == TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
                 and method == "POST"
                 and isinstance(payload, dict)
                 and set(payload)
@@ -344,7 +364,7 @@ def _tool_asset_create_response_failure_message(result, cursors) -> str | None:
     body = result.body if isinstance(result.body, dict) else None
     request = body.get("request") if isinstance(body, dict) else None
     if result.status != 201:
-        code = "P805_TOOL_ASSET_CREATE_HTTP_STATUS"
+        code = _tool_asset_create_http_status_diagnostic_code(result.status)
     elif body is None:
         code = "P805_TOOL_ASSET_CREATE_BODY_SHAPE"
     elif not isinstance(request, dict):
@@ -357,7 +377,7 @@ def _tool_asset_create_response_failure_message(result, cursors) -> str | None:
         code = "P805_TOOL_ASSET_CREATE_OUTBOX_ID"
     else:
         return None
-    if not _tool_asset_create_response_diagnostics_enabled():
+    if not _tool_asset_create_http_boundary_diagnostics_enabled():
         return _TOOL_ASSET_CREATE_RESPONSE_FAILURE
     trace_id = getattr(result, "trace_id", None)
     if (
@@ -384,6 +404,20 @@ def _tool_asset_create_response_failure_message(result, cursors) -> str | None:
         f"[diagnostic_code={code}; exception_type=RuntimeError; "
         f"trace_id={trace_id}]"
     )
+
+
+def _tool_asset_create_http_status_diagnostic_code(status: object) -> str:
+    """Classify a create failure without exposing its actual HTTP status."""
+
+    if status in {401, 403}:
+        return "P805_TOOL_ASSET_CREATE_HTTP_AUTHORIZATION_CLASS"
+    if status == 404:
+        return "P805_TOOL_ASSET_CREATE_HTTP_NOT_FOUND_CLASS"
+    if isinstance(status, int) and 400 <= status < 500:
+        return "P805_TOOL_ASSET_CREATE_HTTP_CLIENT_CLASS"
+    if isinstance(status, int) and 500 <= status < 600:
+        return "P805_TOOL_ASSET_CREATE_HTTP_SERVER_CLASS"
+    return "P805_TOOL_ASSET_CREATE_HTTP_OTHER_CLASS"
 
 
 def _canonical_uuid(value: object) -> bool:
@@ -827,7 +861,7 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     require(isinstance(source, dict) and source.get("acceptanceRevisionGlobalId") == acceptance.get("globalId"), "P8-05 retained acceptance binding drifted")
     create_cursors = (
         item_runtime._replay_diagnostic_log_cursors()
-        if _tool_asset_create_response_diagnostics_enabled()
+        if _tool_asset_create_http_boundary_diagnostics_enabled()
         else None
     )
     created = execution_request(
@@ -850,8 +884,8 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
             "acknowledgement": ACKNOWLEDGEMENT,
         },
         diagnostic_scope=(
-            TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
-            if _tool_asset_create_response_diagnostics_enabled()
+            TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
+            if _tool_asset_create_http_boundary_diagnostics_enabled()
             else None
         ),
     )

@@ -1255,3 +1255,40 @@ the diagnostics source AST, while also enforcing one lexical product context
 per code. A subprocess regression executes the real controlled parent shape
 with `PYTHONPATH=scripts` and `--help`. Server/product diagnostics, activation,
 API and transaction behavior are unchanged.
+
+## 35. Tool Asset create HTTP-boundary diagnostic cycle
+
+Harness-remediation SHA `80b16b8507f78d33be8b787ee8ce98362653cffc`
+passes exact ordinary CI `32814218905`. Its sole product diagnostic dispatch
+`32823780142`, runtime job `97727376777`, returns only the safe parent tuple
+`P805_TOOL_ASSET_CREATE_HTTP_STATUS / RuntimeError /
+trace-872ec1af140e54528d68f4fc07760c03`; the strict reader finds no trusted
+server tuple. No response status value, body, business value, identifier,
+count, actor, hash, profile, exception message or stack was inspected.
+
+Static cross-proof uniquely attributes the missing server record to the
+diagnostic activation boundary, not to a product root. Pinned Frappe calls the
+whitelisted method with `frappe.form_dict`; because the create handler accepts
+`**request_fields`, the framework transport field `cmd` is necessarily present
+in `command_fields`. The old scope required exactly six business fields and
+therefore always disabled its request-local state. The shared request-security
+contract already treats only that exact transport field as non-business input
+and continues to reject every unknown business field.
+
+The `tool-asset-create-response` cycle is immutable at diagnostic `1/1`,
+product repair `0/1`, final `0/1`. Its zero server tuple cannot authorize a
+product repair. A distinct `tool-asset-create-http-boundary` cycle starts at
+diagnostic `0/1`, product repair `0/1`, final `0/1`. The old verifier activation
+is `False`; only the new exact synthetic POST scope is temporarily active.
+Activation requires the exact framework command symbol and value plus exactly
+the six business fields, exact POST route, empty query, trace and idempotency
+header. It neither removes nor changes product input or shared security.
+
+Non-201 responses are classified into fixed authorization, not-found, client,
+server or other parent codes without emitting the actual status. Every class
+uses the strict exact-trace mirrored reader; one fully valid existing 40-code
+server tuple wins, otherwise the fixed parent class remains. Existing
+innermost-one-record, same-exception, finally restoration, response
+equivalence, zero-extra-write and no-leak contracts remain mandatory. No API,
+permission, transaction, Schema, ownership, worker, adapter, target or Gate
+behavior changes.

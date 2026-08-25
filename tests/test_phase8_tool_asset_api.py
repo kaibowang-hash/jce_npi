@@ -22,6 +22,10 @@ TOOLING_SET = "00000000-0000-4000-8000-00000000a503"
 ACCEPTANCE = "00000000-0000-4000-8000-00000000a504"
 REQUEST = "00000000-0000-4000-8000-00000000a505"
 OUTBOX = "00000000-0000-4000-8000-00000000a506"
+CREATE_COMMAND = (
+    "npi_integration.tool_asset_request_api."
+    "create_tool_asset_execution_request"
+)
 
 
 class FakeRepository:
@@ -868,10 +872,14 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         secret = "private-create-boundary"
         original = RuntimeError(secret)
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
-            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
         )
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
+        self.frappe.local.form_dict = {
+            **self.payload(),
+            "cmd": CREATE_COMMAND,
+        }
         self.frappe.flags.npi_route_params = {
             "project_id": PROJECT,
             "tooling_master_id": MASTER,
@@ -885,7 +893,10 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
                 side_effect=original,
             ):
                 with self.assertRaises(RuntimeError) as caught:
-                    self.api.create_tool_asset_execution_request(**self.payload())
+                    self.api.create_tool_asset_execution_request(
+                        **self.payload(),
+                        cmd=CREATE_COMMAND,
+                    )
             self.assertIs(caught.exception, original)
         finally:
             self.api.current_trace_id.reset(token)
@@ -918,14 +929,18 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             "tooling_master_id": MASTER,
             "tooling_set_id": TOOLING_SET,
         }
-        for name, scope, method, candidate_trace, route, query in (
-            ("missing", None, "POST", trace_id, exact_route, {}),
-            ("wrong", "wrong-scope", "POST", trace_id, exact_route, {}),
-            ("method", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "GET", trace_id, exact_route, {}),
-            ("trace", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", "trace-invalid", exact_route, {}),
-            ("route", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, {**exact_route, "extra": "wrong"}, {}),
-            ("route-value", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, {**exact_route, "tooling_set_id": "wrong"}, {}),
-            ("query", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, exact_route, {"extra": "wrong"}),
+        exact_scope = diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
+        for name, scope, method, candidate_trace, route, query, command in (
+            ("missing", None, "POST", trace_id, exact_route, {}, CREATE_COMMAND),
+            ("old", diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE, "POST", trace_id, exact_route, {}, CREATE_COMMAND),
+            ("wrong", "wrong-scope", "POST", trace_id, exact_route, {}, CREATE_COMMAND),
+            ("method", exact_scope, "GET", trace_id, exact_route, {}, CREATE_COMMAND),
+            ("trace", exact_scope, "POST", "trace-invalid", exact_route, {}, CREATE_COMMAND),
+            ("route", exact_scope, "POST", trace_id, {**exact_route, "extra": "wrong"}, {}, CREATE_COMMAND),
+            ("route-value", exact_scope, "POST", trace_id, {**exact_route, "tooling_set_id": "wrong"}, {}, CREATE_COMMAND),
+            ("query", exact_scope, "POST", trace_id, exact_route, {"extra": "wrong"}, CREATE_COMMAND),
+            ("cmd-missing", exact_scope, "POST", trace_id, exact_route, {}, None),
+            ("cmd-wrong", exact_scope, "POST", trace_id, exact_route, {}, "wrong"),
         ):
             with self.subTest(name=name):
                 self.diagnostics.clear()
@@ -941,6 +956,10 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
                 self.frappe.local.request.method = method
                 self.frappe.local.request.args = query
                 self.frappe.flags.npi_route_params = route
+                self.frappe.local.form_dict = {
+                    **self.payload(),
+                    **({"cmd": command} if command is not None else {}),
+                }
                 token = self.api.current_trace_id.set(candidate_trace)
                 try:
                     with patch.object(
@@ -949,9 +968,10 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
                         side_effect=original,
                     ):
                         with self.assertRaises(RuntimeError) as caught:
-                            self.api.create_tool_asset_execution_request(
-                                **self.payload()
-                            )
+                            kwargs = self.payload()
+                            if command is not None:
+                                kwargs["cmd"] = command
+                            self.api.create_tool_asset_execution_request(**kwargs)
                     self.assertIs(caught.exception, original)
                 finally:
                     self.api.current_trace_id.reset(token)
@@ -959,7 +979,62 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
 
         self.diagnostics.clear()
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
-            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+            exact_scope
+        )
+        idempotency_key = self.headers.pop("Idempotency-Key")
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = {}
+        self.frappe.flags.npi_route_params = exact_route
+        self.frappe.local.form_dict = {
+            **self.payload(),
+            "cmd": CREATE_COMMAND,
+        }
+        token = self.api.current_trace_id.set(trace_id)
+        try:
+            with patch.object(
+                self.api,
+                "authenticated_user",
+                side_effect=original,
+            ):
+                with self.assertRaises(RuntimeError) as caught:
+                    self.api.create_tool_asset_execution_request(
+                        **self.payload(),
+                        cmd=CREATE_COMMAND,
+                    )
+            self.assertIs(caught.exception, original)
+        finally:
+            self.api.current_trace_id.reset(token)
+            self.headers["Idempotency-Key"] = idempotency_key
+        self.assertEqual(self.diagnostics, [])
+
+        self.diagnostics.clear()
+        self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
+            exact_scope
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = {}
+        self.frappe.flags.npi_route_params = exact_route
+        self.frappe.local.form_dict = {
+            **self.payload(),
+            "cmd": CREATE_COMMAND,
+            "unknownBusinessField": "private-extra-value",
+        }
+        token = self.api.current_trace_id.set(trace_id)
+        try:
+            with self.assertRaises(self.api.RequestValidationFailed):
+                self.api.create_tool_asset_execution_request(
+                    **self.payload(),
+                    cmd=CREATE_COMMAND,
+                    unknownBusinessField="private-extra-value",
+                )
+        finally:
+            self.api.current_trace_id.reset(token)
+        self.assertEqual(self.diagnostics, [])
+        self.assertNotIn("private-extra-value", repr(self.diagnostics))
+
+        self.diagnostics.clear()
+        self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
+            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
         )
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
@@ -973,7 +1048,8 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             ):
                 with self.assertRaises(RuntimeError) as caught:
                     self.api.update_tool_asset_execution_request(
-                        **self.payload(operation="update_tool_asset")
+                        **self.payload(operation="update_tool_asset"),
+                        cmd=CREATE_COMMAND,
                     )
             self.assertIs(caught.exception, original)
         finally:
@@ -982,7 +1058,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
 
         self.diagnostics.clear()
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
-            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
         )
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
@@ -991,7 +1067,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             with diagnostics.tool_asset_create_response_diagnostics(
                 trace_id,
                 "create_tool_asset",
-                self.payload(),
+                {**self.payload(), "cmd": CREATE_COMMAND},
             ), diagnostics.tool_asset_create_response_step(
                 "P805_TOOL_ASSET_CREATE_DOMAIN_CALL"
             ):
@@ -1014,7 +1090,7 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         self.events.clear()
         self.diagnostics.clear()
         self.headers[diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
-            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
         )
         self.frappe.local.request.method = "POST"
         self.frappe.local.request.args = {}
@@ -1023,10 +1099,15 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
             "tooling_master_id": MASTER,
             "tooling_set_id": TOOLING_SET,
         }
+        self.frappe.local.form_dict = {
+            **self.payload(),
+            "cmd": CREATE_COMMAND,
+        }
         token = self.api.current_trace_id.set("trace-" + "c" * 32)
         try:
             with_scope = self.api.create_tool_asset_execution_request(
-                **self.payload()
+                **self.payload(),
+                cmd=CREATE_COMMAND,
             )
         finally:
             self.api.current_trace_id.reset(token)
@@ -1044,7 +1125,10 @@ class Phase8ToolAssetApiTest(unittest.TestCase):
         )
         token = self.api.current_trace_id.set("trace-" + "d" * 32)
         try:
-            result = self.api.create_tool_asset_execution_request(**self.payload())
+            result = self.api.create_tool_asset_execution_request(
+                **self.payload(),
+                cmd=CREATE_COMMAND,
+            )
         finally:
             self.api.current_trace_id.reset(token)
         self.assertEqual(result, without_scope)

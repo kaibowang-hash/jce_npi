@@ -180,11 +180,17 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_query_command_context_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._tool_asset_create_response_diagnostics_enabled()
+        )
+        self.assertTrue(
+            self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._tool_asset_create_http_boundary_diagnostics_enabled()
         )
         project_id = str(UUID(int=1))
         retained_master_id = str(UUID(int=2))
@@ -349,7 +355,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.assertEqual(post_kwargs["method"], "POST")
             self.assertEqual(
                 post_kwargs["diagnostic_scope"],
-                self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE,
+                self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
             )
 
     def test_create_response_parent_codes_are_ordered_value_free_and_server_wins(self):
@@ -361,7 +367,11 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         }
         secret = "private-create-response-value"
         cases = (
-            ("P805_TOOL_ASSET_CREATE_HTTP_STATUS", types.SimpleNamespace(status=503, body={"opaque": secret}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_HTTP_AUTHORIZATION_CLASS", types.SimpleNamespace(status=403, body={"opaque": secret}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_HTTP_NOT_FOUND_CLASS", types.SimpleNamespace(status=404, body={"opaque": secret}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_HTTP_CLIENT_CLASS", types.SimpleNamespace(status=409, body={"opaque": secret}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_HTTP_SERVER_CLASS", types.SimpleNamespace(status=503, body={"opaque": secret}, trace_id=trace_id)),
+            ("P805_TOOL_ASSET_CREATE_HTTP_OTHER_CLASS", types.SimpleNamespace(status=302, body={"opaque": secret}, trace_id=trace_id)),
             ("P805_TOOL_ASSET_CREATE_BODY_SHAPE", types.SimpleNamespace(status=201, body=secret, trace_id=trace_id)),
             ("P805_TOOL_ASSET_CREATE_REQUEST_SHAPE", types.SimpleNamespace(status=201, body={**valid, "request": secret}, trace_id=trace_id)),
             ("P805_TOOL_ASSET_CREATE_REQUEST_STATE", types.SimpleNamespace(status=201, body={**valid, "request": {"state": secret}}, trace_id=trace_id)),
@@ -382,7 +392,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.assertIn("exception_type=RuntimeError", message)
             self.assertIn(f"trace_id={trace_id}", message)
             self.assertNotIn(secret, message)
-            self.assertNotIn("503", message)
+            for status_value in ("403", "404", "409", "503", "302"):
+                self.assertNotIn(status_value, message)
             reader.assert_called_once_with(
                 trace_id,
                 {"logs/bench.log": 0},
@@ -429,7 +440,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         failure = types.SimpleNamespace(status=500, body={}, trace_id=trace_id)
         with patch.object(
             self.verifier,
-            "TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -493,12 +504,12 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 payload=payload,
                 csrf_token="csrf",
                 idempotency_key="fixed-key",
-                diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE,
+                diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
             )
         self.assertIs(observed, response)
         self.assertEqual(
             request.call_args.kwargs["request_headers"]["X-NPI-Diagnostic-Scope"],
-            "p805-tool-asset-create-response-v1",
+            "p805-tool-asset-create-http-boundary-v1",
         )
         source = (ROOT / "scripts/verify_tool_asset_execution_runtime.py").read_text(encoding="utf-8")
         self.assertNotIn('headers.get("X-Trace-ID")', source)
@@ -510,6 +521,19 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "csrf_token": "csrf",
             "idempotency_key": "fixed-key",
         }
+        with self.assertRaisesRegex(
+            RuntimeError,
+            self.verifier._TOOL_ASSET_CREATE_RESPONSE_FAILURE,
+        ):
+            self.verifier.execution_request(
+                object(),
+                "http://127.0.0.1:8003",
+                path,
+                diagnostic_scope=(
+                    self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+                ),
+                **{key: value for key, value in defaults.items() if key != "path"},
+            )
         for change in (
             {"method": "GET"},
             {"path": path + "?extra=wrong"},
@@ -527,7 +551,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     object(),
                     "http://127.0.0.1:8003",
                     candidate_path,
-                    diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE,
+                    diagnostic_scope=self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
                     **values,
                 )
 
@@ -538,6 +562,15 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             self.verifier.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
             diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+        )
+        self.assertEqual(
+            self.verifier.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
+            diagnostics.TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(
+            diagnostics._TOOL_ASSET_CREATE_COMMAND,
+            "npi_integration.tool_asset_request_api."
+            "create_tool_asset_execution_request",
         )
         source = "\n".join(
             (

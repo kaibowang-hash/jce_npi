@@ -571,3 +571,30 @@ Canonical Linux/amd64 SHA-256 evidence:
   `PYTHONPATH=scripts ... --help` are regression-locked.
 - Activation and every server/product/response/write/permission/transaction/
   Schema/ownership/worker/adapter/target boundary remain unchanged.
+
+### Tool Asset create HTTP-boundary diagnostic checkpoint
+
+- SHA `80b16b8507f78d33be8b787ee8ce98362653cffc` passes ordinary
+  `32814218905`. Controlled run `32823780142`, runtime job `97727376777`,
+  yields the safe parent tuple `P805_TOOL_ASSET_CREATE_HTTP_STATUS /
+  RuntimeError / trace-872ec1af140e54528d68f4fc07760c03` and no trusted
+  server tuple.
+- Pinned Frappe proves that its framework `cmd` transport field reaches the
+  create handler's `**request_fields`. The old six-business-field activation
+  therefore necessarily stayed off. This explains only the missing diagnostic
+  record; the product failure remains non-unique and repair is prohibited.
+- Freeze `tool-asset-create-response` at diagnostic `1/1`, product repair
+  `0/1`, final `0/1`. Open independent `tool-asset-create-http-boundary` at
+  `0/1`, `0/1`, `0/1`; old activation is false and only the new exact scope is
+  true.
+- The new scope validates the exact framework command symbol/value plus the
+  exact six business fields without deleting input or changing shared request
+  security. Wrong/missing command, extra business fields, wrong method, route,
+  query, header or trace stay closed.
+- Fixed HTTP authorization/not-found/client/server/other class codes never
+  reveal the actual status. All non-201 classes consult the strict mirrored
+  reader; a valid existing 40-code server tuple wins, otherwise the parent
+  class remains. Product response, writes/order, permission, transaction,
+  Schema, ownership, worker, adapter, target and Gate behavior are unchanged.
+- Controller marker:
+  `P8-05 final held; tool-asset-create-http-boundary diagnostic 0/1 active`.

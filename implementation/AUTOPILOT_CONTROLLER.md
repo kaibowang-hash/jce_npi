@@ -5187,3 +5187,34 @@ repeat or rewrite it merely to restore context. See
   response, writes/order, permissions, transaction, API, Schema, ownership,
   worker, adapter, target or Gate behavior.
 - Controller marker: `P8-05 final held; tool-asset-create-response diagnostic 0/1 active`.
+
+## 2026-08-25 P8-05 Tool Asset create HTTP-boundary diagnostic cycle
+
+- Parent-verifier isolation SHA
+  `80b16b8507f78d33be8b787ee8ce98362653cffc` passes ordinary
+  `32814218905`. Its sole product diagnostic run `32823780142`, runtime job
+  `97727376777`, returns the value-free parent tuple
+  `P805_TOOL_ASSET_CREATE_HTTP_STATUS / RuntimeError /
+  trace-872ec1af140e54528d68f4fc07760c03` and no trusted server tuple.
+- Pinned Frappe proves the create handler receives framework transport `cmd`
+  through `frappe.form_dict` and `**request_fields`. The old activation's exact
+  six-business-field predicate was therefore false on every real request. This
+  uniquely explains the absent diagnostic record but cannot select a product
+  root.
+- Freeze `tool-asset-create-response` at diagnostic `1/1`, product repair
+  `0/1`, final `0/1`. Open independent `tool-asset-create-http-boundary` at
+  diagnostic `0/1`, product repair `0/1`, final `0/1`. Old create-response
+  activation is false; only the new exact synthetic POST scope is true.
+- The new scope requires the exact framework command symbol/value plus exactly
+  six business fields, method, route, empty query, trace and idempotency header.
+  It does not strip or mutate product input and does not relax shared request
+  security. Fixed non-201 HTTP class codes consult the strict mirrored reader;
+  a trusted existing 40-code server tuple wins, otherwise the parent class is
+  retained.
+- Diagnostic output remains limited to code, exception class and exact trace.
+  Response status values, bodies, business values, identifiers, counts, actor,
+  hashes, profiles, exception messages and stacks remain forbidden. No API,
+  permission, transaction, Schema, ownership, worker, adapter, target or Gate
+  semantics change.
+- Controller marker:
+  `P8-05 final held; tool-asset-create-http-boundary diagnostic 0/1 active`.

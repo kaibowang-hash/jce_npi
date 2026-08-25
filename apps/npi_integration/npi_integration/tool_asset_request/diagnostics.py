@@ -121,8 +121,15 @@ TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
     "p805-tool-asset-create-response-v1"
 )
+TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE = (
+    "p805-tool-asset-create-http-boundary-v1"
+)
 _TOOL_ASSET_CREATE_RESPONSE_FLAG = (
     "npi_p805_tool_asset_create_response_diagnostic"
+)
+_TOOL_ASSET_CREATE_COMMAND = (
+    "npi_integration.tool_asset_request_api."
+    "create_tool_asset_execution_request"
 )
 _TOOL_ASSET_CREATE_FIELDS = frozenset(
     {
@@ -247,7 +254,7 @@ def tool_asset_create_response_diagnostics(
     operation: object,
     command_fields: object,
 ) -> Iterator[None]:
-    """Enable one exact synthetic create POST response-neutral diagnostic."""
+    """Enable one exact Frappe-bound create POST response-neutral diagnostic."""
 
     try:
         request = getattr(getattr(frappe, "local", None), "request", None)
@@ -255,11 +262,12 @@ def tool_asset_create_response_diagnostics(
             frappe.get_request_header(
                 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER
             )
-            == TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+            == TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTIC_SCOPE
             and getattr(request, "method", None) == "POST"
             and operation == "create_tool_asset"
             and isinstance(command_fields, dict)
-            and set(command_fields) == _TOOL_ASSET_CREATE_FIELDS
+            and set(command_fields) == _TOOL_ASSET_CREATE_FIELDS | {"cmd"}
+            and command_fields.get("cmd") == _TOOL_ASSET_CREATE_COMMAND
             and _exact_empty_query(request)
             and _exact_create_route()
             and isinstance(frappe.get_request_header("Idempotency-Key"), str)
