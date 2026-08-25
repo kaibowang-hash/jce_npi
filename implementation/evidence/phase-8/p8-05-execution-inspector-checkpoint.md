@@ -554,3 +554,20 @@ Canonical Linux/amd64 SHA-256 evidence:
 - Product, API response, permission, transaction, Schema, ownership, worker,
   adapter, target and Gate semantics are unchanged. Controller marker:
   `P8-05 final held; tool-asset-create-response diagnostic 0/1 active`.
+
+#### Create-response parent-import harness remediation
+
+- Controlled run `32812880293`, runtime job `97695558904`, yields zero
+  allowlisted create-response tuples. It exits at parent module load because
+  the controlled `PYTHONPATH=scripts` cannot resolve the newly imported app
+  package. The same parent command reproduces the failure locally without any
+  HTTP request or product execution.
+- This is a same-cycle diagnostic harness failure, not product evidence.
+  Product diagnostic and repair counters remain `0/1`; no rerun or product
+  change is authorized by the failed dispatch.
+- The verifier now owns the frozen header/scope/allowlist literals and imports
+  no app package. Equality against both the loaded diagnostics module and its
+  source AST, unique lexical contexts, and executable
+  `PYTHONPATH=scripts ... --help` are regression-locked.
+- Activation and every server/product/response/write/permission/transaction/
+  Schema/ownership/worker/adapter/target boundary remain unchanged.

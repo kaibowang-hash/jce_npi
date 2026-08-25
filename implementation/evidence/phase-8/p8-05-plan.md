@@ -1238,3 +1238,20 @@ stage instrumentation. Success emits nothing; missing/invalid trace and
 invalid/duplicate/mismatched log evidence fail closed. No response, write
 value/order, permission, transaction, API, Schema, ownership, worker, adapter,
 target or Gate behavior changes.
+
+The first controlled dispatch `32812880293`, runtime job `97695558904`,
+produces no allowlisted tuple because the parent verifier stopped at module
+load. The controlled shell launches that verifier with `PYTHONPATH=scripts`,
+while the checkpoint had introduced a top-level import from the integration
+app package. The same invocation reproduces `ModuleNotFoundError` before any
+HTTP request, server scope or product code. This is a diagnostic harness
+failure within the same cycle; product diagnostic remains `0/1`, repair
+remains `0/1`, and no product root is inferred.
+
+The bounded remediation makes the parent verifier app-import-free again. It
+owns a frozen literal copy of the response-neutral header, scope and server
+allowlist. Unit tests compare that set both to the diagnostics module and to
+the diagnostics source AST, while also enforcing one lexical product context
+per code. A subprocess regression executes the real controlled parent shape
+with `PYTHONPATH=scripts` and `--help`. Server/product diagnostics, activation,
+API and transaction behavior are unchanged.

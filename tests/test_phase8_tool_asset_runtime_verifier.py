@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import ast
 import importlib
 import os
+import subprocess
 import sys
 import types
 import unittest
@@ -546,6 +548,75 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         for code in diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES:
             with self.subTest(code=code):
                 self.assertEqual(source.count(f'"{code}"'), 1)
+
+    def test_parent_verifier_is_app_import_free_and_frozen_allowlist_matches_source(self):
+        diagnostics = importlib.import_module(
+            "npi_integration.tool_asset_request.diagnostics"
+        )
+        verifier_path = ROOT / "scripts/verify_tool_asset_execution_runtime.py"
+        diagnostics_path = (
+            ROOT
+            / "apps/npi_integration/npi_integration/tool_asset_request/diagnostics.py"
+        )
+        verifier_tree = ast.parse(verifier_path.read_text(encoding="utf-8"))
+        diagnostics_tree = ast.parse(diagnostics_path.read_text(encoding="utf-8"))
+
+        imported_roots = {
+            alias.name.split(".", 1)[0]
+            for node in verifier_tree.body
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        }
+        imported_roots.update(
+            node.module.split(".", 1)[0]
+            for node in verifier_tree.body
+            if isinstance(node, ast.ImportFrom) and node.module
+        )
+        self.assertNotIn("npi_integration", imported_roots)
+        self.assertNotIn("npi_core", imported_roots)
+
+        def frozen_strings(tree: ast.AST, name: str) -> frozenset[str]:
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Assign) or not any(
+                    isinstance(target, ast.Name) and target.id == name
+                    for target in node.targets
+                ):
+                    continue
+                return frozenset(
+                    value.value
+                    for value in ast.walk(node.value)
+                    if isinstance(value, ast.Constant)
+                    and isinstance(value.value, str)
+                    and value.value.startswith("P805_TOOL_ASSET_CREATE_")
+                )
+            self.fail(f"missing frozen diagnostic set {name}")
+
+        verifier_codes = frozen_strings(
+            verifier_tree,
+            "TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES",
+        )
+        source_codes = frozen_strings(
+            diagnostics_tree,
+            "TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES",
+        )
+        self.assertEqual(verifier_codes, source_codes)
+        self.assertEqual(
+            verifier_codes,
+            diagnostics.TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_CODES,
+        )
+
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(ROOT / "scripts")
+        completed = subprocess.run(
+            [sys.executable, str(verifier_path), "--help"],
+            cwd=ROOT,
+            env=environment,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(completed.returncode, 0)
+        self.assertNotIn("ModuleNotFoundError", completed.stderr)
 
     def test_disposable_fixture_is_exact_distinct_and_fail_closed(self):
         project_id = str(UUID(int=1))
