@@ -5385,3 +5385,43 @@ repeat or rewrite it merely to restore context. See
   `1/1`, final `0/1`.
 - Controller marker:
   `P8-05 final held; post-source-hash receipt repair 1/1 awaits Level 1`.
+
+## 2026-08-26 P8-05 Tool Asset worker-downstream diagnostic cycle
+
+- Receipt-repair SHA `a8847cde360f5827fdcdeee8f3d54e0fb843f1b7`
+  passes exact ordinary CI `32888545597`. Its sole diagnostics-off Level 3
+  `32889896367` passes secret scan `97939104940`, repository `97939104952`,
+  visual `97939104971`, frontend `97939105024` and controlled preflight
+  `97942522175`; controlled runtime `97942689801` stops at the fixed
+  `P8-05 Bench fixture failed` boundary. Failed-child stdout and stderr,
+  response bodies, values, identifiers, exception messages and stacks were
+  not read.
+- The create response predicates passed and the exact request and Outbox
+  identities were handed to the child before its nonzero exit. Parent
+  post-worker equality and terminal detail checks did not run. Static ordering
+  still leaves fixture validation, the worker route/claim/profile/boundary/
+  adapter/seal/recovery chain, post-worker reads and assertions, terminal
+  replay, recoverable-set proof and fixture commit non-unique. No product
+  repair is authorized.
+- Freeze `post-source-hash-tool-asset-create` at diagnostic `1/1`, product
+  repair `1/1`, final `1/1`. Open independent
+  `tool-asset-worker-downstream` at diagnostic `0/1`, product repair `0/1`,
+  final `0/1`.
+- Only `TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED=True`; every
+  historical Item, MBOM, P6-06, Tool Asset context and create activation is
+  false. The verifier passes the exact successful create `HttpResult.trace_id`
+  to the child and snapshots both safe-log cursors before child execution.
+- Seventeen fixed lexical stage codes and fourteen closed worker outcome/shape
+  codes are allowlisted. `synthetic_verified` records nothing. A failing stage
+  records only code, exception class and exact trace through the existing safe
+  logger, then rethrows the same exception. The parent accepts one logical
+  exact-three-key record through the strict mirrored reader; missing,
+  duplicate, divergent, malformed, wrong-trace or disallowed evidence falls
+  back to the fixed constant.
+- A failed child keeps stderr on `DEVNULL` and never seeks, iterates or reads
+  its temporary stdout; successful zero-exit children alone may parse the last
+  JSON line. Product worker, repository, API, response, permission,
+  transaction, Schema, ownership, adapter, target and Gate behavior remain
+  unchanged.
+- Controller marker:
+  `P8-05 final held; tool-asset-worker-downstream diagnostic 0/1 active`.

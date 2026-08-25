@@ -736,3 +736,31 @@ Canonical Linux/amd64 SHA-256 evidence:
   diagnostic `1/1`, product repair `1/1`, final `0/1`.
 - Controller marker:
   `P8-05 final held; post-source-hash receipt repair 1/1 awaits Level 1`.
+
+## Tool Asset worker-downstream diagnostic checkpoint
+
+- Exact receipt-repair SHA
+  `a8847cde360f5827fdcdeee8f3d54e0fb843f1b7` passes ordinary
+  `32888545597`. Its diagnostics-off Level 3 `32889896367` passes secret scan,
+  repository, visual, frontend and controlled preflight. Runtime job
+  `97942689801` stops at `P8-05 Bench fixture failed`; no failed-child output,
+  response body, value, identifier, exception message or stack was read.
+- Create-response validation completed and launched the child. The child
+  failed before the parent worker result, terminal detail and formal-identity
+  assertions, leaving fixture, process, read/assertion, replay, recovery and
+  commit sources non-unique. Product repair is prohibited.
+- Freeze `post-source-hash-tool-asset-create` at diagnostic `1/1`, repair
+  `1/1`, final `1/1`. Open `tool-asset-worker-downstream` at diagnostic
+  `0/1`, repair `0/1`, final `0/1`.
+- Only the new worker activation is true. Seventeen unique stage codes plus
+  fourteen closed outcome/shape codes use the exact create trace and the
+  existing safe logger; `synthetic_verified` emits nothing and failures
+  rethrow the same exception.
+- The parent captures mirrored log cursors before the child, accepts only one
+  logical exact-three-key allowlisted tuple and otherwise returns the fixed
+  constant. A failed child keeps stderr discarded and stdout unread; a
+  successful child alone parses JSON.
+- Product, worker, repository, API, response, permission, transaction,
+  Schema, ownership, adapter, target and Gate behavior remain unchanged.
+- Controller marker:
+  `P8-05 final held; tool-asset-worker-downstream diagnostic 0/1 active`.

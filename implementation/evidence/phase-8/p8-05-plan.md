@@ -1459,3 +1459,39 @@ with zero write.
 POST_SOURCE_HASH activation is false and dormant. Freeze
 `post-source-hash-tool-asset-create` at diagnostic `1/1`, product repair `1/1`,
 final `0/1`.
+
+## 43. Tool Asset worker-downstream diagnostic cycle
+
+Receipt-repair SHA `a8847cde360f5827fdcdeee8f3d54e0fb843f1b7`
+passes exact ordinary CI `32888545597`. Its sole diagnostics-off Level 3
+`32889896367` passes secret, repository, visual, frontend and controlled
+preflight jobs. Controlled runtime job `97942689801` returns only the fixed
+`P8-05 Bench fixture failed` boundary; the failed child output, response body,
+business values, identifiers, exception message and stack were not inspected.
+
+The create response contract passed before the child was launched, while the
+parent post-worker result and terminal-detail checks were not reached. The
+remaining child sequence spans fixture identity, requester session, the full
+worker route/claim/profile/boundary/adapter/seal/recovery operation,
+post-worker request and field reads, outcome and truth assertions, terminal
+replay, recoverable proof and fixture commit. No one product symbol is proven.
+
+Freeze `post-source-hash-tool-asset-create` at diagnostic `1/1`, product
+repair `1/1`, final `1/1`. Open independent
+`tool-asset-worker-downstream` at `0/1`, `0/1`, `0/1`. The new verifier flag
+alone is true; all historical diagnostics remain false.
+
+The checkpoint has seventeen unique `P805_TOOL_ASSET_WORKER_*` lexical stage
+codes and fourteen closed return-state/shape codes. `synthetic_verified` is
+the only zero-diagnostic success. The exact successful create trace is passed
+to the child, safe-log cursors are captured before launch, and each stage
+records only code, exception class and validated trace before rethrowing the
+same exception. The strict mirrored reader accepts a single record or two
+identical handler mirrors as one logical tuple; every missing, duplicate,
+divergent, extra-key, invalid-type, wrong-trace or disallowed record fails
+closed to the constant parent boundary.
+
+Failed child stderr remains discarded and its temporary stdout is never read;
+only a successful child may parse JSON. This is verifier-only recovery
+evidence. It changes no product worker, repository, adapter, request, response,
+permission, transaction, Schema, ownership, target or Gate behavior.

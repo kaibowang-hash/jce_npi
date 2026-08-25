@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import ast
 import importlib
+import json
 import os
 import subprocess
 import sys
+import tempfile
 import types
 import unittest
 from pathlib import Path
@@ -13,7 +15,12 @@ from unittest.mock import patch
 from uuid import UUID
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT / "scripts"), str(ROOT / "apps/npi_integration")]
+sys.path[:0] = [
+    str(ROOT / "scripts"),
+    str(ROOT / "apps/npi_core"),
+    str(ROOT / "apps/npi_integration"),
+]
+_WORKER_TRACE_ID = "trace-0123456789abcdef0123456789abcdef"
 
 
 class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
@@ -1516,6 +1523,435 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                         ),
                         **request_values,
                     )
+
+    def test_worker_downstream_activation_codes_and_outcomes_are_closed(self):
+        self.assertTrue(
+            self.verifier.TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
+        )
+        self.assertEqual(
+            len(self.verifier._TOOL_ASSET_WORKER_STAGE_CODES),
+            17,
+        )
+        self.assertEqual(
+            len(self.verifier._TOOL_ASSET_WORKER_OUTCOME_CODE_BY_STATE),
+            10,
+        )
+        self.assertEqual(
+            len(self.verifier._TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES),
+            4,
+        )
+        self.assertEqual(
+            len(self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES),
+            31,
+        )
+        self.assertEqual(
+            self.verifier._active_tool_asset_worker_diagnostic_codes(),
+            self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES,
+        )
+        self.assertIsNone(
+            self.verifier._tool_asset_worker_outcome_diagnostic_code(
+                {"state": "synthetic_verified"}
+            )
+        )
+        for state, code in (
+            self.verifier._TOOL_ASSET_WORKER_OUTCOME_CODE_BY_STATE.items()
+        ):
+            with self.subTest(state=state):
+                self.assertEqual(
+                    self.verifier._tool_asset_worker_outcome_diagnostic_code(
+                        {"state": state}
+                    ),
+                    code,
+                )
+        for value, code in (
+            (
+                None,
+                self.verifier._TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES[
+                    "not_mapping"
+                ],
+            ),
+            (
+                {},
+                self.verifier._TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES[
+                    "state_missing"
+                ],
+            ),
+            (
+                {"state": 1},
+                self.verifier._TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES[
+                    "state_type"
+                ],
+            ),
+            (
+                {"state": "private-unknown-state"},
+                self.verifier._TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES[
+                    "state_unknown"
+                ],
+            ),
+        ):
+            with self.subTest(value=value):
+                self.assertEqual(
+                    self.verifier._tool_asset_worker_outcome_diagnostic_code(
+                        value
+                    ),
+                    code,
+                )
+
+        historical_flags = (
+            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED",
+            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            "POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+        )
+        for flag in historical_flags:
+            self.assertFalse(getattr(self.verifier, flag))
+            with self.subTest(flag=flag), patch.object(
+                self.verifier,
+                flag,
+                True,
+            ):
+                self.assertFalse(
+                    self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
+                )
+                self.assertEqual(
+                    self.verifier._active_tool_asset_worker_diagnostic_codes(),
+                    frozenset(),
+                )
+        with patch.object(
+            self.verifier,
+            "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+            False,
+        ):
+            self.assertFalse(
+                self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
+            )
+
+    def test_worker_stage_records_one_safe_tuple_and_rethrows_same_exception(self):
+        api = importlib.import_module("npi_core.api")
+        records: list[dict[str, object]] = []
+
+        class OriginalFailure(RuntimeError):
+            pass
+
+        for code in sorted(self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES):
+            records.clear()
+            error = OriginalFailure("private value /tmp/private")
+            with self.subTest(code=code), patch.object(
+                api,
+                "record_safe_diagnostic",
+                side_effect=lambda **values: records.append(values),
+            ):
+                try:
+                    with self.verifier.tool_asset_worker_diagnostic_step(
+                        code,
+                        _WORKER_TRACE_ID,
+                    ):
+                        raise error
+                except OriginalFailure as raised:
+                    self.assertIs(raised, error)
+                else:
+                    self.fail("worker diagnostic did not re-raise")
+            self.assertEqual(
+                records,
+                [
+                    {
+                        "code": code,
+                        "title": "NPI Tool Asset worker verifier stage failed",
+                        "exception_type": "OriginalFailure",
+                        "trace_id": _WORKER_TRACE_ID,
+                    }
+                ],
+            )
+            self.assertNotIn("private value", str(records))
+
+        for enabled, code, trace_id in (
+            (False, "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX", _WORKER_TRACE_ID),
+            (True, "P805_TOOL_ASSET_WORKER_NOT_ALLOWED", _WORKER_TRACE_ID),
+            (True, "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX", "trace-private"),
+        ):
+            records.clear()
+            with self.subTest(
+                enabled=enabled,
+                code=code,
+                trace=trace_id,
+            ), patch.object(
+                self.verifier,
+                "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+                enabled,
+            ), patch.object(
+                api,
+                "record_safe_diagnostic",
+                side_effect=lambda **values: records.append(values),
+            ):
+                error = OriginalFailure("private")
+                with self.assertRaises(OriginalFailure) as raised:
+                    with self.verifier.tool_asset_worker_diagnostic_step(
+                        code,
+                        trace_id,
+                    ):
+                        raise error
+                self.assertIs(raised.exception, error)
+            self.assertEqual(records, [])
+
+        error = OriginalFailure("private")
+        with patch.object(
+            api,
+            "record_safe_diagnostic",
+            side_effect=OSError("private logging path"),
+        ), self.assertRaises(OriginalFailure) as raised:
+            with self.verifier.tool_asset_worker_diagnostic_step(
+                "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+                _WORKER_TRACE_ID,
+            ):
+                raise error
+        self.assertIs(raised.exception, error)
+
+    def test_worker_codes_have_one_runtime_context_each(self):
+        source = (
+            ROOT / "scripts/verify_tool_asset_execution_runtime.py"
+        ).read_text(encoding="utf-8")
+        exercise = source[
+            source.index("def exercise_worker(") : source.index(
+                "\ndef _sanitized_tool_asset_worker_diagnostic("
+            )
+        ]
+        local_fixture = source[
+            source.index("def run_local_bench_fixture(") : source.index(
+                "\ndef main()"
+            )
+        ]
+        for code in self.verifier._TOOL_ASSET_WORKER_STAGE_CODES:
+            context = (
+                local_fixture
+                if code == "P805_TOOL_ASSET_WORKER_FIXTURE_COMMIT"
+                else exercise
+            )
+            with self.subTest(code=code):
+                self.assertEqual(context.count(f'"{code}"'), 1)
+        constants = source[
+            source.index("_TOOL_ASSET_WORKER_OUTCOME_CODE_BY_STATE") :
+            source.index("_TRACE_PATTERN")
+        ]
+        for code in (
+            set(self.verifier._TOOL_ASSET_WORKER_OUTCOME_CODE_BY_STATE.values())
+            | set(self.verifier._TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES.values())
+        ):
+            with self.subTest(code=code):
+                self.assertEqual(constants.count(f'"{code}"'), 1)
+
+    def test_worker_log_reader_accepts_only_one_exact_logical_tuple(self):
+        def read(
+            records: list[dict[str, object]],
+            site_records: list[dict[str, object]] | None = None,
+            trace_id: str = _WORKER_TRACE_ID,
+        ):
+            with tempfile.TemporaryDirectory() as directory:
+                bench_path = Path(directory).resolve()
+                paths = (
+                    bench_path / "logs" / "npi_core.log",
+                    bench_path
+                    / "sites"
+                    / self.verifier.SITE_NAME
+                    / "logs"
+                    / "npi_core.log",
+                )
+                for path in paths:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("prior safe log\n", encoding="utf-8")
+                with patch.object(
+                    self.verifier.item_runtime,
+                    "BENCH_PATH",
+                    bench_path,
+                ):
+                    cursors = (
+                        self.verifier.item_runtime._replay_diagnostic_log_cursors()
+                    )
+                    for path, source_records in zip(
+                        paths,
+                        (records, site_records or []),
+                        strict=True,
+                    ):
+                        with path.open("a", encoding="utf-8") as log_file:
+                            for record in source_records:
+                                log_file.write(
+                                    "private payload /tmp/private "
+                                    + json.dumps(
+                                        record,
+                                        separators=(",", ":"),
+                                    )
+                                    + "\n"
+                                )
+                    return self.verifier._sanitized_tool_asset_worker_diagnostic(
+                        trace_id,
+                        cursors,
+                    )
+
+        valid = {
+            "code": "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+            "exceptionType": "RuntimeError",
+            "traceId": _WORKER_TRACE_ID,
+        }
+        expected = (
+            "RuntimeError",
+            "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+            _WORKER_TRACE_ID,
+        )
+        self.assertEqual(read([valid]), expected)
+        self.assertEqual(read([valid], [valid]), expected)
+        self.assertIsNone(read([valid, valid]))
+        self.assertIsNone(
+            read(
+                [valid],
+                [
+                    {
+                        **valid,
+                        "code": "P805_TOOL_ASSET_WORKER_SESSION_RESTORE",
+                    }
+                ],
+            )
+        )
+        for records in (
+            [],
+            [{**valid, "traceId": "trace-ffffffffffffffffffffffffffffffff"}],
+            [{**valid, "code": "P805_TOOL_ASSET_WORKER_NOT_ALLOWED"}],
+            [{**valid, "exceptionType": "Bad Type /tmp/private"}],
+            [{**valid, "privateValue": "private"}],
+        ):
+            with self.subTest(records=records):
+                self.assertIsNone(read(records))
+        self.assertIsNone(read([valid], trace_id="trace-private"))
+
+    def test_failed_worker_child_never_reads_output_and_renders_only_safe_tuple(self):
+        class FailedOutput:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def seek(self, *_args):
+                raise AssertionError("failed child stdout was read")
+
+            def __iter__(self):
+                raise AssertionError("failed child stdout was read")
+
+        completed = types.SimpleNamespace(returncode=1)
+        private = "private actor payload hash /tmp/private"
+        kwargs = {
+            "fixture_run_id": private,
+            "project_id": private,
+            "request_id": private,
+            "outbox_id": private,
+            "diagnostic_trace_id": _WORKER_TRACE_ID,
+        }
+        diagnostic = (
+            "RuntimeError",
+            "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+            _WORKER_TRACE_ID,
+        )
+        with patch.object(
+            self.verifier.tempfile,
+            "TemporaryFile",
+            return_value=FailedOutput(),
+        ), patch.object(
+            self.verifier.item_runtime,
+            "_replay_diagnostic_log_cursors",
+            return_value={"logs/npi_core.log": 0},
+        ), patch.object(
+            self.verifier,
+            "_sanitized_tool_asset_worker_diagnostic",
+            return_value=diagnostic,
+        ) as reader, patch.object(
+            self.verifier.subprocess,
+            "run",
+            return_value=completed,
+        ) as failed_run, self.assertRaises(RuntimeError) as raised:
+            self.verifier.run_bench_fixture("exercise_worker", kwargs)
+        run_kwargs = failed_run.call_args.kwargs
+        self.assertNotIn("capture_output", run_kwargs)
+        self.assertIs(run_kwargs["stderr"], self.verifier.subprocess.DEVNULL)
+        self.assertNotIn("stdout", vars(completed))
+        self.assertNotIn("stderr", vars(completed))
+        self.assertEqual(
+            str(raised.exception),
+            "P8-05 Bench fixture failed "
+            "[diagnostic_code=P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX; "
+            "exception_type=RuntimeError; "
+            f"trace_id={_WORKER_TRACE_ID}]",
+        )
+        self.assertNotIn(private, str(raised.exception))
+        reader.assert_called_once()
+
+        with patch.object(
+            self.verifier.tempfile,
+            "TemporaryFile",
+            return_value=FailedOutput(),
+        ), patch.object(
+            self.verifier.item_runtime,
+            "_replay_diagnostic_log_cursors",
+            return_value=None,
+        ), patch.object(
+            self.verifier.subprocess,
+            "run",
+            return_value=completed,
+        ), self.assertRaises(RuntimeError) as closed:
+            self.verifier.run_bench_fixture("exercise_worker", kwargs)
+        self.assertEqual(
+            str(closed.exception),
+            self.verifier._TOOL_ASSET_WORKER_FAILURE,
+        )
+        self.assertNotIn(private, str(closed.exception))
+
+    def test_successful_worker_child_parses_json_only_after_zero_exit(self):
+        expected = {"syntheticVerified": True, "fieldResultCount": 5}
+
+        def complete_successfully(*_args, **kwargs):
+            kwargs["stdout"].write("bench prelude\n")
+            kwargs["stdout"].write(json.dumps(expected) + "\n")
+            kwargs["stdout"].flush()
+            return types.SimpleNamespace(returncode=0)
+
+        with patch.object(
+            self.verifier.item_runtime,
+            "_replay_diagnostic_log_cursors",
+            return_value={"logs/npi_core.log": 0},
+        ) as cursor_reader, patch.object(
+            self.verifier.subprocess,
+            "run",
+            side_effect=complete_successfully,
+        ):
+            result = self.verifier.run_bench_fixture(
+                "exercise_worker",
+                {"diagnostic_trace_id": _WORKER_TRACE_ID},
+            )
+        self.assertEqual(result, expected)
+        cursor_reader.assert_called_once()
+
+    def test_worker_parent_forwards_create_trace_and_reads_cursors_before_child(self):
+        source = (
+            ROOT / "scripts/verify_tool_asset_execution_runtime.py"
+        ).read_text(encoding="utf-8")
+        fresh = source[source.index("def run_fresh(") : source.index(
+            "\ndef execution_state_snapshot("
+        )]
+        bench = source[source.index("def run_bench_fixture(") : source.index(
+            "\ndef run_local_bench_fixture("
+        )]
+        self.assertIn('"diagnostic_trace_id": created.trace_id', fresh)
+        self.assertLess(
+            bench.index("_replay_diagnostic_log_cursors()"),
+            bench.index("subprocess.run("),
+        )
+        self.assertLess(
+            bench.index("completed.returncode != 0"),
+            bench.index("output.seek(0)"),
+        )
 
     def test_runtime_profile_preserves_exact_requester_and_service_actor(self):
         environment = {

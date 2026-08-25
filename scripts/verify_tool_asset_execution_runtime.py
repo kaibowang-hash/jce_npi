@@ -7,9 +7,10 @@ import re
 import subprocess
 import tempfile
 import urllib.parse
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 from uuid import UUID
 
 import verify_document_runtime as document_runtime
@@ -37,6 +38,7 @@ TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED = False
 TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED = False
 POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED = False
 POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED = False
+TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED = True
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
     "p805-tool-asset-create-response-v1"
@@ -158,6 +160,55 @@ _TOOL_ASSET_CREATE_RESPONSE_PARENT_CODES = frozenset(
 _TOOL_ASSET_CREATE_RESPONSE_FAILURE = (
     "P8-05 Synthetic command did not create one queued request"
 )
+_TOOL_ASSET_WORKER_FAILURE = "P8-05 Bench fixture failed"
+_TOOL_ASSET_WORKER_STAGE_CODES = frozenset(
+    {
+        "P805_TOOL_ASSET_WORKER_FIXTURE_VALIDATE",
+        "P805_TOOL_ASSET_WORKER_REQUESTER_SESSION",
+        "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+        "P805_TOOL_ASSET_WORKER_SESSION_RESTORE",
+        "P805_TOOL_ASSET_WORKER_REQUEST_READ",
+        "P805_TOOL_ASSET_WORKER_FIELD_RESULTS_READ",
+        "P805_TOOL_ASSET_WORKER_REQUEST_STATE",
+        "P805_TOOL_ASSET_WORKER_FIELD_CARDINALITY",
+        "P805_TOOL_ASSET_WORKER_FIELD_TRUTH",
+        "P805_TOOL_ASSET_WORKER_TERMINAL_REPLAY",
+        "P805_TOOL_ASSET_WORKER_REPLAY_SESSION_RESTORE",
+        "P805_TOOL_ASSET_WORKER_TERMINAL_OUTCOME",
+        "P805_TOOL_ASSET_WORKER_RECOVERABLE_QUERY",
+        "P805_TOOL_ASSET_WORKER_RECOVERABLE_SET",
+        "P805_TOOL_ASSET_WORKER_ADAPTER_COUNT",
+        "P805_TOOL_ASSET_WORKER_MAPPING_COUNT",
+        "P805_TOOL_ASSET_WORKER_FIXTURE_COMMIT",
+    }
+)
+_TOOL_ASSET_WORKER_OUTCOME_CODE_BY_STATE = {
+    "not_claimed": "P805_TOOL_ASSET_WORKER_OUTCOME_NOT_CLAIMED",
+    "validated_mock": "P805_TOOL_ASSET_WORKER_OUTCOME_VALIDATED_MOCK",
+    "queued": "P805_TOOL_ASSET_WORKER_OUTCOME_QUEUED",
+    "processing": "P805_TOOL_ASSET_WORKER_OUTCOME_PROCESSING",
+    "partially_succeeded": (
+        "P805_TOOL_ASSET_WORKER_OUTCOME_PARTIALLY_SUCCEEDED"
+    ),
+    "succeeded": "P805_TOOL_ASSET_WORKER_OUTCOME_SUCCEEDED",
+    "failed_retryable": "P805_TOOL_ASSET_WORKER_OUTCOME_FAILED_RETRYABLE",
+    "failed_final": "P805_TOOL_ASSET_WORKER_OUTCOME_FAILED_FINAL",
+    "uncertain_after_timeout": (
+        "P805_TOOL_ASSET_WORKER_OUTCOME_UNCERTAIN_AFTER_TIMEOUT"
+    ),
+    "mapping_conflict": "P805_TOOL_ASSET_WORKER_OUTCOME_MAPPING_CONFLICT",
+}
+_TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES = {
+    "not_mapping": "P805_TOOL_ASSET_WORKER_OUTCOME_NOT_MAPPING",
+    "state_missing": "P805_TOOL_ASSET_WORKER_OUTCOME_STATE_MISSING",
+    "state_type": "P805_TOOL_ASSET_WORKER_OUTCOME_STATE_TYPE",
+    "state_unknown": "P805_TOOL_ASSET_WORKER_OUTCOME_STATE_UNKNOWN",
+}
+_TOOL_ASSET_WORKER_DIAGNOSTIC_CODES = (
+    _TOOL_ASSET_WORKER_STAGE_CODES
+    | frozenset(_TOOL_ASSET_WORKER_OUTCOME_CODE_BY_STATE.values())
+    | frozenset(_TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES.values())
+)
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _EXECUTION_STATE_DOCTYPES = (
     "NPI Tool Asset Request",
@@ -255,6 +306,81 @@ def _post_source_hash_tool_asset_create_diagnostics_enabled() -> bool:
         and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
         and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
     )
+
+
+def _tool_asset_worker_downstream_diagnostics_enabled() -> bool:
+    """Activate only the independent Tool Asset worker downstream cycle."""
+
+    return (
+        TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED is True
+        and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+        and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+    )
+
+
+def _active_tool_asset_worker_diagnostic_codes() -> frozenset[str]:
+    return (
+        _TOOL_ASSET_WORKER_DIAGNOSTIC_CODES
+        if _tool_asset_worker_downstream_diagnostics_enabled()
+        else frozenset()
+    )
+
+
+def _valid_tool_asset_worker_trace(value: object) -> bool:
+    return isinstance(value, str) and _TRACE_PATTERN.fullmatch(value) is not None
+
+
+def _tool_asset_worker_outcome_diagnostic_code(result: object) -> str | None:
+    """Classify the fixed worker state contract without exposing its value."""
+
+    if not isinstance(result, Mapping):
+        return _TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES["not_mapping"]
+    if "state" not in result:
+        return _TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES["state_missing"]
+    state = result["state"]
+    if not isinstance(state, str):
+        return _TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES["state_type"]
+    if state == "synthetic_verified":
+        return None
+    return _TOOL_ASSET_WORKER_OUTCOME_CODE_BY_STATE.get(
+        state,
+        _TOOL_ASSET_WORKER_OUTCOME_SHAPE_CODES["state_unknown"],
+    )
+
+
+@contextmanager
+def tool_asset_worker_diagnostic_step(
+    code: str,
+    trace_id: str,
+) -> Iterator[None]:
+    """Record one closed verifier stage and re-raise the original failure."""
+
+    try:
+        yield
+    except Exception as error:
+        try:
+            exception_type = type(error).__name__
+            if (
+                code in _active_tool_asset_worker_diagnostic_codes()
+                and _valid_tool_asset_worker_trace(trace_id)
+                and item_runtime._TYPE_PATTERN.fullmatch(exception_type) is not None
+            ):
+                from npi_core.api import record_safe_diagnostic
+
+                record_safe_diagnostic(
+                    code=code,
+                    title="NPI Tool Asset worker verifier stage failed",
+                    exception_type=exception_type,
+                    trace_id=trace_id,
+                )
+        except Exception:
+            pass
+        raise
 
 
 def execution_path(project_id: str, master_id: str, set_id: str, suffix: str = "") -> str:
@@ -950,7 +1076,16 @@ def run_fresh(base_url: str, fixture_password: str) -> dict[str, object]:
     require(create_failure is None, create_failure or _TOOL_ASSET_CREATE_RESPONSE_FAILURE)
     request_id = str(created.body["requestGlobalId"])
     outbox_id = str(created.body["outboxEventId"])
-    exercised = run_bench_fixture("exercise_worker", {"fixture_run_id":FIXTURE_RUN_ID, "project_id":project_id, "request_id":request_id, "outbox_id":outbox_id})
+    exercised = run_bench_fixture(
+        "exercise_worker",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "request_id": request_id,
+            "outbox_id": outbox_id,
+            "diagnostic_trace_id": created.trace_id,
+        },
+    )
     require(exercised == {"adapterCalls":1, "fieldResultCount":5, "mappingHeadCount":0, "recoverableCount":0, "syntheticVerified":True, "terminalReplayNotClaimed":True}, "P8-05 worker durability proof drifted")
     detail = execution_request(actor, base_url, execution_path(project_id, master_id, set_id, f"/{request_id}"), query_key="terminal")
     require(detail.status == 200 and detail.body.get("request", {}).get("state") == "synthetic_verified", "P8-05 terminal Synthetic truth is unavailable")
@@ -971,20 +1106,204 @@ def execution_state_snapshot(fixture_run_id: str) -> dict[str, int]:
     }
 
 
-def exercise_worker(fixture_run_id: str, project_id: str, request_id: str, outbox_id: str) -> dict[str, object]:
+def exercise_worker(
+    fixture_run_id: str,
+    project_id: str,
+    request_id: str,
+    outbox_id: str,
+    diagnostic_trace_id: str,
+) -> dict[str, object]:
     import frappe
     from npi_integration.tool_asset_request.runtime_fixture import synthetic_adapter_call_count
     from npi_integration.tool_asset_request.worker import process_outbox_message
     from npi_integration.tool_asset_request.worker_repository import FrappeToolAssetWorkerRepository
 
-    require(fixture_run_id == FIXTURE_RUN_ID and all(str(UUID(value)) == value for value in (project_id, request_id, outbox_id)), "P8-05 worker fixture identity drifted")
-    result = process_outbox_message(outbox_id)
-    request = frappe.get_doc("NPI Tool Asset Request", request_id)
-    fields = frappe.get_all("NPI Tool Asset Field Result", filters={"request_global_id":request_id}, fields=["state", "authority"])
-    require(result.get("state") == "synthetic_verified" and str(request.execution_state) == "synthetic_verified" and len(fields) == 5 and all(row.get("state") == "synthetic_verified" and row.get("authority") == "synthetic" for row in fields), "P8-05 Synthetic field truth drifted")
-    replay = process_outbox_message(outbox_id)
-    recoverable = FrappeToolAssetWorkerRepository().recoverable_outbox_event_ids(now=datetime.now(UTC))
-    return {"adapterCalls":synthetic_adapter_call_count(), "fieldResultCount":len(fields), "mappingHeadCount":frappe.db.count("NPI Tool Asset Mapping Head", {"project_global_id":project_id}), "recoverableCount":sum(str(value) == outbox_id for value in recoverable), "syntheticVerified":True, "terminalReplayNotClaimed":replay.get("state") == "not_claimed"}
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_FIXTURE_VALIDATE",
+        diagnostic_trace_id,
+    ):
+        require(
+            _valid_tool_asset_worker_trace(diagnostic_trace_id)
+            and fixture_run_id == FIXTURE_RUN_ID
+            and all(
+                str(UUID(value)) == value
+                for value in (project_id, request_id, outbox_id)
+            ),
+            "P8-05 worker fixture identity drifted",
+        )
+    requester_user = str(getattr(frappe.session, "user", ""))
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_REQUESTER_SESSION",
+        diagnostic_trace_id,
+    ):
+        require(
+            requester_user == ACTOR_USER,
+            "P8-05 worker fixture did not start as the authenticated requester",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
+        diagnostic_trace_id,
+    ):
+        result = process_outbox_message(outbox_id)
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_SESSION_RESTORE",
+        diagnostic_trace_id,
+    ):
+        require(
+            str(getattr(frappe.session, "user", "")) == requester_user,
+            "P8-05 worker did not restore the requester",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_REQUEST_READ",
+        diagnostic_trace_id,
+    ):
+        request = frappe.get_doc("NPI Tool Asset Request", request_id)
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_FIELD_RESULTS_READ",
+        diagnostic_trace_id,
+    ):
+        fields = frappe.get_all(
+            "NPI Tool Asset Field Result",
+            filters={"request_global_id": request_id},
+            fields=["state", "authority"],
+        )
+    outcome_code = _tool_asset_worker_outcome_diagnostic_code(result)
+    if outcome_code is not None:
+        with tool_asset_worker_diagnostic_step(
+            outcome_code,
+            diagnostic_trace_id,
+        ):
+            raise RuntimeError("P8-05 Synthetic worker outcome drifted")
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_REQUEST_STATE",
+        diagnostic_trace_id,
+    ):
+        require(
+            str(request.execution_state) == "synthetic_verified",
+            "P8-05 Synthetic request state drifted",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_FIELD_CARDINALITY",
+        diagnostic_trace_id,
+    ):
+        require(
+            len(fields) == 5,
+            "P8-05 Synthetic field result cardinality drifted",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_FIELD_TRUTH",
+        diagnostic_trace_id,
+    ):
+        require(
+            all(
+                row.get("state") == "synthetic_verified"
+                and row.get("authority") == "synthetic"
+                for row in fields
+            ),
+            "P8-05 Synthetic field truth drifted",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_TERMINAL_REPLAY",
+        diagnostic_trace_id,
+    ):
+        replay = process_outbox_message(outbox_id)
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_REPLAY_SESSION_RESTORE",
+        diagnostic_trace_id,
+    ):
+        require(
+            str(getattr(frappe.session, "user", "")) == requester_user,
+            "P8-05 worker did not restore the requester after terminal replay",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_TERMINAL_OUTCOME",
+        diagnostic_trace_id,
+    ):
+        require(
+            replay.get("state") == "not_claimed",
+            "P8-05 terminal replay outcome changed",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_RECOVERABLE_QUERY",
+        diagnostic_trace_id,
+    ):
+        recoverable = FrappeToolAssetWorkerRepository().recoverable_outbox_event_ids(
+            now=datetime.now(UTC)
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_ADAPTER_COUNT",
+        diagnostic_trace_id,
+    ):
+        adapter_calls = synthetic_adapter_call_count()
+        require(
+            adapter_calls == 1,
+            "P8-05 Synthetic adapter call count drifted",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_MAPPING_COUNT",
+        diagnostic_trace_id,
+    ):
+        mapping_head_count = frappe.db.count(
+            "NPI Tool Asset Mapping Head",
+            {"project_global_id": project_id},
+        )
+        require(
+            mapping_head_count == 0,
+            "P8-05 Synthetic mapping truth drifted",
+        )
+    with tool_asset_worker_diagnostic_step(
+        "P805_TOOL_ASSET_WORKER_RECOVERABLE_SET",
+        diagnostic_trace_id,
+    ):
+        recoverable_count = sum(
+            1 for value in recoverable if str(value) == outbox_id
+        )
+        require(
+            recoverable_count == 0,
+            "P8-05 terminal work became recoverable",
+        )
+    return {
+        "adapterCalls": adapter_calls,
+        "fieldResultCount": len(fields),
+        "mappingHeadCount": mapping_head_count,
+        "recoverableCount": recoverable_count,
+        "syntheticVerified": True,
+        "terminalReplayNotClaimed": True,
+    }
+
+
+def _sanitized_tool_asset_worker_diagnostic(
+    trace_id: object,
+    cursors: dict[str, int] | None,
+) -> tuple[str, str, str] | None:
+    """Accept one logical allowlisted worker record for one exact trace."""
+
+    return item_runtime._sanitized_server_log_diagnostic(
+        trace_id,
+        cursors,
+        code_prefix="P805_TOOL_ASSET_WORKER_",
+        allowed_codes=_active_tool_asset_worker_diagnostic_codes(),
+    )
+
+
+def _tool_asset_worker_fixture_failure_message(
+    method: str,
+    kwargs: dict[str, object],
+    cursors: dict[str, int] | None,
+) -> str:
+    if method != "exercise_worker" or not _active_tool_asset_worker_diagnostic_codes():
+        return _TOOL_ASSET_WORKER_FAILURE
+    diagnostic = _sanitized_tool_asset_worker_diagnostic(
+        kwargs.get("diagnostic_trace_id"),
+        cursors,
+    )
+    if diagnostic is None:
+        return _TOOL_ASSET_WORKER_FAILURE
+    exception_type, code, trace_id = diagnostic
+    return (
+        f"{_TOOL_ASSET_WORKER_FAILURE} [diagnostic_code={code}; "
+        f"exception_type={exception_type}; trace_id={trace_id}]"
+    )
 
 
 def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
@@ -992,9 +1311,22 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
     environment["PYTHONPATH"] = str(ROOT) + (os.pathsep + environment["PYTHONPATH"] if environment.get("PYTHONPATH") else "")
     for variable in ("NPI_RUNTIME_ADMINISTRATOR_PASSWORD", "NPI_RUNTIME_FIXTURE_PASSWORD", "NPI_ADMINISTRATOR_PASSWORD", "NPI_DATABASE_ROOT_PASSWORD"):
         environment.pop(variable, None)
+    diagnostic_cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if method == "exercise_worker"
+        and _active_tool_asset_worker_diagnostic_codes()
+        else None
+    )
     with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as output:
         completed = subprocess.run([str(BENCH_PATH / "env/bin/python"), str(Path(__file__).resolve()), "--bench-fixture", method, "--fixture-kwargs", json.dumps(kwargs, separators=(",", ":"), sort_keys=True)], cwd=BENCH_PATH / "sites", env=environment, check=False, stdout=output, stderr=subprocess.DEVNULL, text=True)
-        require(completed.returncode == 0, "P8-05 Bench fixture failed")
+        if completed.returncode != 0:
+            raise RuntimeError(
+                _tool_asset_worker_fixture_failure_message(
+                    method,
+                    kwargs,
+                    diagnostic_cursors,
+                )
+            )
         output.seek(0)
         lines = [line for line in output if line.strip()]
     result = json.loads(lines[-1]) if lines else None
@@ -1018,7 +1350,14 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
         else:
             frappe.set_user(ACTOR_USER)
             result = exercise_worker(**kwargs)
-        frappe.db.commit()
+        if method == "exercise_worker":
+            with tool_asset_worker_diagnostic_step(
+                "P805_TOOL_ASSET_WORKER_FIXTURE_COMMIT",
+                str(kwargs.get("diagnostic_trace_id", "")),
+            ):
+                frappe.db.commit()
+        else:
+            frappe.db.commit()
         print(json.dumps(result, separators=(",", ":"), sort_keys=True))
     except Exception:
         frappe.db.rollback()
