@@ -198,10 +198,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._tool_asset_create_prehandler_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_link_tool_asset_create_diagnostics_enabled()
         )
         project_id = str(UUID(int=1))
@@ -309,7 +309,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 "csrf",
                 retained,
             )
-            cursor_reader.assert_called_once_with()
+            cursor_reader.assert_not_called()
             diagnostic_reader.assert_not_called()
             first_args, first_kwargs = self.verifier.execution_request.call_args_list[0]
             split = urlsplit(first_args[2])
@@ -365,10 +365,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 ),
             )
             self.assertEqual(post_kwargs["method"], "POST")
-            self.assertEqual(
-                post_kwargs["diagnostic_scope"],
-                self.verifier.TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTIC_SCOPE,
-            )
+            self.assertIsNone(post_kwargs["diagnostic_scope"])
 
     def test_create_response_parent_codes_are_ordered_value_free_and_server_wins(self):
         activation = patch.object(
@@ -443,8 +440,8 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.assertNotIn(parent_code, message)
             self.assertNotIn(secret, message)
 
-    def test_post_link_activation_is_independent_and_old_cycles_stay_off(self):
-        self.assertTrue(
+    def test_post_link_activation_is_dormant_and_independent(self):
+        self.assertFalse(
             self.verifier._post_link_tool_asset_create_diagnostics_enabled()
         )
         old_flags = (
@@ -454,8 +451,20 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
             "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
         )
+        with patch.object(
+            self.verifier,
+            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertTrue(
+                self.verifier._post_link_tool_asset_create_diagnostics_enabled()
+            )
         for flag in old_flags:
             with self.subTest(flag=flag), patch.object(
+                self.verifier,
+                "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+                True,
+            ), patch.object(
                 self.verifier,
                 flag,
                 True,

@@ -191,7 +191,7 @@ class NPIToolAssetRequest(Document):
         if rebuilt.canonical_mapping() != request:
             frappe.throw(_("Tool Asset execution request fields do not match the exact snapshot."), frappe.ValidationError)
         for supplied, expected, label in (
-            (self.source_hash, canonical_hash(source), _("Tool Asset Source Hash")),
+            (self.source_hash, rebuilt.source.source_hash, _("Tool Asset Source Hash")),
             (self.approval_hash, canonical_hash(approval), _("Tool Asset Business Approval Hash")),
             (self.mapping_expectation_hash, canonical_hash(expectation), _("Tool Asset Mapping Expectation Hash")),
             (self.payload_hash, request.get("payloadHash"), _("Tool Asset Request Payload Hash")),

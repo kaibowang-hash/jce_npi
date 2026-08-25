@@ -5,6 +5,7 @@ import json
 import sys
 import types
 import unittest
+from copy import deepcopy
 from contextlib import contextmanager, nullcontext
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -1333,6 +1334,212 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
         serialized = repr(captured).casefold()
         for forbidden in ("endpoint", "credential", "password", "api_key"):
             self.assertNotIn(forbidden, serialized)
+
+    def test_execution_request_repository_mapping_passes_real_controller_hash_lifecycle(self) -> None:
+        frappe = self.repository.frappe
+
+        class PinnedValidationError(Exception):
+            pass
+
+        class Document:
+            def get_doc_before_save(self):
+                return None
+
+        def throw(_message: object, exception_type: type[Exception] | None = None):
+            raise (exception_type or PinnedValidationError)()
+
+        def lowercase_sha256(value: object, _label: str) -> str:
+            if (
+                not isinstance(value, str)
+                or len(value) != 64
+                or any(character not in "0123456789abcdef" for character in value)
+            ):
+                raise PinnedValidationError
+            return value
+
+        def json_object(value: object, _label: str) -> dict[str, object]:
+            prepared = json.loads(value) if isinstance(value, str) else value
+            if not isinstance(prepared, dict):
+                raise PinnedValidationError
+            return prepared
+
+        core_validation = types.ModuleType(
+            "npi_core.documents.frappe_validation"
+        )
+        core_validation.assert_immutable_fields = lambda *_args: None
+        core_validation.canonical_json = lambda value: json.dumps(
+            value,
+            allow_nan=False,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        core_validation.canonical_uuid = lambda value, _label: str(UUID(str(value)))
+        core_validation.frappe_utc_datetime_text = lambda value, _label: str(value)
+        core_validation.json_object = json_object
+        core_validation.lowercase_sha256 = lowercase_sha256
+        core_validation.require_exact_parent = lambda *_args: None
+        core_validation.tenant_text = lambda value: str(value)
+
+        tooling_validation = types.ModuleType(
+            "npi_core.tooling.frappe_validation"
+        )
+        tooling_validation.tooling_domain_value = lambda factory: factory()
+
+        legacy_domain = types.ModuleType(
+            "npi_integration.tool_asset_request.domain"
+        )
+        legacy_domain.tool_asset_request_from_snapshot = lambda _snapshot: None
+        legacy_validation = types.ModuleType(
+            "npi_integration.tool_asset_request.frappe_validation"
+        )
+        legacy_validation.deny_tool_asset_history_delete = lambda *_args: None
+        legacy_validation.deny_tool_asset_history_update = lambda *_args: None
+        legacy_validation.require_tool_asset_request_write = lambda: None
+
+        execution_validation = types.ModuleType(
+            "npi_integration.tool_asset_request.execution_frappe_validation"
+        )
+        for name in (
+            "deny_tool_asset_execution_history_delete",
+            "deny_tool_asset_execution_history_update",
+            "require_tool_asset_execution_capability",
+            "require_tool_asset_execution_request_write",
+        ):
+            setattr(execution_validation, name, lambda *_args: None)
+
+        frappe_model = types.ModuleType("frappe.model")
+        frappe_document = types.ModuleType("frappe.model.document")
+        frappe_document.Document = Document
+        modules = {
+            "frappe.model": frappe_model,
+            "frappe.model.document": frappe_document,
+            "npi_core.documents.frappe_validation": core_validation,
+            "npi_core.tooling.frappe_validation": tooling_validation,
+            "npi_integration.tool_asset_request.domain": legacy_domain,
+            "npi_integration.tool_asset_request.frappe_validation": legacy_validation,
+            "npi_integration.tool_asset_request.execution_frappe_validation": execution_validation,
+        }
+        controller_path = (
+            ROOT
+            / "apps/npi_integration/npi_integration/npi_integration/doctype"
+            / "npi_tool_asset_request/npi_tool_asset_request.py"
+        )
+        spec = importlib.util.spec_from_file_location(
+            "p805_tool_asset_request_controller_test",
+            controller_path,
+        )
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        controller = importlib.util.module_from_spec(spec)
+        validation_error_patch = patch.object(
+            frappe,
+            "ValidationError",
+            PinnedValidationError,
+            create=True,
+        )
+        throw_patch = patch.object(frappe, "throw", throw, create=True)
+        validation_error_patch.start()
+        throw_patch.start()
+        self.addCleanup(validation_error_patch.stop)
+        self.addCleanup(throw_patch.stop)
+        with patch.dict(sys.modules, modules):
+            spec.loader.exec_module(controller)
+
+        writes: list[str] = []
+
+        def document_from(mapping: dict[str, object]):
+            document = controller.NPIToolAssetRequest()
+            document.__dict__.update(deepcopy(mapping))
+            document.flags = types.SimpleNamespace(in_insert=False)
+            return document
+
+        def lifecycle(mapping: dict[str, object]):
+            document = document_from(mapping)
+            document.before_insert()
+            document.autoname()
+            document.flags.in_insert = True
+            document.before_validate()
+            document.validate()
+            document.before_save()
+            document.flags.in_insert = False
+            writes.append(str(document.global_id))
+            return document
+
+        value = self.request(ToolAssetExecutionTargetMode.SYNTHETIC)
+        captured: dict[str, object] = {}
+
+        def get_doc(mapping: dict[str, object]):
+            captured.update(deepcopy(mapping))
+            return document_from(mapping)
+
+        def insert_document(document: object, **_kwargs: object):
+            document.before_insert()
+            document.autoname()
+            document.flags.in_insert = True
+            document.before_validate()
+            document.validate()
+            document.before_save()
+            document.flags.in_insert = False
+            writes.append(str(document.global_id))
+            return document
+
+        with patch.object(
+            frappe,
+            "get_doc",
+            side_effect=get_doc,
+            create=True,
+        ), patch.object(
+            self.repository,
+            "insert_tool_asset_support_document",
+            side_effect=insert_document,
+        ) as insert_support:
+            self.repository.FrappeToolAssetRequestRepository._insert_execution_request(
+                value,
+                outbox_event_id=uid(30),
+                target_idempotency_key_hash="b" * 64,
+                semantic_effect_hash="c" * 64,
+                capability=object(),
+            )
+
+        insert_support.assert_called_once()
+        self.assertEqual(writes, [str(value.global_id)])
+        self.assertNotEqual(
+            self.repository.canonical_hash(value.source.canonical_mapping()),
+            value.source.source_hash,
+        )
+        self.assertEqual(captured["source_hash"], value.source.source_hash)
+        self.assertEqual(
+            captured["request_snapshot"]["source"]["sourceHash"],
+            value.source.source_hash,
+        )
+
+        def different_hash(value: str) -> str:
+            return ("0" if value != "0" * 64 else "1") * 64
+
+        tampered: list[tuple[str, dict[str, object]]] = []
+        supplied_source = deepcopy(captured)
+        supplied_source["source_hash"] = different_hash(str(captured["source_hash"]))
+        tampered.append(("supplied-source", supplied_source))
+        nested_source = deepcopy(captured)
+        nested_source["source_snapshot"]["toolingMasterTitle"] = "tampered"
+        tampered.append(("nested-source", nested_source))
+        for fieldname in (
+            "approval_hash",
+            "mapping_expectation_hash",
+            "payload_hash",
+        ):
+            candidate = deepcopy(captured)
+            candidate[fieldname] = different_hash(str(captured[fieldname]))
+            tampered.append((fieldname, candidate))
+
+        for label, mapping in tampered:
+            before = list(writes)
+            with self.subTest(tamper=label), self.assertRaises(
+                PinnedValidationError
+            ):
+                lifecycle(mapping)
+            self.assertEqual(writes, before)
 
     def test_public_request_keeps_immutable_snapshot_and_projects_current_execution_truth(self) -> None:
         request = self.request(ToolAssetExecutionTargetMode.SYNTHETIC)

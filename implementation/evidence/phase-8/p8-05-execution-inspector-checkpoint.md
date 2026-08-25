@@ -664,3 +664,27 @@ Canonical Linux/amd64 SHA-256 evidence:
   adapter/target/Gate behavior is unchanged.
 - Controller marker:
   `P8-05 final held; post-link-tool-asset-create diagnostic 0/1 active`.
+
+## Post-link Tool Asset source-hash repair checkpoint
+
+- Controlled run `32878609864` passes preflight `97902474357`; runtime
+  `97902976741` returns the sole safe tuple
+  `P805_TOOL_ASSET_CREATE_REQUEST_INSERT / ValidationError /
+  trace-439587c04656513091543ad4cc160235`.
+- Pinned Frappe lifecycle places the closed reciprocal Link check before the
+  request controller. The first later predicate compared the approved
+  payload-based source hash with a new hash of the expanded canonical mapping
+  that already carries both derived source hashes.
+- Repair `1/1` changes only the expected operand to the strictly rebuilt
+  source's approved `source_hash`. Approval, expectation, payload and nested
+  source checks retain their order and fail closed; tampering records zero
+  writes and no ValidationError is swallowed.
+- POST_LINK activation is false. Dormant runtime sends no diagnostic scope,
+  reads no server log and emits no tuple; every historical diagnostic remains
+  false.
+- Freeze `post-link-tool-asset-create` at diagnostic `1/1`, product repair
+  `1/1`, final `0/1`. API, permission, transaction, Schema, ownership,
+  request/Outbox order, worker, adapter, target and Gate behavior are
+  unchanged.
+- Controller marker:
+  `P8-05 final held; post-link-tool-asset-create repair 1/1 awaits Level 1`.

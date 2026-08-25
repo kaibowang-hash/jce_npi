@@ -5297,3 +5297,31 @@ repeat or rewrite it merely to restore context. See
   behavior are unchanged.
 - Controller marker:
   `P8-05 final held; post-link-tool-asset-create diagnostic 0/1 active`.
+
+## 2026-08-26 P8-05 post-link Tool Asset source-hash repair
+
+- Sole controlled diagnostic run `32878609864` passes preflight
+  `97902474357`; runtime `97902976741` returns exactly
+  `P805_TOOL_ASSET_CREATE_REQUEST_INSERT / ValidationError /
+  trace-439587c04656513091543ad4cc160235`.
+- Pinned Frappe insert ordering proves the prior LinkValidationError occurred
+  before controller hooks. After the bounded reciprocal-Link deferral, the
+  first generic ValidationError is the request controller's first hash
+  predicate: it compared the approved source hash with a new hash of the full
+  canonical source mapping, which already contains `sourceStreamKeyHash` and
+  `sourceHash`. The domain contract defines the approved value only over the
+  source payload and exposes it as the strictly rebuilt source's `source_hash`.
+- Product repair `1/1` changes only that expected operand to
+  `rebuilt.source.source_hash`. Approval, mapping-expectation and request
+  payload hashes, ordered predicates, immutable snapshots and all nested
+  source checks remain unchanged and fail closed. No ValidationError is
+  swallowed.
+- `POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED=False`; all other Item,
+  MBOM, P6-06 and Tool Asset diagnostics remain false. The dormant mechanism
+  sends no scope, reads no server log and emits no tuple.
+- Freeze `post-link-tool-asset-create` at diagnostic `1/1`, product repair
+  `1/1`, final `0/1`. API, permission, transaction, Schema, ownership,
+  request/Outbox ordering, worker, adapter, target and Gate behavior are
+  unchanged.
+- Controller marker:
+  `P8-05 final held; post-link-tool-asset-create repair 1/1 awaits Level 1`.

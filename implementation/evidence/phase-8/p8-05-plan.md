@@ -1368,3 +1368,32 @@ closed. Output contains only diagnostic code, exception class and exact trace,
 never status/body/business values/identifiers/count/actor/hash/profile/message/
 stack. Product, server, response, write order, permission, transaction, API,
 Schema, ownership, worker, adapter, target and Gate behavior are unchanged.
+
+## 40. Post-link Tool Asset source-hash repair
+
+The sole post-link diagnostic run `32878609864` passes controlled preflight
+`97902474357`; runtime job `97902976741` yields exactly
+`P805_TOOL_ASSET_CREATE_REQUEST_INSERT / ValidationError /
+trace-439587c04656513091543ad4cc160235`. No response status/body, business
+value, identifier, count, exception message or stack was read.
+
+Pinned Frappe runs Link validation before `before_insert`, `before_validate`
+and controller `validate`. The former reciprocal Link root is therefore
+closed. The Tool Asset source domain computes `source_hash` over
+`source_payload()`, then appends `sourceStreamKeyHash` and `sourceHash` to the
+canonical mapping. The controller's first hash predicate incorrectly hashed
+that expanded mapping again. Its generic ValidationError is the unique first
+post-Link failure; mandatory, Link and length errors use distinct exception
+classes and standard field validation runs later.
+
+The one product repair replaces only that expected value with the already
+strictly rebuilt domain source's approved `source_hash`. It does not change
+the source payload, persisted hash, approval/mapping/payload hash predicates,
+predicate order, immutable truth or later exact physical-Set checks. Nested
+and supplied tampering continues to fail before any write.
+
+`POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED=False`, and the dormant
+mechanism neither sends scope nor reads logs. Freeze the cycle at diagnostic
+`1/1`, product repair `1/1`, final `0/1`. No repository write order, response,
+API, permission, transaction, Schema, ownership, worker, adapter, target or
+Gate contract changes.
