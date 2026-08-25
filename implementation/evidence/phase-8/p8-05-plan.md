@@ -1495,3 +1495,40 @@ Failed child stderr remains discarded and its temporary stdout is never read;
 only a successful child may parse JSON. This is verifier-only recovery
 evidence. It changes no product worker, repository, adapter, request, response,
 permission, transaction, Schema, ownership, target or Gate behavior.
+
+## 44. Tool Asset worker-downstream request-truth repair
+
+Checkpoint SHA `4cdaad168e44c635fc3ea302e5fd64a32672daf7` passes
+ordinary `32893286981`. Controlled run `32894841539`, runtime job
+`97955050412`, produced one safe tuple:
+`P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX / ValidationError /
+trace-4321d8aae6905b94bf50d8ffbaa34c99`.
+
+The create transaction had persisted an immutable executable Request snapshot
+at `queued`, optimistic version `1`. During a fresh claim the Attempt insert
+and the Outbox `pending -> processing` save are valid and precede the Request
+save. The repository then advances the live Request to `processing`, version
+`2`. The controller's exact comparison of snapshot state/version to live
+state/version made that Request save the unique first failing predicate. The
+receipt is not written by the worker, and profile/registry and
+adapter/classification failures are caught and converted, so the prior
+reciprocal-link, source-hash and receipt roots are excluded.
+
+The repair preserves the immutable create snapshot and hash bit-for-bit:
+executable snapshots remain `queued/1`, Mock snapshots remain
+`validated_mock/1`. Live state uses the existing one-way transition table and
+live optimistic version advances exactly by one. Invalid transitions,
+version skips/regressions, snapshot state/version changes and other immutable
+tampering remain fail-closed with no recorded write. No API, permission,
+capability, transaction, Schema, ownership, worker order, adapter or target
+contract changes.
+
+`TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED=False`; dormant verification
+does not read safe-log cursors or logs. Freeze this cycle at diagnostic `1/1`,
+product repair `1/1`, final `0/1` pending unchanged Level 3.
+
+Level 1 passes Tool Asset `114/114`, P6 tooling `355/355` plus request-domain
+`4/4`, Item `146/146`, MBOM `126/126`, and current/reconciliation `33/33`.
+Compile, shell syntax, diagnostic-off, exact-eight manifest, unauthorized ninth
+path rejection and diff checks also pass. The repair awaits exact-SHA ordinary
+CI; no Site or final Gate has been dispatched.

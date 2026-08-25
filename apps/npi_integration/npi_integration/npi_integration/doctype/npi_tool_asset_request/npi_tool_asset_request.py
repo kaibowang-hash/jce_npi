@@ -11,6 +11,7 @@ from npi_core.documents.frappe_validation import (
     frappe_utc_datetime_text,
     json_object,
     lowercase_sha256,
+    positive_integer,
     require_exact_parent,
     tenant_text,
 )
@@ -190,6 +191,36 @@ class NPIToolAssetRequest(Document):
             frappe.throw(_("Tool Asset execution request fields do not match the exact snapshot."), frappe.ValidationError)
         if rebuilt.canonical_mapping() != request:
             frappe.throw(_("Tool Asset execution request fields do not match the exact snapshot."), frappe.ValidationError)
+        creation_state = (
+            "validated_mock"
+            if rebuilt.profile.target_mode.value == "mock"
+            else "queued"
+        )
+        if (
+            request.get("state") != creation_state
+            or request.get("optimisticVersion") != 1
+        ):
+            frappe.throw(_("Tool Asset execution request fields do not match the exact snapshot."), frappe.ValidationError)
+        live_version = positive_integer(
+            self.optimistic_version,
+            _("Optimistic Version"),
+        )
+        expected_live_version = (
+            1
+            if previous is None
+            else int(previous.optimistic_version or 0) + 1
+        )
+        if live_version != expected_live_version:
+            frappe.throw(
+                _("Optimistic Version must advance by one."),
+                frappe.ValidationError,
+            )
+        self.optimistic_version = live_version
+        if previous is None and str(self.execution_state) != creation_state:
+            frappe.throw(
+                _("The Tool Asset execution request state transition is invalid."),
+                frappe.ValidationError,
+            )
         for supplied, expected, label in (
             (self.source_hash, rebuilt.source.source_hash, _("Tool Asset Source Hash")),
             (self.approval_hash, canonical_hash(approval), _("Tool Asset Business Approval Hash")),
@@ -205,13 +236,13 @@ class NPIToolAssetRequest(Document):
             "operation": self.operation,
             "tenantId": self.tenant_id,
             "projectGlobalId": self.project_global_id,
-            "state": request.get("state"),
+            "state": creation_state,
             "actorUserId": self.actor_user_id,
             "requestId": self.request_id,
             "traceId": self.trace_id,
             "idempotencyKeyHash": self.idempotency_key_hash,
             "payloadHash": self.payload_hash,
-            "optimisticVersion": int(self.optimistic_version or 0),
+            "optimisticVersion": 1,
         }
         if any(request.get(name) != value for name, value in exact.items()) or request.get("source") != source or request.get("approval") != approval or request.get("mappingExpectation") != expectation:
             frappe.throw(_("Tool Asset execution request fields do not match the exact snapshot."), frappe.ValidationError)

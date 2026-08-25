@@ -1343,7 +1343,7 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
 
         class Document:
             def get_doc_before_save(self):
-                return None
+                return getattr(self, "_previous", None)
 
         def throw(_message: object, exception_type: type[Exception] | None = None):
             raise (exception_type or PinnedValidationError)()
@@ -1378,6 +1378,11 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
         core_validation.frappe_utc_datetime_text = lambda value, _label: str(value)
         core_validation.json_object = json_object
         core_validation.lowercase_sha256 = lowercase_sha256
+        core_validation.positive_integer = lambda value, _label: (
+            int(value)
+            if isinstance(value, int) and not isinstance(value, bool) and value > 0
+            else (_ for _ in ()).throw(PinnedValidationError())
+        )
         core_validation.require_exact_parent = lambda *_args: None
         core_validation.tenant_text = lambda value: str(value)
 
@@ -1454,11 +1459,17 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
             document.flags = types.SimpleNamespace(in_insert=False)
             return document
 
-        def lifecycle(mapping: dict[str, object]):
+        def lifecycle(
+            mapping: dict[str, object],
+            *,
+            previous: object | None = None,
+        ):
             document = document_from(mapping)
-            document.before_insert()
-            document.autoname()
-            document.flags.in_insert = True
+            document._previous = previous
+            if previous is None:
+                document.before_insert()
+                document.autoname()
+                document.flags.in_insert = True
             document.before_validate()
             document.validate()
             document.before_save()
@@ -1512,6 +1523,97 @@ class Phase8ToolAssetRepositoryTest(unittest.TestCase):
         self.assertEqual(
             captured["request_snapshot"]["source"]["sourceHash"],
             value.source.source_hash,
+        )
+
+        created = lifecycle(captured)
+        immutable_snapshot = json.loads(created.request_snapshot)
+        immutable_payload_hash = created.payload_hash
+        processing = deepcopy(captured)
+        processing["execution_state"] = ToolAssetExecutionRequestState.PROCESSING.value
+        processing["optimistic_version"] = 2
+        processing_document = lifecycle(processing, previous=created)
+        self.assertEqual(
+            json.loads(processing_document.request_snapshot),
+            immutable_snapshot,
+        )
+        self.assertEqual(processing_document.payload_hash, immutable_payload_hash)
+        terminal = deepcopy(processing)
+        terminal["execution_state"] = (
+            ToolAssetExecutionRequestState.SYNTHETIC_VERIFIED.value
+        )
+        terminal["optimistic_version"] = 3
+        terminal["result_global_id"] = str(uid(31))
+        terminal_document = lifecycle(terminal, previous=processing_document)
+        self.assertEqual(
+            json.loads(terminal_document.request_snapshot),
+            immutable_snapshot,
+        )
+        self.assertEqual(terminal_document.payload_hash, immutable_payload_hash)
+
+        invalid_updates: list[tuple[str, dict[str, object], object]] = []
+        skipped_version = deepcopy(processing)
+        skipped_version["optimistic_version"] = 3
+        invalid_updates.append(("version-skip", skipped_version, created))
+        regressed_version = deepcopy(processing)
+        regressed_version["optimistic_version"] = 1
+        invalid_updates.append(("version-regress", regressed_version, created))
+        invalid_transition = deepcopy(captured)
+        invalid_transition["execution_state"] = (
+            ToolAssetExecutionRequestState.SYNTHETIC_VERIFIED.value
+        )
+        invalid_transition["optimistic_version"] = 2
+        invalid_updates.append(("state-skip", invalid_transition, created))
+        snapshot_state = deepcopy(processing)
+        snapshot_state["request_snapshot"]["state"] = "processing"
+        invalid_updates.append(("snapshot-state", snapshot_state, created))
+        snapshot_version = deepcopy(processing)
+        snapshot_version["request_snapshot"]["optimisticVersion"] = 2
+        invalid_updates.append(("snapshot-version", snapshot_version, created))
+        for label, mapping, previous in invalid_updates:
+            before = list(writes)
+            with self.subTest(current_tamper=label), self.assertRaises(
+                PinnedValidationError
+            ):
+                lifecycle(mapping, previous=previous)
+            self.assertEqual(writes, before)
+
+        mock = self.request(ToolAssetExecutionTargetMode.MOCK)
+        mock_mapping = deepcopy(captured)
+        mock_mapping.update(
+            {
+                "global_id": str(mock.global_id),
+                "execution_target_mode": "mock",
+                "execution_state": ToolAssetExecutionRequestState.VALIDATED_MOCK.value,
+                "dispatch_allowed": 0,
+                "outbox_event_id": None,
+                "result_global_id": None,
+                "request_snapshot": mock.canonical_mapping(),
+                "source_snapshot": mock.source.canonical_mapping(),
+                "source_hash": mock.source.source_hash,
+                "approval_snapshot": mock.approval.canonical_mapping(),
+                "approval_hash": self.repository.canonical_hash(
+                    mock.approval.canonical_mapping()
+                ),
+                "mapping_expectation_snapshot": (
+                    mock.mapping_expectation.canonical_mapping()
+                ),
+                "mapping_expectation_hash": self.repository.canonical_hash(
+                    mock.mapping_expectation.canonical_mapping()
+                ),
+                "profile_id": mock.profile.profile_id,
+                "profile_version": mock.profile.profile_version,
+                "environment_code": mock.profile.environment_code,
+                "profile_snapshot_hash": mock.profile.snapshot_hash,
+                "projection_policy_id": mock.profile.projection_policy_id,
+                "projection_policy_version": mock.profile.projection_policy_version,
+                "projection_policy_hash": mock.profile.projection_policy_hash,
+                "payload_hash": mock.payload_hash,
+            }
+        )
+        mock_document = lifecycle(mock_mapping)
+        self.assertEqual(
+            json.loads(mock_document.request_snapshot)["state"],
+            ToolAssetExecutionRequestState.VALIDATED_MOCK.value,
         )
 
         def different_hash(value: str) -> str:

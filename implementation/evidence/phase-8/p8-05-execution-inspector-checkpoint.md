@@ -764,3 +764,32 @@ Canonical Linux/amd64 SHA-256 evidence:
   Schema, ownership, adapter, target and Gate behavior remain unchanged.
 - Controller marker:
   `P8-05 final held; tool-asset-worker-downstream diagnostic 0/1 active`.
+
+## Tool Asset worker-downstream request-truth repair
+
+- Exact diagnostic checkpoint SHA
+  `4cdaad168e44c635fc3ea302e5fd64a32672daf7` passes ordinary
+  `32893286981`. Controlled run `32894841539`, runtime job `97955050412`,
+  records the sole tuple
+  `P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX / ValidationError /
+  trace-4321d8aae6905b94bf50d8ffbaa34c99` without reading failed-child output or
+  exposing values, identifiers, messages or stacks.
+- The first source is the claim Request save: immutable executable snapshot
+  truth remains `queued/1`, while the valid fresh claim advances live truth to
+  `processing/2`. The controller had required those distinct truths to be
+  equal. Attempt insert and Outbox processing shape precede it and are valid;
+  profile, adapter, boundary and seal are later and therefore excluded.
+- The repair validates immutable create truth separately from live truth.
+  Executable snapshots are exactly `queued/1`, Mock exactly
+  `validated_mock/1`; live state keeps the one-way transition contract and
+  live optimistic version must advance by one. Snapshot/hash are never
+  rewritten. Tamper, skipped/regressed version and invalid transition cases
+  fail before the test records a write.
+- Worker diagnostics are now dormant and response-neutral. Freeze
+  `tool-asset-worker-downstream` at diagnostic `1/1`, repair `1/1`, final
+  `0/1`.
+- Level 1 passes Tool Asset `114/114`, P6 `359/359`, Item `146/146`, MBOM
+  `126/126`, and current/reconciliation `33/33`, plus compile, shell syntax,
+  diagnostic-off, exact-eight manifest and diff checks.
+- Controller marker:
+  `P8-05 final held; worker-downstream request-truth repair 1/1 Level 1 PASS; awaits exact-SHA ordinary CI`.

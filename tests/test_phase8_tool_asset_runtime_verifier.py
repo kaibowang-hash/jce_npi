@@ -1525,10 +1525,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     )
 
     def test_worker_downstream_activation_codes_and_outcomes_are_closed(self):
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
         )
         self.assertEqual(
@@ -1549,7 +1549,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             self.verifier._active_tool_asset_worker_diagnostic_codes(),
-            self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES,
+            frozenset(),
         )
         self.assertIsNone(
             self.verifier._tool_asset_worker_outcome_diagnostic_code(
@@ -1600,6 +1600,19 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     code,
                 )
 
+        with patch.object(
+            self.verifier,
+            "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertTrue(
+                self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
+            )
+            self.assertEqual(
+                self.verifier._active_tool_asset_worker_diagnostic_codes(),
+                self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES,
+            )
+
         historical_flags = (
             "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
             "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
@@ -1613,6 +1626,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.assertFalse(getattr(self.verifier, flag))
             with self.subTest(flag=flag), patch.object(
                 self.verifier,
+                "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+                True,
+            ), patch.object(
+                self.verifier,
                 flag,
                 True,
             ):
@@ -1623,14 +1640,9 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                     self.verifier._active_tool_asset_worker_diagnostic_codes(),
                     frozenset(),
                 )
-        with patch.object(
-            self.verifier,
-            "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
-            False,
-        ):
-            self.assertFalse(
-                self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
-            )
+        self.assertFalse(
+            self.verifier._tool_asset_worker_downstream_diagnostics_enabled()
+        )
 
     def test_worker_stage_records_one_safe_tuple_and_rethrows_same_exception(self):
         api = importlib.import_module("npi_core.api")
@@ -1643,6 +1655,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             records.clear()
             error = OriginalFailure("private value /tmp/private")
             with self.subTest(code=code), patch.object(
+                self.verifier,
+                "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+                True,
+            ), patch.object(
                 api,
                 "record_safe_diagnostic",
                 side_effect=lambda **values: records.append(values),
@@ -1701,6 +1717,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
         error = OriginalFailure("private")
         with patch.object(
+            self.verifier,
+            "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
             api,
             "record_safe_diagnostic",
             side_effect=OSError("private logging path"),
@@ -1787,10 +1807,15 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                                     )
                                     + "\n"
                                 )
-                    return self.verifier._sanitized_tool_asset_worker_diagnostic(
-                        trace_id,
-                        cursors,
-                    )
+                    with patch.object(
+                        self.verifier,
+                        "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+                        True,
+                    ):
+                        return self.verifier._sanitized_tool_asset_worker_diagnostic(
+                            trace_id,
+                            cursors,
+                        )
 
         valid = {
             "code": "P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX",
@@ -1856,6 +1881,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             _WORKER_TRACE_ID,
         )
         with patch.object(
+            self.verifier,
+            "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
             self.verifier.tempfile,
             "TemporaryFile",
             return_value=FailedOutput(),
@@ -1908,6 +1937,29 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertNotIn(private, str(closed.exception))
 
+        with patch.object(
+            self.verifier.tempfile,
+            "TemporaryFile",
+            return_value=FailedOutput(),
+        ), patch.object(
+            self.verifier.item_runtime,
+            "_replay_diagnostic_log_cursors",
+            side_effect=AssertionError("dormant diagnostics read log cursors"),
+        ), patch.object(
+            self.verifier,
+            "_sanitized_tool_asset_worker_diagnostic",
+            side_effect=AssertionError("dormant diagnostics read logs"),
+        ), patch.object(
+            self.verifier.subprocess,
+            "run",
+            return_value=completed,
+        ), self.assertRaises(RuntimeError) as dormant:
+            self.verifier.run_bench_fixture("exercise_worker", kwargs)
+        self.assertEqual(
+            str(dormant.exception),
+            self.verifier._TOOL_ASSET_WORKER_FAILURE,
+        )
+
     def test_successful_worker_child_parses_json_only_after_zero_exit(self):
         expected = {"syntheticVerified": True, "fieldResultCount": 5}
 
@@ -1920,7 +1972,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             self.verifier.item_runtime,
             "_replay_diagnostic_log_cursors",
-            return_value={"logs/npi_core.log": 0},
+            side_effect=AssertionError("dormant diagnostics read log cursors"),
         ) as cursor_reader, patch.object(
             self.verifier.subprocess,
             "run",
@@ -1931,7 +1983,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 {"diagnostic_trace_id": _WORKER_TRACE_ID},
             )
         self.assertEqual(result, expected)
-        cursor_reader.assert_called_once()
+        cursor_reader.assert_not_called()
 
     def test_worker_parent_forwards_create_trace_and_reads_cursors_before_child(self):
         source = (

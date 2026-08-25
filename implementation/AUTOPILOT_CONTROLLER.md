@@ -5425,3 +5425,39 @@ repeat or rewrite it merely to restore context. See
   unchanged.
 - Controller marker:
   `P8-05 final held; tool-asset-worker-downstream diagnostic 0/1 active`.
+
+## 2026-08-26 P8-05 Tool Asset worker-downstream request-truth repair
+
+- Diagnostic checkpoint SHA `4cdaad168e44c635fc3ea302e5fd64a32672daf7`
+  passes exact ordinary CI `32893286981`. Its one controlled diagnostic Site
+  `32894841539` passes preflight job `97954984739`; runtime job `97955050412`
+  returns exactly one allowlisted tuple:
+  `P805_TOOL_ASSET_WORKER_PROCESS_OUTBOX / ValidationError /
+  trace-4321d8aae6905b94bf50d8ffbaa34c99`. No child stdout/stderr, response body,
+  value, identifier, count, exception message or stack was read or emitted.
+- Symbol-level ordering proves the first failing write. The committed
+  execution-v2 Request snapshot is immutable create truth (`queued`, version
+  `1` for executable profiles; `validated_mock`, version `1` for Mock). A
+  fresh claim validly inserts its Attempt and saves the Outbox
+  `pending -> processing`, then advances live Request truth to `processing`,
+  version `2`. The Request controller incorrectly compared those live fields
+  to the immutable create snapshot and therefore raised `ValidationError`
+  before profile resolution, adapter dispatch, boundary or result sealing.
+- The sole product repair keeps the snapshot and its hash unchanged and
+  validates it against exact create truth. Live state remains governed by the
+  existing one-way transition table and live optimistic version must advance
+  by exactly one. Skips, regressions, invalid transitions and snapshot
+  state/version tampering fail closed before a write. Permission, capability,
+  transaction, API, Schema, ownership, adapter and target behavior are
+  unchanged.
+- `TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED=False`; the dormant
+  mechanism reads no cursors/logs and emits no tuple. Freeze
+  `tool-asset-worker-downstream` at diagnostic `1/1`, product repair `1/1`,
+  final `0/1`.
+- Level 1 passes Tool Asset `114/114`, P6 tooling `355/355` plus Tool Asset
+  request domain `4/4`, Item `146/146`, MBOM `126/126`, and current-task/
+  reconciliation units `33/33`. Current-task and reconciliation scripts,
+  `py_compile`, shell syntax, diagnostic-off scan, diff check, and exact-eight
+  manifest acceptance with a ninth unauthorized path rejected are green.
+- Controller marker:
+  `P8-05 final held; worker-downstream request-truth repair 1/1 Level 1 PASS; awaits exact-SHA ordinary CI`.
