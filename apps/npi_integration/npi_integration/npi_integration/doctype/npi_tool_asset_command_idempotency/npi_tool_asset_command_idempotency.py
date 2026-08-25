@@ -104,7 +104,20 @@ class NPIToolAssetCommandIdempotency(Document):
                 extra_fields=("payload_hash",),
             )
             response = json_object(self.response_payload, _("Sealed Response Payload"))
-            if response.get("globalId") != self.request_global_id or response.get("payloadHash") != str(request.payload_hash):
+            if self._is_execution_v2():
+                response_request = response.get("request")
+                response_matches = (
+                    response.get("requestGlobalId") == self.request_global_id
+                    and isinstance(response_request, dict)
+                    and response_request.get("payloadHash")
+                    == str(request.payload_hash)
+                )
+            else:
+                response_matches = (
+                    response.get("globalId") == self.request_global_id
+                    and response.get("payloadHash") == str(request.payload_hash)
+                )
+            if not response_matches:
                 frappe.throw(_("The sealed response does not match its exact Tool Asset request."), frappe.ValidationError)
             if lowercase_sha256(self.response_hash, _("Sealed Response Hash")) != sha256_json(response):
                 frappe.throw(_("The sealed response hash does not match its payload."), frappe.ValidationError)

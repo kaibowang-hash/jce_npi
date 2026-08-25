@@ -1426,3 +1426,36 @@ includes response status/body, business values, identifiers, count, actor,
 hash, profile, exception message or stack. Product, server, response, write
 order, API, permission, transaction, Schema, ownership, worker, adapter,
 target and Gate behavior remain unchanged.
+
+## 42. Execution-v2 receipt response identity repair
+
+The sole post-source-hash diagnostic run `32886668058` passes preflight
+`97928618343`; controlled runtime `97928721598` returns exactly
+`P805_TOOL_ASSET_CREATE_RECEIPT_INSERT / ValidationError /
+trace-430d312ef8e2542e9c1b244874b96b6c`.
+
+The repository constructs an execution-v2 sealed receipt only after the exact
+Request, reciprocal Outbox, stream guard and audit pass. Its schema, operation,
+request parent, actor and canonical hashes come from the same frozen command.
+Pinned Frappe lifecycle ordering and the exact exception class exclude
+mandatory and Link checks. Unlike the earlier P6 legacy insert/seal save, this
+insert has no before-document, so `None` versus database `0` immutable
+normalization is not on the failing path.
+
+The first failing controller predicate used the legacy receipt response shape:
+top-level `globalId` and `payloadHash`. The execution-v2 response contract uses
+top-level `requestGlobalId` plus nested `request.payloadHash`, so the first
+legacy identity lookup necessarily failed before response-hash validation.
+
+The sole product repair branches only on the established `_is_execution_v2()`
+contract. Execution-v2 strictly validates its top-level request identity,
+mapping request body and nested payload hash against the exact parent Request;
+legacy retains its original top-level identity and payload hash. Response hash
+and canonicalization, immutable fields, one-way seal, capability, API,
+transaction and receipt order are unchanged. Missing, wrong or malformed
+identity and either payload or response-hash tampering remain ValidationError
+with zero write.
+
+POST_SOURCE_HASH activation is false and dormant. Freeze
+`post-source-hash-tool-asset-create` at diagnostic `1/1`, product repair `1/1`,
+final `0/1`.

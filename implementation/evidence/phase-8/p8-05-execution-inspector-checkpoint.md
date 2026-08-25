@@ -714,3 +714,25 @@ Canonical Linux/amd64 SHA-256 evidence:
   unchanged.
 - Controller marker:
   `P8-05 final held; post-source-hash-tool-asset-create diagnostic 0/1 active`.
+
+## Execution-v2 receipt response repair checkpoint
+
+- Controlled run `32886668058`, runtime job `97928721598`, yields the unique
+  safe tuple `P805_TOOL_ASSET_CREATE_RECEIPT_INSERT / ValidationError /
+  trace-430d312ef8e2542e9c1b244874b96b6c` after preflight `97928618343` passes.
+- Request/Outbox/guard/audit already passed. Receipt schema, operation, parent,
+  actor and hashes derive from the same frozen command. Mandatory/Link classes
+  are excluded, and insert has no before-document, so the historical P6
+  legacy `None`/database-`0` immutable comparison is not the source.
+- The controller's legacy top-level `globalId`/`payloadHash` check was the
+  first guaranteed mismatch against the execution-v2 top-level
+  `requestGlobalId` and nested `request.payloadHash` contract.
+- Repair `1/1` uses `_is_execution_v2()` to select the exact response identity.
+  Legacy remains unchanged. Response hash/canonicalization, immutable truth,
+  seal, capability, transaction, API and receipt order are unchanged; all
+  missing/wrong/shape/hash cases fail ValidationError before the test records
+  a write.
+- POST_SOURCE_HASH activation is false and dormant. Freeze the cycle at
+  diagnostic `1/1`, product repair `1/1`, final `0/1`.
+- Controller marker:
+  `P8-05 final held; post-source-hash receipt repair 1/1 awaits Level 1`.

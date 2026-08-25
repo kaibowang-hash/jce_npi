@@ -5356,3 +5356,32 @@ repeat or rewrite it merely to restore context. See
   behavior are unchanged.
 - Controller marker:
   `P8-05 final held; post-source-hash-tool-asset-create diagnostic 0/1 active`.
+
+## 2026-08-26 P8-05 execution-v2 receipt response repair
+
+- Sole controlled run `32886668058` passes controlled preflight
+  `97928618343`; runtime `97928721598` emits exactly
+  `P805_TOOL_ASSET_CREATE_RECEIPT_INSERT / ValidationError /
+  trace-430d312ef8e2542e9c1b244874b96b6c`.
+- The execution-v2 receipt is built with the exact request, Project, actor,
+  operation and canonical hashes after the Request, Outbox, guard and audit
+  inserts pass. Pinned Frappe ordering and the exact exception class exclude
+  mandatory and Link validation. Insert has no before-document, so the closed
+  P6 legacy `None`/database-`0` immutable comparison is not involved.
+- The shared receipt controller still applied the legacy top-level
+  `globalId`/`payloadHash` response identity to execution-v2, whose frozen
+  response contract uses top-level `requestGlobalId` and nested
+  `request.payloadHash`. The first legacy-key predicate therefore failed
+  before the response-hash check.
+- Product repair `1/1` selects the response identity by the existing
+  `_is_execution_v2()` boundary. Execution-v2 requires exact top-level request
+  identity, a mapping request body and exact nested request payload hash;
+  legacy retains its original two top-level fields. Canonical response hash,
+  immutable fields, one-way seal, capability, API, transaction and write order
+  remain unchanged and fail closed.
+- `POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED=False`; the dormant
+  verifier sends no scope, reads no cursor/log and emits no tuple. Freeze
+  `post-source-hash-tool-asset-create` at diagnostic `1/1`, product repair
+  `1/1`, final `0/1`.
+- Controller marker:
+  `P8-05 final held; post-source-hash receipt repair 1/1 awaits Level 1`.
