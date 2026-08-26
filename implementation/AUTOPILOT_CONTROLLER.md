@@ -6509,3 +6509,35 @@ repeat or rewrite it merely to restore context. See
   Product/app diff remains zero.
 - Controller marker:
   `P8-06 checkpoint 4 final 1/1 frozen; P8-01 projection-fresh predecessor diagnostic 1/1 repair 1/1 final 0/1; post-permission remains 0/1`.
+
+## 2026-08-27 P8-01 predecessor final and P8-06 post-permission restoration
+
+- Exact harness SHA `dab0fdda1076c032d17710538e1130bf6175376b`
+  passes ordinary CI `33018663052`. Its sole Level-3 run `33019685661`
+  passes repository `98346708340`, frontend `98346708591`, governed visual
+  `98346708289`, secret scan `98346708170` and controlled preflight
+  `98349109385`; cumulative runtime `98349151712` initializes the disposable
+  Site and then fails at the withheld P5-through-P8-06 verification boundary.
+  No child output, business value, ID, message or stack was read.
+- A whitelist-only scan of fixed outer shell labels finds exactly one
+  `Local Frappe formal quality link runtime verification failed.` and no
+  P8-01 projection, P8-02, Item, MBOM or Tool Asset failure label. The shell
+  order proves P8-01 fresh, route-disable, recovery, replay and redaction all
+  completed before P8-06 quality-link execution; downstream P8-02 through
+  P8-05 execution was not reached.
+- Freeze `p8-01-projection-fresh-predecessor` at diagnostic `1/1`, repair
+  `1/1`, final `1/1`. Restore independent
+  `p8-06-quality-link-post-permission` at diagnostic `0/1`, repair `0/1`,
+  final `0/1`. The P8-01 activation is now false. Among quality-link
+  diagnostics only `QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED` is
+  true; its existing exact-sixty allowlist, exact trace, strict mirror,
+  server-inner-wins and failed-child-unread contracts are unchanged.
+- This exact-five verifier/evidence checkpoint changes only the P8-01 runtime
+  verifier, its focused dormant/activation test, this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and the P8-06 checkpoint
+  evidence. Product, API, repository, permissions, transaction, schema,
+  migration, UI and network behavior remain unchanged. FR-CO-003/004
+  deferral, every B/C hold and queued production fact/DoD governance remain
+  unchanged.
+- Controller marker:
+  `P8-01 projection-fresh predecessor diagnostic 1/1 repair 1/1 final 1/1 frozen; P8-06 post-permission diagnostic 0/1 active`.

@@ -503,6 +503,9 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
 
     def test_fresh_predecessor_diagnostic_is_exact_ordered_and_single(self) -> None:
         codes = self.runtime.PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_CODES
+        self.assertFalse(
+            self.runtime.PROJECTION_FRESH_PREDECESSOR_DIAGNOSTICS_ENABLED
+        )
         self.assertEqual(len(codes), 16)
         self.assertEqual(len(set(codes)), 16)
         self.assertEqual(
@@ -555,6 +558,11 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
                 / "p8-01-projection-fresh-predecessor-diagnostic.json"
             )
             with (
+                patch.object(
+                    self.runtime,
+                    "PROJECTION_FRESH_PREDECESSOR_DIAGNOSTICS_ENABLED",
+                    True,
+                ),
                 patch.dict(
                     os.environ,
                     {
@@ -626,6 +634,11 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
                 / "p8-01-projection-fresh-predecessor-diagnostic.json"
             )
             with (
+                patch.object(
+                    self.runtime,
+                    "PROJECTION_FRESH_PREDECESSOR_DIAGNOSTICS_ENABLED",
+                    True,
+                ),
                 patch.dict(
                     os.environ,
                     {
@@ -675,6 +688,11 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
                 / "p8-01-projection-fresh-predecessor-diagnostic.json"
             )
             with (
+                patch.object(
+                    self.runtime,
+                    "PROJECTION_FRESH_PREDECESSOR_DIAGNOSTICS_ENABLED",
+                    True,
+                ),
                 patch.dict(
                     os.environ,
                     {

@@ -995,3 +995,31 @@ Level 1 passes focused projection runtime `20/20`, complete affected peers
 compilation, shell syntax, actor/security scans and diff hygiene pass. The
 exact-five task and 67-path union manifests are accepted and an unauthorized
 sixth path is rejected. Product/app diff remains zero.
+
+## 29. P8-01 predecessor final and post-permission restoration
+
+Exact actor-repair SHA `dab0fdda1076c032d17710538e1130bf6175376b`
+passes ordinary `33018663052`. Its sole Level-3 `33019685661` passes all four
+ordinary jobs and controlled preflight; the controlled runtime initializes
+the disposable Site and fails only at the withheld cumulative verification
+step. Fixed-label-only inspection matches exactly the formal-quality-link
+failure literal. It matches no P8-01 projection or P8-02/Item/MBOM/Tool Asset
+failure literal. The cumulative shell sequence therefore proves the complete
+P8-01 fresh/disable/recovery/replay/redaction chain and stops inside P8-06
+before any downstream P8-02 through P8-05 execution.
+
+Freeze `p8-01-projection-fresh-predecessor` at `1/1`, `1/1`, `1/1`. Restore
+`p8-06-quality-link-post-permission` at `0/1`, `0/1`, `0/1`. The predecessor
+activation is false; quality-link runtime-stage, prepare-projection and
+prepare-bootstrap remain false; only post-permission is true. Its existing
+exact sixty safe codes, deterministic trace, exclusive exact-three-key record,
+controlled cursors, strict mirrored reader, inner-server precedence and
+failed-child-unread behavior are reused without change.
+
+The exact-five paths are `scripts/verify_projection_runtime.py`,
+`tests/test_phase8_projection_runtime_verifier.py`, this plan,
+`implementation/AUTOPILOT_CONTROLLER.md` and
+`p8-06-domain-metadata-checkpoint.md`. Product, CURRENT_TASK, workflow, API,
+repository, permission, transaction, schema, migration, UI, ERP traffic,
+FR-CO-003/004 deferral and all B/C holds remain unchanged. Production
+read-only fact/DoD governance remains queued.

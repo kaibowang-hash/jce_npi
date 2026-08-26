@@ -434,3 +434,27 @@ Level 1 passes focused projection runtime `20/20`, complete affected peers
 shell syntax, actor/security scans and diff hygiene pass. The exact-five task
 and 67-path post-commit union manifests are accepted and an unauthorized sixth
 path is rejected. Product/app diff remains zero.
+
+## P8-01 predecessor final and post-permission restoration checkpoint
+
+Actor-repair SHA `dab0fdda1076c032d17710538e1130bf6175376b` passes ordinary
+`33018663052`. Its sole Level-3 `33019685661` passes repository
+`98346708340`, frontend `98346708591`, visual `98346708289`, secret scan
+`98346708170` and preflight `98349109385`; runtime `98349151712` initializes
+the disposable Site and then fails at the withheld cumulative verification
+step. No child output or business content was inspected.
+
+Strict inspection of repository-owned fixed outer labels finds one formal
+quality-link runtime failure label and zero P8-01 projection, P8-02, Item,
+MBOM or Tool Asset failure labels. Because P8-06 follows the full P8-01
+fresh/route-disable/recovery/replay/redaction sequence, P8-01 is proven closed
+and the downstream P8-02 through P8-05 sequence is not reached.
+
+The predecessor cycle is immutable at diagnostic `1/1`, repair `1/1`, final
+`1/1`. P8-06 post-permission resumes at `0/1`, `0/1`, `0/1`. P8-01 and the
+three historical quality-link activations are false; only post-permission is
+true. Existing exact-sixty code closure, trace, exclusive safe record, strict
+reader and failed-child-unread behavior are unchanged. The exact-five diff is
+verifier/test/evidence only and has zero product, permission, transaction,
+API, schema, UI or network effect. Production fact/DoD governance remains
+queued; FR-CO-003/004 deferral and all B/C holds remain unchanged.
