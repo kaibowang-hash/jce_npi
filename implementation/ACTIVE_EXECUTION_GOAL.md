@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-26T23:45:00Z`
+Updated: `2026-08-26T23:55:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-06`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AUTHORIZATION_TRANSITION — P8-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -19,8 +19,8 @@ Updated: `2026-08-26T23:45:00Z`
   `f9c358018823f3af20aca38efb53f8fcbd13d406`; repository, frontend,
   secret, `129/129` visual, controlled preflight and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32937395289` (`PASS` at
-  `f9c358018823f3af20aca38efb53f8fcbd13d406`; P8-05 final)
+  `32946799144` (`PASS` at
+  `b3cf6ac722c71c4bdd95cddc16aed4e2544bb037`; P8-06 frozen audit plan)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -121,13 +121,14 @@ Updated: `2026-08-26T23:45:00Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-06 — quality linkage`
-  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI`)
-- Resumed product task: `P8-06` (`AWAITS_AUDIT_CI`)
+  (`IN_PROGRESS_CHECKPOINT_1_AUTHORIZATION_TRANSITION`)
+- Resumed product task: `P8-06`
+  (`CHECKPOINT_1_BOUNDED_AUTHORIZATION_TRANSITION`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-06 AUDIT`)
+  (`IN_PROGRESS — P8-06 CHECKPOINT 1 AUTHORIZATION`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -151,8 +152,13 @@ observation/head owner and freezes only one future NPI operation:
 current observation; it is not an ERP create, update, submit, fail, close or
 approval. Raw status/result interpretation, Gate/readiness policy and all
 target methods remain held. Product code, route, writer, worker, adapter, UI
-and target network remain unauthorized until this plan transition passes
-exact-SHA ordinary CI.
+and target network remain unauthorized outside the exact checkpoint-1
+boundary. Audit-plan SHA `b3cf6ac722c71c4bdd95cddc16aed4e2544bb037`
+passes ordinary CI `32946799144`. This separate controller transition freezes
+only pure quality-link domain/config/validation, three guarded additive
+zero-row DocTypes, ownership/OpenAPI components, translations and focused
+tests; product implementation waits for the transition's own exact-SHA
+ordinary CI.
 
 P7-08 and Phase 7 are sealed at exact final product checkpoint `3111402`.
 Ordinary CI `31898840279` passes `1,921` tracked Python tests, `918/918`

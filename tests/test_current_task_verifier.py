@@ -39,29 +39,40 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-07")
         self.assertIn(
-            "P8_06_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_THE_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_ORDINARY_CI",
+            "P8_06_PRODUCT_CODE_AUTHORIZED_ONLY_FOR_CHECKPOINT_1_AFTER_THIS_CONTROLLER_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
             value["frozen_invariants"],
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI",
+            "IN_PROGRESS_CHECKPOINT_1_AUTHORIZATION_TRANSITION",
         )
         self.assertIn(
             "P8_05_LEVEL_3_EXACT_SHA_F9C358018823F3AF20ACA38EFB53F8FCBD13D406_ORDINARY_32937395289_FINAL_32938622250_PASSED",
             value["frozen_invariants"],
         )
         self.assertEqual(value["requirement_ids"], ["INT-007", "FR-TR-006", "FR-NP-006"])
-        self.assertIn("implementation/evidence/phase-8/p8-06-*.md", value["allowed_paths"])
+        self.assertIn(
+            "implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md",
+            value["allowed_paths"],
+        )
         self.assertIn(
             "LINK_OBSERVED_FORMAL_QUALITY_REFERENCE_IS_NPI_ONLY_AND_NEVER_CREATES_SUBMITS_UPDATES_FAILS_CLOSES_OR_APPROVES_ERP_QUALITY_TRUTH",
             value["frozen_invariants"],
         )
+        self.assertIn(
+            "apps/npi_integration/npi_integration/quality_link/domain.py",
+            value["allowed_paths"],
+        )
+        self.assertIn("contracts/data-ownership.yaml", value["allowed_paths"])
+        self.assertIn("contracts/npi-api.openapi.yaml", value["allowed_paths"])
+        self.assertNotIn("contracts/integration-event.schema.json", value["allowed_paths"])
         self.assertFalse(
             any(
-                path.startswith(("apps/", "frontend/", "contracts/"))
+                any(token in path for token in ("_api.py", "repository.py", "worker.py", "adapters.py"))
                 for path in value["allowed_paths"]
             )
         )
+        self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:

@@ -486,6 +486,11 @@ ERP approval or pass. P8-01 remains the sole observation/head/order owner.
 The only frozen future NPI operation links one exact current observed formal
 quality reference and never writes ERP truth. Raw status/result-to-pass/fail,
 Gate/readiness invalidation, target methods/fields and source-context link
-authority remain held. Product code, route, writer, worker, adapter, UI and
-target network remain unauthorized until this plan transition passes
-exact-SHA ordinary CI. P8-08/P8-09 and production ERPNext/JCE remain inactive.
+authority remain held. Exact audit-plan SHA `b3cf6ac` passes ordinary CI
+`32946799144`. A separate controller transition now bounds checkpoint 1 to
+pure `quality_link` domain/config/validation, three guarded additive zero-row
+support DocTypes, ownership/OpenAPI components, direct translations and
+focused tests. It authorizes no integration event, route, repository, Outbox,
+writer, worker, adapter, runtime, UI or target network, and implementation may
+start only after the transition's own exact-SHA ordinary CI. P8-08/P8-09 and
+production ERPNext/JCE remain inactive.

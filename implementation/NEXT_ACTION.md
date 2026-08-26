@@ -1,17 +1,21 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-06`
+`IN_PROGRESS_CHECKPOINT_1_AUTHORIZATION_TRANSITION — P8-06`
 
-Recovery time: `2026-08-26T23:45:00Z`
+Recovery time: `2026-08-26T23:55:00Z`
 
 Current atomic action: retain the frozen P8-06 quality-linkage audit for
 `INT-007`, `FR-TR-006` and `FR-NP-006` in
-`implementation/evidence/phase-8/p8-06-plan.md` and wait for this exact plan
-transition to pass ordinary CI. Product code remains unauthorized. Do not add
-a route, writer, worker, adapter, UI or target network contact. A later
-transition may activate only behavior-free checkpoint 1; no ERP target write,
-raw-code pass/fail interpretation or Gate/readiness policy is approved.
+`implementation/evidence/phase-8/p8-06-plan.md`. Exact audit-plan SHA
+`b3cf6ac722c71c4bdd95cddc16aed4e2544bb037` passes ordinary CI
+`32946799144`. Commit and pass this separate controller transition before
+implementing behavior-free checkpoint 1. Its exact scope is pure domain/
+configuration/validation, three guarded additive zero-row support DocTypes,
+ownership/OpenAPI components, direct translations and focused tests. Do not
+add an event, route, writer, Outbox, worker, adapter, runtime, UI or target
+network contact; no ERP target write, raw-code pass/fail interpretation or
+Gate/readiness policy is approved.
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -268,13 +272,18 @@ P8-05 is complete at exact SHA
 and Level 3 `32938622250`. Complete evidence is
 `implementation/evidence/phase-8/p8-05-validation.md`.
 
-The sole next atomic action is the P8-06 requirement/domain/existing-
-capability/security audit for `INT-007`, `FR-TR-006` and `FR-NP-006`, followed
-by a separately governed `p8-06-plan.md`. Preserve formal Quality Inspection,
+The P8-06 requirement/domain/existing-capability/security audit for `INT-007`,
+`FR-TR-006` and `FR-NP-006` is complete and its exact frozen-plan SHA
+`b3cf6ac` passes ordinary CI `32946799144`. The sole next atomic action is the
+separate checkpoint-1 authorization transition. After that transition's own
+exact-SHA ordinary CI passes, implement only the exact behavior-free paths in
+`CURRENT_TASK.json`: pure quality-link domain/config/validation, guarded Link
+Head/Revision/Command Idempotency metadata with zero rows, ownership/OpenAPI
+components, direct i18n and focused tests. Preserve formal Quality Inspection,
 NCR and CAPA as ERPNext-owned read-only truth; do not infer ERP approval or
-pass from NPI evidence. Do not modify product/app/frontend/contracts or add a
-route, writer, worker, adapter, UI or network behavior. Production/Sandbox
-methods, fields, approval and service-scope facts remain held.
+pass from NPI evidence. Route, repository, Outbox, writer, worker, adapter,
+runtime, UI and network remain closed. Production/Sandbox methods, fields,
+approval and service-scope facts remain held.
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
 `31898840279` passes repository `95046204818` (`1,921` tracked Python),

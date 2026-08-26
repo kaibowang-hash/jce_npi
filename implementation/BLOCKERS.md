@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-26T23:45:00Z`
+Updated: `2026-08-26T23:55:00Z`
 
 ## Active hard blockers
 
@@ -12,8 +12,9 @@ visual `98084790917`, preflight `98087726984` and cumulative Site
 `98087768879`. Runtime, visual and Gitleaks artifacts have the exact hashes
 recorded in `implementation/evidence/phase-8/p8-05-validation.md`; all
 diagnostics are false, zero production traffic and cleanup pass. The P8-06
-audit is frozen and awaits only its exact-SHA ordinary CI; it requires no user
-action, login or frontend operation.
+audit-plan exact SHA `b3cf6ac` passes ordinary CI `32946799144`; only its
+separate checkpoint-1 authorization transition is active and it requires no
+user action, login or frontend operation.
 
 ## Active recovery
 
@@ -41,7 +42,7 @@ credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-## Current authoritative blocker state — 2026-08-26T23:45:00Z
+## Current authoritative blocker state — 2026-08-26T23:55:00Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-05 exact final SHA `f9c3580` passes ordinary `32937395289` and final
@@ -53,7 +54,8 @@ remain scoped holds, not global Hard Blockers.
   `implementation/evidence/phase-8/p8-06-plan.md`. Missing formal ERPNext
   Quality Inspection/NCR/CAPA DocType mappings, fields, lifecycle, raw-code
   interpretation, approval, Gate/readiness policy and Sandbox operation are
-  scoped Class-B holds. Product code remains unauthorized until plan CI;
+  scoped Class-B holds. Product code is bounded only to behavior-free
+  checkpoint 1 after this controller transition passes exact-SHA ordinary CI;
   target traffic, P8-07 generic operations and P8-08/P8-09 remain inactive.
 
 ## Historical recovery
@@ -1058,8 +1060,11 @@ must preserve that boundary.
   naming/category/company/location/maintenance rules, business approval,
   credentials and formal mapping remain scoped external holds. They do not
   invalidate the default-disabled, network-free P8-05 technical foundation.
-- P8-06 is active only as a requirement/domain/existing-capability/security
-  audit. Current ERPNext Quality Inspection/NCR/CAPA method, fields, lifecycle,
+- P8-06 audit-plan SHA `b3cf6ac` passes ordinary CI `32946799144`. Only the
+  separate checkpoint-1 controller transition is active; product code is
+  bounded after its own exact-SHA CI to pure domain/config/validation, three
+  zero-row guarded DocTypes, ownership/OpenAPI components, i18n and tests.
+  Current ERPNext Quality Inspection/NCR/CAPA method, fields, lifecycle,
   approval, submission and service-scope mapping, authenticated Sandbox
   operation and formal result confirmation are scoped holds, not a global
-  blocker. Product code and target traffic remain unauthorized.
+  blocker. Target traffic and all later-checkpoint behavior remain unauthorized.

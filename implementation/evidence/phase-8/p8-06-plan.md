@@ -1,6 +1,6 @@
 # P8-06 Plan — Formal Quality Linkage Foundation
 
-Status: **AUDIT PASS — FROZEN PLAN AWAITS EXACT-SHA ORDINARY CI**
+Status: **AUDIT-PLAN CI PASS — CHECKPOINT 1 BOUNDED AUTHORIZATION TRANSITION**
 
 Audit date: 2026-08-26
 
@@ -9,10 +9,18 @@ Audit base and predecessor product checkpoint:
 
 Requirements: `INT-007`, `FR-TR-006`, `FR-NP-006`
 
-Product-code authorization: **false**. This plan, controller and trace change
-contains no app, frontend, contract, route, DocType, migration, worker, adapter,
-target request or target network behavior. A later transition may activate only
-checkpoint 1 after this exact plan SHA passes ordinary CI.
+Audit-plan checkpoint:
+`b3cf6ac722c71c4bdd95cddc16aed4e2544bb037`
+
+Audit-plan ordinary CI: `32946799144` (`PASS`; secret `98109154354`, frontend
+`98109154557`, repository `98109154561`, governed visual `98109154578`; both
+controlled lanes correctly skipped).
+
+Product-code authorization: **checkpoint 1 bounded only after this separate
+controller-transition exact SHA passes ordinary CI**. The transition itself
+contains no app, frontend or contract change. Checkpoint 1 remains behavior-free:
+no route, persisted business row, writer, worker, adapter, target request, UI or
+network behavior is authorized.
 
 ## 1. Requirement and source conclusion
 
@@ -292,33 +300,62 @@ may expose drift facts but no manual redispatch or target correction action.
 - complete exact-SHA ordinary CI and Level 3 cumulative runtime.
 
 Every checkpoint starts only after the previous exact product SHA passes
-ordinary CI. Product paths remain unauthorized in the current audit task.
+ordinary CI. Checkpoint-1 product paths remain closed until this separate
+controller-transition exact SHA passes ordinary CI; later checkpoint paths
+remain unauthorized.
 
 ## 12. Planned product paths and tests
 
-This audit authorizes no product path. A later checkpoint transition may
-propose narrowly named paths under:
+Checkpoint 1 is frozen to the following exact product paths; no wildcard is
+authorized:
 
-- `apps/npi_integration/npi_integration/quality_link/**`;
-- guarded additive `NPI Formal Quality Link*` metadata;
-- fixed BFF/API integration points;
-- exact ownership/event/OpenAPI additions;
-- existing Trial/review/readiness data-source and workspace integration;
-- direct translations and focused tests.
+- `apps/npi_integration/npi_integration/quality_link/__init__.py`;
+- `apps/npi_integration/npi_integration/quality_link/config.py`;
+- `apps/npi_integration/npi_integration/quality_link/domain.py`;
+- `apps/npi_integration/npi_integration/quality_link/doctype_base.py`;
+- `apps/npi_integration/npi_integration/quality_link/frappe_validation.py`;
+- the exact `__init__.py`, JSON and Python controller beneath each of
+  `npi_formal_quality_link_head`, `npi_formal_quality_link_revision` and
+  `npi_formal_quality_link_command_idempotency` in the integration app's
+  DocType directory;
+- `contracts/data-ownership.yaml` and `contracts/npi-api.openapi.yaml` only;
+- `apps/npi_core/npi_core/translations/zh.csv`,
+  `apps/npi_core/npi_core/translations/zh-TW.csv` and
+  `frontend/src/generated/catalogs.ts`; and
+- `tests/test_phase8_quality_link_config.py`,
+  `tests/test_phase8_quality_link_domain.py`,
+  `tests/test_phase8_quality_link_contract.py`,
+  `tests/test_phase8_quality_link_metadata.py` and
+  `tests/test_phase8_quality_link_security.py`.
 
-The later manifest must enumerate exact paths rather than inherit this list.
-Required test groups include pure domain, metadata, contract, Project-first
-permission/IDOR, source containment, repository transaction/idempotency,
-P8-01 observation/head regressions, P7 quality/review/readiness regressions,
-security/no-direct-SQL/no-raw-target, trilingual/accessibility/E2E/visual,
-network-free runtime, migration twice, rollback, current-task/reconciliation
-and Level 3.
+`contracts/integration-event.schema.json`, any API/BFF path, repository,
+Outbox, scheduler, worker, adapter, runtime fixture, browser source and visual
+baseline are deliberately absent. The checkpoint may define only reusable
+OpenAPI components, never a route or command response.
+
+The exact changed-files-to-tests map is:
+
+| Checkpoint-1 boundary | Required proof |
+|---|---|
+| pure domain/config | closed source/context/record/state/fault/idempotency values; exact canonical hashes; disabled default; no endpoint/credential/network |
+| guarded metadata | install/migrate twice; zero fixture/default rows; internal write capability; append-only revision; exact head +1 CAS; one-way receipt seal; update/delete/tamper denial |
+| ownership/OpenAPI components | ERP formal identity/status/result remains read-only; NPI link history remains NPI-owned; components have closed shapes; zero new path/event/Outbox |
+| translations/catalog | English source; exact direct `zh`/`zh-TW`; generated catalog symmetry; placeholder and mixed-language scans |
+| regression/security | P8-01 projection domain/contract/metadata; P7 Trial quality/review/readiness domain/contract/metadata; Item/MBOM/Tool Asset config/domain/contract/metadata/security; zero SQL, `ignore_permissions`, whitelisted route, worker, adapter, request library, production literal or fixture row |
+| governance | current-task and reconciliation units; exact manifest; JSON/YAML/CSV parse; Python compile and diff hygiene |
+
+Checkpoint 2 repository/permission/IDOR/idempotent link behavior, checkpoint 3
+consumer/reconciliation projection and checkpoint 4 UI/runtime/visual evidence
+remain closed and are not inherited by checkpoint 1.
 
 ## 13. Migration and rollback
 
-The audit has no runtime or data migration. Checkpoint 1 may add only guarded,
-additive, versioned metadata; install/migrate twice must pass with no row
-creation. Checkpoint 2 may create NPI link history only after exact authorization.
+The audit and controller transition have no runtime or data migration.
+Checkpoint 1 may add only the three guarded, additive, versioned support
+DocTypes above; install/migrate twice must pass with no row creation. Before
+rows exist, rollback removes only those additive metadata definitions and pure
+components on a disposable Site. Checkpoint 2 may create NPI link history only
+after exact authorization.
 
 Rollback before product activation reverts this controller/trace plan and
 restores the P8-05 product checkpoint while preserving all P8-01 observations
@@ -358,6 +395,7 @@ Phase 8 anchor, trace CSV and reconciliation checks agree that:
 - P8-01 remains the sole formal-quality observation owner;
 - the only frozen NPI operation is exact-observation linking, not ERP write;
 - formal pass and Gate/readiness interpretation remain held;
-- product code remains unauthorized until exact-SHA ordinary CI passes;
+- product code remains bounded to checkpoint 1 only after the controller-
+  transition exact-SHA ordinary CI passes;
 - production ERPNext and generic P8-07 operations remain inactive; and
 - every unresolved B/C fact is explicit and fail-closed.

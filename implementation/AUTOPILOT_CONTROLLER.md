@@ -5976,3 +5976,30 @@ repeat or rewrite it merely to restore context. See
   inactive.
 - Controller marker:
   `P8-06 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI`.
+
+## 2026-08-26 P8-06 audit-plan CI PASS; checkpoint 1 authorization transition
+
+- Exact frozen audit-plan SHA
+  `b3cf6ac722c71c4bdd95cddc16aed4e2544bb037` passes ordinary CI
+  `32946799144`: secret `98109154354`, frontend `98109154557`, repository
+  `98109154561` and governed visual `98109154578` pass; controlled preflight
+  and runtime correctly skip because the plan has no product behavior.
+- This separate controller transition enumerates checkpoint 1 without changing
+  app, frontend or contracts. After the transition's own exact-SHA ordinary CI
+  passes, checkpoint 1 alone may add the pure `quality_link` domain,
+  default-disabled configuration and guarded validation; additive zero-row
+  Link Head, Link Revision and Command Idempotency metadata; ownership and
+  OpenAPI components; direct translations/generated catalog; and five focused
+  test modules.
+- Integration-event Schema, route/API/BFF, repository, business row, Outbox,
+  enqueue, scheduler, worker, adapter, runtime fixture, browser UI and target
+  network are absent from the exact manifest. P8-01 remains the sole formal-
+  quality observation/head/order/freshness writer and checkpoint 1 cannot
+  create a link row.
+- ERPNext NCR/CAPA/Quality Inspection DocTypes, methods, fields, lifecycle,
+  service scope and approval; raw-code pass/fail and Gate/readiness policy;
+  source-context link authority/cardinality; freshness/reconciliation owner;
+  Sandbox profile; production credentials/data/traffic; P8-07 operations and
+  P8-08/P8-09 remain held exactly as frozen.
+- Controller marker:
+  `P8-06 audit-plan CI PASS; checkpoint 1 authorization transition active`.
