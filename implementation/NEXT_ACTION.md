@@ -1,21 +1,19 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_AUTHORIZATION_TRANSITION — P8-06`
+`IN_PROGRESS_CHECKPOINT_1_LEVEL_1_REVIEW — P8-06`
 
 Recovery time: `2026-08-26T23:55:00Z`
 
-Current atomic action: retain the frozen P8-06 quality-linkage audit for
-`INT-007`, `FR-TR-006` and `FR-NP-006` in
-`implementation/evidence/phase-8/p8-06-plan.md`. Exact audit-plan SHA
-`b3cf6ac722c71c4bdd95cddc16aed4e2544bb037` passes ordinary CI
-`32946799144`. Commit and pass this separate controller transition before
-implementing behavior-free checkpoint 1. Its exact scope is pure domain/
-configuration/validation, three guarded additive zero-row support DocTypes,
-ownership/OpenAPI components, direct translations and focused tests. Do not
-add an event, route, writer, Outbox, worker, adapter, runtime, UI or target
-network contact; no ERP target write, raw-code pass/fail interpretation or
-Gate/readiness policy is approved.
+Current atomic action: review the behavior-free P8-06 checkpoint-1 foundation
+for `INT-007`, `FR-TR-006` and `FR-NP-006`. Exact authorization-transition SHA
+`675c28a15133b9937ccac6af492db7c537a17946` passes ordinary CI
+`32949383911`. The implementation is limited to pure domain/configuration/
+validation, three guarded additive zero-row support DocTypes, ownership and
+OpenAPI components, direct translations/generated catalog and five focused
+tests. It adds no event, route, writer, Outbox, worker, adapter, runtime, UI or
+target network contact. After review, commit only the exact governed paths and
+wait for exact-SHA ordinary CI before checkpoint 2 is considered.
 
 Required branch:
 `codex/npi-v1.2-implementation`

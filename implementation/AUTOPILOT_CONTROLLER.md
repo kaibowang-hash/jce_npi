@@ -6003,3 +6003,25 @@ repeat or rewrite it merely to restore context. See
   P8-08/P8-09 remain held exactly as frozen.
 - Controller marker:
   `P8-06 audit-plan CI PASS; checkpoint 1 authorization transition active`.
+
+## 2026-08-26 P8-06 checkpoint 1 behavior-free foundation Level 1 PASS
+
+- Exact authorization-transition SHA
+  `675c28a15133b9937ccac6af492db7c537a17946` passes ordinary CI
+  `32949383911`; checkpoint-1 bounded product authorization is therefore
+  satisfied without activating any later checkpoint.
+- The implementation adds only pure closed formal-quality source,
+  observation, link, idempotency and fault values; default-empty disabled
+  configuration; three guarded additive zero-row support DocTypes; ownership
+  and OpenAPI components; direct translations/generated catalog; and five
+  focused test modules.
+- The exact reference requires P8-01 `formal_quality_status` truth to be
+  `ERPNEXT`, `available`, `fresh` and `applied_current`. Raw status/result are
+  retained without a pass/fail/Gate/readiness interpretation. P8-01 remains
+  the sole observation/head/order/freshness owner.
+- Integration event, route/API/BFF, repository, Outbox, scheduler, worker,
+  adapter, runtime, UI, network, fixture and default rows remain absent.
+  Existing Class-B ERPNext mapping/authority/policy holds and all Class-C
+  production boundaries remain unchanged.
+- Controller marker:
+  `P8-06 checkpoint 1 behavior-free foundation Level 1 PASS; review active`.

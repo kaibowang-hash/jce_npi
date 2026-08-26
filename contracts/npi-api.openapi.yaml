@@ -8570,6 +8570,95 @@ components:
           type: array
           maxItems: 200
           items: { $ref: "#/components/schemas/ERPProjectionItem" }
+    FormalQualityLinkSourceReference:
+      type: object
+      additionalProperties: false
+      required: [tenantId, projectGlobalId, sourceKind, sourceGlobalId, sourceVersion, sourceState, sourceSnapshotHash]
+      properties:
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        sourceKind: { type: string, enum: [trial_round, trial_defect, trial_review, readiness_assessment, controlled_quality_report] }
+        sourceGlobalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        sourceState: { type: string, minLength: 1, maxLength: 128 }
+        sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    FormalQualityObservationReference:
+      type: object
+      additionalProperties: false
+      required: [tenantId, projectGlobalId, scopeKind, scopeGlobalId, projectionKind, sourceSystem, availability, freshness, disposition, observationGlobalId, headGlobalId, headOptimisticVersion, sourceObjectType, sourceObjectId, sourceVersion, recordKind, statusCode, resultCode, payloadHash, observationHash, headHash, freshnessPolicyRef]
+      properties:
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        scopeKind: { type: string, enum: [project, trial_round, readiness] }
+        scopeGlobalId: { type: string, format: uuid }
+        projectionKind: { type: string, const: formal_quality_status }
+        sourceSystem: { type: string, const: ERPNEXT }
+        availability: { type: string, const: available }
+        freshness: { type: string, const: fresh }
+        disposition: { type: string, const: applied_current }
+        observationGlobalId: { type: string, format: uuid }
+        headGlobalId: { type: string, format: uuid }
+        headOptimisticVersion: { type: integer, minimum: 1 }
+        sourceObjectType: { type: string, minLength: 1, maxLength: 100 }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 255 }
+        sourceVersion: { type: string, minLength: 1, maxLength: 255 }
+        recordKind: { type: string, enum: [quality_inspection, ncr, capa] }
+        statusCode: { type: string, minLength: 1, maxLength: 128 }
+        resultCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        observationHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        headHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        freshnessPolicyRef: { type: string, minLength: 1, maxLength: 128 }
+    FormalQualityLinkRevision:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, streamKeyHash, revisionNumber, predecessorGlobalId, source, formalObservation, linkState, actorUserId, traceId, createdAt, linkHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        streamKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        revisionNumber: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        source: { $ref: "#/components/schemas/FormalQualityLinkSourceReference" }
+        formalObservation: { $ref: "#/components/schemas/FormalQualityObservationReference" }
+        linkState: { type: string, enum: [linked, superseded] }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        createdAt: { type: string, format: date-time }
+        linkHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    FormalQualityLinkHead:
+      type: object
+      additionalProperties: false
+      required: [globalId, tenantId, projectGlobalId, sourceKind, sourceGlobalId, streamKeyHash, currentRevisionGlobalId, revisionNumber, currentObservationGlobalId, currentProjectionHeadGlobalId, currentProjectionHeadVersion, optimisticVersion, updatedAt, headHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        sourceKind: { type: string, enum: [trial_round, trial_defect, trial_review, readiness_assessment, controlled_quality_report] }
+        sourceGlobalId: { type: string, format: uuid }
+        streamKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        currentRevisionGlobalId: { type: string, format: uuid }
+        revisionNumber: { type: integer, minimum: 1 }
+        currentObservationGlobalId: { type: string, format: uuid }
+        currentProjectionHeadGlobalId: { type: string, format: uuid }
+        currentProjectionHeadVersion: { type: integer, minimum: 1 }
+        optimisticVersion: { type: integer, minimum: 1 }
+        updatedAt: { type: string, format: date-time }
+        headHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    FormalQualityLinkCommandIdentity:
+      type: object
+      additionalProperties: false
+      required: [tenantId, projectGlobalId, actorUserId, operation, idempotencyKeyHash, payloadHash, sourceSnapshotHash, projectionHeadHash, receiptKeyHash]
+      properties:
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        operation: { type: string, const: link_observed_formal_quality_reference }
+        idempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        projectionHeadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        receiptKeyHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
     ControlledPrintSourceReference:
       type: object
       additionalProperties: false

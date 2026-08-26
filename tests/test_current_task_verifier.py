@@ -44,7 +44,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_AUTHORIZATION_TRANSITION",
+            "IN_PROGRESS_CHECKPOINT_1_LEVEL_1_REVIEW",
         )
         self.assertIn(
             "P8_05_LEVEL_3_EXACT_SHA_F9C358018823F3AF20ACA38EFB53F8FCBD13D406_ORDINARY_32937395289_FINAL_32938622250_PASSED",

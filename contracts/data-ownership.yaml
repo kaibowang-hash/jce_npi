@@ -162,6 +162,31 @@ objects:
       source_version_modified_time_payload_hash_and_freshness_policy_ref: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: DERIVED_READ_ONLY, conflict: SOURCE_OBSERVATION_WINS}
       erp_business_fields: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_COPIED_AS_EDITABLE_TRUTH}
 
+  FormalQualityLinkRevision:
+    owner_system: NPI_ONE_QUALITY_LINK_SERVICE
+    erp_view: exact_read_only_observation_reference
+    fields:
+      source_identity_version_state_and_snapshot_hash: {owner: NPI_SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_EXACT_SOURCE}
+      formal_observation_head_version_raw_status_and_result: {owner: ERPNEXT_VIA_NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXACT_CURRENT_FRESH_APPLIED_OBSERVATION_ONLY}
+      link_revision_state_actor_trace_and_hash: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      formal_pass_gate_and_readiness_interpretation: {owner: FUTURE_APPROVED_VERSIONED_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE_RAW_CODES_ARE_NOT_PASS}
+
+  FormalQualityLinkHead:
+    owner_system: NPI_ONE_QUALITY_LINK_SERVICE
+    erp_view: read_model_pointer
+    fields:
+      tenant_project_source_and_stream_identity: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_revision_observation_and_projection_head_pointer: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [NPI_ONE_QUALITY_LINK_SERVICE], direction: REFERENCE_ONLY, conflict: LOCKED_PLUS_ONE_VERSION}
+      erp_formal_quality_fields: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_COPIED_AS_EDITABLE_TRUTH}
+
+  FormalQualityLinkCommandIdempotency:
+    owner_system: NPI_ONE_QUALITY_LINK_SERVICE
+    erp_view: none
+    fields:
+      tenant_project_actor_operation_and_key_hash: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDEMPOTENCY_SCOPE}
+      payload_source_and_projection_head_expectation_hashes: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: SAME_KEY_DIFFERENT_PAYLOAD_CONFLICT}
+      exact_link_revision_and_sealed_response: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [NPI_ONE_QUALITY_LINK_SERVICE], direction: NONE, conflict: ONE_WAY_SEAL_EXACT_REPLAY}
+
   ERPProjectSourceEvent:
     owner_system: ERPNEXT
     npi_view: authenticated_append_only_receipt

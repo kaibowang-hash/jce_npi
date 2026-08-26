@@ -399,3 +399,21 @@ Phase 8 anchor, trace CSV and reconciliation checks agree that:
   transition exact-SHA ordinary CI passes;
 - production ERPNext and generic P8-07 operations remain inactive; and
 - every unresolved B/C fact is explicit and fail-closed.
+
+## 16. Checkpoint-1 implementation status — Level 1 PASS
+
+The bounded authorization transition at exact SHA
+`675c28a15133b9937ccac6af492db7c537a17946` passed ordinary CI
+`32949383911`. Checkpoint 1 now implements only the frozen behavior-free
+foundation: pure closed link/source/observation/idempotency/fault values;
+default-empty disabled configuration; three guarded zero-row support
+DocTypes; ownership and OpenAPI components; direct `zh`/`zh-TW` plus the
+generated catalog; and five focused test modules.
+
+P8-01 remains the only observation/head/order/freshness owner. A link accepts
+only exact `formal_quality_status`, `ERPNEXT`, `available`, `fresh` and
+`applied_current` observation truth and retains raw status/result codes. No
+formal-pass, Gate or readiness interpretation is installed. Integration
+events, API/BFF paths, repository writes, Outbox, worker, adapter, runtime,
+UI, network and seeded rows remain absent. Detailed Level-1 evidence is in
+`implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.

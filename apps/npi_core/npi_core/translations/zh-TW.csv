@@ -8339,3 +8339,65 @@ Commit one immutable operation-specific request and one recoverable Outbox event
 "Actor, trace, idempotency, source and mapping expectation hashes are recorded.",記錄操作者、追蹤、冪等、來源和映射預期雜湊。
 Tool Asset execution inspector,模具資產執行檢查器
 Select exact acceptance evidence and a physical Tooling Set to inspect execution truth.,選擇精確驗收證據和實體工裝套組以檢查執行事實。
+A sealed formal quality link receipt cannot be changed.,已密封的正式品質關聯回執不可變更。
+A sealed formal quality link receipt requires its exact revision and response.,已密封的正式品質關聯回執必須包含精確修訂和回應。
+An unsealed formal quality link receipt cannot contain response truth.,未密封的正式品質關聯回執不能包含回應事實。
+Current Formal Quality Link Revision,目前正式品質關聯修訂
+Current Formal Quality Observation Global ID,目前正式品質觀測全域識別
+Current Formal Quality Projection Head Global ID,目前正式品質投影頭全域識別
+Current Formal Quality Projection Head Version,目前正式品質投影頭版本
+Exact Formal Quality Observation Snapshot,精確正式品質觀測快照
+Exact Quality Link Source Snapshot,精確品質關聯源快照
+Formal Quality Freshness Policy Reference,正式品質新鮮度策略引用
+Formal Quality Link Command Payload Hash,正式品質關聯命令載荷雜湊
+Formal Quality Link Hash,正式品質關聯雜湊
+Formal Quality Link Head Hash,正式品質關聯頭雜湊
+Formal Quality Link Head Snapshot,正式品質關聯頭快照
+Formal Quality Link Operation,正式品質關聯操作
+Formal Quality Link Receipt Key Hash,正式品質關聯回執鍵雜湊
+Formal Quality Link Revision,正式品質關聯修訂
+Formal Quality Link Revision Number,正式品質關聯修訂號
+Formal Quality Link Snapshot,正式品質關聯快照
+Formal Quality Link State,正式品質關聯狀態
+Formal Quality Link Stream Key Hash,正式品質關聯流鍵雜湊
+Formal Quality Observation Global ID,正式品質觀測全域識別
+Formal Quality Observation Hash,正式品質觀測雜湊
+Formal Quality Projection Head Global ID,正式品質投影頭全域識別
+Formal Quality Projection Head Hash,正式品質投影頭雜湊
+Formal Quality Projection Head Version,正式品質投影頭版本
+Formal Quality Projection Payload Hash,正式品質投影載荷雜湊
+Formal Quality Raw Result Code,正式品質原始結果代碼
+Formal Quality Raw Status Code,正式品質原始狀態代碼
+Formal Quality Record Kind,正式品質記錄類型
+Formal quality link head snapshot does not match its fields.,正式品質關聯頭快照與其欄位不符。
+Formal quality link head versions must advance exactly once.,正式品質關聯頭版本必須精確遞增一次。
+Formal quality link history cannot be changed.,正式品質關聯歷史不可變更。
+Formal quality link predecessor does not match its revision number.,正式品質關聯前序與其修訂號不符。
+Formal quality link receipt identity is unsupported.,不支援此正式品質關聯回執識別。
+Formal quality link records can only be changed by the controlled quality-link service.,正式品質關聯記錄只能由受控品質關聯服務變更。
+Formal quality link records cannot be deleted.,正式品質關聯記錄不可刪除。
+Formal quality link schema version is unsupported.,不支援此正式品質關聯架構版本。
+Formal quality link snapshot does not match its immutable fields.,正式品質關聯快照與其不可變欄位不符。
+Formal quality link source kind is unsupported.,不支援此正式品質關聯源類型。
+Formal quality link state or record kind is unsupported.,不支援此正式品質關聯狀態或記錄類型。
+NPI Formal Quality Link Command Idempotency,NPI 正式品質關聯命令冪等
+NPI Formal Quality Link Head,NPI 正式品質關聯頭
+NPI Formal Quality Link Revision,NPI 正式品質關聯修訂
+Predecessor Formal Quality Link Revision,前序正式品質關聯修訂
+Quality Link Source Global ID,品質關聯源全域識別
+Quality Link Source Kind,品質關聯源類型
+Quality Link Source Snapshot Hash,品質關聯源快照雜湊
+Quality Link Source State,品質關聯源狀態
+Quality Link Source Version,品質關聯源版本
+capa,矯正與預防措施
+linked,已關聯
+ncr,不符合項報告
+quality_inspection,品質檢驗
+readiness_assessment,就緒評估
+trial_defect,試模缺陷
+trial_review,試模評審
+Formal quality link source or observation snapshot does not match its fields.,正式品質關聯源或觀測快照與其欄位不符。
+The exact current formal quality link revision is unavailable.,精確的目前正式品質關聯修訂不可用。
+The exact current formal quality observation is unavailable.,精確的目前正式品質觀測不可用。
+The exact current formal quality projection head is unavailable.,精確的目前正式品質投影頭不可用。
+The sealed formal quality link response hash does not match its payload.,已密封正式品質關聯回應的雜湊與其載荷不符。
