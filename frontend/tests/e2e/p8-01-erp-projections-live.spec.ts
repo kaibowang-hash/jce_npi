@@ -33,9 +33,9 @@ function required<T>(value: T | undefined, message: string): T {
 }
 
 interface ProjectionApiOptions {
-  delay?: boolean;
   malformed?: boolean;
   problemStatus?: 403 | 503;
+  responseMayComplete?: Promise<void>;
   value?: ErpProjectionCollectionViewModel;
 }
 
@@ -132,10 +132,8 @@ async function installProjectApi(
     expect(route.request().method()).toBe("GET");
     expect(new URL(route.request().url()).search).toBe("");
     observed.push(new URL(route.request().url()).pathname);
-    if (options.delay) {
-      await new Promise<void>((resolve) => {
-        globalThis.setTimeout(resolve, 450);
-      });
+    if (options.responseMayComplete) {
+      await options.responseMayComplete;
     }
     if (options.problemStatus) {
       await fulfillProblem(route, locale, options.problemStatus);
@@ -260,13 +258,21 @@ test.describe("P8-01 live ERP projection read path", () => {
   test("keeps loading, redacted, denied, retryable and invalid responses explicit", async ({
     page,
   }) => {
+    let releaseResponse: (() => void) | undefined;
+    const responseMayComplete = new Promise<void>((resolve) => {
+      releaseResponse = resolve;
+    });
     await installSession(page, "en");
-    await installProjectApi(page, "en", { delay: true });
+    await installProjectApi(page, "en", { responseMayComplete });
     const navigation = page.goto(
       `/projects/${projectId}?lang=en&tab=controls`,
       { waitUntil: "domcontentloaded" },
     );
-    await expect(page.getByLabel("Loading ERP projections")).toBeVisible();
+    try {
+      await expect(page.getByLabel("Loading ERP projections")).toBeVisible();
+    } finally {
+      releaseResponse?.();
+    }
     await navigation;
     await expect(
       page.getByRole("heading", { name: "ERPNext governed projections" }),

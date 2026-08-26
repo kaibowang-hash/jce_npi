@@ -5825,3 +5825,35 @@ repeat or rewrite it merely to restore context. See
   unauthorized ninth path is rejected.
 - Controller marker:
   `P8-05 final held; synthetic Tool Asset terminal replay repair 1/1 Level 1 PASS`.
+
+## 2026-08-26 P8-05 ordinary P8-01 loading harness remediation
+
+- Synthetic-terminal replay repair SHA
+  `5c2e7b252fc9259c9ba772eef005ce685e78beed` reached exact ordinary CI
+  `32926690741`. Repository `98050949937`, secret scan `98050949942` and
+  governed visual `98050949808` pass. Frontend `98050949978` ran 454 E2E
+  cases and failed only the pre-existing P8-01 ERP-projection loading
+  observation; 453 cases passed. No file in the exact-eight repair diff is a
+  frontend path.
+- Static cross-proof identifies a deterministic harness race, not a product
+  regression: the test released the mocked projection response after a fixed
+  450 ms measured from route interception, so a loaded CI worker could spend
+  that interval before React mounted the loading surface. The repository's
+  established loading peers hold their response behind an explicit Promise.
+- The same-cycle verifier-only remediation replaces the wall-clock delay with
+  an explicit response gate, asserts the unchanged loading label while the
+  request is provably pending, and releases in `finally` before asserting the
+  loaded projection. It does not add a retry, increase a timeout, alter a
+  route/fixture response, or change product code.
+- CURRENT_TASK adds only the exact P8-01 E2E path and its focused Playwright
+  check. The post-synthetic-Outbox worker-parent cycle remains frozen at
+  diagnostic `1/1`, product repair `1/1`, final `0/1`; all diagnostics remain
+  false.
+- Level 1 passes Prettier, ESLint and TypeScript, then the five affected
+  nonvisual P8-01 cases across five consecutive single-worker runs (`25/25`).
+  Current-task/reconciliation units pass `33/33`, both verification scripts,
+  JSON/YAML parse, diff hygiene and exact-five manifest pass; an unauthorized
+  sixth path is rejected. No baseline, product, diagnostic or timeout changes
+  are present.
+- Controller marker:
+  `P8-05 final held; ordinary P8-01 loading harness remediation Level 1 PASS`.

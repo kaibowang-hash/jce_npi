@@ -85,6 +85,7 @@
     "frontend/src/pages/tooling-workspace.tsx",
     "frontend/src/styles/app.css",
     "frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts",
+    "frontend/tests/e2e/p8-01-erp-projections-live.spec.ts",
     "frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-06-acceptance-assets-en-1366x768-100-linux.png",
     "frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-06-acceptance-assets-zh-1440x900-125-linux.png",
     "frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-06-acceptance-assets-zh-TW-1920x1080-150-linux.png",
@@ -135,6 +136,7 @@
       ["python", "-m", "unittest", "tests.test_phase6_tooling_runtime_verifier", "-v"],
       ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase8_item_publish_*.py"],
       ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase8_mbom_publish_*.py"],
+      ["npx", "playwright", "test", "frontend/tests/e2e/p8-01-erp-projections-live.spec.ts"],
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
       ["git", "diff", "--check"]

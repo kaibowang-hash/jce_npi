@@ -1105,3 +1105,30 @@ Canonical Linux/amd64 SHA-256 evidence:
   rejected.
 - Controller marker:
   `P8-05 final held; synthetic Tool Asset terminal replay repair 1/1 Level 1 PASS`.
+
+### Ordinary P8-01 loading harness remediation
+
+- Exact ordinary `32926690741` for repair SHA
+  `5c2e7b252fc9259c9ba772eef005ce685e78beed` passes repository
+  `98050949937`, secret `98050949942` and governed visual `98050949808`.
+  Frontend `98050949978` passes 453/454 and fails only the existing P8-01 ERP
+  projection loading observation. The exact-eight repair has no frontend
+  path.
+- The fixed 450 ms mock delay can expire after route interception but before
+  the loading surface mounts on a loaded CI worker. This is the unique
+  harness root: the product loading branch is still request-pending state,
+  the same response later renders valid loaded truth, and repository peers
+  use an explicit response gate for the same contract.
+- The verifier-only remediation keeps the response pending until the exact
+  loading label is observed, releases it in `finally`, then checks the same
+  loaded heading and value. No product, response, route, timeout or retry
+  changes are made. CURRENT_TASK gains only the exact P8-01 E2E path and
+  focused check; all diagnostics stay false and cycle counters remain
+  `1/1,1/1,0/1`.
+- Level 1 passes Prettier, ESLint, TypeScript and five consecutive
+  single-worker executions of the five affected nonvisual cases (`25/25`).
+  Current/reconciliation units pass `33/33`; verifier scripts, JSON/YAML,
+  diff and exact-five manifest pass, with an unauthorized sixth rejected.
+  No governed baseline or product file changes.
+- Controller marker:
+  `P8-05 final held; ordinary P8-01 loading harness remediation Level 1 PASS`.

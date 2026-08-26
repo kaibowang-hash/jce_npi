@@ -1926,3 +1926,34 @@ write-free public replay, zero redispatch, compile, executable, shell,
 JSON/YAML, security-negative, current/reconciliation and diff checks pass.
 All thirty-one runtime diagnostic flags are false. The exact-eight manifest
 passes and rejects an unauthorized ninth path.
+
+## 53. Ordinary P8-01 loading harness remediation
+
+Synthetic-terminal replay repair SHA
+`5c2e7b252fc9259c9ba772eef005ce685e78beed` reaches exact ordinary CI
+`32926690741`. Repository `98050949937`, secret scan `98050949942` and
+governed visual `98050949808` pass. Frontend `98050949978` passes 453 of 454
+E2E cases and fails only the existing P8-01 loading-state observation. The
+exact-eight repair contains no frontend path.
+
+The failure has one harness source. The projection route released its mock
+after a fixed 450 ms; that wall-clock interval starts at interception and can
+expire before a loaded CI worker mounts the React loading surface. The test
+then cannot observe a state whose response has already completed. Existing
+governed loading peers instead use an explicit unresolved Promise, proving
+the intended deterministic contract.
+
+The bounded same-cycle remediation holds the unchanged projection response
+until the existing loading label is visible, releases the response in
+`finally`, and then requires the unchanged loaded heading and formal value.
+It does not change product code, route matching, response data, assertions,
+timeouts or retries. CURRENT_TASK authorizes only this exact E2E path and its
+focused check. The worker-parent cycle remains `1/1,1/1,0/1`; all diagnostic
+activations remain false.
+
+Level 1 passes focused formatting, lint and TypeScript plus five consecutive
+single-worker runs of all five nonvisual P8-01 cases (`25/25`). The exact
+loading case passes in every run. Current-task/reconciliation units pass
+`33/33`; scripts, JSON/YAML parse, diff hygiene and exact-five manifest pass,
+and an unauthorized sixth path is rejected. Product, visual baselines,
+timeouts and diagnostic activations are unchanged.
