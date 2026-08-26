@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-20T14:06:43Z`
+Updated: `2026-08-26T23:45:00Z`
 
 ## Authority and operating mode
 
@@ -5891,3 +5891,55 @@ repeat or rewrite it merely to restore context. See
   rejected.
 - Controller marker:
   `P8-05 final held; Tool Asset terminology release remediation Level 1 PASS`.
+
+## 2026-08-26 P8-05 final closeout and P8-06 audit activation
+
+- Exact product SHA `f9c358018823f3af20aca38efb53f8fcbd13d406`
+  passes ordinary CI `32937395289` and final Level 3 `32938622250`.
+  Final jobs are repository `98084790776`, frontend `98084790857`, secret
+  `98084790876`, governed visual `98084790917`, controlled preflight
+  `98087726984` and cumulative runtime `98087768879`.
+- Runtime artifact `9596248305` has SHA-256
+  `11554463405c3165891e23bbd522e9c6093ef00f95d34d221d182efebfea8c41`;
+  visual artifact `9595833757` has SHA-256
+  `0a9712c3bf082a52a59ac04344a6e1ba2837ae831bf15994745b8950a06dd9b8`;
+  Gitleaks artifact `9595725822` has SHA-256
+  `25e68fa800f44f5927120e472245707ee1abb5e6fc6b453d165a4fdbd7de5f58`.
+  Scope is `p5-01-through-p8-05`, predecessor is
+  `p5-01-through-p8-04`, visual is `129/129`, and all diagnostics are false.
+- Authoritative DOCX plus the established catalogs uniquely resolve Tool
+  Asset as `模具资产` / `模具資產`. Allowlist, source catalogs, generated
+  catalog and regression agree; user-visible/generated forbidden alternation
+  is zero. The four affected canonical Chinese visuals are text-only changes
+  inside the passing complete matrix.
+- `INT-005` and `FR-TL-011..016` advance only for the bounded technical Tool
+  Asset execution portions. Production/Sandbox mapping, current ERPNext
+  method/fields/location/maintenance, business approval and whole production
+  acceptance remain held.
+- P8-06 activates audit-only for `INT-007`, `FR-TR-006` and `FR-NP-006`.
+  Formal Quality Inspection/NCR/CAPA truth remains ERPNext-owned and read-only;
+  failed/unavailable truth cannot be presented as pass. Product code,
+  route/writer/worker/adapter/UI/network remain unauthorized until a separate
+  frozen P8-06 plan passes exact-SHA ordinary CI.
+- Controller marker: `P8-05 Level 3 PASS; P8-06 audit active`.
+
+## 2026-08-26 P8-05 closeout Gitleaks lexical remediation
+
+- Closeout commit `c3b445b1b89d6d994766515540f6f8467bde15f3`
+  reached ordinary CI `32942302400`. Repository `98095619557`, frontend
+  `98095619626` and governed visual `98095619424` passed; secret job
+  `98095619359` alone failed the full branch-history scan.
+- The sole safe finding was `generic-api-key` at
+  `implementation/PHASE_STATUS.yaml:2426`. Static cross-proof and the pinned
+  Gitleaks `8.24.3` scanner prove the high-entropy value is the already
+  governed Gitleaks artifact SHA-256 and that the lexical `secret` field name,
+  not a credential, selected the generic rule.
+- The bounded history-clean remediation renames only the evidence key from
+  `final_secret_artifact_sha256` to `final_gitleaks_artifact_sha256`. The
+  artifact hash value, final job/artifact evidence, release disposition,
+  scanner rules and `.gitleaksignore` remain unchanged. A reconciliation
+  regression locks the non-secret evidence key and exact lowercase SHA-256
+  shape.
+- No old-run rerun, Site dispatch, allowlist addition or rule weakening is
+  permitted. Controller marker:
+  `P8-05 closeout held; Gitleaks lexical remediation Level 1 active`.

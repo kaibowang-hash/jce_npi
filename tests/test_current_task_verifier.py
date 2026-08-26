@@ -34,33 +34,26 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P8-05")
+        self.assertEqual(value["task_id"], "P8-06")
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P8-06")
+        self.assertEqual(value["authorized_next_task"], "P8-07")
         self.assertIn(
-            "P8_05_FROZEN_PLAN_EXACT_SHA_ORDINARY_CI_32656436943_PASSED",
+            "P8_06_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_THE_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_ORDINARY_CI",
             value["frozen_invariants"],
         )
-        self.assertEqual(
-            value["status"],
-            "IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT",
-        )
+        self.assertEqual(value["status"], "IN_PROGRESS_AUDIT")
         self.assertIn(
-            "P8_05_CHECKPOINT_3_EXACT_SHA_ORDINARY_CI_32667224305_PASSED",
+            "P8_05_LEVEL_3_EXACT_SHA_F9C358018823F3AF20ACA38EFB53F8FCBD13D406_ORDINARY_32937395289_FINAL_32938622250_PASSED",
             value["frozen_invariants"],
         )
-        self.assertIn(
-            "apps/npi_integration/npi_integration/tool_asset_request/**",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "scripts/verify_tooling_acceptance_runtime.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "contracts/integration-event.schema.json",
-            value["allowed_paths"],
+        self.assertEqual(value["requirement_ids"], ["INT-007", "FR-TR-006", "FR-NP-006"])
+        self.assertIn("implementation/evidence/phase-8/p8-06-*.md", value["allowed_paths"])
+        self.assertFalse(
+            any(
+                path.startswith(("apps/", "frontend/", "contracts/"))
+                for path in value["allowed_paths"]
+            )
         )
         self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
 

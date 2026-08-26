@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-05 CHECKPOINTS 1–3 PASS; CHECKPOINT 4 IMPLEMENTED; AWAITS EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-05 LEVEL 3 PASS; P8-06 AUDIT ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -456,13 +456,32 @@ maintenance ownership. Frozen-plan SHA `937c5d72` passes ordinary CI
 `32656436943`; remediated checkpoint 1 SHA `db0cb846` passes ordinary CI
 `32660953137`; checkpoint 2 SHA `d20b4a3` passes ordinary CI `32664440277`;
 and checkpoint 3 SHA `17406118` passes ordinary CI `32667224305`. Checkpoint 4
-now implements only the strict read-only execution detail projection and
+implements only the strict read-only execution detail projection and
 compact trilingual Tool Asset execution inspector inside the existing Tooling
 acceptance/Asset workspace. Formal Asset identity remains withheld unless
 authenticated authoritative evidence, the exact current mapping head and the
 fresh permitted P8-01 projection agree. Target network, Sandbox/production
 facts and retry, reconcile, submit, ERP approval, movement and maintenance
-controls remain closed. Final unchanged Level 3 waits for checkpoint 4
-exact-SHA ordinary CI. `NFR-INT-001` generic operations/DLQ/manual replay/
-reconciliation remains P8-07. P8-06, P8-08/P8-09 and production ERPNext/JCE
-remain inactive.
+controls remain closed.
+
+P8-05 passes at exact product SHA
+`f9c358018823f3af20aca38efb53f8fcbd13d406`, ordinary CI `32937395289`
+and final Level 3 `32938622250`. Six final jobs, `129/129` governed visuals,
+the cumulative disposable runtime and runtime/visual/Gitleaks artifact hashes
+pass; every diagnostic flag is false. Complete evidence is
+`implementation/evidence/phase-8/p8-05-validation.md`.
+
+`INT-005` and `FR-TL-011..016` are technically verified only for the bounded
+Tool Asset execution foundation. Production/Sandbox mapping, current ERPNext
+Asset method/fields/location/maintenance, business approval and overall
+production acceptance remain held. `NFR-INT-001` generic operations/DLQ/
+manual replay/reconciliation remains P8-07.
+
+P8-06 is active only as an audit for `INT-007`, `FR-TR-006` and
+`FR-NP-006`. Formal Quality Inspection/NCR/CAPA identity, lifecycle, approval,
+submission and result remain ERPNext-owned read-only truth; NPI Trial, issue,
+review, readiness and controlled-report evidence cannot imply ERP approval or
+pass. Product code, route, writer, worker, adapter, UI, target network and
+invented ERPNext method/field rules remain unauthorized until a separately
+frozen P8-06 plan passes exact-SHA ordinary CI. P8-08/P8-09 and production
+ERPNext/JCE remain inactive.

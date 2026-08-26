@@ -1179,3 +1179,41 @@ scripts pass. The i18n audit covers `8,341` literal English sources with
 complete direct zh/zh-TW coverage, forbidden alternation residuals are zero,
 all diagnostics remain false, diff hygiene passes, exact-sixteen post-commit
 simulation passes and an unauthorized seventeenth path is rejected.
+
+## Final Level 3 and release closeout
+
+Exact product SHA `f9c358018823f3af20aca38efb53f8fcbd13d406`
+passes ordinary CI `32937395289` and final Level 3 `32938622250`.
+Repository `98084790776`, frontend `98084790857`, secret `98084790876`,
+visual `98084790917`, controlled preflight `98087726984` and cumulative
+runtime `98087768879` all pass. The governed visual matrix is `129/129`, all
+diagnostics are dormant, and cumulative scope is `p5-01-through-p8-05` with
+predecessor `p5-01-through-p8-04`.
+
+The runtime, visual and Gitleaks artifacts are respectively `9596248305` /
+`11554463405c3165891e23bbd522e9c6093ef00f95d34d221d182efebfea8c41`,
+`9595833757` /
+`0a9712c3bf082a52a59ac04344a6e1ba2837ae831bf15994745b8950a06dd9b8`,
+and `9595725822` /
+`25e68fa800f44f5927120e472245707ee1abb5e6fc6b453d165a4fdbd7de5f58`.
+
+This closes only the technical Tool Asset execution and inspector portions.
+Production/Sandbox target operation, current ERPNext method/fields/location/
+maintenance, business approval and formal mapping remain held. Complete
+release evidence is `implementation/evidence/phase-8/p8-05-validation.md`.
+P8-06 is audit-only and product code remains unauthorized.
+
+The P8-05 closeout documentation candidate
+`c3b445b1b89d6d994766515540f6f8467bde15f3` reached ordinary CI
+`32942302400`: repository `98095619557`, frontend `98095619626` and visual
+`98095619424` passed, while secret job `98095619359` alone failed the complete
+branch-history scan. The safe finding was the `generic-api-key` rule at the
+`final_secret_artifact_sha256` evidence key. The recorded value is the
+governed Gitleaks artifact SHA-256 already proven by final Level 3, and the
+keyword-bearing field name uniquely caused the lexical classification.
+
+The bounded remediation changes that key only to
+`final_gitleaks_artifact_sha256`, retains its value, and adds a reconciliation
+regression for the non-secret evidence key and lowercase SHA-256 shape. It
+does not add an ignore fingerprint, weaken Gitleaks, change product code or
+release evidence, rerun the failed ordinary workflow, or dispatch a Site.

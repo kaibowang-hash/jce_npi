@@ -2002,3 +2002,45 @@ coverage; the Frappe localization/current/reconciliation group passes
 `75/75`, verifier scripts pass, forbidden alternation and diagnostic-enabled
 scans are zero, and diff hygiene passes. Exact-sixteen post-commit simulation
 accepts the governed set and rejects an unauthorized seventeenth path.
+
+## Final release-gate closeout
+
+P8-05 passes at exact product SHA
+`f9c358018823f3af20aca38efb53f8fcbd13d406`. Ordinary CI `32937395289`
+passes repository, frontend, secret and governed visual lanes. Final Level 3
+`32938622250` passes the same exact SHA with repository `98084790776`,
+frontend `98084790857`, secret `98084790876`, visual `98084790917`,
+controlled preflight `98087726984` and cumulative runtime `98087768879`.
+The governed visual matrix is `129/129`; the controlled runtime scope is
+`p5-01-through-p8-05` with predecessor `p5-01-through-p8-04`.
+
+Runtime artifact `9596248305` has SHA-256
+`11554463405c3165891e23bbd522e9c6093ef00f95d34d221d182efebfea8c41`;
+visual artifact `9595833757` has SHA-256
+`0a9712c3bf082a52a59ac04344a6e1ba2837ae831bf15994745b8950a06dd9b8`;
+Gitleaks artifact `9595725822` has SHA-256
+`25e68fa800f44f5927120e472245707ee1abb5e6fc6b453d165a4fdbd7de5f58`.
+All diagnostics are dormant.
+
+The authoritative terminology chain now uses only `模具资产` / `模具資產`
+for Tool Asset; user-visible/generated sources contain no forbidden
+alternation, and all four affected Chinese canonical images are text-only
+updates inside the passing `129/129` matrix. Complete evidence is
+`implementation/evidence/phase-8/p8-05-validation.md`.
+
+Only the bounded technical portions of `INT-005` and `FR-TL-011..016` are
+verified. Production/Sandbox execution, current ERPNext Asset method and field
+mapping, location/maintenance rules, business approval and formal production
+mapping remain held. P8-06 starts audit-only; no P8-06 product code, route,
+writer, worker, adapter, UI or target network is authorized.
+
+The first governed closeout commit
+`c3b445b1b89d6d994766515540f6f8467bde15f3` reached ordinary CI
+`32942302400`. Repository, frontend and visual passed; secret job
+`98095619359` alone failed on the `generic-api-key` lexical classification of
+the `final_secret_artifact_sha256` evidence key in `PHASE_STATUS.yaml`. The
+value is the already governed Gitleaks artifact SHA-256, not a credential.
+The same-cycle history-clean remediation renames only that key to
+`final_gitleaks_artifact_sha256`, preserves the value bit-for-bit, adds no
+allowlist, changes no scanner rule and consumes no product repair. The failed
+ordinary run is not rerun or reused for a controlled workflow.

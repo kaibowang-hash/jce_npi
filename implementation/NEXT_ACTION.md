@@ -1,18 +1,27 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT — P8-05`
+`IN_PROGRESS_AUDIT — P8-06`
 
-Recovery time: `2026-08-23T20:13:00Z`
+Recovery time: `2026-08-26T23:45:00Z`
 
-Current atomic action: commit only the response-neutral P6-06 predecessor
-Asset-create diagnostic checkpoint after Level 1 passes, then wait for its
-exact-SHA ordinary CI before one controlled diagnostic Site. Final P8-05
-Level 3 run `32682520429` remains immutable failed evidence; no product repair
-is authorized by its opaque HTTP 500.
+Current atomic action: audit only P8-06 quality linkage for `INT-007`,
+`FR-TR-006` and `FR-NP-006`, then freeze a separate governed
+`implementation/evidence/phase-8/p8-06-plan.md`. Product code is not
+authorized. Do not add a route, writer, worker, adapter, UI or target network
+contact before that plan passes exact-SHA ordinary CI.
 
 Required branch:
 `codex/npi-v1.2-implementation`
+
+P8-05 final product checkpoint and P8-06 audit base:
+`f9c358018823f3af20aca38efb53f8fcbd13d406`
+
+P8-05 final ordinary CI:
+`32937395289`
+
+P8-05 final Level 3 workflow:
+`32938622250`
 
 Completed P7-04 product checkpoint:
 `02781c0c712c4d8c739114ead24545daa537329d`
@@ -251,6 +260,19 @@ P8-04 final Level 3 workflow:
 `32651903846`
 
 ## Current authoritative action
+
+P8-05 is complete at exact SHA
+`f9c358018823f3af20aca38efb53f8fcbd13d406`, ordinary CI `32937395289`
+and Level 3 `32938622250`. Complete evidence is
+`implementation/evidence/phase-8/p8-05-validation.md`.
+
+The sole next atomic action is the P8-06 requirement/domain/existing-
+capability/security audit for `INT-007`, `FR-TR-006` and `FR-NP-006`, followed
+by a separately governed `p8-06-plan.md`. Preserve formal Quality Inspection,
+NCR and CAPA as ERPNext-owned read-only truth; do not infer ERP approval or
+pass from NPI evidence. Do not modify product/app/frontend/contracts or add a
+route, writer, worker, adapter, UI or network behavior. Production/Sandbox
+methods, fields, approval and service-scope facts remain held.
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
 `31898840279` passes repository `95046204818` (`1,921` tracked Python),

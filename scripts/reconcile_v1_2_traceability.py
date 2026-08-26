@@ -425,17 +425,21 @@ P8_04_COMPLETED_ALLOCATION = {
     "INT-004": "TECHNICAL_VERIFIED_MBOM_EXECUTION_FOUNDATION_PRODUCTION_SANDBOX_MAPPING_HELD",
     "FR-DS-013": "TECHNICAL_VERIFIED_ITEM_AND_MBOM_PORTIONS_PRODUCTION_SANDBOX_MAPPING_AND_WHOLE_REQUIREMENT_HELD",
 }
-P8_05_AUDIT_EVIDENCE = (
+P8_05_COMPLETED_EVIDENCE = (
     "implementation/evidence/phase-8/p8-05-plan.md",
+    "implementation/evidence/phase-8/p8-05-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-8/p8-05-worker-execution-checkpoint.md",
+    "implementation/evidence/phase-8/p8-05-execution-inspector-checkpoint.md",
+    "implementation/evidence/phase-8/p8-05-validation.md",
 )
-P8_05_AUDIT_REQUIREMENTS = {
-    "INT-005",
-    "FR-TL-011",
-    "FR-TL-012",
-    "FR-TL-013",
-    "FR-TL-014",
-    "FR-TL-015",
-    "FR-TL-016",
+P8_05_COMPLETED_ALLOCATION = {
+    "INT-005": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_FOUNDATION_PRODUCTION_SANDBOX_MAPPING_HELD",
+    "FR-TL-011": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-012": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-013": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-014": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-015": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-016": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
 }
 P8_ANCHOR_ALLOCATION = {
     "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
@@ -443,6 +447,7 @@ P8_ANCHOR_ALLOCATION = {
     "P8-03": {"INT-003"},
     "P8-04": {"INT-004"},
     "P8-05": {"INT-005"},
+    "P8-06": {"INT-007", "FR-TR-006", "FR-NP-006"},
     "P8-07": {"FR-RP-009", "NFR-INT-001"},
     "P8-09": {"FR-BR-002"},
 }
@@ -964,15 +969,17 @@ def _expanded_rows(
             dict.fromkeys((*evidence, *P8_04_COMPLETED_EVIDENCE))
         )
 
-    for requirement_id in P8_05_AUDIT_REQUIREMENTS:
+    for requirement_id, status in P8_05_COMPLETED_ALLOCATION.items():
         row = expanded_by_id[requirement_id]
+        row["phase"] = "8"
+        row["status"] = status
         evidence = [
             value.strip()
             for value in row["evidence"].split(";")
             if value.strip()
         ]
         row["evidence"] = "; ".join(
-            dict.fromkeys((*evidence, *P8_05_AUDIT_EVIDENCE))
+            dict.fromkeys((*evidence, *P8_05_COMPLETED_EVIDENCE))
         )
 
     return expanded

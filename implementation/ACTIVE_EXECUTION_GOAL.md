@@ -1,26 +1,26 @@
 # Active Execution Goal
 
-Updated: `2026-08-23T20:13:00Z`
+Updated: `2026-08-26T23:45:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT — P8-05`
+- Mode: `IN_PROGRESS_AUDIT — P8-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `3d35d6860e63478bc12fde9a0426d0ea00c8b31e` (pushed; P8-05 checkpoint 4
-  ordinary PASS; final held at the P6-06 predecessor boundary)
+  `f9c358018823f3af20aca38efb53f8fcbd13d406` (pushed; P8-05
+  `PASS_LEVEL_3`; P8-06 audit base)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `32651903846` (`PASS — LEVEL 3` at `ca72deceab4b8e899d0da1207883887c9d30077a`;
-  repository, frontend, secret, `126/126` visual and cumulative controlled Site)
+  `32938622250` (`PASS — LEVEL 3` at
+  `f9c358018823f3af20aca38efb53f8fcbd13d406`; repository, frontend,
+  secret, `129/129` visual, controlled preflight and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32680231720` (`PASS` at
-  `3d35d6860e63478bc12fde9a0426d0ea00c8b31e`; P8-05 checkpoint 4,
-  final Level 3 `32682520429` held at the P6-06 predecessor boundary)
+  `32937395289` (`PASS` at
+  `f9c358018823f3af20aca38efb53f8fcbd13d406`; P8-05 final)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -113,22 +113,40 @@ Updated: `2026-08-23T20:13:00Z`
 - P8-04 final product Gate:
   `ca72deceab4b8e899d0da1207883887c9d30077a` (`LEVEL 3 PASS`;
   ordinary CI `32651139504`; exact-SHA Level 3 `32651903846`)
+- P8-05 final product Gate:
+  `f9c358018823f3af20aca38efb53f8fcbd13d406` (`LEVEL 3 PASS`;
+  ordinary CI `32937395289`; exact-SHA Level 3 `32938622250`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-05 — Tool Asset execution`
-  (`IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT`)
-- Resumed product task: `P8-05` (`CHECKPOINT_4_IMPLEMENTED`)
+  `P8-06 — quality linkage` (`IN_PROGRESS_AUDIT`)
+- Resumed product task: `P8-06` (`ACTIVE_AUDIT_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-05 CHECKPOINT 4`)
+  (`IN_PROGRESS — P8-06 AUDIT`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
+
+P8-05 is sealed `PASS_LEVEL_3` at exact product SHA
+`f9c358018823f3af20aca38efb53f8fcbd13d406`. Ordinary CI `32937395289`
+and final Level 3 `32938622250` pass all required lanes, `129/129` governed
+visuals and the cumulative disposable runtime; artifact IDs and hashes are
+recorded in `implementation/evidence/phase-8/p8-05-validation.md`. All
+diagnostics are false. The bounded technical Tool Asset portions are verified,
+while production/Sandbox mapping, ERPNext Asset method/fields/location/
+maintenance and business approval remain held.
+
+Only P8-06 audit work is active. It covers `INT-007`, `FR-TR-006` and
+`FR-NP-006`, preserves formal Quality Inspection/NCR/CAPA truth as ERPNext-
+owned read-only observations and forbids presenting failed or unavailable
+truth as pass. Product code, route, writer, worker, adapter, UI and target
+network remain unauthorized until the separate audit plan passes exact-SHA
+ordinary CI.
 
 P7-08 and Phase 7 are sealed at exact final product checkpoint `3111402`.
 Ordinary CI `31898840279` passes `1,921` tracked Python tests, `918/918`

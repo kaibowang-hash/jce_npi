@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-23T20:13:00Z'
+updated_at: '2026-08-26T23:45:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P8-05
-current_task_status: IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT
-current_task_completed_stage: P8_05_CHECKPOINT_4_ORDINARY_PASS_FINAL_FAILED_AT_P6_06_PREDECESSOR
-current_task_next_stage: P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT
-current_task_next_stage_status: IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY_CI
-resumed_product_task: P8-05
-resumed_product_task_status: P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT
+current_task: P8-06
+current_task_status: IN_PROGRESS_AUDIT
+current_task_completed_stage: P8_05_PASS_LEVEL_3
+current_task_next_stage: P8_06_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_SECURITY_AUDIT
+current_task_next_stage_status: ACTIVE_PRODUCT_CODE_UNAUTHORIZED
+resumed_product_task: P8-06
+resumed_product_task_status: ACTIVE_AUDIT_ONLY
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -2384,7 +2384,7 @@ p8_04:
 p8_05:
   task: P8-05
   controller_task: P8-05_TOOL_ASSET_EXECUTION
-  status: IN_PROGRESS_P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT
+  status: PASS_LEVEL_3
   phase: 8
   milestone: M7-05
   requirements:
@@ -2408,16 +2408,28 @@ p8_05:
   checkpoint_3_ordinary_ci: 32667224305
   checkpoint_4_product_checkpoint: 3d35d6860e63478bc12fde9a0426d0ea00c8b31e
   checkpoint_4_ordinary_ci: 32680231720
-  final_level_3_run: 32682520429
-  final_runtime_job: 97303507677
-  final_level_3_status: FAILED_AT_P6_06_PREDECESSOR_ASSET_CREATE_HTTP_500
-  p6_06_predecessor_cycle_diagnostic: 0_OF_1
-  p6_06_predecessor_cycle_repair: 0_OF_1
-  p6_06_predecessor_cycle_final: 0_OF_1
-  product_code_authorized: true
+  final_product_checkpoint: f9c358018823f3af20aca38efb53f8fcbd13d406
+  final_ordinary_ci: 32937395289
+  final_level_3_run: 32938622250
+  final_level_3_status: PASS
+  final_repository_job: 98084790776
+  final_frontend_job: 98084790857
+  final_secret_job: 98084790876
+  final_visual_job: 98084790917
+  final_controlled_preflight_job: 98087726984
+  final_runtime_job: 98087768879
+  final_runtime_artifact: 9596248305
+  final_runtime_artifact_sha256: 11554463405c3165891e23bbd522e9c6093ef00f95d34d221d182efebfea8c41
+  final_visual_artifact: 9595833757
+  final_visual_artifact_sha256: 0a9712c3bf082a52a59ac04344a6e1ba2837ae831bf15994745b8950a06dd9b8
+  final_secret_artifact: 9595725822
+  final_gitleaks_artifact_sha256: 25e68fa800f44f5927120e472245707ee1abb5e6fc6b453d165a4fdbd7de5f58
+  governed_visual_cases: 129
+  terminology_rule: TOOL_ASSET_IS_MOLD_ASSET_ZH_AND_ZH_TW
+  product_code_authorized: COMPLETE_RETAINED
   product_code_changed: true
-  current_stage: P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_CHECKPOINT
-  next_stage_after_pass: P6_06_PREDECESSOR_ASSET_CREATE_DIAGNOSTIC_SITE
+  current_stage: COMPLETE
+  next_stage_after_pass: P8_06_AUDIT
   physical_mapping_rule: ONE_PHYSICAL_TOOLING_SET_TO_ZERO_OR_ONE_FORMAL_ERP_ASSET
   operation_rule: CREATE_AND_UPDATE_ARE_OPERATION_SPECIFIC_NOT_GENERIC_CRUD
   ownership_rule: ERP_ASSET_LOCATION_MOVEMENT_MAINTENANCE_AND_VERSION_OWNED_BY_ERPNEXT
@@ -2439,6 +2451,42 @@ p8_05:
     - implementation/evidence/phase-8/p8-04-validation.md
     - implementation/evidence/phase-8/p8-05-plan.md
     - implementation/evidence/phase-8/p8-05-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-8/p8-05-worker-execution-checkpoint.md
+    - implementation/evidence/phase-8/p8-05-execution-inspector-checkpoint.md
+    - implementation/evidence/phase-8/p8-05-validation.md
+p8_06:
+  task: P8-06
+  controller_task: P8-06_QUALITY_LINKAGE
+  status: IN_PROGRESS_AUDIT
+  phase: 8
+  milestone: M7-06
+  requirements:
+    - INT-007
+    - FR-TR-006
+    - FR-NP-006
+  predecessor_product_checkpoint: f9c358018823f3af20aca38efb53f8fcbd13d406
+  audit_base_checkpoint: f9c358018823f3af20aca38efb53f8fcbd13d406
+  audit: IN_PROGRESS
+  product_code_authorized: false
+  product_code_changed: false
+  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_SECURITY_AUDIT
+  next_stage_after_pass: FROZEN_PLAN_EXACT_SHA_ORDINARY_CI
+  ownership_rule: ERP_OWNS_FORMAL_QUALITY_INSPECTION_NCR_CAPA_APPROVAL_AND_RESULT
+  evidence_rule: NPI_TRIAL_ISSUE_REVIEW_READINESS_AND_REPORT_EVIDENCE_IS_NOT_ERP_APPROVAL_OR_PASS
+  observed_truth_rule: FORMAL_QUALITY_REFERENCES_ARE_READ_ONLY_PROJECT_BOUND_CURRENT_OBSERVATIONS
+  failure_rule: FAILED_PARTIAL_UNCERTAIN_UNAVAILABLE_MOCK_OR_SYNTHETIC_NEVER_PRESENTS_AS_FORMAL_PASS
+  external_holds:
+    - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_AND_NETWORK_CONTACT
+    - CURRENT_ERPNEXT_QUALITY_INSPECTION_NCR_CAPA_METHOD_FIELD_LIFECYCLE_APPROVAL_AND_SERVICE_SCOPE_MAPPING
+    - AUTHENTICATED_SANDBOX_QUALITY_OPERATION_AND_RESULT_CONFIRMATION_NOT_AVAILABLE
+    - FORMAL_QUALITY_PASS_FROM_NPI_EVIDENCE_MOCK_SYNTHETIC_HTTP_ACCEPTANCE_PARTIAL_OR_TIMEOUT
+    - NFR_INT_001_FULL_OPERATIONS_REPLAY_AND_RECONCILIATION_P8_07
+    - P8_08_P8_09_AND_PHASE_9_AUTHORITIES
+  evidence:
+    - implementation/phase-8-requirement-anchor.md
+    - implementation/evidence/phase-8/p8-00-validation.md
+    - implementation/evidence/phase-8/p8-01-validation.md
+    - implementation/evidence/phase-8/p8-05-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -2465,5 +2513,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04], current_task: P8-05}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05], current_task: P8-06}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}
