@@ -917,3 +917,42 @@ current/reconciliation `36/36`. Current and reconciliation scripts,
 compilation, shell syntax, exact activation, strict-reader/no-leak checks,
 product-zero-diff and diff hygiene pass. The exact-five manifest is accepted
 and an unauthorized sixth path is rejected.
+
+## 27. Independent P8-01 projection-fresh predecessor diagnostic
+
+Post-permission checkpoint `9853c23208305e4ece10e38749896bd90297127f`
+passes ordinary `33012596539`. Controlled run `33013828908` passes preflight
+`98326755117`; runtime `98326824448` contains no P8-06 tuple. Whitelist-only
+inspection of fixed shell labels identifies the unique P8-01 fresh projection
+failure branch. That branch exits before formal-quality verification and all
+P8-02/Item/MBOM/Tool Asset downstream work. The post-permission cycle therefore
+remains `0/1`, `0/1`, `0/1`; no quality-link product inference is permitted.
+
+The independent `p8-01-projection-fresh-predecessor` cycle starts at
+diagnostic `0/1`, repair `0/1`, final `0/1`. Sixteen ordered verifier-owned
+codes cover bootstrap/login/CSRF, retained context, seed spawn/status/parse/
+shape, collection and kind closure, invalid-query and guest authorization,
+internal/external access and cleanup, and Tooling consumers. Its exact scope,
+deterministic trace, O_EXCL exact-three-key file and strict reader admit only
+one code/type/trace tuple. Failed Bench child stderr is discarded and stdout
+is never read; successful child JSON alone is parsed. Default/no-scope paths
+remain behaviorally dormant and successful diagnostics produce no record.
+
+The exact-eight governed paths are `scripts/verify_projection_runtime.py`,
+`scripts/verify-frappe-runtime.sh`,
+`tests/test_phase8_projection_runtime_verifier.py`,
+`implementation/CURRENT_TASK.json`, `tests/test_current_task_verifier.py`,
+this plan, the checkpoint evidence and `implementation/AUTOPILOT_CONTROLLER.md`.
+The manifest adds only the two exact projection verifier/test paths and their
+focused/runtime-preflight commands; it adds no pattern or product path.
+Product semantics, repositories, APIs, permissions, transaction order,
+projection truth, target traffic, UI, FR-CO-003/004 deferral and all B/C holds
+remain unchanged. Production read-only fact/DoD governance remains queued.
+
+Level 1 passes focused projection/current `23/23`, complete affected P8-01/
+P8-06/P7 and Item/MBOM/Tool Asset `316/316`, full repository Python
+`2536/2536` and current/reconciliation `36/36`. Current/reconciliation scripts,
+generated-source check, compile, shell syntax, exact lexical stages, strict
+reader/no-leak checks and diff hygiene pass. The exact-eight post-commit union
+manifest is accepted and an unauthorized ninth path is rejected; product/app
+diff is zero.

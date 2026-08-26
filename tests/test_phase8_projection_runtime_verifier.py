@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import ast
 import importlib
+import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -334,6 +336,227 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
         self.assertLess(
             source.index('run_released_summary_runtime_verifier fresh'),
             source.index('run_projection_runtime_verifier fresh'),
+        )
+
+    def test_fresh_predecessor_diagnostic_is_exact_ordered_and_single(self) -> None:
+        codes = self.runtime.PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_CODES
+        self.assertEqual(len(codes), 16)
+        self.assertEqual(len(set(codes)), 16)
+        self.assertEqual(
+            codes,
+            (
+                "P801_PROJECTION_FRESH_BOOTSTRAP",
+                "P801_PROJECTION_FRESH_LOGIN",
+                "P801_PROJECTION_FRESH_CSRF",
+                "P801_PROJECTION_FRESH_RETAINED_CONTEXT",
+                "P801_PROJECTION_FRESH_SEED_SUBPROCESS",
+                "P801_PROJECTION_FRESH_SEED_STATUS",
+                "P801_PROJECTION_FRESH_SEED_PARSE",
+                "P801_PROJECTION_FRESH_SEED_SHAPE",
+                "P801_PROJECTION_FRESH_COLLECTION",
+                "P801_PROJECTION_FRESH_KIND_COLLECTIONS",
+                "P801_PROJECTION_FRESH_QUERY_VALIDATION",
+                "P801_PROJECTION_FRESH_GUEST_ACCESS",
+                "P801_PROJECTION_FRESH_INTERNAL_ACCESS",
+                "P801_PROJECTION_FRESH_EXTERNAL_ACCESS",
+                "P801_PROJECTION_FRESH_ACCESS_CLEANUP",
+                "P801_PROJECTION_FRESH_TOOLING_CONSUMERS",
+            ),
+        )
+        source = (SCRIPTS / "verify_projection_runtime.py").read_text(
+            encoding="utf-8"
+        )
+        positions = [source.index(f'"{code}"') for code in codes]
+        self.assertEqual(positions, sorted(positions))
+        tree = ast.parse(source)
+        staged = [
+            node.args[0].value
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "projection_fresh_predecessor_diagnostic_step"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ]
+        self.assertEqual(set(staged), set(codes))
+        self.assertTrue(all(staged.count(code) == 1 for code in codes))
+
+    def test_fresh_predecessor_reader_is_exact_and_no_leak(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        scope_env = self.runtime._PROJECTION_FRESH_DIAGNOSTIC_SCOPE_ENV
+        path_env = self.runtime._PROJECTION_FRESH_DIAGNOSTIC_PATH_ENV
+        with tempfile.TemporaryDirectory() as directory:
+            path = (
+                Path(directory)
+                / "p8-01-projection-fresh-predecessor-diagnostic.json"
+            )
+            with (
+                patch.dict(
+                    os.environ,
+                    {
+                        scope_env: self.runtime._PROJECTION_FRESH_DIAGNOSTIC_SCOPE,
+                        path_env: str(path),
+                    },
+                    clear=False,
+                ),
+                self.runtime.projection_fresh_predecessor_diagnostic_scope(trace_id),
+            ):
+                for error in (RuntimeError("secret-one"), ValueError("secret-two")):
+                    try:
+                        with self.runtime.projection_fresh_predecessor_diagnostic_step(
+                            "P801_PROJECTION_FRESH_COLLECTION"
+                        ):
+                            raise error
+                    except Exception:
+                        pass
+            payload = path.read_text(encoding="utf-8")
+            self.assertNotIn("secret-one", payload)
+            self.assertNotIn("secret-two", payload)
+            self.assertEqual(
+                set(json.loads(payload)),
+                {"code", "exceptionType", "traceId"},
+            )
+            self.assertEqual(
+                self.runtime.read_projection_fresh_predecessor_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("RuntimeError", "P801_PROJECTION_FRESH_COLLECTION", trace_id),
+            )
+            self.assertIsNone(
+                self.runtime.read_projection_fresh_predecessor_diagnostic(
+                    path,
+                    expected_trace="trace-fedcba9876543210fedcba9876543210",
+                )
+            )
+            path.unlink()
+            path.write_text(
+                json.dumps(
+                    {
+                        "code": "P801_PROJECTION_FRESH_UNKNOWN",
+                        "exceptionType": "RuntimeError",
+                        "traceId": trace_id,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertIsNone(
+                self.runtime.read_projection_fresh_predecessor_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+            )
+            path.write_text("not-json\n", encoding="utf-8")
+            self.assertIsNone(
+                self.runtime.read_projection_fresh_predecessor_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+            )
+
+    def test_failed_seed_child_output_is_never_read(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        with tempfile.TemporaryDirectory() as directory:
+            path = (
+                Path(directory)
+                / "p8-01-projection-fresh-predecessor-diagnostic.json"
+            )
+            with (
+                patch.dict(
+                    os.environ,
+                    {
+                        self.runtime._PROJECTION_FRESH_DIAGNOSTIC_SCOPE_ENV: (
+                            self.runtime._PROJECTION_FRESH_DIAGNOSTIC_SCOPE
+                        ),
+                        self.runtime._PROJECTION_FRESH_DIAGNOSTIC_PATH_ENV: str(path),
+                    },
+                    clear=False,
+                ),
+                patch.object(
+                    self.runtime.subprocess,
+                    "run",
+                    return_value=SimpleNamespace(returncode=1),
+                ) as child,
+                self.runtime.projection_fresh_predecessor_diagnostic_scope(trace_id),
+                self.assertRaisesRegex(RuntimeError, "Bench fixture.*failed"),
+            ):
+                self.runtime.run_bench_fixture(
+                    "seed_projection_truth",
+                    {"fixture_run_id": self.runtime.FIXTURE_RUN_ID},
+                )
+            self.assertIs(
+                child.call_args.kwargs["stderr"],
+                self.runtime.subprocess.DEVNULL,
+            )
+            self.assertNotIn("capture_output", child.call_args.kwargs)
+            source = (SCRIPTS / "verify_projection_runtime.py").read_text(
+                encoding="utf-8"
+            )
+            self.assertNotIn("completed.stderr", source)
+            self.assertEqual(
+                self.runtime.read_projection_fresh_predecessor_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("RuntimeError", "P801_PROJECTION_FRESH_SEED_STATUS", trace_id),
+            )
+
+    def test_fresh_predecessor_success_has_zero_record(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        path_env = self.runtime._PROJECTION_FRESH_DIAGNOSTIC_PATH_ENV
+        scope_env = self.runtime._PROJECTION_FRESH_DIAGNOSTIC_SCOPE_ENV
+        with tempfile.TemporaryDirectory() as directory:
+            path = (
+                Path(directory)
+                / "p8-01-projection-fresh-predecessor-diagnostic.json"
+            )
+            with (
+                patch.dict(
+                    os.environ,
+                    {
+                        self.runtime._PROJECTION_FRESH_DIAGNOSTIC_SCOPE_ENV: (
+                            self.runtime._PROJECTION_FRESH_DIAGNOSTIC_SCOPE
+                        ),
+                        self.runtime._PROJECTION_FRESH_DIAGNOSTIC_PATH_ENV: str(path),
+                    },
+                    clear=False,
+                ),
+                self.runtime.projection_fresh_predecessor_diagnostic_scope(trace_id),
+                self.runtime.projection_fresh_predecessor_diagnostic_step(
+                    "P801_PROJECTION_FRESH_COLLECTION"
+                ),
+            ):
+                value = {"unchanged": True}
+            self.assertEqual(value, {"unchanged": True})
+            self.assertFalse(path.exists())
+            with (
+                patch.dict(
+                    os.environ,
+                    {path_env: str(path), scope_env: "disabled"},
+                    clear=False,
+                ),
+                self.runtime.projection_fresh_predecessor_diagnostic_scope(trace_id),
+                self.assertRaisesRegex(RuntimeError, "dormant"),
+            ):
+                with self.runtime.projection_fresh_predecessor_diagnostic_step(
+                    "P801_PROJECTION_FRESH_COLLECTION"
+                ):
+                    raise RuntimeError("dormant")
+            self.assertFalse(path.exists())
+
+    def test_shell_uses_strict_fresh_predecessor_reader(self) -> None:
+        source = (SCRIPTS / "verify-frappe-runtime.sh").read_text(encoding="utf-8")
+        self.assertIn(
+            'NPI_P801_PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_SCOPE="p8-01-projection-fresh-predecessor-v1"',
+            source,
+        )
+        self.assertIn("read_projection_fresh_predecessor_diagnostic", source)
+        self.assertIn("--expected-trace", source)
+        self.assertIn("P8-01 projection fresh predecessor diagnostic", source)
+        self.assertLess(
+            source.index('run_projection_runtime_verifier fresh'),
+            source.index('run_quality_link_runtime_verifier >/dev/null 2>/dev/null'),
         )
 
     def test_level3_workflow_runs_exact_projection_mode_and_records_scope(self) -> None:

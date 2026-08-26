@@ -109,6 +109,7 @@
     "implementation/evidence/phase-8/p8-06-plan.md",
     "implementation/phase-8-requirement-anchor.md",
     "scripts/verify-frappe-runtime.sh",
+    "scripts/verify_projection_runtime.py",
     "scripts/verify_quality_link_runtime.py",
     "tests/test_current_task_verifier.py",
     "tests/test_phase8_item_publish_security.py",
@@ -117,6 +118,7 @@
     "tests/test_phase8_projection_api.py",
     "tests/test_phase8_projection_contract.py",
     "tests/test_phase8_projection_repository.py",
+    "tests/test_phase8_projection_runtime_verifier.py",
     "tests/test_phase8_quality_link_api.py",
     "tests/test_phase8_quality_link_contract.py",
     "tests/test_phase8_quality_link_repository.py",
@@ -127,7 +129,7 @@
   "affected_checks": {
     "level_1": [
       ["python", "-m", "unittest", "tests.test_phase8_quality_link_api", "tests.test_phase8_quality_link_config", "tests.test_phase8_quality_link_contract", "tests.test_phase8_quality_link_domain", "tests.test_phase8_quality_link_metadata", "tests.test_phase8_quality_link_repository", "tests.test_phase8_quality_link_runtime_verifier", "tests.test_phase8_quality_link_security", "-v"],
-      ["python", "-m", "unittest", "tests.test_phase8_projection_api", "tests.test_phase8_projection_contract", "tests.test_phase8_projection_domain", "tests.test_phase8_projection_metadata", "tests.test_phase8_projection_readers", "tests.test_phase8_projection_repository", "tests.test_phase7_trial_quality_repository", "tests.test_phase7_trial_review_repository", "tests.test_phase7_readiness_repository", "tests.test_phase7_readiness_repository_seams", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase8_projection_api", "tests.test_phase8_projection_contract", "tests.test_phase8_projection_domain", "tests.test_phase8_projection_metadata", "tests.test_phase8_projection_readers", "tests.test_phase8_projection_repository", "tests.test_phase8_projection_runtime_verifier", "tests.test_phase7_trial_quality_repository", "tests.test_phase7_trial_review_repository", "tests.test_phase7_readiness_repository", "tests.test_phase7_readiness_repository_seams", "-v"],
       ["python", "-m", "unittest", "tests.test_phase8_item_publish_config", "tests.test_phase8_item_publish_contract", "tests.test_phase8_item_publish_security", "tests.test_phase8_mbom_publish_config", "tests.test_phase8_mbom_publish_contract", "tests.test_phase8_mbom_publish_security", "tests.test_phase8_tool_asset_config", "tests.test_phase8_tool_asset_contract", "tests.test_phase8_tool_asset_security", "-v"],
       ["python", "-m", "unittest", "tests.test_phase8_item_publish_runtime_verifier", "tests.test_phase8_mbom_publish_runtime_verifier", "tests.test_phase8_tool_asset_runtime_verifier", "-v"],
       ["npm", "run", "generate:check"],
@@ -145,7 +147,7 @@
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
-      ["python", "-m", "unittest", "tests.test_phase8_quality_link_runtime_verifier", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase8_projection_runtime_verifier", "tests.test_phase8_quality_link_runtime_verifier", "-v"],
       ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],
     "level_3": [

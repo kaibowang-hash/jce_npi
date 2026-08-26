@@ -4,14 +4,18 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
+import tempfile
 import urllib.parse
 import urllib.request
 from collections import Counter
+from contextlib import contextmanager, nullcontext
+from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Mapping
-from uuid import UUID
+from typing import Any, Iterator, Mapping
+from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
 import verify_tooling_acceptance_runtime as acceptance_runtime
@@ -54,6 +58,166 @@ SYNTHETIC_RECEIVED_AT = datetime(2026, 8, 16, 8, 1, tzinfo=UTC)
 MOCK_RECEIVED_AT = datetime(2026, 8, 16, 8, 5, tzinfo=UTC)
 SANDBOX_MODIFIED_AT = datetime(2026, 8, 16, 8, 10, tzinfo=UTC)
 SANDBOX_RECEIVED_AT = datetime(2026, 8, 16, 8, 11, tzinfo=UTC)
+PROJECTION_FRESH_PREDECESSOR_DIAGNOSTICS_ENABLED = True
+PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_CODES = (
+    "P801_PROJECTION_FRESH_BOOTSTRAP",
+    "P801_PROJECTION_FRESH_LOGIN",
+    "P801_PROJECTION_FRESH_CSRF",
+    "P801_PROJECTION_FRESH_RETAINED_CONTEXT",
+    "P801_PROJECTION_FRESH_SEED_SUBPROCESS",
+    "P801_PROJECTION_FRESH_SEED_STATUS",
+    "P801_PROJECTION_FRESH_SEED_PARSE",
+    "P801_PROJECTION_FRESH_SEED_SHAPE",
+    "P801_PROJECTION_FRESH_COLLECTION",
+    "P801_PROJECTION_FRESH_KIND_COLLECTIONS",
+    "P801_PROJECTION_FRESH_QUERY_VALIDATION",
+    "P801_PROJECTION_FRESH_GUEST_ACCESS",
+    "P801_PROJECTION_FRESH_INTERNAL_ACCESS",
+    "P801_PROJECTION_FRESH_EXTERNAL_ACCESS",
+    "P801_PROJECTION_FRESH_ACCESS_CLEANUP",
+    "P801_PROJECTION_FRESH_TOOLING_CONSUMERS",
+)
+_PROJECTION_FRESH_DIAGNOSTIC_SCOPE = "p8-01-projection-fresh-predecessor-v1"
+_PROJECTION_FRESH_DIAGNOSTIC_SCOPE_ENV = (
+    "NPI_P801_PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_SCOPE"
+)
+_PROJECTION_FRESH_DIAGNOSTIC_PATH_ENV = (
+    "NPI_PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_PATH"
+)
+_PROJECTION_FRESH_DIAGNOSTIC_KEYS = frozenset(
+    {"code", "exceptionType", "traceId"}
+)
+_PROJECTION_FRESH_DIAGNOSTIC_LIMIT = 4096
+_PROJECTION_FRESH_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_PROJECTION_FRESH_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_PROJECTION_FRESH_NAMESPACE = UUID("806b89b8-3c5a-4cb3-bf15-2d85173ff801")
+_PROJECTION_FRESH_DIAGNOSTIC_STATE: ContextVar[dict[str, object] | None] = (
+    ContextVar("p801_projection_fresh_predecessor_diagnostic_state", default=None)
+)
+
+
+def projection_fresh_predecessor_diagnostic_trace() -> str:
+    return (
+        "trace-"
+        + uuid5(
+            _PROJECTION_FRESH_NAMESPACE,
+            f"projection-fresh-predecessor:{FIXTURE_RUN_ID}",
+        ).hex
+    )
+
+
+def _projection_fresh_predecessor_diagnostics_active() -> bool:
+    return (
+        PROJECTION_FRESH_PREDECESSOR_DIAGNOSTICS_ENABLED
+        and os.environ.get(_PROJECTION_FRESH_DIAGNOSTIC_SCOPE_ENV)
+        == _PROJECTION_FRESH_DIAGNOSTIC_SCOPE
+    )
+
+
+@contextmanager
+def projection_fresh_predecessor_diagnostic_scope(
+    trace_id: str,
+) -> Iterator[None]:
+    state = None
+    if (
+        _projection_fresh_predecessor_diagnostics_active()
+        and _PROJECTION_FRESH_TRACE_PATTERN.fullmatch(trace_id) is not None
+    ):
+        state = {"trace_id": trace_id, "recorded": False}
+    token = _PROJECTION_FRESH_DIAGNOSTIC_STATE.set(state)
+    try:
+        yield
+    finally:
+        _PROJECTION_FRESH_DIAGNOSTIC_STATE.reset(token)
+
+
+@contextmanager
+def projection_fresh_predecessor_diagnostic_step(code: str) -> Iterator[None]:
+    try:
+        yield
+    except Exception as error:
+        _record_projection_fresh_predecessor_diagnostic(code, error)
+        raise
+
+
+def _record_projection_fresh_predecessor_diagnostic(
+    code: str,
+    error: Exception,
+) -> None:
+    try:
+        state = _PROJECTION_FRESH_DIAGNOSTIC_STATE.get()
+        exception_type = type(error).__name__
+        if (
+            state is None
+            or state["recorded"] is True
+            or code not in PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_CODES
+            or _PROJECTION_FRESH_TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["recorded"] = True
+        _write_projection_fresh_predecessor_diagnostic(
+            {
+                "code": code,
+                "exceptionType": exception_type,
+                "traceId": str(state["trace_id"]),
+            }
+        )
+    except Exception:
+        # The bounded diagnostic must never replace the verifier failure.
+        pass
+
+
+def _write_projection_fresh_predecessor_diagnostic(
+    record: dict[str, str],
+) -> None:
+    path_value = os.environ.get(_PROJECTION_FRESH_DIAGNOSTIC_PATH_ENV)
+    if not isinstance(path_value, str) or not path_value:
+        return
+    path = Path(path_value)
+    if (
+        not path.is_absolute()
+        or path.name != "p8-01-projection-fresh-predecessor-diagnostic.json"
+    ):
+        return
+    payload = json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        stream.write(payload)
+
+
+def read_projection_fresh_predecessor_diagnostic(
+    path: Path,
+    *,
+    expected_trace: str,
+) -> tuple[str, str, str] | None:
+    if _PROJECTION_FRESH_TRACE_PATTERN.fullmatch(expected_trace) is None:
+        return None
+    try:
+        payload = path.read_bytes()
+        if not payload or len(payload) > _PROJECTION_FRESH_DIAGNOSTIC_LIMIT:
+            return None
+        text = payload.decode("utf-8")
+        lines = [line for line in text.splitlines() if line]
+        if len(lines) != 1:
+            return None
+        record = json.loads(lines[0])
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(record, dict) or set(record) != _PROJECTION_FRESH_DIAGNOSTIC_KEYS:
+        return None
+    code = record.get("code")
+    exception_type = record.get("exceptionType")
+    trace_id = record.get("traceId")
+    if (
+        not isinstance(code, str)
+        or code not in PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_CODES
+        or not isinstance(exception_type, str)
+        or _PROJECTION_FRESH_TYPE_PATTERN.fullmatch(exception_type) is None
+        or trace_id != expected_trace
+    ):
+        return None
+    return exception_type, code, expected_trace
 
 
 def deterministic_uuid(label: str) -> UUID:
@@ -386,147 +550,184 @@ def run_fresh(
     administrator_csrf: str,
     fixture_password: str,
 ) -> dict[str, object]:
-    context = retained_context(administrator, base_url)
+    with projection_fresh_predecessor_diagnostic_step(
+        "P801_PROJECTION_FRESH_RETAINED_CONTEXT"
+    ):
+        context = retained_context(administrator, base_url)
     seeded = run_bench_fixture(
         "seed_projection_truth",
         {"fixture_run_id": FIXTURE_RUN_ID, **context},
     )
-    require(
-        seeded.get("headCount") == 7
-        and seeded.get("observationCount") == 25
-        and seeded.get("auditCount") == 25
-        and seeded.get("replayCount") == 7
-        and seeded.get("consumerClosure") is True,
-        "P8-01 controlled projection persistence proof drifted",
-    )
+    with projection_fresh_predecessor_diagnostic_step(
+        "P801_PROJECTION_FRESH_SEED_SHAPE"
+    ):
+        require(
+            seeded.get("headCount") == 7
+            and seeded.get("observationCount") == 25
+            and seeded.get("auditCount") == 25
+            and seeded.get("replayCount") == 7
+            and seeded.get("consumerClosure") is True,
+            "P8-01 controlled projection persistence proof drifted",
+        )
     project_id = str(context["project_id"])
     master_id = str(context["master_id"])
     tooling_set_id = str(context["tooling_set_id"])
-    collection = assert_collection(
-        projection_request(
-            administrator,
-            base_url,
-            projection_path(project_id),
-            query_key="fresh-collection",
-        ),
-        project_id=project_id,
-    )
-    for kind in KINDS:
-        assert_collection(
+    with projection_fresh_predecessor_diagnostic_step(
+        "P801_PROJECTION_FRESH_COLLECTION"
+    ):
+        collection = assert_collection(
             projection_request(
                 administrator,
                 base_url,
-                projection_path(project_id, kind=kind),
-                query_key=f"kind-{kind}",
+                projection_path(project_id),
+                query_key="fresh-collection",
             ),
             project_id=project_id,
-            expected_kinds=(kind,),
         )
-    validate_problem(
-        projection_request(
-            administrator,
-            base_url,
-            projection_path(project_id, kind="unsupported_kind"),
-            query_key="invalid-kind",
-        ),
-        422,
-        "VALIDATION_FAILED",
-    )
-    validate_problem(
-        projection_request(
-            administrator,
-            base_url,
-            f"{projection_path(project_id)}?sourceObjectId=forbidden",
-            query_key="unexpected-query",
-        ),
-        422,
-        "VALIDATION_FAILED",
-    )
-    guest = urllib.request.build_opener()
-    validate_problem(
-        projection_request(
-            guest,
-            base_url,
-            projection_path(project_id),
-            query_key="guest",
-        ),
-        401,
-        "AUTHENTICATION_REQUIRED",
-    )
+    with projection_fresh_predecessor_diagnostic_step(
+        "P801_PROJECTION_FRESH_KIND_COLLECTIONS"
+    ):
+        for kind in KINDS:
+            assert_collection(
+                projection_request(
+                    administrator,
+                    base_url,
+                    projection_path(project_id, kind=kind),
+                    query_key=f"kind-{kind}",
+                ),
+                project_id=project_id,
+                expected_kinds=(kind,),
+            )
+    with projection_fresh_predecessor_diagnostic_step(
+        "P801_PROJECTION_FRESH_QUERY_VALIDATION"
+    ):
+        validate_problem(
+            projection_request(
+                administrator,
+                base_url,
+                projection_path(project_id, kind="unsupported_kind"),
+                query_key="invalid-kind",
+            ),
+            422,
+            "VALIDATION_FAILED",
+        )
+        validate_problem(
+            projection_request(
+                administrator,
+                base_url,
+                f"{projection_path(project_id)}?sourceObjectId=forbidden",
+                query_key="unexpected-query",
+            ),
+            422,
+            "VALIDATION_FAILED",
+        )
+    with projection_fresh_predecessor_diagnostic_step(
+        "P801_PROJECTION_FRESH_GUEST_ACCESS"
+    ):
+        guest = urllib.request.build_opener()
+        validate_problem(
+            projection_request(
+                guest,
+                base_url,
+                projection_path(project_id),
+                query_key="guest",
+            ),
+            401,
+            "AUTHENTICATION_REQUIRED",
+        )
 
-    document_runtime.create_internal_fixture_user(
-        administrator,
-        base_url,
-        INTERNAL_USER,
-        fixture_password,
-        administrator_csrf,
-    )
+    internal_created = False
     external_created = False
     try:
-        internal = login(base_url, INTERNAL_USER, fixture_password)
-        for scoped_project, key in (
-            (project_id, "internal-existing"),
-            (ABSENT_PROJECT_ID, "internal-absent"),
+        with projection_fresh_predecessor_diagnostic_step(
+            "P801_PROJECTION_FRESH_INTERNAL_ACCESS"
         ):
-            validate_problem(
-                projection_request(
-                    internal,
-                    base_url,
-                    projection_path(scoped_project),
-                    query_key=key,
-                ),
-                404,
-                "PROJECT_UNAVAILABLE",
+            document_runtime.create_internal_fixture_user(
+                administrator,
+                base_url,
+                INTERNAL_USER,
+                fixture_password,
+                administrator_csrf,
             )
-        created = create_disposable_user(
-            administrator,
-            base_url,
-            EXTERNAL_USER,
-            fixture_password,
-            administrator_csrf,
-        )
-        validate_disposable_user(created, EXTERNAL_USER)
-        external_created = True
-        external = login(base_url, EXTERNAL_USER, fixture_password)
-        redacted = projection_request(
-            external,
-            base_url,
-            projection_path(project_id),
-            query_key="external-redacted",
-        )
-        require(
-            redacted.status == 200
-            and redacted.body
-            == {
-                "projectGlobalId": project_id,
-                "accessState": "redacted",
-                "reasonCode": "projection_access_redacted",
-                "permissions": {"view": False, "edit": False, "refresh": False},
-                "items": [],
-            },
-            "P8-01 external projection response was not exactly redacted",
-        )
-    finally:
-        if external_created:
-            delete_disposable_user(
+            internal_created = True
+            internal = login(base_url, INTERNAL_USER, fixture_password)
+            for scoped_project, key in (
+                (project_id, "internal-existing"),
+                (ABSENT_PROJECT_ID, "internal-absent"),
+            ):
+                validate_problem(
+                    projection_request(
+                        internal,
+                        base_url,
+                        projection_path(scoped_project),
+                        query_key=key,
+                    ),
+                    404,
+                    "PROJECT_UNAVAILABLE",
+                )
+        with projection_fresh_predecessor_diagnostic_step(
+            "P801_PROJECTION_FRESH_EXTERNAL_ACCESS"
+        ):
+            created = create_disposable_user(
                 administrator,
                 base_url,
                 EXTERNAL_USER,
+                fixture_password,
                 administrator_csrf,
             )
-        delete_disposable_user(
+            validate_disposable_user(created, EXTERNAL_USER)
+            external_created = True
+            external = login(base_url, EXTERNAL_USER, fixture_password)
+            redacted = projection_request(
+                external,
+                base_url,
+                projection_path(project_id),
+                query_key="external-redacted",
+            )
+            require(
+                redacted.status == 200
+                and redacted.body
+                == {
+                    "projectGlobalId": project_id,
+                    "accessState": "redacted",
+                    "reasonCode": "projection_access_redacted",
+                    "permissions": {
+                        "view": False,
+                        "edit": False,
+                        "refresh": False,
+                    },
+                    "items": [],
+                },
+                "P8-01 external projection response was not exactly redacted",
+            )
+    finally:
+        with projection_fresh_predecessor_diagnostic_step(
+            "P801_PROJECTION_FRESH_ACCESS_CLEANUP"
+        ):
+            if external_created:
+                delete_disposable_user(
+                    administrator,
+                    base_url,
+                    EXTERNAL_USER,
+                    administrator_csrf,
+                )
+            if internal_created:
+                delete_disposable_user(
+                    administrator,
+                    base_url,
+                    INTERNAL_USER,
+                    administrator_csrf,
+                )
+    with projection_fresh_predecessor_diagnostic_step(
+        "P801_PROJECTION_FRESH_TOOLING_CONSUMERS"
+    ):
+        assert_tooling_consumers(
             administrator,
             base_url,
-            INTERNAL_USER,
-            administrator_csrf,
+            project_id=project_id,
+            master_id=master_id,
+            tooling_set_id=tooling_set_id,
         )
-    assert_tooling_consumers(
-        administrator,
-        base_url,
-        project_id=project_id,
-        master_id=master_id,
-        tooling_set_id=tooling_set_id,
-    )
     return {
         "accessClosure": True,
         "consumerClosure": True,
@@ -1352,29 +1553,61 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         if not current_pythonpath
         else f"{ROOT}{os.pathsep}{current_pythonpath}"
     )
-    completed = subprocess.run(
-        [
-            str(BENCH_PATH / "env" / "bin" / "python"),
-            str(Path(__file__).resolve()),
-            "--bench-fixture",
-            method,
-            "--fixture-kwargs",
-            json.dumps(kwargs, separators=(",", ":"), sort_keys=True),
-        ],
-        cwd=BENCH_PATH / "sites",
-        env=environment,
-        check=False,
-        capture_output=True,
-        text=True,
+    seed_diagnostic_active = (
+        method == "seed_projection_truth"
+        and _projection_fresh_predecessor_diagnostics_active()
+        and _PROJECTION_FRESH_DIAGNOSTIC_STATE.get() is not None
     )
-    require(
-        completed.returncode == 0,
-        f"P8-01 Bench fixture {method} failed: {completed.stderr[-2000:]}",
+    with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as output:
+        step = (
+            projection_fresh_predecessor_diagnostic_step(
+                "P801_PROJECTION_FRESH_SEED_SUBPROCESS"
+            )
+            if seed_diagnostic_active
+            else nullcontext()
+        )
+        with step:
+            completed = subprocess.run(
+                [
+                    str(BENCH_PATH / "env" / "bin" / "python"),
+                    str(Path(__file__).resolve()),
+                    "--bench-fixture",
+                    method,
+                    "--fixture-kwargs",
+                    json.dumps(kwargs, separators=(",", ":"), sort_keys=True),
+                ],
+                cwd=BENCH_PATH / "sites",
+                env=environment,
+                check=False,
+                stdout=output,
+                stderr=subprocess.DEVNULL,
+                text=True,
+            )
+        status_step = (
+            projection_fresh_predecessor_diagnostic_step(
+                "P801_PROJECTION_FRESH_SEED_STATUS"
+            )
+            if seed_diagnostic_active
+            else nullcontext()
+        )
+        with status_step:
+            require(
+                completed.returncode == 0,
+                f"P8-01 Bench fixture {method} failed",
+            )
+        output.seek(0)
+        lines = [line for line in output if line.strip()]
+    parse_step = (
+        projection_fresh_predecessor_diagnostic_step(
+            "P801_PROJECTION_FRESH_SEED_PARSE"
+        )
+        if seed_diagnostic_active
+        else nullcontext()
     )
-    lines = [line for line in completed.stdout.splitlines() if line.strip()]
-    require(bool(lines), f"P8-01 Bench fixture {method} was silent")
-    result = json.loads(lines[-1])
-    require(isinstance(result, dict), "P8-01 Bench fixture result is invalid")
+    with parse_step:
+        require(bool(lines), f"P8-01 Bench fixture {method} was silent")
+        result = json.loads(lines[-1])
+        require(isinstance(result, dict), "P8-01 Bench fixture result is invalid")
     return result
 
 
@@ -1400,14 +1633,52 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
         frappe.destroy()
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url")
     parser.add_argument("--replay-only", action="store_true")
     parser.add_argument("--route-disable-probe", choices=("disabled", "recovered"))
     parser.add_argument("--bench-fixture")
     parser.add_argument("--fixture-kwargs")
+    parser.add_argument("--diagnostic-trace", action="store_true")
+    parser.add_argument("--read-diagnostic")
+    parser.add_argument("--expected-trace")
     arguments = parser.parse_args()
+    if arguments.diagnostic_trace:
+        require(
+            arguments.base_url is None
+            and not arguments.replay_only
+            and arguments.route_disable_probe is None
+            and arguments.bench_fixture is None
+            and arguments.fixture_kwargs is None
+            and arguments.read_diagnostic is None
+            and arguments.expected_trace is None,
+            "P8-01 predecessor diagnostic trace invocation drifted",
+        )
+        print(projection_fresh_predecessor_diagnostic_trace())
+        return 0
+    if arguments.read_diagnostic:
+        if (
+            arguments.base_url is not None
+            or arguments.replay_only
+            or arguments.route_disable_probe is not None
+            or arguments.bench_fixture is not None
+            or arguments.fixture_kwargs is not None
+            or arguments.expected_trace is None
+        ):
+            return 2
+        diagnostic = read_projection_fresh_predecessor_diagnostic(
+            Path(arguments.read_diagnostic),
+            expected_trace=arguments.expected_trace,
+        )
+        if diagnostic is None:
+            return 2
+        exception_type, code, trace_id = diagnostic
+        print(
+            f"diagnostic_code={code}; exception_type={exception_type}; "
+            f"trace_id={trace_id}"
+        )
+        return 0
     if arguments.bench_fixture is not None:
         require(
             arguments.base_url is None and arguments.fixture_kwargs is not None,
@@ -1416,32 +1687,50 @@ def main() -> None:
         kwargs = json.loads(arguments.fixture_kwargs)
         require(isinstance(kwargs, dict), "P8-01 fixture arguments are invalid")
         run_local_bench_fixture(arguments.bench_fixture, kwargs)
-        return
-    require(
-        arguments.base_url is not None
-        and os.environ.get(document_runtime.FIXTURE_RUN_ID_ENV) is not None
-        and int(arguments.replay_only)
-        + int(arguments.route_disable_probe is not None)
-        <= 1,
-        "P8-01 runtime invocation is incomplete",
-    )
-    administrator_password = secret_from_environment(
-        "NPI_RUNTIME_ADMINISTRATOR_PASSWORD"
-    )
-    fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
-    base_url = validate_local_fixture_inputs(
-        arguments.base_url,
-        ACTOR_USER,
-        INTERNAL_USER,
-    )
-    validate_local_fixture_inputs(base_url, ACTOR_USER, EXTERNAL_USER)
-    require(
-        FIXTURE_RUN_ID != "0" * 32
-        and INTERNAL_USER.endswith("@example.invalid")
-        and EXTERNAL_USER.endswith("@example.invalid"),
-        "P8-01 fixture namespace drifted",
-    )
-    administrator = login(base_url, ACTOR_USER, administrator_password)
+        return 0
+    fresh_mode = not arguments.replay_only and arguments.route_disable_probe is None
+    trace_id = projection_fresh_predecessor_diagnostic_trace()
+    with projection_fresh_predecessor_diagnostic_scope(
+        trace_id if fresh_mode else ""
+    ):
+        try:
+            with projection_fresh_predecessor_diagnostic_step(
+                "P801_PROJECTION_FRESH_BOOTSTRAP"
+            ) if fresh_mode else nullcontext():
+                require(
+                    arguments.base_url is not None
+                    and os.environ.get(document_runtime.FIXTURE_RUN_ID_ENV) is not None
+                    and int(arguments.replay_only)
+                    + int(arguments.route_disable_probe is not None)
+                    <= 1,
+                    "P8-01 runtime invocation is incomplete",
+                )
+                administrator_password = secret_from_environment(
+                    "NPI_RUNTIME_ADMINISTRATOR_PASSWORD"
+                )
+                fixture_password = secret_from_environment(
+                    "NPI_RUNTIME_FIXTURE_PASSWORD"
+                )
+                base_url = validate_local_fixture_inputs(
+                    arguments.base_url,
+                    ACTOR_USER,
+                    INTERNAL_USER,
+                )
+                validate_local_fixture_inputs(base_url, ACTOR_USER, EXTERNAL_USER)
+                require(
+                    FIXTURE_RUN_ID != "0" * 32
+                    and INTERNAL_USER.endswith("@example.invalid")
+                    and EXTERNAL_USER.endswith("@example.invalid"),
+                    "P8-01 fixture namespace drifted",
+                )
+            with projection_fresh_predecessor_diagnostic_step(
+                "P801_PROJECTION_FRESH_LOGIN"
+            ) if fresh_mode else nullcontext():
+                administrator = login(base_url, ACTOR_USER, administrator_password)
+        except Exception:
+            if fresh_mode and _projection_fresh_predecessor_diagnostics_active():
+                return 1
+            raise
     if arguments.route_disable_probe is not None:
         result = route_disable_probe(
             administrator,
@@ -1451,19 +1740,29 @@ def main() -> None:
     elif arguments.replay_only:
         result = run_replay_only(administrator, base_url)
     else:
-        administrator_csrf = bootstrap_csrf(
-            administrator,
-            base_url,
-            ACTOR_USER,
-        )
-        result = run_fresh(
-            administrator,
-            base_url,
-            administrator_csrf,
-            fixture_password,
-        )
+        with projection_fresh_predecessor_diagnostic_scope(trace_id):
+            try:
+                with projection_fresh_predecessor_diagnostic_step(
+                    "P801_PROJECTION_FRESH_CSRF"
+                ):
+                    administrator_csrf = bootstrap_csrf(
+                        administrator,
+                        base_url,
+                        ACTOR_USER,
+                    )
+                result = run_fresh(
+                    administrator,
+                    base_url,
+                    administrator_csrf,
+                    fixture_password,
+                )
+            except Exception:
+                if _projection_fresh_predecessor_diagnostics_active():
+                    return 1
+                raise
     print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

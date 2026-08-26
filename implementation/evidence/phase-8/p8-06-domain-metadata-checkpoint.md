@@ -371,3 +371,30 @@ current/reconciliation `36/36`. Current and reconciliation scripts,
 compilation, shell syntax, activation/no-leak checks, product-zero-diff and
 diff hygiene pass. The exact-five manifest is accepted and an unauthorized
 sixth path is rejected.
+
+## P8-01 projection-fresh predecessor diagnostic checkpoint
+
+Post-permission exact SHA `9853c23208305e4ece10e38749896bd90297127f`
+passes ordinary `33012596539`. Controlled run `33013828908` passes preflight
+`98326755117`; runtime `98326824448` yields no P8-06 tuple. A whitelist-only
+safe-label read finds only the unique P8-01 fresh projection failure label.
+The shell exits at that branch before quality-link, P8-02, Item, MBOM and Tool
+Asset execution. This is a predecessor/harness boundary; post-permission stays
+diagnostic `0/1`, repair `0/1`, final `0/1`.
+
+Independent `p8-01-projection-fresh-predecessor` starts `0/1`, `0/1`, `0/1`.
+The exact-eight verifier/governance change adds sixteen ordered safe stages,
+one deterministic trace, one O_EXCL exact-three-key record and a strict shell
+reader. Failed Bench child stderr is discarded and stdout remains unread;
+success alone is parsed and produces zero diagnostic record. CURRENT_TASK
+permits only the two exact projection verifier/test additions and pins their
+focused/runtime-preflight checks. No product/app/API/schema/permission/
+transaction/migration/UI/network change is present. Production fact/DoD work
+remains queued, and FR-CO-003/004 plus every B/C hold remain unchanged.
+
+Level 1 passes focused projection/current `23/23`, complete affected peers
+`316/316`, full repository Python `2536/2536` and current/reconciliation
+`36/36`. Current/reconciliation scripts, generated-source check, compilation,
+shell syntax, lexical uniqueness, strict-reader/no-leak checks and diff hygiene
+pass. The exact-eight union manifest is accepted and an unauthorized ninth
+path is rejected. Product/app diff remains zero.

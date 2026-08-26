@@ -6432,3 +6432,40 @@ repeat or rewrite it merely to restore context. See
   and an unauthorized sixth path is rejected.
 - Controller marker:
   `P8-06 checkpoint 4 final 1/1 frozen; post-permission diagnostic 0/1 active`.
+
+## 2026-08-27 P8-01 projection-fresh predecessor diagnostic checkpoint
+
+- Post-permission checkpoint `9853c23208305e4ece10e38749896bd90297127f`
+  passes ordinary CI `33012596539`. Controlled run `33013828908` passes
+  preflight `98326755117`, while runtime `98326824448` yields no quality-link
+  tuple. A strict whitelist scan of fixed response-neutral shell labels finds
+  only `Local Frappe ERP projection runtime verification failed.` This literal
+  is unique to the P8-01 `run_projection_runtime_verifier fresh` branch, which
+  exits before the P8-06 verifier and before P8-02, Item, MBOM or Tool Asset.
+- The run is therefore a predecessor/harness failure, not a P8-06 product
+  diagnostic. `p8-06-quality-link-post-permission` remains diagnostic `0/1`,
+  repair `0/1`, final `0/1`. No P8-06 repair or downstream diagnostic is
+  authorized from the zero-tuple result.
+- Open independent `p8-01-projection-fresh-predecessor` at diagnostic `0/1`,
+  repair `0/1`, final `0/1`. One exact scope activates sixteen ordered parent
+  stages covering bootstrap/login/CSRF, retained context, seed subprocess and
+  status/parse/shape, collection/filter validation, guest/internal/external
+  access and cleanup, and Tooling consumers. The deterministic exact trace,
+  O_EXCL exact-three-key record and strict reader expose only code, exception
+  class and trace. A failed Bench child uses `stderr=DEVNULL`; its stdout is
+  not sought or read. Success produces no record.
+- The exact-eight change is limited to the P8-01 runtime verifier, cumulative
+  shell, focused projection runtime test, CURRENT_TASK and its legal manifest
+  test, this controller, `p8-06-plan.md` and the P8-06 checkpoint evidence.
+  Product, API, repository, schema, permission, transaction, migration, UI,
+  ERP target traffic, FR-CO-003/004 deferral and all B/C holds stay unchanged.
+  Production read-only fact/DoD governance remains queued.
+- Level 1 passes focused projection/current `23/23`, full affected P8-01/
+  P8-06/P7 and Item/MBOM/Tool Asset `316/316`, full repository Python
+  `2536/2536` and current/reconciliation `36/36`. Current and reconciliation
+  scripts, generated-source check, compilation, shell syntax, exact lexical
+  stages, strict-reader/no-leak scans and diff hygiene pass. The exact-eight
+  post-commit union manifest is accepted and an unauthorized ninth path is
+  rejected. Product/app diff remains zero.
+- Controller marker:
+  `P8-06 checkpoint 4 final 1/1 frozen; P8-01 projection-fresh predecessor diagnostic 0/1 active`.

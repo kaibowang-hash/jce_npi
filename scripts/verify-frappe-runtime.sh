@@ -2802,6 +2802,8 @@ run_projection_runtime_verifier() {
     export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
     export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
     if [[ "${mode}" == "fresh" ]]; then
+      export NPI_PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_PATH="${RUNNER_TEMP:-/tmp}/p8-01-projection-fresh-predecessor-diagnostic.json"
+      export NPI_P801_PROJECTION_FRESH_PREDECESSOR_DIAGNOSTIC_SCOPE="p8-01-projection-fresh-predecessor-v1"
       exec python "${repo_root}/scripts/verify_projection_runtime.py" \
         --base-url "${base_url}"
     fi
@@ -2813,6 +2815,20 @@ run_projection_runtime_verifier() {
     echo "Unknown ERP projection runtime verification mode." >&2
     exit 2
   )
+}
+
+read_projection_fresh_predecessor_diagnostic() {
+  local diagnostic_path="${RUNNER_TEMP:-/tmp}/p8-01-projection-fresh-predecessor-diagnostic.json"
+  local expected_trace
+  expected_trace="$(
+    NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}" \
+      python "${repo_root}/scripts/verify_projection_runtime.py" \
+      --diagnostic-trace
+  )" || return 1
+  NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}" \
+    python "${repo_root}/scripts/verify_projection_runtime.py" \
+    --read-diagnostic "${diagnostic_path}" \
+    --expected-trace "${expected_trace}"
 }
 
 run_projection_route_probe() {
@@ -4054,6 +4070,9 @@ if [[ "${verification_mode}" == "all" ||
     exit 1
   fi
   if ! run_projection_runtime_verifier fresh; then
+    if diagnostic="$(read_projection_fresh_predecessor_diagnostic)"; then
+      echo "P8-01 projection fresh predecessor diagnostic [${diagnostic}]" >&2
+    fi
     echo "Local Frappe ERP projection runtime verification failed." >&2
     report_projection_runtime_failure
     exit 1
