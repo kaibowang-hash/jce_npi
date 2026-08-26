@@ -6130,3 +6130,10 @@ repeat or rewrite it merely to restore context. See
 - Checkpoint-3 product authorization becomes effective only after this
   transition's own exact-SHA ordinary CI passes. Controller marker:
   `P8-06 checkpoint 2 exact-SHA ordinary PASS; checkpoint 3 authorization transition active`.
+- Before the frozen checkpoint-3 product diff is staged, the affected-test
+  manifest is corrected without reducing coverage: the nonexistent standalone
+  `tests.test_phase7_readiness_source_resolver` module is replaced by the
+  existing `tests.test_phase7_readiness_repository_seams` suite, while the
+  existing full `tests.test_phase7_readiness_repository` suite remains. Both
+  factual suites pass, and this governance-only repair changes no product,
+  source-state, permission, route or checkpoint-3 acceptance boundary.

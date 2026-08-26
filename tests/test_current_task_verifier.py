@@ -92,6 +92,24 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
+        affected_modules = {
+            module
+            for command in value["affected_checks"]["level_1"]
+            for module in command
+            if isinstance(module, str) and module.startswith("tests.")
+        }
+        self.assertIn(
+            "tests.test_phase7_readiness_repository",
+            affected_modules,
+        )
+        self.assertIn(
+            "tests.test_phase7_readiness_repository_seams",
+            affected_modules,
+        )
+        self.assertNotIn(
+            "tests.test_phase7_readiness_source_resolver",
+            affected_modules,
+        )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
         source = MANIFEST.read_text(encoding="utf-8")

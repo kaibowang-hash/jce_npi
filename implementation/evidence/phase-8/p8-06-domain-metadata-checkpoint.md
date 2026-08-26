@@ -85,6 +85,18 @@ It adds no route, write, P7 policy effect, Outbox, worker, adapter, network,
 runtime, UI or raw-code pass interpretation. All existing Class-B/Class-C and
 FR-CO-003/004 holds remain unchanged.
 
+## Checkpoint-3 affected-test manifest correction
+
+The frozen Level-1 command originally named a standalone
+`tests.test_phase7_readiness_source_resolver` module that does not exist in the
+repository. This is a governance-path defect, not a product or coverage root.
+The corrected command retains the full
+`tests.test_phase7_readiness_repository` suite and adds the existing
+`tests.test_phase7_readiness_repository_seams` suite, where the readiness
+source-resolver seam contract is actually pinned. Both suites pass before the
+checkpoint-3 exact-nine product diff is staged. No test, scanner, threshold,
+product path or acceptance condition is removed or weakened.
+
 ## Rollback
 
 Before any future link row exists, revert this pure module, components,
