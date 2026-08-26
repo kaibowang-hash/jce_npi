@@ -121,3 +121,26 @@ capability, direct EN/zh/zh-TW/a11y/visual evidence and one disposable
 network-free cumulative runtime. It reuses existing routes and adds no ERP
 write, Outbox, worker, adapter, browser target network or pass/Gate mapping.
 All Class-B/Class-C and FR-CO-003/004 holds remain unchanged.
+
+## Checkpoint-4 same-cycle CI harness evidence
+
+Checkpoint-4 product SHA `0bc2687f9541fb14fa348614c16968c182aafcbb`
+reached ordinary run `32983850058`. Repository job `98227122886`, frontend
+job `98227123050` and governed visual job `98227123047` expose only stale
+current-scope, asynchronous-load and unmocked-inspector fixture contracts;
+secret scanning passes. The product root count is zero.
+
+The authorized repair is exact fourteen changed paths: three runtime tests,
+one readiness unit test, two P7 E2E fixtures, one current-task verifier test,
+three Linux Bookworm/x64
+baselines and four governance paths. All six visual cases remain mandatory;
+P7-04 English/Simplified Chinese and P7-07 Traditional Chinese are tested but
+bit-identical to their existing canonical files after the terminal gate.
+Historical assertions remain exact;
+readiness proves one loaded empty response; P7 fixtures prove both exact GETs
+and terminal inspector state. Product source, API, permission, runtime,
+translations, thresholds, Darwin baselines and all B/C holds are unchanged.
+The old run is immutable and will not be rerun. Acceptance requires focused
+tests, two focused-six no-update visual runs, full 132 no-update, exact-path
+manifest acceptance with an unauthorized fifteenth path rejected, a new
+exact-SHA ordinary PASS and then one Level-3 Gate.

@@ -8,7 +8,11 @@ import {
   trialPlanningIds,
   trialPlanningWorkspace,
 } from "../support/trial-planning-fixture";
-import { trialQualityWorkspace } from "../support/trial-quality-fixture";
+import {
+  trialFormalQualityLinks,
+  trialFormalQualityProjection,
+  trialQualityWorkspace,
+} from "../support/trial-quality-fixture";
 import {
   trialConclusion,
   trialConclusionPolicy,
@@ -27,6 +31,8 @@ const csrfToken = "p7-04-trial-review-browser-csrf-x";
 const sessionEndpoint = /\/api\/npi\/v1\/session\/bootstrap(?:\?.*)?$/u;
 const trialEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/(?:trials|trial-plans(?:\/.*)?|trial-rounds(?:\/.*|:[^/?]+))$/u;
+const formalQualityEndpoint =
+  /\/api\/npi\/v1\/projects\/[^/?]+\/(?:formal-quality-links|erp-projections)(?:\?.*)?$/u;
 const requestIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 
@@ -109,6 +115,22 @@ async function installTrialApi(
   const observed: ObservedRequest[] = [];
   let reviewAttempts = 0;
   const review = options.review ?? trialReviewWorkspace();
+  await page.route(formalQualityEndpoint, async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    expect(request.method()).toBe("GET");
+    expect([...url.searchParams.entries()]).toEqual(
+      url.pathname.endsWith("/erp-projections")
+        ? [["kind", "formal_quality_status"]]
+        : [],
+    );
+    await fulfillJson(
+      route,
+      url.pathname.endsWith("/erp-projections")
+        ? trialFormalQualityProjection()
+        : trialFormalQualityLinks(),
+    );
+  });
   await page.route(trialEndpoint, async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
@@ -177,6 +199,7 @@ async function openReview(page: Page, locale: TestLocale): Promise<void> {
       name: /Trial review and conclusion|试模审查与结论|試模審查與結論/u,
     }),
   ).toBeVisible();
+  await expect(page.getByTestId("formal-quality-link-state")).toBeVisible();
   await page.locator("#trial-live-review").evaluate((element) => {
     element.scrollIntoView();
   });

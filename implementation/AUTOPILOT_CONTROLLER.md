@@ -6169,3 +6169,28 @@ repeat or rewrite it merely to restore context. See
   remain closed. Product authorization starts only after this transition's
   exact-SHA ordinary CI. Controller marker:
   `P8-06 checkpoint 3 exact-SHA ordinary PASS; checkpoint 4 authorization transition active`.
+
+## 2026-08-26 P8-06 checkpoint 4 same-cycle harness remediation
+
+- Exact checkpoint-4 product SHA
+  `0bc2687f9541fb14fa348614c16968c182aafcbb` reached ordinary CI
+  `32983850058`. Repository job `98227122886`, frontend job `98227123050`
+  and governed visual job `98227123047` exposed three harness-only roots;
+  secret scanning passed and product root count is zero.
+- The three cumulative runtime tests retain their historical P8-03/P8-04/
+  P8-05 assertions and now pin current `p5-01-through-p8-06` with predecessor
+  `p5-01-through-p8-05`.
+- Readiness waits for the asynchronous empty formal-quality result and proves
+  its exact single load. P7-04 and P7-07 mock the same two exact Project-first
+  GETs as P7-03 and wait for the inspector terminal state before scrolling.
+  Only their six Linux Bookworm/x64 baselines may change; Darwin and thresholds
+  remain untouched.
+- This same-cycle repair is exact fourteen changed paths: seven tests, three
+  Linux baselines and four governance files. The P7-04 English/Simplified
+  Chinese and P7-07 Traditional Chinese cases are still exercised but become
+  bit-identical to their existing canonical files after the terminal gate, so
+  they are tested unchanged paths. The seventh test pins the resulting legal
+  allowlist cardinality without weakening any negative manifest assertion.
+  The repair changes no product source, API, permission,
+  runtime behavior or translation. Old run `32983850058` is immutable and is
+  not rerun; a new exact-SHA ordinary run is required before Level 3.

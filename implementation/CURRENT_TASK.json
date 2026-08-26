@@ -40,6 +40,8 @@
     "P8_06_CHECKPOINT_4_READ_ONLY_INSPECTOR_STATES_ARE_LOADING_EMPTY_PERMISSION_READ_ONLY_CURRENT_DRIFTED_UNAVAILABLE_CONFLICT_ERROR",
     "P8_06_CHECKPOINT_4_DIRECT_EN_ZH_ZH_TW_KEYBOARD_A11Y_RESPONSIVE_AND_FIXED_LINUX_VISUAL_PROOF",
     "P8_06_CHECKPOINT_4_RUNTIME_IS_DISPOSABLE_NETWORK_FREE_AND_ZERO_ERP_TARGET_TRAFFIC",
+    "P8_06_CHECKPOINT_4_INITIAL_ORDINARY_32983850058_FAILED_ONLY_STALE_RUNTIME_AND_VISUAL_HARNESS_CONTRACTS_PRODUCT_ROOT_ZERO",
+    "P8_06_CHECKPOINT_4_SAME_CYCLE_REMEDIATION_EXACT_FOURTEEN_CHANGED_PATHS_NO_OLD_RUN_RERUN",
     "FR_CO_003_FR_CO_004_EXTERNAL_PORTAL_SURFACES_USER_APPROVED_POST_V1_2_DEFERRED",
     "FR_CO_003_FR_CO_004_IDS_SOURCES_PRIORITIES_CANONICAL_TRACE_AND_REMAPPED_PHASE_9_STATUS_PRESERVED",
     "INTERNAL_SUPPLIER_CUSTOMER_EVIDENCE_PROJECT_GATE_TRIAL_READINESS_PERMISSION_AUDIT_NOTIFICATION_AND_ERP_PROJECTION_SCOPE_REMAINS_V1_2",
@@ -75,10 +77,15 @@
     "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts-snapshots/p7-03-trial-quality-en-1366x768-100-linux.png",
     "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts-snapshots/p7-03-trial-quality-zh-1440x900-125-linux.png",
     "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts-snapshots/p7-03-trial-quality-zh-TW-1920x1080-150-linux.png",
+    "frontend/tests/e2e/p7-04-trial-review-live.spec.ts",
+    "frontend/tests/e2e/p7-04-trial-review-live.spec.ts-snapshots/p7-04-trial-review-zh-TW-1920x1080-150-linux.png",
     "frontend/tests/e2e/p7-05-readiness-live.spec.ts",
     "frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/p7-05-readiness-en-1366x768-100-linux.png",
     "frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/p7-05-readiness-zh-1440x900-125-linux.png",
     "frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/p7-05-readiness-zh-TW-1920x1080-150-linux.png",
+    "frontend/tests/e2e/p7-07-released-trial-summary-live.spec.ts",
+    "frontend/tests/e2e/p7-07-released-trial-summary-live.spec.ts-snapshots/p7-07-released-trial-summary-en-1366x768-100-linux.png",
+    "frontend/tests/e2e/p7-07-released-trial-summary-live.spec.ts-snapshots/p7-07-released-trial-summary-zh-1440x900-125-linux.png",
     "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts",
     "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts-snapshots/p8-06-formal-quality-link-en-1366x768-100-linux.png",
     "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts-snapshots/p8-06-formal-quality-link-zh-1440x900-125-linux.png",
@@ -103,6 +110,8 @@
     "scripts/verify-frappe-runtime.sh",
     "scripts/verify_quality_link_runtime.py",
     "tests/test_current_task_verifier.py",
+    "tests/test_phase8_item_publish_runtime_verifier.py",
+    "tests/test_phase8_mbom_publish_runtime_verifier.py",
     "tests/test_phase8_projection_api.py",
     "tests/test_phase8_projection_contract.py",
     "tests/test_phase8_projection_repository.py",
@@ -110,16 +119,18 @@
     "tests/test_phase8_quality_link_contract.py",
     "tests/test_phase8_quality_link_repository.py",
     "tests/test_phase8_quality_link_runtime_verifier.py",
-    "tests/test_phase8_quality_link_security.py"
+    "tests/test_phase8_quality_link_security.py",
+    "tests/test_phase8_tool_asset_runtime_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
       ["python", "-m", "unittest", "tests.test_phase8_quality_link_api", "tests.test_phase8_quality_link_config", "tests.test_phase8_quality_link_contract", "tests.test_phase8_quality_link_domain", "tests.test_phase8_quality_link_metadata", "tests.test_phase8_quality_link_repository", "tests.test_phase8_quality_link_runtime_verifier", "tests.test_phase8_quality_link_security", "-v"],
       ["python", "-m", "unittest", "tests.test_phase8_projection_api", "tests.test_phase8_projection_contract", "tests.test_phase8_projection_domain", "tests.test_phase8_projection_metadata", "tests.test_phase8_projection_readers", "tests.test_phase8_projection_repository", "tests.test_phase7_trial_quality_repository", "tests.test_phase7_trial_review_repository", "tests.test_phase7_readiness_repository", "tests.test_phase7_readiness_repository_seams", "-v"],
       ["python", "-m", "unittest", "tests.test_phase8_item_publish_config", "tests.test_phase8_item_publish_contract", "tests.test_phase8_item_publish_security", "tests.test_phase8_mbom_publish_config", "tests.test_phase8_mbom_publish_contract", "tests.test_phase8_mbom_publish_security", "tests.test_phase8_tool_asset_config", "tests.test_phase8_tool_asset_contract", "tests.test_phase8_tool_asset_security", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase8_item_publish_runtime_verifier", "tests.test_phase8_mbom_publish_runtime_verifier", "tests.test_phase8_tool_asset_runtime_verifier", "-v"],
       ["npm", "run", "generate:check"],
       ["npm", "run", "test", "--", "--run", "frontend/tests/unit/erp-projections-data-source.test.ts", "frontend/tests/unit/formal-quality-link-data-source.test.ts", "frontend/tests/unit/formal-quality-link-inspector.test.tsx", "frontend/tests/unit/live-trial-page.test.tsx", "frontend/tests/unit/project-readiness-workspace.test.tsx"],
-      ["npx", "playwright", "test", "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts", "frontend/tests/e2e/p7-05-readiness-live.spec.ts", "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts", "--grep-invert", "@visual"],
+      ["npx", "playwright", "test", "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts", "frontend/tests/e2e/p7-04-trial-review-live.spec.ts", "frontend/tests/e2e/p7-05-readiness-live.spec.ts", "frontend/tests/e2e/p7-07-released-trial-summary-live.spec.ts", "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts", "--grep-invert", "@visual"],
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/reconcile_v1_2_traceability.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
@@ -127,7 +138,7 @@
     ],
     "level_2": [
       ["bash", "scripts/verify.sh"],
-      ["npx", "playwright", "test", "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts", "frontend/tests/e2e/p7-05-readiness-live.spec.ts", "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts"]
+      ["npx", "playwright", "test", "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts", "frontend/tests/e2e/p7-04-trial-review-live.spec.ts", "frontend/tests/e2e/p7-05-readiness-live.spec.ts", "frontend/tests/e2e/p7-07-released-trial-summary-live.spec.ts", "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts"]
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],

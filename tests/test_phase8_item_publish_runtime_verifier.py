@@ -1155,7 +1155,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertTrue(_legacy_sql_contract_violations(variant))
 
-    def test_controlled_workflow_retains_p8_03_history_under_current_p8_05_scope(
+    def test_controlled_workflow_retains_p8_03_history_under_current_p8_06_scope(
         self,
     ) -> None:
         source = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
@@ -1171,9 +1171,9 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn(
             "# Preserved P8-03 predecessor_scope=p5-01-through-p8-02", source
         )
-        self.assertIn("printf 'scope=p5-01-through-p8-05\\n'", source)
+        self.assertIn("printf 'scope=p5-01-through-p8-06\\n'", source)
         self.assertIn(
-            "printf 'predecessor_scope=p5-01-through-p8-04\\n'", source
+            "printf 'predecessor_scope=p5-01-through-p8-05\\n'", source
         )
         self.assertIn("p8-integration-runtime-${{ github.run_id }}", source)
         self.assertIn("needs.controlled_preflight.result == 'success'", source)

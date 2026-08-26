@@ -624,3 +624,35 @@ head, receipt, audit and P8-01 observation. Never delete or retarget history,
 reinterpret raw codes, change P7 readiness/Gate truth or contact ERPNext.
 Product work starts only after this governance transition passes exact-SHA
 ordinary CI.
+
+## 21. Checkpoint-4 same-cycle harness remediation
+
+Checkpoint-4 product SHA `0bc2687f9541fb14fa348614c16968c182aafcbb`
+reached ordinary CI `32983850058`. Repository `98227122886`, frontend
+`98227123050` and governed visual `98227123047` identify harness contracts
+that predate the accepted checkpoint-4 surface; secret scanning passes and
+there is no product root.
+
+The bounded exact-fourteen changed-path remediation preserves all product
+semantics:
+
+- three runtime tests keep every historical P8-03/P8-04/P8-05 assertion and
+  update only the current P8-06 scope and P8-05 predecessor contract;
+- one readiness unit test awaits the exact asynchronously loaded empty result
+  and proves one exact source-bound load;
+- one current-task verifier assertion pins the resulting legal allowlist
+  cardinality while retaining every negative manifest check;
+- P7-04 and P7-07 mock the exact formal-quality collection plus the exact
+  `kind=formal_quality_status` projection request, then wait for the terminal
+  inspector before scrolling; and
+- all six corresponding Linux Bookworm/x64 cases are exercised after
+  text/layout-only manual review, two focused no-update passes and the full
+  governed 132-case no-update matrix. Only P7-04 Traditional Chinese and
+  P7-07 English/Simplified Chinese require file changes; P7-04 English/
+  Simplified Chinese and P7-07 Traditional Chinese are bit-identical to their
+  existing canonical files once the terminal gate is applied.
+
+The remaining four changed paths are this plan, checkpoint evidence,
+controller and CURRENT_TASK. No product, workflow, API, permission, route, translation,
+threshold or Darwin baseline changes. Run `32983850058` is not rerun; the
+repair requires a new exact-SHA ordinary PASS before one Level-3 execution.

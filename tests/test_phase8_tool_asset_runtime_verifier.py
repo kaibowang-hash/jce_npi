@@ -2621,9 +2621,9 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("stderr=subprocess.DEVNULL", source)
         self.assertIn("tempfile.TemporaryFile", source)
         workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-        self.assertIn("P5 controlled runtime through P8-05 Tool Asset command and Outbox worker", workflow)
-        self.assertIn("printf 'scope=p5-01-through-p8-05\\n'", workflow)
-        self.assertIn("printf 'predecessor_scope=p5-01-through-p8-04\\n'", workflow)
+        self.assertIn("P5 controlled runtime through P8-06 formal quality link", workflow)
+        self.assertIn("printf 'scope=p5-01-through-p8-06\\n'", workflow)
+        self.assertIn("printf 'predecessor_scope=p5-01-through-p8-05\\n'", workflow)
         self.assertIn("tests/e2e/p8-05-tool-asset-execution-live.spec.ts", workflow)
         self.assertIn(
             "frontend/tests/e2e/p8-05-tool-asset-execution-live.spec.ts-snapshots/p8-05-*-linux.png",

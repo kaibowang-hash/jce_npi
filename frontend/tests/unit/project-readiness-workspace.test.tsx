@@ -494,7 +494,20 @@ describe("Project readiness workspace", () => {
   });
 
   it("renders blocker-first server scores, exact evidence, and unavailable formal holds", async () => {
-    renderWorkspace(createDataSource());
+    const loadFormalQuality = vi.fn().mockResolvedValue({
+      collection: {
+        projectGlobalId: ids.project,
+        permissions: { view: true, link: false },
+        items: [],
+      },
+      candidate: null,
+    });
+    renderWorkspace(createDataSource(), {
+      formalQualityDataSource: {
+        load: loadFormalQuality,
+        link: vi.fn(),
+      },
+    });
 
     expect(
       await screen.findByRole("heading", {
@@ -512,8 +525,22 @@ describe("Project readiness workspace", () => {
       await screen.findByRole("heading", { name: "Formal quality reference" }),
     ).toBeVisible();
     expect(
-      screen.getByText("No formal quality reference available"),
+      await screen.findByText("No formal quality reference available"),
     ).toBeVisible();
+    expect(loadFormalQuality).toHaveBeenCalledTimes(1);
+    expect(loadFormalQuality).toHaveBeenCalledWith(
+      ids.project,
+      {
+        scopeGlobalId: ids.instance,
+        scopeKind: "readiness",
+        sourceCapability: true,
+        sourceGlobalId: ids.instance,
+        sourceKind: "readiness_assessment",
+        sourceSnapshotHash: hash("e"),
+        sourceVersion: 2,
+      },
+      expect.any(AbortSignal),
+    );
     expect(
       screen.getAllByText("Mandatory quality approval").length,
     ).toBeGreaterThan(0);

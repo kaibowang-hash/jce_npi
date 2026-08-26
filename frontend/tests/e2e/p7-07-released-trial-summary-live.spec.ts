@@ -10,7 +10,11 @@ import {
   trialPlanningIds,
   trialPlanningWorkspace,
 } from "../support/trial-planning-fixture";
-import { trialQualityWorkspace } from "../support/trial-quality-fixture";
+import {
+  trialFormalQualityLinks,
+  trialFormalQualityProjection,
+  trialQualityWorkspace,
+} from "../support/trial-quality-fixture";
 import {
   emptyReleasedTrialSummaryWorkspace,
   releasedTrialSummaryIds,
@@ -30,6 +34,8 @@ const csrfToken = "p7-07-released-summary-browser-csrf-exact";
 const sessionEndpoint = /\/api\/npi\/v1\/session\/bootstrap(?:\?.*)?$/u;
 const trialEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/(?:trials|trial-plans(?:\/.*)?|trial-rounds(?:\/.*|:[^/?]+))$/u;
+const formalQualityEndpoint =
+  /\/api\/npi\/v1\/projects\/[^/?]+\/(?:formal-quality-links|erp-projections)(?:\?.*)?$/u;
 const controlledPrintEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/controlled-print\/capability(?:\?.*)?$/u;
 const requestIdPattern =
@@ -174,6 +180,22 @@ async function installTrialApi(
   let commandAccepted = false;
   let refreshProblemPending = options.refreshProblemOnce ?? false;
 
+  await page.route(formalQualityEndpoint, async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    expect(request.method()).toBe("GET");
+    expect([...url.searchParams.entries()]).toEqual(
+      url.pathname.endsWith("/erp-projections")
+        ? [["kind", "formal_quality_status"]]
+        : [],
+    );
+    await fulfillJson(
+      route,
+      url.pathname.endsWith("/erp-projections")
+        ? trialFormalQualityProjection()
+        : trialFormalQualityLinks(),
+    );
+  });
   await page.route(trialEndpoint, async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
@@ -272,6 +294,7 @@ async function openSummary(page: Page, locale: TestLocale): Promise<void> {
     name: translate(locale, "Released Trial Summary"),
   });
   await expect(workspace).toBeVisible();
+  await expect(page.getByTestId("formal-quality-link-state")).toBeVisible();
   await workspace.evaluate((element) => {
     element.scrollIntoView();
   });
