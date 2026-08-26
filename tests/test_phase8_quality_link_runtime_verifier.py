@@ -101,7 +101,25 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.verifier.QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
+        )
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
+        self.assertEqual(
+            self.verifier._active_quality_link_runtime_diagnostic_codes(),
+            frozenset(expected)
+            .union(self.verifier.QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES)
+            .union(self.verifier.QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES),
+        )
+        self.assertEqual(
+            len(self.verifier._active_quality_link_runtime_diagnostic_codes()),
+            60,
+        )
+        self.assertTrue(
+            set(self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_CODES).isdisjoint(
+                self.verifier._active_quality_link_runtime_diagnostic_codes()
+            )
+        )
         source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(encoding="utf-8")
         tree = ast.parse(source)
         stages = [
@@ -490,6 +508,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                     "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
                     False,
                 ),
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED",
+                    False,
+                ),
                 patch.dict(
                     os.environ,
                     {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
@@ -502,6 +525,25 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 ),
             ):
                 raise RuntimeError("same-error")
+            self.assertFalse(path.exists())
+
+    def test_post_permission_success_has_zero_record_or_behavior_effect(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ),
+                self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+                self.verifier.quality_link_runtime_diagnostic_step(
+                    "P806_QUALITY_CURRENT_TRUTH"
+                ),
+            ):
+                value = {"unchanged": True}
+            self.assertEqual(value, {"unchanged": True})
             self.assertFalse(path.exists())
 
     def test_runtime_shell_never_reads_failed_child_output_and_uses_strict_reader(self) -> None:
@@ -572,6 +614,9 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                     {
                         "project_id": "10000000-0000-4000-8000-000000000002",
                         "readiness_id": "10000000-0000-4000-8000-000000000001",
+                        "diagnostic_trace_id": (
+                            self.verifier.quality_link_runtime_diagnostic_trace()
+                        ),
                     },
                 ),
                 call(
@@ -592,7 +637,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             with (
                 patch.object(
                     self.verifier,
-                    "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                    "QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED",
                     True,
                 ),
                 patch.dict(
@@ -628,7 +673,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 )
             with patch.object(
                 self.verifier,
-                "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                "QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -653,7 +698,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             with (
                 patch.object(
                     self.verifier,
-                    "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                    "QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED",
                     True,
                 ),
                 patch.dict(
@@ -689,7 +734,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 )
             with patch.object(
                 self.verifier,
-                "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                "QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(

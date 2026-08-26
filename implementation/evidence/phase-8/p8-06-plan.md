@@ -856,3 +856,64 @@ All diagnostic flags are false. FR-CO-003/004 deferral, all ERPNext/Sandbox/
 production and approval holds, raw-code-no-pass behavior and every B/C hold
 remain unchanged. The separate production read-only fact/DoD governance task
 remains queued and outside this repair.
+
+## 26. Independent post-permission runtime diagnostic
+
+Exact projection-support repair SHA
+`88716e48972f16064c56f60ca067845b7df0f681` passes ordinary CI
+`33008613712`. Its sole Level-3 run `33009962578` passes repository, secret,
+frontend, governed visual and controlled preflight, then runtime job
+`98317534667` fails at the cumulative P5-through-P8-06 verification boundary.
+Failed-child output, business values, IDs, messages and stacks remain unread.
+
+The prior exact tuple proved every ordered prepare stage through transaction
+entry and selected only Observation insert permission enforcement. The repair
+now binds the same retained Readiness actor and active Frappe session to a
+request-local capability, requires `NPI API User`, and allows only Observation
+insert and Head insert/save through the two pinned permission helpers. This
+closes that exact PermissionError root. It does not prove which later or
+non-permission predicate failed in the new Level-3 run. Remaining independent
+boundaries include Observation lifecycle validation, Head persistence, Audit,
+outcome, collection, commit/response, current truth, create/replay/stale/list
+and cleanup. Selecting any product repair would be speculative.
+
+Freeze `p8-06-quality-link-prepare-bootstrap` at diagnostic `1/1`, repair
+`1/1`, final `1/1`. Independent
+`p8-06-quality-link-post-permission` starts diagnostic `0/1`, repair `0/1`,
+final `0/1`. Runtime-stage, prepare-projection and prepare-bootstrap flags are
+false; only the post-permission verifier flag is true. Its active allowlist is
+exactly sixty unique stages: seventeen cumulative runtime stages, four
+prepare-parent stages and thirty-nine repository/server stages. Bootstrap's
+five historical stages are excluded from this cycle.
+
+The cycle reuses the deterministic trace, exact path, O_EXCL exact-three-key
+record, pre-child log cursors and strict mirrored reader. One valid server
+tuple wins over the parent fallback. Duplicate, malformed, unknown or
+wrong-trace data is rejected. The same exception is re-raised, `finally` is
+preserved, nonzero child stdout/stderr are never read and only a successful
+child result is parsed. Dormant execution creates no record and changes no
+behavior.
+
+The exact-five paths are this plan, the checkpoint evidence,
+`implementation/AUTOPILOT_CONTROLLER.md`,
+`scripts/verify_quality_link_runtime.py` and
+`tests/test_phase8_quality_link_runtime_verifier.py`. Changed-files-to-tests
+must cover flag mutual exclusion, exact-sixty AST/lexical equality, scope,
+trace, cursor, server-win, parent fallback, innermost one-record behavior,
+same-exception/finally, malformed/missing/duplicate/wrong-trace rejection,
+no-leak, success and dormant paths. Full affected projection/quality-link/P7
+and Item/MBOM/Tool Asset regressions, current/reconciliation, compilation,
+shell syntax, security scans, diff hygiene and exact-five manifest with an
+unauthorized sixth path rejected remain required.
+
+This is verifier/evidence only. Product, API, schema, permission, transaction,
+ownership, migration, UI, translation, visual, target-network, FR-CO-003/004
+deferral and B/C holds do not change. Production read-only fact gathering and
+final-DoD documentation remain queued outside this exact-SHA chain.
+
+Level 1 passes focused runtime `18/18`, complete affected P8-06/P8-01/P7 and
+Item/MBOM/Tool Asset `300/300`, full repository Python `2531/2531` and
+current/reconciliation `36/36`. Current and reconciliation scripts,
+compilation, shell syntax, exact activation, strict-reader/no-leak checks,
+product-zero-diff and diff hygiene pass. The exact-five manifest is accepted
+and an unauthorized sixth path is rejected.

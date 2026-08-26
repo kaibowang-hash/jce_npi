@@ -329,3 +329,45 @@ FR-CO-003/004 stay `USER_APPROVED_POST_V1_2_DEFERRED`. ERPNext mapping,
 approval, pass semantics, Sandbox/production and all B/C holds are unchanged.
 The separately requested production read-only facts/DoD governance work stays
 queued and is not mixed into this checkpoint.
+
+## Post-permission runtime diagnostic checkpoint
+
+Projection-support repair SHA
+`88716e48972f16064c56f60ca067845b7df0f681` passes ordinary
+`33008613712`. Its sole Level-3 `33009962578` passes repository
+`98313370026`, secret `98313369805`, frontend `98313370060`, governed visual
+`98313370084` and preflight `98317457895`; runtime `98317534667` fails at the
+withheld cumulative formal-quality verification step. No child output,
+business content, IDs, messages or stacks were inspected.
+
+Static cross-proof closes the old Observation permission source but cannot
+select a new first source. The exact capability repair binds the retained
+Readiness actor, active session, `NPI API User`, DocType, action and controller
+flag before its only two support-write bypasses. The remaining runtime covers
+multiple independent non-permission persistence, Head, Audit, collection,
+HTTP/replay/conflict/list and cleanup predicates. No product repair is
+authorized.
+
+The prepare-bootstrap cycle is immutable at diagnostic `1/1`, repair `1/1`,
+final `1/1`. Independent `p8-06-quality-link-post-permission` starts at
+`0/1`, `0/1`, `0/1`. Its sole active verifier flag exposes exactly the
+existing seventeen runtime, four prepare-parent and thirty-nine server codes.
+The record remains one exclusive `{code, exceptionType, traceId}` object; a
+trusted strict server mirror wins, otherwise the ordered parent fallback is
+used. Failed-child stdout/stderr remain unread, same-exception/finally and
+response behavior remain unchanged, and default-off execution is dormant.
+
+The exact-five verifier/evidence paths add no product, workflow, API, schema,
+permission, transaction, migration, UI or target-network diff. Tests pin
+mutual exclusion, exact-sixty lexical equality, trace/scope/cursors,
+server-win/fallback, one-record/inner-wins, malformed and no-leak behavior,
+success/dormant behavior and the unchanged shell reader contract. The
+production read-only fact/DoD task remains queued; FR-CO-003/004 deferral and
+all B/C holds remain intact.
+
+Level 1 passes focused runtime `18/18`, complete affected P8-06/P8-01/P7 and
+Item/MBOM/Tool Asset `300/300`, full repository Python `2531/2531` and
+current/reconciliation `36/36`. Current and reconciliation scripts,
+compilation, shell syntax, activation/no-leak checks, product-zero-diff and
+diff hygiene pass. The exact-five manifest is accepted and an unauthorized
+sixth path is rejected.

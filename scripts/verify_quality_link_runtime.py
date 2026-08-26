@@ -34,6 +34,7 @@ _NAMESPACE = UUID("2f927cab-16a1-4ac9-a9da-39fc8800b806")
 QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED = False
+QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED = True
 QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES = (
     "P806_QUALITY_BOOTSTRAP_SECRET",
     "P806_QUALITY_ADMIN_LOGIN",
@@ -138,6 +139,7 @@ def quality_link_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
             QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+            or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
         )
         and _TRACE_PATTERN.fullmatch(trace_id) is not None
     ):
@@ -172,13 +174,17 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
             )
             or (
                 code in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
-                and not QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
+                and not (
+                    QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
+                    or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
+                )
             )
             or (
                 code in QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
                 and not (
                     QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
                     or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+                    or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
                 )
             )
             or (
@@ -256,6 +262,12 @@ def _active_quality_link_runtime_diagnostic_codes() -> frozenset[str]:
             .union(QUALITY_LINK_PREPARE_BOOTSTRAP_CODES)
             .union(QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES)
         )
+    if QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED:
+        return (
+            frozenset(QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES)
+            .union(QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES)
+            .union(QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES)
+        )
     if QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED:
         return frozenset(QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES).union(
             QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES
@@ -293,6 +305,7 @@ def _prepare_projection_diagnostics_enabled() -> bool:
     return (
         QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
         or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+        or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
     )
 
 
@@ -714,7 +727,10 @@ def run_scoped_local_bench_fixture(method: str, kwargs: dict[str, object]) -> No
     trace_id = kwargs.get("diagnostic_trace_id")
     scope_is_exact = (
         method == "prepare_projection"
-        and QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+        and (
+            QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+            or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
+        )
         and os.environ.get(_PREPARE_PROJECTION_DIAGNOSTIC_ENV)
         == _PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
         and isinstance(trace_id, str)
@@ -786,6 +802,7 @@ def main() -> int:
                 QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+                or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
             ):
                 return 1
             raise

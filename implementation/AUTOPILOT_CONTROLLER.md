@@ -6385,3 +6385,50 @@ repeat or rewrite it merely to restore context. See
   unchanged. The production read-only fact-audit/DoD task remains queued.
 - Controller marker:
   `P8-06 checkpoint 4 final 1/1 frozen; prepare-bootstrap diagnostic 1/1 repair 1/1 final 0/1; all diagnostics off`.
+
+## 2026-08-27 P8-06 post-permission runtime diagnostic checkpoint
+
+- Exact repair SHA `88716e48972f16064c56f60ca067845b7df0f681`
+  passes ordinary CI `33008613712`. Its sole Level-3 run `33009962578`
+  passes repository `98313370026`, secret scan `98313369805`, frontend
+  `98313370060`, governed visual `98313370084` and controlled preflight
+  `98317457895`, then runtime `98317534667` fails only at the withheld
+  cumulative P5-through-P8-06 verification boundary. No child stdout/stderr,
+  business value, ID, message or stack was read.
+- Freeze `p8-06-quality-link-prepare-bootstrap` at diagnostic `1/1`, repair
+  `1/1`, final `1/1`. The prior
+  `P806_QUALITY_PROJECTION_OBSERVATION_INSERT / PermissionError` root is
+  closed by the exact actor-bound capability: the runtime actor is the same
+  user set into the Frappe session and the retained Readiness fixture pins
+  `NPI API User`; Observation and Head support writes alone use the bounded
+  permission helpers. The wide post-repair failure cannot safely select among
+  a non-permission Observation lifecycle failure, Head insert/update/save,
+  Audit, outcome, collection, commit/response, link/replay/stale/list or
+  cleanup. No further repair is authorized from this boundary.
+- Open independent `p8-06-quality-link-post-permission` at diagnostic `0/1`,
+  repair `0/1`, final `0/1`. Only its new verifier activation is true; runtime
+  stage, prepare-projection and prepare-bootstrap activations are false. Its
+  exact sixty-code allowlist is the union of seventeen cumulative parent
+  stages, four prepare-parent stages and thirty-nine server stages. The five
+  historical bootstrap codes stay inactive.
+- The existing exact trace, exclusive exact-three-key record, controlled log
+  cursors and strict mirrored reader are reused. A trusted server tuple wins;
+  otherwise one fixed parent stage is retained. Innermost stage wins, the same
+  exception and `finally` behavior are preserved, failed-child stdout/stderr
+  remain unread and successful children alone are parsed. Default-off
+  execution has zero record and behavior effect.
+- Exact paths are `scripts/verify_quality_link_runtime.py`,
+  `tests/test_phase8_quality_link_runtime_verifier.py`, this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Product, permissions, source values, transaction order, API, metadata,
+  migration, UI, ERP traffic, FR-CO-003/004 deferral and all B/C holds remain
+  unchanged. Production read-only fact/DoD governance stays queued.
+- Level 1 passes focused runtime `18/18`, complete affected P8-06/P8-01/P7
+  and Item/MBOM/Tool Asset `300/300`, full repository Python `2531/2531`
+  and current/reconciliation `36/36`. Current and reconciliation scripts,
+  compilation, shell syntax, exact activation, strict-reader/no-leak checks,
+  product-zero-diff and diff hygiene pass. The exact-five manifest is accepted
+  and an unauthorized sixth path is rejected.
+- Controller marker:
+  `P8-06 checkpoint 4 final 1/1 frozen; post-permission diagnostic 0/1 active`.
