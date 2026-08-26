@@ -239,6 +239,12 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_attempt_snapshot_tool_asset_process_diagnostics_enabled()
         )
+        self.assertTrue(
+            self.verifier.POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
+        )
         project_id = str(UUID(int=1))
         retained_master_id = str(UUID(int=2))
         retained_set_id = str(UUID(int=3))
@@ -1571,7 +1577,13 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_attempt_snapshot_tool_asset_process_diagnostics_enabled()
         )
-        self.assertFalse(
+        self.assertTrue(
+            self.verifier.POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
+        )
+        self.assertTrue(
             self.verifier._tool_asset_process_diagnostics_enabled()
         )
         self.assertEqual(
@@ -1592,7 +1604,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             self.verifier._active_tool_asset_worker_diagnostic_codes(),
-            frozenset(),
+            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
         )
         self.assertEqual(
             len(self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES),
@@ -1863,6 +1875,16 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.verifier.POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
+        )
+        self.verifier.POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED = False
+        self.addCleanup(
+            setattr,
+            self.verifier,
+            "POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            True,
+        )
         self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED = True
         self.addCleanup(
             setattr,
@@ -1944,6 +1966,55 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             self.assertEqual(
                 self.verifier._active_tool_asset_worker_diagnostic_codes(),
                 self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+            )
+
+    def test_post_result_datetime_process_activation_is_new_only(self):
+        self.assertTrue(
+            self.verifier.POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
+        )
+        self.assertFalse(
+            self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
+        )
+        self.assertTrue(self.verifier._tool_asset_process_diagnostics_enabled())
+        self.assertEqual(
+            self.verifier._active_tool_asset_worker_diagnostic_codes(),
+            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+        )
+
+        competing_flags = (
+            "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
+            "POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED",
+            "POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            "POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+            "TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+            "POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED",
+        )
+        for flag in competing_flags:
+            with self.subTest(flag=flag), patch.object(self.verifier, flag, True):
+                self.assertFalse(
+                    self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
+                )
+
+        with patch.object(
+            self.verifier,
+            "POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            False,
+        ):
+            self.assertFalse(
+                self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
+            )
+            self.assertFalse(self.verifier._tool_asset_process_diagnostics_enabled())
+            self.assertEqual(
+                self.verifier._active_tool_asset_worker_diagnostic_codes(),
+                frozenset(),
             )
 
     def test_worker_codes_have_one_runtime_context_each(self):
@@ -2057,15 +2128,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                                     )
                                     + "\n"
                                 )
-                    with patch.object(
-                        self.verifier,
-                        "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
-                        True,
-                    ):
-                        return self.verifier._sanitized_tool_asset_worker_diagnostic(
-                            trace_id,
-                            cursors,
-                        )
+                    return self.verifier._sanitized_tool_asset_worker_diagnostic(
+                        trace_id,
+                        cursors,
+                    )
 
         valid = {
             "code": "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
@@ -2143,10 +2209,6 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             _WORKER_TRACE_ID,
         )
         with patch.object(
-            self.verifier,
-            "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
-            True,
-        ), patch.object(
             self.verifier.tempfile,
             "TemporaryFile",
             return_value=FailedOutput(),
@@ -2204,6 +2266,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
+            self.verifier,
+            "POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.verifier.tempfile,
             "TemporaryFile",
             return_value=FailedOutput(),
@@ -2236,10 +2302,6 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             return types.SimpleNamespace(returncode=0)
 
         with patch.object(
-            self.verifier,
-            "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
-            True,
-        ), patch.object(
             self.verifier.item_runtime,
             "_replay_diagnostic_log_cursors",
             return_value={"logs/npi_core.log": 0},
@@ -2263,6 +2325,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             self.verifier,
             "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,

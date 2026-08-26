@@ -42,6 +42,7 @@ TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED = False
 POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED = False
 TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED = False
 POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED = False
+POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED = True
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
     "p805-tool-asset-create-response-v1"
@@ -439,10 +440,30 @@ def _post_attempt_snapshot_tool_asset_process_diagnostics_enabled() -> bool:
     )
 
 
+def _post_result_datetime_tool_asset_process_diagnostics_enabled() -> bool:
+    """Activate only the independent post-Result-datetime process cycle."""
+
+    return (
+        POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED is True
+        and POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED is False
+        and POST_SNAPSHOT_TOOL_ASSET_WORKER_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_WORKER_DOWNSTREAM_DIAGNOSTICS_ENABLED is False
+        and POST_SOURCE_HASH_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and POST_LINK_TOOL_ASSET_CREATE_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_PREHANDLER_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_HTTP_BOUNDARY_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CREATE_RESPONSE_DIAGNOSTICS_ENABLED is False
+        and TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+        and POST_QUERY_TOOL_ASSET_CONTEXT_DIAGNOSTICS_ENABLED is False
+    )
+
+
 def _tool_asset_process_diagnostics_enabled() -> bool:
     return (
         _tool_asset_process_stage_diagnostics_enabled()
         or _post_attempt_snapshot_tool_asset_process_diagnostics_enabled()
+        or _post_result_datetime_tool_asset_process_diagnostics_enabled()
     )
 
 

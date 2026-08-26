@@ -1733,3 +1733,48 @@ Level 1 passes focused repository/runtime `48/48`, complete Tool Asset
 All-diagnostics-off, direct-SQL/target-network/submit-BOM scans, compile,
 current/reconciliation scripts, exact-seven manifest with an unauthorized
 eighth path rejected, and diff hygiene pass.
+
+## 50. Post-Result-datetime Tool Asset process diagnostic cycle
+
+Result datetime repair SHA
+`398cd326339f2dae146380be239940d7f00dc35e` passes exact ordinary CI
+`32913836338`. Its sole diagnostics-off Level 3 `32914798761` passes secret,
+repository, frontend, governed visual and controlled preflight jobs. Controlled
+runtime job `98019105211` initializes the pinned Bench and disposable Site,
+then stops at the fixed cumulative P5-through-P8-05 runtime step. Result and
+runtime-artifact steps are skipped and cleanup succeeds. Failed-child
+stdout/stderr, response data, business values, identifiers, counts, exception
+messages and stacks were not read.
+
+The repair closes the exact ISO-`Z` Datetime boundary for Result, Field Result
+and Mapping Observation, as well as the earlier hydrated Attempt datetime
+root. The diagnostics-off cumulative boundary cannot prove this run entered
+the Tool Asset child, and, if it did, remaining Result SQL constraints, Field
+Result/Mapping persistence, Attempt/Request/Outbox/Guard/Audit saves, commits,
+recovery, outcome and response contexts remain non-unique. No next product
+repair is proven.
+
+Freeze `post-attempt-snapshot-tool-asset-process` at diagnostic `1/1`, product
+repair `1/1`, final `1/1`. Open independent
+`post-result-datetime-tool-asset-process` at diagnostic `0/1`, product repair
+`0/1`, final `0/1`. Only
+`POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=True`; every
+historical activation is false.
+
+The verifier reuses the exact fifty-two existing process codes, successful
+create trace, pre-child log cursors, request-local scope, innermost-one-record
+behavior, same-exception rethrow and strict mirrored reader. Failed-child
+stderr remains discarded and stdout unread; successful zero-exit output alone
+may be parsed and emits no diagnostic. No product worker, repository,
+diagnostics, API, permission, transaction, Schema, ownership, adapter, target
+or Gate behavior changes.
+
+Level 1 passes focused runtime verifier `38/38`, complete Tool Asset `125/125`,
+P6 Tooling `355/355`, Tool Asset request-domain `4/4`, Item `146/146`, MBOM
+`126/126`, and current-task/reconciliation `33/33`. Exact-52 code equality and
+unique lexical contexts, strict shared-reader and failed-child-output contracts,
+Python compile, shell syntax, direct-SQL/target-network/submit/TODO scans,
+current/reconciliation scripts and diff hygiene pass. Runtime verifiers expose
+twenty-nine diagnostic flags: only the new post-Result-datetime flag is true.
+The post-commit manifest accepts exactly the five authorized paths and rejects
+an unauthorized sixth path. Product code remains unchanged.

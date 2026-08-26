@@ -5634,3 +5634,41 @@ repeat or rewrite it merely to restore context. See
   eighth path rejected, and diff hygiene pass.
 - Controller marker:
   `P8-05 final held; post-attempt-snapshot Result datetime repair 1/1 Level 1 PASS`.
+
+## 2026-08-26 P8-05 post-Result-datetime process diagnostic cycle
+
+- Result datetime repair SHA
+  `398cd326339f2dae146380be239940d7f00dc35e` passes exact ordinary CI
+  `32913836338`. Sole diagnostics-off Level 3 `32914798761` passes secret,
+  repository, frontend, visual and preflight. Controlled runtime job
+  `98019105211` initializes the pinned Bench and disposable Site, then fails at
+  the fixed cumulative P5-through-P8-05 step. Result/runtime-artifact steps are
+  skipped and cleanup succeeds; failed-child output, response/business values,
+  identifiers, counts, messages and stacks were not read.
+- Result/Field/Observation ISO-`Z` datetime and hydrated Attempt datetime roots
+  are closed. The cumulative boundary does not prove Tool Asset child entry;
+  even after entry, Result SQL, Field/Mapping persistence, terminal saves,
+  commits, recovery, outcome and response remain non-unique. Repair is
+  prohibited.
+- Freeze `post-attempt-snapshot-tool-asset-process` at diagnostic `1/1`,
+  product repair `1/1`, final `1/1`. Open independent
+  `post-result-datetime-tool-asset-process` at diagnostic `0/1`, product repair
+  `0/1`, final `0/1`.
+- Only `POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=True`;
+  every historical diagnostic activation is false. Reuse exact-52 process
+  codes, created trace, pre-child cursors, strict mirrored reader,
+  same-exception/finally, failed-child-output-unread and success-zero contracts.
+  Product code has zero diff.
+- Controller marker:
+  `P8-05 final held; post-result-datetime process diagnostic 0/1 active`.
+- Level 1 passes focused runtime verifier `38/38`, complete Tool Asset `125/125`,
+  P6 Tooling `355/355` plus Tool Asset request-domain `4/4`, Item `146/146`,
+  MBOM `126/126`, and current-task/reconciliation `33/33`. Exact-52
+  equality/lexical coverage, shared safe-reader behavior, Python compile,
+  shell syntax, direct-SQL/target-network/submit/TODO scans, current and
+  reconciliation scripts, diff hygiene, and the exact-five manifest all pass;
+  an unauthorized sixth path is rejected. Across runtime verifiers exactly
+  one of twenty-nine diagnostic flags is active: the new post-Result-datetime
+  flag. Product code remains unchanged.
+- Controller marker:
+  `P8-05 final held; post-result-datetime process diagnostic 0/1 Level 1 PASS`.
