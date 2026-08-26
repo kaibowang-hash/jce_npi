@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-06 CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZATION TRANSITION**
+Status: **IN PROGRESS — P8-06 CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZATION RESTORATION**
 
 Anchor date: 2026-08-16
 
@@ -498,3 +498,11 @@ conflict. Unproved contexts remain unavailable. It authorizes no ERP Outbox,
 target method, worker, adapter, network, runtime, UI or pass mapping, and
 implementation may start only after the transition's own exact-SHA ordinary
 CI. P8-07/P8-08/P8-09 and production ERPNext/JCE remain inactive.
+
+The initial checkpoint-2 transition passes at `bc6095c`/ordinary
+`32955709358`. The subsequent FR-CO-003/004 external-only portal decision
+passes at `51c552a`/ordinary `32957762888` and does not change this Phase-8
+quality-link boundary. A separate governance-only restoration must pass its
+own exact-SHA ordinary CI before the unchanged exact14 product paths resume;
+the portal deferral and retained internal V1.2/Phase-9/final-gate rules remain
+in force.

@@ -4,7 +4,7 @@ Updated: `2026-08-26T23:55:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_USER_APPROVED_SCOPE_DECISION — P8-06 PAUSED`
+- Mode: `IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION — P8-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -19,9 +19,9 @@ Updated: `2026-08-26T23:55:00Z`
   `f9c358018823f3af20aca38efb53f8fcbd13d406`; repository, frontend,
   secret, `129/129` visual, controlled preflight and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32955709358` (`PASS` at
-  `bc6095c1ba23580dc3eec3ace4fe9798fc3c160c`; P8-06 checkpoint-2
-  controller authorization transition)
+  `32957762888` (`PASS` at
+  `51c552a0863d7c2cdb818585aa7017e5996501b3`; FR-CO-003/004
+  external-portal scope decision)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -122,14 +122,14 @@ Updated: `2026-08-26T23:55:00Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-06 — quality linkage`
-  (`IN_PROGRESS_USER_APPROVED_SCOPE_DECISION`)
+  (`IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION`)
 - Resumed product task: `P8-06`
-  (`PAUSED_BEFORE_CHECKPOINT_2_PRODUCT_IMPLEMENTATION`)
+  (`AWAITING_RESTORATION_EXACT_SHA_ORDINARY_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — FR-CO-003/004 GOVERNANCE DECISION`)
+  (`IN_PROGRESS — P8-06 CHECKPOINT 2 AUTHORIZATION RESTORATION`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -173,6 +173,14 @@ notification foundation and ERP read-only projections remain V1.2. P8-06
 checkpoint-2 product work stays paused until this governance checkpoint passes
 exact-SHA ordinary CI and a separate controller restoration reopens its exact
 fourteen product paths.
+
+That scope-decision checkpoint passes at exact SHA
+`51c552a0863d7c2cdb818585aa7017e5996501b3` and ordinary CI
+`32957762888`. This separate governance-only restoration now returns the
+frozen P8-06 checkpoint-2 exact fourteen product paths only after its own
+exact-SHA ordinary CI. The accepted FR-CO-003/004 marker, trace status,
+retained V1.2 internal scope and Phase-9/final-gate rules remain unchanged.
+No product file changes in this restoration.
 
 P7-08 and Phase 7 are sealed at exact final product checkpoint `3111402`.
 Ordinary CI `31898840279` passes `1,921` tracked Python tests, `918/918`

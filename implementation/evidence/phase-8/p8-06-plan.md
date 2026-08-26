@@ -485,3 +485,22 @@ After link history exists, disable the P8-06 route and retain immutable link
 revisions, heads, receipts and audits for forward repair. Never delete or
 retarget a link, mutate ERP truth or reinterpret unavailable/raw evidence as
 pass.
+
+## 18. Checkpoint-2 authorization restoration after portal scope decision
+
+The original exact-fourteen checkpoint-2 boundary is accepted at controller
+SHA `bc6095c1ba23580dc3eec3ace4fe9798fc3c160c`, ordinary CI
+`32955709358`. The intervening governance-only FR-CO-003/004 decision passes
+exact SHA `51c552a0863d7c2cdb818585aa7017e5996501b3`, ordinary CI
+`32957762888`. That decision keeps both portal requirements P1
+`REMAPPED_PHASE_9`, marks only external login/identity/self-service portal
+surfaces `USER_APPROVED_POST_V1_2_DEFERRED`, and retains all internal V1.2 and
+Phase-9/final-gate obligations.
+
+This separate restoration changes no product path. Only after its own
+exact-SHA ordinary CI may the unchanged fourteen product paths in section 17
+resume. Project-first authorization, exact source/head locks, supported source
+capabilities, one atomic revision/head/idempotency/audit transaction, replay,
+conflict, ownership, permission, rollback and all external holds remain
+bit-for-bit the same boundary. The portal decision is not reverted or included
+in P8-06 product scope.

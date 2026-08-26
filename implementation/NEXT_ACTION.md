@@ -1,21 +1,20 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_USER_APPROVED_SCOPE_DECISION — P8-06 PAUSED`
+`IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION — P8-06`
 
 Recovery time: `2026-08-26T23:55:00Z`
 
-Current atomic action: record the separate user-approved scope decision for
-`FR-CO-003` and `FR-CO-004`. Exact P8-06 checkpoint-2 transition SHA
-`bc6095c1ba23580dc3eec3ace4fe9798fc3c160c` passes ordinary CI
-`32955709358`; product implementation is paused. Preserve the existing
-`REMAPPED_PHASE_9` status and original IDs/source/history, and use
-`USER_APPROVED_POST_V1_2_DEFERRED` only as the decision marker for external
-portal login, identity, self-service submission/approval UI and API. Retain
-all internal supplier/customer evidence, Project/Gate/Trial/Readiness,
-permission/audit, notification foundation and ERP read-only projection scope
-in V1.2. After this governance checkpoint passes exact-SHA ordinary CI, open a
-separate controller restoration before any P8-06 checkpoint-2 product work.
+Current atomic action: complete the separate P8-06 checkpoint-2 product
+authorization restoration. The frozen exact-fourteen boundary at `bc6095c`
+passed ordinary CI `32955709358`; the intervening FR-CO-003/004 scope decision
+passes exact SHA `51c552a0863d7c2cdb818585aa7017e5996501b3` and ordinary CI
+`32957762888`. This transition changes governance only. After its own exact-SHA
+ordinary CI, checkpoint 2 may implement only Project-first list/detail and the
+NPI-owned exact-observation link within those fourteen paths. External portals
+remain `USER_APPROVED_POST_V1_2_DEFERRED`; retained internal collaboration and
+Phase-9/final-gate rules remain unchanged. No product work begins before this
+restoration CI.
 
 Required branch:
 `codex/npi-v1.2-implementation`

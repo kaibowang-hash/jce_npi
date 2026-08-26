@@ -65,6 +65,12 @@ Exact-SHA ordinary CI passes frontend `98129304814`, repository
 controlled lanes correctly skip because this checkpoint has no route or
 runtime behavior.
 
+Checkpoint-2 controller authorization exact SHA `bc6095c` passes ordinary CI
+`32955709358`. The separate FR-CO-003/004 scope-decision exact SHA `51c552a`
+passes ordinary CI `32957762888` and changes no checkpoint-1 product fact.
+Checkpoint-2 product work remains closed until its governance-only restoration
+passes exact-SHA ordinary CI; the external-portal decision remains durable.
+
 ## Rollback
 
 Before any future link row exists, revert this pure module, components,

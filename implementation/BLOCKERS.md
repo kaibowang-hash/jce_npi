@@ -13,8 +13,9 @@ visual `98084790917`, preflight `98087726984` and cumulative Site
 recorded in `implementation/evidence/phase-8/p8-05-validation.md`; all
 diagnostics are false, zero production traffic and cleanup pass. The P8-06
 checkpoint-2 authorization transition SHA `bc6095c` passes ordinary CI
-`32955709358`. Its product implementation is paused only for the active
-governance checkpoint and requires no external login or production action.
+`32955709358`, and the external-portal scope decision SHA `51c552a` passes
+ordinary CI `32957762888`. Only its separate product-authorization restoration
+is active and requires no external login or production action.
 
 ## Active recovery
 
@@ -72,6 +73,9 @@ read-only projection obligations remain V1.2.
   entry with approved external identity/authorization, evidence/approval,
   privacy/security, rollback and release-gate facts; it is not a global
   blocker and does not defer internal collaboration truth.
+- P8-06 checkpoint-2 product authorization remains closed until the current
+  governance-only restoration passes exact-SHA ordinary CI. Its future exact14
+  boundary and all quality ownership/production holds remain unchanged.
 
 ## Historical recovery
 

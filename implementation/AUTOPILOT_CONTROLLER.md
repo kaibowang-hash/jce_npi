@@ -6078,3 +6078,19 @@ repeat or rewrite it merely to restore context. See
   security threat model, rollback, tests and release-gate acceptance.
 - Controller marker:
   `FR-CO-003/004 external portals USER_APPROVED_POST_V1_2_DEFERRED; internal collaboration scope retained`.
+
+## 2026-08-26 P8-06 checkpoint-2 product authorization restoration
+
+- FR-CO-003/004 scope-decision exact SHA
+  `51c552a0863d7c2cdb818585aa7017e5996501b3` passes ordinary CI
+  `32957762888`; its external-only deferral, legal trace status, retained V1.2
+  internal scope and Phase-9/final-gate rules remain immutable.
+- This governance-only transition restores the previously accepted exact
+  fourteen P8-06 checkpoint-2 product paths from `bc6095c`/`32955709358` only
+  after this restoration's own exact-SHA ordinary CI passes. It changes no
+  app, frontend, contract, runtime, row or external state.
+- The exact command/source/head/transaction/permission/ownership boundary and
+  all unproved source, ERP target, Outbox, worker, adapter, network, runtime,
+  UI, production and Sandbox holds remain unchanged.
+- Controller marker:
+  `P8-06 checkpoint 2 product authorization restoration active; FR-CO-003/004 decision retained`.
