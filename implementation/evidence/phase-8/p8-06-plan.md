@@ -417,3 +417,71 @@ formal-pass, Gate or readiness interpretation is installed. Integration
 events, API/BFF paths, repository writes, Outbox, worker, adapter, runtime,
 UI, network and seeded rows remain absent. Detailed Level-1 evidence is in
 `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+
+## 17. Checkpoint-2 controller transition
+
+Checkpoint-1 exact product SHA
+`64b59f219f4a5687865e6b27670e3bd11d186b88` passes ordinary CI
+`32953275865`: frontend `98129304814`, repository `98129305104`, secret
+`98129305097` and governed visual `98129305261` pass. OpenAPI paths remain
+unchanged, the integration-event schema is unchanged, and no BFF, route,
+repository, worker, adapter, fixture or network behavior exists in checkpoint
+1.
+
+This governance-only transition authorizes checkpoint 2 only after its own
+exact-SHA ordinary CI passes. The exact fourteen product paths are:
+
+- `apps/npi_core/npi_core/bff.py`;
+- `apps/npi_core/npi_core/translations/zh.csv` and
+  `apps/npi_core/npi_core/translations/zh-TW.csv`;
+- `apps/npi_integration/npi_integration/quality_link/frappe_repository.py`;
+- `apps/npi_integration/npi_integration/quality_link/problems.py`;
+- `apps/npi_integration/npi_integration/quality_link/frappe_validation.py`;
+- `apps/npi_integration/npi_integration/quality_link_api.py`;
+- `contracts/npi-api.openapi.yaml`;
+- `frontend/src/generated/catalogs.ts`; and
+- `tests/test_phase8_quality_link_api.py`,
+  `tests/test_phase8_quality_link_repository.py`,
+  `tests/test_phase8_quality_link_security.py`,
+  `tests/test_phase8_quality_link_contract.py` and
+  `tests/test_phase8_quality_link_metadata.py`.
+
+Checkpoint 2 exposes fixed Project-first list/detail and the sole NPI-owned
+`link_observed_formal_quality_reference` command. Project VIEW is checked
+before secondary identities. A link command requires mutable Project context,
+CSRF/trace, one exact current source revision/hash, one exact current P8-01
+observation/head and an existing source-specific server capability. The only
+proved active mappings are `trial_defect` -> `manageDefects`, `trial_review`
+-> `manageReviewReferences` and `readiness_assessment` -> `canRevise` from
+their owning current Project-first responses. `trial_round` has no exact link
+capability and `controlled_quality_report` has distinct retain/revise
+capabilities rather than one approved link authority, so both remain
+unavailable without role fallback.
+
+One transaction appends the immutable Link Revision, advances the Link Head by
+exact `+1`, seals the operation-bound actor/idempotency receipt and appends the
+audit. Same-key/same-payload returns the exact original result; same-key/
+different-payload, source drift, head drift, foreign/ambiguous containment or
+optimistic-version drift conflicts before write. List/detail remain
+permission-safe and never reveal foreign identities.
+
+No ERP Outbox, enqueue, scheduler, target method, worker, adapter, target
+network, runtime fixture, UI, generic replay/reconciliation control or formal
+pass mapping is authorized. P8-01 remains the only observation/head/order/
+freshness owner; raw ERP status/result remains uninterpreted. Existing Class-B
+source authority, mapping, lifecycle, approval and freshness facts and all
+Class-C production boundaries remain held.
+
+Changed-files-to-tests must cover API shape and BFF routing, Project-first
+IDOR/permission denial, every allowed and unavailable source kind, exact
+source/head locks, canonical payload/idempotency replay and conflict, atomic
+revision/head/receipt/audit ordering and rollback, capability/finally restore,
+zero Outbox/enqueue/network, closed OpenAPI responses, direct trilingual
+messages, P8-01/P7 source regressions and Item/MBOM/Tool Asset peers.
+
+Before any checkpoint-2 row exists, rollback removes only the BFF/API/
+repository/problem/i18n/OpenAPI additions and retains checkpoint-1 metadata.
+After link history exists, disable the P8-06 route and retain immutable link
+revisions, heads, receipts and audits for forward repair. Never delete or
+retarget a link, mutate ERP truth or reinterpret unavailable/raw evidence as
+pass.

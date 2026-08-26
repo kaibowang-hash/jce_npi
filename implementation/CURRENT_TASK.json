@@ -3,27 +3,27 @@
   "task_id": "P8-06",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_1_LEVEL_1_REVIEW",
+  "status": "IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-07",
-  "base_checkpoint": "f9c358018823f3af20aca38efb53f8fcbd13d406",
-  "predecessor_product_checkpoint": "f9c358018823f3af20aca38efb53f8fcbd13d406",
+  "base_checkpoint": "64b59f219f4a5687865e6b27670e3bd11d186b88",
+  "predecessor_product_checkpoint": "64b59f219f4a5687865e6b27670e3bd11d186b88",
   "requirement_ids": [
     "INT-007",
     "FR-TR-006",
     "FR-NP-006"
   ],
   "scope": [
-    "Retain the frozen read-only ERPNext quality-linkage audit in implementation/evidence/phase-8/p8-06-plan.md for INT-007, FR-TR-006 and FR-NP-006; exact audit-plan SHA b3cf6ac722c71c4bdd95cddc16aed4e2544bb037 passed ordinary CI 32946799144.",
-    "Inspect the exact P7 Trial, quality-issue, review, readiness and controlled-report foundations, the P8-01 read-only quality projection, the P8-03 through P8-05 operation-specific request, Outbox, worker, result and projection precedents, ownership contracts, permissions, migration and rollback before choosing any implementation.",
-    "Freeze formal Quality Inspection, NCR and CAPA references as ERPNext-owned read-only observed truth, with explicit operation-specific request and result linkage only where a later approved Sandbox operation and authority are proven.",
-    "Freeze the distinction between NPI Trial, issue, review, readiness and evidence truth and ERPNext formal quality approval, document identity, lifecycle and result truth; failed, partial, uncertain, unavailable, Mock or synthetic evidence can never be presented as a formal quality pass.",
-    "Keep production ERPNext and JCE endpoints, credentials, data and traffic prohibited; use only repository facts, pure fixtures, Mock and explicitly bounded disposable network-free evidence during planning.",
-    "Authorize checkpoint 1 only after this controller-transition exact SHA passes ordinary CI: pure quality_link domain/configuration/validation, three additive guarded zero-row support DocTypes, ownership and OpenAPI components, direct translations and focused tests.",
-    "Freeze exact requirements, existing-capability findings, ownership, the NPI-only link_observed_formal_quality_reference operation, operation and approval holds, contracts, state, fault and permission matrix, migration, rollback, exact checkpoint-1 paths, affected tests and Level 3 impact before any P8-06 product code."
+    "Retain the frozen P8-06 audit and checkpoint-1 behavior-free foundation; exact product SHA 64b59f219f4a5687865e6b27670e3bd11d186b88 passed ordinary CI 32953275865 with frontend, repository, secret and visual lanes green.",
+    "Authorize checkpoint 2 only after this controller-transition exact SHA passes ordinary CI and only within the frozen exact fourteen product paths.",
+    "Implement fixed Project-first list and detail queries plus the single NPI-owned link_observed_formal_quality_reference command; resolve Project and source authority before accepting any secondary identity.",
+    "Permit linking only for trial_defect with existing manageDefects, trial_review with existing manageReviewReferences and readiness_assessment with existing canRevise; trial_round and controlled_quality_report remain unavailable because no single exact link authority is proven.",
+    "Require exact source revision and hash, exact current P8-01 observation and head lock, actor-bound operation idempotency and one atomic link revision, head, receipt and audit transaction with exact replay and conflict truth.",
+    "Keep formal Quality Inspection, NCR and CAPA identity, lifecycle, approval and result ERPNext-owned; preserve raw status/result and never infer formal pass, Gate or readiness satisfaction.",
+    "Keep production ERPNext/JCE, Sandbox target operations, Outbox, enqueue, scheduler, worker, adapter, target network, runtime fixture, UI and generic P8-07 operations prohibited."
   ],
   "non_scope": [
-    "Any P8-06 product implementation before this checkpoint-1 controller-transition exact SHA passes ordinary CI, or outside the exact checkpoint-1 path and test manifest.",
+    "Any checkpoint-2 product implementation before this controller-transition exact SHA passes ordinary CI, or outside the exact checkpoint-2 path and test manifest.",
     "Any production ERPNext or JCE endpoint, credential, data, request, response, network contact, Quality Inspection, NCR, CAPA, approval, submission, reconciliation or compensating transaction.",
     "Any caller-selected tenant, actor, operation, target method, DocType, formal quality identity, lifecycle, disposition, target version, success, linkage, payload hash or generic CRUD payload.",
     "Any rewrite of Trial, issue, review, readiness, controlled report, Project, Gate, Work Item, Tooling, Item, MBOM, Asset or existing ERP projection truth, or any inference that NPI evidence is ERP approval or formal quality pass.",
@@ -33,8 +33,10 @@
   "frozen_invariants": [
     "P8_05_LEVEL_3_EXACT_SHA_F9C358018823F3AF20ACA38EFB53F8FCBD13D406_ORDINARY_32937395289_FINAL_32938622250_PASSED",
     "P8_06_AUDIT_PLAN_EXACT_SHA_B3CF6AC722C71C4BDD95CDDC16AED4E2544BB037_ORDINARY_32946799144_PASSED",
-    "P8_06_PRODUCT_CODE_AUTHORIZED_ONLY_FOR_CHECKPOINT_1_AFTER_THIS_CONTROLLER_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
-    "P8_06_CHECKPOINT_1_IS_BEHAVIOR_FREE_DOMAIN_CONFIG_VALIDATION_ADDITIVE_ZERO_ROW_METADATA_OWNERSHIP_OPENAPI_I18N_AND_TESTS_ONLY",
+    "P8_06_CHECKPOINT_1_EXACT_SHA_64B59F219F4A5687865E6B27670E3BD11D186B88_ORDINARY_32953275865_PASSED",
+    "P8_06_PRODUCT_CODE_AUTHORIZED_ONLY_FOR_CHECKPOINT_2_AFTER_THIS_CONTROLLER_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
+    "P8_06_CHECKPOINT_2_IS_PROJECT_FIRST_LIST_DETAIL_AND_NPI_ONLY_EXACT_OBSERVATION_LINK_WITHOUT_TARGET_EXECUTION",
+    "P8_06_CHECKPOINT_2_SUPPORTED_SOURCE_CAPABILITIES_ARE_TRIAL_DEFECT_MANAGE_DEFECTS_TRIAL_REVIEW_MANAGE_REVIEW_REFERENCES_AND_READINESS_CAN_REVISE_ONLY",
     "ERP_NEXT_OWNS_FORMAL_QUALITY_INSPECTION_NCR_CAPA_IDENTITY_LIFECYCLE_APPROVAL_SUBMISSION_AND_RESULT",
     "NPI_ONE_OWNS_TRIAL_ISSUE_REVIEW_READINESS_EVIDENCE_REQUEST_RESULT_LINKAGE_AND_READ_ONLY_OBSERVATION",
     "NPI_EVIDENCE_IS_NOT_ERP_APPROVAL_FORMAL_QUALITY_DOCUMENT_OR_QUALITY_PASS",
@@ -51,23 +53,13 @@
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    "apps/npi_core/npi_core/bff.py",
     "apps/npi_core/npi_core/translations/zh-TW.csv",
     "apps/npi_core/npi_core/translations/zh.csv",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_command_idempotency/__init__.py",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_command_idempotency/npi_formal_quality_link_command_idempotency.json",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_command_idempotency/npi_formal_quality_link_command_idempotency.py",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_head/__init__.py",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_head/npi_formal_quality_link_head.json",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_head/npi_formal_quality_link_head.py",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_revision/__init__.py",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_revision/npi_formal_quality_link_revision.json",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_revision/npi_formal_quality_link_revision.py",
-    "apps/npi_integration/npi_integration/quality_link/__init__.py",
-    "apps/npi_integration/npi_integration/quality_link/config.py",
-    "apps/npi_integration/npi_integration/quality_link/doctype_base.py",
-    "apps/npi_integration/npi_integration/quality_link/domain.py",
+    "apps/npi_integration/npi_integration/quality_link/frappe_repository.py",
     "apps/npi_integration/npi_integration/quality_link/frappe_validation.py",
-    "contracts/data-ownership.yaml",
+    "apps/npi_integration/npi_integration/quality_link/problems.py",
+    "apps/npi_integration/npi_integration/quality_link_api.py",
     "contracts/npi-api.openapi.yaml",
     "frontend/src/generated/catalogs.ts",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
@@ -77,27 +69,19 @@
     "implementation/DECISION_LOG.md",
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
-    "implementation/REQUIREMENT_TRACEABILITY.csv",
-    "implementation/RISK_REGISTER.md",
-    "implementation/evidence/phase-8/p8-05-execution-inspector-checkpoint.md",
-    "implementation/evidence/phase-8/p8-05-plan.md",
-    "implementation/evidence/phase-8/p8-05-validation.md",
     "implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md",
     "implementation/evidence/phase-8/p8-06-plan.md",
     "implementation/phase-8-requirement-anchor.md",
-    "scripts/reconcile_v1_2_traceability.py",
-    "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
-    "tests/test_phase8_quality_link_config.py",
+    "tests/test_phase8_quality_link_api.py",
     "tests/test_phase8_quality_link_contract.py",
-    "tests/test_phase8_quality_link_domain.py",
     "tests/test_phase8_quality_link_metadata.py",
-    "tests/test_phase8_quality_link_security.py",
-    "tests/test_v1_2_reconciliation.py"
+    "tests/test_phase8_quality_link_repository.py",
+    "tests/test_phase8_quality_link_security.py"
   ],
   "affected_checks": {
     "level_1": [
-      ["python", "-m", "unittest", "tests.test_phase8_quality_link_config", "tests.test_phase8_quality_link_contract", "tests.test_phase8_quality_link_domain", "tests.test_phase8_quality_link_metadata", "tests.test_phase8_quality_link_security", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase8_quality_link_api", "tests.test_phase8_quality_link_config", "tests.test_phase8_quality_link_contract", "tests.test_phase8_quality_link_domain", "tests.test_phase8_quality_link_metadata", "tests.test_phase8_quality_link_repository", "tests.test_phase8_quality_link_security", "-v"],
       ["python", "-m", "unittest", "tests.test_phase8_projection_domain", "tests.test_phase8_projection_contract", "tests.test_phase8_projection_metadata", "tests.test_phase7_trial_quality_domain", "tests.test_phase7_trial_quality_contract", "tests.test_phase7_trial_quality_metadata", "tests.test_phase7_trial_review_domain", "tests.test_phase7_trial_review_contract", "tests.test_phase7_trial_review_metadata", "tests.test_phase7_readiness_domain", "tests.test_phase7_readiness_contract", "tests.test_phase7_readiness_metadata", "-v"],
       ["python", "-m", "unittest", "tests.test_phase8_item_publish_config", "tests.test_phase8_item_publish_contract", "tests.test_phase8_item_publish_domain", "tests.test_phase8_item_publish_metadata", "tests.test_phase8_item_publish_security", "tests.test_phase8_mbom_publish_config", "tests.test_phase8_mbom_publish_contract", "tests.test_phase8_mbom_publish_domain", "tests.test_phase8_mbom_publish_metadata", "tests.test_phase8_mbom_publish_security", "tests.test_phase8_tool_asset_config", "tests.test_phase8_tool_asset_contract", "tests.test_phase8_tool_asset_domain", "tests.test_phase8_tool_asset_metadata", "tests.test_phase8_tool_asset_security", "-v"],
       ["npm", "run", "generate:check"],
@@ -127,10 +111,10 @@
     "phase_status_resumed_product_task": "P8-06",
     "active_goal_marker": "P8-06",
     "next_action_marker": "P8-06",
-    "controller_marker": "P8-06 checkpoint 1 behavior-free foundation Level 1 PASS; review active"
+    "controller_marker": "P8-06 checkpoint 1 exact-SHA ordinary PASS; checkpoint 2 authorization transition active"
   },
   "rollback": {
-    "before_product_resume": "Restore exact P8-05 final product checkpoint f9c358018823f3af20aca38efb53f8fcbd13d406 while retaining every Item, MBOM and Tool Asset request, idempotency row, Outbox event, claim, attempt, result, uncertainty, observation, mapping head and audit; the P8-06 audit changes no product or external state.",
-    "after_product_resume": "Checkpoint 1 may start only after this controller-transition exact SHA passes ordinary CI. Before any link row exists, revert the pure module, contract components and additive metadata and uninstall only on a disposable Site after proving zero rows. If later checkpoints create link history, disable future route/UI activation and retain immutable source/observation links, heads, idempotency receipts and audit for forward repair; never mutate ERP truth or rewrite unavailable or failed truth as pass."
+    "before_product_resume": "Restore exact P8-06 checkpoint-1 product SHA 64b59f219f4a5687865e6b27670e3bd11d186b88; it has no link rows, routes, workers, adapters or external effects.",
+    "after_product_resume": "Before checkpoint-2 link rows exist, revert only its BFF/API/repository/problem/i18n/OpenAPI additions and retain checkpoint-1 support metadata. After link history exists, disable the P8-06 route and retain immutable link revisions, heads, idempotency receipts and audits for forward repair; never delete or retarget history, mutate ERP truth or convert unavailable or raw evidence into pass."
   }
 }

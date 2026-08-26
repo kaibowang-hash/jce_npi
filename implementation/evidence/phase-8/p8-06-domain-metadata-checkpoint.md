@@ -1,11 +1,14 @@
 # P8-06 Checkpoint 1 — Formal Quality Link Domain and Metadata
 
-Status: **LEVEL 1 PASS — awaiting exact-path review**
+Status: **CHECKPOINT 1 PASS — exact-SHA ordinary verified**
 
 Requirements: `INT-007`, `FR-TR-006`, `FR-NP-006`
 
 Authorization transition:
 `675c28a15133b9937ccac6af492db7c537a17946`, ordinary CI `32949383911`
+
+Product checkpoint:
+`64b59f219f4a5687865e6b27670e3bd11d186b88`, ordinary CI `32953275865`
 
 ## Delivered boundary
 
@@ -56,6 +59,11 @@ Class-B holds; production access and irreversible migration remain Class C.
 - the exact `32`-path checkpoint diff is accepted, its simulated post-commit
   base-to-tip manifest is the frozen exact `43` paths, and a synthetic
   unauthorized `33`rd checkpoint path is rejected fail-closed.
+
+Exact-SHA ordinary CI passes frontend `98129304814`, repository
+`98129305104`, secret `98129305097` and governed visual `98129305261`;
+controlled lanes correctly skip because this checkpoint has no route or
+runtime behavior.
 
 ## Rollback
 

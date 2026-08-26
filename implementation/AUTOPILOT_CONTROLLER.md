@@ -6025,3 +6025,30 @@ repeat or rewrite it merely to restore context. See
   production boundaries remain unchanged.
 - Controller marker:
   `P8-06 checkpoint 1 behavior-free foundation Level 1 PASS; review active`.
+
+## 2026-08-26 P8-06 checkpoint 1 exact-SHA PASS; checkpoint 2 authorization
+
+- Exact checkpoint-1 product SHA
+  `64b59f219f4a5687865e6b27670e3bd11d186b88` passes ordinary CI
+  `32953275865`: frontend `98129304814`, repository `98129305104`, secret
+  `98129305097` and governed visual `98129305261` pass; controlled lanes
+  correctly skip because checkpoint 1 has no runtime behavior.
+- This separate governance-only transition freezes checkpoint 2 to exact
+  Project-first list/detail and one NPI-owned
+  `link_observed_formal_quality_reference` command. It requires exact source
+  revision/hash, exact current P8-01 observation/head, a proved existing
+  source capability and one atomic revision/head/idempotency/audit transaction
+  with exact replay/conflict. The proved subset is `trial_defect` /
+  `manageDefects`, `trial_review` / `manageReviewReferences` and
+  `readiness_assessment` / `canRevise`; `trial_round` and
+  `controlled_quality_report` remain unavailable.
+- The exact checkpoint-2 product manifest contains fourteen paths and excludes
+  ERP Outbox, enqueue, scheduler, worker, adapter, target method, network,
+  runtime fixture, UI and integration-event changes. Raw ERP status/result is
+  never interpreted as formal pass, approval, Gate or readiness satisfaction.
+- Checkpoint-2 product authorization becomes effective only after this
+  transition's own exact-SHA ordinary CI passes. Existing Class-B mapping,
+  lifecycle, approval, capability and freshness holds and all Class-C
+  production boundaries remain unchanged.
+- Controller marker:
+  `P8-06 checkpoint 1 exact-SHA ordinary PASS; checkpoint 2 authorization transition active`.

@@ -5,7 +5,7 @@ updated_at: '2026-08-26T23:55:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-06
-current_task_status: IN_PROGRESS_CHECKPOINT_1_LEVEL_1_REVIEW
+current_task_status: IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION
 current_task_completed_stage: P8_06_AUDIT_PLAN_EXACT_SHA_ORDINARY_CI_PASS
 current_task_next_stage: P8_06_CHECKPOINT_1_EXACT_SHA_ORDINARY_CI
 current_task_next_stage_status: AWAITS_CONTROLLER_TRANSITION_EXACT_SHA_ORDINARY_CI
@@ -2457,25 +2457,28 @@ p8_05:
 p8_06:
   task: P8-06
   controller_task: P8-06_QUALITY_LINKAGE
-  status: IN_PROGRESS_CHECKPOINT_1_LEVEL_1_REVIEW
+  status: IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION
   phase: 8
   milestone: M7-06
   requirements:
     - INT-007
     - FR-TR-006
     - FR-NP-006
-  predecessor_product_checkpoint: f9c358018823f3af20aca38efb53f8fcbd13d406
+  predecessor_product_checkpoint: 64b59f219f4a5687865e6b27670e3bd11d186b88
   audit_base_checkpoint: f9c358018823f3af20aca38efb53f8fcbd13d406
   audit: PASS_FROZEN
   audit_plan_checkpoint: b3cf6ac722c71c4bdd95cddc16aed4e2544bb037
   audit_plan_ordinary_ci: 32946799144
   checkpoint_1_authorization_checkpoint: 675c28a15133b9937ccac6af492db7c537a17946
   checkpoint_1_authorization_ordinary_ci: 32949383911
-  product_code_authorized: CHECKPOINT_1_BOUNDED_ONLY
+  checkpoint_1_product_checkpoint: 64b59f219f4a5687865e6b27670e3bd11d186b88
+  checkpoint_1_product_ordinary_ci: 32953275865
+  product_code_authorized: CHECKPOINT_2_BOUNDED_AFTER_TRANSITION_EXACT_SHA_ORDINARY_PASS
   product_code_changed: true
-  current_stage: CHECKPOINT_1_BEHAVIOR_FREE_FOUNDATION_LEVEL_1_REVIEW
-  next_stage_after_pass: CHECKPOINT_1_EXACT_SHA_ORDINARY_CI
+  current_stage: CHECKPOINT_2_CONTROLLER_AUTHORIZATION_TRANSITION
+  next_stage_after_pass: CHECKPOINT_2_PROJECT_FIRST_LINK_REPOSITORY_AND_BFF
   checkpoint_1_boundary: BEHAVIOR_FREE_DOMAIN_CONFIG_VALIDATION_ZERO_ROW_METADATA_OWNERSHIP_OPENAPI_I18N_TESTS
+  checkpoint_2_boundary: PROJECT_FIRST_LIST_DETAIL_EXACT_OBSERVATION_LINK_ATOMIC_REVISION_HEAD_RECEIPT_AUDIT_REPLAY_CONFLICT
   ownership_rule: ERP_OWNS_FORMAL_QUALITY_INSPECTION_NCR_CAPA_APPROVAL_AND_RESULT
   evidence_rule: NPI_TRIAL_ISSUE_REVIEW_READINESS_AND_REPORT_EVIDENCE_IS_NOT_ERP_APPROVAL_OR_PASS
   observed_truth_rule: FORMAL_QUALITY_REFERENCES_ARE_READ_ONLY_PROJECT_BOUND_CURRENT_OBSERVATIONS

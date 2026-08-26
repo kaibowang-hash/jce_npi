@@ -12,17 +12,18 @@ visual `98084790917`, preflight `98087726984` and cumulative Site
 `98087768879`. Runtime, visual and Gitleaks artifacts have the exact hashes
 recorded in `implementation/evidence/phase-8/p8-05-validation.md`; all
 diagnostics are false, zero production traffic and cleanup pass. The P8-06
-audit-plan exact SHA `b3cf6ac` passes ordinary CI `32946799144`; only its
-separate checkpoint-1 authorization transition is active and it requires no
-user action, login or frontend operation.
+checkpoint-1 exact product SHA `64b59f2` passes ordinary CI `32953275865`;
+only its separate checkpoint-2 authorization transition is active and it
+requires no user action, login or frontend operation.
 
 ## Active recovery
 
 None. P8-05 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 historical diagnostic evidence and final exact-SHA run `32938622250` is
 authoritative. The P8-06 plan freezes an NPI-only exact-observation link, keeps
-all target methods and status/Gate policy held, and authorizes no product code,
-route, writer, worker, adapter, UI or target contact. Production adapters,
+all target methods and status/Gate policy held. Checkpoint 2 may authorize
+only an NPI-owned Project-first exact-observation link after its transition CI;
+it authorizes no ERP target write, worker, adapter, UI or target contact. Production adapters,
 formal Item/BOM/Asset/
 quality mapping from Mock or Synthetic proof, production writes, P8-08/P8-09
 and the P8-07 operations/replay/reconciliation surface remain inactive.
@@ -54,9 +55,11 @@ remain scoped holds, not global Hard Blockers.
   `implementation/evidence/phase-8/p8-06-plan.md`. Missing formal ERPNext
   Quality Inspection/NCR/CAPA DocType mappings, fields, lifecycle, raw-code
   interpretation, approval, Gate/readiness policy and Sandbox operation are
-  scoped Class-B holds. Product code is bounded only to behavior-free
-  checkpoint 1 after this controller transition passes exact-SHA ordinary CI;
-  target traffic, P8-07 generic operations and P8-08/P8-09 remain inactive.
+  scoped Class-B holds. Checkpoint 1 passes at exact SHA `64b59f2` and ordinary
+  CI `32953275865`. Product code is bounded only to checkpoint-2 Project-first
+  list/detail/exact-observation link after this controller transition passes
+  exact-SHA ordinary CI; unproved source capabilities, target traffic, P8-07
+  generic operations and P8-08/P8-09 remain inactive.
 
 ## Historical recovery
 

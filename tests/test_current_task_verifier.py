@@ -39,12 +39,16 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-07")
         self.assertIn(
-            "P8_06_PRODUCT_CODE_AUTHORIZED_ONLY_FOR_CHECKPOINT_1_AFTER_THIS_CONTROLLER_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
+            "P8_06_PRODUCT_CODE_AUTHORIZED_ONLY_FOR_CHECKPOINT_2_AFTER_THIS_CONTROLLER_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
             value["frozen_invariants"],
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_LEVEL_1_REVIEW",
+            "IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION",
+        )
+        self.assertIn(
+            "P8_06_CHECKPOINT_1_EXACT_SHA_64B59F219F4A5687865E6B27670E3BD11D186B88_ORDINARY_32953275865_PASSED",
+            value["frozen_invariants"],
         )
         self.assertIn(
             "P8_05_LEVEL_3_EXACT_SHA_F9C358018823F3AF20ACA38EFB53F8FCBD13D406_ORDINARY_32937395289_FINAL_32938622250_PASSED",
@@ -59,16 +63,21 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "LINK_OBSERVED_FORMAL_QUALITY_REFERENCE_IS_NPI_ONLY_AND_NEVER_CREATES_SUBMITS_UPDATES_FAILS_CLOSES_OR_APPROVES_ERP_QUALITY_TRUTH",
             value["frozen_invariants"],
         )
+        self.assertEqual(len(value["allowed_paths"]), 25)
+        self.assertIn("apps/npi_core/npi_core/bff.py", value["allowed_paths"])
         self.assertIn(
-            "apps/npi_integration/npi_integration/quality_link/domain.py",
+            "apps/npi_integration/npi_integration/quality_link/frappe_repository.py",
             value["allowed_paths"],
         )
-        self.assertIn("contracts/data-ownership.yaml", value["allowed_paths"])
+        self.assertIn(
+            "apps/npi_integration/npi_integration/quality_link_api.py",
+            value["allowed_paths"],
+        )
         self.assertIn("contracts/npi-api.openapi.yaml", value["allowed_paths"])
         self.assertNotIn("contracts/integration-event.schema.json", value["allowed_paths"])
         self.assertFalse(
             any(
-                any(token in path for token in ("_api.py", "repository.py", "worker.py", "adapters.py"))
+                any(token in path for token in ("outbox", "worker.py", "adapters.py", "runtime"))
                 for path in value["allowed_paths"]
             )
         )

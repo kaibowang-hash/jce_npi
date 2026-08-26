@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-06 AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-06 CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZATION TRANSITION**
 
 Anchor date: 2026-08-16
 
@@ -487,10 +487,14 @@ The only frozen future NPI operation links one exact current observed formal
 quality reference and never writes ERP truth. Raw status/result-to-pass/fail,
 Gate/readiness invalidation, target methods/fields and source-context link
 authority remain held. Exact audit-plan SHA `b3cf6ac` passes ordinary CI
-`32946799144`. A separate controller transition now bounds checkpoint 1 to
-pure `quality_link` domain/config/validation, three guarded additive zero-row
-support DocTypes, ownership/OpenAPI components, direct translations and
-focused tests. It authorizes no integration event, route, repository, Outbox,
-writer, worker, adapter, runtime, UI or target network, and implementation may
-start only after the transition's own exact-SHA ordinary CI. P8-08/P8-09 and
-production ERPNext/JCE remain inactive.
+`32946799144`. Checkpoint 1 passes at exact product SHA `64b59f2` and ordinary
+CI `32953275865`; its pure `quality_link` domain/config/validation, three
+guarded zero-row support DocTypes, ownership/OpenAPI components and direct
+translations activate no route, business row or external effect. A separate
+controller transition now bounds checkpoint 2 to fixed Project-first list/
+detail and one NPI-owned exact-observation link with exact source/head locks,
+proved source capability and atomic revision/head/receipt/audit replay and
+conflict. Unproved contexts remain unavailable. It authorizes no ERP Outbox,
+target method, worker, adapter, network, runtime, UI or pass mapping, and
+implementation may start only after the transition's own exact-SHA ordinary
+CI. P8-07/P8-08/P8-09 and production ERPNext/JCE remain inactive.

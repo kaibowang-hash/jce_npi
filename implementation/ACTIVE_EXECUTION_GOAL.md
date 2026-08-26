@@ -4,7 +4,7 @@ Updated: `2026-08-26T23:55:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_LEVEL_1_REVIEW — P8-06`
+- Mode: `IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION — P8-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -19,9 +19,9 @@ Updated: `2026-08-26T23:55:00Z`
   `f9c358018823f3af20aca38efb53f8fcbd13d406`; repository, frontend,
   secret, `129/129` visual, controlled preflight and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32949383911` (`PASS` at
-  `675c28a15133b9937ccac6af492db7c537a17946`; P8-06 checkpoint-1 bounded
-  authorization transition)
+  `32953275865` (`PASS` at
+  `64b59f219f4a5687865e6b27670e3bd11d186b88`; P8-06 checkpoint-1
+  behavior-free foundation)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -122,14 +122,14 @@ Updated: `2026-08-26T23:55:00Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-06 — quality linkage`
-  (`IN_PROGRESS_CHECKPOINT_1_AUTHORIZATION_TRANSITION`)
+  (`IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION`)
 - Resumed product task: `P8-06`
-  (`CHECKPOINT_1_BOUNDED_AUTHORIZATION_TRANSITION`)
+  (`CHECKPOINT_2_BOUNDED_AUTHORIZATION_TRANSITION`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-06 CHECKPOINT 1 AUTHORIZATION`)
+  (`IN_PROGRESS — P8-06 CHECKPOINT 2 AUTHORIZATION`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -144,22 +144,21 @@ diagnostics are false. The bounded technical Tool Asset portions are verified,
 while production/Sandbox mapping, ERPNext Asset method/fields/location/
 maintenance and business approval remain held.
 
-The P8-06 audit passes and is frozen in
-`implementation/evidence/phase-8/p8-06-plan.md`. It covers `INT-007`,
-`FR-TR-006` and `FR-NP-006`, preserves formal Quality Inspection/NCR/CAPA
-truth as ERPNext-owned read-only observations, keeps P8-01 as the sole
-observation/head owner and freezes only one future NPI operation:
-`link_observed_formal_quality_reference`. That operation links an exact
-current observation; it is not an ERP create, update, submit, fail, close or
-approval. Raw status/result interpretation, Gate/readiness policy and all
-target methods remain held. Product code, route, writer, worker, adapter, UI
-and target network remain unauthorized outside the exact checkpoint-1
-boundary. Audit-plan SHA `b3cf6ac722c71c4bdd95cddc16aed4e2544bb037`
-passes ordinary CI `32946799144`. This separate controller transition freezes
-only pure quality-link domain/config/validation, three guarded additive
-zero-row DocTypes, ownership/OpenAPI components, translations and focused
-tests; product implementation waits for the transition's own exact-SHA
-ordinary CI.
+P8-06 checkpoint 1 is complete at exact product SHA
+`64b59f219f4a5687865e6b27670e3bd11d186b88`; ordinary CI `32953275865`
+passes frontend `98129304814`, repository `98129305104`, secret
+`98129305097` and visual `98129305261`. The pure domain/config/validation,
+three guarded zero-row DocTypes, ownership/OpenAPI components and direct
+translations activate no route, row or external effect. This separate
+checkpoint-2 controller transition freezes only Project-first list/detail and
+the NPI-owned `link_observed_formal_quality_reference` command with exact
+source/head locks and atomic revision/head/receipt/audit, replay and conflict.
+Only `trial_defect/manageDefects`, `trial_review/manageReviewReferences` and
+`readiness_assessment/canRevise` are proved; Trial Round and controlled-report
+linking remain unavailable. ERP Outbox, target execution, worker, adapter, network, runtime,
+UI and formal-pass interpretation remain unauthorized until later explicit
+gates; checkpoint-2 product implementation waits for this transition's own
+exact-SHA ordinary CI.
 
 P7-08 and Phase 7 are sealed at exact final product checkpoint `3111402`.
 Ordinary CI `31898840279` passes `1,921` tracked Python tests, `918/918`
