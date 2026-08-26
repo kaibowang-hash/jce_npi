@@ -3,7 +3,7 @@
   "task_id": "P8-06",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-07",
   "base_checkpoint": "f9c358018823f3af20aca38efb53f8fcbd13d406",
@@ -14,12 +14,12 @@
     "FR-NP-006"
   ],
   "scope": [
-    "Audit only the read-only ERPNext quality linkage boundary allocated to P8-06 for INT-007, FR-TR-006 and FR-NP-006.",
+    "Retain the frozen read-only ERPNext quality-linkage audit in implementation/evidence/phase-8/p8-06-plan.md for INT-007, FR-TR-006 and FR-NP-006 while its exact-SHA ordinary CI is pending.",
     "Inspect the exact P7 Trial, quality-issue, review, readiness and controlled-report foundations, the P8-01 read-only quality projection, the P8-03 through P8-05 operation-specific request, Outbox, worker, result and projection precedents, ownership contracts, permissions, migration and rollback before choosing any implementation.",
     "Freeze formal Quality Inspection, NCR and CAPA references as ERPNext-owned read-only observed truth, with explicit operation-specific request and result linkage only where a later approved Sandbox operation and authority are proven.",
     "Freeze the distinction between NPI Trial, issue, review, readiness and evidence truth and ERPNext formal quality approval, document identity, lifecycle and result truth; failed, partial, uncertain, unavailable, Mock or synthetic evidence can never be presented as a formal quality pass.",
     "Keep production ERPNext and JCE endpoints, credentials, data and traffic prohibited; use only repository facts, pure fixtures, Mock and explicitly bounded disposable network-free evidence during planning.",
-    "Produce implementation/evidence/phase-8/p8-06-plan.md with exact requirements, existing-capability findings, ownership, operation and approval holds, contracts, state, fault and permission matrix, migration, rollback, allowed product paths, affected tests and Level 3 impact before any P8-06 product code."
+    "Freeze exact requirements, existing-capability findings, ownership, the NPI-only link_observed_formal_quality_reference operation, operation and approval holds, contracts, state, fault and permission matrix, migration, rollback, planned product paths, affected tests and Level 3 impact before any P8-06 product code."
   ],
   "non_scope": [
     "Any P8-06 product implementation before the requirement, domain, existing-capability and security audit is frozen and its exact-SHA ordinary CI passes.",
@@ -37,6 +37,9 @@
     "NPI_EVIDENCE_IS_NOT_ERP_APPROVAL_FORMAL_QUALITY_DOCUMENT_OR_QUALITY_PASS",
     "FAILED_PARTIAL_UNCERTAIN_UNAVAILABLE_MOCK_OR_SYNTHETIC_NEVER_MEANS_FORMAL_QUALITY_PASS",
     "FORMAL_QUALITY_REFERENCES_ARE_READ_ONLY_OBSERVED_TRUTH_AND_REQUIRE_EXACT_PROJECT_SOURCE_AUTHORITY_AND_CURRENTNESS",
+    "LINK_OBSERVED_FORMAL_QUALITY_REFERENCE_IS_NPI_ONLY_AND_NEVER_CREATES_SUBMITS_UPDATES_FAILS_CLOSES_OR_APPROVES_ERP_QUALITY_TRUTH",
+    "P8_01_REMAINS_THE_ONLY_FORMAL_QUALITY_OBSERVATION_HEAD_ORDER_AND_FRESHNESS_OWNER",
+    "RAW_ERPNEXT_STATUS_AND_RESULT_CODES_HAVE_NO_INSTALLED_PASS_FAIL_GATE_OR_READINESS_POLICY",
     "ANY_FUTURE_WRITE_AUTHORITY_MUST_BE_OPERATION_SPECIFIC_APPROVED_AND_SANDBOX_BOUND_NOT_GENERIC_CRUD",
     "PROJECT_TENANT_ACTOR_PERMISSION_TRACE_IDEMPOTENCY_PROFILE_AND_SECONDARY_CONTAINMENT_ARE_SERVER_ENFORCED",
     "NO_DEFAULT_PROFILE_ENDPOINT_CREDENTIAL_QUALITY_MAPPING_PRODUCTION_TRAFFIC_OR_TARGET_WRITE",
@@ -91,10 +94,10 @@
     "phase_status_resumed_product_task": "P8-06",
     "active_goal_marker": "P8-06",
     "next_action_marker": "P8-06",
-    "controller_marker": "P8-05 Level 3 PASS; P8-06 audit active"
+    "controller_marker": "P8-06 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI"
   },
   "rollback": {
     "before_product_resume": "Restore exact P8-05 final product checkpoint f9c358018823f3af20aca38efb53f8fcbd13d406 while retaining every Item, MBOM and Tool Asset request, idempotency row, Outbox event, claim, attempt, result, uncertainty, observation, mapping head and audit; the P8-06 audit changes no product or external state.",
-    "after_product_resume": "Not authorized until the P8-06 audit freezes exact Trial and quality evidence sources, formal Quality Inspection, NCR and CAPA ownership and linkage, operation-specific approval, expected target identity/version, partial or uncertain result, migration and forward-repair boundaries."
+    "after_product_resume": "Not authorized until the frozen P8-06 audit-plan transition passes exact-SHA ordinary CI and a separate checkpoint transition enumerates exact product paths. Any later link rollback disables the route and UI but retains immutable source/observation links, idempotency receipts and audit; it never mutates ERP truth or rewrites unavailable or failed truth as pass."
   }
 }

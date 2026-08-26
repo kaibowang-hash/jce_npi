@@ -441,6 +441,14 @@ P8_05_COMPLETED_ALLOCATION = {
     "FR-TL-015": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
     "FR-TL-016": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
 }
+P8_06_AUDIT_EVIDENCE = (
+    "implementation/evidence/phase-8/p8-06-plan.md",
+)
+P8_06_AUDIT_REQUIREMENTS = {
+    "INT-007",
+    "FR-TR-006",
+    "FR-NP-006",
+}
 P8_ANCHOR_ALLOCATION = {
     "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
     "P8-02": {"FR-PM-002", "INT-002"},
@@ -980,6 +988,17 @@ def _expanded_rows(
         ]
         row["evidence"] = "; ".join(
             dict.fromkeys((*evidence, *P8_05_COMPLETED_EVIDENCE))
+        )
+
+    for requirement_id in P8_06_AUDIT_REQUIREMENTS:
+        row = expanded_by_id[requirement_id]
+        evidence = [
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        ]
+        row["evidence"] = "; ".join(
+            dict.fromkeys((*evidence, *P8_06_AUDIT_EVIDENCE))
         )
 
     return expanded

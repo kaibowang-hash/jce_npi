@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-05 LEVEL 3 PASS; P8-06 AUDIT ACTIVE**
+Status: **IN PROGRESS — P8-06 AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
 
 Anchor date: 2026-08-16
 
@@ -477,11 +477,15 @@ Asset method/fields/location/maintenance, business approval and overall
 production acceptance remain held. `NFR-INT-001` generic operations/DLQ/
 manual replay/reconciliation remains P8-07.
 
-P8-06 is active only as an audit for `INT-007`, `FR-TR-006` and
-`FR-NP-006`. Formal Quality Inspection/NCR/CAPA identity, lifecycle, approval,
-submission and result remain ERPNext-owned read-only truth; NPI Trial, issue,
-review, readiness and controlled-report evidence cannot imply ERP approval or
-pass. Product code, route, writer, worker, adapter, UI, target network and
-invented ERPNext method/field rules remain unauthorized until a separately
-frozen P8-06 plan passes exact-SHA ordinary CI. P8-08/P8-09 and production
-ERPNext/JCE remain inactive.
+The bounded P8-06 audit passes and is frozen in
+`implementation/evidence/phase-8/p8-06-plan.md` for `INT-007`, `FR-TR-006`
+and `FR-NP-006`. Formal Quality Inspection/NCR/CAPA identity, lifecycle,
+approval, submission and result remain ERPNext-owned read-only truth; NPI
+Trial, issue, review, readiness and controlled-report evidence cannot imply
+ERP approval or pass. P8-01 remains the sole observation/head/order owner.
+The only frozen future NPI operation links one exact current observed formal
+quality reference and never writes ERP truth. Raw status/result-to-pass/fail,
+Gate/readiness invalidation, target methods/fields and source-context link
+authority remain held. Product code, route, writer, worker, adapter, UI and
+target network remain unauthorized until this plan transition passes
+exact-SHA ordinary CI. P8-08/P8-09 and production ERPNext/JCE remain inactive.

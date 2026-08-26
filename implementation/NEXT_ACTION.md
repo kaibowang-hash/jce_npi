@@ -1,15 +1,17 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-06`
+`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-06`
 
 Recovery time: `2026-08-26T23:45:00Z`
 
-Current atomic action: audit only P8-06 quality linkage for `INT-007`,
-`FR-TR-006` and `FR-NP-006`, then freeze a separate governed
-`implementation/evidence/phase-8/p8-06-plan.md`. Product code is not
-authorized. Do not add a route, writer, worker, adapter, UI or target network
-contact before that plan passes exact-SHA ordinary CI.
+Current atomic action: retain the frozen P8-06 quality-linkage audit for
+`INT-007`, `FR-TR-006` and `FR-NP-006` in
+`implementation/evidence/phase-8/p8-06-plan.md` and wait for this exact plan
+transition to pass ordinary CI. Product code remains unauthorized. Do not add
+a route, writer, worker, adapter, UI or target network contact. A later
+transition may activate only behavior-free checkpoint 1; no ERP target write,
+raw-code pass/fail interpretation or Gate/readiness policy is approved.
 
 Required branch:
 `codex/npi-v1.2-implementation`

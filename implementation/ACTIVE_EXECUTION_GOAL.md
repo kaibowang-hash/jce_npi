@@ -4,7 +4,7 @@ Updated: `2026-08-26T23:45:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P8-06`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -120,8 +120,9 @@ Updated: `2026-08-26T23:45:00Z`
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-06 — quality linkage` (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P8-06` (`ACTIVE_AUDIT_ONLY`)
+  `P8-06 — quality linkage`
+  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI`)
+- Resumed product task: `P8-06` (`AWAITS_AUDIT_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
@@ -141,12 +142,17 @@ diagnostics are false. The bounded technical Tool Asset portions are verified,
 while production/Sandbox mapping, ERPNext Asset method/fields/location/
 maintenance and business approval remain held.
 
-Only P8-06 audit work is active. It covers `INT-007`, `FR-TR-006` and
-`FR-NP-006`, preserves formal Quality Inspection/NCR/CAPA truth as ERPNext-
-owned read-only observations and forbids presenting failed or unavailable
-truth as pass. Product code, route, writer, worker, adapter, UI and target
-network remain unauthorized until the separate audit plan passes exact-SHA
-ordinary CI.
+The P8-06 audit passes and is frozen in
+`implementation/evidence/phase-8/p8-06-plan.md`. It covers `INT-007`,
+`FR-TR-006` and `FR-NP-006`, preserves formal Quality Inspection/NCR/CAPA
+truth as ERPNext-owned read-only observations, keeps P8-01 as the sole
+observation/head owner and freezes only one future NPI operation:
+`link_observed_formal_quality_reference`. That operation links an exact
+current observation; it is not an ERP create, update, submit, fail, close or
+approval. Raw status/result interpretation, Gate/readiness policy and all
+target methods remain held. Product code, route, writer, worker, adapter, UI
+and target network remain unauthorized until this plan transition passes
+exact-SHA ordinary CI.
 
 P7-08 and Phase 7 are sealed at exact final product checkpoint `3111402`.
 Ordinary CI `31898840279` passes `1,921` tracked Python tests, `918/918`

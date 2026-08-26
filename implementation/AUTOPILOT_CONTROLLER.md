@@ -5943,3 +5943,36 @@ repeat or rewrite it merely to restore context. See
 - No old-run rerun, Site dispatch, allowlist addition or rule weakening is
   permitted. Controller marker:
   `P8-05 closeout held; Gitleaks lexical remediation Level 1 active`.
+
+## 2026-08-26 P8-06 quality-linkage audit PASS; checkpoint 1 awaits plan CI
+
+- The bounded audit for `INT-007`, `FR-TR-006` and `FR-NP-006` is frozen in
+  `implementation/evidence/phase-8/p8-06-plan.md`. The P8-05 predecessor
+  remains exact product SHA `f9c358018823f3af20aca38efb53f8fcbd13d406`.
+- P8-01 remains the sole owner of immutable formal-quality observations,
+  guarded heads, ordering, availability and freshness. Its closed
+  `quality_inspection | ncr | capa` record kinds and raw status/result codes
+  classify observed truth; they do not prove current target DocTypes or a
+  pass/fail/Gate policy.
+- P7-03 Trial quality, P7-04 review and P7-05 readiness/controlled-report
+  sources remain exact NPI truth. Evidence, verification, conclusions and
+  reports are not ERP approval, formal Quality Inspection/NCR/CAPA state or a
+  formal pass.
+- The only frozen future operation is NPI-owned
+  `link_observed_formal_quality_reference`. It binds one exact current P8-01
+  observation to one exact source revision with Project-first containment,
+  source-specific existing capability, actor/trace/idempotency and immutable
+  audit. It never creates, submits, updates, fails, closes or approves ERP
+  quality truth and uses no target adapter or network.
+- Current ERPNext NCR/CAPA DocType mappings, fields, workflow/lifecycle,
+  service scopes, raw-code interpretation, Gate/readiness invalidation,
+  source-context link authority, freshness policy and authenticated Sandbox
+  operations are scoped Class-B holds. Production credentials, data, traffic,
+  mutation and irreversible migration are prohibited Class-C boundaries.
+- Product code remains unauthorized. Checkpoint 1 may be activated only after
+  this exact plan/controller/trace SHA passes ordinary CI, and a later
+  transition must enumerate behavior-free product paths. P8-07 generic
+  replay/reconciliation, P8-08/P8-09 and production ERPNext/JCE remain
+  inactive.
+- Controller marker:
+  `P8-06 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI`.

@@ -11,15 +11,18 @@ passes all required lanes. Final Level 3 `32938622250` passes repository
 visual `98084790917`, preflight `98087726984` and cumulative Site
 `98087768879`. Runtime, visual and Gitleaks artifacts have the exact hashes
 recorded in `implementation/evidence/phase-8/p8-05-validation.md`; all
-diagnostics are false, zero production traffic and cleanup pass. P8-06 is
-audit-only and requires no user action, login or frontend operation.
+diagnostics are false, zero production traffic and cleanup pass. The P8-06
+audit is frozen and awaits only its exact-SHA ordinary CI; it requires no user
+action, login or frontend operation.
 
 ## Active recovery
 
 None. P8-05 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 historical diagnostic evidence and final exact-SHA run `32938622250` is
-authoritative. P8-06 product code, route, writer, worker, adapter, UI and
-target contact remain inactive. Production adapters, formal Item/BOM/Asset/
+authoritative. The P8-06 plan freezes an NPI-only exact-observation link, keeps
+all target methods and status/Gate policy held, and authorizes no product code,
+route, writer, worker, adapter, UI or target contact. Production adapters,
+formal Item/BOM/Asset/
 quality mapping from Mock or Synthetic proof, production writes, P8-08/P8-09
 and the P8-07 operations/replay/reconciliation surface remain inactive.
 
@@ -32,8 +35,8 @@ actuals, stability policy, readiness/release, the external Released Trial
 Summary event/projection under `DR-REC-009`, form mapping, signature,
 retention and copy policy under `DR-REC-003` and `DR-REC-004`, and G7/ERP/
 production print authority remain scoped holds, not global Hard Blockers. The
-latest complete Level 3 is `32651903846` at
-`ca72deceab4b8e899d0da1207883887c9d30077a`. Production ERPNext/JCE endpoints,
+latest complete Level 3 is `32938622250` at
+`f9c358018823f3af20aca38efb53f8fcbd13d406`. Production ERPNext/JCE endpoints,
 credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
@@ -46,11 +49,12 @@ remain scoped holds, not global Hard Blockers.
 - Missing ERPNext Asset customization, naming/category/location/maintenance/
   service-scope, business approval and authenticated Sandbox facts remain
   scoped external holds. NPI acceptance is not ERP approval.
-- P8-06 is audit-only for `INT-007`, `FR-TR-006` and `FR-NP-006`. Missing
-  formal ERPNext Quality Inspection/NCR/CAPA methods, fields, lifecycle,
-  approval and Sandbox operation are scoped holds. Product code and target
-  traffic are unauthorized; P8-07 generic operations and P8-08/P8-09 remain
-  inactive.
+- The P8-06 audit for `INT-007`, `FR-TR-006` and `FR-NP-006` is frozen in
+  `implementation/evidence/phase-8/p8-06-plan.md`. Missing formal ERPNext
+  Quality Inspection/NCR/CAPA DocType mappings, fields, lifecycle, raw-code
+  interpretation, approval, Gate/readiness policy and Sandbox operation are
+  scoped Class-B holds. Product code remains unauthorized until plan CI;
+  target traffic, P8-07 generic operations and P8-08/P8-09 remain inactive.
 
 ## Historical recovery
 

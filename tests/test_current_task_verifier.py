@@ -42,13 +42,20 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_06_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_THE_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_ORDINARY_CI",
             value["frozen_invariants"],
         )
-        self.assertEqual(value["status"], "IN_PROGRESS_AUDIT")
+        self.assertEqual(
+            value["status"],
+            "IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI",
+        )
         self.assertIn(
             "P8_05_LEVEL_3_EXACT_SHA_F9C358018823F3AF20ACA38EFB53F8FCBD13D406_ORDINARY_32937395289_FINAL_32938622250_PASSED",
             value["frozen_invariants"],
         )
         self.assertEqual(value["requirement_ids"], ["INT-007", "FR-TR-006", "FR-NP-006"])
         self.assertIn("implementation/evidence/phase-8/p8-06-*.md", value["allowed_paths"])
+        self.assertIn(
+            "LINK_OBSERVED_FORMAL_QUALITY_REFERENCE_IS_NPI_ONLY_AND_NEVER_CREATES_SUBMITS_UPDATES_FAILS_CLOSES_OR_APPROVES_ERP_QUALITY_TRUTH",
+            value["frozen_invariants"],
+        )
         self.assertFalse(
             any(
                 path.startswith(("apps/", "frontend/", "contracts/"))

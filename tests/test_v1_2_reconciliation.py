@@ -178,6 +178,8 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_04_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION:
                 expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
+                expected_evidence |= self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -207,6 +209,8 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_04_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION:
                 expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
+                expected_evidence |= self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -286,6 +290,8 @@ class V12ReconciliationTests(unittest.TestCase):
                         expected_evidence |= self.verifier.EXPECTED_P8_04_COMPLETED_EVIDENCE
                     if requirement_id in self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION:
                         expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
+                    if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
+                        expected_evidence |= self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE
                     self.assertEqual(evidence, expected_evidence)
                 for evidence_path in evidence:
                     self.assertTrue(
@@ -380,6 +386,12 @@ class V12ReconciliationTests(unittest.TestCase):
                             evidence
                         )
                     )
+                if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
+                    self.assertTrue(
+                        self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE.issubset(
+                            evidence
+                        )
+                    )
 
         for requirement_id, expected_trace in {
             **self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS,
@@ -439,6 +451,12 @@ class V12ReconciliationTests(unittest.TestCase):
                         evidence
                     )
                 )
+            if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
+                self.assertTrue(
+                    self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE.issubset(
+                        evidence
+                    )
+                )
 
     def test_p8_05_completion_trace_is_frozen_without_overclaiming(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
@@ -484,7 +502,7 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertEqual(len(digest), 64)
         self.assertTrue(all(character in "0123456789abcdef" for character in digest))
 
-    def test_p8_06_audit_activation_retains_existing_quality_holds(self) -> None:
+    def test_p8_06_frozen_audit_retains_existing_quality_holds(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
         expected = {
@@ -512,7 +530,7 @@ class V12ReconciliationTests(unittest.TestCase):
             self.assertTrue(
                 self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE.issubset(evidence)
             )
-            self.assertNotIn(
+            self.assertIn(
                 "implementation/evidence/phase-8/p8-06-plan.md",
                 evidence,
             )
