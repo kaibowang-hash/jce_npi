@@ -91,6 +91,39 @@ class Phase8QualityLinkSecurityTest(unittest.TestCase):
             self.assertNotIn("passed", {field["fieldname"] for field in metadata["fields"]})
             self.assertTrue(all(not permission.get("write", 0) and not permission.get("create", 0) for permission in metadata["permissions"]))
 
+    def test_checkpoint_three_reconciliation_is_read_only_and_identity_safe(self) -> None:
+        source = (MODULE / "frappe_repository.py").read_text(encoding="utf-8")
+        start = source.index("    def _link_reconciliation(")
+        end = source.index("    @staticmethod\n    def _head_matches_project", start)
+        reconciliation = source[start:end]
+        for forbidden in (
+            ".insert(",
+            ".save(",
+            "frappe.db.commit",
+            "frappe.db.rollback",
+            "ignore_permissions",
+            "enqueue(",
+            "create_audit_event",
+        ):
+            self.assertNotIn(forbidden, reconciliation)
+        for marker in (
+            '"tenant_id": str(project.tenant_id)',
+            '"project_global_id": str(project.global_id)',
+            '"projection_kind": "formal_quality_status"',
+            'limit_page_length=2',
+            'order_by="global_id asc"',
+            "current.project.global_id != source.project_global_id",
+            "current.trial_round_global_id != observation.scope_global_id",
+        ):
+            self.assertIn(marker, reconciliation)
+        self.assertNotIn("latest", reconciliation.casefold())
+        api = (ROOT / "apps/npi_integration/npi_integration/quality_link_api.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertEqual(api.count("@frappe.whitelist"), 3)
+        self.assertIn("_query_response(", api)
+        self.assertNotIn("currentGlobalId", api)
+
 
 if __name__ == "__main__":
     unittest.main()

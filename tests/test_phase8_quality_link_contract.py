@@ -19,6 +19,7 @@ class Phase8QualityLinkContractTest(unittest.TestCase):
             "FormalQualityLinkHead",
             "FormalQualityLinkCommandIdentity",
             "FormalQualityInterpretationUnavailable",
+            "FormalQualityLinkReconciliation",
             "FormalQualityLinkItem",
             "FormalQualityLinkPermissions",
             "FormalQualityLinkCollection",
@@ -77,6 +78,28 @@ class Phase8QualityLinkContractTest(unittest.TestCase):
         ownership = OWNERSHIP_PATH.read_text(encoding="utf-8")
         for marker in ("  FormalQualityLinkRevision:\n    owner_system: NPI_ONE_QUALITY_LINK_SERVICE", "  QualityInspection:\n    owner_system: ERPNEXT", "UNAVAILABLE_RAW_CODES_ARE_NOT_PASS", "  ERPProjectionHead:\n    owner_system: NPI_ONE_ERP_PROJECTION_SERVICE"):
             self.assertIn(marker, ownership)
+
+    def test_read_only_reconciliation_is_closed_without_pass_or_write_semantics(self) -> None:
+        contract = OPENAPI_PATH.read_text(encoding="utf-8")
+        schema = contract[
+            contract.index("    FormalQualityLinkReconciliation:\n") :
+            contract.index("    FormalQualityLinkItem:\n")
+        ]
+        self.assertIn("enum: [current, drifted, unavailable]", schema)
+        for reason in (
+            "linked_truth_current",
+            "linked_source_advanced",
+            "linked_projection_advanced",
+            "linked_source_and_projection_advanced",
+            "current_truth_unavailable",
+        ):
+            self.assertIn(reason, schema)
+        self.assertNotIn("pass", schema.casefold())
+        item = contract[
+            contract.index("    FormalQualityLinkItem:\n") :
+            contract.index("    FormalQualityLinkPermissions:\n")
+        ]
+        self.assertIn("reconciliation", item)
 
 
 if __name__ == "__main__":

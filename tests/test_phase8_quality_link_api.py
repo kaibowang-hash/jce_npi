@@ -36,11 +36,24 @@ class FakeRepository:
 
     def list_quality_links(self, *args: object, **kwargs: object):
         self.calls.append(("list", args, kwargs))
-        return {"projectGlobalId": PROJECT, "permissions": {"view": True, "link": False}, "items": []}
+        return {
+            "projectGlobalId": PROJECT,
+            "permissions": {"view": True, "link": False},
+            "items": [],
+        }
 
     def quality_link_detail(self, *args: object, **kwargs: object):
         self.calls.append(("detail", args, kwargs))
-        return {"projectGlobalId": PROJECT, "permissions": {"view": True, "link": False}, "link": {}}
+        return {
+            "projectGlobalId": PROJECT,
+            "permissions": {"view": True, "link": False},
+            "link": {
+                "reconciliation": {
+                    "state": "current",
+                    "reasonCode": "linked_truth_current",
+                }
+            },
+        }
 
     def link_observed_formal_quality_reference(self, *args: object, **kwargs: object):
         self.calls.append(("link", args, kwargs))
@@ -202,7 +215,9 @@ class Phase8QualityLinkApiTest(unittest.TestCase):
 
     def test_project_first_list_detail_and_command_are_fixed(self) -> None:
         self.assertEqual(self.module.get_formal_quality_links()["items"], [])
-        self.assertEqual(self.module.get_formal_quality_link()["projectGlobalId"], PROJECT)
+        detail = self.module.get_formal_quality_link()
+        self.assertEqual(detail["projectGlobalId"], PROJECT)
+        self.assertEqual(detail["link"]["reconciliation"]["state"], "current")
         result = self.command()
         self.assertEqual(result["operation"], "link_observed_formal_quality_reference")
         self.assertEqual(self.events, ["csrf", "commit"])
@@ -271,6 +286,34 @@ class Phase8QualityLinkApiTest(unittest.TestCase):
         api_source = (ROOT / "apps/npi_integration/npi_integration/quality_link_api.py").read_text(encoding="utf-8")
         self.assertNotIn("enqueue(", api_source)
         self.assertNotIn("ignore_permissions", api_source)
+
+    def test_query_reconciliation_shape_is_closed_before_serialization(self) -> None:
+        original = self.repository.quality_link_detail
+        for reconciliation in (
+            None,
+            {"state": "latest", "reasonCode": "linked_truth_current"},
+            {"state": "current", "reasonCode": "linked_source_advanced"},
+            {
+                "state": "unavailable",
+                "reasonCode": "current_truth_unavailable",
+                "currentGlobalId": SOURCE,
+            },
+        ):
+            with self.subTest(reconciliation=reconciliation):
+                self.repository.quality_link_detail = lambda *_args, **_kwargs: {
+                    "projectGlobalId": PROJECT,
+                    "permissions": {"view": True, "link": False},
+                    "link": {"reconciliation": reconciliation},
+                }
+                with self.assertRaisesRegex(RuntimeError, "reconciliation"):
+                    self.module.get_formal_quality_link()
+        self.repository.quality_link_detail = original
+        result = self.module.get_formal_quality_link()
+        self.assertEqual(
+            set(result["link"]["reconciliation"]),
+            {"state", "reasonCode"},
+        )
+        self.assertNotIn("commit", self.events)
 
 
 if __name__ == "__main__":

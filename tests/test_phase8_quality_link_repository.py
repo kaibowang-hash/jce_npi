@@ -5,6 +5,7 @@ import sys
 import types
 import unittest
 from contextlib import contextmanager
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
@@ -367,6 +368,267 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
         self.assertEqual(source.count("workspace[\"permissions\"].get(\"manageDefects\") is True"), 1)
         self.assertEqual(source.count("workspace[\"permissions\"].get(\"manageReviewReferences\") is True"), 1)
         self.assertEqual(source.count("workspace[\"permissions\"].get(\"canRevise\") is True"), 1)
+
+    def test_source_currentness_is_exact_version_hash_and_project_containment(self) -> None:
+        current = types.SimpleNamespace(
+            tenant_id=TENANT,
+            project_global_id=PROJECT,
+            defect_global_id=SOURCE,
+            trial_round_global_id=self.observation.scope_global_id,
+            defect_version=2,
+            snapshot_hash=SOURCE_HASH,
+        )
+        source_repository = types.SimpleNamespace(
+            _trial_defect_chain=lambda *_args, **_kwargs: (current,)
+        )
+        with patch.object(
+            self.module,
+            "FrappeTrialQualityRepository",
+            return_value=source_repository,
+        ):
+            self.assertEqual(
+                self.repository._source_currentness(
+                    self.project,
+                    self.source,
+                    self.observation,
+                ),
+                self.module.QualityLinkReconciliationState.CURRENT,
+            )
+            current.defect_version = 3
+            current.snapshot_hash = "f" * 64
+            self.assertEqual(
+                self.repository._source_currentness(
+                    self.project,
+                    self.source,
+                    self.observation,
+                ),
+                self.module.QualityLinkReconciliationState.DRIFTED,
+            )
+            current.defect_version = 2
+            self.assertEqual(
+                self.repository._source_currentness(
+                    self.project,
+                    self.source,
+                    self.observation,
+                ),
+                self.module.QualityLinkReconciliationState.UNAVAILABLE,
+            )
+            current.project_global_id = UUID(int=99)
+            self.assertEqual(
+                self.repository._source_currentness(
+                    self.project,
+                    self.source,
+                    self.observation,
+                ),
+                self.module.QualityLinkReconciliationState.UNAVAILABLE,
+            )
+
+    def test_projection_currentness_uses_one_exact_p8_01_stream(self) -> None:
+        head, observation, linked = self.projection_truth(version=3)
+        calls: list[tuple[object, ...]] = []
+
+        def get_all(doctype: str, **kwargs: object):
+            calls.append((doctype, kwargs))
+            return [str(PROJECTION_HEAD)]
+
+        def get_doc(doctype: str, _name: str, **_kwargs: object):
+            return head if doctype == "NPI ERP Projection Head" else observation
+
+        with patch.object(self.frappe, "get_all", side_effect=get_all), patch.object(
+            self.frappe,
+            "get_doc",
+            side_effect=get_doc,
+        ):
+            self.assertEqual(
+                self.repository._projection_currentness(self.project, linked),
+                self.module.QualityLinkReconciliationState.CURRENT,
+            )
+        filters = calls[0][1]["filters"]
+        self.assertEqual(
+            filters,
+            {
+                "tenant_id": TENANT,
+                "project_global_id": str(PROJECT),
+                "scope_kind": "trial_round",
+                "scope_global_id": str(linked.scope_global_id),
+                "projection_kind": "formal_quality_status",
+                "source_object_type": "Quality Inspection",
+                "source_object_id": "QI-opaque",
+            },
+        )
+        self.assertNotIn("status_code", filters)
+        self.assertNotIn("result_code", filters)
+
+    def test_projection_advance_is_drift_and_ambiguous_or_corrupt_is_unavailable(self) -> None:
+        _linked_head, _linked_observation, linked = self.projection_truth(version=3)
+        head, observation, _current = self.projection_truth(
+            version=4,
+            observation_id=UUID("00000000-0000-4000-8000-00000000c618"),
+        )
+
+        def get_doc(doctype: str, _name: str, **_kwargs: object):
+            return head if doctype == "NPI ERP Projection Head" else observation
+
+        with patch.object(self.frappe, "get_all", return_value=[str(PROJECTION_HEAD)]), patch.object(
+            self.frappe,
+            "get_doc",
+            side_effect=get_doc,
+        ):
+            self.assertEqual(
+                self.repository._projection_currentness(self.project, linked),
+                self.module.QualityLinkReconciliationState.DRIFTED,
+            )
+            head.tenant_id = "foreign-tenant"
+            self.assertEqual(
+                self.repository._projection_currentness(self.project, linked),
+                self.module.QualityLinkReconciliationState.UNAVAILABLE,
+            )
+        with patch.object(
+            self.frappe,
+            "get_all",
+            return_value=[str(PROJECTION_HEAD), str(UUID(int=99))],
+        ):
+            self.assertEqual(
+                self.repository._projection_currentness(self.project, linked),
+                self.module.QualityLinkReconciliationState.UNAVAILABLE,
+            )
+
+    def test_reconciliation_is_one_closed_fact_and_never_substitutes_identity(self) -> None:
+        revision = self.module.QualityLinkRevision(
+            UUID("00000000-0000-4000-8000-00000000c619"),
+            "e" * 64,
+            1,
+            None,
+            self.source,
+            self.observation,
+            self.module.QualityLinkState.LINKED,
+            "quality@example.invalid",
+            "trace-quality-link-repository",
+            datetime(2026, 8, 26, tzinfo=UTC),
+        )
+        for source_state, projection_state, expected in (
+            ("current", "current", "current"),
+            ("drifted", "current", "drifted"),
+            ("current", "unavailable", "unavailable"),
+        ):
+            with self.subTest(expected=expected), patch.object(
+                self.repository,
+                "_source_currentness",
+                return_value=self.module.QualityLinkReconciliationState(source_state),
+            ), patch.object(
+                self.repository,
+                "_projection_currentness",
+                return_value=self.module.QualityLinkReconciliationState(projection_state),
+            ):
+                result = self.repository._link_reconciliation(
+                    self.project,
+                    revision.payload(),
+                )
+                self.assertEqual(result["state"], expected)
+                self.assertEqual(set(result), {"state", "reasonCode"})
+                self.assertNotIn("global", str(result).casefold())
+                self.assertNotIn("pass", str(result).casefold())
+        malformed = {**revision.payload(), "source": {"unexpected": "value"}}
+        self.assertEqual(
+            self.repository._link_reconciliation(self.project, malformed),
+            {
+                "state": "unavailable",
+                "reasonCode": "current_truth_unavailable",
+            },
+        )
+
+    def projection_truth(
+        self,
+        *,
+        version: int,
+        observation_id: UUID = OBSERVATION,
+    ) -> tuple[object, object, object]:
+        scope_id = self.observation.scope_global_id
+        stream = {
+            "tenantId": TENANT,
+            "projectGlobalId": str(PROJECT),
+            "scopeKind": "trial_round",
+            "scopeGlobalId": str(scope_id),
+            "projectionKind": "formal_quality_status",
+            "sourceObjectType": "Quality Inspection",
+            "sourceObjectId": "QI-opaque",
+        }
+        observation_snapshot = {"observation": str(observation_id)}
+        observation_hash = self.module.canonical_payload_hash(observation_snapshot)
+        head_snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(PROJECTION_HEAD),
+            **stream,
+            "streamKeyHash": self.module.canonical_payload_hash(stream),
+            "currentObservationGlobalId": str(observation_id),
+            "lastRefreshObservationGlobalId": str(observation_id),
+            "currentSourceVersion": str(version + 4),
+            "currentSourceModifiedAt": "2026-08-26T00:00:00Z",
+            "currentPayloadHash": "c" * 64,
+            "availability": "available",
+            "freshness": "fresh",
+            "freshnessPolicyRef": "formal_quality_v1",
+            "optimisticVersion": version,
+            "updatedAt": "2026-08-26T00:00:00Z",
+        }
+        head_hash = self.module.canonical_payload_hash(head_snapshot)
+        head = types.SimpleNamespace(
+            global_id=PROJECTION_HEAD,
+            tenant_id=TENANT,
+            project_global_id=PROJECT,
+            scope_kind="trial_round",
+            scope_global_id=scope_id,
+            projection_kind="formal_quality_status",
+            source_object_type="Quality Inspection",
+            source_object_id="QI-opaque",
+            stream_key_hash=head_snapshot["streamKeyHash"],
+            current_observation=observation_id,
+            current_source_version=str(version + 4),
+            current_payload_hash="c" * 64,
+            availability="available",
+            freshness="fresh",
+            freshness_policy_ref="formal_quality_v1",
+            optimistic_version=version,
+            head_snapshot=head_snapshot,
+            head_hash=head_hash,
+        )
+        observation = types.SimpleNamespace(
+            global_id=observation_id,
+            tenant_id=TENANT,
+            project_global_id=PROJECT,
+            scope_kind="trial_round",
+            scope_global_id=scope_id,
+            projection_kind="formal_quality_status",
+            source_object_type="Quality Inspection",
+            source_object_id="QI-opaque",
+            source_system="ERPNEXT",
+            target_system="NPI_ONE",
+            adapter_mode="sandbox",
+            availability="available",
+            freshness="fresh",
+            disposition="applied_current",
+            source_version=str(version + 4),
+            payload_hash="c" * 64,
+            observation_snapshot=observation_snapshot,
+            observation_hash=observation_hash,
+            payload={
+                "values": {
+                    "recordKind": "quality_inspection",
+                    "statusCode": "Completed",
+                    "resultCode": "Accepted",
+                    "observedAt": "2026-08-26T00:00:00Z",
+                }
+            },
+        )
+        linked = replace(
+            self.observation,
+            observation_global_id=observation_id,
+            head_optimistic_version=version,
+            source_version=str(version + 4),
+            observation_hash=observation_hash,
+            head_hash=head_hash,
+        )
+        return head, observation, linked
 
 
 if __name__ == "__main__":

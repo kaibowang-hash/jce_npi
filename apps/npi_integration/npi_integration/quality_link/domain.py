@@ -49,6 +49,90 @@ class QualityLinkFaultKind(StrEnum):
     VALIDATION_FAILED = "validation_failed"
 
 
+class QualityLinkReconciliationState(StrEnum):
+    CURRENT = "current"
+    DRIFTED = "drifted"
+    UNAVAILABLE = "unavailable"
+
+
+class QualityLinkReconciliationReason(StrEnum):
+    LINKED_TRUTH_CURRENT = "linked_truth_current"
+    SOURCE_ADVANCED = "linked_source_advanced"
+    PROJECTION_ADVANCED = "linked_projection_advanced"
+    SOURCE_AND_PROJECTION_ADVANCED = "linked_source_and_projection_advanced"
+    CURRENT_TRUTH_UNAVAILABLE = "current_truth_unavailable"
+
+
+@dataclass(frozen=True, slots=True)
+class QualityLinkReconciliation:
+    state: QualityLinkReconciliationState
+    reason: QualityLinkReconciliationReason
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.state, QualityLinkReconciliationState) or not isinstance(
+            self.reason,
+            QualityLinkReconciliationReason,
+        ):
+            raise QualityLinkContractError("Quality link reconciliation is unsupported.")
+        allowed = {
+            QualityLinkReconciliationState.CURRENT: {
+                QualityLinkReconciliationReason.LINKED_TRUTH_CURRENT,
+            },
+            QualityLinkReconciliationState.DRIFTED: {
+                QualityLinkReconciliationReason.SOURCE_ADVANCED,
+                QualityLinkReconciliationReason.PROJECTION_ADVANCED,
+                QualityLinkReconciliationReason.SOURCE_AND_PROJECTION_ADVANCED,
+            },
+            QualityLinkReconciliationState.UNAVAILABLE: {
+                QualityLinkReconciliationReason.CURRENT_TRUTH_UNAVAILABLE,
+            },
+        }
+        if self.reason not in allowed[self.state]:
+            raise QualityLinkContractError(
+                "Quality link reconciliation state and reason do not agree."
+            )
+
+    def payload(self) -> dict[str, str]:
+        return {
+            "state": self.state.value,
+            "reasonCode": self.reason.value,
+        }
+
+
+def quality_link_reconciliation(
+    source: QualityLinkReconciliationState,
+    projection: QualityLinkReconciliationState,
+) -> QualityLinkReconciliation:
+    if not isinstance(source, QualityLinkReconciliationState) or not isinstance(
+        projection,
+        QualityLinkReconciliationState,
+    ):
+        raise QualityLinkContractError("Quality link currentness is unsupported.")
+    if QualityLinkReconciliationState.UNAVAILABLE in {source, projection}:
+        return QualityLinkReconciliation(
+            QualityLinkReconciliationState.UNAVAILABLE,
+            QualityLinkReconciliationReason.CURRENT_TRUTH_UNAVAILABLE,
+        )
+    if (
+        source is QualityLinkReconciliationState.CURRENT
+        and projection is QualityLinkReconciliationState.CURRENT
+    ):
+        return QualityLinkReconciliation(
+            QualityLinkReconciliationState.CURRENT,
+            QualityLinkReconciliationReason.LINKED_TRUTH_CURRENT,
+        )
+    if (
+        source is QualityLinkReconciliationState.DRIFTED
+        and projection is QualityLinkReconciliationState.DRIFTED
+    ):
+        reason = QualityLinkReconciliationReason.SOURCE_AND_PROJECTION_ADVANCED
+    elif source is QualityLinkReconciliationState.DRIFTED:
+        reason = QualityLinkReconciliationReason.SOURCE_ADVANCED
+    else:
+        reason = QualityLinkReconciliationReason.PROJECTION_ADVANCED
+    return QualityLinkReconciliation(QualityLinkReconciliationState.DRIFTED, reason)
+
+
 @dataclass(frozen=True, slots=True)
 class QualitySourceReference:
     tenant_id: str

@@ -24,11 +24,15 @@ from npi_integration.quality_link.domain import (
     FormalQualityObservationReference,
     FormalQualityRecordKind,
     QualityLinkCommandIdentity,
+    QualityLinkContractError,
+    QualityLinkReconciliationReason,
+    QualityLinkReconciliationState,
     QualityLinkRevision,
     QualityLinkState,
     QualitySourceKind,
     QualitySourceReference,
     canonical_payload_hash,
+    quality_link_reconciliation,
 )
 from npi_integration.quality_link.frappe_validation import (
     quality_link_command_write,
@@ -44,6 +48,30 @@ from npi_integration.quality_link.problems import (
 
 _MAX_LINKS = 1_000
 _HEAD_NAMESPACE = UUID("6f1ed39f-d156-5932-a345-3cfb913bd95e")
+_PROJECTION_HEAD_SNAPSHOT_FIELDS = {
+    "schemaVersion",
+    "globalId",
+    "tenantId",
+    "projectGlobalId",
+    "scopeKind",
+    "scopeGlobalId",
+    "projectionKind",
+    "sourceObjectType",
+    "sourceObjectId",
+    "streamKeyHash",
+    "currentObservationGlobalId",
+    "lastRefreshObservationGlobalId",
+    "currentSourceVersion",
+    "currentSourceModifiedAt",
+    "currentPayloadHash",
+    "availability",
+    "freshness",
+    "freshnessPolicyRef",
+    "optimisticVersion",
+    "updatedAt",
+}
+
+
 @dataclass(frozen=True, slots=True)
 class FormalQualityLinkCommandOutcome:
     response: dict[str, Any]
@@ -564,11 +592,271 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
                 **revision_payload,
                 "linkHash": str(revision.link_hash),
             },
+            "reconciliation": self._link_reconciliation(
+                project,
+                revision_payload,
+            ),
             "formalQualityInterpretation": {
                 "state": "unavailable",
                 "reasonCode": "raw_formal_quality_codes_not_interpreted",
             },
         }
+
+    def _link_reconciliation(
+        self,
+        project: object,
+        revision_payload: Mapping[str, Any],
+    ) -> dict[str, str]:
+        try:
+            source, observation = _linked_references(revision_payload)
+            source_state = self._source_currentness(project, source, observation)
+            projection_state = self._projection_currentness(
+                project,
+                observation,
+            )
+            return quality_link_reconciliation(
+                source_state,
+                projection_state,
+            ).payload()
+        except (
+            AttributeError,
+            KeyError,
+            QualityLinkContractError,
+            RuntimeError,
+            TypeError,
+            ValueError,
+        ):
+            return {
+                "state": QualityLinkReconciliationState.UNAVAILABLE.value,
+                "reasonCode": QualityLinkReconciliationReason.CURRENT_TRUTH_UNAVAILABLE.value,
+            }
+
+    def _source_currentness(
+        self,
+        project: object,
+        source: QualitySourceReference,
+        observation: FormalQualityObservationReference,
+    ) -> QualityLinkReconciliationState:
+        if source.source_kind is QualitySourceKind.TRIAL_DEFECT:
+            repository = FrappeTrialQualityRepository(
+                principal=self.principal,
+                request_id=self.request_id,
+                trace_id=self.trace_id,
+            )
+            chain = repository._trial_defect_chain(
+                project,
+                defect_id=source.source_global_id,
+                for_update=False,
+            )
+            if not chain:
+                return QualityLinkReconciliationState.UNAVAILABLE
+            current = chain[-1]
+            if (
+                current.tenant_id != source.tenant_id
+                or current.project_global_id != source.project_global_id
+                or current.defect_global_id != source.source_global_id
+                or observation.scope_kind != "trial_round"
+                or current.trial_round_global_id != observation.scope_global_id
+            ):
+                return QualityLinkReconciliationState.UNAVAILABLE
+            version = current.defect_version
+            snapshot_hash = current.snapshot_hash
+        elif source.source_kind is QualitySourceKind.TRIAL_REVIEW:
+            if observation.scope_kind != "trial_round":
+                return QualityLinkReconciliationState.UNAVAILABLE
+            repository = FrappeTrialReviewRepository(
+                principal=self.principal,
+                request_id=self.request_id,
+                trace_id=self.trace_id,
+            )
+            chain = repository._reference_chain(
+                project,
+                observation.scope_global_id,
+                source.source_global_id,
+            )
+            if not chain:
+                return QualityLinkReconciliationState.UNAVAILABLE
+            current = chain[-1]
+            if (
+                current.tenant_id != source.tenant_id
+                or current.project_global_id != source.project_global_id
+                or current.reference_global_id != source.source_global_id
+                or current.trial_round_global_id != observation.scope_global_id
+            ):
+                return QualityLinkReconciliationState.UNAVAILABLE
+            version = current.reference_version
+            snapshot_hash = current.snapshot_hash
+        elif source.source_kind is QualitySourceKind.READINESS_ASSESSMENT:
+            if (
+                observation.scope_kind != "readiness"
+                or observation.scope_global_id != source.source_global_id
+            ):
+                return QualityLinkReconciliationState.UNAVAILABLE
+            chain = _project_revision_chain(project)
+            if not chain:
+                return QualityLinkReconciliationState.UNAVAILABLE
+            current = chain[-1]
+            if (
+                current.tenant_id != source.tenant_id
+                or current.project.global_id != source.project_global_id
+                or current.instance_global_id != source.source_global_id
+            ):
+                return QualityLinkReconciliationState.UNAVAILABLE
+            version = current.instance_version
+            snapshot_hash = current.snapshot_hash
+        else:
+            return QualityLinkReconciliationState.UNAVAILABLE
+        return _currentness(
+            linked_version=source.source_version,
+            linked_hash=source.source_snapshot_hash,
+            current_version=version,
+            current_hash=snapshot_hash,
+        )
+
+    def _projection_currentness(
+        self,
+        project: object,
+        linked: FormalQualityObservationReference,
+    ) -> QualityLinkReconciliationState:
+        names = frappe.get_all(
+            "NPI ERP Projection Head",
+            filters={
+                "tenant_id": str(project.tenant_id),
+                "project_global_id": str(project.global_id),
+                "scope_kind": linked.scope_kind,
+                "scope_global_id": str(linked.scope_global_id),
+                "projection_kind": "formal_quality_status",
+                "source_object_type": linked.source_object_type,
+                "source_object_id": linked.source_object_id,
+            },
+            pluck="name",
+            order_by="global_id asc",
+            limit_page_length=2,
+        )
+        if not isinstance(names, (list, tuple)) or len(names) != 1:
+            return QualityLinkReconciliationState.UNAVAILABLE
+        head = _optional_doc("NPI ERP Projection Head", UUID(str(names[0])))
+        if head is None:
+            return QualityLinkReconciliationState.UNAVAILABLE
+        head_snapshot = _json_object(head.head_snapshot)
+        expected_stream = {
+            "tenantId": str(project.tenant_id),
+            "projectGlobalId": str(project.global_id),
+            "scopeKind": linked.scope_kind,
+            "scopeGlobalId": str(linked.scope_global_id),
+            "projectionKind": "formal_quality_status",
+            "sourceObjectType": linked.source_object_type,
+            "sourceObjectId": linked.source_object_id,
+        }
+        if (
+            set(head_snapshot) != _PROJECTION_HEAD_SNAPSHOT_FIELDS
+            or str(head.global_id) != str(names[0])
+            or str(head.global_id) != str(linked.head_global_id)
+            or str(head.tenant_id) != expected_stream["tenantId"]
+            or str(head.project_global_id) != expected_stream["projectGlobalId"]
+            or str(head.scope_kind) != expected_stream["scopeKind"]
+            or str(head.scope_global_id) != expected_stream["scopeGlobalId"]
+            or str(head.projection_kind) != expected_stream["projectionKind"]
+            or str(head.source_object_type) != expected_stream["sourceObjectType"]
+            or str(head.source_object_id) != expected_stream["sourceObjectId"]
+            or str(head.stream_key_hash) != canonical_payload_hash(expected_stream)
+            or canonical_payload_hash(head_snapshot) != str(head.head_hash)
+            or head_snapshot["schemaVersion"] != 1
+            or str(head_snapshot["globalId"]) != str(head.global_id)
+            or any(
+                str(head_snapshot[key]) != value
+                for key, value in expected_stream.items()
+            )
+            or str(head_snapshot["streamKeyHash"]) != str(head.stream_key_hash)
+            or str(head_snapshot["currentObservationGlobalId"])
+            != str(head.current_observation)
+            or str(head_snapshot["currentSourceVersion"])
+            != str(head.current_source_version)
+            or str(head_snapshot["currentPayloadHash"])
+            != str(head.current_payload_hash)
+            or str(head_snapshot["availability"]) != str(head.availability)
+            or str(head_snapshot["freshness"]) != str(head.freshness)
+            or str(head_snapshot["freshnessPolicyRef"])
+            != str(head.freshness_policy_ref)
+            or int(head_snapshot["optimisticVersion"])
+            != int(head.optimistic_version)
+            or str(head.availability) != "available"
+            or str(head.freshness) != "fresh"
+            or not head.current_observation
+            or not head.current_source_version
+            or not head.current_payload_hash
+            or not head.freshness_policy_ref
+        ):
+            return QualityLinkReconciliationState.UNAVAILABLE
+        observation = _optional_doc(
+            "NPI ERP Projection Observation",
+            UUID(str(head.current_observation)),
+        )
+        if observation is None:
+            return QualityLinkReconciliationState.UNAVAILABLE
+        observation_snapshot = _json_object(observation.observation_snapshot)
+        if (
+            str(observation.global_id) != str(head.current_observation)
+            or str(observation.tenant_id) != expected_stream["tenantId"]
+            or str(observation.project_global_id) != expected_stream["projectGlobalId"]
+            or str(observation.scope_kind) != expected_stream["scopeKind"]
+            or str(observation.scope_global_id) != expected_stream["scopeGlobalId"]
+            or str(observation.projection_kind) != expected_stream["projectionKind"]
+            or str(observation.source_object_type) != expected_stream["sourceObjectType"]
+            or str(observation.source_object_id) != expected_stream["sourceObjectId"]
+            or str(observation.source_system) != "ERPNEXT"
+            or str(observation.target_system) != "NPI_ONE"
+            or str(observation.adapter_mode) != "sandbox"
+            or str(observation.availability) != "available"
+            or str(observation.freshness) != "fresh"
+            or str(observation.disposition) != "applied_current"
+            or str(observation.source_version) != str(head.current_source_version)
+            or str(observation.payload_hash) != str(head.current_payload_hash)
+            or canonical_payload_hash(observation_snapshot)
+            != str(observation.observation_hash)
+        ):
+            return QualityLinkReconciliationState.UNAVAILABLE
+        payload = _json_object(observation.payload)
+        values = payload.get("values")
+        if not isinstance(values, dict) or set(values) != {
+            "recordKind",
+            "statusCode",
+            "resultCode",
+            "observedAt",
+        }:
+            return QualityLinkReconciliationState.UNAVAILABLE
+        current = FormalQualityObservationReference(
+            str(project.tenant_id),
+            UUID(str(project.global_id)),
+            linked.scope_kind,
+            linked.scope_global_id,
+            UUID(str(observation.global_id)),
+            UUID(str(head.global_id)),
+            int(head.optimistic_version),
+            str(observation.source_object_type),
+            str(observation.source_object_id),
+            str(observation.source_version),
+            FormalQualityRecordKind(str(values["recordKind"])),
+            str(values["statusCode"]),
+            values["resultCode"],
+            str(observation.payload_hash),
+            str(observation.observation_hash),
+            str(head.head_hash),
+            str(head.freshness_policy_ref),
+        )
+        exact = (
+            current.head_optimistic_version == linked.head_optimistic_version
+            and current.observation_global_id == linked.observation_global_id
+            and current.source_version == linked.source_version
+            and current.payload_hash == linked.payload_hash
+            and current.observation_hash == linked.observation_hash
+            and current.head_hash == linked.head_hash
+        )
+        if exact:
+            return QualityLinkReconciliationState.CURRENT
+        if current.head_optimistic_version > linked.head_optimistic_version:
+            return QualityLinkReconciliationState.DRIFTED
+        return QualityLinkReconciliationState.UNAVAILABLE
 
     @staticmethod
     def _head_matches_project(
@@ -742,6 +1030,115 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
         receipt.save()
 
 
+def _linked_references(
+    revision_payload: Mapping[str, Any],
+) -> tuple[QualitySourceReference, FormalQualityObservationReference]:
+    source = _closed_object(
+        revision_payload.get("source"),
+        {
+            "tenantId",
+            "projectGlobalId",
+            "sourceKind",
+            "sourceGlobalId",
+            "sourceVersion",
+            "sourceState",
+            "sourceSnapshotHash",
+        },
+    )
+    observation = _closed_object(
+        revision_payload.get("formalObservation"),
+        {
+            "tenantId",
+            "projectGlobalId",
+            "scopeKind",
+            "scopeGlobalId",
+            "projectionKind",
+            "sourceSystem",
+            "availability",
+            "freshness",
+            "disposition",
+            "observationGlobalId",
+            "headGlobalId",
+            "headOptimisticVersion",
+            "sourceObjectType",
+            "sourceObjectId",
+            "sourceVersion",
+            "recordKind",
+            "statusCode",
+            "resultCode",
+            "payloadHash",
+            "observationHash",
+            "headHash",
+            "freshnessPolicyRef",
+        },
+    )
+    source_reference = QualitySourceReference(
+        source["tenantId"],
+        UUID(str(source["projectGlobalId"])),
+        QualitySourceKind(str(source["sourceKind"])),
+        UUID(str(source["sourceGlobalId"])),
+        source["sourceVersion"],
+        source["sourceState"],
+        source["sourceSnapshotHash"],
+    )
+    observation_reference = FormalQualityObservationReference(
+        observation["tenantId"],
+        UUID(str(observation["projectGlobalId"])),
+        observation["scopeKind"],
+        UUID(str(observation["scopeGlobalId"])),
+        UUID(str(observation["observationGlobalId"])),
+        UUID(str(observation["headGlobalId"])),
+        observation["headOptimisticVersion"],
+        observation["sourceObjectType"],
+        observation["sourceObjectId"],
+        observation["sourceVersion"],
+        FormalQualityRecordKind(str(observation["recordKind"])),
+        observation["statusCode"],
+        observation["resultCode"],
+        observation["payloadHash"],
+        observation["observationHash"],
+        observation["headHash"],
+        observation["freshnessPolicyRef"],
+    )
+    if (
+        observation.get("projectionKind") != observation_reference.projection_kind
+        or observation.get("sourceSystem") != observation_reference.source_system
+        or observation.get("availability") != observation_reference.availability
+        or observation.get("freshness") != observation_reference.freshness
+        or observation.get("disposition") != observation_reference.disposition
+        or source_reference.tenant_id != observation_reference.tenant_id
+        or source_reference.project_global_id
+        != observation_reference.project_global_id
+    ):
+        raise QualityLinkContractError(
+            "Persisted formal quality link references are invalid."
+        )
+    return source_reference, observation_reference
+
+
+def _currentness(
+    *,
+    linked_version: object,
+    linked_hash: object,
+    current_version: object,
+    current_hash: object,
+) -> QualityLinkReconciliationState:
+    if (
+        type(linked_version) is not int
+        or type(current_version) is not int
+        or linked_version < 1
+        or current_version < 1
+        or not isinstance(linked_hash, str)
+        or not isinstance(current_hash, str)
+    ):
+        return QualityLinkReconciliationState.UNAVAILABLE
+    if current_version == linked_version and current_hash == linked_hash:
+        return QualityLinkReconciliationState.CURRENT
+    if current_version > linked_version:
+        return QualityLinkReconciliationState.DRIFTED
+    return QualityLinkReconciliationState.UNAVAILABLE
+
+
 def _head_response(
     *,
     global_id: UUID,
@@ -788,6 +1185,15 @@ def _json_object(value: object) -> dict[str, Any]:
     if not isinstance(parsed, dict):
         raise RuntimeError("Persisted formal quality link JSON is invalid.")
     return parsed
+
+
+def _closed_object(value: object, fields: set[str]) -> dict[str, Any]:
+    result = _json_object(value)
+    if set(result) != fields:
+        raise QualityLinkContractError(
+            "Persisted formal quality link reference shape is invalid."
+        )
+    return result
 
 
 def _row_value(row: object, fieldname: str) -> object:

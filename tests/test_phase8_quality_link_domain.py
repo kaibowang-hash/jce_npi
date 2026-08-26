@@ -12,8 +12,11 @@ sys.path.insert(0, str(ROOT / "apps/npi_integration"))
 
 from npi_integration.quality_link.domain import (  # noqa: E402
     FormalQualityObservationReference, FormalQualityRecordKind,
-    QualityLinkCommandIdentity, QualityLinkContractError, QualityLinkFaultKind, QualityLinkRevision, QualityLinkState,
+    QualityLinkCommandIdentity, QualityLinkContractError, QualityLinkFaultKind,
+    QualityLinkReconciliation, QualityLinkReconciliationReason,
+    QualityLinkReconciliationState, QualityLinkRevision, QualityLinkState,
     QualitySourceKind, QualitySourceReference, canonical_payload_hash,
+    quality_link_reconciliation,
 )
 
 
@@ -81,6 +84,51 @@ class Phase8QualityLinkDomainTest(unittest.TestCase):
         self.assertEqual(candidate.payload_hash, canonical_payload_hash(reordered))
         changed = replace(candidate, observation=replace(observation(), status_code="OTHER_RAW_STATUS"))
         self.assertNotEqual(candidate.payload_hash, changed.payload_hash)
+
+    def test_reconciliation_state_reason_pairs_are_closed_and_non_interpreting(self) -> None:
+        current = quality_link_reconciliation(
+            QualityLinkReconciliationState.CURRENT,
+            QualityLinkReconciliationState.CURRENT,
+        )
+        self.assertEqual(
+            current.payload(),
+            {"state": "current", "reasonCode": "linked_truth_current"},
+        )
+        cases = (
+            (
+                QualityLinkReconciliationState.DRIFTED,
+                QualityLinkReconciliationState.CURRENT,
+                "linked_source_advanced",
+            ),
+            (
+                QualityLinkReconciliationState.CURRENT,
+                QualityLinkReconciliationState.DRIFTED,
+                "linked_projection_advanced",
+            ),
+            (
+                QualityLinkReconciliationState.DRIFTED,
+                QualityLinkReconciliationState.DRIFTED,
+                "linked_source_and_projection_advanced",
+            ),
+            (
+                QualityLinkReconciliationState.UNAVAILABLE,
+                QualityLinkReconciliationState.CURRENT,
+                "current_truth_unavailable",
+            ),
+        )
+        for source_state, projection_state, reason in cases:
+            with self.subTest(reason=reason):
+                payload = quality_link_reconciliation(
+                    source_state,
+                    projection_state,
+                ).payload()
+                self.assertEqual(payload["reasonCode"], reason)
+                self.assertNotIn("pass", str(payload).casefold())
+        with self.assertRaises(QualityLinkContractError):
+            QualityLinkReconciliation(
+                QualityLinkReconciliationState.CURRENT,
+                QualityLinkReconciliationReason.SOURCE_ADVANCED,
+            )
 
 
 if __name__ == "__main__":

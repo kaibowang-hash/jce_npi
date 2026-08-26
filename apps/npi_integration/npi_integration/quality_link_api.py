@@ -43,6 +43,15 @@ _ACKNOWLEDGEMENT = (
     "I confirm this links only the exact observed formal quality reference. "
     "It does not write ERPNext or interpret a formal pass."
 )
+_RECONCILIATION_REASONS = {
+    "current": {"linked_truth_current"},
+    "drifted": {
+        "linked_source_advanced",
+        "linked_projection_advanced",
+        "linked_source_and_projection_advanced",
+    },
+    "unavailable": {"current_truth_unavailable"},
+}
 
 
 class _Outcome(Protocol):
@@ -100,7 +109,11 @@ def get_formal_quality_links(**request_fields: Any) -> dict[str, Any] | None:
         if response is None:
             raise FormalQualityLinkUnavailable()
         headers["X-Request-ID"] = request_id
-        return _response(response)
+        return _query_response(
+            response,
+            project_id=project_id,
+            collection=True,
+        )
 
     return frappe_domain_call(
         handle,
@@ -122,7 +135,11 @@ def get_formal_quality_link(**request_fields: Any) -> dict[str, Any] | None:
         if response is None:
             raise FormalQualityLinkUnavailable()
         headers["X-Request-ID"] = request_id
-        return _response(response)
+        return _query_response(
+            response,
+            project_id=project_id,
+            collection=False,
+        )
 
     return frappe_domain_call(
         handle,
@@ -338,6 +355,48 @@ def _response(value: object) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise RuntimeError("The formal quality link response is invalid.")
     return value
+
+
+def _query_response(
+    value: object,
+    *,
+    project_id: UUID,
+    collection: bool,
+) -> dict[str, Any]:
+    response = _response(value)
+    expected_fields = {
+        "projectGlobalId",
+        "permissions",
+        "items" if collection else "link",
+    }
+    if set(response) != expected_fields:
+        raise RuntimeError("The formal quality link query response shape is invalid.")
+    if str(response["projectGlobalId"]) != str(project_id):
+        raise RuntimeError("The formal quality link query escaped its Project.")
+    if response["permissions"] != {"view": True, "link": False}:
+        raise RuntimeError("The formal quality link query permissions are invalid.")
+    if collection:
+        items = response["items"]
+        if not isinstance(items, list) or len(items) > 1_000:
+            raise RuntimeError("The formal quality link collection is invalid.")
+    else:
+        items = [response["link"]]
+    for item in items:
+        if not isinstance(item, dict):
+            raise RuntimeError("The formal quality link item is invalid.")
+        reconciliation = item.get("reconciliation")
+        if not isinstance(reconciliation, dict) or set(reconciliation) != {
+            "state",
+            "reasonCode",
+        }:
+            raise RuntimeError("The formal quality link reconciliation is invalid.")
+        state = reconciliation["state"]
+        if (
+            state not in _RECONCILIATION_REASONS
+            or reconciliation["reasonCode"] not in _RECONCILIATION_REASONS[state]
+        ):
+            raise RuntimeError("The formal quality link reconciliation is invalid.")
+    return response
 
 
 __all__ = [

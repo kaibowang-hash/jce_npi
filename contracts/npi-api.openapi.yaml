@@ -8760,13 +8760,25 @@ components:
       properties:
         state: { type: string, const: unavailable }
         reasonCode: { type: string, const: raw_formal_quality_codes_not_interpreted }
+    FormalQualityLinkReconciliation:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, enum: [current, drifted, unavailable] }
+        reasonCode:
+          type: string
+          enum:
+            [linked_truth_current, linked_source_advanced, linked_projection_advanced,
+             linked_source_and_projection_advanced, current_truth_unavailable]
     FormalQualityLinkItem:
       type: object
       additionalProperties: false
-      required: [linkHead, linkRevision, formalQualityInterpretation]
+      required: [linkHead, linkRevision, reconciliation, formalQualityInterpretation]
       properties:
         linkHead: { $ref: "#/components/schemas/FormalQualityLinkHead" }
         linkRevision: { $ref: "#/components/schemas/FormalQualityLinkRevision" }
+        reconciliation: { $ref: "#/components/schemas/FormalQualityLinkReconciliation" }
         formalQualityInterpretation: { $ref: "#/components/schemas/FormalQualityInterpretationUnavailable" }
     FormalQualityLinkPermissions:
       type: object
