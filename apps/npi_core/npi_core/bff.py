@@ -99,6 +99,17 @@ _PROJECT_COCKPIT_ROUTE = re.compile(
 _PROJECT_ERP_PROJECTIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/erp-projections$"
 )
+_PROJECT_FORMAL_QUALITY_LINKS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/formal-quality-links$"
+)
+_PROJECT_FORMAL_QUALITY_LINK_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/formal-quality-links/"
+    r"(?P<formal_quality_link_id>[^/:]+)$"
+)
+_PROJECT_FORMAL_QUALITY_LINK_COMMAND_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/"
+    r"formal-quality-links:link-observed-reference$"
+)
 _PROJECT_TRIALS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trials$"
 )
@@ -789,6 +800,22 @@ def route_request() -> None:
     if command is None and request.method == "GET":
         for route, candidate in (
             (
+                _PROJECT_FORMAL_QUALITY_LINKS_ROUTE,
+                "npi_integration.quality_link_api.get_formal_quality_links",
+            ),
+            (
+                _PROJECT_FORMAL_QUALITY_LINK_ROUTE,
+                "npi_integration.quality_link_api.get_formal_quality_link",
+            ),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
+        for route, candidate in (
+            (
                 _PROJECT_TRIALS_ROUTE,
                 "npi_core.trial_api.get_trial_planning_workspace",
             ),
@@ -823,6 +850,11 @@ def route_request() -> None:
                 command = candidate
                 route_params = match.groupdict()
                 break
+    if command is None and request.method == "POST":
+        match = _PROJECT_FORMAL_QUALITY_LINK_COMMAND_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_integration.quality_link_api.link_observed_formal_quality_reference"
+            route_params = match.groupdict()
     if command is None and request.method == "POST":
         for route, candidate in (
             (_PROJECT_TRIALS_ROUTE, "npi_core.trial_api.create_trial_plan"),
@@ -2276,6 +2308,12 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         _PROJECT_COCKPIT_ROUTE.fullmatch(path) is not None
         or _PROJECT_WORK_CONTEXT_ROUTE.fullmatch(path) is not None
         or _PROJECT_ERP_PROJECTIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_FORMAL_QUALITY_LINKS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_FORMAL_QUALITY_LINK_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "POST" and (
+        _PROJECT_FORMAL_QUALITY_LINK_COMMAND_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method in {"GET", "POST"} and (

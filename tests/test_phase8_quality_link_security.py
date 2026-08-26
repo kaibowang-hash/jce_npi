@@ -44,7 +44,7 @@ class Phase8QualityLinkSecurityTest(unittest.TestCase):
             with self.assertRaises(frappe.PermissionError):
                 module.require_quality_link_write("NPI Formal Quality Link Revision", "insert")
 
-    def test_checkpoint_one_is_route_worker_adapter_network_and_direct_sql_free(self) -> None:
+    def test_checkpoint_two_is_target_worker_adapter_network_and_direct_sql_free(self) -> None:
         paths = list(MODULE.glob("*.py"))
         combined = "\n".join(path.read_text(encoding="utf-8") for path in paths)
         for path in paths:
@@ -52,14 +52,36 @@ class Phase8QualityLinkSecurityTest(unittest.TestCase):
             imports = {alias.name for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
             self.assertFalse({"requests", "httpx", "socket", "urllib.request"} & imports)
             self.assertFalse(any(is_direct_sql(node) for node in ast.walk(tree)))
-        for forbidden in ("@frappe.whitelist", "enqueue(", "scheduler_events", "ignore_permissions", "adapter_registry", "outbox"):
+        for forbidden in ("enqueue(", "scheduler_events", "ignore_permissions", "adapter_registry", "outbox"):
             self.assertNotIn(forbidden, combined.casefold())
+
+    def test_public_surface_is_exact_internal_project_first_and_no_raw_crud(self) -> None:
+        api = (ROOT / "apps/npi_integration/npi_integration/quality_link_api.py").read_text(encoding="utf-8")
+        bff = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
+        self.assertEqual(api.count("@frappe.whitelist"), 3)
+        self.assertEqual(api.count("authenticated_user()"), 1)
+        self.assertIn("if principal.is_external:", api)
+        self.assertIn("if not repository.authorize_scope(project_id):", api)
+        self.assertIn("require_csrf_token()", api)
+        self.assertIn("actor_idempotency_key_hash", api)
+        self.assertIn("frappe.db.commit()", api)
+        self.assertIn("frappe.db.rollback()", api)
+        for forbidden in ("ignore_permissions", "frappe.db.sql", "enqueue(", "requests.", "httpx."):
+            self.assertNotIn(forbidden, api)
+        for marker in (
+            "formal-quality-links$",
+            "formal-quality-links/",
+            "formal-quality-links:link-observed-reference$",
+        ):
+            self.assertIn(marker, bff)
 
     def test_capability_is_request_local_exact_and_finally_restored(self) -> None:
         source = (MODULE / "frappe_validation.py").read_text(encoding="utf-8")
         for marker in ("ContextVar", "allowed: frozenset[tuple[str, str]]", "try:", "finally:", "_CURRENT.reset(token)"):
             self.assertIn(marker, source)
         self.assertNotIn("ignore_permissions", source)
+        self.assertIn("QUALITY_LINK_COMMAND_WRITES", source)
+        self.assertIn("quality_link_command_write", source)
 
     def test_metadata_has_no_rows_permissions_or_formal_pass_field(self) -> None:
         for folder in DOCTYPE_ROOT.glob("npi_formal_quality_link_*"):

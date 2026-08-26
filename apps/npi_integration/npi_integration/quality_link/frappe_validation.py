@@ -26,6 +26,15 @@ _FLAGS = {
     "NPI Formal Quality Link Head": QUALITY_LINK_HEAD_WRITE_FLAG,
     "NPI Formal Quality Link Command Idempotency": QUALITY_LINK_RECEIPT_WRITE_FLAG,
 }
+QUALITY_LINK_COMMAND_WRITES = frozenset(
+    {
+        ("NPI Formal Quality Link Revision", "insert"),
+        ("NPI Formal Quality Link Head", "insert"),
+        ("NPI Formal Quality Link Head", "save"),
+        ("NPI Formal Quality Link Command Idempotency", "insert"),
+        ("NPI Formal Quality Link Command Idempotency", "save"),
+    }
+)
 
 
 def require_quality_link_write(doctype: str, action: str) -> None:
@@ -45,7 +54,7 @@ def deny_quality_link_history_delete() -> None:
 
 @contextmanager
 def quality_link_write_capability(*, scope: str, allowed: frozenset[tuple[str, str]]) -> Iterator[QualityLinkWriteCapability]:
-    """Private dormant capability; checkpoint 1 has no repository caller."""
+    """Private request-local capability; callers cannot bypass DocType guards."""
 
     if not allowed or any(item[0] not in _FLAGS or item[1] not in {"insert", "save"} for item in allowed):
         raise ValueError("Quality link capability is outside the closed support set.")
@@ -67,3 +76,14 @@ def quality_link_write_capability(*, scope: str, allowed: frozenset[tuple[str, s
             else:
                 setattr(frappe.flags, name, value)
         _CURRENT.reset(token)
+
+
+@contextmanager
+def quality_link_command_write(*, scope: str) -> Iterator[QualityLinkWriteCapability]:
+    """Expose only the fixed CP2 append/head/receipt transaction write set."""
+
+    with quality_link_write_capability(
+        scope=scope,
+        allowed=QUALITY_LINK_COMMAND_WRITES,
+    ) as capability:
+        yield capability

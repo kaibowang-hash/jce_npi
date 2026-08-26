@@ -64,7 +64,11 @@ class Phase8QualityLinkMetadataTest(unittest.TestCase):
 
     def test_visible_sources_have_direct_symmetric_chinese_translations(self) -> None:
         sources: set[str] = set()
-        paths = [MODULE / "frappe_validation.py"]
+        paths = [
+            MODULE / "frappe_validation.py",
+            MODULE / "problems.py",
+            ROOT / "apps/npi_integration/npi_integration/quality_link_api.py",
+        ]
         for folder in self.FOLDERS:
             metadata = self.load(folder)
             sources.add(metadata["name"])
@@ -82,6 +86,25 @@ class Phase8QualityLinkMetadataTest(unittest.TestCase):
                 catalogs[language] = {row[0]: row[1] for row in csv.reader(handle) if len(row) >= 2 and row[0]}
             self.assertFalse(sorted(source for source in sources if not catalogs[language].get(source)))
         self.assertEqual(set(catalogs["zh"]), set(catalogs["zh-TW"]))
+
+    def test_checkpoint_two_repository_uses_only_guarded_additive_records(self) -> None:
+        repository = (MODULE / "frappe_repository.py").read_text(encoding="utf-8")
+        guards = (MODULE / "frappe_validation.py").read_text(encoding="utf-8")
+        for doctype, action in (
+            ("NPI Formal Quality Link Revision", "insert"),
+            ("NPI Formal Quality Link Head", "insert"),
+            ("NPI Formal Quality Link Head", "save"),
+            ("NPI Formal Quality Link Command Idempotency", "insert"),
+            ("NPI Formal Quality Link Command Idempotency", "save"),
+        ):
+            self.assertIn(f'("{doctype}", "{action}")', guards)
+        self.assertIn("with quality_link_command_write(", repository)
+        self.assertIn("self._insert_receipt", repository)
+        self.assertIn("self._insert_revision", repository)
+        self.assertIn("self._insert_head", repository)
+        self.assertIn("self._append_audit", repository)
+        self.assertIn("self._seal_receipt", repository)
+        self.assertNotIn("ignore_permissions", repository)
 
 
 if __name__ == "__main__":

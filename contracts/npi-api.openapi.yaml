@@ -540,6 +540,99 @@ paths:
         default:
           $ref: "#/components/responses/ProjectError"
 
+  /projects/{projectId}/formal-quality-links:
+    get:
+      tags: [Projects, Integration]
+      operationId: getFormalQualityLinks
+      description: >-
+        Returns the bounded NPI-owned history that links exact Project quality
+        sources to exact current P8-01 formal-quality observations. Raw ERPNext
+        status and result codes remain uninterpreted and this read never
+        refreshes or mutates either system.
+      x-required-roles: [System User]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Authorized formal-quality link collection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FormalQualityLinkCollection" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/formal-quality-links/{formalQualityLinkId}:
+    get:
+      tags: [Projects, Integration]
+      operationId: getFormalQualityLink
+      description: >-
+        Returns one exact Project-contained formal-quality link head and its
+        immutable current revision without interpreting ERPNext quality codes.
+      x-required-roles: [System User]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: formalQualityLinkId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Authorized formal-quality link detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FormalQualityLinkDetail" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/formal-quality-links:link-observed-reference:
+    post:
+      tags: [Projects, Integration]
+      operationId: linkObservedFormalQualityReference
+      description: >-
+        Atomically appends one immutable NPI link revision against exact
+        source, P8-01 projection-head and link-head versions. This command does
+        not write ERPNext, infer a formal pass, enqueue work or contact a target.
+      x-required-roles: [System User]
+      x-transaction-boundary: project-formal-quality-link
+      x-audit-operation: formal_quality_link.link_observed_reference
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LinkObservedFormalQualityReference" }
+      responses:
+        "200":
+          description: Exact replay of the previously sealed command response
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FormalQualityLinkCommandResult" }
+        "201":
+          description: Immutable formal-quality link revision created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FormalQualityLinkCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/erp-projections:
     get:
       tags: [Projects, Execution]
@@ -8629,8 +8722,9 @@ components:
     FormalQualityLinkHead:
       type: object
       additionalProperties: false
-      required: [globalId, tenantId, projectGlobalId, sourceKind, sourceGlobalId, streamKeyHash, currentRevisionGlobalId, revisionNumber, currentObservationGlobalId, currentProjectionHeadGlobalId, currentProjectionHeadVersion, optimisticVersion, updatedAt, headHash]
+      required: [schemaVersion, globalId, tenantId, projectGlobalId, sourceKind, sourceGlobalId, streamKeyHash, currentRevisionGlobalId, revisionNumber, currentObservationGlobalId, currentProjectionHeadGlobalId, currentProjectionHeadVersion, optimisticVersion, updatedAt, headHash]
       properties:
+        schemaVersion: { type: integer, const: 1 }
         globalId: { type: string, format: uuid }
         tenantId: { type: string, minLength: 1, maxLength: 128 }
         projectGlobalId: { type: string, format: uuid }
@@ -8659,6 +8753,74 @@ components:
         sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         projectionHeadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         receiptKeyHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+    FormalQualityInterpretationUnavailable:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: raw_formal_quality_codes_not_interpreted }
+    FormalQualityLinkItem:
+      type: object
+      additionalProperties: false
+      required: [linkHead, linkRevision, formalQualityInterpretation]
+      properties:
+        linkHead: { $ref: "#/components/schemas/FormalQualityLinkHead" }
+        linkRevision: { $ref: "#/components/schemas/FormalQualityLinkRevision" }
+        formalQualityInterpretation: { $ref: "#/components/schemas/FormalQualityInterpretationUnavailable" }
+    FormalQualityLinkPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, link]
+      properties:
+        view: { type: boolean, const: true }
+        link: { type: boolean, const: false }
+    FormalQualityLinkCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, items]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/FormalQualityLinkPermissions" }
+        items:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/FormalQualityLinkItem" }
+    FormalQualityLinkDetail:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, link]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/FormalQualityLinkPermissions" }
+        link: { $ref: "#/components/schemas/FormalQualityLinkItem" }
+    LinkObservedFormalQualityReference:
+      type: object
+      additionalProperties: false
+      required: [sourceKind, sourceGlobalId, expectedSourceVersion, expectedSourceSnapshotHash, formalObservationGlobalId, expectedProjectionHeadGlobalId, expectedProjectionHeadVersion, expectedProjectionHeadHash, expectedLinkHeadVersion, acknowledgement]
+      properties:
+        sourceKind: { type: string, enum: [trial_defect, trial_review, readiness_assessment] }
+        sourceGlobalId: { type: string, format: uuid }
+        expectedSourceVersion: { type: integer, minimum: 1 }
+        expectedSourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        formalObservationGlobalId: { type: string, format: uuid }
+        expectedProjectionHeadGlobalId: { type: string, format: uuid }
+        expectedProjectionHeadVersion: { type: integer, minimum: 1 }
+        expectedProjectionHeadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedLinkHeadVersion: { type: integer, minimum: 0 }
+        acknowledgement:
+          type: string
+          const: I confirm this links only the exact observed formal quality reference. It does not write ERPNext or interpret a formal pass.
+    FormalQualityLinkCommandResult:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, operation, linkRevision, linkHead, formalQualityInterpretation]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        operation: { type: string, const: link_observed_formal_quality_reference }
+        linkRevision: { $ref: "#/components/schemas/FormalQualityLinkRevision" }
+        linkHead: { $ref: "#/components/schemas/FormalQualityLinkHead" }
+        formalQualityInterpretation: { $ref: "#/components/schemas/FormalQualityInterpretationUnavailable" }
     ControlledPrintSourceReference:
       type: object
       additionalProperties: false

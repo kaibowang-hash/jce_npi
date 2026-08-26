@@ -8401,3 +8401,12 @@ The exact current formal quality link revision is unavailable.,精確的目前�
 The exact current formal quality observation is unavailable.,精確的目前正式品質觀測不可用。
 The exact current formal quality projection head is unavailable.,精確的目前正式品質投影頭不可用。
 The sealed formal quality link response hash does not match its payload.,已密封正式品質關聯回應的雜湊與其載荷不符。
+Confirm the exact observed quality-link boundary.,確認精確的已觀測品質關聯邊界。
+Enter a valid global identifier.,請輸入有效的全域識別。
+Enter a valid request identifier.,請輸入有效的請求識別。
+The exact formal quality link is unavailable.,精確的正式品質關聯不可用。
+The formal quality link changed. Reload it before continuing.,正式品質關聯已變更。請重新載入後繼續。
+The formal quality observation changed. Reload it before linking.,正式品質觀測已變更。請重新載入後再關聯。
+The idempotency key was already used for a different formal quality link command.,此冪等鍵已用於其他正式品質關聯命令。
+The quality source changed. Reload it before linking formal quality.,品質源已變更。請重新載入後再關聯正式品質。
+You are not authorized to link this formal quality reference.,您無權關聯此正式品質引用。
