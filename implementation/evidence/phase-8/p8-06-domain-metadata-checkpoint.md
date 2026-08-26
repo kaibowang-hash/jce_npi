@@ -252,3 +252,31 @@ and current/reconciliation `36/36`. Current and reconciliation scripts,
 compile, shell syntax, activation/security/no-leak scans and diff hygiene pass.
 The exact-five manifest and base union are accepted; an unauthorized sixth
 path is rejected.
+
+## Prepare-bootstrap ordinary loading-harness checkpoint
+
+Exact prepare-bootstrap SHA
+`9b5e092e70506a0f4739f92359c845829e23807f` reaches ordinary
+`33002560114`. Repository `98287882871`, secret scan `98287882833` and visual
+`98287882946` pass. Frontend `98287882578` passes `454/455` E2E cases and
+fails only the unchanged P7-05 `readiness-loading` observation. The exact-five
+diagnostic diff changes no frontend file, and no controlled diagnostic is
+dispatched.
+
+Read-only cross-proof matches the established fixed-delay harness race: the
+mock response's 450 ms clock begins at route interception and can finish before
+React mounts the transient loading state. The same-cycle test-only fix uses an
+explicit pending Promise, proves loading before release, always releases in
+`finally`, and proves the loaded summary afterward. Product behavior, route
+and response contracts, timeout, retry, visual baselines and diagnostic
+counters remain unchanged. CURRENT_TASK already contains the P7-05 test and
+the governance paths, so it requires no edit. The prepare-bootstrap cycle
+remains diagnostic `0/1`, repair `0/1`, final `0/1` pending a new exact-SHA
+ordinary PASS.
+
+Level 1 passes five consecutive complete P7-05 nonvisual repetitions
+(`50/50`), all affected P7/P8-06 nonvisual specs (`33/33`), affected frontend
+units (`68/68`), generate/format/lint/type checks, current/reconciliation
+(`36/36`) and diff hygiene. The exact-four manifest is accepted and an
+unauthorized fifth path is rejected. Product, app, API, contract and governed
+baseline diffs remain zero.

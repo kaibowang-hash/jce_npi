@@ -780,3 +780,29 @@ reconciliation scripts, compilation, shell syntax, exact activation,
 direct-SQL/network/leak scans and diff hygiene pass. The exact-five manifest
 and simulated base-to-tip union are accepted; a synthetic unauthorized sixth
 path is rejected fail-closed.
+
+## 24. Same-cycle P7-05 loading-harness remediation
+
+Prepare-bootstrap SHA `9b5e092e70506a0f4739f92359c845829e23807f`
+reaches ordinary `33002560114`. Repository `98287882871`, secret scan
+`98287882833` and visual `98287882946` pass; frontend `98287882578` passes
+`454/455` E2E cases and fails only the unchanged P7-05 readiness loading
+locator. The exact-five prepare-bootstrap diff has no frontend path, and the
+controlled diagnostic is not dispatched.
+
+The fixture's fixed 450 ms response delay begins at route interception and can
+expire before a loaded CI worker mounts React's loading state. This is the
+same deterministic race already governed for the P8-01 projection fixture.
+The minimal same-cycle remediation replaces only that delay with an explicit
+pending Promise, starts navigation, asserts loading while the response is
+provably pending, releases it in `finally`, and then asserts the loaded
+summary. It changes no product, response, route, timeout, retry, visual
+baseline, threshold or diagnostic counter. CURRENT_TASK already allows the
+P7-05 test and all three governance paths, so no manifest expansion is needed.
+
+Level 1 passes five consecutive complete P7-05 nonvisual repetitions
+(`50/50`), all five affected P7/P8-06 nonvisual specs (`33/33`), the five
+affected unit files (`68/68`), frontend generate/format/lint/type checks,
+current/reconciliation (`36/36`) and diff hygiene. The exact-four manifest is
+accepted and a synthetic unauthorized fifth path is rejected. Product, app,
+API, contract and visual-baseline diffs remain zero.

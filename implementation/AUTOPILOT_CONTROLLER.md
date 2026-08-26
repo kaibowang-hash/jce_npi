@@ -6309,3 +6309,36 @@ repeat or rewrite it merely to restore context. See
   manifest and base-to-tip union pass; an unauthorized sixth path is rejected.
 - Controller marker:
   `P8-06 checkpoint 4 final 1/1 frozen; prepare-bootstrap diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 prepare-bootstrap ordinary loading-harness remediation
+
+- Prepare-bootstrap exact SHA
+  `9b5e092e70506a0f4739f92359c845829e23807f` reached ordinary CI
+  `33002560114`. Repository `98287882871`, secret scan `98287882833` and
+  governed visual `98287882946` pass. Frontend `98287882578` passes `454/455`
+  E2E cases and fails only the unchanged P7-05 readiness loading observation:
+  `readiness-loading` is not observed within five seconds. No frontend path is
+  present in the exact-five prepare-bootstrap change.
+- Static cross-proof identifies the repository's established deterministic
+  harness race. The P7-05 fixture released its Readiness response after a
+  fixed 450 ms measured from route interception, so a loaded worker could use
+  that interval before React mounted the loading state. This is the same
+  mechanism already proven and repaired for the P8-01 projection fixture; it
+  does not identify a product regression or a prepare-bootstrap diagnostic
+  result. The controlled diagnostic remains undispatched.
+- The same-cycle harness-only remediation replaces the wall-clock delay with
+  an explicit pending Promise. The test begins navigation, proves the
+  unchanged loading state while the response is pending, releases the response
+  in `finally`, then proves the loaded summary. It adds no timeout, retry,
+  product behavior, response, baseline or threshold change.
+- The P7-05 test path and the three governance evidence paths are already in
+  the frozen CURRENT_TASK allowlist; CURRENT_TASK does not change. The
+  prepare-bootstrap cycle remains diagnostic `0/1`, repair `0/1`, final `0/1`
+  until a new exact-SHA ordinary PASS permits its one controlled diagnostic.
+- Level 1 passes the complete ten-case P7-05 nonvisual spec for five
+  consecutive repetitions (`50/50`), the five affected P7/P8-06 nonvisual
+  specs (`33/33`), five affected frontend unit files (`68/68`), generate
+  checks, Prettier, ESLint, TypeScript, current/reconciliation (`36/36`) and
+  diff hygiene. The exact-four task manifest is accepted and an unauthorized
+  fifth path is rejected. Product, app, API, contract and baseline diffs are
+  zero.

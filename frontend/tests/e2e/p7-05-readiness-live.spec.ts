@@ -46,10 +46,10 @@ interface ObservedRequest {
 
 interface ApiOptions {
   commandWorkspace?: ReadinessWorkspace;
-  loadDelay?: boolean;
   loadProblem?: ProblemStatus;
   malformedWorkspace?: boolean;
   replayed?: boolean;
+  responseMayComplete?: Promise<void>;
   reviseDelay?: boolean;
   reviseProblems?: readonly ProblemStatus[];
   templateCatalog?: ReadinessTemplateCatalog;
@@ -212,10 +212,8 @@ async function installReadinessApi(
       return;
     }
     if (request.method() === "GET" && path.endsWith("/npi-readiness")) {
-      if (options.loadDelay) {
-        await new Promise<void>((resolve) => {
-          globalThis.setTimeout(resolve, 450);
-        });
+      if (options.responseMayComplete) {
+        await options.responseMayComplete;
       }
       if (options.loadProblem) {
         await fulfillProblem(route, options.loadProblem);
@@ -394,12 +392,22 @@ test.describe("P7-05 live Project readiness workspace", () => {
   test("exposes loading, empty, permission and fail-closed BFF states without stale readiness truth", async ({
     page,
   }) => {
-    await installSession(page, "en");
-    await installReadinessApi(page, { loadDelay: true });
-    await page.goto(`/projects/${readinessIds.project}?lang=en&tab=readiness`, {
-      waitUntil: "domcontentloaded",
+    let releaseResponse: (() => void) | undefined;
+    const responseMayComplete = new Promise<void>((resolve) => {
+      releaseResponse = resolve;
     });
-    await expect(page.getByTestId("readiness-loading")).toBeVisible();
+    await installSession(page, "en");
+    await installReadinessApi(page, { responseMayComplete });
+    const navigation = page.goto(
+      `/projects/${readinessIds.project}?lang=en&tab=readiness`,
+      { waitUntil: "domcontentloaded" },
+    );
+    try {
+      await expect(page.getByTestId("readiness-loading")).toBeVisible();
+    } finally {
+      releaseResponse?.();
+    }
+    await navigation;
     await expect(page.getByTestId("readiness-summary")).toBeVisible();
 
     await page.unroute(projectEndpoint);
