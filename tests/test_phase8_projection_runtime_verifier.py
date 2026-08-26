@@ -33,6 +33,54 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
             else:
                 os.environ[fixture_env] = previous
 
+    def _service_actor_frappe(
+        self,
+        *,
+        exists: bool = True,
+        enabled: int = 1,
+        user_type: str = "System User",
+        assigned_roles: tuple[str, ...] = (
+            "Desk User",
+            "NPI API User",
+            "System Manager",
+        ),
+        runtime_roles: tuple[str, ...] = (
+            "All",
+            "Desk User",
+            "NPI API User",
+            "System Manager",
+        ),
+        bind_session: bool = True,
+    ) -> tuple[SimpleNamespace, list[str]]:
+        actor = self.runtime.PROJECTION_SERVICE_ACTOR
+        session = SimpleNamespace(user="Administrator")
+        calls: list[str] = []
+
+        def set_user(user_id: str) -> None:
+            calls.append(user_id)
+            if bind_session:
+                session.user = user_id
+
+        user = SimpleNamespace(
+            name=actor,
+            email=actor,
+            enabled=enabled,
+            user_type=user_type,
+            roles=[SimpleNamespace(role=role) for role in assigned_roles],
+        )
+        frappe = SimpleNamespace(
+            db=SimpleNamespace(
+                exists=lambda doctype, name: actor
+                if exists and doctype == "User" and name == actor
+                else None
+            ),
+            get_doc=lambda doctype, name: user,
+            get_roles=lambda user_id: list(runtime_roles),
+            session=session,
+            set_user=set_user,
+        )
+        return frappe, calls
+
     def test_deterministic_runtime_identity_is_stable_uuid_v4(self) -> None:
         first = self.runtime.deterministic_uuid("observation")
         second = self.runtime.deterministic_uuid("observation")
@@ -315,6 +363,121 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
                 part_id=part_id,
                 tooling_set_id=tooling_set_id,
             )
+
+    def test_projection_service_actor_is_exact_retained_non_admin_authority(
+        self,
+    ) -> None:
+        actor = self.runtime.PROJECTION_SERVICE_ACTOR
+        self.assertEqual(actor, self.runtime.readiness_runtime.ACTOR_USER)
+        self.assertEqual(
+            actor,
+            f"npi-readiness-{self.runtime.FIXTURE_RUN_ID[:20]}-manager@example.invalid",
+        )
+        self.assertNotIn(actor.casefold(), {"guest", "administrator"})
+        frappe, calls = self._service_actor_frappe()
+        with patch.dict(sys.modules, {"frappe": frappe}):
+            selected_actor, roles = self.runtime._projection_service_actor_context()
+        self.assertEqual(selected_actor, actor)
+        self.assertEqual(calls, [actor])
+        self.assertEqual(frappe.session.user, actor)
+        self.assertTrue(self.runtime.PROJECTION_SERVICE_ROLES <= roles)
+
+    def test_projection_service_actor_fails_closed_before_repository_write(
+        self,
+    ) -> None:
+        cases = (
+            ("missing", {"exists": False}, None),
+            ("disabled", {"enabled": 0}, None),
+            ("website", {"user_type": "Website User"}, None),
+            ("wrong-assigned-roles", {"assigned_roles": ("Desk User",)}, None),
+            ("wrong-runtime-roles", {"runtime_roles": ("Desk User",)}, None),
+            ("unbound-session", {"bind_session": False}, None),
+            ("guest", {}, "Guest"),
+            ("administrator", {}, "Administrator"),
+        )
+        for label, values, actor_override in cases:
+            with self.subTest(case=label):
+                frappe, _calls = self._service_actor_frappe(**values)
+                actor_patch = (
+                    patch.object(
+                        self.runtime,
+                        "PROJECTION_SERVICE_ACTOR",
+                        actor_override,
+                    )
+                    if actor_override is not None
+                    else patch.object(
+                        self.runtime,
+                        "PROJECTION_SERVICE_ACTOR",
+                        self.runtime.readiness_runtime.ACTOR_USER,
+                    )
+                )
+                with (
+                    patch.dict(sys.modules, {"frappe": frappe}),
+                    actor_patch,
+                    self.assertRaises(RuntimeError),
+                ):
+                    self.runtime._projection_service_actor_context()
+                self.assertFalse(hasattr(frappe, "insert"))
+                self.assertFalse(hasattr(frappe, "save"))
+
+    def test_seed_and_replay_bind_service_actor_before_projection_writes(self) -> None:
+        source = (SCRIPTS / "verify_projection_runtime.py").read_text(
+            encoding="utf-8"
+        )
+        seed = source[
+            source.index("def seed_projection_truth(") : source.index(
+                "def replay_projection_truth("
+            )
+        ]
+        replay = source[
+            source.index("def replay_projection_truth(") : source.index(
+                "def run_bench_fixture("
+            )
+        ]
+        for fixture in (seed, replay):
+            self.assertIn("projection_repository()", fixture)
+            self.assertNotIn("frappe.set_user(ACTOR_USER)", fixture)
+        self.assertLess(
+            seed.index("repository = projection_repository()"),
+            seed.index("repository.apply_observation("),
+        )
+        repository = source[
+            source.index("def _projection_service_actor_context(") : source.index(
+                "def sandbox_registry("
+            )
+        ]
+        self.assertIn("principal.user_id == actor", repository)
+        self.assertIn("principal.roles == roles", repository)
+
+    def test_bench_fixture_rolls_back_service_actor_failure(self) -> None:
+        events: list[str] = []
+        frappe = SimpleNamespace(
+            db=SimpleNamespace(
+                commit=lambda: events.append("commit"),
+                rollback=lambda: events.append("rollback"),
+            ),
+            init=lambda *args, **kwargs: events.append("init"),
+            connect=lambda: events.append("connect"),
+            destroy=lambda: events.append("destroy"),
+            set_user=lambda user_id: events.append(f"actor:{user_id}"),
+        )
+        with (
+            patch.dict(sys.modules, {"frappe": frappe}),
+            patch.object(
+                self.runtime,
+                "seed_projection_truth",
+                side_effect=RuntimeError("actor rejected"),
+            ),
+            self.assertRaisesRegex(RuntimeError, "actor rejected"),
+        ):
+            self.runtime.run_local_bench_fixture(
+                "seed_projection_truth",
+                {"fixture_run_id": self.runtime.FIXTURE_RUN_ID},
+            )
+        self.assertEqual(
+            events,
+            ["init", "connect", "actor:Administrator", "rollback", "destroy"],
+        )
 
     def test_shell_projection_mode_is_cumulative_and_restores_route_switch(self) -> None:
         source = (SCRIPTS / "verify-frappe-runtime.sh").read_text(encoding="utf-8")

@@ -18,6 +18,7 @@ from typing import Any, Iterator, Mapping
 from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
+import verify_readiness_runtime as readiness_runtime
 import verify_tooling_acceptance_runtime as acceptance_runtime
 import verify_tooling_manufacturing_runtime as manufacturing_runtime
 import verify_tooling_runtime as tooling_runtime
@@ -41,6 +42,8 @@ RUNTIME_MARKER = document_runtime.RUNTIME_MARKER
 FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
 TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = "Administrator"
+PROJECTION_SERVICE_ACTOR = readiness_runtime.ACTOR_USER
+PROJECTION_SERVICE_ROLES = frozenset({"NPI API User", "System Manager"})
 INTERNAL_USER = f"npi-projection-{FIXTURE_RUN_ID[:16]}-internal@example.invalid"
 EXTERNAL_USER = f"npi-projection-{FIXTURE_RUN_ID[:16]}-external@example.invalid"
 ABSENT_PROJECT_ID = "00000000-0000-4000-8000-000000000801"
@@ -1024,20 +1027,59 @@ class ControlledSandboxReader:
     read_tool_asset_status = _read
 
 
-def projection_repository():
+def _projection_service_actor_context() -> tuple[str, frozenset[str]]:
     import frappe
 
+    actor = PROJECTION_SERVICE_ACTOR
+    require(
+        actor == readiness_runtime.ACTOR_USER
+        and actor == f"npi-readiness-{FIXTURE_RUN_ID[:20]}-manager@example.invalid"
+        and actor.casefold() not in {"guest", "administrator"},
+        "P8-01 projection service actor identity drifted",
+    )
+    require(
+        bool(frappe.db.exists("User", actor)),
+        "P8-01 retained projection service actor is unavailable",
+    )
+    user = frappe.get_doc("User", actor)
+    assigned_roles = frozenset(str(value.role) for value in user.roles)
+    require(
+        str(user.name) == actor
+        and str(user.email) == actor
+        and int(user.enabled) == 1
+        and str(user.user_type) == "System User"
+        and PROJECTION_SERVICE_ROLES <= assigned_roles,
+        "P8-01 retained projection service actor authority drifted",
+    )
+    frappe.set_user(actor)
+    roles = frozenset(frappe.get_roles(actor))
+    require(
+        getattr(getattr(frappe, "session", None), "user", None) == actor
+        and PROJECTION_SERVICE_ROLES <= roles,
+        "P8-01 projection service session authority drifted",
+    )
+    return actor, roles
+
+
+def projection_repository():
     from npi_core.foundation.security import Principal
     from npi_integration.projections.domain import ProjectionKind
     from npi_integration.projections.frappe_repository import FrappeProjectionRepository
 
+    actor, roles = _projection_service_actor_context()
     principal = Principal(
-        user_id=ACTOR_USER,
-        roles=frozenset(frappe.get_roles(ACTOR_USER)),
+        user_id=actor,
+        roles=roles,
         tenant_id=TENANT_ID,
         is_external=False,
     )
-    require("System Manager" in principal.roles, "P8-01 runtime actor authority drifted")
+    require(
+        principal.user_id == actor
+        and principal.roles == roles
+        and principal.tenant_id == TENANT_ID
+        and principal.is_external is False,
+        "P8-01 projection service principal drifted",
+    )
     return FrappeProjectionRepository(
         principal=principal,
         request_id=str(deterministic_uuid("repository-request")),
@@ -1230,8 +1272,6 @@ def seed_projection_truth(
     tooling_set_id: str,
     model_reference: Mapping[str, object],
 ) -> dict[str, object]:
-    import frappe
-
     from npi_integration.projections.config import ProjectionAdapterConfiguration
     from npi_integration.projections.domain import (
         AdapterMode,
@@ -1251,7 +1291,6 @@ def seed_projection_truth(
         part_id=part_id,
         tooling_set_id=tooling_set_id,
     )
-    frappe.set_user(ACTOR_USER)
     repository = projection_repository()
     initial = _structural_context(project_id)
     require(
@@ -1497,8 +1536,6 @@ def replay_projection_truth(
     tooling_set_id: str,
     model_reference: Mapping[str, object],
 ) -> dict[str, object]:
-    import frappe
-
     from npi_integration.projections.worker import refresh_project_projections
 
     _validate_fixture_context(
@@ -1508,7 +1545,6 @@ def replay_projection_truth(
         part_id=part_id,
         tooling_set_id=tooling_set_id,
     )
-    frappe.set_user(ACTOR_USER)
     before = _structural_context(project_id)
     targets = projection_targets(
         project_id=project_id,

@@ -6469,3 +6469,43 @@ repeat or rewrite it merely to restore context. See
   rejected. Product/app diff remains zero.
 - Controller marker:
   `P8-06 checkpoint 4 final 1/1 frozen; P8-01 projection-fresh predecessor diagnostic 0/1 active`.
+
+## 2026-08-27 P8-01 retained projection service actor repair
+
+- Exact predecessor diagnostic SHA
+  `4c6a1f59c0377e97dea8519c60fff20efdc76d09` passes ordinary CI
+  `33015924661`. Controlled run `33016828285` passes preflight
+  `98337100792`; runtime `98337177954` returns the sole safe tuple
+  `P801_PROJECTION_FRESH_SEED_STATUS / RuntimeError /
+  trace-b9b1e616cb455501b277f9205ef59f12`. Failed-child output, business
+  values, IDs, messages and stacks remain unread.
+- Static cross-proof is unique. The seed child selected `Administrator` for
+  both its Frappe session and repository principal. Projection support write
+  capability introduced at `88716e4` deliberately rejects Guest and
+  Administrator before the first observation insert. The first synthetic
+  `apply_observation` therefore rolls back and exits nonzero; parent argv,
+  exact retained Project/Master/Part/Set context and subprocess creation have
+  already passed, while seed persistence, commit and response are unreachable.
+  This is a P8-01 harness actor mismatch, not a projection permission defect.
+- The closed exact-five repair changes only the projection runtime verifier,
+  its focused test, this controller, `p8-06-plan.md` and the P8-06 checkpoint
+  evidence. Seed and replay reuse the retained deterministic P7 readiness
+  manager only after exact non-Guest/non-Administrator identity, enabled
+  System User, assigned and runtime `NPI API User` plus `System Manager`,
+  session and principal checks. Administrator remains bootstrap/HTTP only.
+  Missing, disabled, Website, wrong-role, Guest, Administrator and unbound
+  session cases fail before any projection write; rollback remains mandatory.
+- Product capability, repository, permission, transaction, schema, API, UI,
+  network and CURRENT_TASK are unchanged. The predecessor cycle is diagnostic
+  `1/1`, repair `1/1`, final `0/1`; P8-06 post-permission remains diagnostic
+  `0/1`, repair `0/1`, final `0/1`. Production fact/DoD governance remains
+  queued, and FR-CO-003/004 plus every B/C hold remain unchanged.
+- Level 1 passes focused projection runtime `20/20`, complete affected P8-01/
+  P8-06/P7 and Item/MBOM/Tool Asset `320/320`, full repository Python
+  `2540/2540` and current/reconciliation `36/36`. Current/reconciliation
+  scripts, generated-source check, compilation, shell syntax, actor/security
+  scans and diff hygiene pass. The exact-five task and 67-path post-commit
+  union manifests are accepted; an unauthorized sixth path is rejected.
+  Product/app diff remains zero.
+- Controller marker:
+  `P8-06 checkpoint 4 final 1/1 frozen; P8-01 projection-fresh predecessor diagnostic 1/1 repair 1/1 final 0/1; post-permission remains 0/1`.

@@ -398,3 +398,39 @@ Level 1 passes focused projection/current `23/23`, complete affected peers
 shell syntax, lexical uniqueness, strict-reader/no-leak checks and diff hygiene
 pass. The exact-eight union manifest is accepted and an unauthorized ninth
 path is rejected. Product/app diff remains zero.
+
+## P8-01 retained projection service actor repair checkpoint
+
+Exact diagnostic SHA `4c6a1f59c0377e97dea8519c60fff20efdc76d09`
+passes ordinary `33015924661`. Controlled run `33016828285` passes preflight
+`98337100792`; runtime `98337177954` yields the sole exact tuple
+`P801_PROJECTION_FRESH_SEED_STATUS / RuntimeError /
+trace-b9b1e616cb455501b277f9205ef59f12`. Failed-child output and all business
+values remain unread.
+
+The static source chain is unique: child bootstrap and retained-context
+validation precede seed; seed then selected `Administrator` as session and
+repository principal. The bounded support-write capability from `88716e4`
+rejects Administrator before the first observation insert, rolls back and
+returns nonzero. Commit and response are unreachable. The repair does not
+weaken that product security boundary. Seed and replay instead require the
+already-retained deterministic P7 readiness manager to be an exact non-Guest,
+non-Administrator enabled System User with assigned/runtime `NPI API User`
+and `System Manager`, then bind the same session and principal before any
+projection write.
+
+The exact-five verifier/evidence diff adds no product or CURRENT_TASK path.
+Focused tests cover exact retained identity, successful binding, missing,
+disabled, Website, wrong assigned/runtime roles, Guest, Administrator,
+unbound session, fail-before-write ordering and rollback. Existing 25
+observations, seven heads, 25 audits and same/cross-process replay assertions
+remain unchanged. The predecessor cycle is frozen at diagnostic `1/1`, repair
+`1/1`, final `0/1`; P8-06 post-permission remains `0/1`, `0/1`, `0/1`.
+Production fact/DoD governance remains queued and all B/C holds remain active.
+
+Level 1 passes focused projection runtime `20/20`, complete affected peers
+`320/320`, full repository Python `2540/2540` and current/reconciliation
+`36/36`. Current/reconciliation scripts, generated-source check, compilation,
+shell syntax, actor/security scans and diff hygiene pass. The exact-five task
+and 67-path post-commit union manifests are accepted and an unauthorized sixth
+path is rejected. Product/app diff remains zero.

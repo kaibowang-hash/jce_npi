@@ -956,3 +956,42 @@ generated-source check, compile, shell syntax, exact lexical stages, strict
 reader/no-leak checks and diff hygiene pass. The exact-eight post-commit union
 manifest is accepted and an unauthorized ninth path is rejected; product/app
 diff is zero.
+
+## 28. P8-01 retained projection service actor repair
+
+Diagnostic SHA `4c6a1f59c0377e97dea8519c60fff20efdc76d09` passes
+ordinary `33015924661`. Controlled run `33016828285` passes preflight
+`98337100792`; runtime `98337177954` exposes exactly
+`P801_PROJECTION_FRESH_SEED_STATUS / RuntimeError /
+trace-b9b1e616cb455501b277f9205ef59f12`. No failed-child output or business
+payload is read. The exact seed argv, environment, working directory and
+retained Project/Master/Part/Set context have passed, while the child has not
+reached commit or response.
+
+The unique static first source is the harness actor. Seed and replay selected
+`Administrator`; the exact projection support capability added at `88716e4`
+rejects Administrator before the first synthetic observation write. The
+capability remains unchanged. The verifier-only repair instead reuses the
+retained deterministic P7 readiness manager as the service actor. Before any
+write it pins the exact actor formula, rejects Guest/Administrator, validates
+the retained enabled System User and assigned/runtime `NPI API User` plus
+`System Manager` roles, binds the exact Frappe session and constructs a
+matching principal. Missing, disabled, Website, role-tampered and unbound
+session cases fail closed; child failure still rolls back.
+
+The exact-five paths are `scripts/verify_projection_runtime.py`,
+`tests/test_phase8_projection_runtime_verifier.py`, this plan,
+`implementation/AUTOPILOT_CONTROLLER.md` and
+`p8-06-domain-metadata-checkpoint.md`. CURRENT_TASK already permits all five;
+there is no product, shell, API, repository, permission, schema, migration,
+UI or network change. Existing 25-observation, seven-head, 25-audit,
+same-process and cross-process replay contracts remain exact. The predecessor
+cycle is diagnostic `1/1`, repair `1/1`, final `0/1`; post-permission remains
+`0/1`, `0/1`, `0/1`. Production fact/DoD governance remains queued.
+
+Level 1 passes focused projection runtime `20/20`, complete affected peers
+`320/320`, full repository Python `2540/2540` and current/reconciliation
+`36/36`. Current and reconciliation scripts, generated-source check,
+compilation, shell syntax, actor/security scans and diff hygiene pass. The
+exact-five task and 67-path union manifests are accepted and an unauthorized
+sixth path is rejected. Product/app diff remains zero.
