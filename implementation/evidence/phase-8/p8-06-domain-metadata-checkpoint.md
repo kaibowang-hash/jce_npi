@@ -71,6 +71,20 @@ passes ordinary CI `32957762888` and changes no checkpoint-1 product fact.
 Checkpoint-2 product work remains closed until its governance-only restoration
 passes exact-SHA ordinary CI; the external-portal decision remains durable.
 
+Checkpoint 2 subsequently passes exact accepted tip `9983a8d` and ordinary CI
+`32964612981` across frontend `98164272727`, repository `98164272787`, visual
+`98164272829` and secret `98164272855`. Product commit `2e4ace3` remains the
+exact-fourteen implementation. The final exact-two test change only prevents
+the direct-SQL scanner from matching its own negative-test literal; the same
+runtime forbidden-symbol contract remains, so product root count is zero.
+
+The separate checkpoint-3 controller transition authorizes no product until
+its own exact-SHA ordinary CI. Its future exact-nine boundary is read-only
+current/drift/unavailable reconciliation on the existing list/detail response.
+It adds no route, write, P7 policy effect, Outbox, worker, adapter, network,
+runtime, UI or raw-code pass interpretation. All existing Class-B/Class-C and
+FR-CO-003/004 holds remain unchanged.
+
 ## Rollback
 
 Before any future link row exists, revert this pure module, components,

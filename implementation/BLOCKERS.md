@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-26T23:55:00Z`
+Updated: `2026-08-26T12:00:00Z`
 
 ## Active hard blockers
 
@@ -14,17 +14,20 @@ recorded in `implementation/evidence/phase-8/p8-05-validation.md`; all
 diagnostics are false, zero production traffic and cleanup pass. The P8-06
 checkpoint-2 authorization transition SHA `bc6095c` passes ordinary CI
 `32955709358`, and the external-portal scope decision SHA `51c552a` passes
-ordinary CI `32957762888`. Only its separate product-authorization restoration
-is active and requires no external login or production action.
+ordinary CI `32957762888`. The restoration and P8-06 checkpoint-2 exact tip
+`9983a8d` / ordinary CI `32964612981` pass. Only the checkpoint-3 read-only
+reconciliation authorization transition is active and requires no external
+login or production action.
 
 ## Active recovery
 
 None. P8-05 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 historical diagnostic evidence and final exact-SHA run `32938622250` is
 authoritative. The P8-06 plan freezes an NPI-only exact-observation link, keeps
-all target methods and status/Gate policy held. Checkpoint 2 may authorize
-only an NPI-owned Project-first exact-observation link after its transition CI;
-it authorizes no ERP target write, worker, adapter, UI or target contact. Production adapters,
+all target methods and status/Gate policy held. Checkpoint 2 now proves only an
+NPI-owned Project-first exact-observation link; checkpoint 3 may add only
+read-only linked/current/drift facts after its transition CI. Neither
+authorizes an ERP target write, worker, adapter, UI or target contact. Production adapters,
 formal Item/BOM/Asset/
 quality mapping from Mock or Synthetic proof, production writes, P8-08/P8-09
 and the P8-07 operations/replay/reconciliation surface remain inactive.
@@ -51,7 +54,7 @@ source and history remain; internal supplier/customer evidence and all
 Project/Gate/Trial/Readiness, permission/audit, notification-foundation and ERP
 read-only projection obligations remain V1.2.
 
-## Current authoritative blocker state — 2026-08-26T23:55:00Z
+## Current authoritative blocker state — 2026-08-26T12:00:00Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-05 exact final SHA `f9c3580` passes ordinary `32937395289` and final
@@ -64,18 +67,21 @@ read-only projection obligations remain V1.2.
   Quality Inspection/NCR/CAPA DocType mappings, fields, lifecycle, raw-code
   interpretation, approval, Gate/readiness policy and Sandbox operation are
   scoped Class-B holds. Checkpoint 1 passes at exact SHA `64b59f2` and ordinary
-  CI `32953275865`. Product code is bounded only to checkpoint-2 Project-first
-  list/detail/exact-observation link after this controller transition passes
-  exact-SHA ordinary CI; unproved source capabilities, target traffic, P8-07
+  CI `32953275865`. Checkpoint 2 passes at exact tip `9983a8d` and ordinary CI
+  `32964612981`; its tests-only scanner remediation changes no product or
+  scanner rule. Checkpoint 3 is bounded to exact read-only link/current/drift
+  facts after this controller transition passes exact-SHA ordinary CI;
+  unproved source capabilities, P7 policy effects, target traffic, P8-07
   generic operations and P8-08/P8-09 remain inactive.
 - `USER_APPROVED_POST_V1_2_DEFERRED` applies only to FR-CO-003/004 external
   portal surfaces. Restoration requires a separate future-release controller
   entry with approved external identity/authorization, evidence/approval,
   privacy/security, rollback and release-gate facts; it is not a global
   blocker and does not defer internal collaboration truth.
-- P8-06 checkpoint-2 product authorization remains closed until the current
-  governance-only restoration passes exact-SHA ordinary CI. Its future exact14
-  boundary and all quality ownership/production holds remain unchanged.
+- P8-06 checkpoint-3 product authorization remains closed until the current
+  governance-only transition passes exact-SHA ordinary CI. Its future exact9
+  read-only boundary and all quality ownership/production holds remain
+  unchanged.
 
 ## Historical recovery
 

@@ -1,20 +1,22 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION — P8-06`
+`IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION — P8-06`
 
-Recovery time: `2026-08-26T23:55:00Z`
+Recovery time: `2026-08-26T12:00:00Z`
 
-Current atomic action: complete the separate P8-06 checkpoint-2 product
-authorization restoration. The frozen exact-fourteen boundary at `bc6095c`
-passed ordinary CI `32955709358`; the intervening FR-CO-003/004 scope decision
-passes exact SHA `51c552a0863d7c2cdb818585aa7017e5996501b3` and ordinary CI
-`32957762888`. This transition changes governance only. After its own exact-SHA
-ordinary CI, checkpoint 2 may implement only Project-first list/detail and the
-NPI-owned exact-observation link within those fourteen paths. External portals
-remain `USER_APPROVED_POST_V1_2_DEFERRED`; retained internal collaboration and
-Phase-9/final-gate rules remain unchanged. No product work begins before this
-restoration CI.
+Current atomic action: complete the separate P8-06 checkpoint-3 product
+authorization transition. Checkpoint 2 passes exact accepted tip
+`9983a8d0b6ff87d6bc8a9891c428f1790b83d91f` and ordinary CI `32964612981`;
+product commit `2e4ace3` remains exact fourteen paths and the final exact-two
+test remediation changes no product or scanner rule. This transition changes
+governance only. After its own exact-SHA ordinary CI, checkpoint 3 may extend
+only the existing Project-first quality-link list/detail response with exact
+read-only `current`, `drifted` or `unavailable` facts over the immutable linked
+source and current P8-01 head. No new route, write, P7 policy effect, UI,
+runtime, target operation or network is authorized. External portals remain
+`USER_APPROVED_POST_V1_2_DEFERRED` and no product work begins before the
+transition CI.
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -271,17 +273,17 @@ P8-05 is complete at exact SHA
 and Level 3 `32938622250`. Complete evidence is
 `implementation/evidence/phase-8/p8-05-validation.md`.
 
-P8-06 checkpoint 1 passes at exact SHA `64b59f2` and ordinary CI
-`32953275865`. It retains only behavior-free quality-link domain/config/
-validation, guarded zero-row metadata, ownership/OpenAPI components and direct
-i18n. The sole next atomic action is this separate checkpoint-2 authorization
-transition. After its exact-SHA ordinary CI passes, implement only the exact
-fourteen product paths in `CURRENT_TASK.json`: Project-first list/detail and
-the fixed NPI-only link command, proved source capability, exact source/head
-locks and one atomic revision/head/receipt/audit transaction with replay and
-conflict truth. Preserve formal Quality Inspection, NCR and CAPA as ERPNext-
-owned read-only truth. ERP Outbox, target operation, worker, adapter, network,
-runtime, UI, source-role invention and formal pass mapping remain closed.
+P8-06 checkpoint 2 passes exact accepted tip `9983a8d` and ordinary CI
+`32964612981`. Its fixed Project-first list/detail and exact NPI-only link
+command preserve ERP ownership, raw-code non-interpretation, source/head locks,
+atomic revision/head/receipt/audit and replay/conflict truth. The sole next
+atomic action is this separate checkpoint-3 authorization transition. After
+its exact-SHA ordinary CI, implement only the exact nine product paths in
+`CURRENT_TASK.json`: closed read-only link reconciliation domain and existing
+list/detail response facts. Preserve formal Quality Inspection, NCR and CAPA
+as ERPNext-owned read-only truth. P7 state/policy, ERP Outbox, target operation,
+worker, adapter, network, runtime, UI, source-role invention and formal pass
+mapping remain closed.
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
 `31898840279` passes repository `95046204818` (`1,921` tracked Python),

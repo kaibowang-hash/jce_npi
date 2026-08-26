@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-06 CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZATION RESTORATION**
+Status: **IN PROGRESS — P8-06 CHECKPOINT 2 PASS; CHECKPOINT 3 AUTHORIZATION TRANSITION**
 
 Anchor date: 2026-08-16
 
@@ -506,3 +506,13 @@ quality-link boundary. A separate governance-only restoration must pass its
 own exact-SHA ordinary CI before the unchanged exact14 product paths resume;
 the portal deferral and retained internal V1.2/Phase-9/final-gate rules remain
 in force.
+
+Checkpoint 2 passes exact accepted tip `9983a8d` and ordinary CI
+`32964612981`. Product commit `2e4ace3` provides only fixed Project-first
+list/detail and the NPI-owned exact-observation link; a tests-only exact-two
+scanner remediation changes no product or scanner rule. The separate
+checkpoint-3 transition freezes only read-only `current`, `drifted` or
+`unavailable` link reconciliation over the exact current source and P8-01
+head. It adds no route or write and does not change P7 source state, policy,
+readiness, Gate or raw-code interpretation. Product work waits for the
+transition's exact-SHA ordinary PASS.

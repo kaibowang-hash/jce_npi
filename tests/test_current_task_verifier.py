@@ -39,15 +39,15 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-07")
         self.assertIn(
-            "P8_06_CHECKPOINT_2_PRODUCT_AUTHORIZED_ONLY_AFTER_THIS_RESTORATION_PASSES_EXACT_SHA_ORDINARY_CI",
+            "P8_06_CHECKPOINT_3_PRODUCT_AUTHORIZED_ONLY_AFTER_THIS_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
             value["frozen_invariants"],
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION",
+            "IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION",
         )
         self.assertIn(
-            "P8_06_CHECKPOINT_1_EXACT_SHA_64B59F219F4A5687865E6B27670E3BD11D186B88_ORDINARY_32953275865_PASSED",
+            "P8_06_CHECKPOINT_2_EXACT_SHA_9983A8D0B6FF87D6BC8A9891C428F1790B83D91F_ORDINARY_32964612981_PASSED",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -60,11 +60,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["allowed_paths"],
         )
         self.assertIn(
-            "LINK_OBSERVED_FORMAL_QUALITY_REFERENCE_IS_NPI_ONLY_AND_NEVER_CREATES_SUBMITS_UPDATES_FAILS_CLOSES_OR_APPROVES_ERP_QUALITY_TRUTH",
+            "P8_06_CHECKPOINT_3_IS_READ_ONLY_LINK_CURRENTNESS_AND_DRIFT_WITHOUT_A_NEW_ROUTE_OR_WRITE",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 25)
-        self.assertIn("apps/npi_core/npi_core/bff.py", value["allowed_paths"])
+        self.assertEqual(len(value["allowed_paths"]), 20)
+        self.assertIn(
+            "apps/npi_integration/npi_integration/quality_link/domain.py",
+            value["allowed_paths"],
+        )
         self.assertIn(
             "apps/npi_integration/npi_integration/quality_link/frappe_repository.py",
             value["allowed_paths"],
@@ -74,6 +77,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["allowed_paths"],
         )
         self.assertIn("contracts/npi-api.openapi.yaml", value["allowed_paths"])
+        self.assertNotIn("apps/npi_core/npi_core/bff.py", value["allowed_paths"])
+        self.assertNotIn(
+            "apps/npi_core/npi_core/readiness/frappe_repository.py",
+            value["allowed_paths"],
+        )
         self.assertNotIn("implementation/backlog.yaml", value["allowed_paths"])
         self.assertNotIn("contracts/integration-event.schema.json", value["allowed_paths"])
         self.assertFalse(

@@ -6094,3 +6094,39 @@ repeat or rewrite it merely to restore context. See
   UI, production and Sandbox holds remain unchanged.
 - Controller marker:
   `P8-06 checkpoint 2 product authorization restoration active; FR-CO-003/004 decision retained`.
+
+## 2026-08-26 P8-06 checkpoint 2 PASS; checkpoint 3 authorization
+
+- Exact checkpoint-2 accepted tip
+  `9983a8d0b6ff87d6bc8a9891c428f1790b83d91f` passes ordinary CI
+  `32964612981`: frontend `98164272727`, repository `98164272787`, governed
+  visual `98164272829` and secret scan `98164272855` pass; controlled lanes
+  correctly skip because checkpoint 2 installs no worker or runtime fixture.
+- Product commit `2e4ace358c734b36eb72203108cadc8db425f503`
+  remains the exact fourteen-path Project-first list/detail and NPI-only link
+  implementation. Initial ordinary run `32962969595` passed every product
+  test plus frontend, visual and secret lanes; repository then failed only
+  because the zero-direct-SQL scanner matched two negative-test literals.
+  Exact tests-only remediation `9983a8d` preserves the same runtime forbidden-
+  symbol assertions without changing product, scanner or allowlist; product
+  root count is zero.
+- This separate governance-only transition freezes checkpoint 3 to exact
+  read-only reconciliation facts on the existing Project-first quality-link
+  list/detail responses. One item may be `current` only when its immutable
+  linked source revision/hash and linked observation match the exact current
+  source plus P8-01 head identity/version/hash; valid advancement is
+  `drifted`; missing, ambiguous, foreign or corrupt truth is `unavailable`.
+  There is no tenant-wide latest substitution.
+- The exact checkpoint-3 product manifest is nine paths: quality-link domain,
+  repository, existing API, OpenAPI and five focused tests. It adds no route,
+  command, write, Outbox, worker, adapter, network, runtime, UI or migration.
+  P7 Trial quality/review/readiness repositories are regression consumers only
+  and their source state, policy, score and Gate behavior remain unchanged.
+- Raw ERP status/result, link currentness and drift have no installed formal
+  pass/fail, approval, readiness or Gate meaning. Existing Class-B mapping,
+  lifecycle, approval, capability and freshness-policy holds, all Class-C
+  production boundaries, generic P8-07 operations and the FR-CO-003/004
+  external-portal deferral remain unchanged.
+- Checkpoint-3 product authorization becomes effective only after this
+  transition's own exact-SHA ordinary CI passes. Controller marker:
+  `P8-06 checkpoint 2 exact-SHA ordinary PASS; checkpoint 3 authorization transition active`.

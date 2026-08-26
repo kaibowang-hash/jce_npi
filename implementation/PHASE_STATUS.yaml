@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-26T23:55:00Z'
+updated_at: '2026-08-26T12:00:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-06
-current_task_status: IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION
-current_task_completed_stage: FR_CO_003_004_SCOPE_DECISION_EXACT_SHA_ORDINARY_CI_PASS
-current_task_next_stage: P8_06_CHECKPOINT_2_RESTORATION_EXACT_SHA_ORDINARY_CI
+current_task_status: IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION
+current_task_completed_stage: P8_06_CHECKPOINT_2_EXACT_SHA_ORDINARY_CI_PASS
+current_task_next_stage: P8_06_CHECKPOINT_3_AUTHORIZATION_TRANSITION_EXACT_SHA_ORDINARY_CI
 current_task_next_stage_status: GOVERNANCE_LEVEL_1_ACTIVE
 resumed_product_task: P8-06
-resumed_product_task_status: AWAITS_RESTORATION_EXACT_SHA_ORDINARY_CI
+resumed_product_task_status: AWAITS_CHECKPOINT_3_TRANSITION_EXACT_SHA_ORDINARY_CI
 scope_decisions:
   fr_co_003_004_external_portals:
     decision_marker: USER_APPROVED_POST_V1_2_DEFERRED
@@ -2466,14 +2466,14 @@ p8_05:
 p8_06:
   task: P8-06
   controller_task: P8-06_QUALITY_LINKAGE
-  status: IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION
+  status: IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION
   phase: 8
   milestone: M7-06
   requirements:
     - INT-007
     - FR-TR-006
     - FR-NP-006
-  predecessor_product_checkpoint: 64b59f219f4a5687865e6b27670e3bd11d186b88
+  predecessor_product_checkpoint: 2e4ace358c734b36eb72203108cadc8db425f503
   audit_base_checkpoint: f9c358018823f3af20aca38efb53f8fcbd13d406
   audit: PASS_FROZEN
   audit_plan_checkpoint: b3cf6ac722c71c4bdd95cddc16aed4e2544bb037
@@ -2484,15 +2484,26 @@ p8_06:
   checkpoint_1_product_ordinary_ci: 32953275865
   checkpoint_2_authorization_checkpoint: bc6095c1ba23580dc3eec3ace4fe9798fc3c160c
   checkpoint_2_authorization_ordinary_ci: 32955709358
+  checkpoint_2_product_checkpoint: 2e4ace358c734b36eb72203108cadc8db425f503
+  checkpoint_2_product_initial_ordinary_ci: 32962969595
+  checkpoint_2_product_initial_ordinary_result: HARNESS_ONLY_DIRECT_SQL_LITERAL_SCANNER_FAILURE_PRODUCT_ROOT_ZERO
+  checkpoint_2_accepted_checkpoint: 9983a8d0b6ff87d6bc8a9891c428f1790b83d91f
+  checkpoint_2_accepted_ordinary_ci: 32964612981
+  checkpoint_2_accepted_ordinary_jobs:
+    frontend: 98164272727
+    repository: 98164272787
+    visual_regression: 98164272829
+    secret_scan: 98164272855
   portal_scope_decision_checkpoint: 51c552a0863d7c2cdb818585aa7017e5996501b3
   portal_scope_decision_ordinary_ci: 32957762888
-  product_code_authorized: CHECKPOINT_2_BOUNDED_AFTER_RESTORATION_EXACT_SHA_ORDINARY_PASS
-  product_code_authorization_reason: EXACT14_RESTORATION_TRANSITION_ACTIVE
-  product_code_changed: true
-  current_stage: CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION
-  next_stage_after_pass: CHECKPOINT_2_PROJECT_FIRST_LINK_REPOSITORY_AND_BFF
+  product_code_authorized: CHECKPOINT_3_BOUNDED_AFTER_TRANSITION_EXACT_SHA_ORDINARY_PASS
+  product_code_authorization_reason: EXACT9_READ_ONLY_RECONCILIATION_TRANSITION_ACTIVE
+  product_code_changed: false
+  current_stage: CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION
+  next_stage_after_pass: CHECKPOINT_3_READ_ONLY_LINK_RECONCILIATION
   checkpoint_1_boundary: BEHAVIOR_FREE_DOMAIN_CONFIG_VALIDATION_ZERO_ROW_METADATA_OWNERSHIP_OPENAPI_I18N_TESTS
   checkpoint_2_boundary: PROJECT_FIRST_LIST_DETAIL_EXACT_OBSERVATION_LINK_ATOMIC_REVISION_HEAD_RECEIPT_AUDIT_REPLAY_CONFLICT
+  checkpoint_3_boundary: PROJECT_FIRST_READ_ONLY_LINK_RECONCILIATION_CURRENT_DRIFTED_UNAVAILABLE
   ownership_rule: ERP_OWNS_FORMAL_QUALITY_INSPECTION_NCR_CAPA_APPROVAL_AND_RESULT
   evidence_rule: NPI_TRIAL_ISSUE_REVIEW_READINESS_AND_REPORT_EVIDENCE_IS_NOT_ERP_APPROVAL_OR_PASS
   observed_truth_rule: FORMAL_QUALITY_REFERENCES_ARE_READ_ONLY_PROJECT_BOUND_CURRENT_OBSERVATIONS

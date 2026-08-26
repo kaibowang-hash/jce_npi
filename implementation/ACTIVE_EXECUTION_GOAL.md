@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-26T23:55:00Z`
+Updated: `2026-08-26T12:00:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION — P8-06`
+- Mode: `IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION — P8-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -19,9 +19,9 @@ Updated: `2026-08-26T23:55:00Z`
   `f9c358018823f3af20aca38efb53f8fcbd13d406`; repository, frontend,
   secret, `129/129` visual, controlled preflight and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32957762888` (`PASS` at
-  `51c552a0863d7c2cdb818585aa7017e5996501b3`; FR-CO-003/004
-  external-portal scope decision)
+  `32964612981` (`PASS` at
+  `9983a8d0b6ff87d6bc8a9891c428f1790b83d91f`; P8-06 checkpoint 2
+  plus tests-only direct-SQL scanner harness remediation)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -122,14 +122,14 @@ Updated: `2026-08-26T23:55:00Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-06 — quality linkage`
-  (`IN_PROGRESS_CHECKPOINT_2_PRODUCT_AUTHORIZATION_RESTORATION`)
+  (`IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION`)
 - Resumed product task: `P8-06`
-  (`AWAITING_RESTORATION_EXACT_SHA_ORDINARY_CI`)
+  (`AWAITING_CHECKPOINT_3_TRANSITION_EXACT_SHA_ORDINARY_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-06 CHECKPOINT 2 AUTHORIZATION RESTORATION`)
+  (`IN_PROGRESS — P8-06 CHECKPOINT 3 AUTHORIZATION TRANSITION`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -181,6 +181,26 @@ frozen P8-06 checkpoint-2 exact fourteen product paths only after its own
 exact-SHA ordinary CI. The accepted FR-CO-003/004 marker, trace status,
 retained V1.2 internal scope and Phase-9/final-gate rules remain unchanged.
 No product file changes in this restoration.
+
+P8-06 checkpoint 2 is accepted at exact tip
+`9983a8d0b6ff87d6bc8a9891c428f1790b83d91f` and ordinary CI
+`32964612981`: frontend `98164272727`, repository `98164272787`, governed
+visual `98164272829` and secret scan `98164272855` pass. Product commit
+`2e4ace358c734b36eb72203108cadc8db425f503` remains the frozen exact-fourteen
+implementation. The first ordinary run `32962969595` passed every product
+test and all other lanes but its zero-direct-SQL scanner matched only two
+negative-test literals; exact tests-only remediation `9983a8d` retained the
+same runtime assertion without changing product or scanner, so the product
+root count is zero.
+
+The only active atomic scope is now a governance-only checkpoint-3
+authorization transition. After its own exact-SHA ordinary CI, checkpoint 3
+may extend only the existing Project-first quality-link list/detail responses
+with exact read-only `current`, `drifted` or `unavailable` reconciliation
+facts over the linked source and current P8-01 head. It adds no route or write,
+does not modify P7 Trial/review/readiness truth, and cannot interpret raw ERP
+codes as pass/fail, readiness or Gate truth. UI, runtime, ERP target effects,
+generic P8-07 operations and deferred external portal surfaces remain closed.
 
 P7-08 and Phase 7 are sealed at exact final product checkpoint `3111402`.
 Ordinary CI `31898840279` passes `1,921` tracked Python tests, `918/918`

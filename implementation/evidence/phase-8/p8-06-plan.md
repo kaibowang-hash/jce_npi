@@ -504,3 +504,66 @@ capabilities, one atomic revision/head/idempotency/audit transaction, replay,
 conflict, ownership, permission, rollback and all external holds remain
 bit-for-bit the same boundary. The portal decision is not reverted or included
 in P8-06 product scope.
+
+## 19. Checkpoint-2 acceptance and checkpoint-3 controller transition
+
+Checkpoint 2 passes exact accepted tip
+`9983a8d0b6ff87d6bc8a9891c428f1790b83d91f` and ordinary CI
+`32964612981`: frontend `98164272727`, repository `98164272787`, governed
+visual `98164272829` and secret scan `98164272855` pass. Product commit
+`2e4ace358c734b36eb72203108cadc8db425f503` is the unchanged exact-fourteen
+implementation. Initial ordinary `32962969595` passed all product tests and
+the other three lanes, then the direct-SQL zero-match scanner found only two
+negative-test literals. Exact tests-only remediation `9983a8d` retains the
+same product-symbol assertion without modifying product, scanner or allowlist;
+this is a harness root and product root count is zero.
+
+Checkpoint 3 is a read-only extension of the existing Project-first
+quality-link list/detail responses, not a new operation. For each immutable
+link it may expose one closed reconciliation fact:
+
+- `current` requires exact Project containment, exact current source identity,
+  version and snapshot hash, plus exact current P8-01 formal-quality head and
+  observation identity, version and hash;
+- `drifted` requires a valid contained source or P8-01 head advancement and
+  reports no substituted identity or interpreted result; and
+- `unavailable` covers missing, ambiguous, foreign, malformed or corrupt
+  source/head truth without disclosing a secondary identity.
+
+There is no tenant-wide latest lookup, caller-provided state, reconciliation
+write, link mutation or automatic successor. Raw ERP status/result remains
+uninterpreted. P7 Trial quality, Trial review and readiness repositories are
+regression consumers only: checkpoint 3 does not alter their source state,
+policy, score, blocker, Gate or mutation behavior. In particular, no existing
+approved policy maps formal raw quality codes, so link currentness cannot
+satisfy readiness or produce formal pass/fail.
+
+The frozen exact-nine product paths are:
+
+- `apps/npi_integration/npi_integration/quality_link/domain.py`;
+- `apps/npi_integration/npi_integration/quality_link/frappe_repository.py`;
+- `apps/npi_integration/npi_integration/quality_link_api.py`;
+- `contracts/npi-api.openapi.yaml`;
+- `tests/test_phase8_quality_link_api.py`;
+- `tests/test_phase8_quality_link_contract.py`;
+- `tests/test_phase8_quality_link_domain.py`;
+- `tests/test_phase8_quality_link_repository.py`; and
+- `tests/test_phase8_quality_link_security.py`.
+
+Changed-files-to-tests must prove the closed reconciliation enum/shape,
+exact current and one-sided source/head drift, missing/foreign/ambiguous/
+malformed fail-closed behavior, stable Project-first IDOR containment, no
+additional write or query authority, zero SQL/permission bypass/Outbox/
+enqueue/worker/adapter/network/runtime/UI, exact OpenAPI shape, and full P8-01
+projection plus P7 Trial quality/review/readiness regressions. Item, MBOM and
+Tool Asset security/contract peers, current/reconciliation governance and task
+manifest/diff checks remain required.
+
+Before checkpoint-3 response activation, rollback reverts only its exact-nine
+response/domain/contract/test changes. If a client has observed the read-only
+shape, disable that projection through a forward fix while retaining every
+immutable link revision, head, receipt, audit and P8-01 observation. No data
+migration or deletion is authorized. Checkpoint 4 UI, runtime, target effects,
+generic P8-07 operations, production/Sandbox contact and deferred external
+portal surfaces remain closed. Checkpoint 3 product work starts only after
+this governance transition passes exact-SHA ordinary CI.
