@@ -1,20 +1,22 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION — P8-06`
+`IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION — P8-06`
 
 Recovery time: `2026-08-26T12:00:00Z`
 
-Current atomic action: complete the separate P8-06 checkpoint-3 product
-authorization transition. Checkpoint 2 passes exact accepted tip
-`9983a8d0b6ff87d6bc8a9891c428f1790b83d91f` and ordinary CI `32964612981`;
-product commit `2e4ace3` remains exact fourteen paths and the final exact-two
-test remediation changes no product or scanner rule. This transition changes
-governance only. After its own exact-SHA ordinary CI, checkpoint 3 may extend
-only the existing Project-first quality-link list/detail response with exact
-read-only `current`, `drifted` or `unavailable` facts over the immutable linked
-source and current P8-01 head. No new route, write, P7 policy effect, UI,
-runtime, target operation or network is authorized. External portals remain
+Current atomic action: complete the separate P8-06 checkpoint-4 product
+authorization transition. Checkpoint 3 passes exact product SHA
+`f09f7baed565b232f37530ede3df0a13fb466a1e` and ordinary CI `32971175544`;
+frontend `98185026209`, repository `98185025979`, visual `98185026270` and
+secret `98185026147` pass. This transition changes governance only. After its
+own exact-SHA ordinary CI, checkpoint 4 may implement only the frozen exact44
+read-only inspector, direct trilingual/a11y/visual evidence and disposable
+network-free runtime proof. The sole visible action is the existing NPI-only
+exact-observation link command behind both query permission and the exact
+owning source workspace capability. No new route, ERP write, retry/reconcile/
+submit/approval control, worker, adapter, browser target network or pass/Gate
+interpretation is authorized. External portals remain
 `USER_APPROVED_POST_V1_2_DEFERRED` and no product work begins before the
 transition CI.
 

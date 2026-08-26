@@ -6137,3 +6137,35 @@ repeat or rewrite it merely to restore context. See
   existing full `tests.test_phase7_readiness_repository` suite remains. Both
   factual suites pass, and this governance-only repair changes no product,
   source-state, permission, route or checkpoint-3 acceptance boundary.
+
+## 2026-08-26 P8-06 checkpoint 3 PASS; checkpoint 4 authorization
+
+- Exact checkpoint-3 product SHA
+  `f09f7baed565b232f37530ede3df0a13fb466a1e` passes ordinary CI
+  `32971175544`: frontend `98185026209`, repository `98185025979`, governed
+  visual `98185026270` and secret scan `98185026147` pass. The exact-nine
+  change adds only closed `current`, `drifted` or `unavailable` reconciliation
+  facts and no route or write.
+- This separate governance-only transition freezes checkpoint 4 to exact
+  forty-four product paths. It reuses the existing Project-first projection,
+  quality-link query and link-command routes and may expose only the
+  authenticated P8-01 observation/head identity already required by the
+  immutable link command. P8-01 remains sole head/order/freshness owner.
+- The compact inspector appears only in existing Trial quality and Project
+  readiness workspaces. Its single link Impact Review requires both query
+  permission and the exact owning source capability (`manageDefects` or
+  `canRevise`); no client inference or generic authority is accepted.
+- Direct EN/zh/zh-TW loading, empty, no-permission, read-only, current,
+  drifted, unavailable, conflict and error states must pass keyboard, axe,
+  responsive, mixed-language and fixed-Linux governed visual evidence.
+  Existing P7-03/P7-05 canonical baselines plus three P8-06 baselines are the
+  only anticipated visual changes; Darwin and thresholds remain untouched.
+- A disposable cumulative runtime may prove exact link, actor-bound replay,
+  stale/conflict rejection, current/drift/unavailable, authorization, zero ERP
+  target traffic and cleanup. It adds no target profile, Outbox, worker,
+  adapter, scheduler, browser-to-ERP call or external network.
+- ERP approve/submit/retry/reconcile, raw-code pass/fail, readiness/Gate
+  mapping, all B/C holds, P8-07 operations and FR-CO-003/004 external portals
+  remain closed. Product authorization starts only after this transition's
+  exact-SHA ordinary CI. Controller marker:
+  `P8-06 checkpoint 3 exact-SHA ordinary PASS; checkpoint 4 authorization transition active`.

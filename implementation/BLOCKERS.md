@@ -15,19 +15,22 @@ diagnostics are false, zero production traffic and cleanup pass. The P8-06
 checkpoint-2 authorization transition SHA `bc6095c` passes ordinary CI
 `32955709358`, and the external-portal scope decision SHA `51c552a` passes
 ordinary CI `32957762888`. The restoration and P8-06 checkpoint-2 exact tip
-`9983a8d` / ordinary CI `32964612981` pass. Only the checkpoint-3 read-only
-reconciliation authorization transition is active and requires no external
-login or production action.
+`9983a8d` / ordinary CI `32964612981` pass. Checkpoint 3 then passes exact
+product SHA `f09f7ba` / ordinary CI `32971175544`. Only the checkpoint-4
+industrial inspector authorization transition is active and requires no
+external login or production action.
 
 ## Active recovery
 
 None. P8-05 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 historical diagnostic evidence and final exact-SHA run `32938622250` is
 authoritative. The P8-06 plan freezes an NPI-only exact-observation link, keeps
-all target methods and status/Gate policy held. Checkpoint 2 now proves only an
-NPI-owned Project-first exact-observation link; checkpoint 3 may add only
-read-only linked/current/drift facts after its transition CI. Neither
-authorizes an ERP target write, worker, adapter, UI or target contact. Production adapters,
+all target methods and status/Gate policy held. Checkpoint 2 proves only an
+NPI-owned Project-first exact-observation link and checkpoint 3 proves only
+read-only linked/current/drift facts. Checkpoint 4 may add only the frozen
+read-only inspector, one server-capability-gated NPI link action and disposable
+runtime after its transition CI. None authorizes an ERP target write, worker,
+adapter or target contact. Production adapters,
 formal Item/BOM/Asset/
 quality mapping from Mock or Synthetic proof, production writes, P8-08/P8-09
 and the P8-07 operations/replay/reconciliation surface remain inactive.
@@ -69,18 +72,21 @@ read-only projection obligations remain V1.2.
   scoped Class-B holds. Checkpoint 1 passes at exact SHA `64b59f2` and ordinary
   CI `32953275865`. Checkpoint 2 passes at exact tip `9983a8d` and ordinary CI
   `32964612981`; its tests-only scanner remediation changes no product or
-  scanner rule. Checkpoint 3 is bounded to exact read-only link/current/drift
-  facts after this controller transition passes exact-SHA ordinary CI;
-  unproved source capabilities, P7 policy effects, target traffic, P8-07
-  generic operations and P8-08/P8-09 remain inactive.
+  scanner rule. Checkpoint 3 passes at exact SHA `f09f7ba` and ordinary CI
+  `32971175544`. Checkpoint 4 is bounded to the exact read-only Trial/readiness
+  inspector, one doubly server-capability-gated NPI link action, trilingual
+  visual/a11y proof and network-free disposable runtime after this controller
+  transition passes exact-SHA ordinary CI; unproved source capabilities, P7
+  policy effects, target traffic, P8-07 generic operations and P8-08/P8-09
+  remain inactive.
 - `USER_APPROVED_POST_V1_2_DEFERRED` applies only to FR-CO-003/004 external
   portal surfaces. Restoration requires a separate future-release controller
   entry with approved external identity/authorization, evidence/approval,
   privacy/security, rollback and release-gate facts; it is not a global
   blocker and does not defer internal collaboration truth.
-- P8-06 checkpoint-3 product authorization remains closed until the current
-  governance-only transition passes exact-SHA ordinary CI. Its future exact9
-  read-only boundary and all quality ownership/production holds remain
+- P8-06 checkpoint-4 product authorization remains closed until the current
+  governance-only transition passes exact-SHA ordinary CI. Its future exact44
+  UI/runtime boundary and all quality ownership/production holds remain
   unchanged.
 
 ## Historical recovery

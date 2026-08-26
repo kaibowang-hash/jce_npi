@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-06 CHECKPOINT 2 PASS; CHECKPOINT 3 AUTHORIZATION TRANSITION**
+Status: **IN PROGRESS — P8-06 CHECKPOINT 3 PASS; CHECKPOINT 4 AUTHORIZATION TRANSITION**
 
 Anchor date: 2026-08-16
 
@@ -516,3 +516,14 @@ checkpoint-3 transition freezes only read-only `current`, `drifted` or
 head. It adds no route or write and does not change P7 source state, policy,
 readiness, Gate or raw-code interpretation. Product work waits for the
 transition's exact-SHA ordinary PASS.
+
+Checkpoint 3 passes exact product SHA `f09f7ba` and ordinary CI
+`32971175544`; frontend `98185026209`, repository `98185025979`, visual
+`98185026270` and secret `98185026147` pass. Its exact-nine change adds only
+read-only link reconciliation and no route or write. The separate checkpoint-4
+transition freezes an exact44 industrial UI/runtime boundary: one compact
+Trial-quality/readiness inspector, one existing NPI link action gated by both
+query permission and exact source capability, direct EN/zh/zh-TW/a11y/visual
+proof and disposable network-free runtime before Level 3. ERP approve/submit/
+retry/reconcile, target writes/network, worker/adapter/Outbox, raw-code pass/
+Gate mapping, P8-07 operations and FR-CO-003/004 portals remain closed.

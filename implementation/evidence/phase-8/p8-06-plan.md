@@ -567,3 +567,60 @@ migration or deletion is authorized. Checkpoint 4 UI, runtime, target effects,
 generic P8-07 operations, production/Sandbox contact and deferred external
 portal surfaces remain closed. Checkpoint 3 product work starts only after
 this governance transition passes exact-SHA ordinary CI.
+
+## 20. Checkpoint-3 acceptance and checkpoint-4 controller transition
+
+Checkpoint 3 passes exact product SHA
+`f09f7baed565b232f37530ede3df0a13fb466a1e` and ordinary CI
+`32971175544`: frontend `98185026209`, repository `98185025979`, governed
+visual `98185026270` and secret scan `98185026147` pass. The exact-nine
+product change adds only `current`, `drifted` and `unavailable` read facts to
+the existing list/detail response; it creates no route, write or migration.
+
+Checkpoint 4 remains one bounded UI/runtime slice:
+
+- a compact formal-quality inspector appears only in the existing Trial
+  quality and Project readiness workspaces;
+- it reuses the existing Project-first P8-01 projection, quality-link query
+  and `link_observed_formal_quality_reference` routes;
+- P8-01 may expose only authenticated exact observation/head identity,
+  version and hash already required by the link command; P8-01 remains the
+  only observation/head/order/freshness owner;
+- the only visible primary action is a link Impact Review and appears only
+  when both the quality-link query permission and exact source workspace
+  capability are true. Trial defect uses `manageDefects`; readiness assessment
+  uses `canRevise`; no generic or client-inferred authority is accepted;
+- direct EN/zh/zh-TW loading, empty, no-permission, read-only, current,
+  drifted, unavailable, conflict and error states must pass keyboard, axe,
+  responsive, mixed-language and fixed-Linux governed visual checks; and
+- a disposable network-free cumulative runtime proves link, actor-bound
+  replay, stale/conflict rejection, current/drift/unavailable, permission,
+  zero ERP target traffic and cleanup before the final Level 3 Gate.
+
+The exact checkpoint-4 product manifest is forty-four paths: the existing CI
+workflow; two translation CSVs; P8-01 projection repository/response;
+quality-link repository/API; OpenAPI; projection and formal-quality browser
+data sources; generated catalog; one inspector; existing Trial quality and
+readiness workspaces and style sheet; P7-03/P7-05 and P8-06 E2E plus their
+exact nine Linux baselines; two fixtures; five focused frontend unit tests;
+the runtime shell and verifier; and nine focused projection/quality-link
+backend/runtime tests. `implementation/CURRENT_TASK.json` enumerates every
+path without wildcard. No BFF route, integration event, metadata, migration,
+Outbox, worker, adapter, target client, Darwin baseline or threshold is in the
+manifest.
+
+Changed-files-to-tests must prove strict shapes, Project containment, query
+and source capability intersection, exact candidate/head binding, all named
+states, one Impact Review, replay, no-leak errors, no browser target network,
+three-language completeness, keyboard/axe/responsive behavior, affected nine
+Linux baselines, the complete governed visual matrix and disposable runtime
+through P8-06. Item, MBOM, Tool Asset, P8-01 and P7 regressions, security
+scans, current/reconciliation units and exact manifest/diff remain mandatory.
+
+Before UI exposure, rollback reverts the exact forty-four checkpoint-4 paths.
+After link history or client observation exists, disable the inspector/action
+through a reviewed forward fix while retaining every immutable link revision,
+head, receipt, audit and P8-01 observation. Never delete or retarget history,
+reinterpret raw codes, change P7 readiness/Gate truth or contact ERPNext.
+Product work starts only after this governance transition passes exact-SHA
+ordinary CI.

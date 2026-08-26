@@ -5,12 +5,12 @@ updated_at: '2026-08-26T12:00:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-06
-current_task_status: IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION
-current_task_completed_stage: P8_06_CHECKPOINT_2_EXACT_SHA_ORDINARY_CI_PASS
-current_task_next_stage: P8_06_CHECKPOINT_3_AUTHORIZATION_TRANSITION_EXACT_SHA_ORDINARY_CI
+current_task_status: IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION
+current_task_completed_stage: P8_06_CHECKPOINT_3_EXACT_SHA_ORDINARY_CI_PASS
+current_task_next_stage: P8_06_CHECKPOINT_4_AUTHORIZATION_TRANSITION_EXACT_SHA_ORDINARY_CI
 current_task_next_stage_status: GOVERNANCE_LEVEL_1_ACTIVE
 resumed_product_task: P8-06
-resumed_product_task_status: AWAITS_CHECKPOINT_3_TRANSITION_EXACT_SHA_ORDINARY_CI
+resumed_product_task_status: AWAITS_CHECKPOINT_4_TRANSITION_EXACT_SHA_ORDINARY_CI
 scope_decisions:
   fr_co_003_004_external_portals:
     decision_marker: USER_APPROVED_POST_V1_2_DEFERRED
@@ -2466,14 +2466,14 @@ p8_05:
 p8_06:
   task: P8-06
   controller_task: P8-06_QUALITY_LINKAGE
-  status: IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION
+  status: IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION
   phase: 8
   milestone: M7-06
   requirements:
     - INT-007
     - FR-TR-006
     - FR-NP-006
-  predecessor_product_checkpoint: 2e4ace358c734b36eb72203108cadc8db425f503
+  predecessor_product_checkpoint: f09f7baed565b232f37530ede3df0a13fb466a1e
   audit_base_checkpoint: f9c358018823f3af20aca38efb53f8fcbd13d406
   audit: PASS_FROZEN
   audit_plan_checkpoint: b3cf6ac722c71c4bdd95cddc16aed4e2544bb037
@@ -2494,16 +2494,24 @@ p8_06:
     repository: 98164272787
     visual_regression: 98164272829
     secret_scan: 98164272855
+  checkpoint_3_product_checkpoint: f09f7baed565b232f37530ede3df0a13fb466a1e
+  checkpoint_3_product_ordinary_ci: 32971175544
+  checkpoint_3_product_ordinary_jobs:
+    frontend: 98185026209
+    repository: 98185025979
+    visual_regression: 98185026270
+    secret_scan: 98185026147
   portal_scope_decision_checkpoint: 51c552a0863d7c2cdb818585aa7017e5996501b3
   portal_scope_decision_ordinary_ci: 32957762888
-  product_code_authorized: CHECKPOINT_3_BOUNDED_AFTER_TRANSITION_EXACT_SHA_ORDINARY_PASS
-  product_code_authorization_reason: EXACT9_READ_ONLY_RECONCILIATION_TRANSITION_ACTIVE
+  product_code_authorized: CHECKPOINT_4_BOUNDED_AFTER_TRANSITION_EXACT_SHA_ORDINARY_PASS
+  product_code_authorization_reason: EXACT44_READ_ONLY_INSPECTOR_RUNTIME_TRANSITION_ACTIVE
   product_code_changed: false
-  current_stage: CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION
-  next_stage_after_pass: CHECKPOINT_3_READ_ONLY_LINK_RECONCILIATION
+  current_stage: CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION
+  next_stage_after_pass: CHECKPOINT_4_INDUSTRIAL_INSPECTOR_AND_LEVEL_3
   checkpoint_1_boundary: BEHAVIOR_FREE_DOMAIN_CONFIG_VALIDATION_ZERO_ROW_METADATA_OWNERSHIP_OPENAPI_I18N_TESTS
   checkpoint_2_boundary: PROJECT_FIRST_LIST_DETAIL_EXACT_OBSERVATION_LINK_ATOMIC_REVISION_HEAD_RECEIPT_AUDIT_REPLAY_CONFLICT
   checkpoint_3_boundary: PROJECT_FIRST_READ_ONLY_LINK_RECONCILIATION_CURRENT_DRIFTED_UNAVAILABLE
+  checkpoint_4_boundary: TRIAL_READINESS_READ_ONLY_INSPECTOR_ONE_SERVER_GATED_LINK_ACTION_TRILINGUAL_VISUAL_RUNTIME_LEVEL_3
   ownership_rule: ERP_OWNS_FORMAL_QUALITY_INSPECTION_NCR_CAPA_APPROVAL_AND_RESULT
   evidence_rule: NPI_TRIAL_ISSUE_REVIEW_READINESS_AND_REPORT_EVIDENCE_IS_NOT_ERP_APPROVAL_OR_PASS
   observed_truth_rule: FORMAL_QUALITY_REFERENCES_ARE_READ_ONLY_PROJECT_BOUND_CURRENT_OBSERVATIONS

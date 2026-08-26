@@ -105,3 +105,19 @@ metadata only on a disposable Site after proving zero rows. Once later
 history exists, disable future routes/UI and retain immutable revisions,
 heads, receipts and audits for forward repair. Never rewrite ERP observation
 truth or convert unavailable/raw evidence into pass.
+
+## Checkpoint-3 acceptance and checkpoint-4 boundary
+
+Checkpoint 3 passes exact product SHA
+`f09f7baed565b232f37530ede3df0a13fb466a1e` and ordinary CI
+`32971175544`: frontend `98185026209`, repository `98185025979`, visual
+`98185026270` and secret `98185026147` pass. Its exact-nine boundary adds only
+read-only current/drifted/unavailable facts.
+
+The separate checkpoint-4 transition changes no product. Its future exact44
+boundary is one compact Trial-quality/readiness inspector, one existing NPI
+link Impact Review gated by both server query permission and exact source
+capability, direct EN/zh/zh-TW/a11y/visual evidence and one disposable
+network-free cumulative runtime. It reuses existing routes and adds no ERP
+write, Outbox, worker, adapter, browser target network or pass/Gate mapping.
+All Class-B/Class-C and FR-CO-003/004 holds remain unchanged.

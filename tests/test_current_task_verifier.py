@@ -39,15 +39,15 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-07")
         self.assertIn(
-            "P8_06_CHECKPOINT_3_PRODUCT_AUTHORIZED_ONLY_AFTER_THIS_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
+            "P8_06_CHECKPOINT_4_PRODUCT_AUTHORIZED_ONLY_AFTER_THIS_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
             value["frozen_invariants"],
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_3_PRODUCT_AUTHORIZATION_TRANSITION",
+            "IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION",
         )
         self.assertIn(
-            "P8_06_CHECKPOINT_2_EXACT_SHA_9983A8D0B6FF87D6BC8A9891C428F1790B83D91F_ORDINARY_32964612981_PASSED",
+            "P8_06_CHECKPOINT_3_EXACT_SHA_F09F7BAED565B232F37530EDE3DF0A13FB466A1E_ORDINARY_32971175544_PASSED",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -60,20 +60,20 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["allowed_paths"],
         )
         self.assertIn(
-            "P8_06_CHECKPOINT_3_IS_READ_ONLY_LINK_CURRENTNESS_AND_DRIFT_WITHOUT_A_NEW_ROUTE_OR_WRITE",
+            "P8_06_CHECKPOINT_4_ONE_LINK_ACTION_REQUIRES_SERVER_QUERY_PERMISSION_AND_EXACT_SOURCE_CAPABILITY",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 20)
+        self.assertEqual(len(value["allowed_paths"]), 55)
         self.assertIn(
-            "apps/npi_integration/npi_integration/quality_link/domain.py",
+            "frontend/src/pages/formal-quality-link-inspector.tsx",
             value["allowed_paths"],
         )
         self.assertIn(
-            "apps/npi_integration/npi_integration/quality_link/frappe_repository.py",
+            "frontend/src/api/formal-quality-link-data-source.ts",
             value["allowed_paths"],
         )
         self.assertIn(
-            "apps/npi_integration/npi_integration/quality_link_api.py",
+            "scripts/verify_quality_link_runtime.py",
             value["allowed_paths"],
         )
         self.assertIn("contracts/npi-api.openapi.yaml", value["allowed_paths"])
@@ -86,10 +86,15 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertNotIn("contracts/integration-event.schema.json", value["allowed_paths"])
         self.assertFalse(
             any(
-                any(token in path for token in ("outbox", "worker.py", "adapters.py", "runtime"))
+                any(token in path for token in ("outbox", "worker.py", "adapters.py"))
                 for path in value["allowed_paths"]
             )
         )
+        self.assertIn(
+            "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts-snapshots/p8-06-formal-quality-link-zh-TW-1920x1080-150-linux.png",
+            value["allowed_paths"],
+        )
+        self.assertFalse(any("darwin" in path.casefold() for path in value["allowed_paths"]))
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
         affected_modules = {
