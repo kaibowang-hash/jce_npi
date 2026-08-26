@@ -5672,3 +5672,38 @@ repeat or rewrite it merely to restore context. See
   flag. Product code remains unchanged.
 - Controller marker:
   `P8-05 final held; post-result-datetime process diagnostic 0/1 Level 1 PASS`.
+
+### Post-Result-datetime process repair
+
+- Diagnostic checkpoint SHA
+  `fdff0c0c9caf5cefe8ce3794e2ddf5cd7b504419` passes ordinary CI
+  `32917091959`. Its sole controlled diagnostic `32918081992`, runtime job
+  `98025953304`, returns the unique allowlisted tuple
+  `P805_TOOL_ASSET_PROCESS_SEAL_OUTBOX_SAVE / ValidationError /
+  trace-668631acc1b252ff98c23d16fe27082d`. Failed-child output and prohibited
+  response/business/message/stack content were not read.
+- The synthetic adapter, classifier, request and result contracts all require
+  the terminal state `synthetic_verified`; `_outbox_state()` preserves it.
+  The Outbox v3 controller and its Select metadata alone omitted that state.
+  The first save predicate was therefore the processing-to-synthetic one-way
+  transition, before the later state-shape predicate. Add only this exact
+  terminal transition and metadata option; all other transitions, claim
+  history, permission, transaction, immutable payload and mapping rules remain
+  unchanged.
+- Freeze this cycle at diagnostic `1/1`, product repair `1/1`, final `0/1`.
+  `POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=False`; all
+  Item/MBOM/Tool Asset diagnostic activations are dormant. Product repair uses
+  the shared additive Outbox controller and metadata plus a pinned real
+  lifecycle regression; no API, ownership, permission, transaction or worker
+  order changes.
+- Controller marker:
+  `P8-05 final held; post-result-datetime synthetic Outbox repair 1/1 active`.
+- Level 1 passes focused controller/runtime `47/47`, complete Tool Asset
+  `126/126`, P6 Tooling `355/355` plus request-domain `4/4`, Item `146/146`,
+  MBOM `126/126`, and current-task/reconciliation `33/33`. All twenty-nine
+  runtime diagnostic flags are false. JSON parse, exact controller lifecycle,
+  compile, shell syntax, direct-SQL/target-network/submit/TODO scans,
+  current/reconciliation scripts, exact-eight manifest with unauthorized ninth
+  rejection, and diff hygiene pass.
+- Controller marker:
+  `P8-05 final held; post-result-datetime synthetic Outbox repair 1/1 Level 1 PASS`.

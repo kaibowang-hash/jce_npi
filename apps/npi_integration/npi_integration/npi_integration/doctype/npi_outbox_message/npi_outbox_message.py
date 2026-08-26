@@ -101,7 +101,8 @@ _MBOM_TERMINAL_STATES = frozenset(
 )
 _TOOL_ASSET_STATES = {
     "pending": frozenset({"processing", "failed_final"}),
-    "processing": frozenset({"pending", "partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain", "mapping_conflict"}),
+    "processing": frozenset({"pending", "synthetic_verified", "partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain", "mapping_conflict"}),
+    "synthetic_verified": frozenset(),
     "partially_succeeded": frozenset(),
     "succeeded": frozenset(),
     "failed_retryable": frozenset(),
@@ -109,7 +110,7 @@ _TOOL_ASSET_STATES = {
     "uncertain": frozenset(),
     "mapping_conflict": frozenset(),
 }
-_TOOL_ASSET_TERMINAL_STATES = frozenset({"partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain", "mapping_conflict"})
+_TOOL_ASSET_TERMINAL_STATES = frozenset({"synthetic_verified", "partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain", "mapping_conflict"})
 _V1_FIELDS = (
     "schema_version",
     "operation",

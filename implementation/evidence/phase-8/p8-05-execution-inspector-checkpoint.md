@@ -980,3 +980,35 @@ Canonical Linux/amd64 SHA-256 evidence:
   sixth path is rejected; product code remains unchanged.
 - Controller marker:
   `P8-05 final held; post-result-datetime process diagnostic 0/1 Level 1 PASS`.
+
+### Post-Result-datetime process repair checkpoint
+
+- SHA `fdff0c0c9caf5cefe8ce3794e2ddf5cd7b504419` passes ordinary
+  `32917091959`. Controlled run `32918081992`, runtime job `98025953304`,
+  returns the sole allowlisted tuple
+  `P805_TOOL_ASSET_PROCESS_SEAL_OUTBOX_SAVE / ValidationError /
+  trace-668631acc1b252ff98c23d16fe27082d`; failed-child and prohibited content
+  remain unread.
+- The unique first source is the Outbox v3 processing transition: the frozen
+  synthetic classifier and `_outbox_state()` produce `synthetic_verified`, but
+  controller and Select metadata omitted that valid terminal state. Earlier
+  result, field, mapping, attempt and request contexts passed; the ordered
+  transition fails before the later state-shape check.
+- Add only the exact processing-to-synthetic terminal state in controller and
+  metadata. A pinned real lifecycle requires complete claim/result history and
+  keeps pending-to-synthetic, unrelated-state and missing-result paths closed.
+  Permission, transaction, immutable payload/hash, ownership, mapping, lease,
+  API and worker order are unchanged.
+- Cycle counters are diagnostic `1/1`, product repair `1/1`, final `0/1`.
+  `POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=False`; the
+  verified reader remains dormant and every runtime diagnostic flag is false.
+- Controller marker:
+  `P8-05 final held; post-result-datetime synthetic Outbox repair 1/1 active`.
+- Level 1 passes focused controller/runtime `47/47`, complete Tool Asset
+  `126/126`, P6 Tooling `355/355`, request-domain `4/4`, Item `146/146`, MBOM
+  `126/126`, and current-task/reconciliation `33/33`. All twenty-nine runtime
+  diagnostic flags are false. JSON/controller lifecycle, compile, shell,
+  security-negative, current/reconciliation, exact-eight manifest with
+  unauthorized ninth rejection, and diff checks pass.
+- Controller marker:
+  `P8-05 final held; post-result-datetime synthetic Outbox repair 1/1 Level 1 PASS`.

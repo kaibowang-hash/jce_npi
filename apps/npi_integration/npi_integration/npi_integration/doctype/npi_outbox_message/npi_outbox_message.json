@@ -16,7 +16,7 @@
     {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
     {"fieldname": "payload_hash", "fieldtype": "Data", "label": "Payload Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "payload", "fieldtype": "JSON", "label": "Payload", "reqd": 1, "read_only": 1},
-    {"fieldname": "state", "fieldtype": "Select", "label": "State", "options": "pending\nprocessing\npartially_succeeded\nsucceeded\nfailed_retryable\nfailed_final\nuncertain\nmapping_conflict", "reqd": 1, "read_only": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "State", "options": "pending\nprocessing\nsynthetic_verified\npartially_succeeded\nsucceeded\nfailed_retryable\nfailed_final\nuncertain\nmapping_conflict", "reqd": 1, "read_only": 1},
     {"fieldname": "attempt_count", "fieldtype": "Int", "label": "Attempt Count", "read_only": 1},
     {"fieldname": "last_error_code", "fieldtype": "Data", "label": "Last Error Code", "read_only": 1},
     {"fieldname": "schema_version", "fieldtype": "Int", "label": "Schema Version", "read_only": 1},

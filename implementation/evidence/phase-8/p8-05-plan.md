@@ -1778,3 +1778,41 @@ current/reconciliation scripts and diff hygiene pass. Runtime verifiers expose
 twenty-nine diagnostic flags: only the new post-Result-datetime flag is true.
 The post-commit manifest accepts exactly the five authorized paths and rejects
 an unauthorized sixth path. Product code remains unchanged.
+
+### Post-Result-datetime diagnostic result and repair 1/1
+
+Checkpoint SHA `fdff0c0c9caf5cefe8ce3794e2ddf5cd7b504419` passes exact
+ordinary CI `32917091959`. The single controlled diagnostic run `32918081992`,
+runtime job `98025953304`, yields only the strict tuple
+`P805_TOOL_ASSET_PROCESS_SEAL_OUTBOX_SAVE / ValidationError /
+trace-668631acc1b252ff98c23d16fe27082d`. Preflight, pinned Bench, disposable
+Site and cleanup pass. Failed-child output, response/business values,
+identifiers, counts, exception messages and stacks remain unread.
+
+The source is unique. Synthetic execution classifies every valid field as
+`synthetic_verified`, aggregates the request to the same state, and
+`_outbox_state()` preserves it. Result, Field, Mapping, Attempt and Request
+writes completed before the Outbox save. At that save the v3 controller's
+ordered first failing predicate is `processing -> synthetic_verified`, because
+both `_TOOL_ASSET_STATES` and the DocType Select metadata omitted this already
+contracted terminal state. The later terminal-state shape check would reject
+the same state independently. No other controller predicate can be the first
+source.
+
+Repair only the shared additive Outbox v3 state allowlist and Select option so
+`processing -> synthetic_verified` is terminal. Pinned controller lifecycle
+tests require complete claim history and a result reference, and continue to
+reject pending-to-synthetic, an unrelated state and a missing result. No
+payload/hash, permission, transaction, ownership, API, adapter, mapping, claim,
+lease, replay or write-order behavior changes. Freeze the independent cycle at
+diagnostic `1/1`, product repair `1/1`, final `0/1`; set
+`POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=False` and retain
+the diagnostic mechanism dormant.
+
+Level 1 passes focused controller/runtime `47/47`, complete Tool Asset
+`126/126`, P6 Tooling `355/355`, request-domain `4/4`, Item `146/146`, MBOM
+`126/126`, and current-task/reconciliation `33/33`. All twenty-nine runtime
+diagnostic flags are false. JSON metadata parse, exact real-controller
+lifecycle, Python compile, shell syntax, direct-SQL/target-network/submit/TODO
+scans, current/reconciliation scripts and diff hygiene pass. The exact-eight
+post-commit manifest passes and rejects an unauthorized ninth path.
