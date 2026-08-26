@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import re
+from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import Any, Protocol
+from typing import Iterator
 from uuid import UUID
 
 import frappe
@@ -52,6 +55,50 @@ _RECONCILIATION_REASONS = {
     },
     "unavailable": {"current_truth_unavailable"},
 }
+QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER = (
+    "X-NPI-P806-Quality-Create-Diagnostic"
+)
+QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
+    "p8-06-quality-link-create-response-v1"
+)
+_CREATE_RESPONSE_DIAGNOSTIC_ACTIVE: ContextVar[bool] = ContextVar(
+    "p806_quality_link_create_response_api_diagnostic",
+    default=False,
+)
+
+
+@contextmanager
+def quality_link_create_response_diagnostics(
+    trace_id: str | None,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    token = _CREATE_RESPONSE_DIAGNOSTIC_ACTIVE.set(active)
+    try:
+        if active:
+            from npi_integration.quality_link.frappe_repository import (
+                quality_link_create_response_diagnostics as server_scope,
+            )
+
+            with server_scope(trace_id, active=True):
+                yield
+        else:
+            yield
+    finally:
+        _CREATE_RESPONSE_DIAGNOSTIC_ACTIVE.reset(token)
+
+
+@contextmanager
+def quality_link_create_response_step(code: str) -> Iterator[None]:
+    if _CREATE_RESPONSE_DIAGNOSTIC_ACTIVE.get():
+        from npi_integration.quality_link.frappe_repository import (
+            quality_link_create_response_step as server_step,
+        )
+
+        with server_step(code):
+            yield
+        return
+    yield
 
 
 class _Outcome(Protocol):
@@ -170,98 +217,152 @@ def link_observed_formal_quality_reference(
 
     def handle() -> dict[str, Any]:
         nonlocal replayed
-        require_csrf_token()
-        request_id, repository, project_id, actor = _context(
-            request_fields,
-            allowed_fields=_LINK_FIELDS,
-        )
-        command_fields = {
-            **request_fields,
-            "sourceKind": sourceKind,
-            "sourceGlobalId": sourceGlobalId,
-            "expectedSourceVersion": expectedSourceVersion,
-            "expectedSourceSnapshotHash": expectedSourceSnapshotHash,
-            "formalObservationGlobalId": formalObservationGlobalId,
-            "expectedProjectionHeadGlobalId": expectedProjectionHeadGlobalId,
-            "expectedProjectionHeadVersion": expectedProjectionHeadVersion,
-            "expectedProjectionHeadHash": expectedProjectionHeadHash,
-            "expectedLinkHeadVersion": expectedLinkHeadVersion,
-            "acknowledgement": acknowledgement,
-        }
-        reject_unexpected_request_fields(_LINK_FIELDS, command_fields)
-        require_request_fields(_LINK_FIELDS, command_fields)
-        if acknowledgement != _ACKNOWLEDGEMENT:
-            raise _field(
-                "acknowledgement",
-                _("Confirm the exact observed quality-link boundary."),
+        with quality_link_create_response_step("P806_QUALITY_CREATE_API_CSRF"):
+            require_csrf_token()
+        with quality_link_create_response_step("P806_QUALITY_CREATE_API_CONTEXT"):
+            request_id, repository, project_id, actor = _context(
+                request_fields,
+                allowed_fields=_LINK_FIELDS,
             )
-        try:
-            source_kind = QualitySourceKind(str(sourceKind))
-        except (TypeError, ValueError) as error:
-            raise _field("sourceKind", _("Select a supported value.")) from error
-        outcome = repository.link_observed_formal_quality_reference(
-            project_id,
-            source_kind=source_kind,
-            source_global_id=_uuid(sourceGlobalId, "sourceGlobalId"),
-            expected_source_version=_positive(
-                expectedSourceVersion,
-                "expectedSourceVersion",
-            ),
-            expected_source_snapshot_hash=_sha256(
-                expectedSourceSnapshotHash,
-                "expectedSourceSnapshotHash",
-            ),
-            observation_global_id=_uuid(
-                formalObservationGlobalId,
-                "formalObservationGlobalId",
-            ),
-            expected_projection_head_global_id=_uuid(
-                expectedProjectionHeadGlobalId,
-                "expectedProjectionHeadGlobalId",
-            ),
-            expected_projection_head_version=_positive(
-                expectedProjectionHeadVersion,
-                "expectedProjectionHeadVersion",
-            ),
-            expected_projection_head_hash=_sha256(
-                expectedProjectionHeadHash,
-                "expectedProjectionHeadHash",
-            ),
-            expected_link_head_version=_nonnegative(
-                expectedLinkHeadVersion,
-                "expectedLinkHeadVersion",
-            ),
-            idempotency_key_hash=actor_idempotency_key_hash(
-                actor,
-                frappe.get_request_header("Idempotency-Key"),
-            ),
-        )
-        if outcome is None or type(outcome.replayed) is not bool:
-            raise FormalQualityLinkUnavailable()
-        if not isinstance(outcome.response, dict):
-            raise RuntimeError("The formal quality link command result is invalid.")
-        try:
-            frappe.db.commit()
-        except Exception:
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_API_REQUEST_FIELDS"
+        ):
+            command_fields = {
+                **request_fields,
+                "sourceKind": sourceKind,
+                "sourceGlobalId": sourceGlobalId,
+                "expectedSourceVersion": expectedSourceVersion,
+                "expectedSourceSnapshotHash": expectedSourceSnapshotHash,
+                "formalObservationGlobalId": formalObservationGlobalId,
+                "expectedProjectionHeadGlobalId": expectedProjectionHeadGlobalId,
+                "expectedProjectionHeadVersion": expectedProjectionHeadVersion,
+                "expectedProjectionHeadHash": expectedProjectionHeadHash,
+                "expectedLinkHeadVersion": expectedLinkHeadVersion,
+                "acknowledgement": acknowledgement,
+            }
+            reject_unexpected_request_fields(_LINK_FIELDS, command_fields)
+            require_request_fields(_LINK_FIELDS, command_fields)
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_API_ACKNOWLEDGEMENT"
+        ):
+            if acknowledgement != _ACKNOWLEDGEMENT:
+                raise _field(
+                    "acknowledgement",
+                    _("Confirm the exact observed quality-link boundary."),
+                )
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_API_SOURCE_KIND"
+        ):
             try:
-                frappe.db.rollback()
+                source_kind = QualitySourceKind(str(sourceKind))
+            except (TypeError, ValueError) as error:
+                raise _field("sourceKind", _("Select a supported value.")) from error
+        with quality_link_create_response_step("P806_QUALITY_CREATE_API_INPUT_PARSE"):
+            values = {
+                "source_kind": source_kind,
+                "source_global_id": _uuid(sourceGlobalId, "sourceGlobalId"),
+                "expected_source_version": _positive(
+                    expectedSourceVersion,
+                    "expectedSourceVersion",
+                ),
+                "expected_source_snapshot_hash": _sha256(
+                    expectedSourceSnapshotHash,
+                    "expectedSourceSnapshotHash",
+                ),
+                "observation_global_id": _uuid(
+                    formalObservationGlobalId,
+                    "formalObservationGlobalId",
+                ),
+                "expected_projection_head_global_id": _uuid(
+                    expectedProjectionHeadGlobalId,
+                    "expectedProjectionHeadGlobalId",
+                ),
+                "expected_projection_head_version": _positive(
+                    expectedProjectionHeadVersion,
+                    "expectedProjectionHeadVersion",
+                ),
+                "expected_projection_head_hash": _sha256(
+                    expectedProjectionHeadHash,
+                    "expectedProjectionHeadHash",
+                ),
+                "expected_link_head_version": _nonnegative(
+                    expectedLinkHeadVersion,
+                    "expectedLinkHeadVersion",
+                ),
+                "idempotency_key_hash": actor_idempotency_key_hash(
+                    actor,
+                    frappe.get_request_header("Idempotency-Key"),
+                ),
+            }
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_API_REPOSITORY_COMMAND"
+        ):
+            outcome = repository.link_observed_formal_quality_reference(
+                project_id,
+                **values,
+            )
+        with quality_link_create_response_step("P806_QUALITY_CREATE_API_OUTCOME"):
+            if outcome is None or type(outcome.replayed) is not bool:
+                raise FormalQualityLinkUnavailable()
+            if not isinstance(outcome.response, dict):
+                raise RuntimeError("The formal quality link command result is invalid.")
+        with quality_link_create_response_step("P806_QUALITY_CREATE_API_COMMIT"):
+            try:
+                frappe.db.commit()
             except Exception:
-                pass
-            raise
-        replayed = outcome.replayed
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(replayed).lower()
-        return _response(outcome.response)
+                try:
+                    frappe.db.rollback()
+                except Exception:
+                    pass
+                raise
+        with quality_link_create_response_step("P806_QUALITY_CREATE_API_RESPONSE"):
+            replayed = outcome.replayed
+            headers["X-Request-ID"] = request_id
+            headers["Idempotency-Replayed"] = str(replayed).lower()
+            return _response(outcome.response)
 
-    result = frappe_domain_call(
-        handle,
-        cache_control="private, no-store",
-        success_status=201,
-        response_headers=headers,
-    )
+    trace_id = frappe.get_request_header("X-Trace-ID")
+    with quality_link_create_response_diagnostics(
+        trace_id,
+        active=_quality_link_create_response_diagnostic_active(trace_id),
+    ):
+        result = frappe_domain_call(
+            handle,
+            cache_control="private, no-store",
+            success_status=201,
+            response_headers=headers,
+        )
     if replayed and frappe.local.response.http_status_code == 201:
         frappe.local.response.http_status_code = 200
     return result
+
+
+def _quality_link_create_response_diagnostic_active(trace_id: object) -> bool:
+    try:
+        request = getattr(getattr(frappe, "local", None), "request", None)
+        arguments = getattr(request, "args", None)
+        route = getattr(frappe.flags, "npi_route_params", None)
+        form = getattr(getattr(frappe, "local", None), "form_dict", None)
+        return (
+            frappe.get_request_header(
+                QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER
+            )
+            == QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+            and frappe.get_request_header("X-Trace-ID") == trace_id
+            and isinstance(trace_id, str)
+            and re.fullmatch(r"trace-[a-f0-9]{32}", trace_id) is not None
+            and getattr(request, "method", None) == "POST"
+            and arguments is not None
+            and list(arguments.keys()) == []
+            and isinstance(route, dict)
+            and set(route) == {"project_id"}
+            and isinstance(form, dict)
+            and set(form) == _LINK_FIELDS | {"cmd"}
+            and form.get("cmd")
+            == "npi_integration.quality_link_api.link_observed_formal_quality_reference"
+        )
+    except Exception:
+        return False
 
 
 def _query_context(

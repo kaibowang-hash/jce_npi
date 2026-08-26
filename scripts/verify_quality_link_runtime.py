@@ -34,7 +34,8 @@ _NAMESPACE = UUID("2f927cab-16a1-4ac9-a9da-39fc8800b806")
 QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED = False
-QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED = True
+QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED = False
+QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED = True
 QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES = (
     "P806_QUALITY_BOOTSTRAP_SECRET",
     "P806_QUALITY_ADMIN_LOGIN",
@@ -110,6 +111,52 @@ QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES = frozenset(
         "P806_QUALITY_PROJECTION_OUTCOME",
     }
 )
+QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES = (
+    "P806_QUALITY_CREATE_STATUS_INVALID",
+    "P806_QUALITY_CREATE_STATUS_INFORMATIONAL",
+    "P806_QUALITY_CREATE_STATUS_SUCCESS_NON_201",
+    "P806_QUALITY_CREATE_STATUS_REDIRECTION",
+    "P806_QUALITY_CREATE_STATUS_CLIENT_ERROR",
+    "P806_QUALITY_CREATE_STATUS_SERVER_ERROR",
+    "P806_QUALITY_CREATE_BODY_SHAPE",
+)
+QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES = frozenset(
+    {
+        "P806_QUALITY_CREATE_API_CSRF",
+        "P806_QUALITY_CREATE_API_CONTEXT",
+        "P806_QUALITY_CREATE_API_REQUEST_FIELDS",
+        "P806_QUALITY_CREATE_API_ACKNOWLEDGEMENT",
+        "P806_QUALITY_CREATE_API_SOURCE_KIND",
+        "P806_QUALITY_CREATE_API_INPUT_PARSE",
+        "P806_QUALITY_CREATE_API_REPOSITORY_COMMAND",
+        "P806_QUALITY_CREATE_API_OUTCOME",
+        "P806_QUALITY_CREATE_API_COMMIT",
+        "P806_QUALITY_CREATE_API_RESPONSE",
+        "P806_QUALITY_CREATE_REPOSITORY_PROJECT",
+        "P806_QUALITY_CREATE_REPOSITORY_COMMAND_IDENTITY",
+        "P806_QUALITY_CREATE_REPOSITORY_REPLAY",
+        "P806_QUALITY_CREATE_REPOSITORY_SOURCE",
+        "P806_QUALITY_CREATE_REPOSITORY_OBSERVATION",
+        "P806_QUALITY_CREATE_REPOSITORY_STREAM",
+        "P806_QUALITY_CREATE_REPOSITORY_HEAD",
+        "P806_QUALITY_CREATE_REPOSITORY_REVISION",
+        "P806_QUALITY_CREATE_REPOSITORY_RESPONSE",
+        "P806_QUALITY_CREATE_REPOSITORY_TRANSACTION",
+        "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT",
+        "P806_QUALITY_CREATE_REPOSITORY_REVISION_INSERT",
+        "P806_QUALITY_CREATE_REPOSITORY_HEAD_INSERT",
+        "P806_QUALITY_CREATE_REPOSITORY_HEAD_SAVE",
+        "P806_QUALITY_CREATE_REPOSITORY_AUDIT",
+        "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_SEAL",
+        "P806_QUALITY_CREATE_REPOSITORY_OUTCOME",
+    }
+)
+QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER = (
+    "X-NPI-P806-Quality-Create-Diagnostic"
+)
+QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
+    "p8-06-quality-link-create-response-v1"
+)
 _PREPARE_PROJECTION_DIAGNOSTIC_SCOPE = (
     "p8-06-quality-link-prepare-projection-v1"
 )
@@ -140,6 +187,7 @@ def quality_link_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
             or QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
+            or QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
         )
         and _TRACE_PATTERN.fullmatch(trace_id) is not None
     ):
@@ -171,6 +219,7 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
                 code not in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
                 and code not in QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
                 and code not in QUALITY_LINK_PREPARE_BOOTSTRAP_CODES
+                and code not in QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES
             )
             or (
                 code in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
@@ -190,6 +239,10 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
             or (
                 code in QUALITY_LINK_PREPARE_BOOTSTRAP_CODES
                 and not QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+            )
+            or (
+                code in QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES
+                and not QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
             )
             or _TYPE_PATTERN.fullmatch(exception_type) is None
         ):
@@ -274,6 +327,10 @@ def _active_quality_link_runtime_diagnostic_codes() -> frozenset[str]:
         )
     if QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED:
         return frozenset(QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES)
+    if QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED:
+        return frozenset(QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES).union(
+            QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES
+        )
     return frozenset()
 
 
@@ -306,6 +363,103 @@ def _prepare_projection_diagnostics_enabled() -> bool:
         QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
         or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
         or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
+        or QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
+    )
+
+
+def _create_response_parent_code(status: object) -> str | None:
+    if type(status) is not int or status < 100 or status > 599:
+        return "P806_QUALITY_CREATE_STATUS_INVALID"
+    if status == 201:
+        return None
+    if status < 200:
+        return "P806_QUALITY_CREATE_STATUS_INFORMATIONAL"
+    if status < 300:
+        return "P806_QUALITY_CREATE_STATUS_SUCCESS_NON_201"
+    if status < 400:
+        return "P806_QUALITY_CREATE_STATUS_REDIRECTION"
+    if status < 500:
+        return "P806_QUALITY_CREATE_STATUS_CLIENT_ERROR"
+    return "P806_QUALITY_CREATE_STATUS_SERVER_ERROR"
+
+
+def _create_response_request(
+    actor: object,
+    base_url: str,
+    path: str,
+    *,
+    actor_csrf: str,
+    payload: dict[str, object],
+) -> object:
+    if not QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED:
+        return document_runtime.npi_request(
+            actor,
+            base_url,
+            path,
+            method="POST",
+            payload=payload,
+            csrf_token=actor_csrf,
+            idempotency_key=IDEMPOTENCY_KEY,
+            query_key="p806-link",
+        )
+    trace_id = quality_link_runtime_diagnostic_trace()
+    headers = document_runtime.command_headers(actor_csrf, IDEMPOTENCY_KEY)
+    headers["X-Trace-ID"] = trace_id
+    headers[QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER] = (
+        QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+    )
+    cursors = item_runtime._replay_diagnostic_log_cursors()
+    result = document_runtime.request(
+        actor,
+        base_url,
+        path,
+        method="POST",
+        payload=payload,
+        request_headers=headers,
+    )
+    require(
+        result.headers.get("X-Request-ID") == headers["X-Request-ID"],
+        "NPI request identity was not echoed for formal quality link create",
+    )
+    require(
+        result.headers.get("Cache-Control") == "private, no-store",
+        "NPI cache control drifted for formal quality link create",
+    )
+    parent_code = _create_response_parent_code(getattr(result, "status", None))
+    if parent_code is not None:
+        diagnostic = item_runtime._sanitized_server_log_diagnostic(
+            trace_id,
+            cursors,
+            code_prefix="P806_QUALITY_CREATE_",
+            allowed_codes=QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES,
+        )
+        if diagnostic is not None:
+            exception_type, code, validated_trace = diagnostic
+            try:
+                _write_quality_link_runtime_diagnostic(
+                    {
+                        "code": code,
+                        "exceptionType": exception_type,
+                        "traceId": validated_trace,
+                    }
+                )
+            except OSError:
+                pass
+        with quality_link_runtime_diagnostic_step(parent_code):
+            require(False, "P8-06 create response HTTP class drifted")
+    with quality_link_runtime_diagnostic_step(
+        "P806_QUALITY_CREATE_BODY_SHAPE"
+    ):
+        require(
+            isinstance(getattr(result, "body", None), dict),
+            "P8-06 create response shape drifted",
+        )
+    return document_runtime.HttpResult(
+        result.status,
+        result.headers,
+        result.body,
+        request_id=headers["X-Request-ID"],
+        trace_id=trace_id,
     )
 
 
@@ -537,7 +691,13 @@ def _exercise_link(
             "acknowledgement": ACKNOWLEDGEMENT,
         }
     with quality_link_runtime_diagnostic_step("P806_QUALITY_CREATE_HTTP"):
-        first = document_runtime.npi_request(actor, base_url, path, method="POST", payload=payload, csrf_token=actor_csrf, idempotency_key=IDEMPOTENCY_KEY, query_key="p806-link")
+        first = _create_response_request(
+            actor,
+            base_url,
+            path,
+            actor_csrf=actor_csrf,
+            payload=payload,
+        )
     with quality_link_runtime_diagnostic_step("P806_QUALITY_CREATE_SHAPE"):
         first_body = _body(first, status=201)
     with quality_link_runtime_diagnostic_step("P806_QUALITY_REPLAY_HTTP"):
@@ -803,6 +963,7 @@ def main() -> int:
                 or QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
+                or QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
             ):
                 return 1
             raise

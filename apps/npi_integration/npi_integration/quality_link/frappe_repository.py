@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
+import re
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 from uuid import UUID, uuid4, uuid5
 
 import frappe
@@ -70,6 +73,146 @@ _PROJECTION_HEAD_SNAPSHOT_FIELDS = {
     "optimisticVersion",
     "updatedAt",
 }
+QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P806_QUALITY_CREATE_API_CSRF",
+        "P806_QUALITY_CREATE_API_CONTEXT",
+        "P806_QUALITY_CREATE_API_REQUEST_FIELDS",
+        "P806_QUALITY_CREATE_API_ACKNOWLEDGEMENT",
+        "P806_QUALITY_CREATE_API_SOURCE_KIND",
+        "P806_QUALITY_CREATE_API_INPUT_PARSE",
+        "P806_QUALITY_CREATE_API_REPOSITORY_COMMAND",
+        "P806_QUALITY_CREATE_API_OUTCOME",
+        "P806_QUALITY_CREATE_API_COMMIT",
+        "P806_QUALITY_CREATE_API_RESPONSE",
+        "P806_QUALITY_CREATE_REPOSITORY_PROJECT",
+        "P806_QUALITY_CREATE_REPOSITORY_COMMAND_IDENTITY",
+        "P806_QUALITY_CREATE_REPOSITORY_REPLAY",
+        "P806_QUALITY_CREATE_REPOSITORY_SOURCE",
+        "P806_QUALITY_CREATE_REPOSITORY_OBSERVATION",
+        "P806_QUALITY_CREATE_REPOSITORY_STREAM",
+        "P806_QUALITY_CREATE_REPOSITORY_HEAD",
+        "P806_QUALITY_CREATE_REPOSITORY_REVISION",
+        "P806_QUALITY_CREATE_REPOSITORY_RESPONSE",
+        "P806_QUALITY_CREATE_REPOSITORY_TRANSACTION",
+        "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT",
+        "P806_QUALITY_CREATE_REPOSITORY_REVISION_INSERT",
+        "P806_QUALITY_CREATE_REPOSITORY_HEAD_INSERT",
+        "P806_QUALITY_CREATE_REPOSITORY_HEAD_SAVE",
+        "P806_QUALITY_CREATE_REPOSITORY_AUDIT",
+        "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_SEAL",
+        "P806_QUALITY_CREATE_REPOSITORY_OUTCOME",
+    }
+)
+QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER = (
+    "X-NPI-P806-Quality-Create-Diagnostic"
+)
+QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
+    "p8-06-quality-link-create-response-v1"
+)
+_QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV = (
+    "NPI_P806_QUALITY_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE"
+)
+_QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV_VALUE = (
+    "p8-06-quality-link-prepare-projection-v1"
+)
+_QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG = (
+    "npi_p806_quality_create_response_diagnostic"
+)
+_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+
+
+@contextmanager
+def quality_link_create_response_diagnostics(
+    trace_id: str | None,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    """Enable one closed, response-neutral create-response diagnostic scope."""
+
+    try:
+        state = None
+        if (
+            active
+            and os.environ.get(_QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV)
+            == _QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV_VALUE
+            and isinstance(trace_id, str)
+            and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+        ):
+            state = {"trace_id": trace_id, "recorded": False}
+        flags = frappe.flags
+        missing = object()
+        previous = getattr(
+            flags,
+            _QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG,
+            missing,
+        )
+        setattr(flags, _QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG, state)
+    except Exception:
+        yield
+        return
+    try:
+        yield
+    finally:
+        try:
+            if previous is missing:
+                delattr(flags, _QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG)
+            else:
+                setattr(
+                    flags,
+                    _QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG,
+                    previous,
+                )
+        except Exception:
+            pass
+
+
+@contextmanager
+def quality_link_create_response_step(code: str) -> Iterator[None]:
+    """Record one innermost allowlisted create stage and re-raise unchanged."""
+
+    try:
+        yield
+    except Exception as error:
+        _record_quality_link_create_response_failure(code, error)
+        raise
+
+
+def _record_quality_link_create_response_failure(
+    code: str,
+    error: Exception,
+) -> None:
+    try:
+        state = getattr(
+            frappe.flags,
+            _QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG,
+            None,
+        )
+        exception_type = type(error).__name__
+        if (
+            not isinstance(state, dict)
+            or set(state) != {"trace_id", "recorded"}
+            or state.get("recorded") is True
+            or type(state.get("recorded")) is not bool
+            or code not in QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_CODES
+            or not isinstance(state.get("trace_id"), str)
+            or _DIAGNOSTIC_TRACE_PATTERN.fullmatch(str(state["trace_id"])) is None
+            or _DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["recorded"] = True
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=code,
+            title="NPI formal quality link create stage failed",
+            exception_type=exception_type,
+            trace_id=str(state["trace_id"]),
+        )
+    except Exception:
+        # Diagnostics must never alter the original response or transaction.
+        pass
 
 
 @dataclass(frozen=True, slots=True)
@@ -176,131 +319,187 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
         expected_link_head_version: int,
         idempotency_key_hash: str,
     ) -> FormalQualityLinkCommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
-        if project is None:
-            return None
-        require_mutable_project(project)
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_PROJECT"
+        ):
+            project = self._locked_authorized_project(project_id)
+            if project is None:
+                return None
+            require_mutable_project(project)
 
-        command_payload = {
-            "operation": QUALITY_LINK_OPERATION,
-            "sourceKind": source_kind.value,
-            "sourceGlobalId": str(source_global_id),
-            "expectedSourceVersion": expected_source_version,
-            "expectedSourceSnapshotHash": expected_source_snapshot_hash,
-            "formalObservationGlobalId": str(observation_global_id),
-            "expectedProjectionHeadGlobalId": str(expected_projection_head_global_id),
-            "expectedProjectionHeadVersion": expected_projection_head_version,
-            "expectedProjectionHeadHash": expected_projection_head_hash,
-            "expectedLinkHeadVersion": expected_link_head_version,
-        }
-        payload_hash = canonical_payload_hash(command_payload)
-        identity = QualityLinkCommandIdentity(
-            str(project.tenant_id),
-            UUID(str(project.global_id)),
-            self.actor.casefold(),
-            QUALITY_LINK_OPERATION,
-            idempotency_key_hash,
-            payload_hash,
-            expected_source_snapshot_hash,
-            expected_projection_head_hash,
-        )
-        replay = self._receipt_replay(project, identity)
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_COMMAND_IDENTITY"
+        ):
+            command_payload = {
+                "operation": QUALITY_LINK_OPERATION,
+                "sourceKind": source_kind.value,
+                "sourceGlobalId": str(source_global_id),
+                "expectedSourceVersion": expected_source_version,
+                "expectedSourceSnapshotHash": expected_source_snapshot_hash,
+                "formalObservationGlobalId": str(observation_global_id),
+                "expectedProjectionHeadGlobalId": str(expected_projection_head_global_id),
+                "expectedProjectionHeadVersion": expected_projection_head_version,
+                "expectedProjectionHeadHash": expected_projection_head_hash,
+                "expectedLinkHeadVersion": expected_link_head_version,
+            }
+            payload_hash = canonical_payload_hash(command_payload)
+            identity = QualityLinkCommandIdentity(
+                str(project.tenant_id),
+                UUID(str(project.global_id)),
+                self.actor.casefold(),
+                QUALITY_LINK_OPERATION,
+                idempotency_key_hash,
+                payload_hash,
+                expected_source_snapshot_hash,
+                expected_projection_head_hash,
+            )
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_REPLAY"
+        ):
+            replay = self._receipt_replay(project, identity)
         if replay is not None:
             return FormalQualityLinkCommandOutcome(replay, replayed=True)
 
-        source = self._resolve_source(
-            project,
-            source_kind=source_kind,
-            source_global_id=source_global_id,
-            expected_version=expected_source_version,
-            expected_snapshot_hash=expected_source_snapshot_hash,
-        )
-        observation = self._resolve_observation(
-            project,
-            source=source,
-            observation_global_id=observation_global_id,
-            expected_head_global_id=expected_projection_head_global_id,
-            expected_head_version=expected_projection_head_version,
-            expected_head_hash=expected_projection_head_hash,
-        )
-        stream_key_hash = canonical_payload_hash(
-            {
-                "tenantId": str(project.tenant_id),
-                "projectGlobalId": str(project.global_id),
-                "sourceKind": source_kind.value,
-                "sourceGlobalId": str(source_global_id),
-            }
-        )
-        head = self._locked_link_head(stream_key_hash)
-        if head is None:
-            if expected_link_head_version != 0:
-                raise FormalQualityLinkHeadConflict()
-            revision_number = 1
-            predecessor_id = None
-            link_head_id = uuid5(_HEAD_NAMESPACE, stream_key_hash)
-        else:
-            self._require_link_head_identity(
-                project,
-                head,
-                source.reference,
-                stream_key_hash,
-            )
-            if int(head.optimistic_version) != expected_link_head_version:
-                raise FormalQualityLinkHeadConflict()
-            revision_number = int(head.revision_number) + 1
-            predecessor_id = UUID(str(head.current_revision))
-            link_head_id = UUID(str(head.global_id))
-
-        now = datetime.now(UTC)
-        revision = QualityLinkRevision(
-            uuid4(),
-            stream_key_hash,
-            revision_number,
-            predecessor_id,
-            source.reference,
-            observation,
-            QualityLinkState.LINKED,
-            self.actor,
-            self.trace_id,
-            now,
-        )
-        revision_response = {**revision.payload(), "linkHash": revision.payload_hash}
-        head_response = _head_response(
-            global_id=link_head_id,
-            project=project,
-            source=source.reference,
-            stream_key_hash=stream_key_hash,
-            revision=revision,
-            optimistic_version=(1 if head is None else int(head.optimistic_version) + 1),
-            updated_at=now,
-        )
-        response = {
-            "projectGlobalId": str(project.global_id),
-            "operation": QUALITY_LINK_OPERATION,
-            "linkRevision": revision_response,
-            "linkHead": head_response,
-            "formalQualityInterpretation": {
-                "state": "unavailable",
-                "reasonCode": "raw_formal_quality_codes_not_interpreted",
-            },
-        }
-
-        with quality_link_command_write(
-            scope=f"{QUALITY_LINK_OPERATION}:{project.global_id}",
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_SOURCE"
         ):
-            receipt = self._insert_receipt(project, identity, now)
-            self._insert_revision(revision)
-            if head is None:
-                self._insert_head(head_response)
-            else:
-                self._advance_head(head, head_response)
-            self._append_audit(
-                revision,
-                source_snapshot_hash=source.reference.source_snapshot_hash,
-                projection_head_hash=observation.head_hash,
+            source = self._resolve_source(
+                project,
+                source_kind=source_kind,
+                source_global_id=source_global_id,
+                expected_version=expected_source_version,
+                expected_snapshot_hash=expected_source_snapshot_hash,
             )
-            self._seal_receipt(receipt, revision, response, now)
-        return FormalQualityLinkCommandOutcome(response)
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_OBSERVATION"
+        ):
+            observation = self._resolve_observation(
+                project,
+                source=source,
+                observation_global_id=observation_global_id,
+                expected_head_global_id=expected_projection_head_global_id,
+                expected_head_version=expected_projection_head_version,
+                expected_head_hash=expected_projection_head_hash,
+            )
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_STREAM"
+        ):
+            stream_key_hash = canonical_payload_hash(
+                {
+                    "tenantId": str(project.tenant_id),
+                    "projectGlobalId": str(project.global_id),
+                    "sourceKind": source_kind.value,
+                    "sourceGlobalId": str(source_global_id),
+                }
+            )
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_HEAD"
+        ):
+            head = self._locked_link_head(stream_key_hash)
+            if head is None:
+                if expected_link_head_version != 0:
+                    raise FormalQualityLinkHeadConflict()
+                revision_number = 1
+                predecessor_id = None
+                link_head_id = uuid5(_HEAD_NAMESPACE, stream_key_hash)
+            else:
+                self._require_link_head_identity(
+                    project,
+                    head,
+                    source.reference,
+                    stream_key_hash,
+                )
+                if int(head.optimistic_version) != expected_link_head_version:
+                    raise FormalQualityLinkHeadConflict()
+                revision_number = int(head.revision_number) + 1
+                predecessor_id = UUID(str(head.current_revision))
+                link_head_id = UUID(str(head.global_id))
+
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_REVISION"
+        ):
+            now = datetime.now(UTC)
+            revision = QualityLinkRevision(
+                uuid4(),
+                stream_key_hash,
+                revision_number,
+                predecessor_id,
+                source.reference,
+                observation,
+                QualityLinkState.LINKED,
+                self.actor,
+                self.trace_id,
+                now,
+            )
+            revision_response = {
+                **revision.payload(),
+                "linkHash": revision.payload_hash,
+            }
+            head_response = _head_response(
+                global_id=link_head_id,
+                project=project,
+                source=source.reference,
+                stream_key_hash=stream_key_hash,
+                revision=revision,
+                optimistic_version=(
+                    1 if head is None else int(head.optimistic_version) + 1
+                ),
+                updated_at=now,
+            )
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_RESPONSE"
+        ):
+            response = {
+                "projectGlobalId": str(project.global_id),
+                "operation": QUALITY_LINK_OPERATION,
+                "linkRevision": revision_response,
+                "linkHead": head_response,
+                "formalQualityInterpretation": {
+                    "state": "unavailable",
+                    "reasonCode": "raw_formal_quality_codes_not_interpreted",
+                },
+            }
+
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_TRANSACTION"
+        ):
+            with quality_link_command_write(
+                scope=f"{QUALITY_LINK_OPERATION}:{project.global_id}",
+            ):
+                with quality_link_create_response_step(
+                    "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT"
+                ):
+                    receipt = self._insert_receipt(project, identity, now)
+                with quality_link_create_response_step(
+                    "P806_QUALITY_CREATE_REPOSITORY_REVISION_INSERT"
+                ):
+                    self._insert_revision(revision)
+                if head is None:
+                    with quality_link_create_response_step(
+                        "P806_QUALITY_CREATE_REPOSITORY_HEAD_INSERT"
+                    ):
+                        self._insert_head(head_response)
+                else:
+                    with quality_link_create_response_step(
+                        "P806_QUALITY_CREATE_REPOSITORY_HEAD_SAVE"
+                    ):
+                        self._advance_head(head, head_response)
+                with quality_link_create_response_step(
+                    "P806_QUALITY_CREATE_REPOSITORY_AUDIT"
+                ):
+                    self._append_audit(
+                        revision,
+                        source_snapshot_hash=source.reference.source_snapshot_hash,
+                        projection_head_hash=observation.head_hash,
+                    )
+                with quality_link_create_response_step(
+                    "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_SEAL"
+                ):
+                    self._seal_receipt(receipt, revision, response, now)
+        with quality_link_create_response_step(
+            "P806_QUALITY_CREATE_REPOSITORY_OUTCOME"
+        ):
+            return FormalQualityLinkCommandOutcome(response)
 
     def _resolve_source(
         self,

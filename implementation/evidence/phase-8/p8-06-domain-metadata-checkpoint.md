@@ -458,3 +458,32 @@ reader and failed-child-unread behavior are unchanged. The exact-five diff is
 verifier/test/evidence only and has zero product, permission, transaction,
 API, schema, UI or network effect. Production fact/DoD governance remains
 queued; FR-CO-003/004 deferral and all B/C holds remain unchanged.
+
+## Quality-link create-response diagnostic checkpoint
+
+Post-permission exact SHA `feb46b8cc650743ef48fe11231181aa79a191e1a`
+passes ordinary `33021562548`. Controlled run `33022467444` produces exactly
+`P806_QUALITY_CREATE_SHAPE / RuntimeError /
+trace-7cf3b5d5e5e252adb04253d473a0eaa8`; no body, business value, identifier,
+message, stack or child output is read. The prior cycle freezes diagnostic
+`1/1`, repair `0/1`, final `0/1`. Independent create-response begins `0/1`,
+`0/1`, `0/1`.
+
+This exact-nine checkpoint activates only create-response. It pins seven
+parent status/body classes and 27 exact API/repository stages under one exact
+POST/header/trace scope. Records remain three safe keys, exclusive, strictly
+mirrored and cursor-bounded; server inner stage wins and parent class is the
+fail-closed fallback. Default-off behavior, original exceptions, finally
+restoration, response equivalence, transaction boundaries and write order are
+regression-locked. Changed-files map verifier to runtime tests, API to API
+tests, repository to repository tests, and governance to current/reconcile/
+manifest checks. No capability, permission, schema, migration, route, UI, ERP
+target or external network scope is added. Production governance remains
+queued and all holds remain active.
+
+Level 1 evidence: focused `48/48`; quality-link `74/74`; affected projection,
+P7, Item, MBOM and Tool Asset `255/255`; full Python repository `2549/2549`;
+current/reconciliation `36/36`. Compile, AST/lexical equality, exact one-of-five
+activation, strict mirror/no-leak scan and diff-check pass. The exact-nine
+manifest is accepted and an unauthorized tenth is rejected; no task path is
+staged and unrelated dirty/untracked files remain preserved.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import os
 import sys
 import types
 import unittest
@@ -29,6 +30,7 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
     MODULES = (
         "frappe",
         "npi_core.documents.frappe_repository",
+        "npi_core.api",
         "npi_core.foundation.audit",
         "npi_core.foundation.security",
         "npi_core.project_controls.terminal_guard",
@@ -47,11 +49,17 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
         self.events: list[str] = []
         frappe = types.ModuleType("frappe")
         frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
+        frappe.flags = types.SimpleNamespace()
         frappe.db = types.SimpleNamespace(get_value=lambda *_args, **_kwargs: None)
         frappe.get_all = lambda *_args, **_kwargs: []
         frappe.get_doc = lambda *_args, **_kwargs: None
         self.frappe = frappe
         sys.modules["frappe"] = frappe
+
+        self.diagnostics: list[dict[str, object]] = []
+        api = types.ModuleType("npi_core.api")
+        api.record_safe_diagnostic = lambda **values: self.diagnostics.append(values)
+        sys.modules[api.__name__] = api
 
         base = types.ModuleType("npi_core.documents.frappe_repository")
 
@@ -197,6 +205,88 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
         self.assertEqual(outcome.response["formalQualityInterpretation"]["state"], "unavailable")
         self.assertEqual(outcome.response["linkRevision"]["source"]["sourceSnapshotHash"], SOURCE_HASH)
         self.assertEqual(outcome.response["linkHead"]["currentProjectionHeadVersion"], 3)
+
+    def test_create_response_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
+        import ast
+
+        api_source = (
+            ROOT / "apps/npi_integration/npi_integration/quality_link_api.py"
+        ).read_text(encoding="utf-8")
+        repository_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/quality_link/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        stages = [
+            node.args[0].value
+            for node in ast.walk(ast.parse(api_source + "\n" + repository_source))
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "quality_link_create_response_step"
+            and len(node.args) == 1
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ]
+        self.assertEqual(len(self.module.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_CODES), 27)
+        self.assertEqual(
+            set(stages),
+            set(self.module.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_CODES),
+        )
+        self.assertTrue(all(stages.count(code) == 1 for code in stages))
+
+    def test_create_response_diagnostic_is_exact_inner_wins_and_restores(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        flag = self.module._QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG
+        setattr(self.frappe.flags, flag, {"prior": True})
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    self.module._QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV: (
+                        self.module._QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV_VALUE
+                    )
+                },
+                clear=False,
+            ),
+            self.assertRaisesRegex(ValueError, "opaque"),
+            self.module.quality_link_create_response_diagnostics(
+                trace_id,
+                active=True,
+            ),
+            self.module.quality_link_create_response_step(
+                "P806_QUALITY_CREATE_REPOSITORY_TRANSACTION"
+            ),
+            self.module.quality_link_create_response_step(
+                "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT"
+            ),
+        ):
+            raise ValueError("opaque")
+        self.assertEqual(
+            self.diagnostics,
+            [
+                {
+                    "code": "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT",
+                    "title": "NPI formal quality link create stage failed",
+                    "exception_type": "ValueError",
+                    "trace_id": trace_id,
+                }
+            ],
+        )
+        self.assertEqual(getattr(self.frappe.flags, flag), {"prior": True})
+
+    def test_create_response_diagnostic_is_dormant_without_exact_scope(self) -> None:
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            self.assertRaisesRegex(RuntimeError, "opaque"),
+            self.module.quality_link_create_response_diagnostics(
+                "trace-0123456789abcdef0123456789abcdef",
+                active=True,
+            ),
+            self.module.quality_link_create_response_step(
+                "P806_QUALITY_CREATE_REPOSITORY_PROJECT"
+            ),
+        ):
+            raise RuntimeError("opaque")
+        self.assertEqual(self.diagnostics, [])
 
     def test_query_link_capability_reuses_exact_source_authority_without_client_input(self) -> None:
         source = (ROOT / "apps/npi_integration/npi_integration/quality_link/frappe_repository.py").read_text(

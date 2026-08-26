@@ -4,6 +4,7 @@ import importlib
 import sys
 import types
 import unittest
+from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
 from unittest.mock import patch
@@ -233,6 +234,130 @@ class Phase8QualityLinkApiTest(unittest.TestCase):
                 "idempotency_key_hash",
             },
         )
+
+    def test_create_response_diagnostic_scope_is_exact_and_response_neutral(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        values = {
+            "sourceKind": "trial_defect",
+            "sourceGlobalId": SOURCE,
+            "expectedSourceVersion": 2,
+            "expectedSourceSnapshotHash": "a" * 64,
+            "formalObservationGlobalId": OBSERVATION,
+            "expectedProjectionHeadGlobalId": PROJECTION_HEAD,
+            "expectedProjectionHeadVersion": 3,
+            "expectedProjectionHeadHash": "b" * 64,
+            "expectedLinkHeadVersion": 0,
+            "acknowledgement": ACKNOWLEDGEMENT,
+        }
+        command = (
+            "npi_integration.quality_link_api."
+            "link_observed_formal_quality_reference"
+        )
+        self.frappe.local.form_dict = {**values, "cmd": command}
+        self.frappe.local.request = types.SimpleNamespace(
+            method="POST",
+            args={},
+        )
+        self.frappe.flags.npi_route_params = {"project_id": PROJECT}
+        self.headers.update(
+            {
+                "X-Trace-ID": trace_id,
+                self.module.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER: (
+                    self.module.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+                ),
+            }
+        )
+        repository_module = types.ModuleType(
+            "npi_integration.quality_link.frappe_repository"
+        )
+        stages: list[str] = []
+
+        @contextmanager
+        def scope(received_trace: object, *, active: bool):
+            self.assertEqual(received_trace, trace_id)
+            self.assertTrue(active)
+            yield
+
+        @contextmanager
+        def step(code: str):
+            stages.append(code)
+            yield
+
+        repository_module.quality_link_create_response_diagnostics = scope
+        repository_module.quality_link_create_response_step = step
+        token = self.module.current_trace_id.set(trace_id)
+        try:
+            with patch.dict(
+                sys.modules,
+                {
+                    "npi_integration.quality_link.frappe_repository": (
+                        repository_module
+                    )
+                },
+            ):
+                result = self.module.link_observed_formal_quality_reference(**values)
+        finally:
+            self.module.current_trace_id.reset(token)
+        self.assertEqual(result["operation"], "link_observed_formal_quality_reference")
+        self.assertEqual(
+            stages,
+            [
+                "P806_QUALITY_CREATE_API_CSRF",
+                "P806_QUALITY_CREATE_API_CONTEXT",
+                "P806_QUALITY_CREATE_API_REQUEST_FIELDS",
+                "P806_QUALITY_CREATE_API_ACKNOWLEDGEMENT",
+                "P806_QUALITY_CREATE_API_SOURCE_KIND",
+                "P806_QUALITY_CREATE_API_INPUT_PARSE",
+                "P806_QUALITY_CREATE_API_REPOSITORY_COMMAND",
+                "P806_QUALITY_CREATE_API_OUTCOME",
+                "P806_QUALITY_CREATE_API_COMMIT",
+                "P806_QUALITY_CREATE_API_RESPONSE",
+            ],
+        )
+
+    def test_create_response_diagnostic_rejects_each_wrong_scope_dimension(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        command = (
+            "npi_integration.quality_link_api."
+            "link_observed_formal_quality_reference"
+        )
+        valid = {
+            "method": "POST",
+            "args": {},
+            "route": {"project_id": PROJECT},
+            "form": {name: object() for name in self.module._LINK_FIELDS},
+        }
+        valid["form"]["cmd"] = command
+        self.headers.update(
+            {
+                "X-Trace-ID": trace_id,
+                self.module.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER: (
+                    self.module.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE
+                ),
+            }
+        )
+
+        def active(**changes: object) -> bool:
+            case = {**valid, **changes}
+            self.frappe.local.request = types.SimpleNamespace(
+                method=case["method"],
+                args=case["args"],
+            )
+            self.frappe.flags.npi_route_params = case["route"]
+            self.frappe.local.form_dict = case["form"]
+            return self.module._quality_link_create_response_diagnostic_active(
+                trace_id
+            )
+
+        self.assertTrue(active())
+        self.assertFalse(active(method="GET"))
+        self.assertFalse(active(args={"extra": "opaque"}))
+        self.assertFalse(active(route={"project_id": PROJECT, "extra": "opaque"}))
+        self.assertFalse(active(form={"cmd": command}))
+        self.assertFalse(active(form={**valid["form"], "cmd": "wrong"}))
+        self.headers["X-Trace-ID"] = "trace-wrong"
+        self.assertFalse(active())
+        self.assertNotIn(PROJECT, repr(active()))
 
     def test_replay_is_200_and_commit_precedes_response(self) -> None:
         self.replayed = True

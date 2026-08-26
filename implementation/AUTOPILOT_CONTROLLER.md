@@ -6541,3 +6541,34 @@ repeat or rewrite it merely to restore context. See
   unchanged.
 - Controller marker:
   `P8-01 projection-fresh predecessor diagnostic 1/1 repair 1/1 final 1/1 frozen; P8-06 post-permission diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 quality-link create-response diagnostic checkpoint
+
+- Exact SHA `feb46b8cc650743ef48fe11231181aa79a191e1a` passes ordinary CI
+  `33021562548`. Its sole controlled run `33022467444` returns exactly
+  `P806_QUALITY_CREATE_SHAPE / RuntimeError /
+  trace-7cf3b5d5e5e252adb04253d473a0eaa8`. No response body, business value,
+  identifier, message, stack, failed-child stdout or stderr was read.
+- Ordered static cross-proof closes current-truth and HTTP transport. The
+  shared helper already rejects a non-object response before returning, so
+  the remaining ambiguity is the non-201 class and the API/repository stage.
+- Freeze `p8-06-quality-link-post-permission` at diagnostic `1/1`, repair
+  `0/1`, final `0/1`. Open independent
+  `p8-06-quality-link-create-response` at `0/1`, `0/1`, `0/1`. Only the new
+  activation is true. Seven value-free parent classes and 27 unique API/
+  repository stages use exact POST scope, trace, cursors, exclusive
+  exact-three-key record and strict mirror. Server wins; otherwise the fixed
+  parent class wins.
+- The exact-nine paths are verifier/test, API/repository and their focused
+  tests plus this controller, plan and checkpoint. Default-off instrumentation
+  preserves exception identity, finally restoration, response behavior,
+  transaction and write order. No schema, permission, migration, UI, ERP
+  traffic or route changes. All holds and queued production governance remain.
+- Level 1 passes focused diagnostic `48/48`, complete quality-link `74/74`,
+  affected projection/P7/Item/MBOM/Tool Asset `255/255`, full repository
+  `2549/2549` and current/reconciliation `36/36`. Compile, exact activation,
+  lexical allowlist equality, no-leak/security scan and diff hygiene pass.
+  Manifest simulation accepts exact nine and rejects an unauthorized tenth;
+  index remains clean and unrelated worktree state is preserved.
+- Controller marker:
+  `P8-06 checkpoint 4 final 1/1 frozen; post-permission diagnostic 1/1 repair 0/1 final 0/1; create-response diagnostic 0/1 active`.

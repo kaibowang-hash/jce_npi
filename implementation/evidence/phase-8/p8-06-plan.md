@@ -1023,3 +1023,47 @@ The exact-five paths are `scripts/verify_projection_runtime.py`,
 repository, permission, transaction, schema, migration, UI, ERP traffic,
 FR-CO-003/004 deferral and all B/C holds remain unchanged. Production
 read-only fact/DoD governance remains queued.
+
+## 30. Independent quality-link create-response diagnostic
+
+Exact SHA `feb46b8cc650743ef48fe11231181aa79a191e1a` passes ordinary
+`33021562548`. Controlled run `33022467444` returns the sole safe tuple
+`P806_QUALITY_CREATE_SHAPE / RuntimeError /
+trace-7cf3b5d5e5e252adb04253d473a0eaa8`. The shared HTTP helper has already
+validated response object serialization, request-ID echo and cache control;
+static source cannot distinguish the non-201 class or the ordered API/
+repository stage without prohibited response inspection.
+
+Freeze post-permission at `1/1`, `0/1`, `0/1`. Start independent
+`p8-06-quality-link-create-response` at `0/1`, `0/1`, `0/1`. Historical
+quality flags are false and only the new flag is true. Seven closed parent
+classes cover invalid, informational, non-201 success, redirection, client,
+server and 201-body-shape boundaries. Twenty-seven unique server stages span
+API validation/dispatch/commit/response and repository authority, resolution,
+transaction, each write and final outcome.
+
+Activation requires the exact POST route scope, empty query, framework command
+symbol, exact business-field names, diagnostic header and deterministic trace.
+Cursors are captured before the request. The reader accepts one mirrored
+exact-three-key record from controlled logs; a trusted server tuple wins the
+O_EXCL record, otherwise the fixed parent class is recorded. Inner stage wins,
+the original exception is re-raised, state restores in `finally`, and success
+writes no record. Default-off execution preserves response and write order.
+
+The exact-nine paths are `scripts/verify_quality_link_runtime.py`,
+`tests/test_phase8_quality_link_runtime_verifier.py`,
+`apps/npi_integration/npi_integration/quality_link_api.py`,
+`apps/npi_integration/npi_integration/quality_link/frappe_repository.py`,
+`tests/test_phase8_quality_link_api.py`,
+`tests/test_phase8_quality_link_repository.py`, this plan,
+`implementation/AUTOPILOT_CONTROLLER.md` and
+`p8-06-domain-metadata-checkpoint.md`. No route, schema, permission,
+migration, UI, network target or ERP write changes. Production governance
+remains queued and all holds remain active.
+
+Level 1 passes focused diagnostic `48/48`, complete quality-link `74/74`,
+affected peers `255/255`, full repository `2549/2549` and current/
+reconciliation `36/36`. Compilation, exact activation `1/5`, seven-plus-27
+allowlist equality, lexical uniqueness, strict-reader/no-leak scans and diff
+hygiene pass. Exact-nine manifest simulation passes and an unauthorized tenth
+is rejected. Index stays clean and unrelated worktree state is untouched.

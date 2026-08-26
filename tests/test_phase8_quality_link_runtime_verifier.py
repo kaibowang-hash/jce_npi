@@ -101,26 +101,30 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
         self.assertEqual(
             self.verifier._active_quality_link_runtime_diagnostic_codes(),
-            frozenset(expected)
-            .union(self.verifier.QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES)
-            .union(self.verifier.QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES),
+            frozenset(self.verifier.QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES)
+            .union(self.verifier.QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES),
         )
         self.assertEqual(
             len(self.verifier._active_quality_link_runtime_diagnostic_codes()),
-            60,
+            34,
         )
         self.assertTrue(
             set(self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_CODES).isdisjoint(
                 self.verifier._active_quality_link_runtime_diagnostic_codes()
             )
         )
-        source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(encoding="utf-8")
+        source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(
+            encoding="utf-8"
+        )
         tree = ast.parse(source)
         stages = [
             node.args[0].value
@@ -132,8 +136,172 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.args[0], ast.Constant)
             and isinstance(node.args[0].value, str)
         ]
-        self.assertEqual(len(stages), 17)
-        self.assertEqual(set(stages), set(expected))
+        self.assertTrue(set(expected).issubset(stages))
+        self.assertTrue(all(stages.count(code) == 1 for code in expected))
+
+    def test_create_response_parent_classes_are_closed_and_value_free(self) -> None:
+        expected = {
+            None: "P806_QUALITY_CREATE_STATUS_INVALID",
+            0: "P806_QUALITY_CREATE_STATUS_INVALID",
+            99: "P806_QUALITY_CREATE_STATUS_INVALID",
+            100: "P806_QUALITY_CREATE_STATUS_INFORMATIONAL",
+            200: "P806_QUALITY_CREATE_STATUS_SUCCESS_NON_201",
+            201: None,
+            299: "P806_QUALITY_CREATE_STATUS_SUCCESS_NON_201",
+            300: "P806_QUALITY_CREATE_STATUS_REDIRECTION",
+            400: "P806_QUALITY_CREATE_STATUS_CLIENT_ERROR",
+            500: "P806_QUALITY_CREATE_STATUS_SERVER_ERROR",
+            600: "P806_QUALITY_CREATE_STATUS_INVALID",
+        }
+        self.assertEqual(
+            {value: self.verifier._create_response_parent_code(value) for value in expected},
+            expected,
+        )
+        source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(
+            encoding="utf-8"
+        )
+        create = source[
+            source.index("def _create_response_request") : source.index("def _body")
+        ]
+        self.assertLess(
+            create.index("parent_code = _create_response_parent_code"),
+            create.index('getattr(result, "body", None)'),
+        )
+
+    def test_create_response_server_allowlist_matches_repository_source(self) -> None:
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/quality_link/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        assignment = next(
+            node
+            for node in ast.parse(source).body
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name)
+                and target.id == "QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_CODES"
+                for target in node.targets
+            )
+        )
+        repository_codes = {
+            element.value
+            for element in assignment.value.args[0].elts
+            if isinstance(element, ast.Constant) and isinstance(element.value, str)
+        }
+        self.assertEqual(
+            repository_codes,
+            self.verifier.QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES,
+        )
+
+    def test_create_response_server_tuple_wins_parent_and_failed_body_is_unread(self) -> None:
+        trace_id = self.verifier.quality_link_runtime_diagnostic_trace()
+        server_code = "P806_QUALITY_CREATE_REPOSITORY_PROJECT"
+        result = types.SimpleNamespace(
+            status=500,
+            headers={
+                "X-Request-ID": self.verifier.document_runtime.fixture_request_id(
+                    self.verifier.IDEMPOTENCY_KEY
+                ),
+                "Cache-Control": "private, no-store",
+            },
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ),
+                patch.object(
+                    self.verifier.document_runtime,
+                    "request",
+                    return_value=result,
+                ),
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_replay_diagnostic_log_cursors",
+                    return_value={"logs/npi_core.log": 0},
+                ),
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_sanitized_server_log_diagnostic",
+                    return_value=("ValueError", server_code, trace_id),
+                ) as reader,
+                self.assertRaisesRegex(RuntimeError, "HTTP class drifted"),
+                self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+            ):
+                self.verifier._create_response_request(
+                    object(),
+                    "http://npi.localhost",
+                    "/api/npi/v1/projects/project/formal-quality-links:link-observed-reference",
+                    actor_csrf="csrf",
+                    payload={"opaque": True},
+                )
+            self.assertEqual(
+                self.verifier.read_quality_link_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("ValueError", server_code, trace_id),
+            )
+            reader.assert_called_once_with(
+                trace_id,
+                {"logs/npi_core.log": 0},
+                code_prefix="P806_QUALITY_CREATE_",
+                allowed_codes=self.verifier.QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES,
+            )
+
+    def test_create_response_success_preserves_shape_and_default_path(self) -> None:
+        headers = {
+            "X-Request-ID": self.verifier.document_runtime.fixture_request_id(
+                self.verifier.IDEMPOTENCY_KEY
+            ),
+            "Cache-Control": "private, no-store",
+        }
+        result = types.SimpleNamespace(status=201, headers=headers, body={"ok": True})
+        with patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=result,
+        ) as request:
+            outcome = self.verifier._create_response_request(
+                object(),
+                "http://npi.localhost",
+                "/path",
+                actor_csrf="csrf",
+                payload={"opaque": True},
+            )
+        self.assertEqual(outcome.body, {"ok": True})
+        sent_headers = request.call_args.kwargs["request_headers"]
+        self.assertEqual(
+            sent_headers[self.verifier.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER],
+            self.verifier.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(
+            sent_headers["X-Trace-ID"],
+            self.verifier.quality_link_runtime_diagnostic_trace(),
+        )
+        with (
+            patch.object(
+                self.verifier,
+                "QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+                False,
+            ),
+            patch.object(
+                self.verifier.document_runtime,
+                "npi_request",
+                return_value=result,
+            ) as default_request,
+        ):
+            self.verifier._create_response_request(
+                object(),
+                "http://npi.localhost",
+                "/path",
+                actor_csrf="csrf",
+                payload={"opaque": True},
+            )
+        default_request.assert_called_once()
 
     def test_prepare_projection_allowlists_are_exact_and_lexically_unique(self) -> None:
         parent = self.verifier.QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
