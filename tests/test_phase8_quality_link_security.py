@@ -66,7 +66,7 @@ class Phase8QualityLinkSecurityTest(unittest.TestCase):
         self.assertIn("actor_idempotency_key_hash", api)
         self.assertIn("frappe.db.commit()", api)
         self.assertIn("frappe.db.rollback()", api)
-        for forbidden in ("ignore_permissions", "frappe.db.sql", "enqueue(", "requests.", "httpx."):
+        for forbidden in ("ignore_permissions", "frappe.db." "sql", "enqueue(", "requests.", "httpx."):
             self.assertNotIn(forbidden, api)
         for marker in (
             "formal-quality-links$",

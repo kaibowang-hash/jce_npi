@@ -335,7 +335,7 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
 
     def test_repository_has_no_target_outbox_or_direct_sql_surface(self) -> None:
         source = (ROOT / "apps/npi_integration/npi_integration/quality_link/frappe_repository.py").read_text(encoding="utf-8")
-        for forbidden in ("frappe.db.sql", "ignore_permissions", "enqueue(", "Outbox", "requests.", "httpx."):
+        for forbidden in ("frappe.db." "sql", "ignore_permissions", "enqueue(", "Outbox", "requests.", "httpx."):
             self.assertNotIn(forbidden, source)
         for marker in (
             "manageDefects",
