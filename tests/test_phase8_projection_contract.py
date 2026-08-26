@@ -160,6 +160,10 @@ class Phase8ProjectionContractTest(unittest.TestCase):
         self.assertIn("additionalProperties: false", schemas)
         self.assertIn("editable: { type: boolean, const: false }", schemas)
         self.assertIn("refresh: { type: boolean, const: false }", schemas)
+        current_truth = schemas[schemas.index("    ERPProjectionCurrentTruth:\n") :]
+        current_truth = current_truth[: current_truth.index("\n    ERPProjectionItem:")]
+        for field in ("headGlobalId", "headOptimisticVersion", "headHash"):
+            self.assertIn(field, current_truth)
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
         self.assertEqual(paths.count("/projects/{projectId}/erp-projections:"), 1)
         route = paths[paths.index("  /projects/{projectId}/erp-projections:") :]

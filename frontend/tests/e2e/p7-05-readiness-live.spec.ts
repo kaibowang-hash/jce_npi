@@ -8,6 +8,8 @@ import type {
 import { translate } from "../../src/i18n/runtime";
 import {
   readinessEmptyWorkspace,
+  readinessFormalQualityLinks,
+  readinessFormalQualityProjection,
   readinessIds,
   readinessPublishedTemplate,
   readinessRevisedWorkspace,
@@ -201,6 +203,14 @@ async function installReadinessApi(
       await fulfillJson(route, projectWorkContextFixture());
       return;
     }
+    if (request.method() === "GET" && path.endsWith("/formal-quality-links")) {
+      await fulfillJson(route, readinessFormalQualityLinks());
+      return;
+    }
+    if (request.method() === "GET" && path.endsWith("/erp-projections")) {
+      await fulfillJson(route, readinessFormalQualityProjection());
+      return;
+    }
     if (request.method() === "GET" && path.endsWith("/npi-readiness")) {
       if (options.loadDelay) {
         await new Promise<void>((resolve) => {
@@ -309,6 +319,11 @@ test.describe("P7-05 live Project readiness workspace", () => {
       await openReadiness(page, locale);
 
       await expect(page.getByTestId("readiness-summary")).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: translate(locale, "Formal quality reference"),
+        }),
+      ).toBeVisible();
       await expect(page.getByTestId("readiness-score-summary")).toContainText(
         "99",
       );
@@ -583,6 +598,11 @@ test.describe("@visual P7-05 Project readiness evidence", () => {
         reducedMotion: "reduce",
       });
       await openReadiness(page, visual.locale);
+      const inspector = page.getByTestId("formal-quality-link-state");
+      await expect(inspector).toBeVisible();
+      await inspector.evaluate((element) => {
+        element.scrollIntoView();
+      });
       await expectNoMixedLanguage(page, visual.locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);
@@ -592,9 +612,6 @@ test.describe("@visual P7-05 Project readiness evidence", () => {
           "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
       });
       await page.evaluate(async () => document.fonts.ready);
-      await page.evaluate(() => {
-        globalThis.scrollTo(0, 0);
-      });
       await expect(page).toHaveScreenshot(`${visual.name}.png`, {
         fullPage: false,
       });

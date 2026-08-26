@@ -14,6 +14,7 @@ import type {
   ReadinessTemplateVersion,
   ReadinessWorkspace,
 } from "../../src/api/readiness-data-source";
+import type { FormalQualityLinkDataSource } from "../../src/api/formal-quality-link-data-source";
 import {
   NpiApiError,
   NpiTransportError,
@@ -441,11 +442,25 @@ function renderWorkspace(
     members?: readonly ProjectMemberViewModel[];
     reportWorkspaceDirty?: ReportWorkspaceDirty;
     requestWorkspaceTransition?: RequestWorkspaceTransition;
+    formalQualityDataSource?: FormalQualityLinkDataSource;
   } = {},
 ): void {
   renderWithLocale(
     <ProjectReadinessWorkspace
       dataSource={dataSource}
+      formalQualityDataSource={
+        options.formalQualityDataSource ?? {
+          load: vi.fn().mockResolvedValue({
+            collection: {
+              projectGlobalId: ids.project,
+              permissions: { view: true, link: false },
+              items: [],
+            },
+            candidate: null,
+          }),
+          link: vi.fn(),
+        }
+      }
       members={options.members ?? members}
       projectId={ids.project}
       reportWorkspaceDirty={options.reportWorkspaceDirty}
@@ -493,6 +508,12 @@ describe("Project readiness workspace", () => {
     ).toBeTruthy();
     expect(within(blocker).getByText("1 active blockers")).toBeVisible();
     expect(within(score).getByText("88%")).toBeVisible();
+    expect(
+      await screen.findByRole("heading", { name: "Formal quality reference" }),
+    ).toBeVisible();
+    expect(
+      screen.getByText("No formal quality reference available"),
+    ).toBeVisible();
     expect(
       screen.getAllByText("Mandatory quality approval").length,
     ).toBeGreaterThan(0);

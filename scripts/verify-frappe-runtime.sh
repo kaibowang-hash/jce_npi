@@ -3115,6 +3115,23 @@ run_tool_asset_runtime_verifier() {
   )
 }
 
+run_quality_link_runtime_verifier() {
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    exec python "${repo_root}/scripts/verify_quality_link_runtime.py" \
+      --base-url "${base_url}"
+  )
+}
+
 verify_tooling_import_runtime_log_redaction() {
   local marker
   for marker in \
@@ -4055,6 +4072,12 @@ if [[ "${verification_mode}" == "all" ||
     exit 1
   fi
   if ! verify_projection_runtime_log_redaction; then
+    report_projection_runtime_failure
+    exit 1
+  fi
+
+  if ! run_quality_link_runtime_verifier; then
+    echo "Local Frappe formal quality link runtime verification failed." >&2
     report_projection_runtime_failure
     exit 1
   fi

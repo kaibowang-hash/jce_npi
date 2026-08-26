@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { TrialDataSource } from "../../src/api/trial-data-source";
+import type { FormalQualityLinkDataSource } from "../../src/api/formal-quality-link-data-source";
 import { NpiApiError, NpiTransportError } from "../../src/api/http";
 import LiveTrialPage from "../../src/pages/live-trial-page";
 import { renderWithLocale } from "../support/render";
@@ -1021,9 +1022,21 @@ describe("live Trial planning page", () => {
   });
 
   it("renders dense cavity, defect, action, verification and unavailable external quality truth", async () => {
+    const formalQualityDataSource: FormalQualityLinkDataSource = {
+      load: vi.fn().mockResolvedValue({
+        collection: {
+          projectGlobalId: trialPlanningIds.project,
+          permissions: { view: true, link: false },
+          items: [],
+        },
+        candidate: null,
+      }),
+      link: vi.fn(),
+    };
     renderWithLocale(
       <LiveTrialPage
         dataSource={dataSource()}
+        formalQualityDataSource={formalQualityDataSource}
         navigate={vi.fn()}
         projectId={trialPlanningIds.project}
       />,
@@ -1043,6 +1056,9 @@ describe("live Trial planning page", () => {
       ),
     ).toBeVisible();
     expect(screen.getByText("NCR creation")).toBeVisible();
+    expect(
+      await screen.findByRole("heading", { name: "Formal quality reference" }),
+    ).toBeVisible();
     expect(screen.getAllByText("Unavailable in this checkpoint")).toHaveLength(
       6,
     );

@@ -66,6 +66,8 @@ import {
 } from "../api/trial-data-source";
 import type { ControlledPrintDataSource } from "../api/controlled-print-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
+import { FormalQualityLinkInspector } from "./formal-quality-link-inspector";
+import type { FormalQualityLinkDataSource } from "../api/formal-quality-link-data-source";
 import type { ReportWorkspaceDirty } from "../app/workspace-navigation";
 import {
   DockedInspector,
@@ -3038,6 +3040,7 @@ function initialQualityEditor(
 function TrialQualitySection({
   dataSource,
   execution,
+  formalQualityDataSource,
   onWorkspace,
   projectId,
   reportWorkspaceDirty,
@@ -3045,6 +3048,7 @@ function TrialQualitySection({
 }: {
   dataSource: TrialDataSource;
   execution: TrialExecutionWorkspace | null;
+  formalQualityDataSource?: FormalQualityLinkDataSource | undefined;
   onWorkspace: (value: TrialQualityWorkspace) => void;
   projectId: string;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
@@ -3077,6 +3081,7 @@ function TrialQualitySection({
     ): entry is Extract<TrialQualityDefectRevision, { source: "trial" }> =>
       entry.source === "trial",
   );
+  const formalQualityDefect = trialDefects.at(-1)?.revision ?? null;
 
   useEffect(() => {
     if (!reportWorkspaceDirty) return undefined;
@@ -4471,6 +4476,21 @@ function TrialQualitySection({
           </div>
         )}
       </Panel>
+      {formalQualityDefect ? (
+        <FormalQualityLinkInspector
+          dataSource={formalQualityDataSource}
+          projectId={projectId}
+          source={{
+            scopeGlobalId: workspace.trialRound.globalId,
+            scopeKind: "trial_round",
+            sourceCapability: workspace.permissions.manageDefects,
+            sourceGlobalId: formalQualityDefect.defectGlobalId,
+            sourceKind: "trial_defect",
+            sourceSnapshotHash: formalQualityDefect.snapshotHash,
+            sourceVersion: formalQualityDefect.defectVersion,
+          }}
+        />
+      ) : null}
       <Panel
         className="desktop-engineering-only"
         title={t("Independent verification")}
@@ -6591,12 +6611,14 @@ function ReleasedTrialSummarySection({
 export default function LiveTrialPage({
   controlledPrintDataSource,
   dataSource,
+  formalQualityDataSource,
   navigate,
   projectId,
   reportWorkspaceDirty,
 }: {
   controlledPrintDataSource?: ControlledPrintDataSource | undefined;
   dataSource: TrialDataSource;
+  formalQualityDataSource?: FormalQualityLinkDataSource | undefined;
   navigate: (target: string) => void;
   projectId: string;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
@@ -8212,6 +8234,7 @@ export default function LiveTrialPage({
                 <TrialQualitySection
                   dataSource={dataSource}
                   execution={executionWorkspace}
+                  formalQualityDataSource={formalQualityDataSource}
                   onWorkspace={(value) => {
                     setQuality({ kind: "loaded", value });
                   }}

@@ -6749,3 +6749,51 @@ textarea::placeholder {
     flex-direction: column;
   }
 }
+
+.formal-quality-link {
+  border-inline-start: 3px solid var(--npi-color-brand-primary);
+}
+
+.formal-quality-link__state {
+  display: grid;
+  gap: var(--npi-space-2);
+}
+
+.formal-quality-link__state p,
+.formal-quality-link__notice {
+  color: var(--npi-color-text-secondary);
+}
+
+.formal-quality-link__facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-block: var(--npi-space-3);
+  border-block: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.formal-quality-link__fact {
+  min-width: 0;
+  padding: var(--npi-space-2);
+  border-inline-end: var(--npi-border-default) solid
+    var(--npi-color-border-default);
+}
+
+.formal-quality-link__fact:last-child {
+  border-inline-end: 0;
+}
+
+.formal-quality-link__facts dt {
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+}
+
+.formal-quality-link__facts dd {
+  margin-block-start: var(--npi-space-1);
+  overflow-wrap: anywhere;
+}
+
+@media (width <= 52rem) {
+  .formal-quality-link__facts {
+    grid-template-columns: 1fr 1fr;
+  }
+}

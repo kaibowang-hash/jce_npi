@@ -5,6 +5,7 @@ import type {
   ReadinessTemplateVersion,
   ReadinessWorkspace,
 } from "../../src/api/readiness-data-source";
+import type { ErpProjectionCollectionViewModel } from "../../src/api/erp-projections-data-source";
 
 export const readinessIds = {
   designReleaseItem: "b0c315d1-06f1-5db9-980b-3a9f85870b5b",
@@ -623,4 +624,62 @@ export function readinessRevisedWorkspace(): ReadinessWorkspace {
     currentRevision: current,
     revisions: [first, second, current],
   });
+}
+
+export function readinessFormalQualityProjection(): ErpProjectionCollectionViewModel {
+  const current = readinessRevisionTwo();
+  const observationGlobalId = "70000000-0000-4000-8000-000000000018";
+  const headGlobalId = "70000000-0000-4000-8000-000000000019";
+  const values = {
+    observedAt: "2026-08-12T08:00:00Z",
+    recordKind: "ncr" as const,
+    resultCode: null,
+    statusCode: "Open",
+  };
+  return {
+    accessState: "available",
+    items: [
+      {
+        availability: "available",
+        currentTruth: {
+          headGlobalId,
+          headHash: "7".repeat(64),
+          headOptimisticVersion: 4,
+          observationGlobalId,
+          payloadHash: "6".repeat(64),
+          receivedAt: "2026-08-12T08:01:00Z",
+          sourceModifiedAt: "2026-08-12T08:00:00Z",
+          sourceVersion: "ncr-v4",
+          values,
+        },
+        disposition: "applied_current",
+        editable: false,
+        freshness: "fresh",
+        observationGlobalId,
+        payloadHash: "6".repeat(64),
+        projectionKind: "formal_quality_status",
+        receivedAt: "2026-08-12T08:01:00Z",
+        scopeGlobalId: current.instanceGlobalId,
+        scopeKind: "readiness",
+        sourceModifiedAt: "2026-08-12T08:00:00Z",
+        sourceObjectId: "NCR-SANDBOX-001",
+        sourceObjectType: "FormalQualityStatus",
+        sourceSystem: "ERPNEXT",
+        sourceVersion: "ncr-v4",
+        unavailableReasonCode: null,
+        values,
+      },
+    ],
+    permissions: { edit: false, refresh: false, view: true },
+    projectGlobalId: readinessIds.project,
+    reasonCode: null,
+  };
+}
+
+export function readinessFormalQualityLinks() {
+  return {
+    items: [],
+    permissions: { link: true, view: true as const },
+    projectGlobalId: readinessIds.project,
+  };
 }

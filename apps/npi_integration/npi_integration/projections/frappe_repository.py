@@ -404,6 +404,9 @@ class FrappeProjectionRepository(FrappeDocumentRepository):
             current_payload = _json_object(current_document.payload)
             current = {
                 "observationGlobalId": str(current_document.global_id),
+                "headGlobalId": str(head.global_id),
+                "headOptimisticVersion": int(head.optimistic_version),
+                "headHash": str(head.head_hash),
                 "sourceVersion": str(current_document.source_version),
                 "sourceModifiedAt": _utc_text(
                     _datetime(current_document.source_modified_at)

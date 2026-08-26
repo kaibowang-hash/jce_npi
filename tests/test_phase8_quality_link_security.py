@@ -124,6 +124,24 @@ class Phase8QualityLinkSecurityTest(unittest.TestCase):
         self.assertIn("_query_response(", api)
         self.assertNotIn("currentGlobalId", api)
 
+    def test_checkpoint_four_capability_and_projection_identity_are_server_authoritative(self) -> None:
+        repository = (MODULE / "frappe_repository.py").read_text(encoding="utf-8")
+        api = (ROOT / "apps/npi_integration/npi_integration/quality_link_api.py").read_text(encoding="utf-8")
+        projection = (
+            ROOT / "apps/npi_integration/npi_integration/projections/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("self._can_administer_project(project, project_id)", repository)
+        self.assertIn('set(permissions) != {"view", "link"}', api)
+        self.assertIn('type(permissions["link"]) is not bool', api)
+        for marker in (
+            '"headGlobalId": str(head.global_id)',
+            '"headOptimisticVersion": int(head.optimistic_version)',
+            '"headHash": str(head.head_hash)',
+        ):
+            self.assertIn(marker, projection)
+        for source in (repository, api, projection):
+            self.assertNotIn("ignore_permissions", source)
+
 
 if __name__ == "__main__":
     unittest.main()

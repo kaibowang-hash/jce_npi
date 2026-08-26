@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type { TrialQualityWorkspace } from "../../src/api/trial-data-source";
+import { translate } from "../../src/i18n/runtime";
 import {
   trialExecutionIds,
   trialExecutionWorkspace,
@@ -11,7 +12,11 @@ import {
   trialPlanningIds,
   trialPlanningWorkspace,
 } from "../support/trial-planning-fixture";
-import { trialQualityWorkspace } from "../support/trial-quality-fixture";
+import {
+  trialFormalQualityLinks,
+  trialFormalQualityProjection,
+  trialQualityWorkspace,
+} from "../support/trial-quality-fixture";
 import { emptyTrialReviewWorkspace } from "../support/trial-review-fixture";
 import {
   effectiveViewport,
@@ -107,6 +112,19 @@ async function installTrialApi(
   const observed: ObservedRequest[] = [];
   let qualityAttempts = 0;
   const quality = options.quality ?? trialQualityWorkspace();
+  await page.route(
+    /\/api\/npi\/v1\/projects\/[^/?]+\/(?:formal-quality-links|erp-projections)(?:\?.*)?$/u,
+    async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      expect(route.request().method()).toBe("GET");
+      await fulfillJson(
+        route,
+        path.endsWith("/erp-projections")
+          ? trialFormalQualityProjection()
+          : trialFormalQualityLinks(),
+      );
+    },
+  );
   await page.route(trialEndpoint, async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
@@ -193,6 +211,11 @@ test.describe("P7-03 live Trial quality workspace", () => {
       await openQuality(page, locale);
 
       await expect(page.getByText("DEF-T0-001").first()).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: translate(locale, "Formal quality reference"),
+        }),
+      ).toBeVisible();
       await expect(
         page.getByText(trialExecutionIds.cavity).first(),
       ).toBeVisible();
@@ -356,6 +379,11 @@ test.describe("@visual P7-03 Trial quality evidence", () => {
         reducedMotion: "reduce",
       });
       await openQuality(page, visual.locale);
+      const inspector = page.getByTestId("formal-quality-link-state");
+      await expect(inspector).toBeVisible();
+      await inspector.evaluate((element) => {
+        element.scrollIntoView();
+      });
       await expectNoMixedLanguage(page, visual.locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);

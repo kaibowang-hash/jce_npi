@@ -8605,9 +8605,12 @@ components:
     ERPProjectionCurrentTruth:
       type: object
       additionalProperties: false
-      required: [observationGlobalId, sourceVersion, sourceModifiedAt, receivedAt, payloadHash, values]
+      required: [observationGlobalId, headGlobalId, headOptimisticVersion, headHash, sourceVersion, sourceModifiedAt, receivedAt, payloadHash, values]
       properties:
         observationGlobalId: { type: string, format: uuid }
+        headGlobalId: { type: string, format: uuid }
+        headOptimisticVersion: { type: integer, minimum: 1 }
+        headHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         sourceVersion: { type: string, minLength: 1, maxLength: 255 }
         sourceModifiedAt: { type: string, format: date-time }
         receivedAt: { type: string, format: date-time }
@@ -8786,7 +8789,7 @@ components:
       required: [view, link]
       properties:
         view: { type: boolean, const: true }
-        link: { type: boolean, const: false }
+        link: { type: boolean }
     FormalQualityLinkCollection:
       type: object
       additionalProperties: false

@@ -198,6 +198,30 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
         self.assertEqual(outcome.response["linkRevision"]["source"]["sourceSnapshotHash"], SOURCE_HASH)
         self.assertEqual(outcome.response["linkHead"]["currentProjectionHeadVersion"], 3)
 
+    def test_query_link_capability_reuses_exact_source_authority_without_client_input(self) -> None:
+        source = (ROOT / "apps/npi_integration/npi_integration/quality_link/frappe_repository.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertEqual(
+            source.count('"link": self._can_administer_project(project, project_id),'),
+            2,
+        )
+        base = (
+            ROOT / "apps/npi_core/npi_core/documents/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        capability = base[
+            base.index("    def _can_administer_project(") : base.index(
+                "    def _tenant_matches("
+            )
+        ]
+        for marker in (
+            "self._tenant_matches(project)",
+            "str(project.global_id) == str(project_id)",
+            "self._is_internal_system_manager()",
+        ):
+            self.assertIn(marker, capability)
+        self.assertNotIn("request_fields", capability)
+
     def test_exact_replay_short_circuits_all_resolution_and_writes(self) -> None:
         replay = {"projectGlobalId": str(PROJECT), "operation": "link_observed_formal_quality_reference"}
         with self.command_patches(replay=replay):

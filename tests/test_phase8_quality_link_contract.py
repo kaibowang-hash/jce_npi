@@ -100,6 +100,11 @@ class Phase8QualityLinkContractTest(unittest.TestCase):
             contract.index("    FormalQualityLinkPermissions:\n")
         ]
         self.assertIn("reconciliation", item)
+        permissions = contract[contract.index("    FormalQualityLinkPermissions:\n") :]
+        permissions = permissions[: permissions.index("\n    FormalQualityLinkCollection:")]
+        self.assertIn("view: { type: boolean, const: true }", permissions)
+        self.assertIn("link: { type: boolean }", permissions)
+        self.assertNotIn("link: { type: boolean, const: false }", permissions)
 
 
 if __name__ == "__main__":

@@ -315,6 +315,29 @@ class Phase8QualityLinkApiTest(unittest.TestCase):
         )
         self.assertNotIn("commit", self.events)
 
+    def test_query_capability_is_server_supplied_boolean_and_shape_is_closed(self) -> None:
+        self.repository.list_quality_links = lambda *_args, **_kwargs: {
+            "projectGlobalId": PROJECT,
+            "permissions": {"view": True, "link": True},
+            "items": [],
+        }
+        result = self.module.get_formal_quality_links()
+        self.assertEqual(result["permissions"], {"view": True, "link": True})
+        for permissions in (
+            {"view": True},
+            {"view": True, "link": "yes"},
+            {"view": True, "link": True, "approve": True},
+        ):
+            with self.subTest(permissions=permissions):
+                self.repository.list_quality_links = lambda *_args, **_kwargs: {
+                    "projectGlobalId": PROJECT,
+                    "permissions": permissions,
+                    "items": [],
+                }
+                with self.assertRaisesRegex(RuntimeError, "permissions"):
+                    self.module.get_formal_quality_links()
+        self.assertNotIn("commit", self.events)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -491,6 +491,18 @@ class Phase8ProjectionRepositoryTest(unittest.TestCase):
             self.repository.authorize_project(PROJECT_ID), kind=None
         )
         self.assertIsNotNone(response["items"][0]["currentTruth"])
+        self.assertEqual(
+            response["items"][0]["currentTruth"]["headGlobalId"],
+            str(head.global_id),
+        )
+        self.assertEqual(
+            response["items"][0]["currentTruth"]["headOptimisticVersion"],
+            4,
+        )
+        self.assertEqual(
+            response["items"][0]["currentTruth"]["headHash"],
+            str(head.head_hash),
+        )
         self.assertEqual(response["items"][0]["availability"], "unavailable")
         self.assertGreaterEqual(len(self.locked), 4)
 

@@ -2507,7 +2507,6 @@ Open the existing Trial prototype workspace.,開啟現有的試模原型工作�
 Open Execution prototype,開啟執行原型
 Open the existing execution and reconciliation prototype.,開啟現有的執行與對帳原型。
 Execution,執行
-Reconciliation,對帳
 Creation capabilities for this Project are unavailable.,此專案的建立能力無法使用。
 Open an authorized live Project before using contextual quick-create.,使用情境快速建立前，請先開啟已授權的即時專案。
 The authenticated session is not ready. Reconcile the session before creating a record.,驗證身分的工作階段尚未就緒。建立記錄前請先對帳工作階段狀態。
@@ -8410,3 +8409,28 @@ The formal quality observation changed. Reload it before linking.,正式品質�
 The idempotency key was already used for a different formal quality link command.,此冪等鍵已用於其他正式品質關聯命令。
 The quality source changed. Reload it before linking formal quality.,品質源已變更。請重新載入後再關聯正式品質。
 You are not authorized to link this formal quality reference.,您無權關聯此正式品質引用。
+Formal quality reference,正式品質引用
+Loading formal quality truth,正在載入正式品質事實
+Current formal quality link,目前正式品質關聯
+Drifted formal quality link,已漂移的正式品質關聯
+Formal quality truth unavailable,正式品質事實無法使用
+Formal quality reference available,正式品質引用可用
+No formal quality reference available,無可用正式品質引用
+Raw ERPNext quality codes remain observed truth and are never interpreted as a pass.,ERPNext 原始品質代碼保持為觀測事實，絕不解釋為通過。
+Reconciliation,對帳
+Formal record kind,正式記錄類型
+Raw status code,原始狀態代碼
+Raw result code,原始結果代碼
+One fresh authoritative formal quality observation is available to link.,有一筆新鮮且權威的正式品質觀測可供關聯。
+No fresh authoritative formal quality observation is available for this exact source.,此精確來源沒有新鮮且權威的正式品質觀測可用。
+This formal quality reference is read only in the current Project context.,此正式品質引用在目前專案上下文中為唯讀。
+Linking the exact formal quality reference.,正在關聯精確的正式品質引用。
+The exact formal quality reference is linked and audited.,精確的正式品質引用已關聯並稽核。
+Link formal quality reference,關聯正式品質引用
+Review formal quality link,審查正式品質關聯
+"The exact source, projection head, observation, actor and trace are retained.",精確的來源、投影頭、觀測、操作者和追蹤均被保留。
+A conflict or unavailable source creates no partial link revision.,衝突或來源無法使用時不會產生部分關聯修訂。
+Links one exact observed ERPNext quality reference to this internal source.,將一筆精確觀測到的 ERPNext 品質引用關聯到此內部來源。
+The retained link revision is immutable; a correction appends a successor.,保留的關聯修訂不可變；更正將追加後繼修訂。
+The server requires exact Project and source-workspace authority.,伺服器要求精確的專案和來源工作區權限。
+Source version {{version}},來源版本 {{version}}

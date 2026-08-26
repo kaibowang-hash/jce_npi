@@ -4,6 +4,7 @@ import type {
   TrialQualityWorkspace,
 } from "../../src/api/trial-data-source";
 import type { ToolingDefectRevisionViewModel } from "../../src/api/tooling-engineering-controls-contract";
+import type { ErpProjectionCollectionViewModel } from "../../src/api/erp-projections-data-source";
 import {
   trialExecutionIds,
   trialExecutionWorkspace,
@@ -290,5 +291,68 @@ export function trialQualityWorkspace(
     trialRound: execution.round,
     verificationRevisions: [trialQualityVerification()],
     ...overrides,
+  };
+}
+
+export function trialFormalQualityProjection(): ErpProjectionCollectionViewModel {
+  const workspace = trialQualityWorkspace();
+  const defect = workspace.defectRevisions.find(
+    (entry) => entry.source === "trial",
+  )?.revision;
+  if (!defect)
+    throw new Error("Trial formal quality fixture requires one Trial defect.");
+  const observationGlobalId = "30000000-0000-4000-8000-00000000000d";
+  const headGlobalId = "30000000-0000-4000-8000-00000000000e";
+  const values = {
+    observedAt: "2026-08-10T10:00:00Z",
+    recordKind: "quality_inspection" as const,
+    resultCode: "Accepted",
+    statusCode: "Completed",
+  };
+  return {
+    accessState: "available",
+    items: [
+      {
+        availability: "available",
+        currentTruth: {
+          headGlobalId,
+          headHash: "e".repeat(64),
+          headOptimisticVersion: 2,
+          observationGlobalId,
+          payloadHash: "d".repeat(64),
+          receivedAt: "2026-08-10T10:01:00Z",
+          sourceModifiedAt: "2026-08-10T10:00:00Z",
+          sourceVersion: "quality-v2",
+          values,
+        },
+        disposition: "applied_current",
+        editable: false,
+        freshness: "fresh",
+        observationGlobalId,
+        payloadHash: "d".repeat(64),
+        projectionKind: "formal_quality_status",
+        receivedAt: "2026-08-10T10:01:00Z",
+        scopeGlobalId: workspace.trialRound.globalId,
+        scopeKind: "trial_round",
+        sourceModifiedAt: "2026-08-10T10:00:00Z",
+        sourceObjectId: "QI-SANDBOX-T0",
+        sourceObjectType: "FormalQualityStatus",
+        sourceSystem: "ERPNEXT",
+        sourceVersion: "quality-v2",
+        unavailableReasonCode: null,
+        values,
+      },
+    ],
+    permissions: { edit: false, refresh: false, view: true },
+    projectGlobalId: trialPlanningIds.project,
+    reasonCode: null,
+  };
+}
+
+export function trialFormalQualityLinks() {
+  return {
+    items: [],
+    permissions: { link: true, view: true as const },
+    projectGlobalId: trialPlanningIds.project,
   };
 }

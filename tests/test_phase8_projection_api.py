@@ -223,6 +223,9 @@ class Phase8ProjectionApiTest(unittest.TestCase):
             },
             "currentTruth": {
                 "observationGlobalId": str(uid(10)),
+                "headGlobalId": str(uid(11)),
+                "headOptimisticVersion": 3,
+                "headHash": "b" * 64,
                 "sourceVersion": "opaque-v1",
                 "sourceModifiedAt": "2026-08-16T08:00:00Z",
                 "receivedAt": "2026-08-16T08:01:00Z",

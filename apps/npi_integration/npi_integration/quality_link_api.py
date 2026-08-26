@@ -373,7 +373,13 @@ def _query_response(
         raise RuntimeError("The formal quality link query response shape is invalid.")
     if str(response["projectGlobalId"]) != str(project_id):
         raise RuntimeError("The formal quality link query escaped its Project.")
-    if response["permissions"] != {"view": True, "link": False}:
+    permissions = response["permissions"]
+    if (
+        not isinstance(permissions, dict)
+        or set(permissions) != {"view", "link"}
+        or permissions["view"] is not True
+        or type(permissions["link"]) is not bool
+    ):
         raise RuntimeError("The formal quality link query permissions are invalid.")
     if collection:
         items = response["items"]

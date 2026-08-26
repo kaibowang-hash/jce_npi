@@ -209,6 +209,45 @@ describe("ERP projection response validation", () => {
       }),
     ).toBe(false);
   });
+
+  it("accepts formal-quality head identity only as one complete closed tuple", () => {
+    const identified = structuredClone(erpProjectionCollectionFixture());
+    const quality = identified.items.find(
+      (item) => item.projectionKind === "formal_quality_status",
+    );
+    if (!quality?.currentTruth) {
+      throw new Error("The formal-quality current truth fixture is required.");
+    }
+    quality.currentTruth.headGlobalId = "a86ce132-f344-49c9-9f26-183dd1f36fd8";
+    quality.currentTruth.headOptimisticVersion = 3;
+    quality.currentTruth.headHash = "a".repeat(64);
+    expect(isErpProjectionCollection(identified)).toBe(true);
+
+    const partial = structuredClone(identified);
+    const partialQuality = partial.items.find(
+      (item) => item.projectionKind === "formal_quality_status",
+    );
+    if (!partialQuality?.currentTruth) {
+      throw new Error("The partial formal-quality current truth is required.");
+    }
+    delete partialQuality.currentTruth.headHash;
+    expect(isErpProjectionCollection(partial)).toBe(false);
+
+    const extra = structuredClone(identified) as unknown as {
+      items: {
+        projectionKind: string;
+        currentTruth: Record<string, unknown> | null;
+      }[];
+    };
+    const extraQuality = extra.items.find(
+      (item) => item.projectionKind === "formal_quality_status",
+    );
+    if (!extraQuality?.currentTruth) {
+      throw new Error("The extra formal-quality current truth is required.");
+    }
+    extraQuality.currentTruth.erpStatus = "Accepted";
+    expect(isErpProjectionCollection(extra)).toBe(false);
+  });
 });
 
 describe("ERP projection live data source", () => {

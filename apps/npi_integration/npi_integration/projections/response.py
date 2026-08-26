@@ -40,6 +40,9 @@ _ITEM_FIELDS = {
 }
 _CURRENT_FIELDS = {
     "observationGlobalId",
+    "headGlobalId",
+    "headOptimisticVersion",
+    "headHash",
     "sourceVersion",
     "sourceModifiedAt",
     "receivedAt",
@@ -178,6 +181,13 @@ def _current_truth(kind: ProjectionKind, value: object) -> dict[str, Any]:
         "observationGlobalId": str(
             _uuid(record["observationGlobalId"], "currentTruth.observationGlobalId")
         ),
+        "headGlobalId": str(
+            _uuid(record["headGlobalId"], "currentTruth.headGlobalId")
+        ),
+        "headOptimisticVersion": _positive_int(
+            record["headOptimisticVersion"], "currentTruth.headOptimisticVersion"
+        ),
+        "headHash": _hash(record["headHash"], "currentTruth.headHash"),
         "sourceVersion": _text(
             record["sourceVersion"], "currentTruth.sourceVersion", 255
         ),
@@ -250,6 +260,12 @@ def _text(value: object, path: str, maximum: int) -> str:
 
 def _optional_text(value: object, path: str, maximum: int) -> str | None:
     return None if value is None else _text(value, path, maximum)
+
+
+def _positive_int(value: object, path: str) -> int:
+    if type(value) is not int or value < 1:
+        raise ValueError(f"ERP projection {path} is invalid.")
+    return value
 
 
 def _hash(value: object, path: str) -> str:

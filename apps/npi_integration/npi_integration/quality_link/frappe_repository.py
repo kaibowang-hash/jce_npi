@@ -134,7 +134,10 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
         ]
         return {
             "projectGlobalId": str(project.global_id),
-            "permissions": {"view": True, "link": False},
+            "permissions": {
+                "view": True,
+                "link": self._can_administer_project(project, project_id),
+            },
             "items": items,
         }
 
@@ -151,7 +154,10 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
             return None
         return {
             "projectGlobalId": str(project.global_id),
-            "permissions": {"view": True, "link": False},
+            "permissions": {
+                "view": True,
+                "link": self._can_administer_project(project, project_id),
+            },
             "link": self._link_item(project, head),
         }
 

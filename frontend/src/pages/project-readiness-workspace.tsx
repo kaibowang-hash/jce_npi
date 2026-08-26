@@ -40,6 +40,8 @@ import {
 } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import { FormalQualityLinkInspector } from "./formal-quality-link-inspector";
+import type { FormalQualityLinkDataSource } from "../api/formal-quality-link-data-source";
 
 type ResourceState =
   | { kind: "loading" }
@@ -1509,6 +1511,7 @@ function ItemInspector({
 
 export interface ProjectReadinessWorkspaceProps {
   readonly dataSource: ReadinessDataSource;
+  readonly formalQualityDataSource?: FormalQualityLinkDataSource | undefined;
   readonly members: readonly ProjectMemberViewModel[];
   readonly projectId: string;
   readonly reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
@@ -1517,6 +1520,7 @@ export interface ProjectReadinessWorkspaceProps {
 
 export function ProjectReadinessWorkspace({
   dataSource,
+  formalQualityDataSource,
   members,
   projectId,
   reportWorkspaceDirty,
@@ -2213,6 +2217,19 @@ export function ProjectReadinessWorkspace({
       </Panel>
 
       <UnavailableProjectionPanel workspace={resource.value} />
+      <FormalQualityLinkInspector
+        dataSource={formalQualityDataSource}
+        projectId={projectId}
+        source={{
+          scopeGlobalId: resource.value.currentRevision.instanceGlobalId,
+          scopeKind: "readiness",
+          sourceCapability: resource.value.permissions.canRevise,
+          sourceGlobalId: resource.value.currentRevision.instanceGlobalId,
+          sourceKind: "readiness_assessment",
+          sourceSnapshotHash: resource.value.currentRevision.snapshotHash,
+          sourceVersion: resource.value.currentRevision.instanceVersion,
+        }}
+      />
       {reviewCommand && selectedItem && currentRevision ? (
         <ImpactReview
           confirmLabel={t("Append readiness revision")}

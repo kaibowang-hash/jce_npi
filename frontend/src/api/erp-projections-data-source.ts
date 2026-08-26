@@ -145,6 +145,9 @@ export type ErpProjectionValues =
 
 export interface ErpProjectionCurrentTruthViewModel {
   observationGlobalId: string;
+  headGlobalId?: string;
+  headOptimisticVersion?: number;
+  headHash?: string;
   sourceVersion: string;
   sourceModifiedAt: string;
   receivedAt: string;
@@ -648,17 +651,32 @@ function currentTruth(
   kind: ErpProjectionKind,
   value: unknown,
 ): value is ErpProjectionCurrentTruthViewModel {
+  const baseFields = [
+    "observationGlobalId",
+    "sourceVersion",
+    "sourceModifiedAt",
+    "receivedAt",
+    "payloadHash",
+    "values",
+  ] as const;
+  const hasHeadIdentity =
+    record(value) &&
+    "headGlobalId" in value &&
+    "headOptimisticVersion" in value &&
+    "headHash" in value;
   return (
     record(value) &&
-    exact(value, [
-      "observationGlobalId",
-      "sourceVersion",
-      "sourceModifiedAt",
-      "receivedAt",
-      "payloadHash",
-      "values",
-    ]) &&
+    exact(
+      value,
+      hasHeadIdentity
+        ? [...baseFields, "headGlobalId", "headOptimisticVersion", "headHash"]
+        : baseFields,
+    ) &&
     uuid(value.observationGlobalId) &&
+    (!hasHeadIdentity ||
+      (uuid(value.headGlobalId) &&
+        integer(value.headOptimisticVersion, 1) &&
+        hash(value.headHash))) &&
     text(value.sourceVersion, 255) &&
     dateTime(value.sourceModifiedAt) &&
     dateTime(value.receivedAt) &&
