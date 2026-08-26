@@ -720,3 +720,63 @@ the checkpoint evidence and `implementation/AUTOPILOT_CONTROLLER.md`. The
 cycle adds no controller predicate instrumentation in advance. A later exact
 insert/save predicate checkpoint is permitted only if this one uniquely stops
 at such a boundary without identifying the controller predicate.
+
+## 23. Independent prepare-projection bootstrap diagnostic
+
+Exact prepare-projection SHA
+`cf4f431e4ca3d74f50716bfbaa8e7c2d66e3d83e` passes ordinary CI
+`32998865737`. Its one controlled run `33000193191` passes preflight
+`98279700208`; runtime `98279799344` emits only
+`P806_QUALITY_PREPARE_PARENT_CHILD_STATUS / RuntimeError /
+trace-9996bb78f674578fae7afed049451082`. No child output, business value, ID,
+message or stack was read.
+
+Static cross-proof proves the absent server tuple is a harness lifecycle
+blind spot. `run_local_bench_fixture` enters the repository diagnostic scope
+before `frappe.init`, while pinned Frappe creates `local.flags` only during
+init. The first diagnostic `getattr(frappe.flags, ...)` therefore raises on
+the unbound Werkzeug local proxy and the response-neutral context yields
+without state. The prior fake test supplied a flags object in advance. This
+uniquely explains why every child/repository stage was dormant, but it does
+not select the underlying product failure.
+
+Freeze `p8-06-quality-link-prepare-projection` at diagnostic `1/1`, repair
+`0/1`, final `0/1`. The independent harness-only
+`p8-06-quality-link-prepare-bootstrap` cycle starts diagnostic `0/1`, repair
+`0/1`, final `0/1`. Its exact-five paths are this plan, the checkpoint
+evidence, `implementation/AUTOPILOT_CONTROLLER.md`,
+`scripts/verify_quality_link_runtime.py` and
+`tests/test_phase8_quality_link_runtime_verifier.py`.
+
+The old activation is false and one new activation is true. A verifier-owned
+exact-scope context records only five pre-context stages: Frappe import,
+repository import, exact argument validation, `frappe.init` and active
+repository-context proof. It uses the existing O_EXCL exact-three-key file,
+same exception and finally rules. Only after init succeeds does the existing
+repository context begin. No coarse verifier stage encloses later product
+work, so the existing thirty-nine server stages remain innermost and the
+strict mirrored reader still wins for post-context failures. Failed-child
+stdout/stderr remain unread; malformed, duplicate, wrong-scope or wrong-trace
+records remain fail-closed.
+
+Changed-files-to-tests must prove fresh unbound flags, init-before-context,
+pre-init exact3 recording, active-context shape, old-off/new-only mutual
+exclusion, exact lexical allowlists, server-inner preference, strict reader,
+default-off/no-leak and unchanged cleanup. Full affected quality-link,
+projection, P7 and integration security regressions, current/reconciliation,
+Python compilation, direct-SQL/network scans, diff hygiene and an exact-five
+manifest with an unauthorized sixth path rejected remain required.
+
+This cycle changes no product/app repository, shell, route, API, metadata,
+migration, permission, transaction, projection value, UI, target, external
+network or portal decision. The separately requested production read-only
+fact audit and final-DoD documentation remain queued under current production
+access prohibitions and are not included.
+
+Level 1 passes focused bootstrap/projection `25/25`, complete affected
+quality-link/projection/P7/Item/MBOM/Tool Asset `297/297`, full repository
+Python `2528/2528` and current/reconciliation `36/36`. Current-task and both
+reconciliation scripts, compilation, shell syntax, exact activation,
+direct-SQL/network/leak scans and diff hygiene pass. The exact-five manifest
+and simulated base-to-tip union are accepted; a synthetic unauthorized sixth
+path is rejected fail-closed.

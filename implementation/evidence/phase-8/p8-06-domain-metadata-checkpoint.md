@@ -209,3 +209,46 @@ projection ordering and zero direct SQL/network/commit additions. Product
 values, permissions, transaction boundaries, write order, responses,
 rollback, API, contracts, metadata, migrations, UI, i18n, ERP target traffic,
 FR-CO-003/004 deferral and every B/C hold remain unchanged.
+
+## Prepare-projection bootstrap diagnostic checkpoint
+
+Exact prepare-projection checkpoint
+`cf4f431e4ca3d74f50716bfbaa8e7c2d66e3d83e` passes ordinary
+`32998865737`. Its sole controlled diagnostic `33000193191` passes preflight
+job `98279700208`; runtime job `98279799344` reports only
+`P806_QUALITY_PREPARE_PARENT_CHILD_STATUS / RuntimeError /
+trace-9996bb78f674578fae7afed049451082`. No failed-child output, business
+value, ID, message or stack was read.
+
+The no-server-tuple condition is uniquely a harness bootstrap defect. The
+fresh child entered `quality_link_prepare_projection_diagnostics` before
+`frappe.init`; pinned Frappe binds `frappe.flags` only in init, so the
+context's first flags lookup raised on an unbound local proxy and its
+best-effort guard yielded without diagnostic state. The prior unit fake
+pre-bound a `SimpleNamespace` and therefore missed this real lifecycle. This
+does not identify a product predicate, so the old cycle freezes at diagnostic
+`1/1`, repair `0/1`, final `0/1` without repair.
+
+Independent `p8-06-quality-link-prepare-bootstrap` starts at diagnostic
+`0/1`, repair `0/1`, final `0/1`. Its exact-five verifier/evidence paths add
+one active harness flag and five direct bootstrap stages for imports,
+arguments, init and active-context proof. Each may write only the existing
+exclusive exact-three-key safe record. Repository diagnostics begin only
+after init; later product failures retain the existing thirty-nine lexical
+server stages, strict mirrored reader and server-inner preference. The
+original exception/finally behavior and failed-child-unread contract remain
+unchanged.
+
+Product code, APIs, permissions, transactions, source ownership, values,
+write order, rollback, metadata, migrations, UI, i18n, ERP target traffic and
+all B/C holds remain unchanged. FR-CO-003/004 remain
+`USER_APPROVED_POST_V1_2_DEFERRED`. Production SSH/read-only facts and final
+DoD documentation remain a separate queued governance task and are not
+authorized here.
+
+Level 1 passes focused bootstrap/projection `25/25`, affected P8-06/P8-01/P7
+and Item/MBOM/Tool Asset peers `297/297`, full repository Python `2528/2528`
+and current/reconciliation `36/36`. Current and reconciliation scripts,
+compile, shell syntax, activation/security/no-leak scans and diff hygiene pass.
+The exact-five manifest and base union are accepted; an unauthorized sixth
+path is rejected.

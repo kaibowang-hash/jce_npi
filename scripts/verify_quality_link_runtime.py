@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
 import re
@@ -31,7 +32,8 @@ ACKNOWLEDGEMENT = (
 )
 _NAMESPACE = UUID("2f927cab-16a1-4ac9-a9da-39fc8800b806")
 QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED = False
-QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED = True
+QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED = False
+QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED = True
 QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES = (
     "P806_QUALITY_BOOTSTRAP_SECRET",
     "P806_QUALITY_ADMIN_LOGIN",
@@ -56,6 +58,13 @@ QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES = (
     "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS",
     "P806_QUALITY_PREPARE_PARENT_RESULT_PARSE",
     "P806_QUALITY_PREPARE_PARENT_RESULT_SHAPE",
+)
+QUALITY_LINK_PREPARE_BOOTSTRAP_CODES = (
+    "P806_QUALITY_PREPARE_BOOTSTRAP_IMPORT_FRAPPE",
+    "P806_QUALITY_PREPARE_BOOTSTRAP_IMPORT_REPOSITORY",
+    "P806_QUALITY_PREPARE_BOOTSTRAP_ARGUMENTS",
+    "P806_QUALITY_PREPARE_BOOTSTRAP_INIT",
+    "P806_QUALITY_PREPARE_BOOTSTRAP_CONTEXT_ACTIVE",
 )
 QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES = frozenset(
     {
@@ -128,6 +137,7 @@ def quality_link_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
         (
             QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+            or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
         )
         and _TRACE_PATTERN.fullmatch(trace_id) is not None
     ):
@@ -158,6 +168,7 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
             or (
                 code not in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
                 and code not in QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
+                and code not in QUALITY_LINK_PREPARE_BOOTSTRAP_CODES
             )
             or (
                 code in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
@@ -165,7 +176,14 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
             )
             or (
                 code in QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
-                and not QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+                and not (
+                    QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+                    or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+                )
+            )
+            or (
+                code in QUALITY_LINK_PREPARE_BOOTSTRAP_CODES
+                and not QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
             )
             or _TYPE_PATTERN.fullmatch(exception_type) is None
         ):
@@ -232,6 +250,12 @@ def read_quality_link_runtime_diagnostic(
 
 
 def _active_quality_link_runtime_diagnostic_codes() -> frozenset[str]:
+    if QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED:
+        return (
+            frozenset(QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES)
+            .union(QUALITY_LINK_PREPARE_BOOTSTRAP_CODES)
+            .union(QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES)
+        )
     if QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED:
         return frozenset(QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES).union(
             QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES
@@ -251,6 +275,25 @@ def _prepare_parent_diagnostic_step(
             yield
         return
     yield
+
+
+@contextmanager
+def _prepare_bootstrap_diagnostic_step(
+    method: str,
+    code: str,
+) -> Iterator[None]:
+    if method == "prepare_projection":
+        with quality_link_runtime_diagnostic_step(code):
+            yield
+        return
+    yield
+
+
+def _prepare_projection_diagnostics_enabled() -> bool:
+    return (
+        QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+        or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+    )
 
 
 def _body(result: object, *, status: int) -> dict[str, Any]:
@@ -276,7 +319,7 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
     diagnostic_cursors = (
         item_runtime._replay_diagnostic_log_cursors()
         if method == "prepare_projection"
-        and QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+        and _prepare_projection_diagnostics_enabled()
         and isinstance(diagnostic_trace_id, str)
         and _TRACE_PATTERN.fullmatch(diagnostic_trace_id) is not None
         else None
@@ -522,7 +565,7 @@ def run_fresh(
         readiness_id = current.get("instanceGlobalId")
         require(isinstance(readiness_id, str), "P8-06 readiness identity is unavailable")
     prepare_kwargs = {"project_id": project_id, "readiness_id": readiness_id}
-    if QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED:
+    if _prepare_projection_diagnostics_enabled():
         prepare_kwargs["diagnostic_trace_id"] = quality_link_runtime_diagnostic_trace()
     with quality_link_runtime_diagnostic_step("P806_QUALITY_PREPARE_PROJECTION"):
         prepared = run_bench_fixture(
@@ -548,56 +591,99 @@ def run_fresh(
 
 
 def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
-    import frappe
-    from npi_integration.projections.frappe_repository import (
-        quality_link_prepare_projection_diagnostics,
-        quality_link_prepare_projection_step,
-    )
+    with _prepare_bootstrap_diagnostic_step(
+        method,
+        "P806_QUALITY_PREPARE_BOOTSTRAP_IMPORT_FRAPPE",
+    ):
+        import frappe
+    with _prepare_bootstrap_diagnostic_step(
+        method,
+        "P806_QUALITY_PREPARE_BOOTSTRAP_IMPORT_REPOSITORY",
+    ):
+        frappe_repository = importlib.import_module(
+            "npi_integration.projections.frappe_repository"
+        )
 
-    require(method in {"prepare_projection", "cleanup"}, "P8-06 Bench fixture is unavailable")
-    exact_kwargs = dict(kwargs)
-    diagnostic_trace_id = exact_kwargs.pop("diagnostic_trace_id", None)
-    prepare_diagnostic_enabled = (
-        os.environ.get(_PREPARE_PROJECTION_DIAGNOSTIC_ENV)
-        == _PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
-    )
-    if method == "prepare_projection":
+    with _prepare_bootstrap_diagnostic_step(
+        method,
+        "P806_QUALITY_PREPARE_BOOTSTRAP_ARGUMENTS",
+    ):
         require(
-            set(exact_kwargs) == {"project_id", "readiness_id"}
-            and (
-                (
-                    prepare_diagnostic_enabled
-                    and isinstance(diagnostic_trace_id, str)
-                    and _TRACE_PATTERN.fullmatch(diagnostic_trace_id) is not None
-                )
-                or (
-                    not prepare_diagnostic_enabled
-                    and diagnostic_trace_id is None
-                )
-            ),
-            "P8-06 prepare fixture arguments are invalid",
+            method in {"prepare_projection", "cleanup"},
+            "P8-06 Bench fixture is unavailable",
         )
-    else:
-        require(
-            set(exact_kwargs) == {"project_id", "readiness_id"}
-            and diagnostic_trace_id is None,
-            "P8-06 cleanup fixture arguments are invalid",
+        exact_kwargs = dict(kwargs)
+        diagnostic_trace_id = exact_kwargs.pop("diagnostic_trace_id", None)
+        prepare_diagnostic_enabled = (
+            os.environ.get(_PREPARE_PROJECTION_DIAGNOSTIC_ENV)
+            == _PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
         )
-    with quality_link_prepare_projection_diagnostics(
+        if method == "prepare_projection":
+            require(
+                set(exact_kwargs) == {"project_id", "readiness_id"}
+                and (
+                    (
+                        prepare_diagnostic_enabled
+                        and isinstance(diagnostic_trace_id, str)
+                        and _TRACE_PATTERN.fullmatch(diagnostic_trace_id) is not None
+                    )
+                    or (
+                        not prepare_diagnostic_enabled
+                        and diagnostic_trace_id is None
+                    )
+                ),
+                "P8-06 prepare fixture arguments are invalid",
+            )
+        else:
+            require(
+                set(exact_kwargs) == {"project_id", "readiness_id"}
+                and diagnostic_trace_id is None,
+                "P8-06 cleanup fixture arguments are invalid",
+            )
+    with _prepare_bootstrap_diagnostic_step(
+        method,
+        "P806_QUALITY_PREPARE_BOOTSTRAP_INIT",
+    ):
+        frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
+    with frappe_repository.quality_link_prepare_projection_diagnostics(
         diagnostic_trace_id if method == "prepare_projection" else None
     ):
-        with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_CHILD_INIT"):
-            frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
-        with quality_link_prepare_projection_step(
+        if method == "prepare_projection" and prepare_diagnostic_enabled:
+            with _prepare_bootstrap_diagnostic_step(
+                method,
+                "P806_QUALITY_PREPARE_BOOTSTRAP_CONTEXT_ACTIVE",
+            ):
+                state = getattr(
+                    frappe.flags,
+                    frappe_repository._QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG,
+                    None,
+                )
+                require(
+                    isinstance(state, dict)
+                    and set(state) == {"trace_id", "recorded"}
+                    and state.get("trace_id") == diagnostic_trace_id
+                    and state.get("recorded") is False,
+                    "P8-06 prepare diagnostic context is inactive",
+                )
+        with frappe_repository.quality_link_prepare_projection_step(
+            "P806_QUALITY_PREPARE_CHILD_INIT"
+        ):
+            require(
+                getattr(frappe.local, "initialised", False) is True,
+                "P8-06 prepare fixture Site was not initialized",
+            )
+        with frappe_repository.quality_link_prepare_projection_step(
             "P806_QUALITY_PREPARE_CHILD_CONNECT"
         ):
             frappe.connect()
         try:
-            with quality_link_prepare_projection_step(
+            with frappe_repository.quality_link_prepare_projection_step(
                 "P806_QUALITY_PREPARE_SITE_VALIDATE"
             ):
                 document_runtime._validated_runtime_site()
-            with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_SET_ACTOR"):
+            with frappe_repository.quality_link_prepare_projection_step(
+                "P806_QUALITY_PREPARE_SET_ACTOR"
+            ):
                 frappe.set_user(
                     ACTOR_USER if method == "prepare_projection" else "Administrator"
                 )
@@ -606,16 +692,38 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
                 if method == "prepare_projection"
                 else cleanup(**exact_kwargs)
             )
-            with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_COMMIT"):
+            with frappe_repository.quality_link_prepare_projection_step(
+                "P806_QUALITY_PREPARE_COMMIT"
+            ):
                 frappe.db.commit()
-            with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_RESPONSE"):
+            with frappe_repository.quality_link_prepare_projection_step(
+                "P806_QUALITY_PREPARE_RESPONSE"
+            ):
                 print(json.dumps(result, separators=(",", ":"), sort_keys=True))
         except Exception:
             frappe.db.rollback()
             raise
         finally:
-            with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_DESTROY"):
+            with frappe_repository.quality_link_prepare_projection_step(
+                "P806_QUALITY_PREPARE_DESTROY"
+            ):
                 frappe.destroy()
+
+
+def run_scoped_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
+    trace_id = kwargs.get("diagnostic_trace_id")
+    scope_is_exact = (
+        method == "prepare_projection"
+        and QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+        and os.environ.get(_PREPARE_PROJECTION_DIAGNOSTIC_ENV)
+        == _PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
+        and isinstance(trace_id, str)
+        and _TRACE_PATTERN.fullmatch(trace_id) is not None
+    )
+    with quality_link_runtime_diagnostic_scope(
+        trace_id if scope_is_exact else ""
+    ):
+        run_local_bench_fixture(method, kwargs)
 
 
 def main() -> int:
@@ -662,7 +770,7 @@ def main() -> int:
         require(arguments.base_url is None and arguments.fixture_kwargs is not None, "P8-06 fixture invocation drifted")
         kwargs = json.loads(arguments.fixture_kwargs)
         require(isinstance(kwargs, dict), "P8-06 fixture arguments are invalid")
-        run_local_bench_fixture(arguments.bench_fixture, kwargs)
+        run_scoped_local_bench_fixture(arguments.bench_fixture, kwargs)
         return 0
     trace_id = quality_link_runtime_diagnostic_trace()
     with quality_link_runtime_diagnostic_scope(trace_id):
@@ -677,6 +785,7 @@ def main() -> int:
             if (
                 QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+                or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
             ):
                 return 1
             raise

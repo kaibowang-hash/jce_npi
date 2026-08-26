@@ -8,6 +8,7 @@ import sys
 import tempfile
 import types
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import call, patch
 
@@ -94,8 +95,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             "P806_QUALITY_CLEANUP",
         )
         self.assertFalse(self.verifier.QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED)
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
         source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(encoding="utf-8")
@@ -115,10 +119,14 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
 
     def test_prepare_projection_allowlists_are_exact_and_lexically_unique(self) -> None:
         parent = self.verifier.QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
+        bootstrap = self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_CODES
         server = self.verifier.QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES
         self.assertEqual(len(parent), 4)
+        self.assertEqual(len(bootstrap), 5)
         self.assertEqual(len(server), 39)
         self.assertTrue(set(parent).isdisjoint(server))
+        self.assertTrue(set(parent).isdisjoint(bootstrap))
+        self.assertTrue(set(bootstrap).isdisjoint(server))
         verifier_source = (
             ROOT / "scripts/verify_quality_link_runtime.py"
         ).read_text(encoding="utf-8")
@@ -137,18 +145,38 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.args[1], ast.Constant)
             and isinstance(node.args[1].value, str)
         ]
+        bootstrap_stages = [
+            node.args[1].value
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "_prepare_bootstrap_diagnostic_step"
+            and len(node.args) == 2
+            and isinstance(node.args[1], ast.Constant)
+            and isinstance(node.args[1].value, str)
+        ]
         server_stages = [
             node.args[0].value
             for node in ast.walk(tree)
             if isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Name)
-            and node.func.id == "quality_link_prepare_projection_step"
+            and (
+                (
+                    isinstance(node.func, ast.Name)
+                    and node.func.id == "quality_link_prepare_projection_step"
+                )
+                or (
+                    isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "quality_link_prepare_projection_step"
+                )
+            )
             and len(node.args) == 1
             and isinstance(node.args[0], ast.Constant)
             and isinstance(node.args[0].value, str)
         ]
         self.assertEqual(len(parent_stages), len(parent))
         self.assertEqual(set(parent_stages), set(parent))
+        self.assertEqual(len(bootstrap_stages), len(bootstrap))
+        self.assertEqual(set(bootstrap_stages), set(bootstrap))
         self.assertEqual(
             sorted(parent, key=verifier_source.index),
             list(parent),
@@ -172,6 +200,193 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             if isinstance(element, ast.Constant) and isinstance(element.value, str)
         }
         self.assertEqual(repository_codes, server)
+
+    def test_prepare_bootstrap_records_init_before_frappe_flags_exist(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        private = "private-value"
+        frappe = types.ModuleType("frappe")
+
+        def fail_init(**_kwargs) -> None:
+            raise ValueError(private)
+
+        frappe.init = fail_init
+        repository = types.ModuleType(
+            "npi_integration.projections.frappe_repository"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.dict(
+                    sys.modules,
+                    {
+                        "frappe": frappe,
+                        "npi_integration.projections.frappe_repository": repository,
+                    },
+                ),
+                patch.dict(
+                    os.environ,
+                    {
+                        self.verifier._DIAGNOSTIC_PATH_ENV: str(path),
+                        self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_ENV:
+                        self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_SCOPE,
+                    },
+                    clear=False,
+                ),
+                self.assertRaisesRegex(ValueError, private),
+            ):
+                self.verifier.run_scoped_local_bench_fixture(
+                    "prepare_projection",
+                    {
+                        "project_id": "10000000-0000-4000-8000-000000000002",
+                        "readiness_id": "10000000-0000-4000-8000-000000000001",
+                        "diagnostic_trace_id": trace_id,
+                    },
+                )
+            self.assertEqual(
+                self.verifier.read_quality_link_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                (
+                    "ValueError",
+                    "P806_QUALITY_PREPARE_BOOTSTRAP_INIT",
+                    trace_id,
+                ),
+            )
+            self.assertNotIn(private, path.read_text(encoding="utf-8"))
+
+    def test_prepare_bootstrap_wrong_scope_or_trace_is_dormant(self) -> None:
+        valid_trace = "trace-0123456789abcdef0123456789abcdef"
+        error = RuntimeError("same-private-error")
+        with tempfile.TemporaryDirectory() as directory:
+            for scope, trace_id in (
+                ("wrong-scope", valid_trace),
+                (self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_SCOPE, "trace-invalid"),
+            ):
+                path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+                path.unlink(missing_ok=True)
+                with (
+                    self.subTest(scope=scope, trace_id=trace_id),
+                    patch.dict(
+                        os.environ,
+                        {
+                            self.verifier._DIAGNOSTIC_PATH_ENV: str(path),
+                            self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_ENV: scope,
+                        },
+                        clear=False,
+                    ),
+                    patch.object(
+                        self.verifier,
+                        "run_local_bench_fixture",
+                        side_effect=error,
+                    ),
+                    self.assertRaises(RuntimeError) as raised,
+                ):
+                    self.verifier.run_scoped_local_bench_fixture(
+                        "prepare_projection",
+                        {"diagnostic_trace_id": trace_id},
+                    )
+                self.assertIs(raised.exception, error)
+                self.assertFalse(path.exists())
+
+    def test_prepare_bootstrap_binds_repository_context_only_after_init(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        events: list[str] = []
+
+        class FreshFrappe(types.ModuleType):
+            initialized = False
+
+            def __getattribute__(self, name: str):
+                if name == "flags" and not object.__getattribute__(
+                    self,
+                    "initialized",
+                ):
+                    raise RuntimeError("frappe flags are not bound")
+                return super().__getattribute__(name)
+
+        frappe = FreshFrappe("frappe")
+
+        def init(**_kwargs) -> None:
+            events.append("init")
+            frappe.initialized = True
+            frappe.flags = types.SimpleNamespace()
+            frappe.local = types.SimpleNamespace(initialised=True)
+
+        frappe.init = init
+        frappe.connect = lambda: events.append("connect")
+        frappe.set_user = lambda _user: events.append("set-user")
+        frappe.destroy = lambda: events.append("destroy")
+        frappe.db = types.SimpleNamespace(
+            commit=lambda: events.append("commit"),
+            rollback=lambda: events.append("rollback"),
+        )
+        repository = types.ModuleType(
+            "npi_integration.projections.frappe_repository"
+        )
+        repository._QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG = (
+            "npi_p806_quality_prepare_projection_diagnostic"
+        )
+
+        @contextmanager
+        def diagnostics(active_trace: str):
+            events.append("context")
+            setattr(
+                frappe.flags,
+                repository._QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG,
+                {"trace_id": active_trace, "recorded": False},
+            )
+            try:
+                yield
+            finally:
+                delattr(
+                    frappe.flags,
+                    repository._QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG,
+                )
+
+        @contextmanager
+        def step(_code: str):
+            yield
+
+        repository.quality_link_prepare_projection_diagnostics = diagnostics
+        repository.quality_link_prepare_projection_step = step
+        with (
+            patch.dict(
+                sys.modules,
+                {
+                    "frappe": frappe,
+                    "npi_integration.projections.frappe_repository": repository,
+                },
+            ),
+            patch.dict(
+                os.environ,
+                {
+                    self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_ENV:
+                    self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_SCOPE,
+                },
+                clear=False,
+            ),
+            patch.object(
+                self.verifier.document_runtime,
+                "_validated_runtime_site",
+            ),
+            patch.object(
+                self.verifier,
+                "prepare_projection",
+                return_value={"prepared": True},
+            ),
+            patch("builtins.print"),
+        ):
+            self.verifier.run_scoped_local_bench_fixture(
+                "prepare_projection",
+                {
+                    "project_id": "10000000-0000-4000-8000-000000000002",
+                    "readiness_id": "10000000-0000-4000-8000-000000000001",
+                    "diagnostic_trace_id": trace_id,
+                },
+            )
+        self.assertLess(events.index("init"), events.index("context"))
+        self.assertLess(events.index("context"), events.index("connect"))
+        self.assertEqual(events[-2:], ["commit", "destroy"])
 
     def test_diagnostic_record_is_one_exact_safe_inner_stage(self) -> None:
         trace_id = "trace-0123456789abcdef0123456789abcdef"
@@ -248,6 +463,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 patch.object(
                     self.verifier,
                     "QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED",
+                    False,
+                ),
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
                     False,
                 ),
                 patch.dict(

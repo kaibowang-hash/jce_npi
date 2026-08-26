@@ -6264,3 +6264,48 @@ repeat or rewrite it merely to restore context. See
   target, portal decision or B/C hold changes.
 - Controller marker:
   `P8-06 checkpoint 4 final 1/1 frozen; prepare-projection diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 prepare-projection bootstrap diagnostic checkpoint
+
+- Exact prepare-projection checkpoint
+  `cf4f431e4ca3d74f50716bfbaa8e7c2d66e3d83e` passes ordinary CI
+  `32998865737`. Its sole controlled diagnostic run `33000193191` passes
+  preflight job `98279700208`; runtime job `98279799344` returns only
+  `P806_QUALITY_PREPARE_PARENT_CHILD_STATUS / RuntimeError /
+  trace-9996bb78f674578fae7afed049451082`. Failed-child stdout/stderr,
+  business values, IDs, messages and stacks remain unread.
+- Read-only cross-proof identifies one harness blind spot, not a product
+  first source. The fresh child enters the repository diagnostic context
+  before `frappe.init`; pinned Frappe binds `frappe.flags` only inside
+  `frappe.init`. The context's initial `getattr(frappe.flags, ...)` therefore
+  raises on the unbound local proxy and its response-neutral setup guard
+  yields with diagnostics disabled. The existing fake repository test had
+  pre-bound flags and did not exercise this fresh lifecycle. Consequently a
+  missing server tuple was inevitable and the underlying product stage
+  remains nonunique. No product repair is authorized.
+- Freeze `p8-06-quality-link-prepare-projection` at diagnostic `1/1`, repair
+  `0/1`, final `0/1`. Open independent harness-only
+  `p8-06-quality-link-prepare-bootstrap` at diagnostic `0/1`, repair `0/1`,
+  final `0/1`. The old verifier activation is false and only the new
+  verifier activation is true.
+- The exact-five change is limited to the quality-link runtime verifier, its
+  focused test, this controller, `p8-06-plan.md` and the P8-06 checkpoint
+  evidence. Five verifier-owned bootstrap stages cover Frappe import,
+  repository import, exact arguments, `frappe.init` and confirmed active
+  repository context. They write at most one O_EXCL exact-three-key record.
+  After successful init the existing thirty-nine server stages and strict
+  mirrored reader retain innermost-server-wins behavior. Failed-child output,
+  product values, permissions, transactions, write order, response and
+  cleanup remain unchanged.
+- FR-CO-003/004 stay `USER_APPROVED_POST_V1_2_DEFERRED`; ERPNext mapping,
+  lifecycle, approval, raw-code interpretation, Sandbox/production and every
+  Class-B/Class-C hold remain unchanged. The separate production read-only
+  fact-audit/DoD request remains queued and is not part of this checkpoint.
+- Level 1 passes focused bootstrap/projection `25/25`, complete affected
+  quality-link/projection/P7/Item/MBOM/Tool Asset `297/297`, full repository
+  Python `2528/2528` and current/reconciliation `36/36`. Current and both
+  reconciliation scripts, compilation, shell syntax, exact activation,
+  direct-SQL/network/leak scans and diff hygiene pass. The exact-five
+  manifest and base-to-tip union pass; an unauthorized sixth path is rejected.
+- Controller marker:
+  `P8-06 checkpoint 4 final 1/1 frozen; prepare-bootstrap diagnostic 0/1 active`.
