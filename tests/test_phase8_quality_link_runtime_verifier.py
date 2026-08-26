@@ -98,7 +98,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
@@ -232,6 +232,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                     },
                     clear=False,
                 ),
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                    True,
+                ),
                 self.assertRaisesRegex(ValueError, private),
             ):
                 self.verifier.run_scoped_local_bench_fixture(
@@ -242,17 +247,22 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                         "diagnostic_trace_id": trace_id,
                     },
                 )
-            self.assertEqual(
-                self.verifier.read_quality_link_runtime_diagnostic(
-                    path,
-                    expected_trace=trace_id,
-                ),
-                (
-                    "ValueError",
-                    "P806_QUALITY_PREPARE_BOOTSTRAP_INIT",
-                    trace_id,
-                ),
-            )
+            with patch.object(
+                self.verifier,
+                "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.read_quality_link_runtime_diagnostic(
+                        path,
+                        expected_trace=trace_id,
+                    ),
+                    (
+                        "ValueError",
+                        "P806_QUALITY_PREPARE_BOOTSTRAP_INIT",
+                        trace_id,
+                    ),
+                )
             self.assertNotIn(private, path.read_text(encoding="utf-8"))
 
     def test_prepare_bootstrap_wrong_scope_or_trace_is_dormant(self) -> None:
@@ -393,6 +403,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
             with (
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                    True,
+                ),
                 patch.dict(
                     os.environ,
                     {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
@@ -408,17 +423,22 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 ),
             ):
                 raise ValueError("private-value")
-            self.assertEqual(
-                self.verifier.read_quality_link_runtime_diagnostic(
-                    path,
-                    expected_trace=trace_id,
-                ),
-                (
-                    "ValueError",
-                    "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS",
-                    trace_id,
-                ),
-            )
+            with patch.object(
+                self.verifier,
+                "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.read_quality_link_runtime_diagnostic(
+                        path,
+                        expected_trace=trace_id,
+                    ),
+                    (
+                        "ValueError",
+                        "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS",
+                        trace_id,
+                    ),
+                )
             payload = path.read_text(encoding="utf-8")
             self.assertNotIn("private-value", payload)
             self.assertEqual(set(json.loads(payload)), {"code", "exceptionType", "traceId"})
@@ -552,7 +572,6 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                     {
                         "project_id": "10000000-0000-4000-8000-000000000002",
                         "readiness_id": "10000000-0000-4000-8000-000000000001",
-                        "diagnostic_trace_id": self.verifier.quality_link_runtime_diagnostic_trace(),
                     },
                 ),
                 call(
@@ -571,6 +590,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
             with (
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                    True,
+                ),
                 patch.dict(
                     os.environ,
                     {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
@@ -602,13 +626,18 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                         "diagnostic_trace_id": trace_id,
                     },
                 )
-            self.assertEqual(
-                self.verifier.read_quality_link_runtime_diagnostic(
-                    path,
-                    expected_trace=trace_id,
-                ),
-                ("ValueError", server_code, trace_id),
-            )
+            with patch.object(
+                self.verifier,
+                "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.read_quality_link_runtime_diagnostic(
+                        path,
+                        expected_trace=trace_id,
+                    ),
+                    ("ValueError", server_code, trace_id),
+                )
             reader.assert_called_once_with(
                 trace_id,
                 {"logs/npi_core.log": 0},
@@ -622,6 +651,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
             with (
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                    True,
+                ),
                 patch.dict(
                     os.environ,
                     {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
@@ -653,17 +687,22 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                         "diagnostic_trace_id": trace_id,
                     },
                 )
-            self.assertEqual(
-                self.verifier.read_quality_link_runtime_diagnostic(
-                    path,
-                    expected_trace=trace_id,
-                ),
-                (
-                    "RuntimeError",
-                    "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS",
-                    trace_id,
-                ),
-            )
+            with patch.object(
+                self.verifier,
+                "QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.read_quality_link_runtime_diagnostic(
+                        path,
+                        expected_trace=trace_id,
+                    ),
+                    (
+                        "RuntimeError",
+                        "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS",
+                        trace_id,
+                    ),
+                )
 
 
 if __name__ == "__main__":

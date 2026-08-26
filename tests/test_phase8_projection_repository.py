@@ -57,7 +57,7 @@ class FakeDocument(AttrDict):
         super().__init__(values)
         object.__setattr__(self, "_owner", owner)
 
-    def insert(self):
+    def insert(self, *, ignore_permissions: bool = False):
         name = self.get("name")
         if name is None:
             name = (
@@ -68,6 +68,9 @@ class FakeDocument(AttrDict):
         if name is None:
             raise AssertionError(f"Fake {self.get('doctype')} document has no identity")
         self.name = str(name)
+        self._owner.permission_calls.append(
+            ("insert", str(self.doctype), ignore_permissions)
+        )
         self._owner.events.append(("insert", str(self.doctype), self.name))
         if self._owner.fail_on == ("insert", str(self.doctype)):
             raise RuntimeError(f"Injected failure at insert {self.doctype}")
@@ -77,7 +80,10 @@ class FakeDocument(AttrDict):
         bucket[self.name] = self
         return self
 
-    def save(self):
+    def save(self, *, ignore_permissions: bool = False):
+        self._owner.permission_calls.append(
+            ("save", str(self.doctype), ignore_permissions)
+        )
         self._owner.events.append(("save", str(self.doctype), str(self.name)))
         if self._owner.fail_on == ("save", str(self.doctype)):
             raise RuntimeError(f"Injected failure at save {self.doctype}")
@@ -143,12 +149,21 @@ class Phase8ProjectionRepositoryTest(unittest.TestCase):
             sys.modules.pop(name, None)
         self.documents: dict[str, dict[str, FakeDocument]] = {}
         self.events: list[tuple[str, str, str]] = []
+        self.permission_calls: list[tuple[str, str, bool]] = []
         self.locked: list[tuple[str, str]] = []
         self.fail_on: tuple[str, str] | None = None
         self.safe_diagnostics: list[dict[str, object]] = []
         self.frappe = types.ModuleType("frappe")
         self.frappe._ = lambda source: source
         self.frappe.flags = types.SimpleNamespace()
+        self.frappe.session = types.SimpleNamespace(user="admin@example.invalid")
+        self.frappe.get_roles = lambda user_id: (
+            ["NPI API User", "System Manager"]
+            if user_id == self.frappe.session.user
+            else []
+        )
+        self.frappe.PermissionError = type("PinnedPermissionError", (RuntimeError,), {})
+        self.frappe.throw = lambda message, error: (_ for _ in ()).throw(error(message))
         self.frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         self.frappe.DuplicateEntryError = type("DuplicateEntryError", (Exception,), {})
         self.frappe.get_doc = self.get_doc
@@ -547,6 +562,125 @@ class Phase8ProjectionRepositoryTest(unittest.TestCase):
                 self.assertEqual(len(matching_heads), 1)
                 self.assertEqual(len(matching_observations), 1)
 
+    def test_projection_support_writes_are_exact_actor_bound_and_permission_scoped(self) -> None:
+        self.permission_calls.clear()
+        validation = importlib.import_module(
+            "npi_integration.projections.frappe_validation"
+        )
+        observation = FakeDocument(
+            self,
+            {"doctype": "NPI ERP Projection Observation", "global_id": str(uid(71))},
+        )
+        head = FakeDocument(
+            self,
+            {"doctype": "NPI ERP Projection Head", "global_id": str(uid(72))},
+        )
+        audit = FakeDocument(
+            self,
+            {"doctype": "NPI Audit Event", "event_id": str(uid(73))},
+        )
+
+        with validation.projection_repository_write(
+            "admin@example.invalid"
+        ) as capability:
+            validation.insert_projection_support_document(
+                observation,
+                capability=capability,
+            )
+            validation.insert_projection_support_document(
+                head,
+                capability=capability,
+            )
+            validation.save_projection_support_document(
+                head,
+                capability=capability,
+            )
+            with self.assertRaises(self.frappe.PermissionError):
+                validation.insert_projection_support_document(
+                    audit,
+                    capability=capability,
+                )
+
+        self.assertEqual(
+            self.permission_calls,
+            [
+                ("insert", "NPI ERP Projection Observation", True),
+                ("insert", "NPI ERP Projection Head", True),
+                ("save", "NPI ERP Projection Head", True),
+            ],
+        )
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                validation.PROJECTION_OBSERVATION_WRITE_FLAG,
+            )
+        )
+        self.assertFalse(
+            hasattr(self.frappe.flags, validation.PROJECTION_HEAD_WRITE_FLAG)
+        )
+        self.assertIsNone(validation._CURRENT_SUPPORT_CAPABILITY.get())
+
+    def test_projection_support_capability_rejects_forgery_actor_role_and_action(self) -> None:
+        self.permission_calls.clear()
+        validation = importlib.import_module(
+            "npi_integration.projections.frappe_validation"
+        )
+        observation = FakeDocument(
+            self,
+            {"doctype": "NPI ERP Projection Observation", "global_id": str(uid(74))},
+        )
+        head = FakeDocument(
+            self,
+            {"doctype": "NPI ERP Projection Head", "global_id": str(uid(75))},
+        )
+        forged = validation.ProjectionSupportWriteCapability(
+            actor="admin@example.invalid",
+            allowed=validation.PROJECTION_REPOSITORY_WRITES,
+        )
+        with self.assertRaises(self.frappe.PermissionError):
+            validation.insert_projection_support_document(
+                observation,
+                capability=forged,
+            )
+        with self.assertRaises(self.frappe.PermissionError):
+            validation.projection_repository_write("other@example.invalid").__enter__()
+        with patch.object(self.frappe, "get_roles", return_value=[]):
+            with self.assertRaises(self.frappe.PermissionError):
+                validation.projection_repository_write(
+                    "admin@example.invalid"
+                ).__enter__()
+        for actor in ("Guest", "Administrator", " admin@example.invalid "):
+            with self.subTest(actor=actor), self.assertRaises(
+                self.frappe.PermissionError
+            ):
+                validation.projection_repository_write(actor).__enter__()
+
+        with self.assertRaisesRegex(RuntimeError, "closed boundary"):
+            with validation.projection_repository_write(
+                "admin@example.invalid"
+            ) as capability:
+                with self.assertRaises(self.frappe.PermissionError):
+                    validation.save_projection_support_document(
+                        observation,
+                        capability=capability,
+                    )
+                self.frappe.session.user = "other@example.invalid"
+                with self.assertRaises(self.frappe.PermissionError):
+                    validation.insert_projection_support_document(
+                        head,
+                        capability=capability,
+                    )
+                self.frappe.session.user = "admin@example.invalid"
+                raise RuntimeError("closed boundary")
+        self.assertIsNone(validation._CURRENT_SUPPORT_CAPABILITY.get())
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                validation.PROJECTION_OBSERVATION_WRITE_FLAG,
+            )
+        )
+        self.assertEqual(self.permission_calls, [])
+
     def test_confirmed_fresh_cost_and_asset_consumers_parse_closed_typed_truth(self) -> None:
         tooling_master_id = uid(20)
         tooling_set_id = uid(30)
@@ -649,11 +783,11 @@ class Phase8ProjectionRepositoryTest(unittest.TestCase):
             apply_source.index("existing_event_rows ="),
         )
         self.assertLess(
-            apply_source.index("with projection_repository_write():"),
-            apply_source.index("frappe.get_doc(observation_values).insert()"),
+            apply_source.index("with projection_repository_write(self.actor) as capability:"),
+            apply_source.index("insert_projection_support_document("),
         )
         self.assertLess(
-            apply_source.index("frappe.get_doc(observation_values).insert()"),
+            apply_source.index("insert_projection_support_document("),
             apply_source.index("self._append_audit("),
         )
         combined = source.casefold()

@@ -6342,3 +6342,46 @@ repeat or rewrite it merely to restore context. See
   diff hygiene. The exact-four task manifest is accepted and an unauthorized
   fifth path is rejected. Product, app, API, contract and baseline diffs are
   zero.
+
+## 2026-08-27 P8-06 prepare-bootstrap projection-support repair
+
+- Exact harness SHA `0534f5152e1c1e071aff42f56d7159edbc70c8b2`
+  passes ordinary CI `33004880719` (repository `98295855458`, frontend
+  `98295855335`, visual `98295855170`, secret scan `98295855392`). Its one
+  controlled diagnostic run `33006282463` passes preflight `98300758405` and
+  runtime `98300904817` returns only
+  `P806_QUALITY_PROJECTION_OBSERVATION_INSERT / PermissionError /
+  trace-5f2cdd805fd15e1b8f9458abaa566e69`. No failed-child output, business
+  value, ID, message or stack was read.
+- Static cross-proof uniquely identifies Frappe permission enforcement on the
+  Observation insert. Project-first authorization, exact actor, source/result
+  validation, Readiness containment and immutable value construction all
+  precede the failing stage. The request-local projection write flags are
+  active, but the non-Administrator `NPI API User` has no metadata create/write
+  grant for the support Observation or Head DocTypes. The Audit Event retains
+  its ordinary role permission. Fixture elevation or metadata permission
+  expansion is forbidden.
+- The closed repair adds an actor-bound, request-local
+  `ProjectionSupportWriteCapability`. It admits only Observation insert and
+  Head insert/save, for the exact active non-Guest/non-Administrator session
+  actor with `NPI API User`; wrong actor, role, capability, DocType, action,
+  session drift and exceptions fail closed and restore all state in `finally`.
+  Only two named helpers contain the pinned permission bypass. Audit remains
+  an ordinary insert. Ownership, source/result values, transaction and write
+  order, hooks, API, metadata and rollback are unchanged.
+- Freeze `p8-06-quality-link-prepare-bootstrap` at diagnostic `1/1`, repair
+  `1/1`, final `0/1`. All diagnostic activations are false. The repair is
+  exact eleven paths, including the full-app permission AST allowlist, exact
+  runtime dormant tests, CURRENT_TASK expansion and its pinned legal
+  allowlist cardinality. Level 1 passes focused capability/security/runtime/
+  current `38/38`, complete affected projection/quality-link/P7/Item/MBOM/
+  Tool Asset `310/310`, full repository Python `2530/2530` and current/
+  reconciliation `36/36`. Compilation, shell syntax, exact diagnostics-off,
+  direct-SQL/network scans, JSON validation and diff hygiene pass. The
+  exact-eleven task and 65-path post-commit union manifests pass; an
+  unauthorized twelfth path is rejected.
+- FR-CO-003/004 stay `USER_APPROVED_POST_V1_2_DEFERRED`; ERPNext mapping,
+  approval, raw-code interpretation, Sandbox/production and every B/C hold are
+  unchanged. The production read-only fact-audit/DoD task remains queued.
+- Controller marker:
+  `P8-06 checkpoint 4 final 1/1 frozen; prepare-bootstrap diagnostic 1/1 repair 1/1 final 0/1; all diagnostics off`.

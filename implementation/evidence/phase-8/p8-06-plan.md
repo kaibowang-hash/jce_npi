@@ -806,3 +806,53 @@ affected unit files (`68/68`), frontend generate/format/lint/type checks,
 current/reconciliation (`36/36`) and diff hygiene. The exact-four manifest is
 accepted and a synthetic unauthorized fifth path is rejected. Product, app,
 API, contract and visual-baseline diffs remain zero.
+
+## 25. Prepare-bootstrap projection-support repair
+
+Exact harness SHA `0534f5152e1c1e071aff42f56d7159edbc70c8b2`
+passes ordinary `33004880719`. The sole controlled diagnostic
+`33006282463` passes preflight `98300758405`; runtime `98300904817` exposes
+only `P806_QUALITY_PROJECTION_OBSERVATION_INSERT / PermissionError /
+trace-5f2cdd805fd15e1b8f9458abaa566e69`. Failed-child output, business values,
+IDs, messages and stacks remain unread.
+
+The ordered stage proves the exact non-Administrator runtime actor already
+passed Project-first authorization, source/result validation, Readiness
+containment and immutable projection value construction, then failed at the
+Observation insert. Existing request-local write flags do not confer Frappe
+DocType permission. The actor has `NPI API User`, while Observation and Head
+metadata intentionally grant no create/write permission. Audit Event remains
+role-permitted. This uniquely selects the missing bounded service capability;
+it does not authorize fixture elevation or metadata permission expansion.
+
+The exact-eleven repair introduces a frozen capability containing the exact
+session actor and exact allowed operations: Observation insert, Head insert
+and Head save. Entry rejects empty, trimmed, Guest, Administrator, session-
+mismatched or non-`NPI API User` actors. Each helper revalidates the active
+request-local capability, actor, DocType, action and matching existing write
+flag before the only two pinned permission-bypass call sites. Capability and
+flags are restored in `finally`. Audit keeps its ordinary insert; Project
+scope, ownership, source/result values, optimistic head rules, transaction,
+write order, hooks, API response and rollback do not change.
+
+Changed-files-to-tests require repository lifecycle and failure injection,
+forged/wrong-actor/role/action/DocType/session/exception cases, the full-app
+permission AST scanner with exactly nine controlled calls, runtime default-off
+and dormant reader coverage, current-task legal-cardinality regression, full
+projection/quality-link/P7/Item/MBOM/Tool Asset affected tests, compilation,
+shell syntax, security scans, current/reconciliation and an exact-eleven
+manifest with an unauthorized twelfth path rejected.
+
+Level 1 passes focused capability/security/runtime/current `38/38`, complete
+affected projection/quality-link/P7/Item/MBOM/Tool Asset `310/310`, full
+repository Python `2530/2530` and current/reconciliation `36/36`. Current and
+both reconciliation scripts, compilation, shell syntax, exact diagnostics-off,
+direct-SQL/network scans, JSON validation and diff hygiene pass. The exact-
+eleven task manifest and 65-path post-commit union pass; a synthetic
+unauthorized twelfth path is rejected fail-closed.
+
+The prepare-bootstrap cycle is diagnostic `1/1`, repair `1/1`, final `0/1`.
+All diagnostic flags are false. FR-CO-003/004 deferral, all ERPNext/Sandbox/
+production and approval holds, raw-code-no-pass behavior and every B/C hold
+remain unchanged. The separate production read-only fact/DoD governance task
+remains queued and outside this repair.

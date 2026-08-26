@@ -280,3 +280,52 @@ units (`68/68`), generate/format/lint/type checks, current/reconciliation
 (`36/36`) and diff hygiene. The exact-four manifest is accepted and an
 unauthorized fifth path is rejected. Product, app, API, contract and governed
 baseline diffs remain zero.
+
+## Prepare-bootstrap projection-support repair checkpoint
+
+Harness SHA `0534f5152e1c1e071aff42f56d7159edbc70c8b2`
+passes ordinary `33004880719` with repository `98295855458`, frontend
+`98295855335`, visual `98295855170` and secret `98295855392`. Controlled run
+`33006282463` passes preflight `98300758405`; runtime `98300904817` yields
+only `P806_QUALITY_PROJECTION_OBSERVATION_INSERT / PermissionError /
+trace-5f2cdd805fd15e1b8f9458abaa566e69`. No withheld child output or business
+content was inspected.
+
+The exact stage is after Project authorization, actor/source/result checks,
+Readiness containment and immutable value construction, and around only the
+Observation insert. The non-Administrator `NPI API User` has no direct
+Observation/Head create or write grant; request-local controller flags alone
+cannot satisfy Frappe permission enforcement. Audit already has its ordinary
+role permission. The unique root is therefore the missing bounded
+projection-support service capability, not a fixture, source-value, ownership,
+transaction or diagnostic defect.
+
+The exact-eleven repair binds one frozen capability to the exact active
+session actor and exactly Observation insert, Head insert and Head save.
+Guest, Administrator, role mismatch, actor/session drift, forged capability,
+wrong DocType/action and exception paths all fail closed. The existing
+request-local write flags must also match, and all state is restored in
+`finally`. Only the two named support helpers use the pinned bypass; Audit is
+unchanged ordinary insert. No permission metadata, API, schema, migration,
+source ownership, projection value, transaction boundary, ordering, hook or
+rollback contract changes.
+
+The runtime activation is false and detailed diagnostic tests enable it only
+inside their closed test scopes; default execution records and reads nothing.
+CURRENT_TASK adds only the capability module and the existing full-app
+permission security scanner, while the current-task verifier pins the legal
+allowlist cardinality at 65 without weakening negative checks. The cycle is
+diagnostic `1/1`, repair `1/1`, final `0/1`.
+
+Level 1 passes focused capability/security/runtime/current `38/38`, complete
+affected projection/quality-link/P7/Item/MBOM/Tool Asset `310/310`, full
+repository Python `2530/2530` and current/reconciliation `36/36`. Current and
+both reconciliation scripts, compilation, shell syntax, diagnostics-off,
+direct-SQL/network scans, JSON validation and diff hygiene pass. The exact-
+eleven task and 65-path post-commit union manifests pass; an unauthorized
+twelfth path is rejected.
+
+FR-CO-003/004 stay `USER_APPROVED_POST_V1_2_DEFERRED`. ERPNext mapping,
+approval, pass semantics, Sandbox/production and all B/C holds are unchanged.
+The separately requested production read-only facts/DoD governance work stays
+queued and is not mixed into this checkpoint.

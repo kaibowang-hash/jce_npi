@@ -47,7 +47,9 @@ from npi_integration.projections.domain import (
     projection_freshness,
 )
 from npi_integration.projections.frappe_validation import (
+    insert_projection_support_document,
     projection_repository_write,
+    save_projection_support_document,
 )
 
 
@@ -499,16 +501,22 @@ class FrappeProjectionRepository(FrappeDocumentRepository):
                 updated_at=received,
             )
         with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_TRANSACTION"):
-            with projection_repository_write():
+            with projection_repository_write(self.actor) as capability:
                 with quality_link_prepare_projection_step(
                     "P806_QUALITY_PROJECTION_OBSERVATION_INSERT"
                 ):
-                    frappe.get_doc(observation_values).insert()
+                    insert_projection_support_document(
+                        frappe.get_doc(observation_values),
+                        capability=capability,
+                    )
                 if head is None:
                     with quality_link_prepare_projection_step(
                         "P806_QUALITY_PROJECTION_HEAD_INSERT"
                     ):
-                        head = frappe.get_doc(next_head_values).insert()
+                        head = insert_projection_support_document(
+                            frappe.get_doc(next_head_values),
+                            capability=capability,
+                        )
                 else:
                     with quality_link_prepare_projection_step(
                         "P806_QUALITY_PROJECTION_HEAD_UPDATE"
@@ -519,7 +527,10 @@ class FrappeProjectionRepository(FrappeDocumentRepository):
                     with quality_link_prepare_projection_step(
                         "P806_QUALITY_PROJECTION_HEAD_SAVE"
                     ):
-                        head.save()
+                        save_projection_support_document(
+                            head,
+                            capability=capability,
+                        )
                 with quality_link_prepare_projection_step(
                     "P806_QUALITY_PROJECTION_AUDIT"
                 ):
