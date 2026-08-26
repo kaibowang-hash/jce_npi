@@ -6225,3 +6225,42 @@ repeat or rewrite it merely to restore context. See
   unchanged.
 - Controller marker:
   `P8-06 checkpoint 4 final 1/1 frozen; quality-link runtime-stage diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 prepare-projection diagnostic checkpoint
+
+- Exact diagnostic checkpoint `71b3ee9276c6078175682ffdc7528e84ccdc7249`
+  passes ordinary CI `32994361662`. Its sole controlled diagnostic run
+  `32995898417` passes preflight and returns only
+  `P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+  trace-d41bef28f3675f2287359d7258a83015` from runtime job `98265034895`.
+  Failed-child stdout/stderr, business values, IDs, messages and stacks remain
+  unread. The `p8-06-quality-link-runtime-stage` cycle is frozen at diagnostic
+  `1/1`, repair `0/1`, final `0/1`.
+- Static cross-proof proves the tuple is the parent Bench return-code guard,
+  which collapses every child failure to `RuntimeError`. Prior P8-01
+  projection runtime and the retained Project/readiness HTTP boundaries pass,
+  but the tuple cannot select among Readiness containment, observation/head
+  application, audit, collection, commit or response. No repair is authorized.
+- An independent `p8-06-quality-link-prepare-projection` cycle starts at
+  diagnostic `0/1`, repair `0/1`, final `0/1`. The old runtime-stage activation
+  is false and only the new exact scope is active. Four parent stages and
+  thirty-nine child/repository stages carry one exact trace. The child records
+  only code, exception class and trace through the existing safe diagnostic
+  logger; a strict cursor-based mirrored reader prefers that unique tuple and
+  otherwise exposes one parent fallback. Innermost stage wins, one logical
+  record is allowed, the same exception is re-raised, `finally` is preserved,
+  and failed-child stdout/stderr remain unread.
+- The exact paths are
+  `apps/npi_integration/npi_integration/projections/frappe_repository.py`,
+  `scripts/verify_quality_link_runtime.py`,
+  `scripts/verify-frappe-runtime.sh`,
+  `tests/test_phase8_projection_repository.py`,
+  `tests/test_phase8_quality_link_runtime_verifier.py`, this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Default/no-scope execution records nothing and preserves exact projection
+  values, validation, permission, write order, transaction, response and
+  rollback behavior. No controller predicate, Schema, API, migration, UI,
+  target, portal decision or B/C hold changes.
+- Controller marker:
+  `P8-06 checkpoint 4 final 1/1 frozen; prepare-projection diagnostic 0/1 active`.

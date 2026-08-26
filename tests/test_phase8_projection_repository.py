@@ -4,6 +4,7 @@ import ast
 import copy
 import importlib
 import json
+import os
 import sys
 import types
 import unittest
@@ -11,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from uuid import UUID
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -128,6 +130,7 @@ class StubDocumentRepository:
 class Phase8ProjectionRepositoryTest(unittest.TestCase):
     MODULES = (
         "frappe",
+        "npi_core.api",
         "npi_core.documents.frappe_repository",
         "npi_core.tooling.acceptance_repository",
         "npi_integration.projections.frappe_validation",
@@ -142,6 +145,7 @@ class Phase8ProjectionRepositoryTest(unittest.TestCase):
         self.events: list[tuple[str, str, str]] = []
         self.locked: list[tuple[str, str]] = []
         self.fail_on: tuple[str, str] | None = None
+        self.safe_diagnostics: list[dict[str, object]] = []
         self.frappe = types.ModuleType("frappe")
         self.frappe._ = lambda source: source
         self.frappe.flags = types.SimpleNamespace()
@@ -150,6 +154,11 @@ class Phase8ProjectionRepositoryTest(unittest.TestCase):
         self.frappe.get_doc = self.get_doc
         self.frappe.get_all = self.get_all
         sys.modules["frappe"] = self.frappe
+        api_module = types.ModuleType("npi_core.api")
+        api_module.record_safe_diagnostic = lambda **values: self.safe_diagnostics.append(
+            values
+        )
+        sys.modules["npi_core.api"] = api_module
         base_module = types.ModuleType("npi_core.documents.frappe_repository")
         base_module.FrappeDocumentRepository = StubDocumentRepository
         sys.modules["npi_core.documents.frappe_repository"] = base_module
@@ -664,6 +673,59 @@ class Phase8ProjectionRepositoryTest(unittest.TestCase):
         self.assertIn("limit_page_length=MAX_PROJECT_PROJECTION_HEADS + 1", source)
         self.assertIn("availability\": ProjectionAvailability.AVAILABLE.value", source)
         self.assertIn("freshness\": ProjectionFreshness.FRESH.value", source)
+
+    def test_prepare_projection_diagnostic_is_exact_inner_and_default_off(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        error = RuntimeError("private-value")
+        with (
+            self.assertRaises(RuntimeError) as disabled,
+            self.module.quality_link_prepare_projection_diagnostics(trace_id),
+            self.module.quality_link_prepare_projection_step(
+                "P806_QUALITY_PROJECTION_TRANSACTION"
+            ),
+        ):
+            raise error
+        self.assertIs(disabled.exception, error)
+        self.assertEqual(self.safe_diagnostics, [])
+
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    self.module._QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_ENV:
+                    self.module.QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
+                },
+                clear=False,
+            ),
+            self.assertRaises(RuntimeError) as active,
+            self.module.quality_link_prepare_projection_diagnostics(trace_id),
+            self.module.quality_link_prepare_projection_step(
+                "P806_QUALITY_PROJECTION_TRANSACTION"
+            ),
+            self.module.quality_link_prepare_projection_step(
+                "P806_QUALITY_PROJECTION_OBSERVATION_INSERT"
+            ),
+        ):
+            raise error
+        self.assertIs(active.exception, error)
+        self.assertEqual(
+            self.safe_diagnostics,
+            [
+                {
+                    "code": "P806_QUALITY_PROJECTION_OBSERVATION_INSERT",
+                    "title": "NPI formal quality projection preparation failed",
+                    "exception_type": "RuntimeError",
+                    "trace_id": trace_id,
+                }
+            ],
+        )
+        self.assertNotIn("private-value", json.dumps(self.safe_diagnostics))
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                self.module._QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG,
+            )
+        )
 
 
 if __name__ == "__main__":

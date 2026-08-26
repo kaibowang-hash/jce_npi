@@ -14,6 +14,7 @@ from typing import Any, Iterator
 from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
+import verify_item_publish_runtime as item_runtime
 import verify_readiness_runtime as readiness_runtime
 from verify_frappe_runtime import login, require, secret_from_environment, validate_local_fixture_inputs
 from verify_project_runtime import bootstrap_csrf
@@ -29,7 +30,8 @@ ACKNOWLEDGEMENT = (
     "It does not write ERPNext or interpret a formal pass."
 )
 _NAMESPACE = UUID("2f927cab-16a1-4ac9-a9da-39fc8800b806")
-QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED = True
+QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED = False
+QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED = True
 QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES = (
     "P806_QUALITY_BOOTSTRAP_SECRET",
     "P806_QUALITY_ADMIN_LOGIN",
@@ -48,6 +50,61 @@ QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES = (
     "P806_QUALITY_LIST_HTTP",
     "P806_QUALITY_LIST_SHAPE",
     "P806_QUALITY_CLEANUP",
+)
+QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES = (
+    "P806_QUALITY_PREPARE_PARENT_SUBPROCESS",
+    "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS",
+    "P806_QUALITY_PREPARE_PARENT_RESULT_PARSE",
+    "P806_QUALITY_PREPARE_PARENT_RESULT_SHAPE",
+)
+QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES = frozenset(
+    {
+        "P806_QUALITY_PREPARE_CHILD_INIT",
+        "P806_QUALITY_PREPARE_CHILD_CONNECT",
+        "P806_QUALITY_PREPARE_SITE_VALIDATE",
+        "P806_QUALITY_PREPARE_SET_ACTOR",
+        "P806_QUALITY_PREPARE_PRINCIPAL",
+        "P806_QUALITY_PREPARE_REPOSITORY",
+        "P806_QUALITY_PREPARE_TARGET",
+        "P806_QUALITY_PREPARE_RESULT",
+        "P806_QUALITY_PREPARE_APPLY",
+        "P806_QUALITY_PREPARE_COLLECTION_AUTHORIZE",
+        "P806_QUALITY_PREPARE_COLLECTION_READ",
+        "P806_QUALITY_PREPARE_COLLECTION_CARDINALITY",
+        "P806_QUALITY_PREPARE_COMMIT",
+        "P806_QUALITY_PREPARE_RESPONSE",
+        "P806_QUALITY_PREPARE_DESTROY",
+        "P806_QUALITY_PROJECTION_AUTHORIZE",
+        "P806_QUALITY_PROJECTION_TARGET",
+        "P806_QUALITY_PROJECTION_SCOPE",
+        "P806_QUALITY_PROJECTION_RESULT",
+        "P806_QUALITY_PROJECTION_NORMALIZE",
+        "P806_QUALITY_PROJECTION_PAYLOAD",
+        "P806_QUALITY_PROJECTION_STREAM",
+        "P806_QUALITY_PROJECTION_HEAD_LOCK",
+        "P806_QUALITY_PROJECTION_HEAD_IDENTITY",
+        "P806_QUALITY_PROJECTION_EVENT_ROWS",
+        "P806_QUALITY_PROJECTION_EVENT_BOUND",
+        "P806_QUALITY_PROJECTION_REPLAY",
+        "P806_QUALITY_PROJECTION_CURRENT",
+        "P806_QUALITY_PROJECTION_CLASSIFY",
+        "P806_QUALITY_PROJECTION_FRESHNESS",
+        "P806_QUALITY_PROJECTION_OBSERVATION_VALUES",
+        "P806_QUALITY_PROJECTION_HEAD_VALUES",
+        "P806_QUALITY_PROJECTION_TRANSACTION",
+        "P806_QUALITY_PROJECTION_OBSERVATION_INSERT",
+        "P806_QUALITY_PROJECTION_HEAD_INSERT",
+        "P806_QUALITY_PROJECTION_HEAD_UPDATE",
+        "P806_QUALITY_PROJECTION_HEAD_SAVE",
+        "P806_QUALITY_PROJECTION_AUDIT",
+        "P806_QUALITY_PROJECTION_OUTCOME",
+    }
+)
+_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE = (
+    "p8-06-quality-link-prepare-projection-v1"
+)
+_PREPARE_PROJECTION_DIAGNOSTIC_ENV = (
+    "NPI_P806_QUALITY_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE"
 )
 _DIAGNOSTIC_PATH_ENV = "NPI_QUALITY_LINK_RUNTIME_DIAGNOSTIC_PATH"
 _DIAGNOSTIC_RECORD_KEYS = frozenset({"code", "exceptionType", "traceId"})
@@ -68,7 +125,10 @@ def quality_link_runtime_diagnostic_trace() -> str:
 def quality_link_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
     state = None
     if (
-        QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
+        (
+            QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
+            or QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+        )
         and _TRACE_PATTERN.fullmatch(trace_id) is not None
     ):
         state = {"trace_id": trace_id, "recorded": False}
@@ -95,7 +155,18 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
         if (
             state is None
             or state["recorded"] is True
-            or code not in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
+            or (
+                code not in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
+                and code not in QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
+            )
+            or (
+                code in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
+                and not QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
+            )
+            or (
+                code in QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
+                and not QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+            )
             or _TYPE_PATTERN.fullmatch(exception_type) is None
         ):
             return
@@ -151,13 +222,35 @@ def read_quality_link_runtime_diagnostic(
     trace_id = record.get("traceId")
     if (
         not isinstance(code, str)
-        or code not in QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES
+        or code not in _active_quality_link_runtime_diagnostic_codes()
         or not isinstance(exception_type, str)
         or _TYPE_PATTERN.fullmatch(exception_type) is None
         or trace_id != expected_trace
     ):
         return None
     return exception_type, code, expected_trace
+
+
+def _active_quality_link_runtime_diagnostic_codes() -> frozenset[str]:
+    if QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED:
+        return frozenset(QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES).union(
+            QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES
+        )
+    if QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED:
+        return frozenset(QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES)
+    return frozenset()
+
+
+@contextmanager
+def _prepare_parent_diagnostic_step(
+    method: str,
+    code: str,
+) -> Iterator[None]:
+    if method == "prepare_projection":
+        with quality_link_runtime_diagnostic_step(code):
+            yield
+        return
+    yield
 
 
 def _body(result: object, *, status: int) -> dict[str, Any]:
@@ -179,28 +272,72 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         "NPI_DATABASE_ROOT_PASSWORD",
     ):
         environment.pop(variable, None)
+    diagnostic_trace_id = kwargs.get("diagnostic_trace_id")
+    diagnostic_cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if method == "prepare_projection"
+        and QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+        and isinstance(diagnostic_trace_id, str)
+        and _TRACE_PATTERN.fullmatch(diagnostic_trace_id) is not None
+        else None
+    )
     with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as output:
-        completed = subprocess.run(
-            [
-                str(BENCH_PATH / "env/bin/python"),
-                str(Path(__file__).resolve()),
-                "--bench-fixture",
-                method,
-                "--fixture-kwargs",
-                json.dumps(kwargs, separators=(",", ":"), sort_keys=True),
-            ],
-            cwd=BENCH_PATH / "sites",
-            env=environment,
-            check=False,
-            stdout=output,
-            stderr=subprocess.DEVNULL,
-            text=True,
-        )
-        require(completed.returncode == 0, "P8-06 Bench fixture failed")
+        with _prepare_parent_diagnostic_step(
+            method,
+            "P806_QUALITY_PREPARE_PARENT_SUBPROCESS"
+        ):
+            completed = subprocess.run(
+                [
+                    str(BENCH_PATH / "env/bin/python"),
+                    str(Path(__file__).resolve()),
+                    "--bench-fixture",
+                    method,
+                    "--fixture-kwargs",
+                    json.dumps(kwargs, separators=(",", ":"), sort_keys=True),
+                ],
+                cwd=BENCH_PATH / "sites",
+                env=environment,
+                check=False,
+                stdout=output,
+                stderr=subprocess.DEVNULL,
+                text=True,
+            )
+        if completed.returncode != 0 and diagnostic_cursors is not None:
+            diagnostic = item_runtime._sanitized_server_log_diagnostic(
+                diagnostic_trace_id,
+                diagnostic_cursors,
+                code_prefix="P806_QUALITY_",
+                allowed_codes=QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES,
+            )
+            if diagnostic is not None:
+                exception_type, code, validated_trace = diagnostic
+                try:
+                    _write_quality_link_runtime_diagnostic(
+                        {
+                            "code": code,
+                            "exceptionType": exception_type,
+                            "traceId": validated_trace,
+                        }
+                    )
+                except OSError:
+                    pass
+        with _prepare_parent_diagnostic_step(
+            method,
+            "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS"
+        ):
+            require(completed.returncode == 0, "P8-06 Bench fixture failed")
         output.seek(0)
         lines = [line for line in output if line.strip()]
-    result = json.loads(lines[-1]) if lines else None
-    require(isinstance(result, dict), "P8-06 Bench fixture result is invalid")
+    with _prepare_parent_diagnostic_step(
+        method,
+        "P806_QUALITY_PREPARE_PARENT_RESULT_PARSE"
+    ):
+        result = json.loads(lines[-1]) if lines else None
+    with _prepare_parent_diagnostic_step(
+        method,
+        "P806_QUALITY_PREPARE_PARENT_RESULT_SHAPE"
+    ):
+        require(isinstance(result, dict), "P8-06 Bench fixture result is invalid")
     return result
 
 
@@ -216,34 +353,43 @@ def prepare_projection(*, project_id: str, readiness_id: str) -> dict[str, objec
         ProjectionRefreshTarget,
         ProjectionScopeKind,
     )
-    from npi_integration.projections.frappe_repository import FrappeProjectionRepository
+    from npi_integration.projections.frappe_repository import (
+        FrappeProjectionRepository,
+        quality_link_prepare_projection_step,
+    )
 
-    principal = Principal(
-        user_id=ACTOR_USER,
-        roles=frozenset(frappe.get_roles(ACTOR_USER)),
-        tenant_id=document_runtime.TENANT_ID,
-        is_external=False,
-    )
-    repository = FrappeProjectionRepository(
-        principal=principal,
-        request_id=str(uuid5(_NAMESPACE, f"request:{FIXTURE_RUN_ID}")),
-        trace_id=f"trace-p806-runtime-{FIXTURE_RUN_ID[:12]}",
-        freshness_policies={ProjectionKind.FORMAL_QUALITY_STATUS: ("p8-06-runtime-quality-v1", 86400)},
-    )
-    target = ProjectionRefreshTarget(
-        context=ProjectionContext(
+    with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_PRINCIPAL"):
+        principal = Principal(
+            user_id=ACTOR_USER,
+            roles=frozenset(frappe.get_roles(ACTOR_USER)),
             tenant_id=document_runtime.TENANT_ID,
-            project_global_id=UUID(project_id),
-            scope_kind=ProjectionScopeKind.READINESS,
-            scope_global_id=UUID(readiness_id),
-        ),
-        kind=ProjectionKind.FORMAL_QUALITY_STATUS,
-        source_object_id="QUALITY-P806-RUNTIME",
-    )
-    outcome = repository.apply_observation(
-        project_global_id=UUID(project_id),
-        target=target,
-        result=ProjectionReaderResult(
+            is_external=False,
+        )
+    with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_REPOSITORY"):
+        repository = FrappeProjectionRepository(
+            principal=principal,
+            request_id=str(uuid5(_NAMESPACE, f"request:{FIXTURE_RUN_ID}")),
+            trace_id=f"trace-p806-runtime-{FIXTURE_RUN_ID[:12]}",
+            freshness_policies={
+                ProjectionKind.FORMAL_QUALITY_STATUS: (
+                    "p8-06-runtime-quality-v1",
+                    86400,
+                )
+            },
+        )
+    with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_TARGET"):
+        target = ProjectionRefreshTarget(
+            context=ProjectionContext(
+                tenant_id=document_runtime.TENANT_ID,
+                project_global_id=UUID(project_id),
+                scope_kind=ProjectionScopeKind.READINESS,
+                scope_global_id=UUID(readiness_id),
+            ),
+            kind=ProjectionKind.FORMAL_QUALITY_STATUS,
+            source_object_id="QUALITY-P806-RUNTIME",
+        )
+    with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_RESULT"):
+        result = ProjectionReaderResult(
             kind=ProjectionKind.FORMAL_QUALITY_STATUS,
             adapter_mode=AdapterMode.SANDBOX,
             source_environment="disposable-test",
@@ -257,21 +403,35 @@ def prepare_projection(*, project_id: str, readiness_id: str) -> dict[str, objec
                 "resultCode": "accepted",
                 "observedAt": "2026-08-26T08:00:00Z",
             },
-        ),
-        event_id=uuid5(_NAMESPACE, f"event:{FIXTURE_RUN_ID}"),
-        received_at=datetime(2026, 8, 26, 8, 1, tzinfo=UTC),
-        correlation_id=uuid5(_NAMESPACE, f"correlation:{FIXTURE_RUN_ID}"),
-    )
-    collection = repository.project_collection(
-        repository.authorize_project(UUID(project_id)),
-        kind="formal_quality_status",
-    )
-    matches = [
-        item
-        for item in collection["items"]
-        if item["scopeKind"] == "readiness" and item["scopeGlobalId"] == readiness_id
-    ]
-    require(len(matches) == 1, "P8-06 projection fixture cardinality drifted")
+        )
+    with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_APPLY"):
+        outcome = repository.apply_observation(
+            project_global_id=UUID(project_id),
+            target=target,
+            result=result,
+            event_id=uuid5(_NAMESPACE, f"event:{FIXTURE_RUN_ID}"),
+            received_at=datetime(2026, 8, 26, 8, 1, tzinfo=UTC),
+            correlation_id=uuid5(_NAMESPACE, f"correlation:{FIXTURE_RUN_ID}"),
+        )
+    with quality_link_prepare_projection_step(
+        "P806_QUALITY_PREPARE_COLLECTION_AUTHORIZE"
+    ):
+        access = repository.authorize_project(UUID(project_id))
+    with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_COLLECTION_READ"):
+        collection = repository.project_collection(
+            access,
+            kind="formal_quality_status",
+        )
+    with quality_link_prepare_projection_step(
+        "P806_QUALITY_PREPARE_COLLECTION_CARDINALITY"
+    ):
+        matches = [
+            item
+            for item in collection["items"]
+            if item["scopeKind"] == "readiness"
+            and item["scopeGlobalId"] == readiness_id
+        ]
+        require(len(matches) == 1, "P8-06 projection fixture cardinality drifted")
     return {"item": matches[0], "replayed": outcome.replayed}
 
 
@@ -361,10 +521,13 @@ def run_fresh(
         require(isinstance(current, dict), "P8-06 retained readiness revision is unavailable")
         readiness_id = current.get("instanceGlobalId")
         require(isinstance(readiness_id, str), "P8-06 readiness identity is unavailable")
+    prepare_kwargs = {"project_id": project_id, "readiness_id": readiness_id}
+    if QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED:
+        prepare_kwargs["diagnostic_trace_id"] = quality_link_runtime_diagnostic_trace()
     with quality_link_runtime_diagnostic_step("P806_QUALITY_PREPARE_PROJECTION"):
         prepared = run_bench_fixture(
             "prepare_projection",
-            {"project_id": project_id, "readiness_id": readiness_id},
+            prepare_kwargs,
         )
     try:
         return _exercise_link(
@@ -386,21 +549,73 @@ def run_fresh(
 
 def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     import frappe
+    from npi_integration.projections.frappe_repository import (
+        quality_link_prepare_projection_diagnostics,
+        quality_link_prepare_projection_step,
+    )
 
     require(method in {"prepare_projection", "cleanup"}, "P8-06 Bench fixture is unavailable")
-    frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
-    frappe.connect()
-    try:
-        document_runtime._validated_runtime_site()
-        frappe.set_user(ACTOR_USER if method == "prepare_projection" else "Administrator")
-        result = prepare_projection(**kwargs) if method == "prepare_projection" else cleanup(**kwargs)
-        frappe.db.commit()
-        print(json.dumps(result, separators=(",", ":"), sort_keys=True))
-    except Exception:
-        frappe.db.rollback()
-        raise
-    finally:
-        frappe.destroy()
+    exact_kwargs = dict(kwargs)
+    diagnostic_trace_id = exact_kwargs.pop("diagnostic_trace_id", None)
+    prepare_diagnostic_enabled = (
+        os.environ.get(_PREPARE_PROJECTION_DIAGNOSTIC_ENV)
+        == _PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
+    )
+    if method == "prepare_projection":
+        require(
+            set(exact_kwargs) == {"project_id", "readiness_id"}
+            and (
+                (
+                    prepare_diagnostic_enabled
+                    and isinstance(diagnostic_trace_id, str)
+                    and _TRACE_PATTERN.fullmatch(diagnostic_trace_id) is not None
+                )
+                or (
+                    not prepare_diagnostic_enabled
+                    and diagnostic_trace_id is None
+                )
+            ),
+            "P8-06 prepare fixture arguments are invalid",
+        )
+    else:
+        require(
+            set(exact_kwargs) == {"project_id", "readiness_id"}
+            and diagnostic_trace_id is None,
+            "P8-06 cleanup fixture arguments are invalid",
+        )
+    with quality_link_prepare_projection_diagnostics(
+        diagnostic_trace_id if method == "prepare_projection" else None
+    ):
+        with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_CHILD_INIT"):
+            frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
+        with quality_link_prepare_projection_step(
+            "P806_QUALITY_PREPARE_CHILD_CONNECT"
+        ):
+            frappe.connect()
+        try:
+            with quality_link_prepare_projection_step(
+                "P806_QUALITY_PREPARE_SITE_VALIDATE"
+            ):
+                document_runtime._validated_runtime_site()
+            with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_SET_ACTOR"):
+                frappe.set_user(
+                    ACTOR_USER if method == "prepare_projection" else "Administrator"
+                )
+            result = (
+                prepare_projection(**exact_kwargs)
+                if method == "prepare_projection"
+                else cleanup(**exact_kwargs)
+            )
+            with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_COMMIT"):
+                frappe.db.commit()
+            with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_RESPONSE"):
+                print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+        except Exception:
+            frappe.db.rollback()
+            raise
+        finally:
+            with quality_link_prepare_projection_step("P806_QUALITY_PREPARE_DESTROY"):
+                frappe.destroy()
 
 
 def main() -> int:
@@ -459,7 +674,10 @@ def main() -> int:
                 administrator_password = secret_from_environment("NPI_RUNTIME_ADMINISTRATOR_PASSWORD")
             result = run_fresh(base_url, fixture_password, administrator_password)
         except Exception:
-            if QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED:
+            if (
+                QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
+                or QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+            ):
                 return 1
             raise
     print(json.dumps(result, separators=(",", ":"), sort_keys=True))

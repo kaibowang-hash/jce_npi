@@ -93,6 +93,10 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             "P806_QUALITY_LIST_SHAPE",
             "P806_QUALITY_CLEANUP",
         )
+        self.assertFalse(self.verifier.QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED)
+        self.assertTrue(
+            self.verifier.QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED
+        )
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
         source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(encoding="utf-8")
         tree = ast.parse(source)
@@ -109,6 +113,66 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(len(stages), 17)
         self.assertEqual(set(stages), set(expected))
 
+    def test_prepare_projection_allowlists_are_exact_and_lexically_unique(self) -> None:
+        parent = self.verifier.QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES
+        server = self.verifier.QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES
+        self.assertEqual(len(parent), 4)
+        self.assertEqual(len(server), 39)
+        self.assertTrue(set(parent).isdisjoint(server))
+        verifier_source = (
+            ROOT / "scripts/verify_quality_link_runtime.py"
+        ).read_text(encoding="utf-8")
+        repository_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/projections/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        tree = ast.parse(verifier_source + "\n" + repository_source)
+        parent_stages = [
+            node.args[1].value
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "_prepare_parent_diagnostic_step"
+            and len(node.args) == 2
+            and isinstance(node.args[1], ast.Constant)
+            and isinstance(node.args[1].value, str)
+        ]
+        server_stages = [
+            node.args[0].value
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "quality_link_prepare_projection_step"
+            and len(node.args) == 1
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ]
+        self.assertEqual(len(parent_stages), len(parent))
+        self.assertEqual(set(parent_stages), set(parent))
+        self.assertEqual(
+            sorted(parent, key=verifier_source.index),
+            list(parent),
+        )
+        self.assertEqual(len(server_stages), len(server))
+        self.assertEqual(set(server_stages), set(server))
+        assignment = next(
+            node
+            for node in ast.parse(repository_source).body
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name)
+                and target.id
+                == "QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_CODES"
+                for target in node.targets
+            )
+        )
+        repository_codes = {
+            element.value
+            for element in assignment.value.args[0].elts
+            if isinstance(element, ast.Constant) and isinstance(element.value, str)
+        }
+        self.assertEqual(repository_codes, server)
+
     def test_diagnostic_record_is_one_exact_safe_inner_stage(self) -> None:
         trace_id = "trace-0123456789abcdef0123456789abcdef"
         with tempfile.TemporaryDirectory() as directory:
@@ -122,10 +186,10 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 self.assertRaisesRegex(ValueError, "private-value"),
                 self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
                 self.verifier.quality_link_runtime_diagnostic_step(
-                    "P806_QUALITY_BOOTSTRAP_SECRET"
+                    "P806_QUALITY_PREPARE_PARENT_SUBPROCESS"
                 ),
                 self.verifier.quality_link_runtime_diagnostic_step(
-                    "P806_QUALITY_ADMIN_LOGIN"
+                    "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS"
                 ),
             ):
                 raise ValueError("private-value")
@@ -134,7 +198,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                     path,
                     expected_trace=trace_id,
                 ),
-                ("ValueError", "P806_QUALITY_ADMIN_LOGIN", trace_id),
+                (
+                    "ValueError",
+                    "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS",
+                    trace_id,
+                ),
             )
             payload = path.read_text(encoding="utf-8")
             self.assertNotIn("private-value", payload)
@@ -143,7 +211,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
     def test_diagnostic_reader_rejects_missing_duplicate_wrong_or_malformed_records(self) -> None:
         trace_id = "trace-0123456789abcdef0123456789abcdef"
         good = {
-            "code": "P806_QUALITY_CREATE_HTTP",
+            "code": "P806_QUALITY_PREPARE_PARENT_RESULT_SHAPE",
             "exceptionType": "RuntimeError",
             "traceId": trace_id,
         }
@@ -179,7 +247,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             with (
                 patch.object(
                     self.verifier,
-                    "QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED",
+                    "QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED",
                     False,
                 ),
                 patch.dict(
@@ -190,7 +258,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 self.assertRaisesRegex(RuntimeError, "same-error"),
                 self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
                 self.verifier.quality_link_runtime_diagnostic_step(
-                    "P806_QUALITY_CREATE_HTTP"
+                    "P806_QUALITY_PREPARE_PARENT_RESULT_SHAPE"
                 ),
             ):
                 raise RuntimeError("same-error")
@@ -205,6 +273,10 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("read_quality_link_runtime_diagnostic", source)
         self.assertIn("--expected-trace", source)
         self.assertIn("P8-06 formal quality link runtime diagnostic", source)
+        self.assertIn(
+            'NPI_P806_QUALITY_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE="p8-06-quality-link-prepare-projection-v1"',
+            source,
+        )
 
     def test_bench_fixture_allowlist_and_arguments_are_closed(self) -> None:
         source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(encoding="utf-8")
@@ -260,6 +332,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                     {
                         "project_id": "10000000-0000-4000-8000-000000000002",
                         "readiness_id": "10000000-0000-4000-8000-000000000001",
+                        "diagnostic_trace_id": self.verifier.quality_link_runtime_diagnostic_trace(),
                     },
                 ),
                 call(
@@ -271,6 +344,106 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 ),
             ],
         )
+
+    def test_failed_prepare_child_prefers_one_strict_server_tuple(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        server_code = "P806_QUALITY_PROJECTION_SCOPE"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ),
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_replay_diagnostic_log_cursors",
+                    return_value={"logs/npi_core.log": 0},
+                ),
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_sanitized_server_log_diagnostic",
+                    return_value=("ValueError", server_code, trace_id),
+                ) as reader,
+                patch.object(
+                    self.verifier.subprocess,
+                    "run",
+                    return_value=types.SimpleNamespace(returncode=1),
+                ) as child,
+                self.assertRaisesRegex(RuntimeError, "Bench fixture failed"),
+                self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+            ):
+                self.verifier.run_bench_fixture(
+                    "prepare_projection",
+                    {
+                        "project_id": "10000000-0000-4000-8000-000000000002",
+                        "readiness_id": "10000000-0000-4000-8000-000000000001",
+                        "diagnostic_trace_id": trace_id,
+                    },
+                )
+            self.assertEqual(
+                self.verifier.read_quality_link_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("ValueError", server_code, trace_id),
+            )
+            reader.assert_called_once_with(
+                trace_id,
+                {"logs/npi_core.log": 0},
+                code_prefix="P806_QUALITY_",
+                allowed_codes=self.verifier.QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES,
+            )
+            self.assertIs(child.call_args.kwargs["stderr"], self.verifier.subprocess.DEVNULL)
+
+    def test_failed_prepare_child_falls_back_to_parent_without_output_read(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ),
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_replay_diagnostic_log_cursors",
+                    return_value={"logs/npi_core.log": 0},
+                ),
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_sanitized_server_log_diagnostic",
+                    return_value=None,
+                ),
+                patch.object(
+                    self.verifier.subprocess,
+                    "run",
+                    return_value=types.SimpleNamespace(returncode=1),
+                ),
+                self.assertRaisesRegex(RuntimeError, "Bench fixture failed"),
+                self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+            ):
+                self.verifier.run_bench_fixture(
+                    "prepare_projection",
+                    {
+                        "project_id": "10000000-0000-4000-8000-000000000002",
+                        "readiness_id": "10000000-0000-4000-8000-000000000001",
+                        "diagnostic_trace_id": trace_id,
+                    },
+                )
+            self.assertEqual(
+                self.verifier.read_quality_link_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                (
+                    "RuntimeError",
+                    "P806_QUALITY_PREPARE_PARENT_CHILD_STATUS",
+                    trace_id,
+                ),
+            )
 
 
 if __name__ == "__main__":

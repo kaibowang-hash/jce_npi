@@ -174,3 +174,38 @@ equal trace only; all other cases retain the static outer failure with no
 leak. Product, permissions, transactions, ownership, contracts, migrations,
 UI, translations, visuals, target network, FR-CO-003/004 deferral and all B/C
 holds are unchanged.
+
+## Prepare-projection substage diagnostic checkpoint
+
+The exact runtime-stage diagnostic checkpoint
+`71b3ee9276c6078175682ffdc7528e84ccdc7249` passes ordinary CI
+`32994361662`. Controlled diagnostic `32995898417` passes preflight and fails
+only in runtime job `98265034895`, exposing the safe tuple
+`P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+trace-d41bef28f3675f2287359d7258a83015`. Failed-child output, business values,
+IDs, messages and stacks were not read. The previous cycle freezes at
+diagnostic `1/1`, repair `0/1`, final `0/1`.
+
+The parent wrapper converts every nonzero prepare child into the same
+`RuntimeError`; real-Site P8-01 projection and Project-first readiness
+boundaries pass, but the tuple remains nonunique across the Readiness-scoped
+apply, persistence, audit, collection and commit sequence. No product repair
+is selected.
+
+The independent `p8-06-quality-link-prepare-projection` cycle starts at
+diagnostic `0/1`, repair `0/1`, final `0/1`. Its exact-eight checkpoint turns
+the old flag off and enables one exact new scope. Four parent and thirty-nine
+child/repository lexical stages share the validated trace. Child failures use
+the existing response-neutral safe logger. The strict cursor reader accepts
+one logical exact-three-key mirrored record; a trusted server tuple wins,
+otherwise a fixed parent stage is used. Innermost wins, the original exception
+and `finally` behavior are retained, failed-child stdout/stderr remain unread,
+and dormant/no-scope execution produces no record.
+
+Focused tests pin mutual exclusion, exact allowlists and lexical uniqueness,
+trace propagation, server-win and parent-fallback behavior, malformed,
+duplicate and wrong-trace rejection, no leak, default-off behavior, unchanged
+projection ordering and zero direct SQL/network/commit additions. Product
+values, permissions, transaction boundaries, write order, responses,
+rollback, API, contracts, metadata, migrations, UI, i18n, ERP target traffic,
+FR-CO-003/004 deferral and every B/C hold remain unchanged.

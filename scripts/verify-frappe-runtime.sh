@@ -3128,6 +3128,7 @@ run_quality_link_runtime_verifier() {
     export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
     export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
     export NPI_QUALITY_LINK_RUNTIME_DIAGNOSTIC_PATH="${RUNNER_TEMP:-/tmp}/p8-06-quality-link-runtime-diagnostic.json"
+    export NPI_P806_QUALITY_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE="p8-06-quality-link-prepare-projection-v1"
     exec python "${repo_root}/scripts/verify_quality_link_runtime.py" \
       --base-url "${base_url}"
   )

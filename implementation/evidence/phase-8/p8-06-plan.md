@@ -683,3 +683,40 @@ The remaining four changed paths are this plan, checkpoint evidence,
 controller and CURRENT_TASK. No product, workflow, API, permission, route, translation,
 threshold or Darwin baseline changes. Run `32983850058` is not rerun; the
 repair requires a new exact-SHA ordinary PASS before one Level-3 execution.
+
+## 22. Independent prepare-projection substage diagnostic
+
+Exact checkpoint `71b3ee9276c6078175682ffdc7528e84ccdc7249`
+passes ordinary CI `32994361662`. Its sole controlled diagnostic run
+`32995898417` reaches runtime job `98265034895` and emits only
+`P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+trace-d41bef28f3675f2287359d7258a83015`. The previous runtime-stage cycle is
+immutable at diagnostic `1/1`, repair `0/1`, final `0/1`.
+
+The tuple is the parent Bench return-code guard and therefore cannot select a
+child first source. The independent
+`p8-06-quality-link-prepare-projection` cycle starts at diagnostic `0/1`,
+repair `0/1`, final `0/1`. It disables the previous activation and enables one
+exact environment-gated child scope only. Four ordered parent stages cover
+spawn, child status, result parse and result shape. Thirty-nine unique
+child/repository stages cover Site setup, actor, principal, target/result,
+Readiness containment, head/event/replay/classification/freshness, immutable
+observation/head values, transaction writes, audit, collection, commit and
+response.
+
+The existing safe diagnostic logger receives only code, exception class and
+the exact trace. The parent snapshots controlled log cursors, accepts only one
+logical exact-three-key mirrored record, prefers that trusted child tuple and
+otherwise uses one fixed parent fallback. Duplicate, malformed, unknown or
+wrong-trace records yield no server tuple. The child subprocess retains
+`stderr=DEVNULL`; nonzero child stdout is never sought or read. One record,
+innermost-wins, same-exception and finally rules apply. Default execution has
+no scope and no record. No projection value, validation, permission,
+transaction, write order, API response, rollback or cleanup semantics change.
+
+The exact eight paths are the projection Frappe repository, the quality-link
+runtime verifier and cumulative shell, their two focused tests, this plan,
+the checkpoint evidence and `implementation/AUTOPILOT_CONTROLLER.md`. The
+cycle adds no controller predicate instrumentation in advance. A later exact
+insert/save predicate checkpoint is permitted only if this one uniquely stops
+at such a boundary without identifying the controller predicate.

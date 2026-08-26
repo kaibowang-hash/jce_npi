@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 from collections.abc import Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, Iterator
 from uuid import UUID, uuid5
 
 import frappe
@@ -52,6 +55,156 @@ MAX_PROJECT_PROJECTION_HEADS = 200
 MAX_EVENT_OBSERVATIONS = 50
 _HEAD_NAMESPACE = UUID("e17085df-3b96-5d87-a5da-c2eaf4bc6c61")
 _OBSERVATION_NAMESPACE = UUID("5e43f3df-50d0-57bc-8b85-2bb7cd3c12e3")
+QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE = (
+    "p8-06-quality-link-prepare-projection-v1"
+)
+QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P806_QUALITY_PREPARE_CHILD_INIT",
+        "P806_QUALITY_PREPARE_CHILD_CONNECT",
+        "P806_QUALITY_PREPARE_SITE_VALIDATE",
+        "P806_QUALITY_PREPARE_SET_ACTOR",
+        "P806_QUALITY_PREPARE_PRINCIPAL",
+        "P806_QUALITY_PREPARE_REPOSITORY",
+        "P806_QUALITY_PREPARE_TARGET",
+        "P806_QUALITY_PREPARE_RESULT",
+        "P806_QUALITY_PREPARE_APPLY",
+        "P806_QUALITY_PREPARE_COLLECTION_AUTHORIZE",
+        "P806_QUALITY_PREPARE_COLLECTION_READ",
+        "P806_QUALITY_PREPARE_COLLECTION_CARDINALITY",
+        "P806_QUALITY_PREPARE_COMMIT",
+        "P806_QUALITY_PREPARE_RESPONSE",
+        "P806_QUALITY_PREPARE_DESTROY",
+        "P806_QUALITY_PROJECTION_AUTHORIZE",
+        "P806_QUALITY_PROJECTION_TARGET",
+        "P806_QUALITY_PROJECTION_SCOPE",
+        "P806_QUALITY_PROJECTION_RESULT",
+        "P806_QUALITY_PROJECTION_NORMALIZE",
+        "P806_QUALITY_PROJECTION_PAYLOAD",
+        "P806_QUALITY_PROJECTION_STREAM",
+        "P806_QUALITY_PROJECTION_HEAD_LOCK",
+        "P806_QUALITY_PROJECTION_HEAD_IDENTITY",
+        "P806_QUALITY_PROJECTION_EVENT_ROWS",
+        "P806_QUALITY_PROJECTION_EVENT_BOUND",
+        "P806_QUALITY_PROJECTION_REPLAY",
+        "P806_QUALITY_PROJECTION_CURRENT",
+        "P806_QUALITY_PROJECTION_CLASSIFY",
+        "P806_QUALITY_PROJECTION_FRESHNESS",
+        "P806_QUALITY_PROJECTION_OBSERVATION_VALUES",
+        "P806_QUALITY_PROJECTION_HEAD_VALUES",
+        "P806_QUALITY_PROJECTION_TRANSACTION",
+        "P806_QUALITY_PROJECTION_OBSERVATION_INSERT",
+        "P806_QUALITY_PROJECTION_HEAD_INSERT",
+        "P806_QUALITY_PROJECTION_HEAD_UPDATE",
+        "P806_QUALITY_PROJECTION_HEAD_SAVE",
+        "P806_QUALITY_PROJECTION_AUDIT",
+        "P806_QUALITY_PROJECTION_OUTCOME",
+    }
+)
+_QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_ENV = (
+    "NPI_P806_QUALITY_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE"
+)
+_QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG = (
+    "npi_p806_quality_prepare_projection_diagnostic"
+)
+_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+
+
+@contextmanager
+def quality_link_prepare_projection_diagnostics(
+    trace_id: str | None,
+) -> Iterator[None]:
+    """Enable one exact response-neutral P8-06 projection diagnostic scope."""
+
+    try:
+        enabled = (
+            os.environ.get(_QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_ENV)
+            == QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
+        )
+        state = None
+        if (
+            enabled
+            and isinstance(trace_id, str)
+            and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+        ):
+            state = {"trace_id": trace_id, "recorded": False}
+        flags = frappe.flags
+        missing = object()
+        previous = getattr(
+            flags,
+            _QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG,
+            missing,
+        )
+        setattr(
+            flags,
+            _QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG,
+            state,
+        )
+    except Exception:
+        yield
+        return
+    try:
+        yield
+    finally:
+        try:
+            if previous is missing:
+                delattr(flags, _QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG)
+            else:
+                setattr(
+                    flags,
+                    _QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG,
+                    previous,
+                )
+        except Exception:
+            pass
+
+
+@contextmanager
+def quality_link_prepare_projection_step(code: str) -> Iterator[None]:
+    """Record the innermost allowlisted stage and re-raise unchanged."""
+
+    try:
+        yield
+    except Exception as error:
+        _record_quality_link_prepare_projection_failure(code, error)
+        raise
+
+
+def _record_quality_link_prepare_projection_failure(
+    code: str,
+    error: Exception,
+) -> None:
+    try:
+        state = getattr(
+            frappe.flags,
+            _QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_FLAG,
+            None,
+        )
+        exception_type = type(error).__name__
+        if (
+            not isinstance(state, dict)
+            or set(state) != {"trace_id", "recorded"}
+            or type(state.get("recorded")) is not bool
+            or state.get("recorded") is True
+            or code not in QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTIC_CODES
+            or not isinstance(state.get("trace_id"), str)
+            or _DIAGNOSTIC_TRACE_PATTERN.fullmatch(str(state["trace_id"])) is None
+            or _DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["recorded"] = True
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=code,
+            title="NPI formal quality projection preparation failed",
+            exception_type=exception_type,
+            trace_id=str(state["trace_id"]),
+        )
+    except Exception:
+        # Diagnostics must never change projection behavior or the exception.
+        pass
 
 
 @dataclass(frozen=True, slots=True)
@@ -220,128 +373,176 @@ class FrappeProjectionRepository(FrappeDocumentRepository):
         received_at: datetime,
         correlation_id: UUID,
     ) -> ProjectionApplyOutcome:
-        access = self.authorize_project(project_global_id)
-        if access is None or access.redacted:
-            raise PermissionError("The Project projection scope is unavailable.")
-        project = access.project
-        _require_target_matches_project(project, target)
-        self._require_scope_belongs_to_project(project, target.context)
-        if (
-            not isinstance(result, ProjectionReaderResult)
-            or result.kind is not target.kind
-            or result.source_object_id != target.source_object_id
-        ):
-            raise ValueError("Projection reader result does not match its exact target.")
-        received = _datetime(received_at)
-        exact_event_id = _uuid(event_id)
-        exact_correlation_id = _uuid(correlation_id)
-        payload = result.event_payload(context=target.context, received_at=received)
-        payload_hash = canonical_payload_hash(payload)
-        stream_identity = _stream_identity(target)
-        stream_key_hash = canonical_payload_hash(stream_identity)
-        head_id = uuid5(_HEAD_NAMESPACE, stream_key_hash)
-        event_key_hash = canonical_payload_hash(
-            {"eventId": str(exact_event_id), "payloadHash": payload_hash}
-        )
-        observation_id = uuid5(_OBSERVATION_NAMESPACE, event_key_hash)
-        head = _optional_locked_doc("NPI ERP Projection Head", str(head_id))
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_AUTHORIZE"):
+            access = self.authorize_project(project_global_id)
+            if access is None or access.redacted:
+                raise PermissionError("The Project projection scope is unavailable.")
+            project = access.project
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_TARGET"):
+            _require_target_matches_project(project, target)
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_SCOPE"):
+            self._require_scope_belongs_to_project(project, target.context)
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_RESULT"):
+            if (
+                not isinstance(result, ProjectionReaderResult)
+                or result.kind is not target.kind
+                or result.source_object_id != target.source_object_id
+            ):
+                raise ValueError(
+                    "Projection reader result does not match its exact target."
+                )
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_NORMALIZE"):
+            received = _datetime(received_at)
+            exact_event_id = _uuid(event_id)
+            exact_correlation_id = _uuid(correlation_id)
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_PAYLOAD"):
+            payload = result.event_payload(context=target.context, received_at=received)
+            payload_hash = canonical_payload_hash(payload)
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_STREAM"):
+            stream_identity = _stream_identity(target)
+            stream_key_hash = canonical_payload_hash(stream_identity)
+            head_id = uuid5(_HEAD_NAMESPACE, stream_key_hash)
+            event_key_hash = canonical_payload_hash(
+                {"eventId": str(exact_event_id), "payloadHash": payload_hash}
+            )
+            observation_id = uuid5(_OBSERVATION_NAMESPACE, event_key_hash)
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_HEAD_LOCK"):
+            head = _optional_locked_doc("NPI ERP Projection Head", str(head_id))
         if head is not None:
-            self._require_head_identity(head, stream_identity, stream_key_hash)
+            with quality_link_prepare_projection_step(
+                "P806_QUALITY_PROJECTION_HEAD_IDENTITY"
+            ):
+                self._require_head_identity(head, stream_identity, stream_key_hash)
 
-        existing_event_rows = frappe.get_all(
-            "NPI ERP Projection Observation",
-            filters={"event_id": str(exact_event_id)},
-            fields=["name", "payload_hash", "disposition"],
-            order_by="created_at asc, global_id asc",
-            limit_page_length=MAX_EVENT_OBSERVATIONS + 1,
-        )
-        if len(existing_event_rows) > MAX_EVENT_OBSERVATIONS:
-            raise ValueError("Persisted ERP projection event history exceeds its safe bound.")
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_EVENT_ROWS"):
+            existing_event_rows = frappe.get_all(
+                "NPI ERP Projection Observation",
+                filters={"event_id": str(exact_event_id)},
+                fields=["name", "payload_hash", "disposition"],
+                order_by="created_at asc, global_id asc",
+                limit_page_length=MAX_EVENT_OBSERVATIONS + 1,
+            )
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_EVENT_BOUND"):
+            if len(existing_event_rows) > MAX_EVENT_OBSERVATIONS:
+                raise ValueError(
+                    "Persisted ERP projection event history exceeds its safe bound."
+                )
         for row in existing_event_rows:
             if str(_row_value(row, "payload_hash")) == payload_hash:
-                if head is None:
-                    raise RuntimeError("A persisted projection replay has no guarded head.")
-                return ProjectionApplyOutcome(
-                    observation_global_id=UUID(str(_row_value(row, "name"))),
-                    disposition=ApplicationDisposition(
-                        str(_row_value(row, "disposition"))
-                    ),
-                    head_optimistic_version=int(head.optimistic_version),
-                    replayed=True,
-                )
+                with quality_link_prepare_projection_step(
+                    "P806_QUALITY_PROJECTION_REPLAY"
+                ):
+                    if head is None:
+                        raise RuntimeError(
+                            "A persisted projection replay has no guarded head."
+                        )
+                    return ProjectionApplyOutcome(
+                        observation_global_id=UUID(str(_row_value(row, "name"))),
+                        disposition=ApplicationDisposition(
+                            str(_row_value(row, "disposition"))
+                        ),
+                        head_optimistic_version=int(head.optimistic_version),
+                        replayed=True,
+                    )
 
-        current = self._current_identity(head)
-        disposition = (
-            ApplicationDisposition.CONFLICTED
-            if existing_event_rows
-            else classify_observation(
-                current,
-                event_id=exact_event_id,
-                result=result,
-                payload_hash=payload_hash,
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_CURRENT"):
+            current = self._current_identity(head)
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_CLASSIFY"):
+            disposition = (
+                ApplicationDisposition.CONFLICTED
+                if existing_event_rows
+                else classify_observation(
+                    current,
+                    event_id=exact_event_id,
+                    result=result,
+                    payload_hash=payload_hash,
+                )
             )
-        )
-        freshness, policy_ref = self._candidate_freshness(
-            target.kind,
-            result,
-            received,
-            disposition,
-            head,
-        )
-        observation_values = _observation_values(
-            global_id=observation_id,
-            event_id=exact_event_id,
-            event_key_hash=event_key_hash,
-            target=target,
-            result=result,
-            payload=payload,
-            payload_hash=payload_hash,
-            received_at=received,
-            trace_id=self.trace_id,
-            correlation_id=exact_correlation_id,
-            freshness=freshness,
-            disposition=disposition,
-        )
-        next_head_values = _head_values(
-            global_id=head_id,
-            stream_identity=stream_identity,
-            stream_key_hash=stream_key_hash,
-            previous=head,
-            observation_values=observation_values,
-            result=result,
-            freshness=freshness,
-            policy_ref=policy_ref,
-            disposition=disposition,
-            updated_at=received,
-        )
-        with projection_repository_write():
-            frappe.get_doc(observation_values).insert()
-            if head is None:
-                head = frappe.get_doc(next_head_values).insert()
-            else:
-                for fieldname, value in next_head_values.items():
-                    if fieldname not in {"doctype", "global_id"}:
-                        setattr(head, fieldname, value)
-                head.save()
-            self._append_audit(
-                operation="erp_projection.observe",
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_FRESHNESS"):
+            freshness, policy_ref = self._candidate_freshness(
+                target.kind,
+                result,
+                received,
+                disposition,
+                head,
+            )
+        with quality_link_prepare_projection_step(
+            "P806_QUALITY_PROJECTION_OBSERVATION_VALUES"
+        ):
+            observation_values = _observation_values(
                 global_id=observation_id,
-                object_version=int(next_head_values["optimistic_version"]),
-                result=disposition.value,
-                summary={
-                    "eventId": str(exact_event_id),
-                    "projectGlobalId": str(project.global_id),
-                    "projectionKind": target.kind.value,
-                    "scopeGlobalId": str(target.context.scope_global_id),
-                    "scopeKind": target.context.scope_kind.value,
-                    "sourceObjectType": target.source_object_type,
-                },
+                event_id=exact_event_id,
+                event_key_hash=event_key_hash,
+                target=target,
+                result=result,
+                payload=payload,
+                payload_hash=payload_hash,
+                received_at=received,
+                trace_id=self.trace_id,
+                correlation_id=exact_correlation_id,
+                freshness=freshness,
+                disposition=disposition,
             )
-        return ProjectionApplyOutcome(
-            observation_global_id=observation_id,
-            disposition=disposition,
-            head_optimistic_version=int(next_head_values["optimistic_version"]),
-        )
+        with quality_link_prepare_projection_step(
+            "P806_QUALITY_PROJECTION_HEAD_VALUES"
+        ):
+            next_head_values = _head_values(
+                global_id=head_id,
+                stream_identity=stream_identity,
+                stream_key_hash=stream_key_hash,
+                previous=head,
+                observation_values=observation_values,
+                result=result,
+                freshness=freshness,
+                policy_ref=policy_ref,
+                disposition=disposition,
+                updated_at=received,
+            )
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_TRANSACTION"):
+            with projection_repository_write():
+                with quality_link_prepare_projection_step(
+                    "P806_QUALITY_PROJECTION_OBSERVATION_INSERT"
+                ):
+                    frappe.get_doc(observation_values).insert()
+                if head is None:
+                    with quality_link_prepare_projection_step(
+                        "P806_QUALITY_PROJECTION_HEAD_INSERT"
+                    ):
+                        head = frappe.get_doc(next_head_values).insert()
+                else:
+                    with quality_link_prepare_projection_step(
+                        "P806_QUALITY_PROJECTION_HEAD_UPDATE"
+                    ):
+                        for fieldname, value in next_head_values.items():
+                            if fieldname not in {"doctype", "global_id"}:
+                                setattr(head, fieldname, value)
+                    with quality_link_prepare_projection_step(
+                        "P806_QUALITY_PROJECTION_HEAD_SAVE"
+                    ):
+                        head.save()
+                with quality_link_prepare_projection_step(
+                    "P806_QUALITY_PROJECTION_AUDIT"
+                ):
+                    self._append_audit(
+                        operation="erp_projection.observe",
+                        global_id=observation_id,
+                        object_version=int(next_head_values["optimistic_version"]),
+                        result=disposition.value,
+                        summary={
+                            "eventId": str(exact_event_id),
+                            "projectGlobalId": str(project.global_id),
+                            "projectionKind": target.kind.value,
+                            "scopeGlobalId": str(target.context.scope_global_id),
+                            "scopeKind": target.context.scope_kind.value,
+                            "sourceObjectType": target.source_object_type,
+                        },
+                    )
+        with quality_link_prepare_projection_step("P806_QUALITY_PROJECTION_OUTCOME"):
+            return ProjectionApplyOutcome(
+                observation_global_id=observation_id,
+                disposition=disposition,
+                head_optimistic_version=int(next_head_values["optimistic_version"]),
+            )
 
     def _candidate_freshness(
         self,
