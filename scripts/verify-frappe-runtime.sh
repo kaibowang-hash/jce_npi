@@ -3127,9 +3127,24 @@ run_quality_link_runtime_verifier() {
     export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
     export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
     export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    export NPI_QUALITY_LINK_RUNTIME_DIAGNOSTIC_PATH="${RUNNER_TEMP:-/tmp}/p8-06-quality-link-runtime-diagnostic.json"
     exec python "${repo_root}/scripts/verify_quality_link_runtime.py" \
       --base-url "${base_url}"
   )
+}
+
+read_quality_link_runtime_diagnostic() {
+  local diagnostic_path="${RUNNER_TEMP:-/tmp}/p8-06-quality-link-runtime-diagnostic.json"
+  local expected_trace
+  expected_trace="$(
+    NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}" \
+      python "${repo_root}/scripts/verify_quality_link_runtime.py" \
+      --diagnostic-trace
+  )" || return 1
+  NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}" \
+    python "${repo_root}/scripts/verify_quality_link_runtime.py" \
+    --read-diagnostic "${diagnostic_path}" \
+    --expected-trace "${expected_trace}"
 }
 
 verify_tooling_import_runtime_log_redaction() {
@@ -4076,7 +4091,10 @@ if [[ "${verification_mode}" == "all" ||
     exit 1
   fi
 
-  if ! run_quality_link_runtime_verifier; then
+  if ! run_quality_link_runtime_verifier >/dev/null 2>/dev/null; then
+    if diagnostic="$(read_quality_link_runtime_diagnostic)"; then
+      echo "P8-06 formal quality link runtime diagnostic [${diagnostic}]" >&2
+    fi
     echo "Local Frappe formal quality link runtime verification failed." >&2
     report_projection_runtime_failure
     exit 1

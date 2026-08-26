@@ -6194,3 +6194,34 @@ repeat or rewrite it merely to restore context. See
   The repair changes no product source, API, permission,
   runtime behavior or translation. Old run `32983850058` is immutable and is
   not rerun; a new exact-SHA ordinary run is required before Level 3.
+
+## 2026-08-27 P8-06 formal-quality runtime stage diagnostic cycle
+
+- Exact checkpoint-4 harness SHA
+  `f382e708564e7b82cb54ac54280fbf722249e0b0` passes ordinary CI
+  `32989038683`, including native Bookworm/x64 `132/132` visuals. Its sole
+  Level-3 run `32990691540` passes repository, frontend, secret, visual and
+  controlled preflight, then fails only inside the P8-06 formal-quality-link
+  verifier after the cumulative P8-01 projection boundary. Cleanup passes.
+- Freeze checkpoint 4 at final `1/1`. The outer withheld failure cannot
+  distinguish verifier bootstrap/readiness, disposable projection setup,
+  create/replay/stale/list response predicates or verifier cleanup, so no
+  product repair is authorized.
+- Open independent `p8-06-quality-link-runtime-stage` at diagnostic `0/1`,
+  product repair `0/1`, final `0/1`. Its exact-six verifier/evidence change
+  adds one active verifier-only flag and seventeen ordered parent stage codes.
+  Product, API, repository, permission, transaction, schema, migration,
+  source ownership, browser UI and target-network behavior are unchanged.
+- On failure the verifier writes at most one exclusive exact-three-key safe
+  record containing only an allowlisted code, exception class and exact
+  run-scoped trace. Innermost stage wins and the original exception is
+  preserved. The cumulative shell never reads failed-child stdout/stderr and
+  reports a tuple only after the strict reader proves code/type/trace equality;
+  missing, duplicate, malformed or mismatched records fall back to the static
+  outer failure.
+- FR-CO-003/004 external portals remain
+  `USER_APPROVED_POST_V1_2_DEFERRED`. All ERPNext lifecycle/mapping/approval,
+  raw-code interpretation, Sandbox/production and Class-B/Class-C holds remain
+  unchanged.
+- Controller marker:
+  `P8-06 checkpoint 4 final 1/1 frozen; quality-link runtime-stage diagnostic 0/1 active`.

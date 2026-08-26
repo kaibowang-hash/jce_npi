@@ -144,3 +144,33 @@ The old run is immutable and will not be rerun. Acceptance requires focused
 tests, two focused-six no-update visual runs, full 132 no-update, exact-path
 manifest acceptance with an unauthorized fifteenth path rejected, a new
 exact-SHA ordinary PASS and then one Level-3 Gate.
+
+## Formal-quality runtime-stage diagnostic checkpoint
+
+Exact harness SHA `f382e708564e7b82cb54ac54280fbf722249e0b0`
+passes ordinary `32989038683`: repository `98241964702`, frontend
+`98241964596`, visual `98241964309` and secret `98241964649` pass, with the
+native visual lane proving `132/132`. The sole Level-3 run `32990691540`
+passes repository `98247307210`, frontend `98247306942`, visual `98247307155`,
+secret `98247307189` and controlled preflight `98251578444`. Runtime
+`98251654660` then fails only at the outer formal-quality-link verifier
+boundary; disposable cleanup passes. No child output, business value, private
+path or stack is accepted as evidence.
+
+Static cross-proof excludes workflow, Bench/Site initialization and the prior
+P8-01 projection fresh/disable/recover/replay/redaction chain, but cannot
+select among verifier bootstrap/readiness, disposable projection setup,
+create/replay/stale/list or cleanup predicates. Checkpoint-4 final `1/1` is
+therefore immutable and no product repair is allowed.
+
+The independent `p8-06-quality-link-runtime-stage` cycle is diagnostic `0/1`,
+repair `0/1`, final `0/1`. Its exact-six change is verifier/evidence only. The
+single active verifier flag selects seventeen fixed ordered parent codes and
+one exact run-scoped trace. Failure writes at most one exclusive exact-three-
+key safe record; innermost stage wins, the original exception is re-raised and
+`finally` remains unchanged. The parent shell never reads failed-child output.
+Its strict reader accepts one allowlisted code, validated exception class and
+equal trace only; all other cases retain the static outer failure with no
+leak. Product, permissions, transactions, ownership, contracts, migrations,
+UI, translations, visuals, target network, FR-CO-003/004 deferral and all B/C
+holds are unchanged.

@@ -304,6 +304,33 @@ ordinary CI. Checkpoint-1 product paths remain closed until this separate
 controller-transition exact SHA passes ordinary CI; later checkpoint paths
 remain unauthorized.
 
+### Independent formal-quality runtime-stage diagnostic
+
+Checkpoint-4 harness SHA `f382e708564e7b82cb54ac54280fbf722249e0b0`
+passes ordinary CI `32989038683`, including native Bookworm/x64 `132/132`
+visuals. Its sole Level-3 run `32990691540` passes every normal and preflight
+job and then fails only at the withheld formal-quality-link verifier boundary.
+The checkpoint-4 final is frozen at `1/1`; no rerun or product repair is
+authorized.
+
+The independent `p8-06-quality-link-runtime-stage` cycle starts at diagnostic
+`0/1`, repair `0/1`, final `0/1`. It is verifier-only and has exactly seventeen
+ordered codes from bootstrap, retained readiness and disposable projection
+setup through create, replay, stale, list and cleanup. One run-scoped trace,
+innermost-one-record and same-exception/finally rules apply. A failed verifier
+exclusively creates at most one exact-three-key safe record. The cumulative
+shell discards failed-child stdout/stderr and exposes only a strict-reader-
+validated code/type/trace tuple; missing, duplicate, malformed, unknown or
+mismatched records expose no tuple.
+
+The exact diagnostic paths are `scripts/verify_quality_link_runtime.py`,
+`scripts/verify-frappe-runtime.sh`,
+`tests/test_phase8_quality_link_runtime_verifier.py`, this plan, the phase-8
+checkpoint evidence and `implementation/AUTOPILOT_CONTROLLER.md`. There is no
+product, app, API, repository, contract, metadata, migration, UI, translation,
+visual or network change. FR-CO-003/004 deferral and every B/C hold remain
+immutable.
+
 ## 12. Planned product paths and tests
 
 Checkpoint 1 is frozen to the following exact product paths; no wildcard is

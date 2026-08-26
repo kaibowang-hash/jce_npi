@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import ast
 import importlib
+import json
 import os
 import sys
+import tempfile
 import types
 import unittest
 from pathlib import Path
@@ -68,6 +71,140 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0)
         self.assertIn("--base-url", completed.stdout)
+        self.assertIn("--read-diagnostic", completed.stdout)
+
+    def test_diagnostic_stage_allowlist_is_exact_and_lexically_unique(self) -> None:
+        expected = (
+            "P806_QUALITY_BOOTSTRAP_SECRET",
+            "P806_QUALITY_ADMIN_LOGIN",
+            "P806_QUALITY_PROJECT_CONTEXT",
+            "P806_QUALITY_ACTOR_LOGIN",
+            "P806_QUALITY_CSRF",
+            "P806_QUALITY_READINESS_HTTP",
+            "P806_QUALITY_READINESS_SHAPE",
+            "P806_QUALITY_PREPARE_PROJECTION",
+            "P806_QUALITY_CURRENT_TRUTH",
+            "P806_QUALITY_CREATE_HTTP",
+            "P806_QUALITY_CREATE_SHAPE",
+            "P806_QUALITY_REPLAY_HTTP",
+            "P806_QUALITY_REPLAY_SHAPE",
+            "P806_QUALITY_STALE_HTTP",
+            "P806_QUALITY_LIST_HTTP",
+            "P806_QUALITY_LIST_SHAPE",
+            "P806_QUALITY_CLEANUP",
+        )
+        self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
+        source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        stages = [
+            node.args[0].value
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "quality_link_runtime_diagnostic_step"
+            and len(node.args) == 1
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ]
+        self.assertEqual(len(stages), 17)
+        self.assertEqual(set(stages), set(expected))
+
+    def test_diagnostic_record_is_one_exact_safe_inner_stage(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ),
+                self.assertRaisesRegex(ValueError, "private-value"),
+                self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+                self.verifier.quality_link_runtime_diagnostic_step(
+                    "P806_QUALITY_BOOTSTRAP_SECRET"
+                ),
+                self.verifier.quality_link_runtime_diagnostic_step(
+                    "P806_QUALITY_ADMIN_LOGIN"
+                ),
+            ):
+                raise ValueError("private-value")
+            self.assertEqual(
+                self.verifier.read_quality_link_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("ValueError", "P806_QUALITY_ADMIN_LOGIN", trace_id),
+            )
+            payload = path.read_text(encoding="utf-8")
+            self.assertNotIn("private-value", payload)
+            self.assertEqual(set(json.loads(payload)), {"code", "exceptionType", "traceId"})
+
+    def test_diagnostic_reader_rejects_missing_duplicate_wrong_or_malformed_records(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        good = {
+            "code": "P806_QUALITY_CREATE_HTTP",
+            "exceptionType": "RuntimeError",
+            "traceId": trace_id,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            self.assertIsNone(
+                self.verifier.read_quality_link_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+            )
+            cases = (
+                json.dumps(good) + "\n" + json.dumps(good) + "\n",
+                json.dumps({**good, "code": "P806_QUALITY_UNKNOWN"}) + "\n",
+                json.dumps({**good, "traceId": "trace-ffffffffffffffffffffffffffffffff"}) + "\n",
+                json.dumps({**good, "private": "not-safe"}) + "\n",
+                "not-json\n",
+            )
+            for payload in cases:
+                with self.subTest(payload=payload[:24]):
+                    path.write_text(payload, encoding="utf-8")
+                    self.assertIsNone(
+                        self.verifier.read_quality_link_runtime_diagnostic(
+                            path,
+                            expected_trace=trace_id,
+                        )
+                    )
+
+    def test_diagnostic_disabled_has_zero_file_or_behavior_effect(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED",
+                    False,
+                ),
+                patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ),
+                self.assertRaisesRegex(RuntimeError, "same-error"),
+                self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+                self.verifier.quality_link_runtime_diagnostic_step(
+                    "P806_QUALITY_CREATE_HTTP"
+                ),
+            ):
+                raise RuntimeError("same-error")
+            self.assertFalse(path.exists())
+
+    def test_runtime_shell_never_reads_failed_child_output_and_uses_strict_reader(self) -> None:
+        source = (ROOT / "scripts/verify-frappe-runtime.sh").read_text(encoding="utf-8")
+        self.assertIn(
+            "run_quality_link_runtime_verifier >/dev/null 2>/dev/null",
+            source,
+        )
+        self.assertIn("read_quality_link_runtime_diagnostic", source)
+        self.assertIn("--expected-trace", source)
+        self.assertIn("P8-06 formal quality link runtime diagnostic", source)
 
     def test_bench_fixture_allowlist_and_arguments_are_closed(self) -> None:
         source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(encoding="utf-8")
@@ -86,7 +223,6 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             },
         )
         with (
-            patch.object(self.verifier, "secret_from_environment", return_value="secret"),
             patch.object(self.verifier, "login", side_effect=[object(), object()]),
             patch.object(
                 self.verifier.document_runtime,
@@ -111,7 +247,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             ),
         ):
             with self.assertRaisesRegex(RuntimeError, "synthetic proof failure"):
-                self.verifier.run_fresh("http://npi.localhost", "fixture-secret")
+                self.verifier.run_fresh(
+                    "http://npi.localhost",
+                    "fixture-secret",
+                    "administrator-secret",
+                )
         self.assertEqual(
             fixture.call_args_list,
             [
