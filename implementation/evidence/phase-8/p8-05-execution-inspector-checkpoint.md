@@ -1012,3 +1012,37 @@ Canonical Linux/amd64 SHA-256 evidence:
   unauthorized ninth rejection, and diff checks pass.
 - Controller marker:
   `P8-05 final held; post-result-datetime synthetic Outbox repair 1/1 Level 1 PASS`.
+
+## Post-synthetic-Outbox Tool Asset process diagnostic checkpoint
+
+- Repair SHA `f117cf422ac2e6cdf2c55382689c7d95280182e5` passes ordinary
+  `32919368662`. Its sole diagnostics-off Level 3 `32920304450` passes secret,
+  repository, frontend, governed visual and preflight. Runtime job
+  `98034836197` initializes Bench/Site and then fails only at the cumulative
+  runtime step; result/artifact steps skip and cleanup succeeds. Failed-child
+  output and prohibited response/business/message/stack content remain unread.
+- The earlier `SEAL_OUTBOX_SAVE` synthetic terminal root is closed. This
+  composite boundary proves ordinary, preflight and Bench/Site setup but does
+  not prove child entry or select among remaining process stages, worker
+  postconditions, replay/recoverability, parent outcome, terminal projection
+  and later retained checks. Product repair is prohibited.
+- Freeze `post-result-datetime-tool-asset-process` at `1/1,1/1,1/1`. Open
+  independent `post-synthetic-outbox-tool-asset-process` at `0/1,0/1,0/1`.
+  Only `POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=True`;
+  all historical flags are false.
+- Reuse exact-52 codes, created trace, pre-child cursors, request-local scope,
+  strict mirrored reader, same-exception/finally and success-zero contracts.
+  Failed-child stderr is discarded and stdout unread. Product code has zero
+  diff.
+- Controller marker:
+  `P8-05 final held; post-synthetic-Outbox process diagnostic 0/1 active`.
+- Level 1 passes focused runtime verifier `39/39`, complete Tool Asset
+  `127/127`, P6 Tooling plus request-domain `359/359`, Item `146/146`, MBOM
+  `126/126`, and current/reconciliation `33/33`. Exact-52 equality/lexical,
+  strict safe-reader, failed-child-output-unread, same-exception/scope,
+  compile, executable, shell, JSON/YAML, security-negative/TODO,
+  current/reconciliation and diff checks pass. Only the new flag is true among
+  thirty runtime diagnostics. Exact-five manifest passes and an unauthorized
+  sixth is rejected; product/frontend/contracts have zero diff.
+- Controller marker:
+  `P8-05 final held; post-synthetic-Outbox process diagnostic 0/1 Level 1 PASS`.

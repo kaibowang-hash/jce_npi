@@ -5707,3 +5707,48 @@ repeat or rewrite it merely to restore context. See
   rejection, and diff hygiene pass.
 - Controller marker:
   `P8-05 final held; post-result-datetime synthetic Outbox repair 1/1 Level 1 PASS`.
+
+## 2026-08-26 P8-05 post-synthetic-Outbox process diagnostic cycle
+
+- Synthetic Outbox repair SHA
+  `f117cf422ac2e6cdf2c55382689c7d95280182e5` passes exact ordinary CI
+  `32919368662`: secret `98029680162`, repository `98029680349`, governed
+  visual `98029680314` and frontend `98029680372` are successful.
+- Its sole diagnostics-off Level 3 `32920304450` passes secret
+  `98032445653`, repository `98032445593`, governed visual `98032445476`,
+  frontend `98032445656` and controlled preflight `98034796077`. Controlled
+  runtime `98034836197` initializes the pinned Bench and disposable Site, then
+  fails only at the cumulative P5-through-P8-05 runtime step; result/artifact
+  steps skip and cleanup succeeds. Failed-child output and prohibited
+  response/business/value/identifier/count/message/stack content remain
+  unread.
+- The additive Outbox controller/metadata repair closes the prior
+  `SEAL_OUTBOX_SAVE` transition predicate, and all ordinary, preflight,
+  Bench/Site boundaries are proven. The diagnostics-off cumulative failure
+  does not prove Tool Asset child entry and cannot distinguish the remaining
+  exact process stages, post-process worker assertions, replay/recoverability,
+  parent outcome, terminal detail or later retained-runtime contexts. No
+  product repair is proven.
+- Freeze `post-result-datetime-tool-asset-process` at diagnostic `1/1`,
+  product repair `1/1`, final `1/1`. Open independent
+  `post-synthetic-outbox-tool-asset-process` at diagnostic `0/1`, product
+  repair `0/1`, final `0/1`.
+- Only
+  `POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=True`; all
+  historical diagnostic activations are false. Reuse the exact fifty-two
+  process codes, created trace, pre-child cursors, request-local scope, strict
+  mirrored reader, same-exception/finally, failed-child-output-unread and
+  success-zero contracts. Product code has zero diff.
+- Controller marker:
+  `P8-05 final held; post-synthetic-Outbox process diagnostic 0/1 active`.
+- Level 1 passes focused runtime verifier `39/39`, complete Tool Asset
+  `127/127`, P6 Tooling plus request-domain `359/359`, Item `146/146`, MBOM
+  `126/126`, and current-task/reconciliation `33/33`. Exact-52 equality and
+  unique lexical contexts, strict mirrored reader, failed-child-output-unread,
+  same-exception/scope, Python compile, verifier executable, shell syntax,
+  JSON/YAML parse, security-negative/TODO scans, current/reconciliation,
+  diff hygiene and exact-five manifest pass; an unauthorized sixth path is
+  rejected. Exactly one of thirty runtime diagnostic flags is active: the new
+  post-synthetic-Outbox flag. Product/frontend/contracts remain unchanged.
+- Controller marker:
+  `P8-05 final held; post-synthetic-Outbox process diagnostic 0/1 Level 1 PASS`.
