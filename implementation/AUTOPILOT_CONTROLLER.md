@@ -5752,3 +5752,43 @@ repeat or rewrite it merely to restore context. See
   post-synthetic-Outbox flag. Product/frontend/contracts remain unchanged.
 - Controller marker:
   `P8-05 final held; post-synthetic-Outbox process diagnostic 0/1 Level 1 PASS`.
+
+## 2026-08-26 P8-05 post-synthetic-Outbox worker-parent diagnostic cycle
+
+- Verifier checkpoint SHA `ebd5384a7c1875171b8e103764a721e768c269c5`
+  passes exact ordinary CI `32922315867`: repository `98038152844`, governed
+  visual `98038152937`, frontend `98038152950` and secret scan `98038152959`
+  are successful. Its sole controlled diagnostic `32923258310` passes
+  preflight `98040916983`; runtime job `98040974787` reaches the Tool Asset
+  `exercise_worker` child and returns nonzero, but the strict exact-52 reader
+  returns no tuple. Failed-child stdout/stderr and prohibited response,
+  business, identifier, count, message and stack content remain unread.
+- Zero tuple is bounded evidence, not a product root. The generic failure can
+  only be raised after the Tool Asset child returns nonzero, so cumulative
+  predecessor phases, create response and child dispatch are proven. The
+  active process allowlist intentionally excludes the existing seventeen
+  fixture stages and fourteen outcome/shape codes; a non-success worker return
+  or any later fixture assertion therefore remains indistinguishable.
+- Freeze `post-synthetic-outbox-tool-asset-process` at diagnostic `1/1`,
+  product repair `0/1`, final `0/1`. Open independent
+  `post-synthetic-outbox-tool-asset-worker-parent` at `0/1,0/1,0/1`.
+  Only
+  `POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED=True`;
+  the prior process flag and every historical diagnostic activation are false.
+  Reuse the exact thirty-one existing worker fixture/outcome codes, created
+  trace, pre-child cursors, strict mirrored reader, same-exception/finally,
+  failed-child-output-unread and success-zero contracts. Product, server,
+  frontend and contracts have zero diff.
+- Controller marker:
+  `P8-05 final held; post-synthetic-Outbox worker-parent diagnostic 0/1 active`.
+- Level 1 passes focused runtime verifier `40/40`, complete Tool Asset
+  `128/128`, P6 Tooling `355/355` plus request-domain `4/4`, Item `146/146`,
+  MBOM `126/126`, and current-task/reconciliation `33/33`. Exact-31 equality
+  and unique lexical contexts, strict mirrored reader, failed-child-output
+  unread, success-zero, Python compile, verifier executable, shell syntax,
+  JSON/YAML parse, security-negative/TODO scans, current/reconciliation and
+  diff hygiene pass. Exactly one of thirty-one runtime diagnostic flags is
+  active: the new worker-parent flag. The exact-five manifest passes and an
+  unauthorized sixth path is rejected.
+- Controller marker:
+  `P8-05 final held; post-synthetic-Outbox worker-parent diagnostic 0/1 Level 1 PASS`.

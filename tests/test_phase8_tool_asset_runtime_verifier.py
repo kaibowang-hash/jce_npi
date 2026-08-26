@@ -245,11 +245,17 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_synthetic_outbox_tool_asset_process_diagnostics_enabled()
+        )
+        self.assertTrue(
+            self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._post_synthetic_outbox_tool_asset_worker_parent_diagnostics_enabled()
         )
         project_id = str(UUID(int=1))
         retained_master_id = str(UUID(int=2))
@@ -1589,13 +1595,19 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_synthetic_outbox_tool_asset_process_diagnostics_enabled()
         )
-        self.assertTrue(self.verifier._tool_asset_process_diagnostics_enabled())
+        self.assertTrue(
+            self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._post_synthetic_outbox_tool_asset_worker_parent_diagnostics_enabled()
+        )
+        self.assertFalse(self.verifier._tool_asset_process_diagnostics_enabled())
         self.assertEqual(
             len(self.verifier._TOOL_ASSET_WORKER_STAGE_CODES),
             17,
@@ -1614,7 +1626,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             self.verifier._active_tool_asset_worker_diagnostic_codes(),
-            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+            self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES,
         )
         self.assertEqual(
             len(self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES),
@@ -1631,6 +1643,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertTrue(
@@ -1708,6 +1724,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertTrue(
@@ -1804,6 +1824,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
                 False,
             ), patch.object(
+                self.verifier,
+                "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
                 api,
                 "record_safe_diagnostic",
                 side_effect=lambda **values: records.append(values),
@@ -1858,6 +1882,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
                 False,
             ), patch.object(
+                self.verifier,
+                "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
                 api,
                 "record_safe_diagnostic",
                 side_effect=lambda **values: records.append(values),
@@ -1910,6 +1938,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED = True
         self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED = False
+        self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED = False
         self.addCleanup(
             setattr,
             self.verifier,
@@ -1920,6 +1949,12 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             setattr,
             self.verifier,
             "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            False,
+        )
+        self.addCleanup(
+            setattr,
+            self.verifier,
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
             True,
         )
         self.assertFalse(
@@ -2005,19 +2040,22 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
         )
         self.assertFalse(
             self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_synthetic_outbox_tool_asset_process_diagnostics_enabled()
         )
-        self.assertTrue(self.verifier._tool_asset_process_diagnostics_enabled())
+        self.assertTrue(
+            self.verifier._post_synthetic_outbox_tool_asset_worker_parent_diagnostics_enabled()
+        )
+        self.assertFalse(self.verifier._tool_asset_process_diagnostics_enabled())
         self.assertEqual(
             self.verifier._active_tool_asset_worker_diagnostic_codes(),
-            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+            self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES,
         )
 
         competing_flags = (
@@ -2039,7 +2077,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             True,
         ), patch.object(
             self.verifier,
-            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertTrue(
@@ -2056,19 +2094,45 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                         self.verifier._post_result_datetime_tool_asset_process_diagnostics_enabled()
                     )
 
-    def test_post_synthetic_outbox_process_activation_is_current_only(self):
-        self.assertTrue(
+    def test_post_synthetic_outbox_process_activation_is_frozen(self):
+        self.assertFalse(
             self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_synthetic_outbox_tool_asset_process_diagnostics_enabled()
         )
-        self.assertTrue(self.verifier._tool_asset_process_diagnostics_enabled())
+        with patch.object(
+            self.verifier,
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            self.verifier,
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
+            False,
+        ):
+            self.assertTrue(
+                self.verifier._post_synthetic_outbox_tool_asset_process_diagnostics_enabled()
+            )
+            self.assertTrue(self.verifier._tool_asset_process_diagnostics_enabled())
+            self.assertEqual(
+                self.verifier._active_tool_asset_worker_diagnostic_codes(),
+                self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+            )
+
+    def test_post_synthetic_outbox_worker_parent_activation_is_current_only(self):
+        self.assertTrue(
+            self.verifier.POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier._post_synthetic_outbox_tool_asset_worker_parent_diagnostics_enabled()
+        )
+        self.assertFalse(self.verifier._tool_asset_process_diagnostics_enabled())
         self.assertEqual(
             self.verifier._active_tool_asset_worker_diagnostic_codes(),
-            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+            self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES,
         )
         historical_flags = (
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
             "POST_RESULT_DATETIME_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
             "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
             "TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED",
@@ -2090,7 +2154,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 True,
             ):
                 self.assertFalse(
-                    self.verifier._post_synthetic_outbox_tool_asset_process_diagnostics_enabled()
+                    self.verifier._post_synthetic_outbox_tool_asset_worker_parent_diagnostics_enabled()
                 )
                 self.assertFalse(
                     self.verifier._tool_asset_process_diagnostics_enabled()
@@ -2101,11 +2165,11 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 )
         with patch.object(
             self.verifier,
-            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertFalse(
-                self.verifier._post_synthetic_outbox_tool_asset_process_diagnostics_enabled()
+                self.verifier._post_synthetic_outbox_tool_asset_worker_parent_diagnostics_enabled()
             )
             self.assertFalse(self.verifier._tool_asset_process_diagnostics_enabled())
             self.assertEqual(
@@ -2226,7 +2290,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                                 )
                     with patch.object(
                         self.verifier,
-                        "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+                        "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
                         True,
                     ):
                         return self.verifier._sanitized_tool_asset_worker_diagnostic(
@@ -2235,19 +2299,19 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                         )
 
         valid = {
-            "code": "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
+            "code": "P805_TOOL_ASSET_WORKER_REQUEST_STATE",
             "exceptionType": "RuntimeError",
             "traceId": _WORKER_TRACE_ID,
         }
         expected = (
             "RuntimeError",
-            "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
+            "P805_TOOL_ASSET_WORKER_REQUEST_STATE",
             _WORKER_TRACE_ID,
         )
         self.assertEqual(read([valid]), expected)
         self.assertEqual(read([valid], [valid]), expected)
-        for code in self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES:
-            with self.subTest(process_reader_code=code):
+        for code in self.verifier._TOOL_ASSET_WORKER_DIAGNOSTIC_CODES:
+            with self.subTest(worker_reader_code=code):
                 self.assertEqual(
                     read([{**valid, "code": code}]),
                     ("RuntimeError", code, _WORKER_TRACE_ID),
@@ -2259,7 +2323,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 [
                     {
                         **valid,
-                        "code": "P805_TOOL_ASSET_PROCESS_CLAIM_AUDIT",
+                        "code": "P805_TOOL_ASSET_WORKER_FIELD_TRUTH",
                     }
                 ],
             )
@@ -2306,12 +2370,12 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         }
         diagnostic = (
             "RuntimeError",
-            "P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE",
+            "P805_TOOL_ASSET_WORKER_REQUEST_STATE",
             _WORKER_TRACE_ID,
         )
         with patch.object(
             self.verifier,
-            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
             True,
         ), patch.object(
             self.verifier.tempfile,
@@ -2339,7 +2403,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             str(raised.exception),
             "P8-05 Bench fixture failed "
-            "[diagnostic_code=P805_TOOL_ASSET_PROCESS_CLAIM_REQUEST_SAVE; "
+            "[diagnostic_code=P805_TOOL_ASSET_WORKER_REQUEST_STATE; "
             "exception_type=RuntimeError; "
             f"trace_id={_WORKER_TRACE_ID}]",
         )
@@ -2379,6 +2443,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
             "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
+            self.verifier,
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.verifier.tempfile,
             "TemporaryFile",
             return_value=FailedOutput(),
@@ -2412,7 +2480,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
 
         with patch.object(
             self.verifier,
-            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
             True,
         ), patch.object(
             self.verifier.item_runtime,
@@ -2446,6 +2514,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -2535,6 +2607,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 self.verifier,
                 "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
                 True,
+            ), patch.object(
+                self.verifier,
+                "POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED",
+                False,
             ), self.assertRaises(ProcessBoundary) as raised:
                 self.verifier.exercise_worker(
                     self.verifier.FIXTURE_RUN_ID,

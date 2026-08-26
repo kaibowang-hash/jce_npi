@@ -1046,3 +1046,35 @@ Canonical Linux/amd64 SHA-256 evidence:
   sixth is rejected; product/frontend/contracts have zero diff.
 - Controller marker:
   `P8-05 final held; post-synthetic-Outbox process diagnostic 0/1 Level 1 PASS`.
+
+## Post-synthetic-Outbox worker-parent diagnostic checkpoint
+
+- Checkpoint SHA `ebd5384a7c1875171b8e103764a721e768c269c5` passes ordinary
+  `32922315867` across repository `98038152844`, visual `98038152937`,
+  frontend `98038152950` and secret `98038152959`.
+- Controlled run `32923258310` passes preflight `98040916983`. Runtime job
+  `98040974787` reaches `exercise_worker`, then fails with no tuple accepted by
+  the strict exact-52 reader. Failed-child output and prohibited payload,
+  value, identifier, count, message and stack content remain unread.
+- The generic parent failure proves a nonzero Tool Asset child return and
+  excludes earlier cumulative and create boundaries. Exact-52 process scope
+  does not include the existing seventeen fixture stages or fourteen
+  outcome/shape codes, so zero tuple cannot select a product symbol.
+- Freeze the process cycle at `1/1,0/1,0/1`; open independent
+  `post-synthetic-outbox-tool-asset-worker-parent` at `0/1,0/1,0/1`.
+  Activate only
+  `POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED` and
+  reuse exact-31 worker codes with the existing trace, cursor, strict-reader,
+  same-exception, failed-child-unread and success-zero contracts. Product and
+  server code remain unchanged.
+- Controller marker:
+  `P8-05 final held; post-synthetic-Outbox worker-parent diagnostic 0/1 active`.
+- Level 1 passes focused verifier `40/40`, complete Tool Asset `128/128`, P6
+  Tooling plus request-domain `359/359`, Item `146/146`, MBOM `126/126`, and
+  current/reconciliation `33/33`. Exact-31 lexical/equality, strict reader,
+  failed-child-output-unread, success-zero, compile/executable/shell,
+  JSON/YAML, security-negative/TODO, diff and exact-five manifest checks pass;
+  an unauthorized sixth path is rejected. Of thirty-one diagnostic flags only
+  the worker-parent activation is true.
+- Controller marker:
+  `P8-05 final held; post-synthetic-Outbox worker-parent diagnostic 0/1 Level 1 PASS`.

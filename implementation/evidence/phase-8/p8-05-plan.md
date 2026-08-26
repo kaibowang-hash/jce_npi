@@ -1860,3 +1860,41 @@ hygiene pass. Runtime verifiers expose thirty diagnostic flags and only the new
 post-synthetic-Outbox flag is true. The exact-five post-commit manifest passes
 and rejects an unauthorized sixth path; product/frontend/contracts have zero
 diff.
+
+## 52. Post-synthetic-Outbox Tool Asset worker-parent diagnostic cycle
+
+Checkpoint SHA `ebd5384a7c1875171b8e103764a721e768c269c5` passes exact
+ordinary CI `32922315867` with repository `98038152844`, governed visual
+`98038152937`, frontend `98038152950` and secret scan `98038152959` all
+successful. The sole controlled run `32923258310` passes preflight
+`98040916983`; runtime job `98040974787` reaches the Tool Asset
+`exercise_worker` child, which returns nonzero. The strict exact-52 mirrored
+reader returns no tuple. Failed-child stdout/stderr, response and business
+values, identifiers, counts, exception messages and stacks remain unread.
+
+This zero tuple is fail-closed evidence. The parent emits its generic Bench
+fixture failure only after a nonzero `exercise_worker` child return, excluding
+all earlier cumulative phases, Tool Asset create and child dispatch. The
+process-only activation cannot record the existing seventeen fixture stages
+or fourteen outcome/shape classifiers. It therefore cannot distinguish a
+non-success process return from a post-process fixture assertion, and no
+product repair is justified.
+
+Freeze `post-synthetic-outbox-tool-asset-process` at diagnostic `1/1`, product
+repair `0/1`, final `0/1`. Open independent
+`post-synthetic-outbox-tool-asset-worker-parent` at `0/1,0/1,0/1`. Only
+`POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED=True`;
+the prior process activation and all historical flags are false. Reuse the
+exact thirty-one existing worker stage/outcome codes, created trace,
+pre-child cursors, strict mirrored reader, same-exception/finally,
+failed-child-output-unread and success-zero contracts. Product, server,
+frontend, contracts, transaction and worker order remain unchanged.
+
+Level 1 passes focused verifier `40/40`, complete Tool Asset `128/128`, P6
+Tooling `355/355` plus request-domain `4/4`, Item `146/146`, MBOM `126/126`,
+and current-task/reconciliation `33/33`. Exact-31 equality and lexical
+coverage, strict shared-reader behavior, failed-child stdout/stderr unread,
+success-zero, compile, executable, shell, JSON/YAML, security-negative/TODO,
+current/reconciliation and diff checks pass. Runtime verifiers expose
+thirty-one diagnostic flags and only the worker-parent flag is true. The
+exact-five manifest passes and rejects an unauthorized sixth path.
