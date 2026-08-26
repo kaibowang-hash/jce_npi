@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import json
 import sys
 import types
 import unittest
@@ -55,6 +56,111 @@ class Phase8ToolAssetWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(self.module._aware_utc("2026-08-24 10:00:00").tzinfo, UTC)
         with self.assertRaises(RuntimeError):
             self.module._aware_utc("not-a-datetime")
+
+    def test_result_persistence_normalizes_only_datetime_columns(self):
+        observed_at = self.module._utc_text(NOW)
+        db_observed_at = self.module._db_datetime(NOW)
+        result = {
+            "globalId": str(uid(51)),
+            "requestGlobalId": str(uid(52)),
+            "outboxEventId": str(uid(53)),
+            "attemptGlobalId": str(uid(54)),
+            "attemptNumber": 1,
+            "operation": ToolAssetExecutionOperation.CREATE.value,
+            "sourceHash": "a" * 64,
+            "mappingExpectationHash": "b" * 64,
+            "state": ToolAssetExecutionRequestState.SYNTHETIC_VERIFIED.value,
+            "authority": "synthetic",
+            "responseAuthenticated": False,
+            "responseHash": "c" * 64,
+            "faultKind": "none",
+            "fieldResultSetHash": "d" * 64,
+            "formalAssetId": None,
+            "targetVersion": None,
+            "observedAt": observed_at,
+        }
+        field = {
+            "globalId": str(uid(55)),
+            "requestGlobalId": result["requestGlobalId"],
+            "resultGlobalId": result["globalId"],
+            "attemptGlobalId": result["attemptGlobalId"],
+            "fieldCode": "tooling_master_title",
+            "state": "verified",
+            "authority": "synthetic",
+            "responseAuthenticated": False,
+            "responseHash": "e" * 64,
+            "faultKind": "none",
+            "observedAt": observed_at,
+        }
+        observation = {
+            "globalId": str(uid(56)),
+            "tenantId": "tenant-a",
+            "projectGlobalId": str(uid(57)),
+            "toolingSetGlobalId": str(uid(58)),
+            "sourceStreamKeyHash": "f" * 64,
+            "requestGlobalId": result["requestGlobalId"],
+            "resultGlobalId": result["globalId"],
+            "attemptGlobalId": result["attemptGlobalId"],
+            "operation": result["operation"],
+            "sourceHash": result["sourceHash"],
+            "mappingExpectationHash": result["mappingExpectationHash"],
+            "previousMappingVersion": 0,
+            "previousFormalAssetId": None,
+            "previousTargetVersion": None,
+            "previousObservationHash": None,
+            "observedFormalAssetId": None,
+            "observedTargetVersion": None,
+            "authority": "synthetic",
+            "responseAuthenticated": False,
+            "responseHash": result["responseHash"],
+            "disposition": "observe_only",
+            "observedAt": observed_at,
+        }
+
+        before_hashes = tuple(
+            self.module.canonical_hash(value)
+            for value in (result, field, observation)
+        )
+        persisted = (
+            self.module._snake_result(result),
+            self.module._snake_field(field),
+            self.module._snake_observation(observation),
+        )
+        self.assertTrue(
+            all(value["observed_at"] == db_observed_at for value in persisted)
+        )
+        self.assertNotIn("T", db_observed_at)
+        self.assertNotIn("Z", db_observed_at)
+        self.assertEqual(
+            before_hashes,
+            tuple(
+                self.module.canonical_hash(value)
+                for value in (result, field, observation)
+            ),
+        )
+        self.assertTrue(
+            all(value["observedAt"] == observed_at for value in (result, field, observation))
+        )
+
+        def pinned_frappe_v15_valid_value(fieldtype: str, value: object) -> object:
+            if fieldtype == "JSON" and isinstance(value, dict):
+                return json.dumps(value, separators=(",", ":"))
+            if isinstance(value, datetime):
+                return str(value)
+            return value
+
+        self.assertIsInstance(
+            pinned_frappe_v15_valid_value("JSON", result),
+            str,
+        )
+        self.assertEqual(
+            pinned_frappe_v15_valid_value("Datetime", observed_at),
+            observed_at,
+        )
+        self.assertEqual(
+            pinned_frappe_v15_valid_value("Datetime", NOW),
+            str(NOW),
+        )
 
     def _attempt(self, *, started_at, finished_at=None):
         return types.SimpleNamespace(

@@ -233,10 +233,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._tool_asset_process_stage_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_attempt_snapshot_tool_asset_process_diagnostics_enabled()
         )
         project_id = str(UUID(int=1))
@@ -1565,13 +1565,13 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier._tool_asset_process_stage_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._post_attempt_snapshot_tool_asset_process_diagnostics_enabled()
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier._tool_asset_process_diagnostics_enabled()
         )
         self.assertEqual(
@@ -1592,7 +1592,7 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             self.verifier._active_tool_asset_worker_diagnostic_codes(),
-            self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES,
+            frozenset(),
         )
         self.assertEqual(
             len(self.verifier._TOOL_ASSET_PROCESS_STAGE_DIAGNOSTIC_CODES),
@@ -1860,8 +1860,15 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
         self.assertIs(raised.exception, error)
 
     def test_post_attempt_snapshot_process_activation_is_new_only(self):
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED
+        )
+        self.verifier.POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED = True
+        self.addCleanup(
+            setattr,
+            self.verifier,
+            "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+            False,
         )
         self.assertFalse(
             self.verifier.TOOL_ASSET_PROCESS_STAGE_DIAGNOSTICS_ENABLED
@@ -2341,6 +2348,10 @@ class Phase8ToolAssetRuntimeVerifierTest(unittest.TestCase):
                 diagnostics,
                 "tool_asset_process_diagnostics",
                 scope,
+            ), patch.object(
+                self.verifier,
+                "POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED",
+                True,
             ), self.assertRaises(ProcessBoundary) as raised:
                 self.verifier.exercise_worker(
                     self.verifier.FIXTURE_RUN_ID,

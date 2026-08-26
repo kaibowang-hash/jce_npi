@@ -5600,3 +5600,37 @@ repeat or rewrite it merely to restore context. See
   sixth rejection, and diff hygiene pass.
 - Controller marker:
   `P8-05 final held; post-attempt-snapshot process diagnostic 0/1 active`.
+
+## 2026-08-26 P8-05 post-Attempt-snapshot Result datetime repair
+
+- Post-Attempt-snapshot checkpoint SHA
+  `590b90e16c10056d7da0e9dd54c022e22b54b351` passes exact ordinary CI
+  `32910964897`. Its one controlled Site `32912119252`, runtime job
+  `98008349085`, returns exactly
+  `P805_TOOL_ASSET_PROCESS_SEAL_RESULT_INSERT / OperationalError /
+  trace-705e1e4f9e395a8282b8f4c5c3f086d1`. Failed-child output, response data,
+  business values, identifiers, counts, exception messages and stacks were
+  not read.
+- The exact inner insert context follows successful Result table lookup,
+  preparation, transaction entry and document build. Link, permission and
+  controller validation precede SQL and have distinct exception types.
+  Pinned Frappe v15 serializes JSON dictionaries but leaves supplied Datetime
+  strings unchanged. The concrete first source is `_snake_result` forwarding
+  ISO `observedAt` text to the MariaDB `observed_at` column instead of using
+  the repository's canonical `_db_datetime` adapter.
+- Product repair `1/1` normalizes only the persisted `observed_at` columns for
+  Result, Field Result and Mapping Observation, which share the same root.
+  Their immutable ISO snapshots and hashes remain unchanged. No write order,
+  transaction/capability, permission, metadata, API, ownership, mapping CAS,
+  adapter or target behavior changes; malformed time still fails closed.
+- `POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=False`; the
+  exact-52 mechanism stays dormant and performs no log/cursor read. Freeze
+  `post-attempt-snapshot-tool-asset-process` at diagnostic `1/1`, product
+  repair `1/1`, final `0/1`.
+- Level 1 passes focused repository/runtime `48/48`, complete Tool Asset
+  `124/124`, P6 tooling `355/355` plus request-domain `4/4`, Item `146/146`,
+  MBOM `126/126`, and current/reconciliation `33/33`. All-diagnostics-off,
+  security scans, compile, scripts, exact-seven manifest with an unauthorized
+  eighth path rejected, and diff hygiene pass.
+- Controller marker:
+  `P8-05 final held; post-attempt-snapshot Result datetime repair 1/1 Level 1 PASS`.

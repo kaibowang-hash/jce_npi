@@ -1690,3 +1690,46 @@ shared HTTP/current-task/reconciliation `39/39`. Fifty-two-code
 AST/equality/lexical uniqueness, direct-SQL/target-network and weakening-marker
 scans, compile and shell syntax, current/reconciliation scripts, exact-five
 manifest with an unauthorized sixth path rejected, and diff hygiene pass.
+
+## 49. Post-Attempt-snapshot Result datetime repair
+
+Post-Attempt-snapshot checkpoint SHA
+`590b90e16c10056d7da0e9dd54c022e22b54b351` passes exact ordinary CI
+`32910964897`. Its sole controlled diagnostic Site `32912119252`, runtime job
+`98008349085`, yields exactly
+`P805_TOOL_ASSET_PROCESS_SEAL_RESULT_INSERT / OperationalError /
+trace-705e1e4f9e395a8282b8f4c5c3f086d1`. Failed-child stdout/stderr, response
+data, business values, identifiers, counts, exception messages and stacks were
+not read.
+
+The exact inner stage starts only after result lookup, preparation,
+transaction entry and Frappe document construction. The prior `SELECT *`
+result lookup proves the migrated Result table is addressable. Link,
+permission, mandatory and controller predicates execute before `db_insert`
+and have distinct fail-closed exception classes. Pinned Frappe v15 serializes
+JSON dictionaries but leaves an already-string `Datetime` unchanged. The
+Result writer alone passed canonical ISO `observedAt` text ending in `Z`
+straight into the MariaDB `Datetime` column, whereas the working Item and MBOM
+peers and every other Tool Asset datetime write use the existing canonical
+`_db_datetime` boundary. This is the unique first SQL source consistent with
+the exact OperationalError.
+
+Product repair `1/1` normalizes only persisted `observed_at` columns through
+`_db_datetime` in the Result, Field Result and Mapping Observation snake-case
+adapters. Those three rows share the same proven root; their immutable JSON
+snapshots retain exact ISO `observedAt` and all canonical hashes remain
+bit-for-bit unchanged. Write order, transaction/capability, permission,
+metadata, API, ownership, mapping CAS and worker behavior are unchanged;
+invalid datetime truth remains fail closed before a write.
+
+`POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=False`; the
+fifty-two-code mechanism remains dormant and reads no cursor/log. Freeze
+`post-attempt-snapshot-tool-asset-process` at diagnostic `1/1`, product repair
+`1/1`, final `0/1`.
+
+Level 1 passes focused repository/runtime `48/48`, complete Tool Asset
+`124/124`, P6 tooling `355/355` plus Tool Asset request-domain `4/4`, Item
+`146/146`, MBOM `126/126`, and current-task/reconciliation `33/33`.
+All-diagnostics-off, direct-SQL/target-network/submit-BOM scans, compile,
+current/reconciliation scripts, exact-seven manifest with an unauthorized
+eighth path rejected, and diff hygiene pass.

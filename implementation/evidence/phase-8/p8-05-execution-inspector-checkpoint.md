@@ -914,3 +914,34 @@ Canonical Linux/amd64 SHA-256 evidence:
   sixth rejection, and diff hygiene pass.
 - Controller marker:
   `P8-05 final held; post-attempt-snapshot process diagnostic 0/1 active`.
+
+## Post-Attempt-snapshot Result datetime repair
+
+- Checkpoint SHA `590b90e16c10056d7da0e9dd54c022e22b54b351`
+  passes ordinary `32910964897`. Controlled run `32912119252`, runtime job
+  `98008349085`, records only
+  `P805_TOOL_ASSET_PROCESS_SEAL_RESULT_INSERT / OperationalError /
+  trace-705e1e4f9e395a8282b8f4c5c3f086d1`; failed-child output and all prohibited
+  response/business/message/stack content remain unread.
+- Result lookup, preparation, transaction entry and document construction
+  passed. The lookup already queried the migrated Result table. Frappe Link,
+  permission and controller validation occur before SQL and use distinct
+  exception classes. Pinned Frappe serializes the JSON dictionary but does
+  not convert ISO text supplied to a `Datetime` field. The unique first SQL
+  defect is `_snake_result` forwarding ISO `observedAt` into `observed_at`
+  instead of using the established DB datetime adapter.
+- Repair `1/1` applies existing `_db_datetime` only to the persisted datetime
+  column in Result and the same-root Field Result and Mapping Observation
+  adapters. Immutable snapshots keep ISO `observedAt`; hashes, values, order,
+  transaction, permissions, Schema, ownership and mapping CAS do not change.
+  Invalid time remains fail closed before a write.
+- `POST_ATTEMPT_SNAPSHOT_TOOL_ASSET_PROCESS_DIAGNOSTICS_ENABLED=False`; dormant
+  tests prohibit cursor/log reads. Freeze this cycle at diagnostic `1/1`,
+  repair `1/1`, final `0/1`.
+- Level 1 passes focused repository/runtime `48/48`, complete Tool Asset
+  `124/124`, P6 tooling `355/355` plus request-domain `4/4`, Item `146/146`,
+  MBOM `126/126`, and current/reconciliation `33/33`. All diagnostics are off;
+  security scans, compile, scripts, exact-seven manifest/unauthorized-eighth
+  rejection and diff hygiene pass.
+- Controller marker:
+  `P8-05 final held; post-attempt-snapshot Result datetime repair 1/1 Level 1 PASS`.

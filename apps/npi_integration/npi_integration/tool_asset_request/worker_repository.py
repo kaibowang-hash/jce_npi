@@ -507,16 +507,18 @@ def _append_worker_audit(*, claim_actor, trace_id, request_global_id, operation,
 
 
 def _snake_result(v):
-    return {"global_id": v["globalId"], "request_global_id": v["requestGlobalId"], "outbox_event_id": v["outboxEventId"], "attempt_global_id": v["attemptGlobalId"], "attempt_number": v["attemptNumber"], "operation": v["operation"], "source_hash": v["sourceHash"], "mapping_expectation_hash": v["mappingExpectationHash"], "state": v["state"], "authority": v["authority"], "response_authenticated": int(v["responseAuthenticated"]), "response_hash": v["responseHash"], "fault_kind": v["faultKind"], "field_result_set_hash": v["fieldResultSetHash"], "formal_asset_id": v["formalAssetId"], "target_version": v["targetVersion"], "observed_at": v["observedAt"]}
+    return {"global_id": v["globalId"], "request_global_id": v["requestGlobalId"], "outbox_event_id": v["outboxEventId"], "attempt_global_id": v["attemptGlobalId"], "attempt_number": v["attemptNumber"], "operation": v["operation"], "source_hash": v["sourceHash"], "mapping_expectation_hash": v["mappingExpectationHash"], "state": v["state"], "authority": v["authority"], "response_authenticated": int(v["responseAuthenticated"]), "response_hash": v["responseHash"], "fault_kind": v["faultKind"], "field_result_set_hash": v["fieldResultSetHash"], "formal_asset_id": v["formalAssetId"], "target_version": v["targetVersion"], "observed_at": _db_datetime(v["observedAt"])}
 
 
 def _snake_field(v):
-    return {"global_id": v["globalId"], "request_global_id": v["requestGlobalId"], "result_global_id": v["resultGlobalId"], "attempt_global_id": v["attemptGlobalId"], "field_code": v["fieldCode"], "state": v["state"], "authority": v["authority"], "response_authenticated": int(v["responseAuthenticated"]), "response_hash": v["responseHash"], "fault_kind": v["faultKind"], "observed_at": v["observedAt"]}
+    return {"global_id": v["globalId"], "request_global_id": v["requestGlobalId"], "result_global_id": v["resultGlobalId"], "attempt_global_id": v["attemptGlobalId"], "field_code": v["fieldCode"], "state": v["state"], "authority": v["authority"], "response_authenticated": int(v["responseAuthenticated"]), "response_hash": v["responseHash"], "fault_kind": v["faultKind"], "observed_at": _db_datetime(v["observedAt"])}
 
 
 def _snake_observation(v):
     pairs = {"globalId":"global_id","tenantId":"tenant_id","projectGlobalId":"project_global_id","toolingSetGlobalId":"tooling_set_global_id","sourceStreamKeyHash":"source_stream_key_hash","requestGlobalId":"request_global_id","resultGlobalId":"result_global_id","attemptGlobalId":"attempt_global_id","operation":"operation","sourceHash":"source_hash","mappingExpectationHash":"mapping_expectation_hash","previousMappingVersion":"previous_mapping_version","previousFormalAssetId":"previous_formal_asset_id","previousTargetVersion":"previous_target_version","previousObservationHash":"previous_observation_hash","observedFormalAssetId":"observed_formal_asset_id","observedTargetVersion":"observed_target_version","authority":"authority","responseAuthenticated":"response_authenticated","responseHash":"response_hash","disposition":"disposition","observedAt":"observed_at"}
-    return {target: (int(v[source]) if source == "responseAuthenticated" else v[source]) for source, target in pairs.items()}
+    values = {target: (int(v[source]) if source == "responseAuthenticated" else v[source]) for source, target in pairs.items()}
+    values["observed_at"] = _db_datetime(v["observedAt"])
+    return values
 
 
 def _attempt_state(state):
