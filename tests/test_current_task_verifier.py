@@ -39,12 +39,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-07")
         self.assertIn(
-            "P8_06_PRODUCT_CODE_AUTHORIZED_ONLY_FOR_CHECKPOINT_2_AFTER_THIS_CONTROLLER_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
+            "FR_CO_003_FR_CO_004_EXTERNAL_PORTAL_SURFACES_USER_APPROVED_POST_V1_2_DEFERRED",
             value["frozen_invariants"],
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION",
+            "IN_PROGRESS_USER_APPROVED_SCOPE_DECISION",
         )
         self.assertIn(
             "P8_06_CHECKPOINT_1_EXACT_SHA_64B59F219F4A5687865E6B27670E3BD11D186B88_ORDINARY_32953275865_PASSED",
@@ -56,24 +56,21 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(value["requirement_ids"], ["INT-007", "FR-TR-006", "FR-NP-006"])
         self.assertIn(
-            "implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md",
+            "implementation/backlog.yaml",
             value["allowed_paths"],
         )
         self.assertIn(
             "LINK_OBSERVED_FORMAL_QUALITY_REFERENCE_IS_NPI_ONLY_AND_NEVER_CREATES_SUBMITS_UPDATES_FAILS_CLOSES_OR_APPROVES_ERP_QUALITY_TRUTH",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 25)
-        self.assertIn("apps/npi_core/npi_core/bff.py", value["allowed_paths"])
-        self.assertIn(
-            "apps/npi_integration/npi_integration/quality_link/frappe_repository.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "apps/npi_integration/npi_integration/quality_link_api.py",
-            value["allowed_paths"],
-        )
-        self.assertIn("contracts/npi-api.openapi.yaml", value["allowed_paths"])
+        self.assertEqual(len(value["allowed_paths"]), 17)
+        self.assertIn("implementation/ROADMAP.md", value["allowed_paths"])
+        self.assertIn("implementation/EXECUTION_PLAN.md", value["allowed_paths"])
+        self.assertIn("implementation/REQUIREMENT_TRACEABILITY.csv", value["allowed_paths"])
+        self.assertNotIn("apps/npi_core/npi_core/bff.py", value["allowed_paths"])
+        self.assertFalse(any(path.startswith("apps/") for path in value["allowed_paths"]))
+        self.assertFalse(any(path.startswith("frontend/") for path in value["allowed_paths"]))
+        self.assertFalse(any(path.startswith("contracts/") for path in value["allowed_paths"]))
         self.assertNotIn("contracts/integration-event.schema.json", value["allowed_paths"])
         self.assertFalse(
             any(

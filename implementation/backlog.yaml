@@ -444,8 +444,20 @@ milestones:
     title: Portfolio and KPI
   - id: M8-03
     title: Supplier portal
+    requirements:
+    - FR-CO-003
+    decision_marker: USER_APPROVED_POST_V1_2_DEFERRED
+    delivery_release: POST_V1_2_FUTURE_RELEASE
+    retained_v1_2_scope: Internal supplier milestones, observations, evidence, permissions, audit, notification foundation, and ERP read-only projection
+    restoration_trigger: Approved future-release charter with external identity, tenant and Project authorization, file/evidence policy, notification/privacy/security controls, rollback and release-gate acceptance
   - id: M8-04
     title: Customer review portal
+    requirements:
+    - FR-CO-004
+    decision_marker: USER_APPROVED_POST_V1_2_DEFERRED
+    delivery_release: POST_V1_2_FUTURE_RELEASE
+    retained_v1_2_scope: Internal customer approval evidence, exact version locks, Project/Gate/Trial/Readiness effects, permissions, audit, notification foundation, and ERP read-only projection
+    restoration_trigger: Approved future-release charter with external identity, tenant and Project authorization, externally binding approval authority, file/evidence policy, notification/privacy/security controls, rollback and release-gate acceptance
 - id: M9
   name: Hardening migration and pilot
   tasks:

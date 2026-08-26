@@ -4,7 +4,7 @@ Updated: `2026-08-26T23:55:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION — P8-06`
+- Mode: `IN_PROGRESS_USER_APPROVED_SCOPE_DECISION — P8-06 PAUSED`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -19,9 +19,9 @@ Updated: `2026-08-26T23:55:00Z`
   `f9c358018823f3af20aca38efb53f8fcbd13d406`; repository, frontend,
   secret, `129/129` visual, controlled preflight and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32953275865` (`PASS` at
-  `64b59f219f4a5687865e6b27670e3bd11d186b88`; P8-06 checkpoint-1
-  behavior-free foundation)
+  `32955709358` (`PASS` at
+  `bc6095c1ba23580dc3eec3ace4fe9798fc3c160c`; P8-06 checkpoint-2
+  controller authorization transition)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -122,14 +122,14 @@ Updated: `2026-08-26T23:55:00Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-06 — quality linkage`
-  (`IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION`)
+  (`IN_PROGRESS_USER_APPROVED_SCOPE_DECISION`)
 - Resumed product task: `P8-06`
-  (`CHECKPOINT_2_BOUNDED_AUTHORIZATION_TRANSITION`)
+  (`PAUSED_BEFORE_CHECKPOINT_2_PRODUCT_IMPLEMENTATION`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-06 CHECKPOINT 2 AUTHORIZATION`)
+  (`IN_PROGRESS — FR-CO-003/004 GOVERNANCE DECISION`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -159,6 +159,20 @@ linking remain unavailable. ERP Outbox, target execution, worker, adapter, netwo
 UI and formal-pass interpretation remain unauthorized until later explicit
 gates; checkpoint-2 product implementation waits for this transition's own
 exact-SHA ordinary CI.
+
+The checkpoint-2 transition exact SHA
+`bc6095c1ba23580dc3eec3ace4fe9798fc3c160c` passes ordinary CI
+`32955709358`. Before product implementation, the separate user-approved
+scope decision marks only FR-CO-003/004 external login, identity,
+self-service submission/approval UI and portal API as
+`USER_APPROVED_POST_V1_2_DEFERRED`. The legal trace status remains
+`REMAPPED_PHASE_9`; IDs, P1 priorities, authoritative sources and history are
+unchanged. Internal supplier milestones/observations, customer approval
+evidence/version locks, Project/Gate/Trial/Readiness, permissions, audit,
+notification foundation and ERP read-only projections remain V1.2. P8-06
+checkpoint-2 product work stays paused until this governance checkpoint passes
+exact-SHA ordinary CI and a separate controller restoration reopens its exact
+fourteen product paths.
 
 P7-08 and Phase 7 are sealed at exact final product checkpoint `3111402`.
 Ordinary CI `31898840279` passes `1,921` tracked Python tests, `918/918`

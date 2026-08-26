@@ -12,9 +12,9 @@ visual `98084790917`, preflight `98087726984` and cumulative Site
 `98087768879`. Runtime, visual and Gitleaks artifacts have the exact hashes
 recorded in `implementation/evidence/phase-8/p8-05-validation.md`; all
 diagnostics are false, zero production traffic and cleanup pass. The P8-06
-checkpoint-1 exact product SHA `64b59f2` passes ordinary CI `32953275865`;
-only its separate checkpoint-2 authorization transition is active and it
-requires no user action, login or frontend operation.
+checkpoint-2 authorization transition SHA `bc6095c` passes ordinary CI
+`32955709358`. Its product implementation is paused only for the active
+governance checkpoint and requires no external login or production action.
 
 ## Active recovery
 
@@ -43,6 +43,13 @@ credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
+FR-CO-003/004 external portal login, identity, self-service submission,
+approval UI and portal API are a user-approved post-V1.2 deferral, not a Hard
+Blocker and not an implementation claim. Their `REMAPPED_PHASE_9` status,
+source and history remain; internal supplier/customer evidence and all
+Project/Gate/Trial/Readiness, permission/audit, notification-foundation and ERP
+read-only projection obligations remain V1.2.
+
 ## Current authoritative blocker state — 2026-08-26T23:55:00Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
@@ -60,6 +67,11 @@ remain scoped holds, not global Hard Blockers.
   list/detail/exact-observation link after this controller transition passes
   exact-SHA ordinary CI; unproved source capabilities, target traffic, P8-07
   generic operations and P8-08/P8-09 remain inactive.
+- `USER_APPROVED_POST_V1_2_DEFERRED` applies only to FR-CO-003/004 external
+  portal surfaces. Restoration requires a separate future-release controller
+  entry with approved external identity/authorization, evidence/approval,
+  privacy/security, rollback and release-gate facts; it is not a global
+  blocker and does not defer internal collaboration truth.
 
 ## Historical recovery
 

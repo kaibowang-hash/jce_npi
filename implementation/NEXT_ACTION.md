@@ -1,22 +1,21 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2_AUTHORIZATION_TRANSITION — P8-06`
+`IN_PROGRESS_USER_APPROVED_SCOPE_DECISION — P8-06 PAUSED`
 
 Recovery time: `2026-08-26T23:55:00Z`
 
-Current atomic action: complete the separate P8-06 checkpoint-2 controller
-transition for `INT-007`, `FR-TR-006` and `FR-NP-006`. Checkpoint-1 product
-SHA `64b59f219f4a5687865e6b27670e3bd11d186b88` passes ordinary CI
-`32953275865`. This transition changes governance only and freezes exact
-Project-first list/detail/link paths, exact source/head locks, atomic revision/
-head/idempotency/audit persistence and replay/conflict. Only existing
-`manageDefects`, `manageReviewReferences` and `canRevise` capabilities map to
-Trial defect, Trial review and readiness sources; other contexts remain
-unavailable. Product work may
-start only after this transition's own exact-SHA ordinary CI. ERP Outbox,
-target execution, worker, adapter, network, pass interpretation, runtime and UI
-remain closed.
+Current atomic action: record the separate user-approved scope decision for
+`FR-CO-003` and `FR-CO-004`. Exact P8-06 checkpoint-2 transition SHA
+`bc6095c1ba23580dc3eec3ace4fe9798fc3c160c` passes ordinary CI
+`32955709358`; product implementation is paused. Preserve the existing
+`REMAPPED_PHASE_9` status and original IDs/source/history, and use
+`USER_APPROVED_POST_V1_2_DEFERRED` only as the decision marker for external
+portal login, identity, self-service submission/approval UI and API. Retain
+all internal supplier/customer evidence, Project/Gate/Trial/Readiness,
+permission/audit, notification foundation and ERP read-only projection scope
+in V1.2. After this governance checkpoint passes exact-SHA ordinary CI, open a
+separate controller restoration before any P8-06 checkpoint-2 product work.
 
 Required branch:
 `codex/npi-v1.2-implementation`

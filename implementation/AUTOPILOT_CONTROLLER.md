@@ -6052,3 +6052,29 @@ repeat or rewrite it merely to restore context. See
   production boundaries remain unchanged.
 - Controller marker:
   `P8-06 checkpoint 1 exact-SHA ordinary PASS; checkpoint 2 authorization transition active`.
+
+## 2026-08-26 FR-CO-003/004 external portal scope decision
+
+- P8-06 checkpoint-2 authorization transition exact SHA
+  `bc6095c1ba23580dc3eec3ace4fe9798fc3c160c` passes ordinary CI
+  `32955709358`; checkpoint-2 product files remain unchanged and paused during
+  this separate governance task.
+- The user-approved decision marker is
+  `USER_APPROVED_POST_V1_2_DEFERRED`. It applies only to FR-CO-003/004 external
+  login, identity, supplier/customer self-service submission, externally
+  binding approval UI and portal API. It is not a new trace status, waiver or
+  implementation claim: both requirements remain P1 `REMAPPED_PHASE_9` with
+  their exact IDs, authoritative source, canonical mapping and history.
+- Internal supplier milestones/observations, customer approval evidence and
+  exact version locks, Project/Gate/Trial/Readiness effects, permissions,
+  audit, notification foundation and ERP read-only projections remain V1.2
+  scope and remain in Phase-9/final release-gate acceptance.
+- V1.2 Phase 9 and final completion may pass without only the deferred external
+  surfaces, provided every retained internal boundary and all ordinary release
+  criteria pass. Neither FR-CO-003 nor FR-CO-004 may be marked implemented.
+- Restoration is a separate post-V1.2/future-release controller entry after an
+  approved charter supplies external identity topology, tenant/Project
+  authorization, file/evidence and approval policy, notification/privacy/
+  security threat model, rollback, tests and release-gate acceptance.
+- Controller marker:
+  `FR-CO-003/004 external portals USER_APPROVED_POST_V1_2_DEFERRED; internal collaboration scope retained`.

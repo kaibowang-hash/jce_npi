@@ -59,6 +59,14 @@ ADDENDUM_IDS = {
     "FR-TX-019",
     "FR-TX-020",
 }
+EXPECTED_POST_V1_2_DEFERRED_PORTALS = {"FR-CO-003", "FR-CO-004"}
+EXPECTED_POST_V1_2_DEFERRED_PORTAL_EVIDENCE = {
+    "implementation/phase-4-requirement-anchor.md",
+    "implementation/backlog.yaml",
+    "implementation/ROADMAP.md",
+    "implementation/EXECUTION_PLAN.md",
+    "implementation/DECISION_LOG.md",
+}
 EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
     "UX-004": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
@@ -1544,6 +1552,35 @@ def verify_trace_sets() -> None:
         )
 
     by_id = {row["requirement_id"]: row for row in trace}
+    for requirement_id in EXPECTED_POST_V1_2_DEFERRED_PORTALS:
+        row = by_id[requirement_id]
+        evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            "P1",
+            "9",
+            "REMAPPED_PHASE_9",
+            "docs/DETAILED_REQUIREMENTS.md",
+            "PACK_CANONICAL",
+            requirement_id,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must preserve its canonical remap status"
+            )
+        if not EXPECTED_POST_V1_2_DEFERRED_PORTAL_EVIDENCE.issubset(evidence):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} lacks the approved post-V1.2 deferral evidence"
+            )
     brand_row = by_id["FR-BR-001"]
     expected_brand_evidence = {
         "frontend/src/ui-adapters/display-brand.tsx",

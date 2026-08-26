@@ -63,6 +63,92 @@ class V12ReconciliationTests(unittest.TestCase):
     def test_trace_sets_are_complete_and_consistent(self) -> None:
         self.verifier.verify_trace_sets()
 
+    def test_external_portals_are_deferred_without_rewriting_requirements(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        for requirement_id in ("FR-CO-003", "FR-CO-004"):
+            row = by_id[requirement_id]
+            self.assertEqual(
+                (
+                    row["priority"],
+                    row["phase"],
+                    row["status"],
+                    row["source"],
+                    row["trace_kind"],
+                    row["canonical_ids"],
+                ),
+                (
+                    "P1",
+                    "9",
+                    "REMAPPED_PHASE_9",
+                    "docs/DETAILED_REQUIREMENTS.md",
+                    "PACK_CANONICAL",
+                    requirement_id,
+                ),
+            )
+            evidence = {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            }
+            self.assertTrue(
+                self.verifier.EXPECTED_POST_V1_2_DEFERRED_PORTAL_EVIDENCE.issubset(
+                    evidence
+                )
+            )
+
+        requirement_source = (ROOT / "docs/DETAILED_REQUIREMENTS.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "| FR-CO-003 | P1 | 供应商门户支持里程碑更新、文件上传、报价/问题回复和整改证据。 | 供应商只能看到授权模具/项目。 |",
+            requirement_source,
+        )
+        self.assertIn(
+            "| FR-CO-004 | P1 | 客户门户支持资料提交、样件/文件审阅、批准/驳回和反馈。 | 客户批准形成时间戳和版本锁定。 |",
+            requirement_source,
+        )
+        self.assertNotIn("USER_APPROVED_POST_V1_2_DEFERRED", requirement_source)
+
+        governed_text = "\n".join(
+            (ROOT / path).read_text(encoding="utf-8")
+            for path in (
+                "implementation/phase-4-requirement-anchor.md",
+                "implementation/backlog.yaml",
+                "implementation/ROADMAP.md",
+                "implementation/EXECUTION_PLAN.md",
+                "implementation/DECISION_LOG.md",
+            )
+        )
+        self.assertIn("USER_APPROVED_POST_V1_2_DEFERRED", governed_text)
+        self.assertIn("internal supplier", governed_text)
+        self.assertIn("customer approval evidence", governed_text)
+
+        backlog = (ROOT / "implementation/backlog.yaml").read_text(encoding="utf-8")
+        self.assertEqual(backlog.count("decision_marker: USER_APPROVED_POST_V1_2_DEFERRED"), 2)
+        self.assertEqual(backlog.count("delivery_release: POST_V1_2_FUTURE_RELEASE"), 2)
+        self.assertEqual(backlog.count("restoration_trigger:"), 2)
+        self.assertEqual(backlog.count("- FR-CO-003"), 1)
+        self.assertEqual(backlog.count("- FR-CO-004"), 1)
+
+        execution_plan = (ROOT / "implementation/EXECUTION_PLAN.md").read_text(
+            encoding="utf-8"
+        )
+        normalized_execution_plan = " ".join(execution_plan.split())
+        self.assertIn("final V1.2 completion exclude only", normalized_execution_plan)
+        self.assertIn("remain required V1.2 scope", normalized_execution_plan)
+        self.assertIn("cannot claim either portal implemented", normalized_execution_plan)
+
+        phase_status = (ROOT / "implementation/PHASE_STATUS.yaml").read_text(
+            encoding="utf-8"
+        )
+        self.assertEqual(
+            phase_status.count("decision_marker: USER_APPROVED_POST_V1_2_DEFERRED"),
+            1,
+        )
+        self.assertIn("product_code_authorized: false", phase_status)
+        self.assertIn("SEPARATE_FUTURE_RELEASE_CONTROLLER", phase_status)
+
     def test_p7_08_mobile_field_trace_is_technically_verified(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         row = next(item for item in rows if item["requirement_id"] == "UX-020")

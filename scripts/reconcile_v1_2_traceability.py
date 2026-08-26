@@ -21,6 +21,14 @@ TRACE_HEADER = (
 )
 LEGACY_HEADER = TRACE_HEADER[:6]
 DOCX_ONLY_PREFIXES = ("UX-", "ARCH-", "COD-", "I18N-", "FR-TX-")
+POST_V1_2_DEFERRED_PORTAL_REQUIREMENTS = {"FR-CO-003", "FR-CO-004"}
+POST_V1_2_DEFERRED_PORTAL_EVIDENCE = (
+    "implementation/phase-4-requirement-anchor.md",
+    "implementation/backlog.yaml",
+    "implementation/ROADMAP.md",
+    "implementation/EXECUTION_PLAN.md",
+    "implementation/DECISION_LOG.md",
+)
 
 ADDENDUM_REQUIREMENTS = (
     ("FR-UX-038", "P0", "5", "TECHNICAL_VERIFIED"),
@@ -999,6 +1007,19 @@ def _expanded_rows(
         ]
         row["evidence"] = "; ".join(
             dict.fromkeys((*evidence, *P8_06_AUDIT_EVIDENCE))
+        )
+
+    for requirement_id in POST_V1_2_DEFERRED_PORTAL_REQUIREMENTS:
+        row = expanded_by_id[requirement_id]
+        row["phase"] = "9"
+        row["status"] = "REMAPPED_PHASE_9"
+        evidence = [
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        ]
+        row["evidence"] = "; ".join(
+            dict.fromkeys((*evidence, *POST_V1_2_DEFERRED_PORTAL_EVIDENCE))
         )
 
     return expanded

@@ -59,13 +59,23 @@ surfaces, and later domain screens remain owned by their delivery phases.
 | FR-PM-010 | 8 | Purchase/time/expense/tool actuals are ERP-owned projections and cannot be invented locally |
 | FR-SG-008 | 9 | Live reminders, escalation, and notification policy belong to notification/hardening delivery; Phase 4 may create queryable due/overdue work only |
 | FR-SG-009 | 9 | Management portfolio bulk view is a portfolio/reporting capability, not the Project/Gate object vertical slice |
-| FR-CO-003 | 9 | Supplier portal and external authorization are later external-collaboration scope |
-| FR-CO-004 | 9 | Customer portal and externally binding approval are later external-collaboration scope |
+| FR-CO-003 | 9 | Historical remap retained; external supplier login/identity/self-service portal UI/API is `USER_APPROVED_POST_V1_2_DEFERRED`, while internal supplier milestones, observations and evidence remain V1.2 |
+| FR-CO-004 | 9 | Historical remap retained; external customer login/identity/self-service review/approval UI/API is `USER_APPROVED_POST_V1_2_DEFERRED`, while internal approval evidence and exact version locks remain V1.2 |
 | FR-CO-005 | 9 | Mail/in-app delivery, subscriptions, escalation, and mandatory audit notifications require the later notification service |
 | FR-CO-007 | 9 | Meeting-minutes templates are a collaboration extension outside the minimum Project/Gate path |
 
 The requirement IDs are preserved. Remapping changes only controller
 allocation and does not waive the original acceptance criteria.
+
+The 2026-08-26 user decision does not alter either requirement's source,
+priority, canonical ID or legal `REMAPPED_PHASE_9` trace status, and does not
+mark either portal implemented. It removes only external portal principals and
+self-service surfaces from the V1.2 Phase-9/final release gate. Project, Gate,
+Trial, Readiness, internal supplier/customer evidence, permissions, audit,
+notification foundation and ERP read-only projections remain required. A
+future release may restore the portal tasks only through a separate controller
+entry after external identity, authorization, evidence, approval, privacy,
+security, rollback and release-gate facts are approved.
 
 ## 3. Facts frozen before implementation
 
