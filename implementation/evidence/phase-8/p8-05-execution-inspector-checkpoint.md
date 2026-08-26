@@ -1078,3 +1078,30 @@ Canonical Linux/amd64 SHA-256 evidence:
   the worker-parent activation is true.
 - Controller marker:
   `P8-05 final held; post-synthetic-Outbox worker-parent diagnostic 0/1 Level 1 PASS`.
+
+### Worker-parent diagnostic result and replay repair
+
+- SHA `a5840dcba90d7d06fefb6da84d134c0b6d571c31` passes ordinary
+  `32924661379`. Controlled `32925635182`, job `98047912734`, returns the one
+  safe tuple `P805_TOOL_ASSET_WORKER_TERMINAL_REPLAY / RuntimeError /
+  trace-d603365eaca85769bee5c61299eb8a49`; child output and prohibited content
+  remain unread.
+- First execution and all pre-replay assertions pass. The worker repository's
+  private terminal set omits persisted `synthetic_verified`, so replay skips
+  terminal-truth validation and fails the next active-state check. Add only
+  this state; complete request/result/guard truth remains mandatory and replay
+  stays write-free and dispatch-free.
+- Cycle counters are `1/1,1/1,0/1`. The worker-parent flag and all other
+  diagnostics are false. Product change is limited to the private terminal
+  classification; Schema/API/permission/transaction/ownership/order are
+  unchanged.
+- Controller marker:
+  `P8-05 final held; synthetic Tool Asset terminal replay repair 1/1 active`.
+- Level 1 passes Tool Asset `131/131`, P6 plus request-domain `359/359`, Item
+  `146/146`, MBOM `126/126`, and current/reconciliation `33/33`. Exact
+  terminal claim/truth, no-redispatch replay, compile/executable/shell,
+  JSON/YAML, security-negative, diff and manifest checks pass. All thirty-one
+  diagnostics are false; exact-eight is accepted and an unauthorized ninth is
+  rejected.
+- Controller marker:
+  `P8-05 final held; synthetic Tool Asset terminal replay repair 1/1 Level 1 PASS`.

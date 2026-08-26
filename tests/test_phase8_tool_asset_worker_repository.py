@@ -488,6 +488,80 @@ class Phase8ToolAssetWorkerRepositoryTest(unittest.TestCase):
         for marker in ("_require_bindings", "NPI Tool Asset Result", "result_global_id", "active_request_global_id", "last_request_global_id", "last_state"):
             self.assertIn(marker, source)
 
+    def test_synthetic_terminal_replay_validates_truth_then_returns_none(self):
+        outbox_id = uid(71)
+        route = self.module.ToolAssetExecutionRoute(
+            "tenant-a",
+            uid(72),
+            "worker@example.invalid",
+            "trace-p805-terminal-replay",
+        )
+        outbox = types.SimpleNamespace(
+            state=ToolAssetExecutionRequestState.SYNTHETIC_VERIFIED.value,
+            tenant_id=route.tenant_id,
+            project_global_id=str(route.project_global_id),
+            service_actor_user_id=route.service_actor_user_id,
+            trace_id=route.trace_id,
+        )
+        events = []
+        with patch.object(
+            self.module,
+            "_required_outbox",
+            return_value=outbox,
+        ), patch.object(
+            self.module,
+            "_require_tool_asset_outbox",
+        ), patch.object(
+            self.module,
+            "_require_terminal_truth",
+            side_effect=lambda value: events.append(("terminal", value)),
+        ):
+            claimed = self.module.FrappeToolAssetWorkerRepository().claim(
+                outbox_id,
+                now=NOW,
+                expected_route=route,
+            )
+        self.assertIsNone(claimed)
+        self.assertEqual(events, [("terminal", outbox)])
+        self.assertIn(
+            ToolAssetExecutionRequestState.SYNTHETIC_VERIFIED.value,
+            self.module._TERMINAL_STATES,
+        )
+
+    def test_synthetic_terminal_replay_fails_closed_on_terminal_truth_drift(self):
+        route = self.module.ToolAssetExecutionRoute(
+            "tenant-a",
+            uid(73),
+            "worker@example.invalid",
+            "trace-p805-terminal-replay",
+        )
+        outbox = types.SimpleNamespace(
+            state=ToolAssetExecutionRequestState.SYNTHETIC_VERIFIED.value,
+            tenant_id=route.tenant_id,
+            project_global_id=str(route.project_global_id),
+            service_actor_user_id=route.service_actor_user_id,
+            trace_id=route.trace_id,
+        )
+        error = RuntimeError("private terminal truth")
+        with patch.object(
+            self.module,
+            "_required_outbox",
+            return_value=outbox,
+        ), patch.object(
+            self.module,
+            "_require_tool_asset_outbox",
+        ), patch.object(
+            self.module,
+            "_require_terminal_truth",
+            side_effect=error,
+        ), self.assertRaises(RuntimeError) as raised:
+            self.module.FrappeToolAssetWorkerRepository().claim(
+                uid(74),
+                now=NOW,
+                expected_route=route,
+            )
+        self.assertIs(raised.exception, error)
+
     def test_process_stage_contexts_preserve_claim_boundary_and_seal_order(self):
         source = inspect.getsource(self.module)
         claim = source[source.index("    def claim(") : source.index("    @staticmethod\n    def require_execution_profile")]

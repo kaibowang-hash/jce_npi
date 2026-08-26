@@ -5792,3 +5792,36 @@ repeat or rewrite it merely to restore context. See
   unauthorized sixth path is rejected.
 - Controller marker:
   `P8-05 final held; post-synthetic-Outbox worker-parent diagnostic 0/1 Level 1 PASS`.
+
+### Post-synthetic-Outbox worker-parent result and repair
+
+- Checkpoint SHA `a5840dcba90d7d06fefb6da84d134c0b6d571c31` passes ordinary
+  `32924661379`. The sole controlled run `32925635182`, runtime job
+  `98047912734`, returns exactly
+  `P805_TOOL_ASSET_WORKER_TERMINAL_REPLAY / RuntimeError /
+  trace-d603365eaca85769bee5c61299eb8a49`. Failed-child output and prohibited
+  content remain unread.
+- The first worker completed, persisted `synthetic_verified`, and passed
+  request state, field cardinality and field truth checks. On replay, the
+  worker repository terminal set alone omits this existing terminal state, so
+  claim skips `_require_terminal_truth` and fails the immediately following
+  active-state predicate. Add only `synthetic_verified` to that private set;
+  replay must still validate request/result/guard terminal truth before
+  returning not-claimed, with no dispatch or writes.
+- Freeze the cycle at diagnostic `1/1`, product repair `1/1`, final `0/1`.
+  Set
+  `POST_SYNTHETIC_OUTBOX_TOOL_ASSET_WORKER_PARENT_DIAGNOSTICS_ENABLED=False`;
+  every Item/MBOM/Tool Asset diagnostic flag is dormant. Schema, API,
+  permissions, transaction, ownership and worker order are unchanged.
+- Controller marker:
+  `P8-05 final held; synthetic Tool Asset terminal replay repair 1/1 active`.
+- Level 1 passes complete Tool Asset `131/131`, P6 Tooling `355/355` plus
+  request-domain `4/4`, Item `146/146`, MBOM `126/126`, and
+  current-task/reconciliation `33/33`. Real synthetic-terminal claim,
+  terminal-truth failure, public replay response and zero-redispatch tests,
+  Python compile, verifier executable, shell, JSON/YAML, security-negative,
+  current/reconciliation and diff checks pass. All thirty-one runtime
+  diagnostic flags are false. The exact-eight manifest passes and an
+  unauthorized ninth path is rejected.
+- Controller marker:
+  `P8-05 final held; synthetic Tool Asset terminal replay repair 1/1 Level 1 PASS`.

@@ -6,6 +6,7 @@ import types
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from unittest.mock import patch
 from uuid import UUID
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -118,6 +119,25 @@ class Phase8ToolAssetWorkerTest(unittest.TestCase):
     def test_live_claim_is_not_claimed_and_never_dispatches(self):
         self.repo.claimed = False
         self.assertIsNone(self.worker._execute_worker(outbox_event_id=UUID(int=1), repository=self.repo, profile_resolver=lambda *a: self.repo.profile, registry_resolver=lambda: self.registry, clock=lambda: NOW))
+        self.assertNotIn("adapter", self.events)
+
+    def test_terminal_replay_returns_not_claimed_without_redispatch(self):
+        self.repo.claimed = False
+        with patch.object(
+            self.worker,
+            "FrappeToolAssetWorkerRepository",
+            return_value=self.repo,
+        ), patch.object(
+            self.worker,
+            "_configured_profile",
+            side_effect=AssertionError("terminal replay resolved a profile"),
+        ), patch.object(
+            self.worker,
+            "_configured_registry",
+            side_effect=AssertionError("terminal replay resolved an adapter"),
+        ):
+            replay = self.worker.process_outbox_message(str(UUID(int=1)))
+        self.assertEqual(replay["state"], "not_claimed")
         self.assertNotIn("adapter", self.events)
 
     def test_process_stage_records_innermost_same_exception_and_restores_scope(self):

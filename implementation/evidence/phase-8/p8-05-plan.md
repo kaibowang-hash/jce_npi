@@ -1898,3 +1898,31 @@ success-zero, compile, executable, shell, JSON/YAML, security-negative/TODO,
 current/reconciliation and diff checks pass. Runtime verifiers expose
 thirty-one diagnostic flags and only the worker-parent flag is true. The
 exact-five manifest passes and rejects an unauthorized sixth path.
+
+### Worker-parent result and synthetic terminal replay repair
+
+Checkpoint SHA `a5840dcba90d7d06fefb6da84d134c0b6d571c31` passes exact ordinary
+`32924661379`. Controlled run `32925635182`, runtime job `98047912734`, yields
+the sole allowlisted tuple `P805_TOOL_ASSET_WORKER_TERMINAL_REPLAY /
+RuntimeError / trace-d603365eaca85769bee5c61299eb8a49`; failed-child and
+prohibited content remain unread.
+
+The completed first process and intervening request/field assertions prove
+the persisted terminal value is `synthetic_verified`. Replay enters the same
+repository, whose private terminal set omits only this already-contracted
+state. The terminal branch is skipped and the next active-state predicate is
+therefore the unique first source. Add only `synthetic_verified` to that set.
+The existing `_require_terminal_truth` request/result/guard checks remain
+mandatory before replay returns not-claimed; no redispatch or write occurs.
+
+Freeze this cycle at `1/1,1/1,0/1`. Disable the worker-parent activation and
+keep every runtime diagnostic dormant. No Schema, API, permission,
+transaction, ownership, adapter, mapping or worker-order behavior changes.
+
+Level 1 passes complete Tool Asset `131/131`, P6 Tooling `355/355` plus
+request-domain `4/4`, Item `146/146`, MBOM `126/126`, and
+current-task/reconciliation `33/33`. Real terminal claim/truth failure,
+write-free public replay, zero redispatch, compile, executable, shell,
+JSON/YAML, security-negative, current/reconciliation and diff checks pass.
+All thirty-one runtime diagnostic flags are false. The exact-eight manifest
+passes and rejects an unauthorized ninth path.

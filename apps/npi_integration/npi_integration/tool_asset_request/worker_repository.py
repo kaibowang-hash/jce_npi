@@ -44,7 +44,7 @@ _RESULT_NAMESPACE = UUID("6877d7c3-aebc-4a17-a022-4959df87e13e")
 _FIELD_NAMESPACE = UUID("23f53be5-fffb-42ad-b5b5-bbe805f8a9ec")
 _OBSERVATION_NAMESPACE = UUID("5dc174fd-f5ab-4c5a-a181-a11ef9d67c76")
 _ACTIVE_STATES = frozenset({"pending", "processing"})
-_TERMINAL_STATES = frozenset({"partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain", "mapping_conflict"})
+_TERMINAL_STATES = frozenset({"synthetic_verified", "partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain", "mapping_conflict"})
 
 
 def deterministic_tool_asset_result_id(attempt_global_id: UUID) -> UUID:
