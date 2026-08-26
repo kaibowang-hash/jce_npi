@@ -8307,11 +8307,11 @@ Succeeded authoritative,權威執行成功
 Observed conflict,觀測衝突
 Authoritative Sandbox,權威沙箱
 No target authority,無目標權威性
-Loading Tool Asset execution truth,正在載入工裝資產執行事實
-Tool Asset execution unavailable,工裝資產執行不可用
+Loading Tool Asset execution truth,正在載入模具資產執行事實
+Tool Asset execution unavailable,模具資產執行不可用
 A signed-in command session is required.,需要已登入的命令工作階段。
 Separate ERP business approval is unavailable.,獨立的企業資源規劃業務核准不可用。
-The Tool Asset execution profile is unavailable.,工裝資產執行設定檔不可用。
+The Tool Asset execution profile is unavailable.,模具資產執行設定檔不可用。
 Create and update authority conflict; no request is permitted.,建立與更新權限衝突；不允許發起請求。
 No exact create or update mapping context is available.,沒有可用的精確建立或更新映射上下文。
 You do not have permission to request this operation.,您沒有權限請求此操作。
@@ -8326,16 +8326,16 @@ Per-field execution results,逐欄位執行結果
 Owned field,主責欄位
 Authority,權威性
 No per-field execution result is available.,沒有可用的逐欄位執行結果。
-Request exact Tool Asset execution,請求精確工裝資產執行
+Request exact Tool Asset execution,請求精確模具資產執行
 "Impact: commits one immutable create or update request and, outside Mock, one recoverable Outbox event. It does not approve, move or maintain an Asset.",影響：提交一個不可變的建立或更新請求，並在模擬之外提交一個可復原的寄件匣事件。它不會核准、移動或維護資產。
-Review Tool Asset request,審查工裝資產請求
-Review exact Tool Asset request,審查精確工裝資產請求
-Request Tool Asset execution,請求工裝資產執行
+Review Tool Asset request,審查模具資產請求
+Review exact Tool Asset request,審查精確模具資產請求
+Request Tool Asset execution,請求模具資產執行
 Exact physical Tooling Set,精確實體工裝套組
 Commit one immutable operation-specific request and one recoverable Outbox event when execution is enabled.,在啟用執行時提交一個不可變的操作專用請求和一個可復原的寄件匣事件。
 "Project membership, separate business approval and exact profile requester authority are required.",需要專案成員身分、獨立業務核准和精確設定檔請求權限。
 "The request, audit, observed field truth and mapping evidence remain immutable.",請求、稽核、觀測欄位事實和映射證據保持不可變。
 "Partial, failed and uncertain truth remains visible. No retry or reconcile command is available here.",部分、失敗和不確定事實保持可見。此處不提供重試或對帳命令。
 "Actor, trace, idempotency, source and mapping expectation hashes are recorded.",記錄操作者、追蹤、冪等、來源和映射預期雜湊。
-Tool Asset execution inspector,工裝資產執行檢查器
+Tool Asset execution inspector,模具資產執行檢查器
 Select exact acceptance evidence and a physical Tooling Set to inspect execution truth.,選擇精確驗收證據和實體工裝套組以檢查執行事實。

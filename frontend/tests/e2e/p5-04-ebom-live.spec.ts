@@ -211,9 +211,19 @@ async function installEbomApi(page: Page): Promise<ObservedRequest[]> {
 }
 
 async function openEbom(page: Page, locale: TestLocale): Promise<void> {
+  const cockpitResponse = page.waitForResponse((response) => {
+    const request = response.request();
+    const url = new URL(response.url());
+    return (
+      request.method() === "GET" &&
+      url.pathname === `/api/npi/v1/projects/${projectId}/cockpit` &&
+      url.search === ""
+    );
+  });
   await page.goto(`/projects/${projectId}?lang=${locale}&tab=ebom`, {
     waitUntil: "domcontentloaded",
   });
+  expect((await cockpitResponse).status()).toBe(200);
   await expect(page.locator("#main-content")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", locale);
   await expect(page.locator(".route-loading")).toHaveCount(0);

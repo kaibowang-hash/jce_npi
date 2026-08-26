@@ -130,6 +130,9 @@ retain_terms:
     zh_tw: PO
     category: erp
 translated_ui_terms:
+  - source: Tool Asset
+    zh_cn: 模具资产
+    zh_tw: 模具資產
   - source: Tooling
     zh_cn: 模具开发
     zh_tw: 模具開發

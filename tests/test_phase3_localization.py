@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import importlib
 import json
 import sys
@@ -22,6 +23,40 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class LocalizationHelpersTest(unittest.TestCase):
+    def test_tool_asset_uses_one_authoritative_chinese_term(self) -> None:
+        terminology = (
+            ROOT / "contracts/terminology-allowlist.yaml"
+        ).read_text(encoding="utf-8")
+        canonical_block = (
+            "  - source: Tool Asset\n"
+            "    zh_cn: 模具资产\n"
+            "    zh_tw: 模具資產\n"
+        )
+        self.assertEqual(terminology.count("  - source: Tool Asset\n"), 1)
+        self.assertEqual(terminology.count(canonical_block), 1)
+
+        for locale, canonical, forbidden in (
+            ("zh", "模具资产", "工装资产"),
+            ("zh-TW", "模具資產", "工裝資產"),
+        ):
+            with (ROOT / f"apps/npi_core/npi_core/translations/{locale}.csv").open(
+                encoding="utf-8", newline=""
+            ) as catalog_file:
+                tool_asset_rows = [
+                    row
+                    for row in csv.reader(catalog_file)
+                    if row and "tool asset" in row[0].casefold()
+                ]
+            self.assertTrue(tool_asset_rows)
+            self.assertFalse(
+                [row for row in tool_asset_rows if forbidden in row[1]],
+                f"{locale} must not alternate Tool Asset terminology",
+            )
+            self.assertTrue(
+                any(canonical in row[1] for row in tool_asset_rows),
+                f"{locale} must retain the canonical Tool Asset terminology",
+            )
+
     def test_only_exact_frappe_language_codes_are_allowed(self) -> None:
         self.assertEqual(validate_language_code("zh"), "zh")
         self.assertEqual(validate_language_code("zh-TW"), "zh-TW")

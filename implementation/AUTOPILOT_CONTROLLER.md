@@ -5857,3 +5857,37 @@ repeat or rewrite it merely to restore context. See
   are present.
 - Controller marker:
   `P8-05 final held; ordinary P8-01 loading harness remediation Level 1 PASS`.
+
+## 2026-08-26 P8-05 release-gate Tool Asset terminology remediation
+
+- Release review identified eight new P8-05 visible strings per Chinese
+  locale that alternated `工装资产` / `工裝資產` with the existing
+  `模具资产` / `模具資產` Tool Asset term.
+- V1.2 DOCX rows `FR-TL-011`, `FR-TL-012`, `FR-TL-013` and `INT-005`, plus
+  thirty-four matching base-catalog entries in each locale, uniquely resolve
+  the canonical term as `模具资产` / `模具資產`. No B-class preference
+  remains and no authoritative source defines a second concept.
+- The bounded remediation changes only controlled terminology/catalog/test,
+  the two affected Chinese P8-05 visual proofs and the two P6-06 composition
+  proofs that render the same inspector. English source/baseline, product
+  behavior and every diagnostic activation remain unchanged.
+- Controller marker:
+  `P8-05 final held; Tool Asset terminology release remediation active`.
+- The first clean full-matrix proof exposed one pre-existing P5-04 first-locale
+  race: the route-level fallback had cleared before the Project cockpit
+  response completed, so the EBOM tab assertion could run before the loaded
+  workspace existed. The exact English case failed while the immediately
+  following zh and zh-TW peers passed; no P5-04 product or baseline changed.
+- The bounded harness gate now awaits the exact GET, exact Project cockpit
+  path, empty query and HTTP 200 response before checking the selected EBOM
+  tab. It does not change a timeout, retry, route fixture or product behavior.
+- Level 1 is green on the exact sixteen paths. The four affected Chinese
+  baselines pass twice no-update; the P5-04 gate passes twice across all three
+  locales; the final isolated Bookworm/amd64 matrix passes `129/129`.
+  P5-04 nonvisual passes `5/5`, P6/P8-05 nonvisual passes `26/26`, frontend
+  unit coverage passes `1,060/1,060`, and the i18n audit covers `8,341`
+  literal sources with complete direct zh/zh-TW coverage. Exact-sixteen
+  post-commit simulation passes and an unauthorized seventeenth path is
+  rejected.
+- Controller marker:
+  `P8-05 final held; Tool Asset terminology release remediation Level 1 PASS`.

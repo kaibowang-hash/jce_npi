@@ -1322,8 +1322,8 @@ async function openExecutionInspector(
         locale === "en"
           ? "Tool Asset execution inspector"
           : locale === "zh"
-            ? "工装资产执行检查器"
-            : "工裝資產執行檢查器",
+            ? "模具资产执行检查器"
+            : "模具資產執行檢查器",
     })
     .first();
   await inspector.scrollIntoViewIfNeeded();

@@ -1957,3 +1957,48 @@ loading case passes in every run. Current-task/reconciliation units pass
 `33/33`; scripts, JSON/YAML parse, diff hygiene and exact-five manifest pass,
 and an unauthorized sixth path is rejected. Product, visual baselines,
 timeouts and diagnostic activations are unchanged.
+
+## 54. Release-gate Tool Asset terminology remediation
+
+The release review found that the eight new P8-05 visible Tool Asset strings
+used `工装资产` / `工裝資產`, while the established catalog used
+`模具资产` / `模具資產`. Repository priority resolves this without a new
+business decision: V1.2 DOCX rows `FR-TL-011`, `FR-TL-012`, `FR-TL-013` and
+`INT-005` explicitly name `模具资产`, and the P8-05 base checkpoint already
+contains thirty-four Tool Asset translations per Chinese locale using that
+term. No authoritative source defines a distinct `工装资产` concept.
+
+The remediation therefore adds the exact Tool Asset term to the controlled
+terminology list, harmonizes only the eight affected P8-05 translations in
+each Chinese catalog, regenerates the React catalog, strengthens the
+terminology regression and updates only the affected canonical zh and zh-TW
+P8-05 baselines plus the two P6-06 composition baselines that render the same
+inspector. English sources, product behavior, API contracts, the English
+baseline and all execution diagnostics remain unchanged.
+
+The first clean full-matrix proof exposed one separate P5-04 harness ordering
+race. The route-level Suspense fallback can be detached while `ProjectPage`
+still renders its independent cockpit-loading surface, so the first English
+case could assert the EBOM tab before the exact cockpit response completed;
+the following zh and zh-TW cases passed. The bounded test-only repair awaits
+the GET response for the exact Project cockpit path with an empty query and
+requires HTTP 200 before asserting the tab. It does not change timeouts,
+retries, fixtures, product behavior or any P5-04 baseline.
+
+The final governed remediation contains exactly sixteen paths: the fourteen
+approved terminology/catalog/test/evidence/baseline paths, the P5-04 exact
+cockpit-response gate, and the P6-03 locale expectation that exercises the
+same inspector. Manual review confirms the four image updates are text-only;
+the two P8-05 and two P6-06 Chinese images retain geometry, old context and
+formal-ID boundaries. Those four pass twice no-update (`4/4` each), the
+P5-04 gate passes twice across en/zh/zh-TW (`3/3` each), and the final clean
+Bookworm/amd64 workers-one governed matrix passes `129/129`.
+
+P5-04 nonvisual passes `5/5`; P6/P8-05 nonvisual passes `26/26`; full
+frontend coverage passes `1,060/1,060`. Generate, type, lint, format, style,
+boundary, UI, build, clean brand and zero-vulnerability audits pass. I18n
+covers `8,341` literal English sources with complete direct zh/zh-TW
+coverage; the Frappe localization/current/reconciliation group passes
+`75/75`, verifier scripts pass, forbidden alternation and diagnostic-enabled
+scans are zero, and diff hygiene passes. Exact-sixteen post-commit simulation
+accepts the governed set and rejects an unauthorized seventeenth path.

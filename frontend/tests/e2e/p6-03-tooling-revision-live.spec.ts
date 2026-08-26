@@ -1652,8 +1652,8 @@ test.describe("P6-06 live acceptance and Asset preparation workspace", () => {
             locale === "en"
               ? "Review Tool Asset request"
               : locale === "zh"
-                ? "审查工装资产请求"
-                : "審查工裝資產請求",
+                ? "审查模具资产请求"
+                : "審查模具資產請求",
         }),
       ).toBeDisabled();
       await expect(workspace.getByText("ASSET-00042")).toHaveCount(0);

@@ -1132,3 +1132,50 @@ Canonical Linux/amd64 SHA-256 evidence:
   No governed baseline or product file changes.
 - Controller marker:
   `P8-05 final held; ordinary P8-01 loading harness remediation Level 1 PASS`.
+
+## Release-gate Tool Asset terminology remediation
+
+- V1.2 DOCX requirements `FR-TL-011..013` and `INT-005` uniquely establish
+  `Tool Asset` as `模具资产` / `模具資產`; the base catalogs already contain
+  thirty-four matching entries per locale. The eight P8-05-only
+  `工装资产` / `工裝資產` translations are terminology drift, not a distinct
+  product concept or unresolved business choice.
+- Remediation scope is terminology allowlist, the two Frappe catalogs,
+  generated React catalog, the P8-05 locale-aware E2E expectation, the two
+  affected P8-05 Chinese Linux/x64 baselines, the two P6-06 Chinese
+  composition baselines that render the same inspector, one localization
+  regression, CURRENT_TASK allowances and this exact controller/evidence
+  record.
+- English sources and baseline, API/schema/permissions/transactions,
+  execution behavior and diagnostic activation remain unchanged.
+- The clean full-matrix run also identified one independent P5-04 harness
+  ordering defect: `.route-loading` covers only the lazy route, while the
+  Project page renders a separate cockpit-loading surface before it can mount
+  the EBOM tabs. The first English case reached the tab assertion before the
+  exact cockpit response; the following zh and zh-TW cases passed. The test
+  now gates on GET plus the exact Project cockpit path, empty query and HTTP
+  200 before asserting the selected tab. No timeout, retry, fixture response,
+  product code or P5-04 baseline changes.
+
+Level 1 closes on sixteen governed paths: the original fourteen terminology
+paths plus the P5-04 cockpit-response gate and the P6-03 locale expectation
+that renders the same inspector. The four changed Linux/amd64 image hashes are:
+
+- P8-05 partial zh: `edaa671ab3b5979a6965877dc955a0c495b773c16957191be712b079fd3fb6da`;
+- P8-05 authoritative zh-TW: `0ead4911f3714ef9843d10a75efa14c712b3ca98b3887ebabd9581379cecff21`;
+- P6-06 zh: `5fa065d0aea158149ce3d0c82c760d531adbbf73b7291acacdf0802fd3c9793c`;
+- P6-06 zh-TW: `53c9ebb99c4d26726d6b341c49d5c9f06d1547d3b81c14a3ea43ffb1da986f66`.
+
+Manual review confirms text-only canonical-term changes with unchanged
+geometry, authority, formal-ID withholding and old context. The affected four
+pass twice no-update (`4/4` each), the P5-04 three-locale gate passes twice
+(`3/3` each), and the final isolated Bookworm/amd64 workers-one governed
+matrix passes `129/129`. P5-04 nonvisual passes `5/5`; P6 plus P8-05
+nonvisual passes `26/26`; frontend coverage passes `1,060/1,060`; build,
+clean brand guard, type, lint, format, style, boundary and UI audits pass;
+both dependency audits report zero vulnerabilities. The Frappe localization
+suite, current-task and reconciliation units pass `75/75`; both verification
+scripts pass. The i18n audit covers `8,341` literal English sources with
+complete direct zh/zh-TW coverage, forbidden alternation residuals are zero,
+all diagnostics remain false, diff hygiene passes, exact-sixteen post-commit
+simulation passes and an unauthorized seventeenth path is rejected.
