@@ -1011,6 +1011,42 @@ schema, UI, network and ERP diffs are zero. Exact-SHA ordinary PASS authorizes
 only one diagnostics-off Level 3. Production governance and every existing
 hold remain queued.
 
+## Post-replay-final combined-boundary diagnostic checkpoint
+
+Diagnostics-off SHA `8ee469a7ef6733ddda99723926a356903a815ae6`
+passes ordinary `33118946895`. Sole Level 3 `33120051623` passes visual, secret
+scan, frontend, repository and controlled preflight, then runtime
+`98686861002` emits only the fixed formal-quality-link outer failure label.
+No raw log, failed-child output, response or business content was inspected.
+
+P8-01 completed before P8-06 returned nonzero; P8-02 through P8-05 were not
+reached. The prior exact-92 success and unchanged product semantics exclude a
+unique static repair, because the new all-off execution may fail at any P8-06
+bootstrap, prepare, create, replay, stale, list or cleanup boundary.
+
+Freeze post-replay combined-boundary at `1/1`, `0/1`, `1/1`. Independent
+post-replay-final combined-boundary begins `0/1`, `0/1`, `0/1`. Its sole new
+activation reuses exact 92 safe codes and the established exact trace,
+cursors, O_EXCL exact-three-key record, strict mirror, inner precedence,
+same-exception, `finally`, failed-child-unread and success-zero contracts.
+All historical activations are false and no product repair is authorized.
+
+The governed exact-five paths remain runtime verifier/test plus AUTOPILOT,
+plan and this checkpoint. Product, CURRENT_TASK, workflow, API, repository,
+permissions, schema, transaction, UI, network and ERP diffs are zero.
+Production governance and every existing hold remain queued.
+
+Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI and i18n `8436` with complete zh/zh-TW
+coverage pass. Compile, shell syntax, JSON/YAML/CSV, exact-one-of-16
+activation, exact-92 AST/lexical equality and precedence, strict-reader/
+no-leak, direct-SQL and diff checks pass. Exact-five and union-71 manifests
+pass; an unauthorized sixth path is rejected. Product diff is zero and
+unrelated state remains intact.
+
 Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
 `110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
 current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and

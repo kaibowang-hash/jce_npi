@@ -7228,3 +7228,48 @@ repeat or rewrite it merely to restore context. See
   activation, exact-92 allowlist/precedence, strict-reader/no-leak, direct-SQL
   and diff checks pass. Exact-five and union-71 manifests pass; an unauthorized
   sixth path is rejected. Product diff is zero and unrelated state is intact.
+
+## 2026-08-28 P8-06 post-replay-final combined-boundary diagnostic checkpoint
+
+- Diagnostics-off SHA `8ee469a7ef6733ddda99723926a356903a815ae6`
+  passes exact ordinary `33118946895`: visual `98680669406`, secret scan
+  `98680669447`, frontend `98680669559` and repository `98680669588` pass. Its
+  sole Level 3 `33120051623` passes the four ordinary lanes and controlled
+  preflight `98686796651`, while cumulative runtime `98686861002` fails at the
+  fixed formal-quality-link outer label. No raw log, child output, response or
+  business content was read.
+- Shell order proves P8-01 fresh projection, route-disable/recovery probes,
+  projection replay and log redaction completed before P8-06 returned nonzero;
+  P8-02, Item, MBOM and Tool Asset were not reached. The successful prior
+  exact-92 run closes its former first source only for that run; this new
+  diagnostics-off failure cannot statically choose among P8-06 bootstrap,
+  prepare, create, replay, stale, list and cleanup boundaries.
+- Freeze `p8-06-quality-link-post-replay-combined-boundary` at diagnostic
+  `1/1`, repair `0/1`, final `1/1`. Independent
+  `p8-06-quality-link-post-replay-final-combined-boundary` starts at diagnostic
+  `0/1`, repair `0/1`, final `0/1`; no product repair is authorized.
+- Only `QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED`
+  is true. All fifteen historical flags are false. The new cycle reuses exact
+  92 safe codes: 17 outer, four prepare parent, five bootstrap, 39 projection
+  server and 27 create server stages. The seven status/body parent codes remain
+  dormant.
+- Exact trace, cursors, O_EXCL exact-three-key record, strict reader,
+  bootstrap/server inner precedence then parent and outer fallback,
+  same-exception, `finally`, failed-child-unread, no-leak and success-zero
+  contracts remain fixed. Exact paths are the quality runtime verifier/test,
+  this controller, the P8-06 plan and checkpoint. Product, CURRENT_TASK,
+  workflow, API, repository, permission, schema, transaction, migration, UI,
+  network and ERP diffs are zero. Production fact/DoD governance, portal
+  deferral and every B/C hold remain queued.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-replay-final combined-boundary diagnostic 0/1 active`.
+- Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+  current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+  affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint,
+  format, styles, boundaries, industrial UI and i18n `8436` with complete
+  zh/zh-TW coverage pass. Compile, shell syntax, JSON/YAML/CSV, exact-one-of-16
+  activation, exact-92 AST/lexical equality and precedence,
+  strict-reader/no-leak, direct-SQL and diff checks pass. Exact-five and
+  union-71 manifests pass; an unauthorized sixth path is rejected. Product
+  diff is zero and unrelated state remains intact.
