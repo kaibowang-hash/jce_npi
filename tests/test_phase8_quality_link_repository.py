@@ -46,6 +46,8 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
         for name in self.MODULES:
             sys.modules.pop(name, None)
         self.events: list[str] = []
+        self.capability_actors: list[str] = []
+        self.support_writes: list[tuple[str, object, object]] = []
         frappe = types.ModuleType("frappe")
         frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         frappe.flags = types.SimpleNamespace()
@@ -87,13 +89,28 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
         review.FrappeTrialReviewRepository = object
         sys.modules[review.__name__] = review
         validation = types.ModuleType("npi_integration.quality_link.frappe_validation")
+        capability = object()
 
         @contextmanager
-        def command_write(*, scope: str):
+        def command_write(*, service_actor_user_id: str, scope: str):
+            self.capability_actors.append(service_actor_user_id)
             self.events.append(f"capability:{scope}")
-            yield object()
+            yield capability
 
+        validation.QualityLinkWriteCapability = object
         validation.quality_link_command_write = command_write
+        validation.insert_quality_link_support_document = (
+            lambda document, *, capability: self.support_writes.append(
+                ("insert", document, capability)
+            )
+            or document
+        )
+        validation.save_quality_link_support_document = (
+            lambda document, *, capability: self.support_writes.append(
+                ("save", document, capability)
+            )
+            or document
+        )
         sys.modules[validation.__name__] = validation
         problems = types.ModuleType("npi_integration.quality_link.problems")
         for name in (
@@ -177,12 +194,21 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
             _resolve_source=lambda *_args, **_kwargs: resolved,
             _resolve_observation=lambda *_args, **_kwargs: self.observation,
             _locked_link_head=lambda _stream: head,
-            _insert_receipt=lambda *_args: self.events.append("receipt-insert") or object(),
-            _insert_revision=lambda *_args: self.events.append("revision-insert"),
-            _insert_head=lambda *_args: self.events.append("head-insert"),
-            _advance_head=lambda *_args: self.events.append("head-save"),
+            _insert_receipt=lambda *_args, **_kwargs: self.events.append(
+                "receipt-insert"
+            )
+            or object(),
+            _insert_revision=lambda *_args, **_kwargs: self.events.append(
+                "revision-insert"
+            ),
+            _insert_head=lambda *_args, **_kwargs: self.events.append(
+                "head-insert"
+            ),
+            _advance_head=lambda *_args, **_kwargs: self.events.append("head-save"),
             _append_audit=lambda *_args, **_kwargs: self.events.append("audit-insert"),
-            _seal_receipt=lambda *_args: self.events.append("receipt-save"),
+            _seal_receipt=lambda *_args, **_kwargs: self.events.append(
+                "receipt-save"
+            ),
         )
 
     def test_create_is_one_closed_atomic_write_order(self) -> None:
@@ -204,6 +230,32 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
         self.assertEqual(outcome.response["formalQualityInterpretation"]["state"], "unavailable")
         self.assertEqual(outcome.response["linkRevision"]["source"]["sourceSnapshotHash"], SOURCE_HASH)
         self.assertEqual(outcome.response["linkHead"]["currentProjectionHeadVersion"], 3)
+        self.assertEqual(self.capability_actors, ["quality@example.invalid"])
+
+    def test_support_writes_share_one_capability_and_audit_remains_ordinary(self) -> None:
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/quality_link/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        transaction = source[
+            source.index("            with quality_link_command_write(") : source.index(
+                "        with quality_link_create_response_step(\n"
+                '            "P806_QUALITY_CREATE_REPOSITORY_OUTCOME"',
+                source.index("            with quality_link_command_write("),
+            )
+        ]
+        self.assertIn("service_actor_user_id=self.actor", transaction)
+        self.assertEqual(transaction.count("capability=capability"), 5)
+        self.assertEqual(source.count("insert_quality_link_support_document("), 3)
+        self.assertEqual(source.count("save_quality_link_support_document("), 2)
+        audit = source[
+            source.index("    def _append_audit(") : source.index(
+                "    @staticmethod\n    def _seal_receipt(",
+                source.index("    def _append_audit("),
+            )
+        ]
+        self.assertIn(").insert()", audit)
+        self.assertNotIn("ignore_permissions", audit)
 
     def test_create_response_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
         import ast

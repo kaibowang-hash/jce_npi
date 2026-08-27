@@ -22,6 +22,8 @@ class Phase8QualityLinkSecurityTest(unittest.TestCase):
     def test_write_capability_is_exact_and_restores_flags_after_exception(self) -> None:
         frappe = types.ModuleType("frappe")
         frappe.flags = types.SimpleNamespace(existing="kept")
+        frappe.session = types.SimpleNamespace(user="quality@example.invalid")
+        frappe.get_roles = lambda _actor: ["NPI API User", "System Manager"]
         frappe.PermissionError = type("PinnedPermissionError", (RuntimeError,), {})
         frappe._ = lambda value: value
         frappe.throw = lambda message, error: (_ for _ in ()).throw(error(message))
@@ -32,28 +34,161 @@ class Phase8QualityLinkSecurityTest(unittest.TestCase):
         with patch.dict(sys.modules, {"frappe": frappe, spec.name: module}):
             assert spec.loader is not None
             spec.loader.exec_module(module)
-            allowed = frozenset({("NPI Formal Quality Link Revision", "insert")})
+            calls: list[tuple[str, str, bool]] = []
+
+            class Document:
+                def __init__(self, doctype: str) -> None:
+                    self.doctype = doctype
+
+                def insert(self, *, ignore_permissions: bool = False):
+                    calls.append(("insert", self.doctype, ignore_permissions))
+                    return self
+
+                def save(self, *, ignore_permissions: bool = False):
+                    calls.append(("save", self.doctype, ignore_permissions))
+                    return self
+
+            revision = Document("NPI Formal Quality Link Revision")
+            head = Document("NPI Formal Quality Link Head")
+            receipt = Document("NPI Formal Quality Link Command Idempotency")
+            audit = Document("NPI Audit Event")
             with self.assertRaisesRegex(RuntimeError, "synthetic boundary"):
-                with module.quality_link_write_capability(scope="test", allowed=allowed):
+                with module.quality_link_command_write(
+                    service_actor_user_id="quality@example.invalid",
+                    scope="test",
+                ) as capability:
                     module.require_quality_link_write("NPI Formal Quality Link Revision", "insert")
+                    module.insert_quality_link_support_document(
+                        revision,
+                        capability=capability,
+                    )
+                    module.insert_quality_link_support_document(
+                        head,
+                        capability=capability,
+                    )
+                    module.save_quality_link_support_document(
+                        head,
+                        capability=capability,
+                    )
+                    module.insert_quality_link_support_document(
+                        receipt,
+                        capability=capability,
+                    )
+                    module.save_quality_link_support_document(
+                        receipt,
+                        capability=capability,
+                    )
+                    self.assertTrue(
+                        getattr(frappe.flags, module.AUDIT_APPEND_FLAG, False)
+                    )
                     with self.assertRaises(frappe.PermissionError):
-                        module.require_quality_link_write("NPI Formal Quality Link Revision", "save")
+                        module.insert_quality_link_support_document(
+                            audit,
+                            capability=capability,
+                        )
+                    with self.assertRaises(frappe.PermissionError):
+                        module.save_quality_link_support_document(
+                            revision,
+                            capability=capability,
+                        )
+                    forged = module.QualityLinkWriteCapability(
+                        actor="quality@example.invalid",
+                        scope="test",
+                        allowed=module.QUALITY_LINK_COMMAND_WRITES,
+                    )
+                    with self.assertRaises(frappe.PermissionError):
+                        module.insert_quality_link_support_document(
+                            revision,
+                            capability=forged,
+                        )
+                    frappe.session.user = "other@example.invalid"
+                    with self.assertRaises(frappe.PermissionError):
+                        module.save_quality_link_support_document(
+                            head,
+                            capability=capability,
+                        )
+                    frappe.session.user = "quality@example.invalid"
                     raise RuntimeError("synthetic boundary")
             self.assertEqual(frappe.flags.existing, "kept")
-            self.assertFalse(hasattr(frappe.flags, module.QUALITY_LINK_REVISION_WRITE_FLAG))
+            for flag in (
+                module.QUALITY_LINK_REVISION_WRITE_FLAG,
+                module.QUALITY_LINK_HEAD_WRITE_FLAG,
+                module.QUALITY_LINK_RECEIPT_WRITE_FLAG,
+                module.AUDIT_APPEND_FLAG,
+            ):
+                self.assertFalse(hasattr(frappe.flags, flag))
+            self.assertIsNone(module._CURRENT.get())
             with self.assertRaises(frappe.PermissionError):
-                module.require_quality_link_write("NPI Formal Quality Link Revision", "insert")
+                module.insert_quality_link_support_document(
+                    revision,
+                    capability=capability,
+                )
+            self.assertEqual(
+                calls,
+                [
+                    ("insert", "NPI Formal Quality Link Revision", True),
+                    ("insert", "NPI Formal Quality Link Head", True),
+                    ("save", "NPI Formal Quality Link Head", True),
+                    (
+                        "insert",
+                        "NPI Formal Quality Link Command Idempotency",
+                        True,
+                    ),
+                    (
+                        "save",
+                        "NPI Formal Quality Link Command Idempotency",
+                        True,
+                    ),
+                ],
+            )
+
+            for actor in ("Guest", "Administrator", " quality@example.invalid "):
+                with self.subTest(actor=actor), self.assertRaises(
+                    frappe.PermissionError
+                ):
+                    frappe.session.user = actor
+                    module.quality_link_command_write(
+                        service_actor_user_id=actor,
+                        scope="test",
+                    ).__enter__()
+            frappe.session.user = "quality@example.invalid"
+            frappe.get_roles = lambda _actor: ["System Manager"]
+            with self.assertRaises(frappe.PermissionError):
+                module.quality_link_command_write(
+                    service_actor_user_id="quality@example.invalid",
+                    scope="test",
+                ).__enter__()
+            frappe.get_roles = lambda _actor: ["NPI API User"]
+            with self.assertRaises(frappe.PermissionError):
+                with module.quality_link_write_capability(
+                    service_actor_user_id="quality@example.invalid",
+                    scope="test",
+                    allowed=frozenset(
+                        {("NPI Formal Quality Link Revision", "insert")}
+                    ),
+                ) as narrow_capability:
+                    module.insert_quality_link_support_document(
+                        head,
+                        capability=narrow_capability,
+                    )
+            self.assertEqual(len(calls), 5)
 
     def test_checkpoint_two_is_target_worker_adapter_network_and_direct_sql_free(self) -> None:
         paths = list(MODULE.glob("*.py"))
         combined = "\n".join(path.read_text(encoding="utf-8") for path in paths)
+        non_validation = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in paths
+            if path.name != "frappe_validation.py"
+        )
         for path in paths:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             imports = {alias.name for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
             self.assertFalse({"requests", "httpx", "socket", "urllib.request"} & imports)
             self.assertFalse(any(is_direct_sql(node) for node in ast.walk(tree)))
-        for forbidden in ("enqueue(", "scheduler_events", "ignore_permissions", "adapter_registry", "outbox"):
+        for forbidden in ("enqueue(", "scheduler_events", "adapter_registry", "outbox"):
             self.assertNotIn(forbidden, combined.casefold())
+        self.assertNotIn("ignore_permissions", non_validation)
 
     def test_public_surface_is_exact_internal_project_first_and_no_raw_crud(self) -> None:
         api = (ROOT / "apps/npi_integration/npi_integration/quality_link_api.py").read_text(encoding="utf-8")
@@ -77,9 +212,43 @@ class Phase8QualityLinkSecurityTest(unittest.TestCase):
 
     def test_capability_is_request_local_exact_and_finally_restored(self) -> None:
         source = (MODULE / "frappe_validation.py").read_text(encoding="utf-8")
-        for marker in ("ContextVar", "allowed: frozenset[tuple[str, str]]", "try:", "finally:", "_CURRENT.reset(token)"):
+        for marker in (
+            "ContextVar",
+            "actor: str",
+            "allowed: frozenset[tuple[str, str]]",
+            "service_actor_user_id.casefold()",
+            '"NPI API User" not in set(get_roles(service_actor_user_id) or ())',
+            "try:",
+            "finally:",
+            "_CURRENT.reset(token)",
+            "AUDIT_APPEND_FLAG",
+        ):
             self.assertIn(marker, source)
-        self.assertNotIn("ignore_permissions", source)
+        tree = ast.parse(source)
+        permission_bypasses = []
+        for node in tree.body:
+            if not isinstance(node, ast.FunctionDef):
+                continue
+            for call in ast.walk(node):
+                if (
+                    isinstance(call, ast.Call)
+                    and isinstance(call.func, ast.Attribute)
+                    and call.func.attr in {"insert", "save"}
+                    and any(
+                        keyword.arg == "ignore_permissions"
+                        and isinstance(keyword.value, ast.Constant)
+                        and keyword.value.value is True
+                        for keyword in call.keywords
+                    )
+                ):
+                    permission_bypasses.append((node.name, call.func.attr))
+        self.assertEqual(
+            permission_bypasses,
+            [
+                ("insert_quality_link_support_document", "insert"),
+                ("save_quality_link_support_document", "save"),
+            ],
+        )
         self.assertIn("QUALITY_LINK_COMMAND_WRITES", source)
         self.assertIn("quality_link_command_write", source)
 

@@ -65,6 +65,7 @@
     "apps/npi_integration/npi_integration/projections/frappe_repository.py",
     "apps/npi_integration/npi_integration/projections/response.py",
     "apps/npi_integration/npi_integration/quality_link/frappe_repository.py",
+    "apps/npi_integration/npi_integration/quality_link/frappe_validation.py",
     "apps/npi_integration/npi_integration/quality_link_api.py",
     "contracts/npi-api.openapi.yaml",
     "frontend/src/api/erp-projections-data-source.ts",

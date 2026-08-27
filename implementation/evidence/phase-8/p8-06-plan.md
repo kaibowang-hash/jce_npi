@@ -1106,3 +1106,41 @@ check, compilation, shell syntax, activation AST/no-leak scans and diff
 hygiene pass. Exact-five and 67-path post-commit union manifests are accepted;
 an unauthorized sixth path is rejected. Index remains clean and unrelated
 worktree state is preserved.
+
+## 32. Quality-link support-write permission repair
+
+Exact harness SHA `004b84a58c82a8e7366a3ba1471bf2970bd6fa15`
+passes ordinary `33026408036`. Controlled run `33027174827` returns the sole
+safe tuple `P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT / PermissionError /
+trace-5d6e6801a9e850e6bf9e2b25a4e8b0bd`. The stage is the first transaction
+write. Frappe checks create permission before controller insertion hooks, and
+the retained non-Administrator `NPI API User` intentionally has no direct
+create/write role grant on the zero-row support DocTypes. The controller flag
+alone therefore cannot make the insert reachable.
+
+The closed repair introduces one actor-bound request-local capability. It
+requires exact actor/session equality, a non-Guest/non-Administrator actor and
+`NPI API User`; its closed set is Revision insert, Head insert/save and
+Receipt insert/save. Only exact validation helpers may perform the two literal
+permission-bypass calls, after identity, token, DocType, action, flag and
+session checks. The repository passes that same capability to all five
+support writes. Audit stays an ordinary insert under a finally-restored
+`npi_audit_append` command flag. Wrong or expired capability, actor, role,
+doctype, action, subset scope and exception cases fail before a write.
+
+The exact-twelve paths are quality-link validation/repository, security and
+repository tests, quality runtime verifier/test, CURRENT_TASK/current test,
+the shared Item permission AST scanner, this plan, controller and checkpoint
+evidence. CURRENT_TASK adds only the exact validation path (67 to 68). All
+quality diagnostics are false. No permission metadata, API, schema, route,
+migration, transaction/order, ownership, UI, network or ERP target contract
+changes. Create-response is diagnostic `1/1`, repair `1/1`, final `0/1`.
+
+Level 1 passes quality-link `75/75`, affected projection/P7 `110/110`, peer
+security/runtime `145/145`, full Python `2550/2550`, current/reconciliation
+`36/36`, affected frontend units `68/68` and nonvisual E2E `33/33`.
+Generated-source, compile, bash syntax, diagnostics-off, exact-eleven-call AST
+permission scanner with all unsafe negatives, direct-SQL/network/no-leak scans
+and diff hygiene pass. Exact-twelve manifest simulation passes and an
+unauthorized thirteenth is rejected. Production fact/DoD governance remains
+queued and all existing holds remain active.

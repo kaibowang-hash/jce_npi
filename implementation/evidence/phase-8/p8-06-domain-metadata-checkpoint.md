@@ -523,3 +523,42 @@ scripts, generated-source check, compilation, shell syntax, activation AST and
 no-leak checks, plus diff hygiene pass. Exact-five and 67-path post-commit
 union manifests are accepted and an unauthorized sixth path is rejected;
 index remains clean and unrelated dirty/untracked files remain preserved.
+
+## Quality-link support-write permission repair checkpoint
+
+Harness SHA `004b84a58c82a8e7366a3ba1471bf2970bd6fa15` passes ordinary
+`33026408036`; controlled `33027174827` passes preflight `98371163087` and
+runtime `98371215941` records only
+`P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT / PermissionError /
+trace-5d6e6801a9e850e6bf9e2b25a4e8b0bd`. Withheld response/child content and
+all business values remain unread.
+
+The first receipt insert is the first transaction write. Frappe permission is
+checked before DocType hooks, while Revision, Head and Receipt intentionally
+have no role create/write grant. The exact runtime actor is a retained
+non-Administrator `NPI API User`; the unique root is therefore the missing
+bounded support-write permission capability, not request shape, fixture,
+source/head identity, transaction entry or diagnostics.
+
+The repair binds one frozen capability to the active actor/session and five
+exact support actions. Two validation helpers alone use literal
+`ignore_permissions=True` after checking the live token, actor, session,
+DocType, action and controller flag. Repository receipt/revision/head writes
+share the same token. Audit retains ordinary insertion and gains only the
+finally-scoped controller flag required by its existing lifecycle. All state
+restores on exception. Permission metadata, schema, API, transaction order,
+hashes, replay, sealing and rollback are unchanged.
+
+Exact-twelve governance includes the shared strict permission AST scanner;
+its allowlist adds only the two exact path/function/receiver/method tuples and
+keeps all unsafe variants. CURRENT_TASK adds one exact validation path and is
+68 paths. All quality-link diagnostics are false. The cycle is diagnostic
+`1/1`, repair `1/1`, final `0/1` pending the sole Level 3.
+
+Level 1 evidence is quality-link `75/75`, projection/P7 `110/110`, peer
+security/runtime `145/145`, repository Python `2550/2550`, current and
+reconciliation `36/36`, affected frontend unit `68/68` and nonvisual E2E
+`33/33`. Generated-source, compile, shell, diagnostic-off, AST security,
+direct-SQL/network/no-leak and diff checks pass. Exact-twelve manifest passes;
+an unauthorized thirteenth fails closed. Production fact/DoD governance stays
+queued, and FR-CO-003/004 plus all B/C holds remain unchanged.

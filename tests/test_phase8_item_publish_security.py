@@ -13,6 +13,7 @@ ITEM_ROOT = APP_ROOT / "npi_integration/npi_integration/item_publish"
 MBOM_ROOT = APP_ROOT / "npi_integration/npi_integration/mbom_publish"
 TOOL_ASSET_ROOT = APP_ROOT / "npi_integration/npi_integration/tool_asset_request"
 PROJECTION_ROOT = APP_ROOT / "npi_integration/npi_integration/projections"
+QUALITY_LINK_ROOT = APP_ROOT / "npi_integration/npi_integration/quality_link"
 EXPECTED_PERMISSION_CALLS = Counter(
     {
         (
@@ -66,6 +67,18 @@ EXPECTED_PERMISSION_CALLS = Counter(
         (
             str(PROJECTION_ROOT / "frappe_validation.py"),
             "save_projection_support_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(QUALITY_LINK_ROOT / "frappe_validation.py"),
+            "insert_quality_link_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(QUALITY_LINK_ROOT / "frappe_validation.py"),
+            "save_quality_link_support_document",
             "document",
             "save",
         ): 1,
@@ -141,7 +154,7 @@ def _scan_permission_paths(paths: list[Path] | tuple[Path, ...]):
 
 
 class Phase8ItemPublishSecurityTest(unittest.TestCase):
-    def test_ignore_permissions_is_exactly_nine_controlled_calls(self) -> None:
+    def test_ignore_permissions_is_exactly_eleven_controlled_calls(self) -> None:
         calls, violations = _scan_permission_paths(tuple(APP_ROOT.rglob("*.py")))
         self.assertEqual(violations, [])
         self.assertEqual(Counter(calls), EXPECTED_PERMISSION_CALLS)

@@ -37,7 +37,10 @@ from npi_integration.quality_link.domain import (
     quality_link_reconciliation,
 )
 from npi_integration.quality_link.frappe_validation import (
+    QualityLinkWriteCapability,
+    insert_quality_link_support_document,
     quality_link_command_write,
+    save_quality_link_support_document,
 )
 from npi_integration.quality_link.problems import (
     FormalQualityLinkAuthorityUnavailable,
@@ -455,26 +458,36 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
             "P806_QUALITY_CREATE_REPOSITORY_TRANSACTION"
         ):
             with quality_link_command_write(
+                service_actor_user_id=self.actor,
                 scope=f"{QUALITY_LINK_OPERATION}:{project.global_id}",
-            ):
+            ) as capability:
                 with quality_link_create_response_step(
                     "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT"
                 ):
-                    receipt = self._insert_receipt(project, identity, now)
+                    receipt = self._insert_receipt(
+                        project,
+                        identity,
+                        now,
+                        capability=capability,
+                    )
                 with quality_link_create_response_step(
                     "P806_QUALITY_CREATE_REPOSITORY_REVISION_INSERT"
                 ):
-                    self._insert_revision(revision)
+                    self._insert_revision(revision, capability=capability)
                 if head is None:
                     with quality_link_create_response_step(
                         "P806_QUALITY_CREATE_REPOSITORY_HEAD_INSERT"
                     ):
-                        self._insert_head(head_response)
+                        self._insert_head(head_response, capability=capability)
                 else:
                     with quality_link_create_response_step(
                         "P806_QUALITY_CREATE_REPOSITORY_HEAD_SAVE"
                     ):
-                        self._advance_head(head, head_response)
+                        self._advance_head(
+                            head,
+                            head_response,
+                            capability=capability,
+                        )
                 with quality_link_create_response_step(
                     "P806_QUALITY_CREATE_REPOSITORY_AUDIT"
                 ):
@@ -486,7 +499,13 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
                 with quality_link_create_response_step(
                     "P806_QUALITY_CREATE_REPOSITORY_RECEIPT_SEAL"
                 ):
-                    self._seal_receipt(receipt, revision, response, now)
+                    self._seal_receipt(
+                        receipt,
+                        revision,
+                        response,
+                        now,
+                        capability=capability,
+                    )
         with quality_link_create_response_step(
             "P806_QUALITY_CREATE_REPOSITORY_OUTCOME"
         ):
@@ -1071,8 +1090,10 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
         project: object,
         identity: QualityLinkCommandIdentity,
         now: datetime,
+        *,
+        capability: QualityLinkWriteCapability,
     ) -> object:
-        return frappe.get_doc(
+        document = frappe.get_doc(
             {
                 "doctype": "NPI Formal Quality Link Command Idempotency",
                 "global_id": str(uuid4()),
@@ -1093,14 +1114,19 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
                 "created_at": _database_datetime(now),
                 "updated_at": _database_datetime(now),
             }
-        ).insert()
+        )
+        return insert_quality_link_support_document(document, capability=capability)
 
     @staticmethod
-    def _insert_revision(revision: QualityLinkRevision) -> object:
+    def _insert_revision(
+        revision: QualityLinkRevision,
+        *,
+        capability: QualityLinkWriteCapability,
+    ) -> object:
         payload = revision.payload()
         source = payload["source"]
         observation = payload["formalObservation"]
-        return frappe.get_doc(
+        document = frappe.get_doc(
             {
                 "doctype": "NPI Formal Quality Link Revision",
                 "global_id": str(revision.global_id),
@@ -1139,11 +1165,16 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
                 "trace_id": revision.trace_id,
                 "created_at": _database_datetime(revision.created_at),
             }
-        ).insert()
+        )
+        return insert_quality_link_support_document(document, capability=capability)
 
     @staticmethod
-    def _insert_head(payload: Mapping[str, Any]) -> object:
-        return frappe.get_doc(
+    def _insert_head(
+        payload: Mapping[str, Any],
+        *,
+        capability: QualityLinkWriteCapability,
+    ) -> object:
+        document = frappe.get_doc(
             {
                 "doctype": "NPI Formal Quality Link Head",
                 "global_id": payload["globalId"],
@@ -1162,10 +1193,16 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
                 "head_hash": payload["headHash"],
                 "updated_at": payload["updatedAt"],
             }
-        ).insert()
+        )
+        return insert_quality_link_support_document(document, capability=capability)
 
     @staticmethod
-    def _advance_head(head: object, payload: Mapping[str, Any]) -> None:
+    def _advance_head(
+        head: object,
+        payload: Mapping[str, Any],
+        *,
+        capability: QualityLinkWriteCapability,
+    ) -> None:
         head.current_revision = payload["currentRevisionGlobalId"]
         head.revision_number = payload["revisionNumber"]
         head.current_observation_global_id = payload["currentObservationGlobalId"]
@@ -1175,7 +1212,7 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
         head.head_snapshot = {key: value for key, value in payload.items() if key != "headHash"}
         head.head_hash = payload["headHash"]
         head.updated_at = payload["updatedAt"]
-        head.save()
+        save_quality_link_support_document(head, capability=capability)
 
     def _append_audit(
         self,
@@ -1217,13 +1254,15 @@ class FrappeFormalQualityLinkRepository(FrappeDocumentRepository):
         revision: QualityLinkRevision,
         response: Mapping[str, Any],
         now: datetime,
+        *,
+        capability: QualityLinkWriteCapability,
     ) -> None:
         receipt.link_revision_global_id = str(revision.global_id)
         receipt.response_payload = dict(response)
         receipt.response_hash = canonical_payload_hash(response)
         receipt.sealed = 1
         receipt.updated_at = _database_datetime(now)
-        receipt.save()
+        save_quality_link_support_document(receipt, capability=capability)
 
 
 def _linked_references(

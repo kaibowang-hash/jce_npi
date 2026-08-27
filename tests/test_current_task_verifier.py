@@ -63,7 +63,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_06_CHECKPOINT_4_ONE_LINK_ACTION_REQUIRES_SERVER_QUERY_PERMISSION_AND_EXACT_SOURCE_CAPABILITY",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 67)
+        self.assertEqual(len(value["allowed_paths"]), 68)
         self.assertIn(
             "frontend/src/pages/formal-quality-link-inspector.tsx",
             value["allowed_paths"],
@@ -78,6 +78,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertIn(
             "scripts/verify_projection_runtime.py",
+            value["allowed_paths"],
+        )
+        self.assertIn(
+            "apps/npi_integration/npi_integration/quality_link/frappe_validation.py",
             value["allowed_paths"],
         )
         self.assertIn(

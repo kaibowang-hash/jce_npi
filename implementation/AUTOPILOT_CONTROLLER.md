@@ -6611,3 +6611,49 @@ repeat or rewrite it merely to restore context. See
   rejected. Index remains clean and unrelated worktree state is preserved.
 - Controller marker:
   `P8-06 create-response harness remediation; product diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 quality-link support-write permission repair
+
+- Harness-remediation SHA `004b84a58c82a8e7366a3ba1471bf2970bd6fa15`
+  passes ordinary CI `33026408036`. Its sole controlled run `33027174827`
+  passes preflight `98371163087`; runtime `98371215941` returns only
+  `P806_QUALITY_CREATE_REPOSITORY_RECEIPT_INSERT / PermissionError /
+  trace-5d6e6801a9e850e6bf9e2b25a4e8b0bd`. No actual status, body, business
+  value, identifier, message, stack or failed-child output was read.
+- Static cross-proof is unique. The repository reaches its first transaction
+  write, but the three quality-link support DocTypes deliberately grant no
+  direct create/write role permission. Their controller flag can authorize
+  the lifecycle but cannot satisfy Frappe's earlier create-permission check.
+  The retained runtime actor is a non-Administrator `NPI API User`; fixture,
+  source/head locks, request shape, transaction entry and diagnostic scope
+  have already passed.
+- The exact actor-bound `QualityLinkWriteCapability` requires the active
+  session to equal its non-Guest/non-Administrator actor and requires
+  `NPI API User`. Only Revision insert, Head insert/save and Receipt
+  insert/save are admitted. Exactly two validation helpers contain literal
+  `ignore_permissions=True`; they additionally require the identical live
+  token, DocType/action, flag and session. Wrong actor, role, token, DocType,
+  action, subset scope, session drift and exception paths fail closed and
+  restore all request-local state.
+- The repository passes one capability through receipt, revision and head
+  persistence without changing transaction or write order. Audit remains a
+  normal insert; `npi_audit_append` exists only during the command context and
+  restores in `finally`. Metadata permissions, API, schema, migration,
+  ownership, hashes and replay/seal semantics do not change.
+- Create-response freezes at diagnostic `1/1`, repair `1/1`, final `0/1`.
+  All quality-link diagnostic activations are false. The exact-twelve paths
+  are validation/repository, their security/repository tests, runtime
+  verifier/test, CURRENT_TASK/current verifier, the shared exact permission
+  AST scanner, this controller, plan and checkpoint evidence. CURRENT_TASK
+  grows from 67 to 68 paths only for the validation module; scanner logic and
+  every unsafe negative remain unchanged.
+- Level 1 passes quality-link `75/75`, affected projection/P7 `110/110`,
+  Item/MBOM/Tool Asset peers `145/145`, full repository Python `2550/2550`,
+  current/reconciliation `36/36`, affected frontend units `68/68` and
+  nonvisual E2E `33/33`. Generated-source, compile, shell syntax, diagnostics-
+  off, AST permission/direct-SQL/network/no-leak checks and diff hygiene pass.
+  The exact-twelve manifest is accepted and an unauthorized thirteenth is
+  rejected. Production fact/DoD governance remains queued; FR-CO-003/004 and
+  every B/C hold remain unchanged.
+- Controller marker:
+  `P8-06 create-response diagnostic 1/1 repair 1/1 final 0/1; sole Level 3 pending exact-SHA ordinary PASS`.
