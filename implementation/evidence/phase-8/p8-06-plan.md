@@ -1446,3 +1446,49 @@ AST/lexical equality, inner precedence, failed-child-unread,
 strict-reader/no-leak and diff checks pass. Exact-five and post-commit 68-path
 manifests pass; an unauthorized sixth is rejected. Product diff is zero and
 unrelated state remains untouched.
+
+## 40. Independent combined-boundary diagnostic
+
+Post-write prepare-full SHA
+`d6d2cb777787a6c944febe4e0d43de850fc32f4f` passes ordinary
+`33098011713`. Controlled `33099230438` passes preflight `98612177530`;
+runtime `98612246261` has the fixed formal-quality-link outer failure and zero
+valid exact-48 tuple. Failed-child stdout/stderr and every actual HTTP or
+business field remain unread.
+
+The same product epoch moved from exact-34 zero in `33091974970`, to outer
+`PREPARE_PROJECTION` in `33095457893`, to exact-48 zero in `33099230438`,
+while every run kept the same formal-quality-link fixed outer label. Cross-run
+fixture/timing movement cannot select a product repair. A single run must cover
+the full outer path plus both inner server families.
+
+Freeze post-write prepare-full at `1/1`, `0/1`, `0/1`. Independent
+`p8-06-quality-link-combined-boundary` begins `0/1`, `0/1`, `0/1`. Its
+new-only activation selects exact 92: 17 outer, four prepare parent, five
+bootstrap, 39 projection server and 27 create server codes. The seven create
+status/body parent codes stay dormant; their no-server failure is safely
+classified by the enclosing `CREATE_HTTP` or `CREATE_SHAPE` outer stage.
+Bootstrap/server O_EXCL evidence wins, otherwise prepare parent and then outer
+fallback records the same exception. Exact trace, prepare environment, POST
+scope/header, cursors, exact-three-key strict reader, failed-child-unread,
+no-leak and zero-success-record rules remain fixed.
+
+The exact-five verifier/test/controller/plan/checkpoint paths have zero
+product, CURRENT_TASK, workflow, API, repository, permission, schema,
+transaction, migration, UI, network or ERP diff. Tests pin new-only activation,
+exact-92 AST/lexical/disjoint equality, all inner/parent/outer precedence,
+create server-to-outer fallback, seven-parent dormancy, exact scope/trace and
+cursors, O_EXCL exact shape, malformed/no-leak handling, failed-child unread
+and success-zero behavior. Production fact/DoD governance remains queued;
+FR-CO-003/004 deferral and all B/C holds remain unchanged.
+
+Level 1 passes focused verifier `36/36`, quality-link `89/89`, projection/P7
+`110/110`, peer runtime/security `145/145`, repository Python `2564/2564`,
+current/reconciliation `36/36`, full frontend unit/coverage twice at
+`1073/1073` and affected nonvisual E2E `33/33`. Generated-source, typecheck,
+lint, formatting, styles, boundaries, industrial UI, i18n `8436` at 100%
+zh/zh-TW, compilation, shell syntax, exact-one-of-thirteen activation,
+exact-92 AST/lexical equality, precedence, failed-child-unread,
+strict-reader/no-leak and diff checks pass. Exact-five manifest simulation
+passes and an unauthorized sixth is rejected; product diff is zero and
+unrelated state remains untouched.

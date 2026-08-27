@@ -808,3 +808,40 @@ AST/lexical equality, inner precedence, failed-child-unread,
 strict-reader/no-leak and diff checks pass. Exact-five and post-commit union
 manifests pass; an unauthorized sixth is rejected. Product diff is zero and
 unrelated paths remain untouched.
+
+## Combined-boundary quality-link diagnostic checkpoint
+
+Post-write prepare-full SHA
+`d6d2cb777787a6c944febe4e0d43de850fc32f4f` passes ordinary
+`33098011713`; controlled `33099230438` passes preflight `98612177530` and
+runtime `98612246261` yields zero valid exact-48 tuple under the fixed formal
+quality-link outer failure. Failed-child output and all actual HTTP/business
+content remain unread.
+
+The last three controlled runs share that fixed outer label but move between
+exact-34 zero, outer prepare failure and exact-48 zero. This is not unique
+product evidence; it requires one exact-run combined boundary. Freeze
+post-write prepare-full `1/1`, `0/1`, `0/1`; combined-boundary begins `0/1`,
+`0/1`, `0/1` with no repair claim.
+
+The product-zero exact-five checkpoint activates exact 92 disjoint safe codes:
+17 ordered outer, four prepare parent, five bootstrap, 39 projection server and
+27 create server stages. Seven create status/body parents remain dormant;
+`CREATE_HTTP`/`CREATE_SHAPE` supply the no-server fallback. Exact trace,
+prepare environment, POST scope/header, cursors, O_EXCL exact-three-key record,
+strict reader, bootstrap/server inner precedence, parent then outer fallback,
+same exception, `finally`, failed-child-unread, no-leak, all-off and
+success-zero contracts remain fixed. No product, CURRENT_TASK, workflow, API,
+repository, permission, schema, migration, UI, network or ERP path changes.
+Production governance remains queued and every hold remains active.
+
+Level 1 evidence is focused verifier `36/36`, quality-link `89/89`,
+projection/P7 `110/110`, peer runtime/security `145/145`, repository Python
+`2564/2564`, current/reconciliation `36/36`, full frontend unit/coverage twice
+at `1073/1073` and affected nonvisual E2E `33/33`. Generated-source,
+typecheck, lint, format, styles, boundaries, industrial UI, i18n `8436` with
+100% zh/zh-TW, compile, shell, exact-one-of-thirteen activation, exact-92
+AST/lexical equality, O_EXCL precedence, failed-child-unread,
+strict-reader/no-leak and diff checks pass. Exact-five manifest simulation
+passes; an unauthorized sixth is rejected. Product diff is zero and unrelated
+paths remain untouched.
