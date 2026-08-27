@@ -357,7 +357,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             source,
         )
         self.assertIn(
-            "QUALITY_LINK_POST_REPLAY_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True",
+            "QUALITY_LINK_POST_REPLAY_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = False",
             source,
         )
         tree = ast.parse(source)
@@ -1078,6 +1078,57 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 payload={"opaque": True},
             )
         default_request.assert_called_once()
+        cursors.assert_not_called()
+        reader.assert_not_called()
+
+    def test_all_diagnostics_off_keeps_trace_cursor_and_reader_dormant(self) -> None:
+        verifier = importlib.reload(self.verifier)
+        activations = (
+            verifier.QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_FULL_BOUNDARY_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_WRITE_CREATE_RESPONSE_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_WRITE_FULL_BOUNDARY_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_WRITE_PREPARE_FULL_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_TIMESTAMP_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_REPLAY_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
+        )
+        result = types.SimpleNamespace(status=201, headers={}, body={"ok": True})
+        self.assertEqual(sum(activations), 0)
+        self.assertFalse(verifier._prepare_projection_diagnostics_enabled())
+        with (
+            patch.object(
+                verifier.document_runtime,
+                "npi_request",
+                return_value=result,
+            ) as request,
+            patch.object(verifier, "quality_link_runtime_diagnostic_trace") as trace,
+            patch.object(
+                verifier.item_runtime,
+                "_replay_diagnostic_log_cursors",
+            ) as cursors,
+            patch.object(
+                verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+            ) as reader,
+        ):
+            returned = verifier._create_response_request(
+                object(),
+                "http://npi.localhost",
+                "/path",
+                actor_csrf="csrf",
+                payload={"opaque": True},
+            )
+        self.assertIs(returned, result)
+        request.assert_called_once()
+        trace.assert_not_called()
         cursors.assert_not_called()
         reader.assert_not_called()
 

@@ -1652,3 +1652,32 @@ coverage, compile, shell syntax, JSON/YAML/CSV, exact-one-of-fifteen activation,
 exact-92 allowlist/precedence, strict-reader/no-leak, direct-SQL and diff checks
 pass. Exact-five and union-71 manifests pass; an unauthorized sixth path is
 rejected. Product diff is zero and unrelated state is preserved.
+
+## 46. Post-replay diagnostics-off final checkpoint
+
+Post-replay diagnostic `548451234000f91a51cca1ddb39171797d9c65f0`
+passes ordinary `33116265023`. Controlled `33117453931` passes preflight job
+`98675655101` and cumulative runtime `98675729883`; exact-92 success writes no
+safe tuple. No failed-child output or business content was inspected.
+
+Freeze post-replay combined-boundary at diagnostic `1/1`, repair `0/1`, final
+`0/1`. Its activation and every historical diagnostic flag are false. The
+mechanism remains covered through localized explicit activation; default-off
+tests require no diagnostic trace, cursor or reader and preserve response
+behavior.
+
+The exact-five paths remain verifier/test, AUTOPILOT, this plan and the
+domain-metadata checkpoint. Product, CURRENT_TASK, workflow, API, repository,
+permissions, schema, transaction, UI, network and ERP diffs are zero. After an
+exact-SHA ordinary PASS, only one Level 3 reusing that ordinary is allowed.
+Production governance and all deferred portal and B/C holds remain queued.
+
+Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI and i18n `8436` with complete zh/zh-TW
+coverage pass. Compile, shell syntax, JSON/YAML/CSV, all-off activation,
+dormant trace/cursor/reader, exact-92 localized mechanism, direct-SQL and diff
+checks pass. Exact-five and union-71 manifests pass; an unauthorized sixth
+path is rejected. Product diff is zero and unrelated state remains intact.

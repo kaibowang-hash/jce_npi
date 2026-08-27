@@ -992,3 +992,31 @@ coverage, compile, shell syntax, JSON/YAML/CSV, exact-one-of-fifteen activation,
 exact-92 allowlist/precedence, strict-reader/no-leak, direct-SQL and diff checks
 pass. Exact-five and union-71 manifests pass; an unauthorized sixth path is
 rejected. Product diff is zero and unrelated state is intact.
+
+## Post-replay diagnostics-off final checkpoint
+
+Diagnostic SHA `548451234000f91a51cca1ddb39171797d9c65f0` passes ordinary
+`33116265023`. Its sole controlled run `33117453931` passes preflight
+`98675655101` and runtime `98675729883`; success produces no exact-92 tuple and
+no restricted child or business content was read.
+
+Post-replay combined-boundary is frozen at diagnostic `1/1`, repair `0/1`,
+final `0/1`. All diagnostic flags are now false. Localized tests preserve the
+exact-92 mechanism and strict reader while the default path locks no diagnostic
+trace, cursor or reader activity.
+
+The governed exact-five paths remain runtime verifier/test plus AUTOPILOT,
+plan and this checkpoint. Product, API, repository, permission, transaction,
+schema, UI, network and ERP diffs are zero. Exact-SHA ordinary PASS authorizes
+only one diagnostics-off Level 3. Production governance and every existing
+hold remain queued.
+
+Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI and i18n `8436` with complete zh/zh-TW
+coverage pass. Compile, shell syntax, JSON/YAML/CSV, all-off activation,
+dormant trace/cursor/reader, exact-92 localized mechanism, direct-SQL and diff
+checks pass. Exact-five and union-71 manifests pass; an unauthorized sixth
+path is rejected. Product diff is zero and unrelated state remains intact.

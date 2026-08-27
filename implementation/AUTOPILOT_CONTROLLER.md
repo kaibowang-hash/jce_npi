@@ -7111,6 +7111,42 @@ repeat or rewrite it merely to restore context. See
   diff checks pass. Exact-five and union-71 manifests pass; an unauthorized
   sixth path is rejected. Product diff is zero and unrelated state is intact.
 
+## 2026-08-28 P8-06 post-replay diagnostics-off final checkpoint
+
+- Post-replay diagnostic SHA `548451234000f91a51cca1ddb39171797d9c65f0`
+  passes exact ordinary `33116265023`: secret scan `98671579653`, frontend
+  `98671579813`, repository `98671579849` and visual `98671579850` pass. Its
+  sole controlled diagnostic `33117453931` passes preflight `98675655101` and
+  cumulative runtime `98675729883`. The exact-92 success-zero contract produces
+  no tuple, and no child output or business content was read.
+- Freeze `p8-06-quality-link-post-replay-combined-boundary` at diagnostic
+  `1/1`, repair `0/1`, final `0/1`. The successful exact-SHA controlled runtime
+  authorizes only its diagnostics-off final; it does not authorize a product
+  change or imply any ERP pass mapping.
+- `QUALITY_LINK_POST_REPLAY_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED` is false and
+  every historical diagnostic flag remains false. Localized tests retain the
+  exact-92 activation/allowlist, precedence, strict reader and failed-child
+  contracts, while the default path proves zero diagnostic trace, cursor or
+  reader use and unchanged response behavior.
+- Exact paths remain the quality runtime verifier/test, this controller, the
+  P8-06 plan and checkpoint. Product, CURRENT_TASK, workflow, API, OpenAPI,
+  repository, permission, schema, transaction, migration, UI, network and ERP
+  diffs are zero. The only next workflow after exact-SHA ordinary success is
+  one Level 3 reusing that ordinary run. Production governance, portal deferral
+  and every B/C hold remain queued.
+- Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+  current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+  affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint,
+  format, styles, boundaries, industrial UI and i18n `8436` with complete
+  zh/zh-TW coverage pass. Compile, shell syntax, JSON/YAML/CSV, all-off
+  activation, dormant trace/cursor/reader, exact-92 localized mechanism,
+  direct-SQL and diff checks pass. Exact-five and union-71 manifests pass; an
+  unauthorized sixth path is rejected. Product diff is zero and unrelated
+  state remains intact.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-replay diagnostic 1/1 repair 0/1 final 0/1; all diagnostics off`.
+
 ## 2026-08-28 P8-06 post-timestamp replay-status repair checkpoint
 
 - Post-timestamp diagnostic SHA `39cfdc341c9c869e5e090eaa927247aa0445a0fb`
