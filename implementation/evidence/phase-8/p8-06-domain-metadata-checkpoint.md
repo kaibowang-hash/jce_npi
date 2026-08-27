@@ -562,3 +562,37 @@ reconciliation `36/36`, affected frontend unit `68/68` and nonvisual E2E
 direct-SQL/network/no-leak and diff checks pass. Exact-twelve manifest passes;
 an unauthorized thirteenth fails closed. Production fact/DoD governance stays
 queued, and FR-CO-003/004 plus all B/C holds remain unchanged.
+
+## Post-receipt quality-link diagnostic checkpoint
+
+Exact repair SHA `f37a1dffd73f703b72ecb60fa295044e1c9ddbc3`
+passes ordinary `33029200552`. Sole Level 3 `33030043065` passes repository
+`98380217005`, frontend `98380216931`, visual `98380216949`, secret
+`98380217077` and preflight `98382459672`; runtime `98382496922` fails at the
+withheld cumulative boundary. The fixed-label-only allowlist matches one
+formal-quality-link failure and no P8-01 projection, P8-02, Item, MBOM or Tool
+Asset label. No child output or business content was inspected.
+
+The exact receipt-permission and Audit controller-permission roots are closed,
+but their stages are not claimed as passed; later and non-permission quality
+boundaries remain non-unique. Create-response is immutable at diagnostic
+`1/1`, repair `1/1`, final `1/1`. New independent
+`p8-06-quality-link-post-receipt` begins `0/1`, `0/1`, `0/1`; its name denotes
+the post-repair epoch only.
+
+The exact-five product-zero checkpoint changes the quality runtime verifier,
+its focused test and the three governance/evidence files. One new activation
+is true and every historical diagnostic is false. Existing seven parent and
+27 server codes, POST scope, trace, cursors, exclusive exact-three-key record,
+strict mirror, inner-wins/fallback, original exception, `finally`, no-leak and
+failed-child-unread contracts are unchanged. No product/API/repository,
+CURRENT_TASK, permission, schema, migration, UI, network or ERP path changes.
+Production fact/DoD work remains queued and all holds remain active.
+
+Level 1 evidence is quality-link `75/75`, projection/P7 `110/110`, peer
+runtime/security `145/145`, repository Python `2550/2550`, current and
+reconciliation `36/36`, affected frontend units `68/68` and nonvisual E2E
+`33/33`. Generated-source, compile, shell, activation/allowlist AST,
+strict-reader/no-leak and diff checks pass. Exact-five manifest passes and an
+unauthorized sixth is rejected. Product diff is zero and unrelated dirty or
+untracked paths are untouched.

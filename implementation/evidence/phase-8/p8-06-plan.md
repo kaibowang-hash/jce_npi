@@ -1144,3 +1144,45 @@ permission scanner with all unsafe negatives, direct-SQL/network/no-leak scans
 and diff hygiene pass. Exact-twelve manifest simulation passes and an
 unauthorized thirteenth is rejected. Production fact/DoD governance remains
 queued and all existing holds remain active.
+
+## 33. Independent post-receipt quality-link diagnostic
+
+Support-write repair SHA `f37a1dffd73f703b72ecb60fa295044e1c9ddbc3`
+passes ordinary `33029200552`. Sole Level 3 `33030043065` passes repository,
+frontend, visual, secret and controlled preflight jobs, then runtime
+`98382496922` stops at the withheld cumulative boundary. Matching only the
+six fixed shell labels yields one formal-quality-link failure and no
+projection, inbound Project, Item, MBOM or Tool Asset label. This proves the
+P8-01 chain completed and later P8-02 through P8-05 execution was not reached,
+without reading failed-child output or business content.
+
+The repair closes the prior receipt `PermissionError` mechanism and the Audit
+controller-permission mechanism, but source cannot prove those stages passed.
+Non-permission receipt validation, revision/head persistence, non-controller
+Audit failure, receipt seal, repository/API outcome and response, replay,
+stale, collection and cleanup remain non-unique. No repair is authorized.
+
+Freeze create-response at `1/1`, `1/1`, `1/1`. Independent
+`p8-06-quality-link-post-receipt` starts `0/1`, `0/1`, `0/1`; “post-receipt”
+names the post-repair epoch rather than a claimed stage boundary. Only its new
+activation is true. It reuses the closed seven parent plus 27 server codes,
+exact POST/header/trace scope, pre-request cursors, O_EXCL exact-three-key
+record, strict mirror, inner-server precedence, parent fallback, same
+exception, `finally` restoration and failed-child-unread behavior. Default-off
+and success behavior are unchanged.
+
+The exact-five verifier/test/controller/plan/checkpoint paths add zero product,
+CURRENT_TASK, workflow, API, repository, permission, schema, migration, UI,
+network or ERP diff. Tests pin new-only activation, exact 34-code AST/lexical
+equality, all parent classes, server-win/fallback, scope/trace/cursor
+fail-closed behavior, no leak, success-zero-record and all-off dormancy.
+Production fact/DoD governance stays queued; FR-CO-003/004 and all B/C holds
+remain unchanged.
+
+Level 1 passes quality-link `75/75`, projection/P7 `110/110`, peer
+runtime/security `145/145`, full Python `2550/2550`, current/reconciliation
+`36/36`, affected frontend units `68/68` and nonvisual E2E `33/33`.
+Generated-source, compile, shell syntax, exact-one-of-six activation, exact-34
+AST/lexical equality, strict-reader/no-leak and diff hygiene pass. Exact-five
+manifest simulation passes and an unauthorized sixth fails closed; product
+diff remains zero and unrelated state is preserved.

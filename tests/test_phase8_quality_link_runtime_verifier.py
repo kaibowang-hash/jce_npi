@@ -107,10 +107,24 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.verifier.QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
+        )
+        activations = (
+            self.verifier.QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED,
+            self.verifier.QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED,
+            self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED,
+            self.verifier.QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED,
+            self.verifier.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED,
+            self.verifier.QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED,
+        )
+        self.assertEqual(sum(activations), 1)
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
         self.assertEqual(
             self.verifier._active_quality_link_runtime_diagnostic_codes(),
-            frozenset(),
+            frozenset(self.verifier.QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES).union(
+                self.verifier.QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES
+            ),
         )
         self.assertTrue(
             set(self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_CODES).isdisjoint(
@@ -164,13 +178,16 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         )
 
     def test_create_response_server_allowlist_matches_repository_source(self) -> None:
-        source = (
+        repository_source = (
             ROOT
             / "apps/npi_integration/npi_integration/quality_link/frappe_repository.py"
         ).read_text(encoding="utf-8")
+        api_source = (
+            ROOT / "apps/npi_integration/npi_integration/quality_link_api.py"
+        ).read_text(encoding="utf-8")
         assignment = next(
             node
-            for node in ast.parse(source).body
+            for node in ast.parse(repository_source).body
             if isinstance(node, ast.Assign)
             and any(
                 isinstance(target, ast.Name)
@@ -187,6 +204,28 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             repository_codes,
             self.verifier.QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES,
         )
+        self.assertEqual(len(self.verifier.QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES), 7)
+        self.assertEqual(len(repository_codes), 27)
+        stages = [
+            node.args[0].value
+            for node in ast.walk(ast.parse(api_source + "\n" + repository_source))
+            if isinstance(node, ast.Call)
+            and (
+                (
+                    isinstance(node.func, ast.Name)
+                    and node.func.id == "quality_link_create_response_step"
+                )
+                or (
+                    isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "quality_link_create_response_step"
+                )
+            )
+            and len(node.args) == 1
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ]
+        self.assertEqual(set(stages), repository_codes)
+        self.assertTrue(all(stages.count(code) == 1 for code in repository_codes))
 
     def test_create_response_server_tuple_wins_parent_and_failed_body_is_unread(self) -> None:
         trace_id = self.verifier.quality_link_runtime_diagnostic_trace()
@@ -205,7 +244,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             with (
                 patch.object(
                     self.verifier,
-                    "QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+                    "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
                     True,
                 ),
                 patch.dict(
@@ -240,7 +279,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 )
             with patch.object(
                 self.verifier,
-                "QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+                "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -268,7 +307,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         with (
             patch.object(
                 self.verifier,
-                "QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+                "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
                 True,
             ),
             patch.object(
@@ -295,6 +334,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             self.verifier.quality_link_runtime_diagnostic_trace(),
         )
         with (
+            patch.object(
+                self.verifier,
+                "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
+                False,
+            ),
             patch.object(
                 self.verifier.document_runtime,
                 "npi_request",
@@ -696,6 +740,16 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 patch.object(
                     self.verifier,
                     "QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED",
+                    False,
+                ),
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED",
+                    False,
+                ),
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
                     False,
                 ),
                 patch.dict(

@@ -36,6 +36,7 @@ QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED = False
+QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED = True
 QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES = (
     "P806_QUALITY_BOOTSTRAP_SECRET",
     "P806_QUALITY_ADMIN_LOGIN",
@@ -188,6 +189,7 @@ def quality_link_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
             or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
+            or QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
         )
         and _TRACE_PATTERN.fullmatch(trace_id) is not None
     ):
@@ -242,7 +244,10 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
             )
             or (
                 code in QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES
-                and not QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
+                and not (
+                    QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
+                    or QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
+                )
             )
             or _TYPE_PATTERN.fullmatch(exception_type) is None
         ):
@@ -327,7 +332,10 @@ def _active_quality_link_runtime_diagnostic_codes() -> frozenset[str]:
         )
     if QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED:
         return frozenset(QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES)
-    if QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED:
+    if (
+        QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
+        or QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
+    ):
         return frozenset(QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES).union(
             QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES
         )
@@ -391,7 +399,10 @@ def _create_response_request(
     actor_csrf: str,
     payload: dict[str, object],
 ) -> object:
-    if not QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED:
+    if not (
+        QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
+        or QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
+    ):
         return document_runtime.npi_request(
             actor,
             base_url,
@@ -964,6 +975,7 @@ def main() -> int:
                 or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
+                or QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
             ):
                 return 1
             raise

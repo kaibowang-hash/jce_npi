@@ -6657,3 +6657,52 @@ repeat or rewrite it merely to restore context. See
   every B/C hold remain unchanged.
 - Controller marker:
   `P8-06 create-response diagnostic 1/1 repair 1/1 final 0/1; sole Level 3 pending exact-SHA ordinary PASS`.
+
+## 2026-08-27 P8-06 post-receipt quality-link diagnostic checkpoint
+
+- Exact support-write repair SHA `f37a1dffd73f703b72ecb60fa295044e1c9ddbc3`
+  passes ordinary CI `33029200552`. Its sole Level 3 `33030043065` passes
+  repository `98380217005`, frontend `98380216931`, visual `98380216949`,
+  secret scan `98380217077` and controlled preflight `98382459672`; runtime
+  `98382496922` fails at the withheld cumulative verification boundary.
+- A read-only match against only the six repository-owned outer failure
+  labels yields exactly the formal-quality-link label. P8-01 projection has
+  completed; P8-02 inbound Project and the Item, MBOM and Tool Asset workers
+  are not reached. No child output, response body, business value, identifier,
+  message or stack is read.
+- The repaired receipt `PermissionError` root is statically closed by the
+  exact actor/session/role/capability/DocType/action/flag predicate followed by
+  the sole controlled insert helper. The Audit controller-permission root is
+  also closed because the normal Audit insert remains inside the command's
+  finally-scoped `npi_audit_append` context. This does not prove either stage
+  completed: receipt validation/lifecycle, revision/head writes, non-controller
+  Audit failures, receipt sealing, repository/API outcome and response, replay,
+  stale, list and cleanup boundaries remain non-unique.
+- Freeze `p8-06-quality-link-create-response` at diagnostic `1/1`, repair
+  `1/1`, final `1/1`. Open independent
+  `p8-06-quality-link-post-receipt` at diagnostic `0/1`, repair `0/1`, final
+  `0/1`. The cycle name identifies the post-repair epoch; it does not assert
+  that runtime passed the receipt stage.
+- Only the new verifier activation is true; all historical quality-link and
+  P8-01 diagnostic flags are false. The cycle reuses the exact seven parent
+  classes and 27 API/repository lexical codes, exact POST scope and trace,
+  pre-request cursors, exclusive exact-three-key record, strict mirror,
+  server-inner precedence, parent fallback, original exception, `finally`
+  restoration and failed-child-unread contract. Success records nothing.
+- Exact paths are `scripts/verify_quality_link_runtime.py`,
+  `tests/test_phase8_quality_link_runtime_verifier.py`, this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Product, CURRENT_TASK, workflow, API, repository, permissions, transaction,
+  schema, migration, UI, network and ERP behavior remain unchanged.
+  Production fact/DoD governance remains queued; FR-CO-003/004 deferral and
+  every B/C hold remain intact.
+- Level 1 passes quality-link `75/75`, projection/P7 `110/110`, peer
+  runtime/security `145/145`, full Python `2550/2550`, current/reconciliation
+  `36/36`, affected frontend unit `68/68` and nonvisual E2E `33/33`.
+  Generated-source, compile, shell syntax, exact-one-of-six activation,
+  exact-34 AST/lexical equality, strict-reader/no-leak and diff checks pass.
+  Manifest simulation accepts exact five and rejects an unauthorized sixth;
+  product diff is zero and unrelated worktree state is preserved.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-receipt diagnostic 0/1 active`.
