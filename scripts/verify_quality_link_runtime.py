@@ -44,7 +44,7 @@ QUALITY_LINK_POST_WRITE_CREATE_RESPONSE_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_POST_WRITE_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_POST_WRITE_PREPARE_FULL_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = False
-QUALITY_LINK_POST_TIMESTAMP_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True
+QUALITY_LINK_POST_TIMESTAMP_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES = (
     "P806_QUALITY_BOOTSTRAP_SECRET",
     "P806_QUALITY_ADMIN_LOGIN",
@@ -811,7 +811,7 @@ def _exercise_link(
     with quality_link_runtime_diagnostic_step("P806_QUALITY_REPLAY_HTTP"):
         replay = document_runtime.npi_request(actor, base_url, path, method="POST", payload=payload, csrf_token=actor_csrf, idempotency_key=IDEMPOTENCY_KEY, query_key="p806-replay")
     with quality_link_runtime_diagnostic_step("P806_QUALITY_REPLAY_SHAPE"):
-        replay_body = _body(replay, status=201)
+        replay_body = _body(replay, status=200)
         require(first_body == replay_body and replay.headers.get("Idempotency-Replayed") == "true", "P8-06 actor-bound replay drifted")
     with quality_link_runtime_diagnostic_step("P806_QUALITY_STALE_HTTP"):
         stale = document_runtime.npi_request(actor, base_url, path, method="POST", payload={**payload, "expectedSourceVersion": int(current["instanceVersion"]) + 1}, csrf_token=actor_csrf, idempotency_key=f"{IDEMPOTENCY_KEY}-stale", query_key="p806-stale")

@@ -1572,3 +1572,44 @@ shell syntax, JSON/YAML/CSV, exact-one activation, exact-92
 AST/lexical/disjoint and precedence, strict-reader/no-leak, direct-SQL and diff
 checks pass. Exact-five and union-71 manifests pass and an unauthorized sixth
 path is rejected. Product diff is zero and unrelated state remains untouched.
+
+## 43. Post-timestamp replay-status repair and final contract
+
+Post-timestamp SHA `39cfdc341c9c869e5e090eaa927247aa0445a0fb`
+passes ordinary `33109726461`. Controlled `33110656386` passes preflight
+`98652302496`; runtime `98652499572` yields the sole safe tuple
+`P806_QUALITY_REPLAY_SHAPE / RuntimeError /
+trace-4e986a4197835296b679bc8101ab2747`. Restricted child output and response
+or business content remains unread.
+
+The failure is uniquely the verifier's first replay-shape predicate. It
+required HTTP `201`, while the API changes a successful replay to `200` after
+the repository returns `replayed=True`. OpenAPI freezes `200` as exact sealed
+replay and `201` as newly created revision; API tests freeze the same status
+and replay header. The repository validates actor-bound identity, seal,
+revision reference and canonical response hash before returning the stored
+response unchanged, so no product replay behavior is altered.
+
+Freeze post-timestamp combined-boundary diagnostic `1/1`; repair is `1/1` and
+final remains `0/1`. The verifier keeps create `201`, requires replay `200`,
+and still requires the identical sealed body plus
+`Idempotency-Replayed=true`. Tests independently reject wrong replay status,
+body and header. The diagnostic flag is false; all diagnostic readers and
+cursors are dormant.
+
+The exact-five manifest contains the runtime verifier and test, AUTOPILOT,
+this plan and the domain-metadata checkpoint. Product, CURRENT_TASK, API,
+OpenAPI, repository, permission, transaction, schema, UI, network and ERP
+diffs are zero. Exact-SHA ordinary PASS permits only the sole diagnostics-off
+Level 3 final. Production governance, portal deferral and all B/C holds remain
+unchanged.
+
+Level 1 passes focused verifier `38/38`, quality-link `92/92`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2567/2567`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI, i18n `8436` with 100% zh/zh-TW, compile,
+shell syntax, JSON/YAML/CSV, all-off diagnostics, dormant cursor/reader,
+direct-SQL and diff checks pass. Exact-five and union-71 manifests pass; an
+unauthorized sixth is rejected. Product diff is zero and unrelated state is
+preserved.

@@ -7110,3 +7110,41 @@ repeat or rewrite it merely to restore context. See
   AST/lexical/disjoint and precedence, strict-reader/no-leak, direct-SQL and
   diff checks pass. Exact-five and union-71 manifests pass; an unauthorized
   sixth path is rejected. Product diff is zero and unrelated state is intact.
+
+## 2026-08-28 P8-06 post-timestamp replay-status repair checkpoint
+
+- Post-timestamp diagnostic SHA `39cfdc341c9c869e5e090eaa927247aa0445a0fb`
+  passes exact ordinary `33109726461`. Its sole controlled run `33110656386`
+  passes preflight `98652302496`; runtime `98652499572` records exactly
+  `P806_QUALITY_REPLAY_SHAPE / RuntimeError /
+  trace-4e986a4197835296b679bc8101ab2747`. Failed-child output, actual response
+  body, business values, identifiers, message and stack remain unread.
+- Ordered first-source proof is unique. The verifier checked replay HTTP status
+  `201` before its response-object, sealed-body equality and
+  `Idempotency-Replayed=true` predicates. The API deterministically changes an
+  exact replay from its default create status `201` to `200`; OpenAPI and the
+  API test independently freeze `200` for replay and `201` for create. The
+  repository returns the same sealed response only after identity, seal,
+  revision reference and canonical response-hash validation.
+- Freeze post-timestamp combined-boundary diagnostic at `1/1`; its bounded
+  verifier repair is `1/1` and final remains `0/1`. Create still requires
+  `201`; replay now requires `200`, the same sealed body and the exact true
+  replay header. Wrong replay status, body or header fails closed independently.
+  Every diagnostic activation is false and cursor/server readers remain
+  dormant.
+- The exact-five paths are the quality runtime verifier and test plus this
+  controller, the P8-06 plan and checkpoint. Product, CURRENT_TASK, workflow,
+  API, OpenAPI, repository, permission, transaction, schema, migration, UI,
+  network and ERP behavior remain unchanged. The only next runtime action
+  after exact-SHA ordinary PASS is the sole diagnostics-off Level 3 final.
+  Production fact/DoD governance remains queued; FR-CO-003/004 deferral and
+  all B/C holds stay active.
+- Level 1 passes focused verifier `38/38`, quality-link `92/92`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2567/2567`,
+  current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+  affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint,
+  format, styles, boundaries, industrial UI, i18n `8436` at 100% zh/zh-TW,
+  compile, shell syntax, JSON/YAML/CSV, all-off diagnostics, dormant
+  cursor/reader, direct-SQL and diff checks pass. Exact-five and union-71
+  manifests pass; an unauthorized sixth path is rejected. Product diff is
+  zero and unrelated state is preserved.

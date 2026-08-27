@@ -100,6 +100,130 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "not an object"):
             self.verifier._body(types.SimpleNamespace(status=200, body=["x"]), status=200)
 
+    def test_link_runtime_create_201_and_replay_200_are_exact(self) -> None:
+        body = {"sealed": True}
+        first = types.SimpleNamespace(
+            status=201,
+            headers={"Idempotency-Replayed": "false"},
+            body=body,
+        )
+        replay = types.SimpleNamespace(
+            status=200,
+            headers={"Idempotency-Replayed": "true"},
+            body=dict(body),
+        )
+        stale = types.SimpleNamespace(status=409, headers={}, body={})
+        listed = types.SimpleNamespace(
+            status=200,
+            headers={},
+            body={"permissions": {"view": True, "link": True}, "items": [{}]},
+        )
+        with (
+            patch.object(
+                self.verifier,
+                "_create_response_request",
+                return_value=first,
+            ),
+            patch.object(
+                self.verifier.document_runtime,
+                "npi_request",
+                side_effect=[replay, stale, listed],
+            ) as request,
+            patch.object(
+                self.verifier.item_runtime,
+                "_replay_diagnostic_log_cursors",
+            ) as cursors,
+            patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+            ) as reader,
+        ):
+            result = self.verifier._exercise_link(
+                actor=object(),
+                actor_csrf="csrf",
+                base_url="http://npi.localhost",
+                current={"instanceVersion": 1, "snapshotHash": "a" * 64},
+                item={
+                    "currentTruth": {
+                        "observationGlobalId": "observation",
+                        "headGlobalId": "head",
+                        "headOptimisticVersion": 1,
+                        "headHash": "b" * 64,
+                    }
+                },
+                project_id="project",
+                readiness_id="readiness",
+            )
+        self.assertEqual(
+            result,
+            {
+                "linked": True,
+                "replayed": True,
+                "staleRejected": True,
+                "targetTraffic": 0,
+                "cleaned": True,
+            },
+        )
+        self.assertEqual(request.call_count, 3)
+        cursors.assert_not_called()
+        reader.assert_not_called()
+
+    def test_link_runtime_replay_status_body_and_header_fail_closed(self) -> None:
+        body = {"sealed": True}
+        first = types.SimpleNamespace(
+            status=201,
+            headers={"Idempotency-Replayed": "false"},
+            body=body,
+        )
+        cases = (
+            types.SimpleNamespace(
+                status=201,
+                headers={"Idempotency-Replayed": "true"},
+                body=dict(body),
+            ),
+            types.SimpleNamespace(
+                status=200,
+                headers={"Idempotency-Replayed": "true"},
+                body={"sealed": False},
+            ),
+            types.SimpleNamespace(
+                status=200,
+                headers={"Idempotency-Replayed": "false"},
+                body=dict(body),
+            ),
+        )
+        for replay in cases:
+            with (
+                self.subTest(replay=replay),
+                patch.object(
+                    self.verifier,
+                    "_create_response_request",
+                    return_value=first,
+                ),
+                patch.object(
+                    self.verifier.document_runtime,
+                    "npi_request",
+                    return_value=replay,
+                ),
+                self.assertRaises(RuntimeError),
+            ):
+                self.verifier._exercise_link(
+                    actor=object(),
+                    actor_csrf="csrf",
+                    base_url="http://npi.localhost",
+                    current={"instanceVersion": 1, "snapshotHash": "a" * 64},
+                    item={
+                        "currentTruth": {
+                            "observationGlobalId": "observation",
+                            "headGlobalId": "head",
+                            "headOptimisticVersion": 1,
+                            "headHash": "b" * 64,
+                        }
+                    },
+                    project_id="project",
+                    readiness_id="readiness",
+                )
+
     def test_cli_help_is_executable_without_frappe_or_secret_environment(self) -> None:
         import subprocess
 
@@ -222,7 +346,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             source,
         )
         self.assertIn(
-            "QUALITY_LINK_POST_TIMESTAMP_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True",
+            "QUALITY_LINK_POST_TIMESTAMP_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = False",
             source,
         )
         tree = ast.parse(source)

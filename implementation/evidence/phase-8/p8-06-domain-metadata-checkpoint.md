@@ -920,3 +920,42 @@ shell syntax, JSON/YAML/CSV, exact-one activation, exact-92
 AST/lexical/disjoint and precedence, strict-reader/no-leak, direct-SQL and diff
 checks pass. Exact-five and union-71 manifests pass; unauthorized path six is
 rejected. Product diff is zero and unrelated state is preserved.
+
+## Post-timestamp replay-status repair checkpoint
+
+Diagnostic SHA `39cfdc341c9c869e5e090eaa927247aa0445a0fb`
+passes ordinary `33109726461`. Controlled `33110656386` passes preflight job
+`98652302496`; runtime job `98652499572` records exactly
+`P806_QUALITY_REPLAY_SHAPE / RuntimeError /
+trace-4e986a4197835296b679bc8101ab2747`. No failed-child output, actual body,
+business value, identifier, message or stack was read.
+
+The replay-shape block checks status before body shape, response equality and
+the replay header. Its stale `201` expectation therefore uniquely failed
+before those later predicates. Product evidence is closed and consistent:
+the API maps `replayed=True` to HTTP `200`, OpenAPI declares exact replay at
+`200` and create at `201`, and the repository returns the same sealed response
+only after actor-bound identity and canonical response-hash checks.
+
+Post-timestamp combined-boundary is frozen at diagnostic `1/1`, repair `1/1`,
+final `0/1`. The verifier requires create `201`, replay `200`, identical sealed
+body and `Idempotency-Replayed=true`; wrong replay status, body and header each
+fail closed. The post-timestamp activation and all historical diagnostics are
+false, leaving cursors and readers dormant.
+
+The governed exact-five paths are the quality runtime verifier/test and the
+three controller/evidence documents. Product, CURRENT_TASK, API, OpenAPI,
+repository, permission, transaction, schema, migration, UI, network and ERP
+diffs are zero. The sole next runtime action after exact-SHA ordinary PASS is
+the diagnostics-off Level 3 final. Production governance and every existing
+hold remain queued.
+
+Level 1 passes focused verifier `38/38`, quality-link `92/92`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2567/2567`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI, i18n `8436` with complete zh/zh-TW
+coverage, compile, shell syntax, JSON/YAML/CSV, all-off diagnostics, dormant
+cursor/reader, direct-SQL and diff checks pass. Exact-five and union-71
+manifests pass; an unauthorized sixth path is rejected. Product diff is zero
+and unrelated state is intact.
