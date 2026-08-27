@@ -6750,3 +6750,45 @@ repeat or rewrite it merely to restore context. See
   sixth; product diff is zero and unrelated worktree state is preserved.
 - Controller marker:
   `P8-06 checkpoint 4 final held; parent/downstream diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 post-projection-permission diagnostic checkpoint
+
+- Parent/downstream SHA `b0f2eed57c52bb81a8b570860b9ce4228d1d2806`
+  passes ordinary CI `33033679266`. Its sole controlled run `33034433880`
+  passes preflight `98393952208`; runtime `98393986055` records exactly
+  `P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+  trace-ad9b8358a1ef55fab2a31669025d6d35`. Failed-child output, response body,
+  business values, identifiers, message and stack remain unread.
+- Static cross-proof cannot select a product repair. Parent/downstream did not
+  enable the prepare-child trace/cursor chain, so its safe tuple identifies the
+  whole Bench preparation call. Prior runs and source close the specific
+  bootstrap-environment, retained-actor/principal and Observation permission
+  mechanisms, but remaining child lifecycle, projection validation and write,
+  collection, commit/response/destroy and parent parse/shape boundaries are
+  still non-unique.
+- Freeze `p8-06-quality-link-parent-downstream` at diagnostic `1/1`, repair
+  `0/1`, final `0/1`. Independent
+  `p8-06-quality-link-post-projection-permission` starts diagnostic `0/1`,
+  repair `0/1`, final `0/1`; the name denotes the post-repair epoch and does
+  not claim that a projection stage passed.
+- Only the new activation is true. It reuses exactly four prepare parents plus
+  39 server stages, exact trace/environment/cursors, exclusive exact-three-key
+  record, strict mirror, server-inner precedence, parent fallback, original
+  exception, `finally`, failed-child-unread and success-zero-record behavior.
+  Bootstrap, outer-runtime and create-response diagnostics stay dormant.
+- Exact paths are the quality runtime verifier/test plus this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Product, CURRENT_TASK, workflow, API, repository, permission, schema,
+  transaction, migration, UI, network and ERP behavior remain unchanged.
+  Production fact/DoD governance remains queued and all existing holds stay
+  active.
+- Level 1 passes quality-link `79/79`, projection/P7 `110/110`, peer
+  runtime/security `145/145`, full Python `2554/2554`, current/reconciliation
+  `36/36`, affected frontend unit `68/68` and nonvisual E2E `33/33`.
+  Generated-source, compile, shell syntax, exact-one-of-eight activation,
+  exact-43 AST/lexical equality, failed-child-unread, strict-reader/no-leak
+  and diff checks pass. Manifest accepts exact five and rejects an unauthorized
+  sixth; product diff is zero and unrelated worktree state is preserved.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-projection-permission diagnostic 0/1 active`.

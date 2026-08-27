@@ -626,3 +626,38 @@ reconciliation `36/36`, affected frontend units `68/68` and nonvisual E2E
 exact-44 AST/lexical equality, failed-child-unread, strict-reader/no-leak and
 diff checks pass. Exact-five manifest passes and an unauthorized sixth is
 rejected. Product diff is zero and unrelated paths remain untouched.
+
+## Post-projection-permission quality-link diagnostic checkpoint
+
+Parent/downstream SHA `b0f2eed57c52bb81a8b570860b9ce4228d1d2806`
+passes ordinary `33033679266`; controlled `33034433880` passes preflight
+`98393952208` and runtime `98393986055` records exactly
+`P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+trace-ad9b8358a1ef55fab2a31669025d6d35`. Failed-child output and all business
+content remain unread.
+
+The prior activation stops at the whole prepare-child boundary because it does
+not activate prepare trace/cursors. Closed bootstrap-environment,
+actor/principal and Observation permission mechanisms do not make the remaining
+child lifecycle unique. Parent/downstream freezes `1/1`, `0/1`, `0/1`; new
+post-projection-permission starts `0/1`, `0/1`, `0/1` without claiming any
+specific server stage passed.
+
+The product-zero exact-five checkpoint changes only the quality runtime
+verifier/test and three governance/evidence files. Its sole activation reuses
+the existing exact four parent plus 39 server codes and exact
+trace/environment/cursors. Strict exact-three-key O_EXCL record, server-inner
+precedence, parent fallback, same exception, `finally`, failed-child unread,
+no-leak, all-off dormancy and success-zero contracts are preserved. Bootstrap,
+outer and create-response diagnostics remain inactive. CURRENT_TASK already
+allows all five paths. Production governance remains queued and every hold
+remains active.
+
+Level 1 evidence is quality-link `79/79`, projection/P7 `110/110`, peer
+runtime/security `145/145`, repository Python `2554/2554`, current and
+reconciliation `36/36`, affected frontend units `68/68` and nonvisual E2E
+`33/33`. Generated-source, compile, shell, exact-one-of-eight activation,
+exact-43 AST/lexical equality, failed-child-unread, strict-reader/no-leak and
+diff checks pass. Exact-five and post-commit union manifests pass; an
+unauthorized sixth is rejected. Product diff is zero and unrelated paths stay
+untouched.

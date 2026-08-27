@@ -1224,3 +1224,44 @@ Generated-source, compile, shell syntax, exact-one-of-seven activation,
 exact-44 AST/lexical equality, failed-child-unread, strict-reader/no-leak and
 diff hygiene pass. Exact-five manifest simulation passes and an unauthorized
 sixth fails closed; product diff remains zero and unrelated state is preserved.
+
+## 35. Independent post-projection-permission diagnostic
+
+Parent/downstream SHA `b0f2eed57c52bb81a8b570860b9ce4228d1d2806`
+passes ordinary `33033679266`. Controlled `33034433880` passes preflight
+`98393952208`; runtime `98393986055` yields the sole safe tuple
+`P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+trace-ad9b8358a1ef55fab2a31669025d6d35`. No failed-child output, business
+content, message or stack was inspected.
+
+The outer code wraps the complete Bench child, while the parent/downstream
+activation intentionally did not pass a prepare diagnostic trace or capture
+server cursors. Specific bootstrap-environment, actor/principal and Observation
+permission mechanisms are already closed, but source cannot distinguish the
+remaining child initialization, projection lifecycle, collection, commit,
+response/destroy or parent result boundaries. No repair is authorized.
+
+Freeze parent/downstream at `1/1`, `0/1`, `0/1`. Independent
+`p8-06-quality-link-post-projection-permission` starts `0/1`, `0/1`, `0/1`.
+Its new-only activation reuses exactly four ordered parent and 39 server codes.
+Exact trace/environment/cursors, O_EXCL exact-three-key record, strict mirror,
+server-inner precedence, parent fallback, unchanged exception, `finally`,
+failed-child-unread and zero-success-record rules remain in force. The five
+bootstrap, 17 outer and 34 create-response codes are not active.
+
+The exact-five verifier/test/controller/plan/checkpoint paths add no product,
+CURRENT_TASK, workflow, API, repository, permission, schema, migration, UI,
+network or ERP change. Tests pin new-only activation, exact-43 AST/lexical
+equality, trace propagation, every parent, server-win/fallback, malformed scope
+and trace dormancy, failed-child unread, strict no-leak reader, all-off and
+success-zero behavior. Production fact/DoD governance remains queued;
+FR-CO-003/004 deferral and all B/C holds remain unchanged.
+
+Level 1 passes quality-link `79/79`, projection/P7 `110/110`, peer
+runtime/security `145/145`, full Python `2554/2554`, current/reconciliation
+`36/36`, affected frontend units `68/68` and nonvisual E2E `33/33`.
+Generated-source, compilation, shell syntax, exact-one-of-eight activation,
+exact-43 AST/lexical equality, trace/cursor, failed-child-unread,
+strict-reader/no-leak and diff checks pass. Exact-five and post-commit union
+manifests are accepted; an unauthorized sixth path is rejected. Product diff
+is zero and unrelated state remains untouched.
