@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import os
 import sys
 import types
 import unittest
@@ -238,15 +237,6 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
         flag = self.module._QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG
         setattr(self.frappe.flags, flag, {"prior": True})
         with (
-            patch.dict(
-                os.environ,
-                {
-                    self.module._QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV: (
-                        self.module._QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV_VALUE
-                    )
-                },
-                clear=False,
-            ),
             self.assertRaisesRegex(ValueError, "opaque"),
             self.module.quality_link_create_response_diagnostics(
                 trace_id,
@@ -272,21 +262,26 @@ class Phase8QualityLinkRepositoryTest(unittest.TestCase):
             ],
         )
         self.assertEqual(getattr(self.frappe.flags, flag), {"prior": True})
+        self.assertNotIn("opaque", repr(self.diagnostics))
 
     def test_create_response_diagnostic_is_dormant_without_exact_scope(self) -> None:
-        with (
-            patch.dict(os.environ, {}, clear=True),
-            self.assertRaisesRegex(RuntimeError, "opaque"),
-            self.module.quality_link_create_response_diagnostics(
-                "trace-0123456789abcdef0123456789abcdef",
-                active=True,
-            ),
-            self.module.quality_link_create_response_step(
-                "P806_QUALITY_CREATE_REPOSITORY_PROJECT"
-            ),
+        for trace_id, active in (
+            ("trace-0123456789abcdef0123456789abcdef", False),
+            ("trace-invalid", True),
         ):
-            raise RuntimeError("opaque")
-        self.assertEqual(self.diagnostics, [])
+            with self.subTest(trace_id=trace_id, active=active):
+                with (
+                    self.assertRaisesRegex(RuntimeError, "opaque"),
+                    self.module.quality_link_create_response_diagnostics(
+                        trace_id,
+                        active=active,
+                    ),
+                    self.module.quality_link_create_response_step(
+                        "P806_QUALITY_CREATE_REPOSITORY_PROJECT"
+                    ),
+                ):
+                    raise RuntimeError("opaque")
+                self.assertEqual(self.diagnostics, [])
 
     def test_query_link_capability_reuses_exact_source_authority_without_client_input(self) -> None:
         source = (ROOT / "apps/npi_integration/npi_integration/quality_link/frappe_repository.py").read_text(

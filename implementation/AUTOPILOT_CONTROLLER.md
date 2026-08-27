@@ -6572,3 +6572,42 @@ repeat or rewrite it merely to restore context. See
   index remains clean and unrelated worktree state is preserved.
 - Controller marker:
   `P8-06 checkpoint 4 final 1/1 frozen; post-permission diagnostic 1/1 repair 0/1 final 0/1; create-response diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 create-response diagnostic activation remediation
+
+- Exact diagnostic SHA `229aeed9a77d60cb0e21fd8d5dfd10239ce4c4dd`
+  passes ordinary CI `33024601498`. Controlled run `33025290767` passes
+  preflight `98365031710`; runtime `98365084376` yields only the fixed parent
+  tuple `P806_QUALITY_CREATE_STATUS_SERVER_ERROR / RuntimeError /
+  trace-1f9c54f8f1aa5e52a3179e0e5c5f8db5`. No actual status, body, business
+  value, identifier, message, stack, failed-child stdout or stderr was read.
+- Static cross-proof identifies a unique harness blind spot. The Bench HTTP
+  server is started by the parent shell before the quality-link verifier
+  subprocess exports its diagnostic environment. That subprocess-only value
+  cannot reach the already-running server, so the repository's second
+  process-environment gate makes every API/repository stage unreachable even
+  after the API has validated the exact header, method, empty query, route,
+  framework command, six fields and trace.
+- The same-cycle exact-five remediation removes only that unreachable
+  repository gate. Repository activation now accepts the API's closed
+  `active=True` handoff plus an exact trace; false or malformed activation is
+  dormant. The API scope, default-off behavior, one-record inner-wins rule,
+  exception identity, `finally` restoration, response, transaction and write
+  ordering are unchanged. Tests lock active-without-process-env, false and
+  invalid dormancy, strict exact-four diagnostic shape and no error-text leak.
+- This controlled run is a harness diagnostic attempt and does not consume
+  the product diagnostic allowance. Keep `p8-06-quality-link-create-response`
+  at diagnostic `0/1`, repair `0/1`, final `0/1`; the next exact-SHA
+  controlled run is its sole product diagnostic. Product semantics, schema,
+  permissions, migration, route, UI and ERP traffic remain unchanged.
+  Production fact/DoD governance remains queued; FR-CO-003/004 deferral and
+  all B/C holds remain intact.
+- Level 1 passes focused repository `16/16`, complete quality-link `74/74`,
+  affected projection/P7/Item/MBOM/Tool Asset `255/255`, full repository
+  Python `2549/2549` and current/reconciliation `36/36`. Current and
+  reconciliation scripts, generated-source check, compilation, shell syntax,
+  activation AST/no-leak scans and diff hygiene pass. Exact-five and 67-path
+  post-commit union manifests are accepted; an unauthorized sixth path is
+  rejected. Index remains clean and unrelated worktree state is preserved.
+- Controller marker:
+  `P8-06 create-response harness remediation; product diagnostic 0/1 active`.

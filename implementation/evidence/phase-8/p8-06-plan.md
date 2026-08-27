@@ -1067,3 +1067,42 @@ reconciliation `36/36`. Compilation, exact activation `1/5`, seven-plus-27
 allowlist equality, lexical uniqueness, strict-reader/no-leak scans and diff
 hygiene pass. Exact-nine manifest simulation passes and an unauthorized tenth
 is rejected. Index stays clean and unrelated worktree state is untouched.
+
+## 31. Same-cycle create-response activation remediation
+
+Diagnostic SHA `229aeed9a77d60cb0e21fd8d5dfd10239ce4c4dd` passes
+ordinary `33024601498`. Its controlled run `33025290767` passes preflight
+`98365031710`; runtime `98365084376` returns only
+`P806_QUALITY_CREATE_STATUS_SERVER_ERROR / RuntimeError /
+trace-1f9c54f8f1aa5e52a3179e0e5c5f8db5`. No actual status, response body,
+business value, identifier, message, stack or failed-child output is read.
+
+The unique static harness root is process scope. The parent shell starts the
+Bench server before the verifier subprocess exports its diagnostic variable;
+a child export cannot alter the existing server environment. The API already
+closes activation over the exact POST method, empty query, route, framework
+command symbol, six business fields, diagnostic header and trace, but the
+repository imposed the unreachable server-environment check a second time.
+Consequently none of its 27 lexical stages could record a tuple.
+
+The exact-five remediation removes only that second repository gate and its
+focused test dependency. The repository accepts the API-provided active bit
+and exact trace; false and malformed activation remain dormant. Default-off
+behavior, API scope, strict record, server-inner precedence, same exception,
+finally restoration, response equivalence, transaction and write order remain
+unchanged. The other three paths are this plan, the controller and checkpoint
+evidence. No CURRENT_TASK, schema, permission, migration, route, UI, network
+or ERP target path changes.
+
+Run `33025290767` is classified as the same-cycle harness diagnostic attempt,
+not the product diagnostic. The create-response cycle therefore remains
+diagnostic `0/1`, repair `0/1`, final `0/1`. Production fact/DoD governance is
+still queued; FR-CO-003/004 deferral and all B/C holds remain unchanged.
+
+Level 1 passes focused repository `16/16`, complete quality-link `74/74`,
+affected peers `255/255`, full repository Python `2549/2549` and current/
+reconciliation `36/36`. Current and reconciliation scripts, generated-source
+check, compilation, shell syntax, activation AST/no-leak scans and diff
+hygiene pass. Exact-five and 67-path post-commit union manifests are accepted;
+an unauthorized sixth path is rejected. Index remains clean and unrelated
+worktree state is preserved.

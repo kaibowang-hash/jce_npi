@@ -487,3 +487,39 @@ current/reconciliation `36/36`. Compile, AST/lexical equality, exact one-of-five
 activation, strict mirror/no-leak scan and diff-check pass. The exact-nine
 manifest is accepted and an unauthorized tenth is rejected; no task path is
 staged and unrelated dirty/untracked files remain preserved.
+
+## Quality-link create-response activation remediation checkpoint
+
+Exact create-response SHA `229aeed9a77d60cb0e21fd8d5dfd10239ce4c4dd`
+passes ordinary `33024601498`. Controlled run `33025290767` passes preflight
+job `98365031710`; runtime job `98365084376` records only the parent-safe tuple
+`P806_QUALITY_CREATE_STATUS_SERVER_ERROR / RuntimeError /
+trace-1f9c54f8f1aa5e52a3179e0e5c5f8db5`. No actual status, body, business
+value, identifier, message, stack, child stdout or child stderr is inspected.
+
+The process topology proves the server tuple blind spot: the parent shell
+starts Bench before the verifier subprocess exports the diagnostic variable,
+and the child environment cannot update the running server. The API's exact
+header/method/empty-query/route/cmd/six-field/trace predicate is authoritative,
+so the repository's second environment predicate is unreachable rather than
+a product boundary.
+
+The exact-five same-cycle remediation is repository, repository test and the
+three governance/evidence paths. It removes only the redundant environment
+predicate. Active plus exact trace reaches the existing diagnostic context;
+false or invalid activation remains dormant. Tests preserve inner-wins,
+same-exception, finally restoration, exact safe shape and no-leak. Default-off
+product behavior, API checks, response, writes, transactions and permissions
+remain unchanged. CURRENT_TASK needs no expansion.
+
+Run `33025290767` is a harness diagnostic attempt. Product create-response
+diagnostic remains `0/1`, repair `0/1`, final `0/1`. Production fact/DoD
+governance stays queued and all existing holds remain active.
+
+Level 1 evidence: focused repository `16/16`; complete quality-link `74/74`;
+affected projection/P7/Item/MBOM/Tool Asset `255/255`; full repository Python
+`2549/2549`; current/reconciliation `36/36`. Current and reconciliation
+scripts, generated-source check, compilation, shell syntax, activation AST and
+no-leak checks, plus diff hygiene pass. Exact-five and 67-path post-commit
+union manifests are accepted and an unauthorized sixth path is rejected;
+index remains clean and unrelated dirty/untracked files remain preserved.

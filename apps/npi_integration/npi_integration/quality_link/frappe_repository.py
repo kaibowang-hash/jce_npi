@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -110,12 +109,6 @@ QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_HEADER = (
 QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_SCOPE = (
     "p8-06-quality-link-create-response-v1"
 )
-_QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV = (
-    "NPI_P806_QUALITY_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE"
-)
-_QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV_VALUE = (
-    "p8-06-quality-link-prepare-projection-v1"
-)
 _QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_FLAG = (
     "npi_p806_quality_create_response_diagnostic"
 )
@@ -135,8 +128,6 @@ def quality_link_create_response_diagnostics(
         state = None
         if (
             active
-            and os.environ.get(_QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV)
-            == _QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTIC_ENV_VALUE
             and isinstance(trace_id, str)
             and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
         ):
