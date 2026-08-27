@@ -1265,3 +1265,45 @@ exact-43 AST/lexical equality, trace/cursor, failed-child-unread,
 strict-reader/no-leak and diff checks pass. Exact-five and post-commit union
 manifests are accepted; an unauthorized sixth path is rejected. Product diff
 is zero and unrelated state remains untouched.
+
+## 36. Independent full-boundary quality-link diagnostic
+
+Post-projection-permission SHA
+`c615d5ba80e29c3dc134568c2b68eb3e5fb3f495` passes ordinary
+`33035975693`. Controlled `33036798806` passes preflight `98401116580`;
+runtime `98401163961` yields no valid exact-43 tuple while a fixed allowlist
+selects only `Local Frappe formal quality link runtime verification failed.`
+No raw log, failed-child output or business content was inspected.
+
+Trace, environment and cursor propagation are statically exact, but the prior
+activation excludes the 17 outer and five bootstrap codes. Its four parents
+also begin after cursor setup and leave output/reader gaps. The exact run can
+therefore still fail before prepare, inside an uncovered prepare boundary or
+after prepare. The earlier prepare tuple is not an exact-run proof because the
+new activation itself adds cursor/reader work. No repair is authorized.
+
+Freeze post-projection-permission at `1/1`, `0/1`, `0/1`. Independent
+`p8-06-quality-link-full-boundary` starts `0/1`, `0/1`, `0/1`. Its new-only
+activation selects exact 65: 17 ordered outer, four prepare parent, five
+bootstrap and 39 server codes. Bootstrap/server inner evidence wins, then
+parent, then outer fallback. Exact trace/path/cursors, O_EXCL exact-three-key
+record, strict reader, original exception, `finally`, failed-child unread,
+no-leak, all-off and success-zero behavior remain mandatory. The seven create
+parents and 27 create server codes are not enabled.
+
+The exact-five verifier/test/controller/plan/checkpoint paths have zero
+product, CURRENT_TASK, workflow, API, repository, permission, schema,
+migration, UI, network or ERP diff. Tests pin one-of-nine activation, exact-65
+AST/lexical equality, all outer/parent/bootstrap/server sets, inner precedence,
+outer gap fallback, trace/cursors, strict reader, failed-child unread,
+dormancy and zero-success behavior. Production fact/DoD governance remains
+queued; FR-CO-003/004 deferral and all B/C holds remain unchanged.
+
+Level 1 passes quality-link `82/82`, projection/P7 `110/110`, peer
+runtime/security `145/145`, full Python `2557/2557`, current/reconciliation
+`36/36`, affected frontend units `68/68` and nonvisual E2E `33/33`.
+Generated-source, compile, shell syntax, exact-one-of-nine activation,
+exact-65 AST/lexical equality, inner precedence, outer gap fallback,
+failed-child-unread, strict-reader/no-leak and diff checks pass. Exact-five and
+post-commit 68-path manifests pass; an unauthorized sixth is rejected. Product
+diff is zero and unrelated state remains untouched.

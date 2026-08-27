@@ -6792,3 +6792,50 @@ repeat or rewrite it merely to restore context. See
   sixth; product diff is zero and unrelated worktree state is preserved.
 - Controller marker:
   `P8-06 checkpoint 4 final held; post-projection-permission diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 full-boundary diagnostic checkpoint
+
+- Post-projection-permission SHA
+  `c615d5ba80e29c3dc134568c2b68eb3e5fb3f495` passes ordinary CI
+  `33035975693`. Its sole controlled run `33036798806` passes preflight
+  `98401116580`; runtime `98401163961` fails with the sole fixed outer label
+  `Local Frappe formal quality link runtime verification failed.` and no valid
+  exact-43 safe tuple. Raw log, failed-child output, response body, business
+  values, identifiers, message and stack remain unread.
+- The zero tuple is not a bootstrap proof. The exact run passes the prepare
+  trace/environment and captures cursors, but the prior active set excludes
+  all 17 outer stages and all five bootstrap stages. Pre-prepare and
+  post-prepare failures remain silent, as do cursor/output setup and reader
+  gaps outside the four parent scopes. The prior exact-SHA prepare tuple is
+  supporting history only because this activation adds cursor/reader work.
+- Freeze `p8-06-quality-link-post-projection-permission` at diagnostic `1/1`,
+  repair `0/1`, final `0/1`. Independent
+  `p8-06-quality-link-full-boundary` starts diagnostic `0/1`, repair `0/1`,
+  final `0/1`; it authorizes diagnosis only and no product repair.
+- Only the full-boundary activation is true. Its active set is exactly 65
+  disjoint codes: 17 ordered outer stages, four prepare parents, five
+  bootstrap stages and 39 prepare/projection server stages. Exact
+  trace/environment/cursors, O_EXCL exact-three-key record and strict mirror
+  are preserved. Bootstrap or server inner evidence wins, then a prepare
+  parent, then the enclosing outer stage. Failed-child stdout/stderr remain
+  unread, the exception and `finally` behavior are unchanged, and successful
+  execution writes no record. The seven create parents and 27 create server
+  stages remain dormant.
+- Exact paths are the quality runtime verifier/test plus this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Product, CURRENT_TASK, workflow, API, repository, permissions, schema,
+  transaction, migration, UI, network and ERP behavior remain unchanged.
+  Production fact/DoD governance remains queued; FR-CO-003/004 deferral and
+  every B/C hold remain active.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; full-boundary diagnostic 0/1 active`.
+- Level 1 passes quality-link `82/82`, projection/P7 `110/110`, peer
+  runtime/security `145/145`, full Python `2557/2557`, current/reconciliation
+  `36/36`, affected frontend unit `68/68` and nonvisual E2E `33/33`.
+  Generated-source, compile, shell syntax, exact-one-of-nine activation,
+  exact-65 AST/lexical equality, inner precedence, outer gap fallback,
+  failed-child-unread, strict-reader/no-leak and diff checks pass. Manifest
+  accepts exact five and the post-commit 68-path union, and rejects an
+  unauthorized sixth; product diff is zero and unrelated worktree state is
+  preserved.

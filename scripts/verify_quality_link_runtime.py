@@ -38,7 +38,8 @@ QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED = False
 QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED = False
-QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED = True
+QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED = False
+QUALITY_LINK_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = True
 QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES = (
     "P806_QUALITY_BOOTSTRAP_SECRET",
     "P806_QUALITY_ADMIN_LOGIN",
@@ -181,6 +182,21 @@ def quality_link_runtime_diagnostic_trace() -> str:
     return f"trace-{uuid5(_NAMESPACE, f'diagnostic:{FIXTURE_RUN_ID}').hex}"
 
 
+def _full_boundary_diagnostics_enabled() -> bool:
+    return QUALITY_LINK_FULL_BOUNDARY_DIAGNOSTICS_ENABLED and not any(
+        (
+            QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED,
+            QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED,
+            QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED,
+            QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED,
+            QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED,
+            QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED,
+            QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED,
+            QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED,
+        )
+    )
+
+
 @contextmanager
 def quality_link_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
     state = None
@@ -194,6 +210,7 @@ def quality_link_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
             or QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED
+            or _full_boundary_diagnostics_enabled()
         )
         and _TRACE_PATTERN.fullmatch(trace_id) is not None
     ):
@@ -233,6 +250,7 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
                     QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED
                     or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
                     or QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED
+                    or _full_boundary_diagnostics_enabled()
                 )
             )
             or (
@@ -242,11 +260,15 @@ def _record_quality_link_runtime_diagnostic(code: str, error: Exception) -> None
                     or QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
                     or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
                     or QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED
+                    or _full_boundary_diagnostics_enabled()
                 )
             )
             or (
                 code in QUALITY_LINK_PREPARE_BOOTSTRAP_CODES
-                and not QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+                and not (
+                    QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
+                    or _full_boundary_diagnostics_enabled()
+                )
             )
             or (
                 code in QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES
@@ -353,6 +375,13 @@ def _active_quality_link_runtime_diagnostic_codes() -> frozenset[str]:
         return frozenset(QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES).union(
             QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES
         )
+    if _full_boundary_diagnostics_enabled():
+        return (
+            frozenset(QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES)
+            .union(QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES)
+            .union(QUALITY_LINK_PREPARE_BOOTSTRAP_CODES)
+            .union(QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES)
+        )
     return frozenset()
 
 
@@ -387,6 +416,7 @@ def _prepare_projection_diagnostics_enabled() -> bool:
         or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
         or QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
         or QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED
+        or _full_boundary_diagnostics_enabled()
     )
 
 
@@ -918,6 +948,7 @@ def run_scoped_local_bench_fixture(method: str, kwargs: dict[str, object]) -> No
             QUALITY_LINK_PREPARE_BOOTSTRAP_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED
             or QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED
+            or _full_boundary_diagnostics_enabled()
         )
         and os.environ.get(_PREPARE_PROJECTION_DIAGNOSTIC_ENV)
         == _PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
@@ -995,6 +1026,7 @@ def main() -> int:
                 or QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED
                 or QUALITY_LINK_POST_PROJECTION_PERMISSION_DIAGNOSTICS_ENABLED
+                or _full_boundary_diagnostics_enabled()
             ):
                 return 1
             raise

@@ -661,3 +661,37 @@ exact-43 AST/lexical equality, failed-child-unread, strict-reader/no-leak and
 diff checks pass. Exact-five and post-commit union manifests pass; an
 unauthorized sixth is rejected. Product diff is zero and unrelated paths stay
 untouched.
+
+## Full-boundary quality-link diagnostic checkpoint
+
+Post-projection-permission SHA
+`c615d5ba80e29c3dc134568c2b68eb3e5fb3f495` passes ordinary
+`33035975693`; controlled `33036798806` passes preflight `98401116580` and
+runtime `98401163961` returns no valid exact-43 tuple. A fixed safe-label
+reader selects only the formal-quality-link outer failure. Raw log,
+failed-child output and business content remain unread.
+
+The prior exact set passes trace/environment/cursors but excludes 17 outer and
+five bootstrap stages; four prepare parents do not cover cursor setup or every
+reader/output boundary. Pre-prepare, uncovered prepare and post-prepare remain
+non-unique. Freeze post-projection-permission at `1/1`, `0/1`, `0/1`; new
+full-boundary begins `0/1`, `0/1`, `0/1` with no repair claim.
+
+The exact-five product-zero checkpoint activates exact 65 codes: 17 outer,
+four prepare parent, five bootstrap and 39 server. Bootstrap/server inner
+evidence wins, then parent and outer fallback. Exact trace/path/cursors,
+O_EXCL exact-three-key record, strict mirror, original exception, `finally`,
+failed-child unread, no-leak and success-zero contracts remain fixed. Create
+status/body and create server diagnostics stay dormant. No product,
+CURRENT_TASK, workflow, API, repository, permission, schema, migration, UI,
+network or ERP path changes. Production governance remains queued and all
+holds remain active.
+
+Level 1 evidence is quality-link `82/82`, projection/P7 `110/110`, peer
+runtime/security `145/145`, repository Python `2557/2557`, current and
+reconciliation `36/36`, affected frontend units `68/68` and nonvisual E2E
+`33/33`. Generated-source, compile, shell, exact-one-of-nine activation,
+exact-65 AST/lexical equality, inner precedence, outer gap fallback,
+failed-child-unread, strict-reader/no-leak and diff checks pass. Exact-five and
+post-commit 68-path manifests pass; an unauthorized sixth is rejected. Product
+diff is zero and unrelated paths stay untouched.
