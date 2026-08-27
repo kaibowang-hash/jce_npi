@@ -1352,3 +1352,49 @@ AST/lexical equality, all parent classes, prepare dormancy, server precedence,
 strict-reader/no-leak and diff hygiene pass. Exact-five and post-commit 68-path
 manifests pass; an unauthorized sixth is rejected. Product diff is zero and
 unrelated state remains untouched.
+
+## 38. Independent post-write full-boundary diagnostic
+
+Post-write create-response SHA
+`8d9ad28232a6d0e0c40b9dccb689f50ada52a061` passes ordinary
+`33090583785`. Controlled `33091974970` passes preflight `98586911142`; runtime
+`98587020509` reaches the cumulative verification step and yields no valid
+exact-34 safe tuple. A strict fixed-label reader selects only the formal-quality
+link outer failure. Failed-child output, actual status/body, business values,
+identifiers, message and stack were not read.
+
+The prior activation starts only at the create response recorder. A classified
+non-201 or body-shape failure would have produced a trusted server tuple or a
+fixed parent fallback, but failures before create, before response
+classification and after a successful create all remain zero-tuple boundaries.
+The f37 support-write repair keeps the exact receipt and Audit
+controller-permission roots closed without proving every write completed. No
+repair is authorized.
+
+Freeze post-write create-response at `1/1`, `0/1`, `0/1`. Independent
+`p8-06-quality-link-post-write-full-boundary` starts `0/1`, `0/1`, `0/1`. Its
+new-only activation selects exact 44: 17 ordered outer plus 27 create server
+codes. The seven create parents and all prepare parent/bootstrap/server codes
+remain inactive. Exact trace/path, POST scope/header/cursors, O_EXCL
+exact-three-key record, strict mirror, server-inner precedence, outer fallback,
+same exception, `finally`, failed-child-unread, no-leak and success-zero rules
+remain fixed.
+
+The exact-five verifier/test/controller/plan/checkpoint paths have zero product,
+CURRENT_TASK, workflow, API, repository, permission, schema, migration, UI,
+network or ERP diff. Tests pin one-of-eleven activation, exact-44 AST/lexical
+equality, all 17 outer fallbacks, all 27 server codes, dormant parent/prepare
+sets, create server precedence, response-class outer fallback, exact scope and
+cursors, failed-child unread, strict malformed/no-leak handling and success-zero
+response equivalence. Production fact/DoD governance remains queued;
+FR-CO-003/004 deferral and all B/C holds remain unchanged.
+
+Level 1 passes focused verifier `32/32`, quality-link `85/85`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2560/2560`,
+current/reconciliation `36/36`, full frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, lint, format, i18n,
+compile, shell syntax, exact-one-of-eleven activation, exact-44 AST/lexical
+equality, outer fallback, server precedence, failed-child-unread,
+strict-reader/no-leak and diff checks pass. Exact-five and post-commit union
+manifests pass; an unauthorized sixth is rejected. Product diff is zero and
+unrelated state remains untouched.

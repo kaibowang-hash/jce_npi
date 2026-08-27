@@ -6888,3 +6888,51 @@ repeat or rewrite it merely to restore context. See
   Manifest accepts exact five and the post-commit 68-path union and rejects an
   unauthorized sixth; product diff is zero and unrelated worktree state is
   preserved.
+
+## 2026-08-27 P8-06 post-write full-boundary diagnostic checkpoint
+
+- Post-write create-response SHA
+  `8d9ad28232a6d0e0c40b9dccb689f50ada52a061` passes ordinary CI
+  `33090583785`. Its sole controlled run `33091974970` passes controlled
+  preflight `98586911142`; runtime `98587020509` reaches the cumulative P5
+  through P8-06 step and yields no valid exact-34 safe tuple. A fixed-label
+  reader selects only `Local Frappe formal quality link runtime verification
+  failed.` Failed-child output, actual HTTP status, response body, business
+  values, identifiers, message and stack remain unread.
+- The exact-34 activation records only seven create status/body parents and 27
+  create API/repository stages. Zero tuple excludes a classified non-201 or
+  body-shape failure under the verified recorder contract, but it does not
+  distinguish pre-create, create request/response-header work before
+  classification, or post-create replay, stale, list and cleanup. The exact
+  receipt `PermissionError` and Audit controller-permission roots closed by
+  `f37a1dffd73f703b72ecb60fa295044e1c9ddbc3` remain closed; other write and
+  lifecycle stages are not claimed as passed.
+- Freeze `p8-06-quality-link-post-write-create-response` at diagnostic `1/1`,
+  repair `0/1`, final `0/1`. Independent
+  `p8-06-quality-link-post-write-full-boundary` starts diagnostic `0/1`, repair
+  `0/1`, final `0/1`; diagnosis only is authorized.
+- Only the new activation is true. Its active set is exactly 44 disjoint codes:
+  17 ordered outer stages plus 27 existing create API/repository server stages.
+  The seven create parent and prepare four-parent/five-bootstrap/39-server sets
+  remain dormant. Exact trace, POST scope/header and cursors, O_EXCL
+  exact-three-key record, strict mirror, server-inner precedence, outer
+  fallback, original exception, `finally`, failed-child-unread, no-leak and
+  success-zero behavior remain mandatory.
+- Exact paths are the quality runtime verifier/test plus this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Product, CURRENT_TASK, workflow, API, repository, permission, schema,
+  transaction, migration, UI, network and ERP behavior remain unchanged.
+  Production fact/DoD governance remains queued; FR-CO-003/004 deferral and
+  every B/C hold remain active.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-write full-boundary diagnostic 0/1 active`.
+- Level 1 passes focused verifier `32/32`, quality-link `85/85`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2560/2560`,
+  current/reconciliation `36/36`, full frontend unit/coverage `1073/1073` and
+  affected nonvisual E2E `33/33`. Generated-source, typecheck, lint, format,
+  i18n, compile, shell syntax, exact-one-of-eleven activation, exact-44
+  AST/lexical equality, outer fallback, server precedence,
+  failed-child-unread, strict-reader/no-leak and diff checks pass. Exact-five
+  and post-commit union manifests pass; an unauthorized sixth is rejected.
+  Product diff is zero and unrelated state remains untouched.
