@@ -2,7 +2,7 @@ from frappe import _, throw, ValidationError
 
 from npi_core.documents.frappe_validation import (
     canonical_json, frappe_utc_datetime_text, json_object, lowercase_sha256,
-    require_exact_parent, required_text,
+    require_exact_parent, required_text, utc_datetime_text,
 )
 from npi_integration.quality_link.doctype_base import QualityLinkSupportDocument
 from npi_integration.quality_link.domain import QUALITY_LINK_SCHEMA_VERSION, canonical_payload_hash
@@ -21,6 +21,7 @@ class NPIFormalQualityLinkRevision(QualityLinkSupportDocument):
 
     def validate(self) -> None:
         super().validate()
+        created_at = utc_datetime_text(self.created_at, _("Created At"))
         if self.schema_version != QUALITY_LINK_SCHEMA_VERSION:
             throw(_("Formal quality link schema version is unsupported."), ValidationError)
         if self.source_kind not in {"trial_round", "trial_defect", "trial_review", "readiness_assessment", "controlled_quality_report"}:
@@ -77,11 +78,11 @@ class NPIFormalQualityLinkRevision(QualityLinkSupportDocument):
             "revisionNumber": self.revision_number, "predecessorGlobalId": self.predecessor_global_id or None,
             "source": expected_source, "formalObservation": expected_observation, "linkState": self.link_state,
             "actorUserId": self.actor_user_id, "traceId": self.trace_id,
-            "createdAt": frappe_utc_datetime_text(self.created_at, _("Created At")),
+            "createdAt": created_at,
         }
         if json_object(self.link_snapshot, _("Formal Quality Link Snapshot")) != expected or lowercase_sha256(self.link_hash, _("Formal Quality Link Hash")) != canonical_payload_hash(expected):
             throw(_("Formal quality link snapshot does not match its immutable fields."), ValidationError)
         self.source_snapshot = canonical_json(expected_source)
         self.formal_observation_snapshot = canonical_json(expected_observation)
         self.link_snapshot = canonical_json(expected)
-        self.created_at = expected["createdAt"]
+        self.created_at = frappe_utc_datetime_text(created_at, _("Created At"))

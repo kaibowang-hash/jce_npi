@@ -1,6 +1,6 @@
 from frappe import _, throw, ValidationError
 
-from npi_core.documents.frappe_validation import canonical_json, frappe_utc_datetime_text, json_object, lowercase_sha256, require_exact_parent
+from npi_core.documents.frappe_validation import canonical_json, frappe_utc_datetime_text, json_object, lowercase_sha256, require_exact_parent, utc_datetime_text
 from npi_integration.quality_link.doctype_base import QualityLinkSupportDocument
 from npi_integration.quality_link.domain import canonical_payload_hash
 
@@ -14,6 +14,7 @@ class NPIFormalQualityLinkHead(QualityLinkSupportDocument):
 
     def validate(self) -> None:
         super().validate()
+        updated_at = utc_datetime_text(self.updated_at, _("Updated At"))
         if self.source_kind not in {"trial_round", "trial_defect", "trial_review", "readiness_assessment", "controlled_quality_report"}:
             throw(_("Formal quality link source kind is unsupported."), ValidationError)
         previous = self.get_doc_before_save()
@@ -39,9 +40,9 @@ class NPIFormalQualityLinkHead(QualityLinkSupportDocument):
             "currentProjectionHeadGlobalId": self.current_projection_head_global_id,
             "currentProjectionHeadVersion": self.current_projection_head_version,
             "optimisticVersion": self.optimistic_version,
-            "updatedAt": frappe_utc_datetime_text(self.updated_at, _("Updated At")),
+            "updatedAt": updated_at,
         }
         if json_object(self.head_snapshot, _("Formal Quality Link Head Snapshot")) != expected or lowercase_sha256(self.head_hash, _("Formal Quality Link Head Hash")) != canonical_payload_hash(expected):
             throw(_("Formal quality link head snapshot does not match its fields."), ValidationError)
         self.head_snapshot = canonical_json(expected)
-        self.updated_at = expected["updatedAt"]
+        self.updated_at = frappe_utc_datetime_text(updated_at, _("Updated At"))

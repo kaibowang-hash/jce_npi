@@ -166,7 +166,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.QUALITY_LINK_POST_WRITE_PREPARE_FULL_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.QUALITY_LINK_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED
         )
         activations = (
@@ -184,26 +184,19 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             self.verifier.QUALITY_LINK_POST_WRITE_PREPARE_FULL_DIAGNOSTICS_ENABLED,
             self.verifier.QUALITY_LINK_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
         )
-        self.assertEqual(sum(activations), 1)
+        self.assertEqual(sum(activations), 0)
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
         self.assertEqual(
             self.verifier._active_quality_link_runtime_diagnostic_codes(),
-            frozenset(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES)
-            .union(self.verifier.QUALITY_LINK_PREPARE_PROJECTION_PARENT_CODES)
-            .union(self.verifier.QUALITY_LINK_PREPARE_BOOTSTRAP_CODES)
-            .union(self.verifier.QUALITY_LINK_PREPARE_PROJECTION_SERVER_CODES)
-            .union(self.verifier.QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES),
+            frozenset(),
         )
-        self.assertEqual(
-            len(self.verifier._active_quality_link_runtime_diagnostic_codes()),
-            92,
-        )
+        self.assertEqual(len(self.verifier._active_quality_link_runtime_diagnostic_codes()), 0)
         self.assertTrue(
             set(self.verifier.QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES).isdisjoint(
                 self.verifier._active_quality_link_runtime_diagnostic_codes()
             )
         )
-        self.assertTrue(self.verifier._prepare_projection_diagnostics_enabled())
+        self.assertFalse(self.verifier._prepare_projection_diagnostics_enabled())
         source = (ROOT / "scripts/verify_quality_link_runtime.py").read_text(
             encoding="utf-8"
         )
@@ -1013,6 +1006,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(repository_codes, server)
 
     def test_combined_boundary_records_outer_parent_and_bootstrap_exactly(self) -> None:
+        self.verifier.QUALITY_LINK_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True
         trace_id = "trace-0123456789abcdef0123456789abcdef"
         cases = tuple(
             (code, False)
@@ -1063,6 +1057,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 self.assertNotIn("private-value", payload)
 
     def test_combined_boundary_bootstrap_inner_wins_parent_and_outer(self) -> None:
+        self.verifier.QUALITY_LINK_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True
         trace_id = "trace-0123456789abcdef0123456789abcdef"
         code = "P806_QUALITY_PREPARE_BOOTSTRAP_INIT"
         with tempfile.TemporaryDirectory() as directory:
@@ -1100,6 +1095,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
     def test_combined_boundary_server_wins_parent_fallback_is_unread(
         self,
     ) -> None:
+        self.verifier.QUALITY_LINK_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True
         trace_id = "trace-0123456789abcdef0123456789abcdef"
         server_code = "P806_QUALITY_PROJECTION_SCOPE"
 
@@ -1190,6 +1186,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 )
 
     def test_combined_boundary_create_server_wins_outer_and_success_zero(self) -> None:
+        self.verifier.QUALITY_LINK_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True
         trace_id = "trace-0123456789abcdef0123456789abcdef"
         headers = {
             "X-Request-ID": self.verifier.document_runtime.fixture_request_id(
@@ -1963,7 +1960,6 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                     {
                         "project_id": "10000000-0000-4000-8000-000000000002",
                         "readiness_id": "10000000-0000-4000-8000-000000000001",
-                        "diagnostic_trace_id": self.verifier.quality_link_runtime_diagnostic_trace(),
                     },
                 ),
                 call(

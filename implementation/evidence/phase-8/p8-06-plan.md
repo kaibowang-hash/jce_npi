@@ -1492,3 +1492,47 @@ exact-92 AST/lexical equality, precedence, failed-child-unread,
 strict-reader/no-leak and diff checks pass. Exact-five manifest simulation
 passes and an unauthorized sixth is rejected; product diff is zero and
 unrelated state remains untouched.
+
+## 41. Combined-boundary timestamp repair and final contract
+
+Combined-boundary SHA `ec094e91172be0f94d7991ba1407f5974a2ed493`
+passes ordinary `33101997053`. Controlled `33103214718` passes preflight
+`98626131597`; runtime `98626455441` records the sole safe tuple
+`P806_QUALITY_CREATE_REPOSITORY_REVISION_INSERT / ValidationError /
+trace-f6460f8d447053bb965845a365808f1d`. Restricted child and business content
+remains unread.
+
+The first-source is the immutable timestamp representation. The pure domain
+and repository hash `createdAt` and `updatedAt` as ISO-UTC API text, but the
+Revision and Head controllers used the physical database Datetime formatter
+when rebuilding those snapshots. The Revision comparison therefore must fail
+first, and the ordered Head insert contains the identical deterministic root.
+Permission, required/Link fields, closed enums, source snapshot, projection
+Observation and locked Head predicates are statically excluded.
+
+Freeze combined-boundary diagnostic at `1/1`; repair is `1/1`; final remains
+`0/1`. The closed repair uses `utc_datetime_text` solely for immutable
+snapshot/hash reconstruction and `frappe_utc_datetime_text` solely for the
+physical Datetime fields. No domain payload, hash algorithm, repository
+mapping, API, schema, metadata, ordering, transaction or permission changes.
+All diagnostic activations are false.
+
+The exact-ten paths are the two controllers, metadata test, CURRENT_TASK and
+fact test, runtime verifier and test, controller, this plan and checkpoint.
+The metadata test executes both real controller `validate` methods and covers
+ISO success plus database-form snapshot, timestamp, hash and parent tamper
+failures. CURRENT_TASK expands 68 to 71 exact paths only. The runtime test pins
+all-off dormancy, no cursor/reader and retained synthetic diagnostic mechanism.
+After exact-SHA ordinary PASS the sole permitted runtime action is the Level 3
+final. Production fact/DoD governance stays queued; portal deferral and all
+B/C holds remain fixed.
+
+Level 1 passes focused repair/current `49/49`, full quality-link `90/90`,
+projection/P7 `110/110`, peer runtime/security `145/145`, full Python
+`2565/2565`, current/reconciliation `36/36`, frontend unit/coverage
+`1073/1073` and affected nonvisual E2E `33/33`. Generated-source, typecheck,
+full lint/format/style/boundary/industrial UI, i18n `8436` at 100% zh/zh-TW,
+compile, shell syntax, JSON/YAML/CSV, all-off diagnostic, direct-SQL, diff and
+exact-path checks pass. Exact-ten and post-commit union-71 manifests pass and
+an unauthorized eleventh path is rejected. Product diff is only the two
+controllers; unrelated state remains untouched.

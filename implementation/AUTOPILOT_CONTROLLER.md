@@ -7030,3 +7030,45 @@ repeat or rewrite it merely to restore context. See
   equality, precedence, failed-child-unread, strict-reader/no-leak and diff
   checks pass. Manifest accepts exact five and rejects an unauthorized sixth;
   product diff is zero and unrelated state remains untouched.
+
+## 2026-08-28 P8-06 combined-boundary timestamp repair checkpoint
+
+- Combined-boundary SHA `ec094e91172be0f94d7991ba1407f5974a2ed493`
+  passes ordinary CI `33101997053`. Its sole controlled run `33103214718`
+  passes preflight `98626131597`; runtime `98626455441` records exactly
+  `P806_QUALITY_CREATE_REPOSITORY_REVISION_INSERT / ValidationError /
+  trace-f6460f8d447053bb965845a365808f1d`. No failed-child output, actual
+  status/body, business value, identifier, message or stack was read.
+- Static first-source proof is unique. `QualityLinkRevision.payload()` and
+  `_head_response()` hash immutable API snapshots with ISO-UTC `createdAt` or
+  `updatedAt`, while the two Frappe controllers rebuilt those same snapshot
+  fields with database Datetime text before comparing snapshot and hash. All
+  prior capability, mandatory/Link, closed-domain, source, projection and head
+  lock predicates are excluded; the identical Head predicate is the same
+  root at the next ordered insert, not a speculative adjacent change.
+- Freeze combined-boundary diagnostic at `1/1`. Its bounded repair is `1/1`
+  and final remains `0/1`. The two controllers now validate immutable
+  snapshots and hashes with `utc_datetime_text`, then separately normalize
+  the physical Datetime field with `frappe_utc_datetime_text`. Repository,
+  domain, API, metadata, transaction order and permission behavior do not
+  change. Every quality-link diagnostic activation is false.
+- The exact-ten repair paths are the Revision and Head controllers, metadata
+  controller-lifecycle test, CURRENT_TASK and its fact test, quality runtime
+  verifier and test, this controller, the P8-06 plan and checkpoint evidence.
+  CURRENT_TASK expands only from 68 to 71 exact paths for the two controllers
+  and metadata test. Tests require ISO snapshots to pass and database-form
+  snapshot, physical timestamp, hash and exact-parent tampering to fail
+  closed; diagnostic mechanisms remain dormant without cursors or readers.
+- Production fact/DoD governance remains queued. FR-CO-003/004 deferral and
+  all B/C holds remain unchanged. The only next runtime action after an exact
+  SHA ordinary PASS is the sole diagnostics-off Level 3 final; no controlled
+  diagnostic rerun is allowed.
+- Level 1 passes focused repair/current `49/49`, full quality-link `90/90`,
+  projection/P7 `110/110`, peer runtime/security `145/145`, full Python
+  `2565/2565`, current/reconciliation `36/36`, frontend unit/coverage
+  `1073/1073` and affected nonvisual E2E `33/33`. Generated-source,
+  typecheck, full lint/format/style/boundary/industrial UI, i18n `8436` at
+  100% zh/zh-TW, compile, shell syntax, JSON/YAML/CSV, diagnostic-all-off,
+  direct-SQL, diff and exact-path checks pass. The exact-ten and post-commit
+  union-71 manifests pass; an unauthorized eleventh path is rejected. Product
+  diff remains limited to the two controllers and unrelated state is intact.

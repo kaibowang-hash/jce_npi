@@ -845,3 +845,44 @@ AST/lexical equality, O_EXCL precedence, failed-child-unread,
 strict-reader/no-leak and diff checks pass. Exact-five manifest simulation
 passes; an unauthorized sixth is rejected. Product diff is zero and unrelated
 paths remain untouched.
+
+## Combined-boundary immutable timestamp repair checkpoint
+
+Combined-boundary SHA `ec094e91172be0f94d7991ba1407f5974a2ed493`
+passes ordinary `33101997053`. Controlled run `33103214718` passes preflight
+job `98626131597`; runtime job `98626455441` records exactly
+`P806_QUALITY_CREATE_REPOSITORY_REVISION_INSERT / ValidationError /
+trace-f6460f8d447053bb965845a365808f1d`. No restricted output or value was
+read.
+
+The deterministic mismatch is between domain ISO-UTC snapshot timestamps and
+controller database Datetime reconstruction. Repository source/observation
+snapshots, exact Projection Observation and locked Projection Head references,
+closed source/state/predecessor fields and capability permission paths all
+precede the failing Revision snapshot/hash predicate and remain unchanged.
+The Head controller has the same timestamp mismatch at the next ordered stage,
+so both are one closed root.
+
+Combined-boundary is frozen at diagnostic `1/1`, repair `1/1`, final `0/1`.
+Revision and Head validate ISO-UTC immutable snapshots and hashes, then
+normalize only the physical Datetime columns to Frappe database text. Real
+controller lifecycle tests require ISO success and database-form snapshot,
+timestamp/hash and exact-parent tamper rejection. All diagnostics are false.
+Repository/domain/API/metadata/order/permissions remain unchanged.
+
+The governed exact-ten manifest contains the two controllers, metadata test,
+CURRENT_TASK and its fact test, quality runtime verifier and test,
+AUTOPILOT controller, P8-06 plan and this checkpoint. CURRENT_TASK grows from
+68 to 71 exact paths without patterns or unrelated product scope. Production
+fact/DoD governance remains queued and all external portal and B/C holds stay
+active. An exact-SHA ordinary PASS permits only the sole Level 3 final.
+
+Level 1 passes focused repair/current `49/49`, full quality-link `90/90`,
+projection/P7 `110/110`, peer runtime/security `145/145`, full Python
+`2565/2565`, current/reconciliation `36/36`, frontend unit/coverage
+`1073/1073` and affected nonvisual E2E `33/33`. Generated-source, typecheck,
+full lint/format/style/boundary/industrial UI, i18n `8436` at 100% zh/zh-TW,
+compile, shell syntax, JSON/YAML/CSV, all-off diagnostic, direct-SQL, diff and
+exact-path checks pass. Exact-ten and post-commit union-71 manifests pass;
+unauthorized path eleven is rejected. Product diff is limited to the two
+controllers and unrelated state is preserved.
