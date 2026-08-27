@@ -1711,6 +1711,35 @@ no-leak, direct-SQL and diff checks pass. Exact-five and union-71 manifests
 pass; an unauthorized sixth path is rejected. Product diff is zero and
 unrelated state remains intact.
 
+## 48. Post-replay-final diagnostics-off final checkpoint
+
+Diagnostic SHA `a59b04cfca94170ecacccb12668f15d12165992e` passes ordinary
+`33121951730`. Controlled `33122964248` passes preflight `98694183026` and
+cumulative runtime `98694245321`; exact-92 success writes no safe tuple. No
+restricted runtime, child or business content was inspected.
+
+Freeze post-replay-final combined-boundary at diagnostic `1/1`, repair `0/1`,
+final `0/1`. Its activation and all fifteen historical diagnostic flags are
+false. Localized tests keep the exact-92 mechanism and strict mirror active
+under explicit test control; the default path locks zero trace, cursor and
+reader use with unchanged response behavior.
+
+The exact-five paths remain runtime verifier/test, AUTOPILOT, this plan and the
+domain-metadata checkpoint. Product, CURRENT_TASK, workflow, API, repository,
+permission, transaction, schema, UI, network and ERP diffs are zero. Exact-SHA
+ordinary PASS permits only one diagnostics-off Level 3 final. Production
+governance, FR-CO-003/004 deferral and all B/C holds remain queued.
+
+Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI and i18n `8436` with complete zh/zh-TW
+coverage pass. Compile, shell syntax, JSON/YAML/CSV, all-off 16-flag dormancy,
+localized exact-92 activation/precedence, strict-reader/no-leak, direct-SQL and
+diff checks pass. Exact-five and union-71 manifests pass; an unauthorized sixth
+path is rejected. Product diff is zero and unrelated state remains intact.
+
 Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
 `110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
 current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and

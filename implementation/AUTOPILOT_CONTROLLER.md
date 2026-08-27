@@ -7273,3 +7273,38 @@ repeat or rewrite it merely to restore context. See
   strict-reader/no-leak, direct-SQL and diff checks pass. Exact-five and
   union-71 manifests pass; an unauthorized sixth path is rejected. Product
   diff is zero and unrelated state remains intact.
+
+## 2026-08-28 P8-06 post-replay-final diagnostics-off checkpoint
+
+- Diagnostic SHA `a59b04cfca94170ecacccb12668f15d12165992e` passes exact
+  ordinary `33121951730`: repository `98690714375`, secret scan `98690714491`,
+  frontend `98690714510` and visual `98690714605` pass. Its sole controlled
+  diagnostic `33122964248` passes preflight `98694183026` and cumulative
+  runtime `98694245321`. The exact-92 success-zero contract produces no tuple;
+  no raw log, child output, response or business content was read.
+- Freeze `p8-06-quality-link-post-replay-final-combined-boundary` at diagnostic
+  `1/1`, repair `0/1`, final `0/1`. Its successful exact-SHA runtime authorizes
+  only the diagnostics-off final and no product repair or ERP pass mapping.
+- `QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED` is
+  false and all fifteen historical diagnostic activations remain false.
+  Localized tests explicitly retain exact-92 activation, precedence, strict
+  reader and failed-child contracts; the default path requires no trace,
+  cursor or reader use and unchanged behavior.
+- Exact paths remain the quality runtime verifier/test, this controller, the
+  P8-06 plan and checkpoint. Product, CURRENT_TASK, workflow, API, repository,
+  permission, schema, transaction, migration, UI, network and ERP diffs are
+  zero. The only next workflow after exact-SHA ordinary success is one Level 3
+  reusing that ordinary run. Production governance, portal deferral and every
+  B/C hold remain queued.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-replay-final diagnostic 1/1 repair 0/1 final 0/1; all diagnostics off`.
+- Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+  current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+  affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint,
+  format, styles, boundaries, industrial UI and i18n `8436` with complete
+  zh/zh-TW coverage pass. Compile, shell syntax, JSON/YAML/CSV, all-off 16-flag
+  dormancy, localized exact-92 activation/precedence, strict-reader/no-leak,
+  direct-SQL and diff checks pass. Exact-five and union-71 manifests pass; an
+  unauthorized sixth path is rejected. Product diff is zero and unrelated
+  state remains intact.

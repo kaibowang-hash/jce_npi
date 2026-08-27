@@ -1047,6 +1047,34 @@ no-leak, direct-SQL and diff checks pass. Exact-five and union-71 manifests
 pass; an unauthorized sixth path is rejected. Product diff is zero and
 unrelated state remains intact.
 
+## Post-replay-final diagnostics-off final checkpoint
+
+Diagnostic SHA `a59b04cfca94170ecacccb12668f15d12165992e` passes ordinary
+`33121951730`. Its sole controlled run `33122964248` passes preflight
+`98694183026` and runtime `98694245321`; success produces no exact-92 tuple and
+no restricted child or business content was read.
+
+Post-replay-final combined-boundary is frozen at diagnostic `1/1`, repair
+`0/1`, final `0/1`. All sixteen diagnostic flags are false. Localized tests
+retain exact-92 activation and strict reader behavior while the default path
+requires no diagnostic trace, cursor or reader activity.
+
+The governed exact-five paths remain runtime verifier/test plus AUTOPILOT,
+plan and this checkpoint. Product, CURRENT_TASK, workflow, API, repository,
+permissions, schema, transaction, UI, network and ERP diffs are zero. Exact-SHA
+ordinary PASS authorizes only one diagnostics-off Level 3. Production
+governance and every existing hold remain queued.
+
+Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI and i18n `8436` with complete zh/zh-TW
+coverage pass. Compile, shell syntax, JSON/YAML/CSV, all-off 16-flag dormancy,
+localized exact-92 activation/precedence, strict-reader/no-leak, direct-SQL and
+diff checks pass. Exact-five and union-71 manifests pass; an unauthorized sixth
+path is rejected. Product diff is zero and unrelated state remains intact.
+
 Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
 `110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
 current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
