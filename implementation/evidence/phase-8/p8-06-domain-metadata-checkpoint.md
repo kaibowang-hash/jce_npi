@@ -886,3 +886,37 @@ compile, shell syntax, JSON/YAML/CSV, all-off diagnostic, direct-SQL, diff and
 exact-path checks pass. Exact-ten and post-commit union-71 manifests pass;
 unauthorized path eleven is rejected. Product diff is limited to the two
 controllers and unrelated state is preserved.
+
+## Post-timestamp combined-boundary diagnostic checkpoint
+
+Timestamp repair SHA `0be46eafdda7a2f0d825861c03952ed9b5a5f322`
+passes ordinary `33105880201`. Sole Level 3 `33107070865` passes repository,
+frontend, visual, secret scan and controlled preflight, then cumulative
+runtime job `98643599822` reaches the fixed P8-06 outer failure label. No
+restricted runtime or child content was read. Real controller lifecycle tests
+and the split ISO-UTC immutable/database-physical timestamp implementation
+close the former Revision/Head root, so the new internal first source remains
+non-unique without same-run diagnostic evidence.
+
+Freeze combined-boundary at `1/1`, `1/1`, `1/1`. Independent
+post-timestamp combined-boundary starts `0/1`, `0/1`, `0/1`; its new activation
+is the only true diagnostic flag. It reuses exact 92 safe stages with exact
+trace/cursors, O_EXCL exact-three-key record, strict reader, server/bootstrap
+inner precedence, parent then outer fallback, failed-child-unread,
+same-exception, `finally`, no-leak and success-zero contracts. The seven
+status/body parent codes stay dormant.
+
+The governed exact-five paths are the quality runtime verifier/test and the
+three P8-06 controller/evidence documents. Product, API, repository,
+controller, metadata, permission, transaction, schema, UI, network and ERP
+diffs are zero. Production governance and all existing holds remain queued.
+
+Level 1 passes focused verifier `36/36`, quality-link `90/90`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2565/2565`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI, i18n `8436` with 100% zh/zh-TW, compile,
+shell syntax, JSON/YAML/CSV, exact-one activation, exact-92
+AST/lexical/disjoint and precedence, strict-reader/no-leak, direct-SQL and diff
+checks pass. Exact-five and union-71 manifests pass; unauthorized path six is
+rejected. Product diff is zero and unrelated state is preserved.

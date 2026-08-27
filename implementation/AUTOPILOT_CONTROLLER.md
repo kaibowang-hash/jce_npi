@@ -7072,3 +7072,41 @@ repeat or rewrite it merely to restore context. See
   direct-SQL, diff and exact-path checks pass. The exact-ten and post-commit
   union-71 manifests pass; an unauthorized eleventh path is rejected. Product
   diff remains limited to the two controllers and unrelated state is intact.
+
+## 2026-08-28 P8-06 post-timestamp combined-boundary diagnostic checkpoint
+
+- Timestamp repair SHA `0be46eafdda7a2f0d825861c03952ed9b5a5f322`
+  passes exact ordinary `33105880201`: repository `98635459897`, frontend
+  `98635460204`, visual `98635460139` and secret scan `98635460172` pass.
+  Its sole diagnostics-off Level 3 `33107070865` passes those four lanes and
+  controlled preflight `98643528478`, then runtime `98643599822` fails at the
+  fixed P8-06 outer label. No raw or failed-child output, business value,
+  identifier, message or stack was read.
+- Freeze combined-boundary at diagnostic `1/1`, repair `1/1`, final `1/1`.
+  The timestamp root remains closed by ISO-UTC immutable snapshot validation,
+  physical database Datetime normalization and real Revision/Head controller
+  lifecycle tests. The new opaque P8-06 failure cannot be reclassified as
+  that prior root.
+- Independent `p8-06-quality-link-post-timestamp-combined-boundary` starts at
+  diagnostic `0/1`, repair `0/1`, final `0/1`. Only its new activation is
+  true; every historical diagnostic activation is false. It reuses the exact
+  92 safe codes: 17 outer, four prepare parent, five bootstrap, 39 projection
+  server and 27 create server stages. Seven status/body parent codes remain
+  dormant.
+- Exact trace, cursors, O_EXCL exact-three-key record, strict reader,
+  bootstrap/server inner precedence then parent and outer fallback,
+  failed-child-unread, same-exception, `finally`, no-leak and success-zero
+  contracts remain fixed. The exact-five paths are the quality runtime
+  verifier and test plus this controller, the P8-06 plan and checkpoint.
+  Product, API, repository, controller, metadata, permission, transaction,
+  schema, UI, network and ERP behavior remain unchanged. Production fact/DoD
+  governance remains queued and all portal and B/C holds stay active.
+- Level 1 passes focused verifier `36/36`, quality-link `90/90`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2565/2565`,
+  current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+  affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint,
+  format, styles, boundaries, industrial UI, i18n `8436` with 100% zh/zh-TW,
+  compile, shell syntax, JSON/YAML/CSV, exact-one activation, exact-92
+  AST/lexical/disjoint and precedence, strict-reader/no-leak, direct-SQL and
+  diff checks pass. Exact-five and union-71 manifests pass; an unauthorized
+  sixth path is rejected. Product diff is zero and unrelated state is intact.

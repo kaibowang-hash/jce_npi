@@ -1536,3 +1536,39 @@ compile, shell syntax, JSON/YAML/CSV, all-off diagnostic, direct-SQL, diff and
 exact-path checks pass. Exact-ten and post-commit union-71 manifests pass and
 an unauthorized eleventh path is rejected. Product diff is only the two
 controllers; unrelated state remains untouched.
+
+## 42. Post-timestamp combined-boundary diagnostic
+
+Repair SHA `0be46eafdda7a2f0d825861c03952ed9b5a5f322` passes ordinary
+`33105880201`. Sole diagnostics-off Level 3 `33107070865` passes repository,
+frontend, visual, secret scan and controlled preflight, but runtime job
+`98643599822` fails at the fixed formal-quality-link outer label. Restricted
+runtime and child content remains unread. Because the repaired Revision and
+Head controllers now validate immutable ISO-UTC timestamps before physical
+database normalization, and their real lifecycle/tamper tests pass, the prior
+timestamp root is closed; the new internal P8-06 first source remains opaque.
+
+Freeze combined-boundary `1/1`, `1/1`, `1/1`. Independent
+`p8-06-quality-link-post-timestamp-combined-boundary` begins `0/1`, `0/1`,
+`0/1`. The new-only activation reuses exact 92 disjoint safe codes: 17 outer,
+four prepare parent, five bootstrap, 39 projection server and 27 create server
+stages. Seven create status/body parent codes stay dormant. Exact trace,
+cursors, O_EXCL exact-three-key record, strict mirror, inner-to-parent-to-outer
+precedence, failed-child-unread, same exception, `finally`, no-leak and
+success-zero behavior remain unchanged.
+
+The exact-five manifest is the quality runtime verifier and its test,
+AUTOPILOT controller, this plan and the domain-metadata checkpoint. Product,
+API, repository, controller, metadata, permission, transaction, schema, UI,
+network and ERP diffs are zero. Production fact/DoD governance remains queued;
+FR-CO portal deferral and all B/C holds remain fixed.
+
+Level 1 passes focused verifier `36/36`, quality-link `90/90`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2565/2565`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI, i18n `8436` with 100% zh/zh-TW, compile,
+shell syntax, JSON/YAML/CSV, exact-one activation, exact-92
+AST/lexical/disjoint and precedence, strict-reader/no-leak, direct-SQL and diff
+checks pass. Exact-five and union-71 manifests pass and an unauthorized sixth
+path is rejected. Product diff is zero and unrelated state remains untouched.
