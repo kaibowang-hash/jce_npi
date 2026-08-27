@@ -1749,3 +1749,44 @@ coverage pass. Compile, shell syntax, JSON/YAML/CSV, all-off activation,
 dormant trace/cursor/reader, exact-92 localized mechanism, direct-SQL and diff
 checks pass. Exact-five and union-71 manifests pass; an unauthorized sixth
 path is rejected. Product diff is zero and unrelated state remains intact.
+
+## 49. Post-replay-final-failure combined-boundary diagnostic
+
+Diagnostics-off SHA `ac7a0b4c61f6d075621efe122b898f0c03173eba` passes ordinary
+`33123910667`. Its sole Level 3 `33124719075` passes repository, secret scan,
+frontend, visual and controlled preflight, then cumulative runtime
+`98702924195` reaches only the fixed formal-quality-link outer failure label.
+No raw runtime log, child output, response, business value, identifier,
+message or stack was read.
+
+The shell order proves P8-01 completed, P8-06 returned nonzero and P8-02
+through P8-05 were not reached. With all diagnostics off, the same execution
+cannot select among P8-06 bootstrap, prepare, create, replay, stale, list and
+cleanup boundaries. A successful diagnostic in another run does not prove the
+first source for this failure, so no repair is authorized.
+
+Freeze post-replay-final combined-boundary at diagnostic `1/1`, repair `0/1`,
+final `1/1`. Independent post-replay-final-failure combined-boundary starts
+diagnostic `0/1`, repair `0/1`, final `0/1`. Its sole new activation reuses
+exact 92 safe codes: 17 outer, four prepare parent, five bootstrap, 39
+projection server and 27 create server stages. The seven status/body parent
+codes remain dormant. Exact trace, cursors, O_EXCL exact-three-key record,
+strict mirror, inner-first precedence, same exception, `finally`, failed-child
+unread, no-leak and success-zero contracts remain mandatory.
+
+The exact-five paths remain runtime verifier/test, AUTOPILOT, this plan and
+the domain-metadata checkpoint. Product, CURRENT_TASK, workflow, API,
+repository, permissions, schema, transaction, UI, network and ERP diffs are
+zero. Production governance, FR-CO-003/004 deferral and every B/C hold remain
+queued.
+
+Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+current/reconciliation, frontend unit/coverage `1073/1073` and affected
+nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format, styles,
+boundaries, industrial UI and i18n `8436` with complete zh/zh-TW coverage pass.
+Read-only compile checks `884` Python files; shell syntax, JSON/CSV/YAML,
+exact-one-of-17 activation, exact-92 allowlist and precedence, strict reader,
+no-leak, direct-SQL and diff checks pass. Exact-five and union-71 manifests
+pass; an unauthorized sixth path is rejected. Product diff is zero and
+unrelated state remains intact.

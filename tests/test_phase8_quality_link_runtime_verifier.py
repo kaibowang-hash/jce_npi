@@ -28,6 +28,9 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = (
             False
         )
+        self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = (
+            False
+        )
 
     def read_full_boundary_diagnostic(
         self,
@@ -246,7 +249,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("--read-diagnostic", completed.stdout)
 
     def test_diagnostic_stage_allowlist_is_exact_and_lexically_unique(self) -> None:
-        self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = (
+        self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = (
             True
         )
         expected = (
@@ -311,8 +314,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.QUALITY_LINK_POST_REPLAY_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED
         )
         activations = (
             self.verifier.QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED,
@@ -331,6 +337,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             self.verifier.QUALITY_LINK_POST_TIMESTAMP_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
             self.verifier.QUALITY_LINK_POST_REPLAY_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
             self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
+            self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
         )
         self.assertEqual(sum(activations), 1)
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
@@ -369,6 +376,10 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertIn(
             "QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = False",
+            source,
+        )
+        self.assertIn(
+            "QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True",
             source,
         )
         tree = ast.parse(source)
@@ -1097,6 +1108,9 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         verifier.QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = (
             False
         )
+        verifier.QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = (
+            False
+        )
         activations = (
             verifier.QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED,
             verifier.QUALITY_LINK_PREPARE_PROJECTION_DIAGNOSTICS_ENABLED,
@@ -1114,6 +1128,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             verifier.QUALITY_LINK_POST_TIMESTAMP_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
             verifier.QUALITY_LINK_POST_REPLAY_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
             verifier.QUALITY_LINK_POST_REPLAY_FINAL_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
+            verifier.QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED,
         )
         result = types.SimpleNamespace(status=201, headers={}, body={"ok": True})
         self.assertEqual(sum(activations), 0)
