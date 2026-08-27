@@ -959,3 +959,36 @@ coverage, compile, shell syntax, JSON/YAML/CSV, all-off diagnostics, dormant
 cursor/reader, direct-SQL and diff checks pass. Exact-five and union-71
 manifests pass; an unauthorized sixth path is rejected. Product diff is zero
 and unrelated state is intact.
+
+## Post-replay combined-boundary diagnostic checkpoint
+
+Exact replay repair `1744465974176f57d95faf9f8dfbf5ed29270ffc` passes ordinary
+`33112381633`. Level 3 `33113478955` passes all ordinary lanes and controlled
+preflight, then runtime `98666057614` fails at the cumulative boundary. The
+fixed safe-label reader returns only the formal-quality-link failure label;
+P8-01 completed and downstream P8-02 through P8-05 were not reached. No raw
+log, child output, response or business content was read.
+
+Post-timestamp combined-boundary is frozen at diagnostic `1/1`, repair `1/1`,
+final `1/1`. The prior replay-status root remains closed, but diagnostics-off
+execution cannot uniquely select the new P8-06 internal first source.
+Independent post-replay combined-boundary begins `0/1`, `0/1`, `0/1` with no
+product repair authorized.
+
+Its new-only activation reuses exact 92 safe codes and the existing exact
+trace, cursors, exclusive exact-three-key record, strict reader, inner-first
+precedence, failed-child-unread and success-zero contracts. All historical
+flags are false and the seven create status/body parents stay dormant. The
+governed exact-five paths are verifier/test plus AUTOPILOT, plan and this
+checkpoint; product, contract, permission, transaction, UI, network and ERP
+diffs are zero. Production governance and every existing hold remain queued.
+
+Level 1 passes focused verifier `38/38`, quality-link `92/92`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2567/2567`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI, i18n `8436` with complete zh/zh-TW
+coverage, compile, shell syntax, JSON/YAML/CSV, exact-one-of-fifteen activation,
+exact-92 allowlist/precedence, strict-reader/no-leak, direct-SQL and diff checks
+pass. Exact-five and union-71 manifests pass; an unauthorized sixth path is
+rejected. Product diff is zero and unrelated state is intact.

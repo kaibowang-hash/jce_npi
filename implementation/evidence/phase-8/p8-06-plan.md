@@ -1613,3 +1613,42 @@ shell syntax, JSON/YAML/CSV, all-off diagnostics, dormant cursor/reader,
 direct-SQL and diff checks pass. Exact-five and union-71 manifests pass; an
 unauthorized sixth is rejected. Product diff is zero and unrelated state is
 preserved.
+
+## 45. Independent post-replay combined-boundary diagnostic
+
+Replay repair SHA `1744465974176f57d95faf9f8dfbf5ed29270ffc` passes ordinary
+`33112381633`. Its sole diagnostics-off Level 3 `33113478955` passes repository,
+frontend, visual, secret scan and controlled preflight, then cumulative runtime
+job `98666057614` fails. A fixed whitelist selects only
+`Local Frappe formal quality link runtime verification failed.` P8-01 has
+completed and P8-02 through P8-05 have not run; no restricted runtime or child
+content was inspected.
+
+The create-201/replay-200 verifier contract closes the former replay-status
+root, but this all-off run cannot distinguish a new pre-replay, replay or
+post-replay first source. Freeze post-timestamp combined-boundary at `1/1`,
+`1/1`, `1/1`. Independent `p8-06-quality-link-post-replay-combined-boundary`
+starts `0/1`, `0/1`, `0/1`; no repair is authorized.
+
+Only the new activation is true. It reuses exact 92: 17 ordered outer, four
+prepare parent, five bootstrap, 39 projection server and 27 create server
+codes. The seven create status/body parents remain dormant. Exact trace,
+cursors, O_EXCL exact-three-key record, strict mirror, bootstrap/server inner
+precedence, parent then outer fallback, same exception, `finally`,
+failed-child-unread, no-leak and success-zero behavior remain mandatory.
+
+The exact-five paths are the runtime verifier/test, AUTOPILOT, this plan and
+the domain-metadata checkpoint. Product, CURRENT_TASK, workflow, API,
+repository, permission, schema, transaction, migration, UI, network and ERP
+diffs are zero. Production governance, FR-CO-003/004 deferral and every B/C
+hold remain queued.
+
+Level 1 passes focused verifier `38/38`, quality-link `92/92`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2567/2567`,
+current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+styles, boundaries, industrial UI, i18n `8436` with complete zh/zh-TW
+coverage, compile, shell syntax, JSON/YAML/CSV, exact-one-of-fifteen activation,
+exact-92 allowlist/precedence, strict-reader/no-leak, direct-SQL and diff checks
+pass. Exact-five and union-71 manifests pass; an unauthorized sixth path is
+rejected. Product diff is zero and unrelated state is preserved.

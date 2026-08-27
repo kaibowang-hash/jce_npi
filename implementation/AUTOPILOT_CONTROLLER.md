@@ -7148,3 +7148,47 @@ repeat or rewrite it merely to restore context. See
   cursor/reader, direct-SQL and diff checks pass. Exact-five and union-71
   manifests pass; an unauthorized sixth path is rejected. Product diff is
   zero and unrelated state is preserved.
+
+## 2026-08-28 P8-06 post-replay combined-boundary diagnostic checkpoint
+
+- Exact verifier-repair SHA `1744465974176f57d95faf9f8dfbf5ed29270ffc`
+  passes ordinary CI `33112381633`: repository `98658252459`, frontend
+  `98658252487`, visual `98658252372` and secret scan `98658252181` pass. Its
+  sole diagnostics-off Level 3 `33113478955` passes those four lanes and
+  controlled preflight `98665984220`; cumulative runtime `98666057614` fails
+  at the withheld P5-through-P8-06 boundary.
+- A fixed whitelist reads exactly
+  `Local Frappe formal quality link runtime verification failed.` and no
+  P8-01 projection, P8-02, Item, MBOM or Tool Asset label. No raw log,
+  failed-child output, response body, business value, identifier, message or
+  stack was read. Shell order proves P8-01 completed, P8-06 returned nonzero
+  and later execution was not reached.
+- Freeze `p8-06-quality-link-post-timestamp-combined-boundary` at diagnostic
+  `1/1`, repair `1/1`, final `1/1`. Its replay-status root remains closed by
+  the exact create-201/replay-200 contract plus unchanged sealed body and true
+  replay-header checks. The all-off Level-3 run cannot uniquely select a new
+  P8-06 internal first source, so no product repair is authorized.
+- Independent `p8-06-quality-link-post-replay-combined-boundary` starts at
+  diagnostic `0/1`, repair `0/1`, final `0/1`. Only its new activation is true;
+  every historical diagnostic activation is false. It reuses exactly 92 safe
+  codes: 17 outer, four prepare parents, five bootstrap, 39 projection server
+  and 27 create server stages. Seven create status/body parents stay dormant.
+- Exact trace, cursors, O_EXCL exact-three-key record, strict reader,
+  bootstrap/server inner precedence then prepare-parent and outer fallback,
+  failed-child-unread, same-exception, `finally`, no-leak and success-zero
+  contracts remain fixed. Exact paths are the quality runtime verifier/test,
+  this controller, the P8-06 plan and checkpoint. Product, CURRENT_TASK,
+  workflow, API, repository, permission, schema, transaction, migration, UI,
+  network and ERP behavior remain unchanged. Production governance and all
+  portal and B/C holds remain queued.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-replay combined-boundary diagnostic 0/1 active`.
+- Level 1 passes focused verifier `38/38`, quality-link `92/92`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2567/2567`,
+  current/reconciliation `36/36`, frontend unit/coverage `1073/1073` and
+  affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint,
+  format, styles, boundaries, industrial UI, i18n `8436` with complete
+  zh/zh-TW coverage, compile, shell syntax, JSON/YAML/CSV, exact-one-of-fifteen
+  activation, exact-92 allowlist/precedence, strict-reader/no-leak, direct-SQL
+  and diff checks pass. Exact-five and union-71 manifests pass; an unauthorized
+  sixth path is rejected. Product diff is zero and unrelated state is intact.
