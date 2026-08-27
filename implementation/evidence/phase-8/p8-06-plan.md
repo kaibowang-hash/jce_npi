@@ -1398,3 +1398,51 @@ equality, outer fallback, server precedence, failed-child-unread,
 strict-reader/no-leak and diff checks pass. Exact-five and post-commit union
 manifests pass; an unauthorized sixth is rejected. Product diff is zero and
 unrelated state remains untouched.
+
+## 39. Independent post-write prepare-full diagnostic
+
+Post-write full-boundary SHA
+`a00329b82ccf24f638a1117463e924b7ff6f2fe2` passes ordinary
+`33094364805`. Controlled `33095457893` passes preflight `98599078533`;
+runtime `98599282271` records exactly
+`P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+trace-647c53b49d5751a0a5629dfd082ea9e2`. Failed-child output and all actual
+HTTP/business content remain unread.
+
+This run passes the outer administrator, Project, actor, CSRF and retained
+readiness predicates, then fails inside the disposable prepare child before
+current truth or any create/downstream predicate. The prior activation kept
+all prepare parent/bootstrap/server codes dormant. A prior controlled run in
+the same unchanged product epoch reached create, but cross-run fixture and
+timing variability cannot identify a unique first source. Parent
+spawn/status/parse/shape, five bootstrap boundaries and 39 child/repository
+stages remain non-unique; no repair is authorized.
+
+Freeze post-write full-boundary at `1/1`, `0/1`, `0/1`. Independent
+`p8-06-quality-link-post-write-prepare-full` starts `0/1`, `0/1`, `0/1`.
+Its new-only activation selects exact 48: four parent, five bootstrap and 39
+server codes. The already-known 17 outer codes and all 34 create codes remain
+dormant. Exact trace/environment/cursors, O_EXCL exact-three-key record,
+strict mirror, bootstrap/server-inner precedence, parent fallback, same
+exception, `finally`, failed-child-unread, no-leak and success-zero behavior
+remain fixed.
+
+The exact-five verifier/test/controller/plan/checkpoint paths have zero
+product, CURRENT_TASK, workflow, API, repository, permission, schema,
+transaction, migration, UI, network or ERP diff. Tests pin one-of-twelve
+activation, exact-48 AST/lexical equality, outer/create dormancy, every parent
+and bootstrap code, all 39 mirrored server stages, inner precedence, parent
+fallback, scope/trace/cursors, malformed-record fail-closed handling,
+failed-child unread and success-zero response equivalence. Production fact/DoD
+governance remains queued; FR-CO-003/004 deferral and all B/C holds remain
+unchanged.
+
+Level 1 passes focused verifier `35/35`, quality-link `88/88`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2563/2563`,
+current/reconciliation `36/36`, full frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, lint, format,
+i18n, compile, shell syntax, exact-one-of-twelve activation, exact-48
+AST/lexical equality, inner precedence, failed-child-unread,
+strict-reader/no-leak and diff checks pass. Exact-five and post-commit 68-path
+manifests pass; an unauthorized sixth is rejected. Product diff is zero and
+unrelated state remains untouched.

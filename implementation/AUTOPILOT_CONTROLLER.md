@@ -6936,3 +6936,50 @@ repeat or rewrite it merely to restore context. See
   failed-child-unread, strict-reader/no-leak and diff checks pass. Exact-five
   and post-commit union manifests pass; an unauthorized sixth is rejected.
   Product diff is zero and unrelated state remains untouched.
+
+## 2026-08-28 P8-06 post-write prepare-full diagnostic checkpoint
+
+- Post-write full-boundary SHA
+  `a00329b82ccf24f638a1117463e924b7ff6f2fe2` passes ordinary CI
+  `33094364805`. Its sole controlled run `33095457893` passes preflight
+  `98599078533`; runtime `98599282271` records exactly
+  `P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+  trace-647c53b49d5751a0a5629dfd082ea9e2`. Failed-child stdout/stderr and all
+  actual HTTP or business content remain unread.
+- The tuple proves this run passed administrator, Project, actor, CSRF and
+  retained-readiness boundaries, then failed inside the disposable
+  `prepare_projection` child before current-truth/create/replay/stale/list.
+  The prior post-write flag deliberately kept all prepare diagnostics dormant,
+  so it cannot distinguish parent spawn/status/parse/shape, five pre-init
+  bootstrap boundaries or 39 child/repository stages. A prior run in the same
+  product epoch reached create, but cross-run fixture or timing drift is not a
+  unique first-source proof. No repair is authorized.
+- Freeze `p8-06-quality-link-post-write-full-boundary` at diagnostic `1/1`,
+  repair `0/1`, final `0/1`. Independent
+  `p8-06-quality-link-post-write-prepare-full` starts diagnostic `0/1`, repair
+  `0/1`, final `0/1`; diagnosis only is authorized.
+- Only the new activation is true. Its exact 48-code set contains four prepare
+  parents, five bootstrap stages and 39 child/repository stages. All 17 outer,
+  seven create parent and 27 create server codes are dormant. Exact trace,
+  prepare environment, cursors, O_EXCL exact-three-key record and strict mirror
+  remain fixed. Bootstrap/server evidence wins before a parent fallback; the
+  original exception and `finally` behavior are preserved, failed-child output
+  remains unread, and success writes no record.
+- Exact paths remain the quality runtime verifier/test plus this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Product, CURRENT_TASK, workflow, API, repository, permission, transaction,
+  schema, migration, UI, network and ERP behavior remain unchanged. Production
+  fact/DoD governance remains queued; FR-CO-003/004 deferral and every B/C hold
+  remain active.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-write prepare-full diagnostic 0/1 active`.
+- Level 1 passes focused verifier `35/35`, quality-link `88/88`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2563/2563`,
+  current/reconciliation `36/36`, full frontend unit/coverage `1073/1073` and
+  affected nonvisual E2E `33/33`. Generated-source, typecheck, lint, format,
+  i18n, compile, shell syntax, exact-one-of-twelve activation, exact-48
+  AST/lexical equality, inner precedence, failed-child-unread,
+  strict-reader/no-leak and diff checks pass. Manifest accepts exact five and
+  the post-commit 68-path union and rejects an unauthorized sixth; product diff
+  is zero and unrelated state remains untouched.

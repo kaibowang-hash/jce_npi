@@ -770,3 +770,41 @@ AST/lexical equality, outer fallback, server precedence, failed-child-unread,
 strict-reader/no-leak and diff checks pass. Exact-five and post-commit union
 manifests pass; an unauthorized sixth is rejected. Product diff is zero and
 unrelated paths remain untouched.
+
+## Post-write prepare-full quality-link diagnostic checkpoint
+
+Post-write full-boundary SHA
+`a00329b82ccf24f638a1117463e924b7ff6f2fe2` passes ordinary
+`33094364805`; controlled `33095457893` passes preflight `98599078533` and
+runtime `98599282271` records exactly
+`P806_QUALITY_PREPARE_PROJECTION / RuntimeError /
+trace-647c53b49d5751a0a5629dfd082ea9e2`. Failed-child output and actual
+HTTP/business content remain unread.
+
+The exact outer tuple proves this run passed login, Project, actor, CSRF and
+readiness, then failed inside the prepare child before any create or downstream
+predicate. The prior activation kept all prepare codes dormant, so parent,
+bootstrap and child/repository first sources remain non-unique. A different
+run in the same product epoch reaching create is comparison evidence only and
+does not make cross-run drift a unique root. Freeze post-write full-boundary
+`1/1`, `0/1`, `0/1`; post-write prepare-full starts `0/1`, `0/1`, `0/1` with
+no repair claim.
+
+The exact-five product-zero checkpoint activates exact 48 codes: four prepare
+parent, five bootstrap and 39 server. All outer/create sets are dormant.
+Bootstrap/server inner evidence wins, otherwise the exact parent stage is the
+fallback. Exact trace/environment/cursors, O_EXCL exact-three-key record,
+strict mirror, original exception, `finally`, failed-child unread, no-leak and
+success-zero contracts remain fixed. No product, CURRENT_TASK, workflow, API,
+repository, permission, schema, migration, UI, network or ERP path changes.
+Production governance remains queued and every hold remains active.
+
+Level 1 evidence is focused verifier `35/35`, quality-link `88/88`,
+projection/P7 `110/110`, peer runtime/security `145/145`, repository Python
+`2563/2563`, current/reconciliation `36/36`, full frontend unit/coverage
+`1073/1073` and affected nonvisual E2E `33/33`. Generated-source, typecheck,
+lint, format, i18n, compile, shell, exact-one-of-twelve activation, exact-48
+AST/lexical equality, inner precedence, failed-child-unread,
+strict-reader/no-leak and diff checks pass. Exact-five and post-commit union
+manifests pass; an unauthorized sixth is rejected. Product diff is zero and
+unrelated paths remain untouched.
