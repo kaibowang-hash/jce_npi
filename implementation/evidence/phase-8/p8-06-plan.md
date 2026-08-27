@@ -1186,3 +1186,41 @@ Generated-source, compile, shell syntax, exact-one-of-six activation, exact-34
 AST/lexical equality, strict-reader/no-leak and diff hygiene pass. Exact-five
 manifest simulation passes and an unauthorized sixth fails closed; product
 diff remains zero and unrelated state is preserved.
+
+## 34. Independent parent/downstream quality-link diagnostic
+
+Exact post-receipt SHA `71109a2d269ba7c47143a94dd0f472281a514971`
+passes ordinary `33031856407`. Controlled run `33032672758` passes preflight
+`98388512843`; runtime `98388565113` fails at the cumulative P8-06 boundary
+without one valid exact-34 safe tuple. The sole fixed outer label remains
+formal quality link; P8-01 completed and later P8-02 through P8-05 did not run.
+No failed-child output or business content was inspected.
+
+The zero tuple is non-unique because the create-only record set excludes all
+pre-create outer stages, response-header checks before its status classifier,
+all successful-create downstream assertions and cleanup. Freeze post-receipt
+at `1/1`, `0/1`, `0/1`; independent
+`p8-06-quality-link-parent-downstream` starts `0/1`, `0/1`, `0/1`.
+
+Only the new flag is active. Its exact 44-code set is the existing 17 ordered
+outer codes plus 27 create server stages. The old seven status/body recorder
+is dormant: a trusted server tuple wins, otherwise the unchanged exception is
+recorded by its enclosing outer stage. Exact request scope, header, trace,
+cursors, O_EXCL exact-three-key record, strict mirror, `finally`, no-leak and
+success-zero behavior are reused. A failed prepare child reaches its outer
+code before any stdout seek/read and keeps stderr discarded.
+
+The exact-five verifier/test/governance paths have zero product, CURRENT_TASK,
+API, repository, permission, schema, migration, UI, network or ERP diff. Tests
+pin unique activation, exact 17/27 AST equality, every outer record, server-win
+and outer fallback, failed-child unread, malformed-record rejection, all-off
+dormancy and success-zero behavior. Production governance stays queued and all
+holds remain active.
+
+Level 1 passes quality-link `78/78`, projection/P7 `110/110`, peer
+runtime/security `145/145`, full Python `2553/2553`, current/reconciliation
+`36/36`, affected frontend units `68/68` and nonvisual E2E `33/33`.
+Generated-source, compile, shell syntax, exact-one-of-seven activation,
+exact-44 AST/lexical equality, failed-child-unread, strict-reader/no-leak and
+diff hygiene pass. Exact-five manifest simulation passes and an unauthorized
+sixth fails closed; product diff remains zero and unrelated state is preserved.

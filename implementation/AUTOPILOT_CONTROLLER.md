@@ -6706,3 +6706,47 @@ repeat or rewrite it merely to restore context. See
   product diff is zero and unrelated worktree state is preserved.
 - Controller marker:
   `P8-06 checkpoint 4 final held; post-receipt diagnostic 0/1 active`.
+
+## 2026-08-27 P8-06 parent/downstream quality-link diagnostic checkpoint
+
+- Exact post-receipt SHA `71109a2d269ba7c47143a94dd0f472281a514971`
+  passes ordinary CI `33031856407`. Its sole controlled run `33032672758`
+  passes preflight `98388512843`; runtime `98388565113` reaches the cumulative
+  verification step and returns no valid exact-34 safe tuple. Fixed-label-only
+  inspection still yields exactly the formal-quality-link outer failure and
+  no projection, P8-02, Item, MBOM or Tool Asset failure label. No child
+  output, response body, business value, identifier, message or stack is read.
+- Zero tuple does not prove create success or a pre-create failure. The prior
+  activation records only the seven create status/body parents and 27 server
+  stages. Bootstrap through current-truth, request-ID/cache-control checks
+  before status classification, successful-create replay/stale/list checks and
+  cleanup therefore all remain valid zero-tuple boundaries.
+- Freeze `p8-06-quality-link-post-receipt` at diagnostic `1/1`, repair `0/1`,
+  final `0/1`. Open independent
+  `p8-06-quality-link-parent-downstream` at diagnostic `0/1`, repair `0/1`,
+  final `0/1`. Only the new activation is true; every historical P8-01 and
+  quality diagnostic flag is false.
+- The new active set is exactly the existing 17 ordered outer runtime codes
+  plus 27 API/repository server codes. It does not enable the historical seven
+  status/body recorder codes. Exact POST scope/header/trace and pre-request
+  cursors remain active: a trusted server record wins; otherwise the exception
+  rises unchanged to the enclosing 17-code parent. Prepare child failure is
+  raised before stdout seek/read, stderr remains discarded, and the outer
+  prepare code records the boundary. Exact-three-key O_EXCL record, strict
+  reader, `finally`, no-leak and success-zero-record contracts remain intact.
+- Exact paths are the quality runtime verifier/test plus this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Product, CURRENT_TASK, workflow, API, repository, permissions, schema,
+  transaction, migration, UI, network and ERP behavior remain unchanged.
+  Production fact/DoD governance remains queued and all existing holds stay
+  active.
+- Level 1 passes quality-link `78/78`, projection/P7 `110/110`, peer
+  runtime/security `145/145`, full Python `2553/2553`, current/reconciliation
+  `36/36`, affected frontend unit `68/68` and nonvisual E2E `33/33`.
+  Generated-source, compile, shell syntax, exact-one-of-seven activation,
+  exact-44 AST/lexical equality, failed-child-unread, strict-reader/no-leak
+  and diff checks pass. Manifest accepts exact five and rejects an unauthorized
+  sixth; product diff is zero and unrelated worktree state is preserved.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; parent/downstream diagnostic 0/1 active`.

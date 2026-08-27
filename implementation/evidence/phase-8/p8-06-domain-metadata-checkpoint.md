@@ -596,3 +596,33 @@ reconciliation `36/36`, affected frontend units `68/68` and nonvisual E2E
 strict-reader/no-leak and diff checks pass. Exact-five manifest passes and an
 unauthorized sixth is rejected. Product diff is zero and unrelated dirty or
 untracked paths are untouched.
+
+## Parent/downstream quality-link diagnostic checkpoint
+
+Post-receipt SHA `71109a2d269ba7c47143a94dd0f472281a514971`
+passes ordinary `33031856407`; controlled `33032672758` passes preflight
+`98388512843` and runtime `98388565113` yields zero valid exact-34 safe tuple.
+Only the fixed formal-quality-link outer failure label is present. No child
+output or business content was read.
+
+Zero tuple leaves pre-create, create response headers, successful-create
+downstream checks and cleanup non-unique. Post-receipt freezes at diagnostic
+`1/1`, repair `0/1`, final `0/1`. New independent parent/downstream begins
+`0/1`, `0/1`, `0/1` with one new activation and every historical flag false.
+
+The product-zero exact-five checkpoint reuses 17 outer plus 27 server safe
+codes. It leaves the old seven status/body recorder dormant, so a trusted
+server tuple wins and every other failure reaches one outer parent. Request
+scope/trace/cursors, exact-three-key O_EXCL record, strict reader, original
+exception, `finally`, failed-child unread, no-leak and zero-success behavior
+are preserved. No product, API, repository, CURRENT_TASK, permission, schema,
+migration, UI, network or ERP path changes. Production governance remains
+queued and all holds remain active.
+
+Level 1 evidence is quality-link `78/78`, projection/P7 `110/110`, peer
+runtime/security `145/145`, repository Python `2553/2553`, current and
+reconciliation `36/36`, affected frontend units `68/68` and nonvisual E2E
+`33/33`. Generated-source, compile, shell, exact-one-of-seven activation,
+exact-44 AST/lexical equality, failed-child-unread, strict-reader/no-leak and
+diff checks pass. Exact-five manifest passes and an unauthorized sixth is
+rejected. Product diff is zero and unrelated paths remain untouched.

@@ -107,8 +107,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED
         )
         activations = (
             self.verifier.QUALITY_LINK_RUNTIME_STAGE_DIAGNOSTICS_ENABLED,
@@ -117,12 +120,13 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             self.verifier.QUALITY_LINK_POST_PERMISSION_DIAGNOSTICS_ENABLED,
             self.verifier.QUALITY_LINK_CREATE_RESPONSE_DIAGNOSTICS_ENABLED,
             self.verifier.QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED,
+            self.verifier.QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED,
         )
         self.assertEqual(sum(activations), 1)
         self.assertEqual(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES, expected)
         self.assertEqual(
             self.verifier._active_quality_link_runtime_diagnostic_codes(),
-            frozenset(self.verifier.QUALITY_LINK_CREATE_RESPONSE_PARENT_CODES).union(
+            frozenset(self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES).union(
                 self.verifier.QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES
             ),
         )
@@ -244,7 +248,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             with (
                 patch.object(
                     self.verifier,
-                    "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
+                    "QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED",
                     True,
                 ),
                 patch.dict(
@@ -279,7 +283,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 )
             with patch.object(
                 self.verifier,
-                "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
+                "QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -296,6 +300,155 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 allowed_codes=self.verifier.QUALITY_LINK_CREATE_RESPONSE_SERVER_CODES,
             )
 
+    def test_parent_downstream_falls_back_to_outer_create_without_server_tuple(self) -> None:
+        trace_id = self.verifier.quality_link_runtime_diagnostic_trace()
+        result = types.SimpleNamespace(
+            status=500,
+            headers={
+                "X-Request-ID": self.verifier.document_runtime.fixture_request_id(
+                    self.verifier.IDEMPOTENCY_KEY
+                ),
+                "Cache-Control": "private, no-store",
+            },
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ),
+                patch.object(
+                    self.verifier.document_runtime,
+                    "request",
+                    return_value=result,
+                ),
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_replay_diagnostic_log_cursors",
+                    return_value={"logs/npi_core.log": 0},
+                ),
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_sanitized_server_log_diagnostic",
+                    return_value=None,
+                ),
+                self.assertRaisesRegex(RuntimeError, "HTTP class drifted"),
+                self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+                self.verifier.quality_link_runtime_diagnostic_step(
+                    "P806_QUALITY_CREATE_HTTP"
+                ),
+            ):
+                self.verifier._create_response_request(
+                    object(),
+                    "http://npi.localhost",
+                    "/api/npi/v1/projects/project/formal-quality-links:link-observed-reference",
+                    actor_csrf="csrf",
+                    payload={"opaque": True},
+                )
+            self.assertEqual(
+                self.verifier.read_quality_link_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("RuntimeError", "P806_QUALITY_CREATE_HTTP", trace_id),
+            )
+
+    def test_parent_downstream_records_each_outer_stage_with_exact_safe_shape(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            for code in self.verifier.QUALITY_LINK_RUNTIME_DIAGNOSTIC_CODES:
+                with (
+                    self.subTest(code=code),
+                    patch.dict(
+                        os.environ,
+                        {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                        clear=False,
+                    ),
+                    self.assertRaisesRegex(RuntimeError, "same-private-error"),
+                    self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+                    self.verifier.quality_link_runtime_diagnostic_step(code),
+                ):
+                    raise RuntimeError("same-private-error")
+                self.assertEqual(
+                    self.verifier.read_quality_link_runtime_diagnostic(
+                        path,
+                        expected_trace=trace_id,
+                    ),
+                    ("RuntimeError", code, trace_id),
+                )
+                self.assertNotIn(
+                    "same-private-error",
+                    path.read_text(encoding="utf-8"),
+                )
+                path.unlink()
+
+    def test_parent_downstream_prepare_failure_never_reads_child_output(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+
+        class UnreadOutput:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def seek(self, *_args):
+                raise AssertionError("failed child stdout was read")
+
+            def __iter__(self):
+                raise AssertionError("failed child stdout was read")
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            with (
+                patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ),
+                patch.object(
+                    self.verifier.tempfile,
+                    "TemporaryFile",
+                    return_value=UnreadOutput(),
+                ),
+                patch.object(
+                    self.verifier.subprocess,
+                    "run",
+                    return_value=types.SimpleNamespace(returncode=1),
+                ) as child,
+                patch.object(
+                    self.verifier.item_runtime,
+                    "_replay_diagnostic_log_cursors",
+                ) as cursors,
+                self.assertRaisesRegex(RuntimeError, "Bench fixture failed"),
+                self.verifier.quality_link_runtime_diagnostic_scope(trace_id),
+                self.verifier.quality_link_runtime_diagnostic_step(
+                    "P806_QUALITY_PREPARE_PROJECTION"
+                ),
+            ):
+                self.verifier.run_bench_fixture(
+                    "prepare_projection",
+                    {
+                        "project_id": "10000000-0000-4000-8000-000000000002",
+                        "readiness_id": "10000000-0000-4000-8000-000000000001",
+                    },
+                )
+            self.assertEqual(
+                self.verifier.read_quality_link_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("RuntimeError", "P806_QUALITY_PREPARE_PROJECTION", trace_id),
+            )
+            cursors.assert_not_called()
+            self.assertIs(
+                child.call_args.kwargs["stderr"],
+                self.verifier.subprocess.DEVNULL,
+            )
+
     def test_create_response_success_preserves_shape_and_default_path(self) -> None:
         headers = {
             "X-Request-ID": self.verifier.document_runtime.fixture_request_id(
@@ -307,7 +460,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         with (
             patch.object(
                 self.verifier,
-                "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
+                "QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED",
                 True,
             ),
             patch.object(
@@ -336,7 +489,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         with (
             patch.object(
                 self.verifier,
-                "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
+                "QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED",
                 False,
             ),
             patch.object(
@@ -750,6 +903,11 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
                 patch.object(
                     self.verifier,
                     "QUALITY_LINK_POST_RECEIPT_DIAGNOSTICS_ENABLED",
+                    False,
+                ),
+                patch.object(
+                    self.verifier,
+                    "QUALITY_LINK_PARENT_DOWNSTREAM_DIAGNOSTICS_ENABLED",
                     False,
                 ),
                 patch.dict(
