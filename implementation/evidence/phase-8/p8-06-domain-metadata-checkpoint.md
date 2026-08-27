@@ -695,3 +695,41 @@ exact-65 AST/lexical equality, inner precedence, outer gap fallback,
 failed-child-unread, strict-reader/no-leak and diff checks pass. Exact-five and
 post-commit 68-path manifests pass; an unauthorized sixth is rejected. Product
 diff is zero and unrelated paths stay untouched.
+
+## Post-write create-response quality-link diagnostic checkpoint
+
+Full-boundary SHA `e7fa19fae9b2239d67648bdf40c8054c6ccca58c`
+passes ordinary `33038381751`; controlled `33087942308` passes preflight
+`98572653434` and runtime `98572776041` records exactly
+`P806_QUALITY_CREATE_SHAPE / RuntimeError /
+trace-61e7cdaaee255b209f714bf2aba1cf3d`. Failed-child output and all actual
+HTTP/business content remain unread.
+
+The verifier checks exact status `201` before body shape, while the shared HTTP
+constructor accepts only object bodies before returning from CREATE_HTTP. The
+tuple is therefore an undisclosed non-201 result rather than a body-shape
+failure. The prior receipt PermissionError is closed by the unchanged
+actor-bound quality-link write capability, but remaining API/repository stages
+are non-unique.
+
+Freeze full-boundary `1/1`, `0/1`, `0/1`; new post-write create-response starts
+`0/1`, `0/1`, `0/1`. The product-zero exact-five checkpoint activates only the
+existing seven parent plus 27 server codes. Prepare and all historical flags
+are false. Exact POST scope/trace/cursors, strict exact-three-key O_EXCL
+record, server-inner precedence, parent fallback, same exception, `finally`,
+response equivalence, no-leak and zero-success-record contracts are preserved.
+API-to-repository activation already has no process-environment second gate.
+
+No product, CURRENT_TASK, workflow, API, repository, permission, schema,
+migration, UI, network or ERP path changes. Production governance remains
+queued and all holds remain active.
+
+Level 1 evidence is focused verifier `30/30`, quality-link `83/83`,
+projection/P7 `110/110`, peer runtime/security `145/145`, repository Python
+`2558/2558`, current/reconciliation `36/36`, full frontend unit/coverage
+`1073/1073` and affected nonvisual E2E `33/33`. Generated-source, typecheck,
+lint, format, i18n, compile, shell, exact-one-of-ten activation, exact-34
+AST/lexical equality, all parent classes, prepare dormancy, server precedence,
+strict-reader/no-leak and diff checks pass. Exact-five and post-commit 68-path
+manifests pass and an unauthorized sixth is rejected. Product diff is zero and
+unrelated paths stay untouched.

@@ -6839,3 +6839,52 @@ repeat or rewrite it merely to restore context. See
   accepts exact five and the post-commit 68-path union, and rejects an
   unauthorized sixth; product diff is zero and unrelated worktree state is
   preserved.
+
+## 2026-08-27 P8-06 post-write create-response diagnostic checkpoint
+
+- Full-boundary SHA `e7fa19fae9b2239d67648bdf40c8054c6ccca58c`
+  passes ordinary CI `33038381751`. Its sole controlled run `33087942308`
+  passes preflight `98572653434`; runtime `98572776041` records exactly
+  `P806_QUALITY_CREATE_SHAPE / RuntimeError /
+  trace-61e7cdaaee255b209f714bf2aba1cf3d`. Failed-child output, actual HTTP
+  status, response body, business values, identifiers, message and stack
+  remain unread.
+- `CREATE_SHAPE` first requires status `201` and only then checks the body.
+  The shared HTTP helper rejects every non-object JSON response before it can
+  return from the enclosing `CREATE_HTTP` stage. The tuple therefore proves a
+  non-201 response without revealing its value; it is not a body-shape fact.
+  The prior receipt PermissionError is closed by the unchanged actor-bound
+  support-write capability, but that history does not identify the new HTTP
+  class or another API/repository stage.
+- Freeze `p8-06-quality-link-full-boundary` at diagnostic `1/1`, repair
+  `0/1`, final `0/1`. Independent
+  `p8-06-quality-link-post-write-create-response` starts diagnostic `0/1`,
+  repair `0/1`, final `0/1`; its name denotes the post-repair epoch and does
+  not assert that every write completed.
+- Only the new activation is true. It selects exactly seven fixed parent
+  status/body classes plus 27 existing API/repository server stages. It does
+  not enable prepare diagnostics. Exact POST scope, trace and cursors,
+  O_EXCL exact-three-key record, strict mirror, server-inner precedence,
+  parent fallback, original exception, `finally`, response equivalence,
+  no-leak and success-zero-record behavior remain mandatory. The existing API
+  passes its exact active scope directly into the repository; no product-side
+  environment gate or activation change is required.
+- Exact paths are the quality runtime verifier/test plus this controller,
+  `implementation/evidence/phase-8/p8-06-plan.md` and
+  `implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md`.
+  Product, CURRENT_TASK, workflow, API, repository, permission, schema,
+  transaction, migration, UI, network and ERP behavior remain unchanged.
+  Production fact/DoD governance remains queued; FR-CO-003/004 deferral and
+  every B/C hold remain active.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-write create-response diagnostic 0/1 active`.
+- Level 1 passes focused verifier `30/30`, quality-link `83/83`,
+  projection/P7 `110/110`, peer runtime/security `145/145`, full Python
+  `2558/2558`, current/reconciliation `36/36`, full frontend unit/coverage
+  `1073/1073` and affected nonvisual E2E `33/33`. Generated-source,
+  typecheck, lint, formatting, i18n, compilation, shell syntax, exact-one-of-ten
+  activation, exact-34 AST/lexical equality, all parent classes, prepare
+  dormancy, server precedence, strict-reader/no-leak and diff checks pass.
+  Manifest accepts exact five and the post-commit 68-path union and rejects an
+  unauthorized sixth; product diff is zero and unrelated worktree state is
+  preserved.

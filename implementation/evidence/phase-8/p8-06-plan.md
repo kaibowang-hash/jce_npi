@@ -1307,3 +1307,48 @@ exact-65 AST/lexical equality, inner precedence, outer gap fallback,
 failed-child-unread, strict-reader/no-leak and diff checks pass. Exact-five and
 post-commit 68-path manifests pass; an unauthorized sixth is rejected. Product
 diff is zero and unrelated state remains untouched.
+
+## 37. Independent post-write create-response diagnostic
+
+Full-boundary SHA `e7fa19fae9b2239d67648bdf40c8054c6ccca58c`
+passes ordinary `33038381751`. Controlled `33087942308` passes preflight
+`98572653434`; runtime `98572776041` yields the sole safe tuple
+`P806_QUALITY_CREATE_SHAPE / RuntimeError /
+trace-61e7cdaaee255b209f714bf2aba1cf3d`. Failed-child output, actual HTTP
+status, body, business values, identifiers, message and stack were not read.
+
+`CREATE_SHAPE` orders its exact-201 check before its object-shape check. The
+shared request helper cannot return a non-dict body, because its `_http_result`
+constructor fails inside `CREATE_HTTP` first. The tuple therefore narrows to
+an undisclosed non-201 response. The unchanged actor-bound receipt support
+write closes the prior PermissionError root, but does not make the remaining
+HTTP class or server stage unique. No repair is authorized.
+
+Freeze full-boundary at `1/1`, `0/1`, `0/1`. Independent
+`p8-06-quality-link-post-write-create-response` starts `0/1`, `0/1`, `0/1`.
+Its new-only activation selects exact 34: seven fixed parent status/body codes
+and 27 API/repository server codes. Prepare diagnostics and all historical
+activations remain false. Exact POST scope/header/trace/cursors, O_EXCL
+exact-three-key record, strict mirror, server-inner precedence, parent
+fallback, same exception, `finally`, response equivalence, no-leak and
+success-zero behavior are preserved. Existing API-to-repository activation is
+already direct and exact, so no server or product path changes.
+
+The exact-five verifier/test/controller/plan/checkpoint paths have zero
+product, CURRENT_TASK, workflow, API, repository, permission, schema,
+migration, UI, network or ERP diff. Tests pin one-of-ten activation, exact-34
+AST/lexical equality, all seven parent classes, server win and fallback,
+prepare dormancy, exact request scope, trace/cursors, strict reader,
+malformed-record rejection, all-off dormancy and success-zero response
+equivalence. Production fact/DoD governance remains queued; FR-CO-003/004
+deferral and all B/C holds remain unchanged.
+
+Level 1 passes focused verifier `30/30`, quality-link `83/83`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2558/2558`,
+current/reconciliation `36/36`, full frontend unit/coverage `1073/1073` and
+affected nonvisual E2E `33/33`. Generated-source, typecheck, lint, formatting,
+i18n, compile, shell syntax, exact-one-of-ten activation, exact-34
+AST/lexical equality, all parent classes, prepare dormancy, server precedence,
+strict-reader/no-leak and diff hygiene pass. Exact-five and post-commit 68-path
+manifests pass; an unauthorized sixth is rejected. Product diff is zero and
+unrelated state remains untouched.
