@@ -72,6 +72,25 @@ The checkpoint-3 Level 1/2 candidate passes:
 The candidate still requires an exact task manifest, commit and exact-SHA
 ordinary CI PASS before this checkpoint can activate checkpoint 4.
 
+### Same-cycle branch-history scan remediation
+
+Initial exact candidate
+`a5bc713d3cac8eb82b511a6aa73dc2262aa58dc6` entered ordinary CI
+`33197139118`. Repository job `98937051995` passed, and secret-scan job
+`98937052033` passed both current-task verification and the standard Gitleaks
+action. Its additional full pull-request-history scan then classified one
+synthetic test-only reconciliation idempotency value at
+`frontend/tests/unit/integration-operations-data-source.test.ts:146` as a
+generic API key and exited `2`; the redacted report identified no production
+credential or product-path value.
+
+The same-cycle repair constructs that fixed test value from low-risk literal
+segments and adds only the exact historical finding fingerprint to
+`.gitleaksignore`. It does not change product code, scanner configuration,
+rules, history coverage, exit code or threshold. The replacement candidate
+must pass a new exact-SHA ordinary CI; evidence from the failed run cannot
+activate checkpoint 4.
+
 ## Holds
 
 Checkpoint 3 adds no backend route, permission, Schema, worker, adapter,

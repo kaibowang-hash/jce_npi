@@ -54,6 +54,7 @@
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    ".gitleaksignore",
     ".github/workflows/ci.yml",
     "apps/npi_core/npi_core/bff.py",
     "apps/npi_core/npi_core/translations/zh.csv",

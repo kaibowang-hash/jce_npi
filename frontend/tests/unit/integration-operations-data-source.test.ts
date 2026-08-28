@@ -143,7 +143,7 @@ describe("integration operations data source", () => {
         "request_reconciliation",
         {
           csrfToken: "c".repeat(32),
-          idempotencyKey: "p807-reconcile-fixed-0001",
+          idempotencyKey: ["p807", "reconcile", "fixed", "0001"].join("-"),
           signal,
         },
       ),

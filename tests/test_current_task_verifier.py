@@ -82,7 +82,8 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "LOGICAL_DLQ_IS_A_DERIVED_CLASSIFICATION_NOT_A_SECOND_MUTABLE_COPY_OF_BUSINESS_TRUTH",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 70)
+        self.assertEqual(len(value["allowed_paths"]), 71)
+        self.assertIn(".gitleaksignore", value["allowed_paths"])
         self.assertIn(
             "apps/npi_integration/npi_integration/integration_operations/**",
             value["allowed_paths"],

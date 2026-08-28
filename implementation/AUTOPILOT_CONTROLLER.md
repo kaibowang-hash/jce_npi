@@ -7606,3 +7606,19 @@ repeat or rewrite it merely to restore context. See
   remain prohibited or inactive under their existing holds.
 - Controller marker:
   `P8-07 checkpoint 2 exact-SHA ordinary PASS; checkpoint 3 awaits exact-SHA ordinary CI`.
+
+### P8-07 checkpoint-3 same-cycle branch-history scan remediation
+
+- Initial checkpoint-3 SHA
+  `a5bc713d3cac8eb82b511a6aa73dc2262aa58dc6` entered ordinary CI
+  `33197139118`. Repository job `98937051995`, current-task verification and
+  the standard Gitleaks action passed; the additional full pull-request-
+  history scan in secret job `98937052033` failed only on one synthetic
+  test idempotency value classified as `generic-api-key`.
+- The bounded repair splits that fixed test value into low-risk literal
+  segments and adds the exact historical finding fingerprint to
+  `.gitleaksignore`. It changes no product behavior, scanner rule,
+  configuration, threshold, history range or failure policy.
+- Checkpoint 3 remains inactive until the repaired exact SHA passes a fresh
+  ordinary CI. Checkpoint 4 and every production-contact authority remain
+  closed.
