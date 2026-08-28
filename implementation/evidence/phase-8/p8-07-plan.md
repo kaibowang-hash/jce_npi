@@ -402,3 +402,32 @@ runtime entrypoint correctly exits before Site creation; the exact-SHA
 controlled runtime remains the applicable execution proof after ordinary CI.
 Detailed candidate evidence is in
 `implementation/evidence/phase-8/p8-07-controlled-runtime-checkpoint.md`.
+
+## 19. Checkpoint-4 Level 3 default-disabled diagnostic boundary
+
+Checkpoint-4 SHA `016be5292e48ac795a2b45f95b07db5555ccae3f`
+passes ordinary CI `33208066878`. Its sole Level 3 `33209167283` passes all
+four base lanes and controlled preflight, while runtime `98981226307` fails
+after Site initialization. Fixed source-label filtering uniquely selects the
+P8-07 default-disabled probe; all predecessors passed and no P8-07 fixture or
+write was reached.
+
+That label is not a safe repair boundary because it contains ordered login,
+transport, response-policy and problem-contract predicates. The bounded
+same-checkpoint diagnostic therefore changes only the runtime verifier and its
+tests plus governance evidence. It emits one of twelve fixed value-free codes
+only on failure, never the actual status, headers, body, identity, values,
+message or stack. The activation requires a fresh exact-SHA ordinary PASS and
+one Level 2 controlled run. No product/API/schema/frontend/workflow behavior,
+target adapter, production profile, Site outside CI, P8-07F or P8-08 scope is
+authorized.
+
+Diagnostic Level 1 passes the focused verifier `17/17`, complete P8-07
+`51/51`, affected P8-02-through-P8-05 `201/201`, governance/reconciliation
+`59/59` and repository `2623/2623` checks in the preserved local tree. Python
+compile, shell syntax, current/reconciliation scripts, diff hygiene and the
+exact-five plus union-78 manifests pass; an unauthorized sixth path is
+rejected. Product, API, schema, frontend and workflow diffs remain zero. The
+existing checkpoint-4 frontend evidence is unchanged, and the diagnostic
+candidate still requires its own exact-SHA ordinary frontend and repository
+lanes before the single controlled diagnostic.

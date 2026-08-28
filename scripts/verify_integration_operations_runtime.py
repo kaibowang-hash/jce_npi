@@ -6,6 +6,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -32,6 +33,23 @@ FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
 TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = publish_runtime.ACTOR_USER
 RUNTIME_MARKER = "npi-one-integration-operations-disposable-v1"
+DEFAULT_DISABLED_DIAGNOSTICS_ENABLED = True
+_DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P807_DEFAULT_DISABLED_LOGIN",
+        "P807_DEFAULT_DISABLED_HTTP",
+        "P807_DEFAULT_DISABLED_REQUEST_ID",
+        "P807_DEFAULT_DISABLED_CACHE_CONTROL",
+        "P807_DEFAULT_DISABLED_RESPONSE_SAFE",
+        "P807_DEFAULT_DISABLED_STATUS",
+        "P807_DEFAULT_DISABLED_BODY_STATUS",
+        "P807_DEFAULT_DISABLED_CODE",
+        "P807_DEFAULT_DISABLED_MEDIA_TYPE",
+        "P807_DEFAULT_DISABLED_TRACE",
+        "P807_DEFAULT_DISABLED_ENVELOPE",
+        "P807_DEFAULT_DISABLED_CONTRACT",
+    }
+)
 _TRACE_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
 _FORBIDDEN_KEYS = frozenset(
     {
@@ -126,24 +144,66 @@ def _request(
         if idempotency_key is not None
         else document_runtime.query_headers(f"p807-{label}")
     )
-    result = document_runtime.request(
-        opener,
-        base_url,
-        path,
-        method=method,
-        payload=payload,
-        request_headers=headers,
-    )
-    require(
+    try:
+        result = document_runtime.request(
+            opener,
+            base_url,
+            path,
+            method=method,
+            payload=payload,
+            request_headers=headers,
+        )
+    except Exception:
+        _record_default_disabled_diagnostic("P807_DEFAULT_DISABLED_HTTP", label=label)
+        raise
+    _diagnostic_require(
         result.headers.get("X-Request-ID") == headers["X-Request-ID"],
+        "P807_DEFAULT_DISABLED_REQUEST_ID",
         "P8-07 request identity was not echoed",
+        label=label,
     )
-    require(
+    _diagnostic_require(
         result.headers.get("Cache-Control") == "private, no-store",
+        "P807_DEFAULT_DISABLED_CACHE_CONTROL",
         "P8-07 response cache control drifted",
+        label=label,
     )
-    _assert_safe(result.body)
+    try:
+        _assert_safe(result.body)
+    except Exception:
+        _record_default_disabled_diagnostic(
+            "P807_DEFAULT_DISABLED_RESPONSE_SAFE",
+            label=label,
+        )
+        raise
     return result
+
+
+def _record_default_disabled_diagnostic(code: str, *, label: str = "disabled") -> None:
+    require(code in _DEFAULT_DISABLED_DIAGNOSTIC_CODES, "P8-07 diagnostic code drifted")
+    if DEFAULT_DISABLED_DIAGNOSTICS_ENABLED and label == "disabled":
+        print(code, file=sys.stderr)
+
+
+def _diagnostic_require(
+    condition: object,
+    code: str,
+    message: str,
+    *,
+    label: str = "disabled",
+) -> None:
+    if condition:
+        return
+    _record_default_disabled_diagnostic(code, label=label)
+    require(False, message)
+
+
+def _diagnostic_call(code: str, function: Any) -> Any:
+    try:
+        return function()
+    except Exception:
+        _record_default_disabled_diagnostic(code)
+        raise
 
 
 def _assert_safe(value: object) -> None:
@@ -242,14 +302,57 @@ def run_disabled_probe(
     fixture_password: str,
     project_id: str,
 ) -> dict[str, object]:
-    actor = login(base_url, ACTOR_USER, fixture_password)
+    actor = _diagnostic_call(
+        "P807_DEFAULT_DISABLED_LOGIN",
+        lambda: login(base_url, ACTOR_USER, fixture_password),
+    )
     result = _request(
         actor,
         base_url,
         _collection_path(project_id),
         label="disabled",
     )
-    validate_problem(result, 503, "INTEGRATION_OPERATIONS_ROUTES_DISABLED")
+    _diagnostic_require(
+        result.status == 503,
+        "P807_DEFAULT_DISABLED_STATUS",
+        "P8-07 disabled route status drifted",
+    )
+    _diagnostic_require(
+        result.body.get("status") == 503,
+        "P807_DEFAULT_DISABLED_BODY_STATUS",
+        "P8-07 disabled route body status drifted",
+    )
+    _diagnostic_require(
+        result.body.get("code") == "INTEGRATION_OPERATIONS_ROUTES_DISABLED",
+        "P807_DEFAULT_DISABLED_CODE",
+        "P8-07 disabled route code drifted",
+    )
+    try:
+        media_type = result.headers.get_content_type()
+    except Exception:
+        _record_default_disabled_diagnostic("P807_DEFAULT_DISABLED_MEDIA_TYPE")
+        raise
+    _diagnostic_require(
+        media_type == "application/problem+json",
+        "P807_DEFAULT_DISABLED_MEDIA_TYPE",
+        "P8-07 disabled route media type drifted",
+    )
+    trace_id = result.body.get("traceId")
+    _diagnostic_require(
+        isinstance(trace_id, str) and trace_id == result.headers.get("X-Trace-ID"),
+        "P807_DEFAULT_DISABLED_TRACE",
+        "P8-07 disabled route trace drifted",
+    )
+    _diagnostic_require(
+        not {"exc", "exception", "exc_type", "message"}.intersection(result.body),
+        "P807_DEFAULT_DISABLED_ENVELOPE",
+        "P8-07 disabled route leaked a Frappe error envelope",
+    )
+    try:
+        validate_problem(result, 503, "INTEGRATION_OPERATIONS_ROUTES_DISABLED")
+    except Exception:
+        _record_default_disabled_diagnostic("P807_DEFAULT_DISABLED_CONTRACT")
+        raise
     return {"routesDisabled": True}
 
 

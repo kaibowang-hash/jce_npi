@@ -20,6 +20,15 @@ SHELL = ROOT / "scripts" / "verify-frappe-runtime.sh"
 FIXTURE_RUN_ID = "0123456789abcdef0123456789abcdef"
 PROJECT_ID = "11111111-1111-4111-8111-111111111111"
 
+
+class Headers(dict[str, str]):
+    def __init__(self, values: dict[str, str], media_type: str) -> None:
+        super().__init__(values)
+        self.media_type = media_type
+
+    def get_content_type(self) -> str:
+        return self.media_type
+
 sys.path[:0] = [
     str(ROOT / "scripts"),
     str(ROOT / "apps" / "npi_core"),
@@ -161,10 +170,26 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 self.verifier._request(object(), "http://127.0.0.1", "/safe", label="list")
 
     def test_disabled_probe_requires_the_fixed_disabled_problem(self) -> None:
+        response = SimpleNamespace(
+            status=503,
+            headers=Headers(
+                {
+                    "X-Request-ID": "11111111-1111-4111-8111-111111111112",
+                    "X-Trace-ID": "trace-p807-disabled",
+                    "Cache-Control": "private, no-store",
+                },
+                "application/problem+json",
+            ),
+            body={
+                "status": 503,
+                "code": "INTEGRATION_OPERATIONS_ROUTES_DISABLED",
+                "traceId": "trace-p807-disabled",
+            },
+        )
         with patch.object(self.verifier, "login", return_value=object()), patch.object(
             self.verifier,
             "_request",
-            return_value=SimpleNamespace(status=503, body={"code": "disabled"}),
+            return_value=response,
         ), patch.object(self.verifier, "validate_problem") as validate:
             self.assertEqual(
                 self.verifier.run_disabled_probe("http://127.0.0.1", "secret", PROJECT_ID),
@@ -175,6 +200,141 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             503,
             "INTEGRATION_OPERATIONS_ROUTES_DISABLED",
         )
+
+    def test_default_disabled_diagnostic_codes_are_fixed_and_value_free(self) -> None:
+        expected = {
+            "P807_DEFAULT_DISABLED_LOGIN",
+            "P807_DEFAULT_DISABLED_HTTP",
+            "P807_DEFAULT_DISABLED_REQUEST_ID",
+            "P807_DEFAULT_DISABLED_CACHE_CONTROL",
+            "P807_DEFAULT_DISABLED_RESPONSE_SAFE",
+            "P807_DEFAULT_DISABLED_STATUS",
+            "P807_DEFAULT_DISABLED_BODY_STATUS",
+            "P807_DEFAULT_DISABLED_CODE",
+            "P807_DEFAULT_DISABLED_MEDIA_TYPE",
+            "P807_DEFAULT_DISABLED_TRACE",
+            "P807_DEFAULT_DISABLED_ENVELOPE",
+            "P807_DEFAULT_DISABLED_CONTRACT",
+        }
+        self.assertTrue(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
+        self.assertEqual(self.verifier._DEFAULT_DISABLED_DIAGNOSTIC_CODES, expected)
+        self.assertTrue(all(re.fullmatch(r"P807_DEFAULT_DISABLED_[A-Z_]+", code) for code in expected))
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertNotIn("result.status, file=sys.stderr", source)
+        self.assertNotIn("result.body, file=sys.stderr", source)
+
+    def test_default_disabled_diagnostic_classifies_ordered_contract_boundaries(self) -> None:
+        base = {
+            "status": 503,
+            "code": "INTEGRATION_OPERATIONS_ROUTES_DISABLED",
+            "traceId": "trace-p807-disabled",
+        }
+        cases = (
+            ("P807_DEFAULT_DISABLED_STATUS", {"result_status": 200}),
+            ("P807_DEFAULT_DISABLED_BODY_STATUS", {"body": {**base, "status": 500}}),
+            ("P807_DEFAULT_DISABLED_CODE", {"body": {**base, "code": "OTHER"}}),
+            ("P807_DEFAULT_DISABLED_MEDIA_TYPE", {"media_type": "application/json"}),
+            ("P807_DEFAULT_DISABLED_TRACE", {"body": {**base, "traceId": "trace-other"}}),
+            ("P807_DEFAULT_DISABLED_ENVELOPE", {"body": {**base, "message": "withheld"}}),
+        )
+        for expected, change in cases:
+            with self.subTest(expected=expected):
+                response = SimpleNamespace(
+                    status=change.get("result_status", 503),
+                    headers=Headers(
+                        {
+                            "X-Request-ID": "11111111-1111-4111-8111-111111111112",
+                            "X-Trace-ID": "trace-p807-disabled",
+                            "Cache-Control": "private, no-store",
+                        },
+                        change.get("media_type", "application/problem+json"),
+                    ),
+                    body=change.get("body", dict(base)),
+                )
+                with patch.object(self.verifier, "login", return_value=object()), patch.object(
+                    self.verifier,
+                    "_request",
+                    return_value=response,
+                ), patch.object(
+                    self.verifier,
+                    "_record_default_disabled_diagnostic",
+                ) as record, self.assertRaises(RuntimeError):
+                    self.verifier.run_disabled_probe(
+                        "http://127.0.0.1",
+                        "secret",
+                        PROJECT_ID,
+                    )
+                record.assert_called_once_with(expected, label="disabled")
+
+    def test_default_disabled_diagnostic_classifies_login_and_request_boundaries(self) -> None:
+        with patch.object(
+            self.verifier,
+            "login",
+            side_effect=RuntimeError("withheld"),
+        ), patch.object(
+            self.verifier,
+            "_record_default_disabled_diagnostic",
+        ) as record, self.assertRaises(RuntimeError):
+            self.verifier.run_disabled_probe("http://127.0.0.1", "secret", PROJECT_ID)
+        record.assert_called_once_with("P807_DEFAULT_DISABLED_LOGIN")
+
+        with patch.object(
+            self.verifier.document_runtime,
+            "query_headers",
+            return_value={"X-Request-ID": "p807-list"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            side_effect=RuntimeError("withheld"),
+        ), patch.object(
+            self.verifier,
+            "_record_default_disabled_diagnostic",
+        ) as record, self.assertRaises(RuntimeError):
+            self.verifier._request(
+                object(),
+                "http://127.0.0.1",
+                "/safe",
+                label="disabled",
+            )
+        record.assert_called_once_with("P807_DEFAULT_DISABLED_HTTP", label="disabled")
+
+        request_cases = (
+            (
+                "P807_DEFAULT_DISABLED_REQUEST_ID",
+                {"X-Request-ID": "wrong", "Cache-Control": "private, no-store"},
+                {"items": []},
+            ),
+            (
+                "P807_DEFAULT_DISABLED_CACHE_CONTROL",
+                {"X-Request-ID": "p807-list", "Cache-Control": "public"},
+                {"items": []},
+            ),
+            (
+                "P807_DEFAULT_DISABLED_RESPONSE_SAFE",
+                {"X-Request-ID": "p807-list", "Cache-Control": "private, no-store"},
+                {"privateToken": "withheld"},
+            ),
+        )
+        for expected, headers, body in request_cases:
+            with self.subTest(expected=expected), patch.object(
+                self.verifier.document_runtime,
+                "query_headers",
+                return_value={"X-Request-ID": "p807-list"},
+            ), patch.object(
+                self.verifier.document_runtime,
+                "request",
+                return_value=SimpleNamespace(headers=headers, body=body),
+            ), patch.object(
+                self.verifier,
+                "_record_default_disabled_diagnostic",
+            ) as record, self.assertRaises(RuntimeError):
+                self.verifier._request(
+                    object(),
+                    "http://127.0.0.1",
+                    "/safe",
+                    label="disabled",
+                )
+            record.assert_called_once_with(expected, label="disabled")
 
     def test_failed_bench_child_never_reads_stdout_or_stderr(self) -> None:
         class FailedOutput:

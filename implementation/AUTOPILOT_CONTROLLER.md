@@ -7684,3 +7684,29 @@ repeat or rewrite it merely to restore context. See
   portals remain inactive.
 - Controller marker:
   `P8-07 checkpoint 3 exact-SHA ordinary PASS; checkpoint 4 awaits exact-SHA ordinary CI`.
+
+## 2026-08-29 P8-07 checkpoint-4 Level 3 default-disabled diagnostic cycle
+
+- Checkpoint-4 SHA `016be5292e48ac795a2b45f95b07db5555ccae3f`
+  passes ordinary CI `33208066878` with repository `98974133179`, secret scan
+  `98974133439`, frontend `98974133485` and visual `98974133564` all PASS.
+- Sole Level 3 `33209167283` passes the same four lanes and controlled
+  preflight `98981169745`; runtime `98981226307` initializes the pinned Bench
+  and fixed Site, then fails. Fixed source-label filtering uniquely yields
+  `Local Frappe integration operations default-disabled probe failed.` Failed
+  child output and response/business values remain unread; no rerun occurred.
+- Freeze that final attempt at `1/1`. The safe label spans multiple independent
+  login/transport/response-contract predicates and does not authorize a repair.
+  Activate one product-zero diagnostic cycle at `0/1,0/1,0/1`: the verifier
+  may emit only one fixed value-free boundary code and its tests must prove no
+  status/header/body/identity/value/message/stack output.
+- The diagnostic candidate must pass exact-SHA ordinary CI before exactly one
+  Level 2 controlled run. No P8-07 product/API/schema/frontend/workflow change,
+  production/Sandbox contact, P8-07F transition or P8-08 activation is allowed.
+- Diagnostic Level 1 passes the focused verifier `17/17`, the complete P8-07
+  set `51/51`, affected P8-02-through-P8-05 regression `201/201`, governed
+  current-task/devcontainer/reconciliation `59/59` and repository verification
+  `2623/2623` in the preserved local tree. Compile, shell syntax,
+  reconciliation, exact-five and union-78 manifests, unauthorized-six
+  rejection and diff hygiene pass. There is no product or frontend diff; the
+  candidate's own exact-SHA ordinary CI remains mandatory before dispatch.
