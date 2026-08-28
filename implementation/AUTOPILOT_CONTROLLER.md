@@ -7710,3 +7710,30 @@ repeat or rewrite it merely to restore context. See
   reconciliation, exact-five and union-78 manifests, unauthorized-six
   rejection and diff hygiene pass. There is no product or frontend diff; the
   candidate's own exact-SHA ordinary CI remains mandatory before dispatch.
+
+### P8-07 checkpoint-4 default-disabled UUID harness repair
+
+- Diagnostic SHA `3362f416782e05a3f21f0025cdf88730fdbafca1`
+  passes ordinary CI `33211692745`: frontend `98986162628`, repository
+  `98986162836`, secret scan `98986162870` and visual `98986162928` all PASS.
+  Its sole Level 2 controlled run `33212760671` passes preflight `98989580926`;
+  runtime `98989686823` initializes the fixed Bench/Site and fails at the
+  default-disabled probe. Strict twelve-code filtering returns zero records;
+  fixed-label filtering still yields only the P8-07 default-disabled label.
+- The zero-record boundary is unique to the verifier before its recorder:
+  approved Project instantiation derives the retained Project identity with
+  UUIDv5, P8-03 captures that exact canonical identity, while the diagnostic
+  SHA's `_require_project_id` required UUIDv4 before `run_disabled_probe`.
+  Earlier local-environment and secret guards were crossed by the same run's
+  predecessor verifiers. This is a harness root, not a product/API/ownership
+  incompatibility.
+- Freeze the diagnostic at `1/1` and the harness repair at `1/1`; final remains
+  `0/1`. The repair accepts only canonical UUIDv5 for this retained Project,
+  rejects v4/noncanonical/malformed values and turns the diagnostic activation
+  off. Product, API, schema, frontend, workflow and production ERP remain
+  unchanged. After exact-SHA ordinary PASS, one Level 3 final is authorized.
+- Repair Level 1 passes focused verifier `18/18`, complete P8-07 `52/52`, the
+  affected integration/security set `72/72`, governance/reconciliation
+  `59/59` and repository `2624/2624` in the preserved local tree. Compile,
+  shell syntax, current/reconciliation, exact-five/union-78 manifests,
+  unauthorized-six rejection and diff hygiene pass.

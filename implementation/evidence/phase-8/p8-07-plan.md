@@ -431,3 +431,29 @@ rejected. Product, API, schema, frontend and workflow diffs remain zero. The
 existing checkpoint-4 frontend evidence is unchanged, and the diagnostic
 candidate still requires its own exact-SHA ordinary frontend and repository
 lanes before the single controlled diagnostic.
+
+## 20. Default-disabled diagnostic result and UUID harness repair
+
+Diagnostic SHA `3362f416782e05a3f21f0025cdf88730fdbafca1` passes
+ordinary CI `33211692745` in all four lanes. Its sole controlled diagnostic
+`33212760671` passes preflight `98989580926`, while runtime `98989686823`
+fails at the same default-disabled boundary. Strict twelve-code filtering
+returns zero safe records; no restricted output was read.
+
+The zero record is statically unique before `run_disabled_probe`. The approved
+Project instantiation service deterministically creates Project identities as
+UUIDv5, and the retained P8-03 capture returns that canonical value unchanged.
+The P8-07 verifier instead required UUIDv4 before any diagnostic recorder could
+run. Same-run predecessors crossed the shared local runtime and secret guards.
+The bounded harness repair therefore changes only that verifier assertion to
+canonical UUIDv5, adds focused v5/v4/noncanonical/malformed coverage and turns
+the diagnostic activation off. It does not change product/API/schema/frontend/
+workflow behavior, ownership or an ERP contract.
+
+The cycle is diagnostic `1/1`, harness repair `1/1`, final `0/1`. Repair Level
+1 passes focused verifier `18/18`, complete P8-07 `52/52`, affected
+integration/security `72/72`, governance/reconciliation `59/59` and repository
+`2624/2624`. Compile, shell syntax, current/reconciliation scripts, diff and
+exact-five/union-78 manifests pass; unauthorized-six is rejected. A fresh
+exact-SHA ordinary PASS is required before the sole diagnostics-off Level 3.
+P8-07F, SSH/ERP contact and P8-08 remain inactive.

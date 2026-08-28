@@ -33,7 +33,7 @@ FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
 TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = publish_runtime.ACTOR_USER
 RUNTIME_MARKER = "npi-one-integration-operations-disposable-v1"
-DEFAULT_DISABLED_DIAGNOSTICS_ENABLED = True
+DEFAULT_DISABLED_DIAGNOSTICS_ENABLED = False
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -98,7 +98,7 @@ def _require_project_id(value: object) -> str:
         parsed = UUID(str(value))
     except (TypeError, ValueError) as error:
         raise RuntimeError("P8-07 runtime Project identity is invalid") from error
-    require(parsed.version == 4 and str(parsed) == str(value), "P8-07 runtime Project identity drifted")
+    require(parsed.version == 5 and str(parsed) == str(value), "P8-07 runtime Project identity drifted")
     return str(parsed)
 
 

@@ -1,6 +1,6 @@
 # P8-07 Checkpoint 4 — Controlled Integration Operations Runtime
 
-Status: **LEVEL 3 FAILED AT DEFAULT-DISABLED PROBE — BOUNDED DIAGNOSTIC ACTIVE**
+Status: **UUID HARNESS REPAIR LEVEL 1 PASS — FINAL AWAITS EXACT-SHA ORDINARY CI**
 
 Date: 2026-08-29
 
@@ -135,3 +135,38 @@ and P8-07F remain inactive.
   path is rejected. Product/API/schema/frontend/workflow diffs are zero; the
   candidate's own exact-SHA ordinary CI remains the required frontend and
   repository proof before its one Level 2 controlled run.
+
+## Diagnostic result and unique harness root
+
+- Diagnostic SHA `3362f416782e05a3f21f0025cdf88730fdbafca1`
+  passes ordinary CI `33211692745`: frontend `98986162628`, repository
+  `98986162836`, secret scan `98986162870` and visual `98986162928` all PASS.
+- Sole controlled diagnostic `33212760671` passes preflight `98989580926`.
+  Runtime `98989686823` initializes the pinned Bench and fixed Site, then
+  fails at the default-disabled probe; cleanup passes. Strict twelve-code
+  filtering returns zero safe records, while the fixed outer allowlist still
+  yields only the P8-07 default-disabled label. Child and response content,
+  status, identity, values, messages and stack remain unread.
+- The recorder is downstream of input validation. Approved
+  `ProjectInstantiationService` derives the retained Project global identity
+  with UUIDv5; P8-03 captures and passes that exact canonical identity. The
+  diagnostic SHA required UUIDv4 in `_require_project_id`, so it necessarily
+  exits before `run_disabled_probe` and before any of the twelve record sites.
+  Same-run predecessors prove the shared local-runtime and secret guards were
+  available. No product repair is implicated.
+
+## UUID harness repair
+
+- The verifier now requires the canonical UUIDv5 actually owned by the current
+  Project domain. UUIDv4, noncanonical text and malformed identities remain
+  fail-closed. The default-disabled diagnostic activation is false; localized
+  tests retain the bounded mechanism without enabling it in a release run.
+- The cycle freezes at diagnostic `1/1`, harness repair `1/1`, final `0/1`.
+  Focused verifier passes `18/18`, complete P8-07 `52/52`, affected
+  integration/security `72/72`, governance/reconciliation `59/59` and
+  repository `2624/2624` in the preserved local tree. Compile, shell syntax,
+  current/reconciliation scripts, diff, exact-five/union-78 manifests and
+  unauthorized-six rejection pass.
+- Product/API/schema/frontend/workflow diffs remain zero. A fresh exact-SHA
+  ordinary PASS is required before the sole diagnostics-off Level 3 final.
+  P8-07F, production/Sandbox contact and P8-08 remain inactive.

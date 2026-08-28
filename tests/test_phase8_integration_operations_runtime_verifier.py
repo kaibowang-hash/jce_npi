@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "verify_integration_operations_runtime.py"
 SHELL = ROOT / "scripts" / "verify-frappe-runtime.sh"
 FIXTURE_RUN_ID = "0123456789abcdef0123456789abcdef"
-PROJECT_ID = "11111111-1111-4111-8111-111111111111"
+PROJECT_ID = "aaaaaaaa-aaaa-5aaa-8aaa-aaaaaaaaaaaa"
 
 
 class Headers(dict[str, str]):
@@ -94,6 +94,16 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier._action_path(PROJECT_ID, "publish_item", operation_id, "delete")
         with self.assertRaises(RuntimeError):
             self.verifier._action_path(PROJECT_ID, "unknown", operation_id, "replay")
+
+    def test_runtime_project_identity_is_the_canonical_deterministic_uuid5(self) -> None:
+        self.assertEqual(self.verifier._require_project_id(PROJECT_ID), PROJECT_ID)
+        for invalid in (
+            "11111111-1111-4111-8111-111111111111",
+            PROJECT_ID.upper(),
+            "not-a-uuid",
+        ):
+            with self.subTest(invalid=invalid), self.assertRaises(RuntimeError):
+                self.verifier._require_project_id(invalid)
 
     def test_runtime_environment_is_exact_and_uses_a_distinct_worker(self) -> None:
         exact = {
@@ -216,12 +226,22 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "P807_DEFAULT_DISABLED_ENVELOPE",
             "P807_DEFAULT_DISABLED_CONTRACT",
         }
-        self.assertTrue(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
+        self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(self.verifier._DEFAULT_DISABLED_DIAGNOSTIC_CODES, expected)
         self.assertTrue(all(re.fullmatch(r"P807_DEFAULT_DISABLED_[A-Z_]+", code) for code in expected))
         source = SCRIPT.read_text(encoding="utf-8")
         self.assertNotIn("result.status, file=sys.stderr", source)
         self.assertNotIn("result.body, file=sys.stderr", source)
+        with patch("builtins.print") as emitted:
+            self.verifier._record_default_disabled_diagnostic("P807_DEFAULT_DISABLED_STATUS")
+        emitted.assert_not_called()
+        with patch.object(
+            self.verifier,
+            "DEFAULT_DISABLED_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch("builtins.print") as emitted:
+            self.verifier._record_default_disabled_diagnostic("P807_DEFAULT_DISABLED_STATUS")
+        emitted.assert_called_once_with("P807_DEFAULT_DISABLED_STATUS", file=self.verifier.sys.stderr)
 
     def test_default_disabled_diagnostic_classifies_ordered_contract_boundaries(self) -> None:
         base = {
