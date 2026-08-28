@@ -7737,3 +7737,40 @@ repeat or rewrite it merely to restore context. See
   `59/59` and repository `2624/2624` in the preserved local tree. Compile,
   shell syntax, current/reconciliation, exact-five/union-78 manifests,
   unauthorized-six rejection and diff hygiene pass.
+
+### P8-07 checkpoint-4 fresh combined diagnostic cycle
+
+- Harness-repair SHA `570fb32b3f334f2b8da60509f00f3344d98a676d`
+  passes ordinary CI `33213916241` in all four lanes. Its sole Level 3
+  `33214965485` passes repository `98996446271`, frontend `98996446246`,
+  secret scan `98996446263`, visual `98996446089` and preflight
+  `98998860347`; runtime `98998907735` fails after exact Bench/Site
+  initialization and cleanup succeeds.
+- Fixed source-label filtering yields only
+  `Local Frappe integration operations runtime verification failed.` The
+  default-disabled probe passed, while cross-process replay and all later
+  route/migration phases were not reached. No runtime/child output, response
+  or business value, identity, message or stack was read.
+- The fresh label contains multiple independent parent and Bench-child
+  predicates and cannot select a repair. Freeze the UUID-repair final at
+  `1/1`; start one independent product-zero fresh combined cycle at diagnostic
+  `0/1`, repair `0/1`, final `0/1`.
+- The exact-five diagnostic changes only the runtime verifier/test and three
+  governance/evidence files. Only
+  `FRESH_COMBINED_DIAGNOSTICS_ENABLED=True`; its exact active set is `97`
+  fixed codes (`45` outer fresh plus `52` fixture stages). Parent and child use
+  one deterministic trace and an exact parent-owned environment. The first
+  inner failure creates one absolute exact-name `0600` `O_EXCL` record with
+  exactly code, exception class and trace; parent fallback cannot overwrite
+  it. The strict reader is one-line/code/type/trace fail-closed. Failed child
+  stdout remains unread and stderr is `DEVNULL`; success records nothing.
+- The diagnostic candidate must pass its own exact-SHA ordinary CI before one
+  Level 2 controlled run. Product/API/schema/frontend/workflow, target and
+  production behavior remain unchanged. P8-07F/SSH/ERP and P8-08 stay closed.
+- Diagnostic Level 1 passes focused verifier `26/26`, complete P8-07 `60/60`,
+  affected integration/security/API `80/80`, governance/reconciliation
+  `59/59`, full local Python `2632/2632`, frontend unit/coverage `1086/1086`
+  and focused P8-07 Playwright `6/6`. Generate/typecheck/full lint, `8585`
+  source i18n at `100%` `zh`/`zh-TW`, compile, shell syntax, current/
+  reconciliation, JSON/YAML/CSV, diff, exact-five/union-78 and unauthorized-
+  six rejection all pass. Product and workflow diffs remain zero.

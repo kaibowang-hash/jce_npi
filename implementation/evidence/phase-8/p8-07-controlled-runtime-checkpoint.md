@@ -1,6 +1,6 @@
 # P8-07 Checkpoint 4 — Controlled Integration Operations Runtime
 
-Status: **UUID HARNESS REPAIR LEVEL 1 PASS — FINAL AWAITS EXACT-SHA ORDINARY CI**
+Status: **FRESH COMBINED DIAGNOSTIC LEVEL 1 PASS — AWAITS EXACT-SHA ORDINARY CI**
 
 Date: 2026-08-29
 
@@ -170,3 +170,54 @@ and P8-07F remain inactive.
 - Product/API/schema/frontend/workflow diffs remain zero. A fresh exact-SHA
   ordinary PASS is required before the sole diagnostics-off Level 3 final.
   P8-07F, production/Sandbox contact and P8-08 remain inactive.
+
+## UUID repair final and fresh-runtime diagnostic boundary
+
+- Harness-repair SHA `570fb32b3f334f2b8da60509f00f3344d98a676d`
+  passes ordinary CI `33213916241`: repository `98993187854`, frontend
+  `98993188050`, secret scan `98993188074` and visual `98993188094` all PASS.
+- Its sole diagnostics-off Level 3 `33214965485` passes repository
+  `98996446271`, frontend `98996446246`, secret scan `98996446263`, visual
+  `98996446089` and controlled preflight `98998860347`. Runtime
+  `98998907735` initializes the pinned Bench and fixed disposable Site, then
+  fails in the cumulative verifier; result-record and artifact steps skip and
+  cleanup succeeds.
+- Fixed source-label filtering returns exactly one safe label:
+  `Local Frappe integration operations runtime verification failed.` The
+  default-disabled probe therefore passed. The failure is inside `run_fresh`;
+  cross-process replay, route disable/recovery, migration verification and
+  post-migration cleanup were not reached. Runtime/child stdout and stderr,
+  response status/body, business values, identities, messages and stack
+  remain unread.
+
+The fresh label spans input/environment, login/CSRF, the retryable seed child,
+Project-scoped collection/DLQ/pagination/detail reads, uncertainty rejection,
+reconciliation intent/observation, replay, stale conflict and final
+cardinality. It cannot authorize a repair. Freeze the UUID-repair final at
+`1/1`; open a separate product-zero fresh combined diagnostic at diagnostic
+`0/1`, repair `0/1`, final `0/1`.
+
+The bounded diagnostic changes only this verifier, its focused test and the
+three P8-07 governance/evidence files. One deterministic trace and one
+exclusive `0600` exact-three-key file cover `45` ordered parent stages and
+`52` Bench-child stages (`97` exact codes). A child record wins before its
+parent through `O_EXCL`; otherwise the nearest parent records. The strict
+reader accepts only one allowlisted code, exception class and exact trace.
+Failed child stdout remains unseekable/unread and stderr remains `DEVNULL`;
+success writes no record. No status, header, body, business value, identity,
+count, message or stack may be emitted. Product/API/schema/frontend/workflow
+diffs stay zero. Exact-SHA ordinary PASS is required before one Level 2
+controlled diagnostic. P8-07F, SSH/ERP contact and P8-08 remain inactive.
+
+Level 1 passes focused verifier `26/26`, complete P8-07 `60/60`, affected
+P8-02-through-P8-05 plus P8-07 security/API `80/80`, governed current-task/
+devcontainer/reconciliation `59/59` and the full local Python repository
+`2632/2632`. Frontend unit/coverage passes `1086/1086` (`80.18%` statements,
+`80.00%` branches, `82.60%` functions, `82.79%` lines); the focused P8-07
+Playwright matrix passes `6/6`. Generate, typecheck, full lint/format/style/
+boundary/UI and i18n checks pass with `8585` English source strings at `100%`
+`zh`/`zh-TW`. Python compilation, shell syntax, current/reconciliation scripts,
+JSON/YAML/CSV governance checks and diff hygiene pass. Exact-five and
+post-commit union-78 manifests are accepted; an unauthorized sixth path is
+rejected. App, contract, frontend and workflow diffs are zero, and preserved
+unrelated workspace state is untouched.

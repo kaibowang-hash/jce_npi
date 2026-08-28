@@ -457,3 +457,44 @@ integration/security `72/72`, governance/reconciliation `59/59` and repository
 exact-five/union-78 manifests pass; unauthorized-six is rejected. A fresh
 exact-SHA ordinary PASS is required before the sole diagnostics-off Level 3.
 P8-07F, SSH/ERP contact and P8-08 remain inactive.
+
+## 21. UUID-repair final result and fresh combined diagnostic
+
+Repair SHA `570fb32b3f334f2b8da60509f00f3344d98a676d` passes ordinary
+CI `33213916241` in all four lanes. Its only Level 3 `33214965485` passes
+repository `98996446271`, frontend `98996446246`, secret scan `98996446263`,
+visual `98996446089` and preflight `98998860347`. Runtime `98998907735`
+initializes the exact Bench/Site and then fails at the cumulative step; cleanup
+passes. A fixed source-label allowlist yields only
+`Local Frappe integration operations runtime verification failed.` No runtime
+or child output, response/business value, identity, message or stack was read.
+
+The safe label proves the default-disabled probe passed and `run_fresh`
+failed before cross-process replay or later route/migration phases. It remains
+nonunique across the ordered fresh verifier and its four Bench fixture methods,
+so product repair is prohibited. Freeze the UUID-repair final at `1/1` and
+start an independent fresh combined cycle at `0/1,0/1,0/1`.
+
+That diagnostic is product-zero and exact-five: runtime verifier/test plus
+`AUTOPILOT_CONTROLLER.md`, this plan and the controlled-runtime checkpoint.
+Only `FRESH_COMBINED_DIAGNOSTICS_ENABLED` is true. Its active set is exactly
+`97` fixed codes: `45` outer fresh stages plus `52` fixture bootstrap/seed/
+snapshot/observation/count stages. The parent supplies one deterministic trace
+and owns the exact child environment. Both processes can create only one
+absolute exact-name, `0600`, `O_EXCL` JSON record with exactly `code`,
+`exceptionType` and `traceId`; child/inner wins and parent fallback cannot
+overwrite it. The reader is exact-code/type/trace and one-line fail-closed.
+Failed child stdout is not sought or iterated and stderr is `DEVNULL`; success
+creates no record. No product, contract, schema, frontend, workflow, adapter,
+target or production behavior changes. The candidate needs its own ordinary
+PASS before one Level 2 controlled run. P8-07F and P8-08 remain closed.
+
+Diagnostic Level 1 passes focused verifier `26/26`, complete P8-07 `60/60`,
+affected integration/security/API `80/80`, governance/reconciliation `59/59`
+and full local Python `2632/2632`. Frontend unit/coverage is `1086/1086`, the
+focused P8-07 Playwright matrix is `6/6`, and generate/typecheck/full lint plus
+`8585`-source `100%` `zh`/`zh-TW` i18n pass. Compile, shell syntax, current and
+reconciliation scripts, JSON/YAML/CSV checks, diff hygiene, exact-five,
+union-78 and unauthorized-six rejection all pass. Product/API/schema/frontend/
+workflow diff remains zero. Only exact-SHA ordinary CI can activate the one
+controlled diagnostic.

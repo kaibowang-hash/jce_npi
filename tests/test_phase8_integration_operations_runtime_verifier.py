@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import types
 import unittest
 from pathlib import Path
@@ -355,6 +356,238 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     label="disabled",
                 )
             record.assert_called_once_with(expected, label="disabled")
+
+    def test_fresh_combined_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
+        codes = self.verifier._active_fresh_runtime_diagnostic_codes()
+        self.assertTrue(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
+        self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
+        self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
+        self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
+        self.assertEqual(len(codes), 97)
+        self.assertEqual(
+            codes,
+            frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+                self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES
+            ),
+        )
+        self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertTrue(all(source.count(f'"{code}"') == 2 for code in codes))
+        self.assertNotIn("str(error)", source)
+        self.assertNotIn("repr(error)", source)
+
+    def test_fresh_diagnostic_is_exact_three_key_o_excl_and_inner_wins(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+                self.verifier._record_fresh_runtime_diagnostic(
+                    "P807_SEED_REQUEST_INSERT",
+                    RuntimeError("withheld inner"),
+                )
+                self.verifier._record_fresh_runtime_diagnostic(
+                    "P807_FRESH_SEED",
+                    ValueError("withheld outer"),
+                )
+            self.assertEqual(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("RuntimeError", "P807_SEED_REQUEST_INSERT", trace_id),
+            )
+            record = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(set(record), {"code", "exceptionType", "traceId"})
+            self.assertNotIn("withheld", path.read_text(encoding="utf-8"))
+            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+
+    def test_fresh_diagnostic_reader_fails_closed(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        valid = {
+            "code": "P807_FRESH_SEED",
+            "exceptionType": "RuntimeError",
+            "traceId": trace_id,
+        }
+        invalid_records = (
+            {},
+            {**valid, "extra": "forbidden"},
+            {**valid, "code": "P807_UNKNOWN"},
+            {**valid, "exceptionType": "bad type"},
+            {**valid, "traceId": "trace-00000000000000000000000000000000"},
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            for record in invalid_records:
+                with self.subTest(record=record):
+                    path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+                    self.assertIsNone(
+                        self.verifier.read_fresh_runtime_diagnostic(
+                            path,
+                            expected_trace=trace_id,
+                        )
+                    )
+            path.write_text(json.dumps(valid) + "\n" + json.dumps(valid) + "\n", encoding="utf-8")
+            self.assertIsNone(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+            )
+            path.write_bytes(b"{" + b"x" * self.verifier._DIAGNOSTIC_RECORD_LIMIT + b"}")
+            self.assertIsNone(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+            )
+
+    def test_fresh_diagnostic_step_rethrows_same_exception_and_restores_scope(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        error = RuntimeError("withheld")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ):
+                with self.assertRaises(RuntimeError) as raised:
+                    with self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+                        with self.verifier.fresh_runtime_diagnostic_step("P807_FRESH_LOGIN"):
+                            raise error
+                self.assertIs(raised.exception, error)
+            self.assertIsNone(self.verifier._DIAGNOSTIC_STATE.get())
+
+    def test_fresh_diagnostic_success_writes_no_record(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+                with self.verifier.fresh_runtime_diagnostic_step("P807_FRESH_LOGIN"):
+                    pass
+            self.assertFalse(path.exists())
+
+    def test_bench_child_diagnostic_environment_is_parent_owned(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        captured: dict[str, str] = {}
+
+        def complete(*_args, **kwargs):
+            captured.update(kwargs["env"])
+            kwargs["stdout"].write('{"safe":true}\n')
+            return SimpleNamespace(returncode=0)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            ambient = {
+                self.verifier._DIAGNOSTIC_PATH_ENV: str(path),
+                self.verifier._DIAGNOSTIC_SCOPE_ENV: "ambient-wrong",
+                self.verifier._DIAGNOSTIC_TRACE_ENV: "trace-00000000000000000000000000000000",
+            }
+            with patch.dict(os.environ, ambient, clear=False), patch.object(
+                self.verifier.subprocess,
+                "run",
+                side_effect=complete,
+            ):
+                result = self.verifier.run_bench_fixture("snapshot", {"safe": True})
+            self.assertEqual(result, {"safe": True})
+            self.assertNotIn(self.verifier._DIAGNOSTIC_PATH_ENV, captured)
+            self.assertNotIn(self.verifier._DIAGNOSTIC_SCOPE_ENV, captured)
+            self.assertNotIn(self.verifier._DIAGNOSTIC_TRACE_ENV, captured)
+
+            captured.clear()
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), patch.object(
+                self.verifier.subprocess,
+                "run",
+                side_effect=complete,
+            ):
+                result = self.verifier.run_bench_fixture("snapshot", {"safe": True})
+            self.assertEqual(result, {"safe": True})
+            self.assertEqual(captured[self.verifier._DIAGNOSTIC_PATH_ENV], str(path))
+            self.assertEqual(captured[self.verifier._DIAGNOSTIC_SCOPE_ENV], self.verifier._DIAGNOSTIC_SCOPE)
+            self.assertEqual(captured[self.verifier._DIAGNOSTIC_TRACE_ENV], trace_id)
+
+    def test_scoped_child_requires_exact_scope_trace_and_path(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        states: list[object] = []
+
+        def observe(_method, _kwargs):
+            states.append(self.verifier._DIAGNOSTIC_STATE.get())
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            exact = {
+                self.verifier._DIAGNOSTIC_PATH_ENV: str(path),
+                self.verifier._DIAGNOSTIC_SCOPE_ENV: self.verifier._DIAGNOSTIC_SCOPE,
+                self.verifier._DIAGNOSTIC_TRACE_ENV: trace_id,
+            }
+            with patch.dict(os.environ, exact, clear=False), patch.object(
+                self.verifier,
+                "run_local_bench_fixture",
+                side_effect=observe,
+            ):
+                self.verifier.run_scoped_local_bench_fixture("snapshot", {})
+            self.assertEqual(states[-1], {"trace_id": trace_id, "recorded": False})
+
+            with patch.dict(
+                os.environ,
+                {**exact, self.verifier._DIAGNOSTIC_SCOPE_ENV: "wrong"},
+                clear=False,
+            ), patch.object(
+                self.verifier,
+                "run_local_bench_fixture",
+                side_effect=observe,
+            ):
+                self.verifier.run_scoped_local_bench_fixture("snapshot", {})
+            self.assertIsNone(states[-1])
+
+    def test_fresh_main_emits_only_the_strict_safe_tuple_on_failure(self) -> None:
+        error = RuntimeError("restricted message")
+
+        def fail(_arguments):
+            self.verifier._record_fresh_runtime_diagnostic(
+                "P807_FRESH_SEED",
+                error,
+            )
+            raise error
+
+        argv = [
+            str(SCRIPT),
+            "--base-url",
+            "http://127.0.0.1:8000",
+            "--project-id",
+            PROJECT_ID,
+        ]
+        with patch.dict(
+            os.environ,
+            {self.verifier._DIAGNOSTIC_PATH_ENV: "/tmp/preserved-ambient-path"},
+            clear=False,
+        ), patch.object(sys, "argv", argv), patch.object(
+            self.verifier,
+            "_run_requested_runtime",
+            side_effect=fail,
+        ), patch("builtins.print") as emitted:
+            self.assertEqual(self.verifier.main(), 1)
+            self.assertEqual(
+                os.environ[self.verifier._DIAGNOSTIC_PATH_ENV],
+                "/tmp/preserved-ambient-path",
+            )
+        rendered = " ".join(str(value) for call in emitted.call_args_list for value in call.args)
+        self.assertIn("diagnostic_code=P807_FRESH_SEED", rendered)
+        self.assertIn("exception_type=RuntimeError", rendered)
+        self.assertIn(self.verifier.fresh_runtime_diagnostic_trace(), rendered)
+        self.assertNotIn("restricted message", rendered)
 
     def test_failed_bench_child_never_reads_stdout_or_stderr(self) -> None:
         class FailedOutput:
