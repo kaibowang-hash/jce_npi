@@ -7538,3 +7538,21 @@ repeat or rewrite it merely to restore context. See
   inactive.
 - Controller marker:
   `P8-07 audit-plan CI PASS; checkpoint 1 awaits exact-SHA ordinary CI`.
+
+### P8-07 checkpoint-1 same-cycle repository scanner remediation
+
+- Initial checkpoint SHA `25c845066ecc5f000d35ecd0209f60f01dd21055`
+  entered ordinary CI `33141886949`. Repository job `98754314346` passed its
+  tracked `2584` Python tests and failed only at the final fail-closed direct-SQL
+  lexical scan. Frontend job `98754314466`, visual job `98754314547` and
+  secret-scan job `98754314478` all passed; the ordinary run's sole failure was
+  the repository scanner boundary.
+- The sole match was the prohibited token in checkpoint 1's own negative
+  security-test inventory. No product path contained direct SQL.
+- The repair keeps the same negative assertion using fixed token fragments, so
+  a future product occurrence remains rejected while the repository-wide
+  lexical scanner stays zero-match. Product, scanner, allowlist and thresholds
+  are unchanged.
+- Focused security `3/3`, the zero-match scanner and the exact
+  `scripts/verify.sh --repository` entrypoint pass locally. Checkpoint 1 still
+  awaits a new exact-SHA ordinary CI; checkpoint 2 remains closed.

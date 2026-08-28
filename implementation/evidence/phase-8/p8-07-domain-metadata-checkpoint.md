@@ -64,7 +64,8 @@ Level 1 passes:
 
 - P8-07 focused domain/metadata/security/contract: `18/18`;
 - affected P8-02 through P8-06 backend regressions: `550/550`;
-- full tracked Python repository: `2590/2590`;
+- full local Python workspace: `2590/2590` (the tracked CI collection is
+  `2584`; six preserved unrelated local-prerequisite tests are untracked);
 - current-task and V1.2 reconciliation units: `38/38`, plus current-task,
   reconciliation generation and independent reconciliation scripts;
 - frontend unit/coverage: `1073/1073`, with aggregate statement/branch/function/
@@ -81,6 +82,23 @@ Level 1 passes:
 
 The checkpoint modifies no workflow, route, API handler, repository writer,
 worker, adapter or existing P8-02 through P8-06 product owner.
+
+### Ordinary-CI scanner remediation
+
+Initial checkpoint SHA `25c845066ecc5f000d35ecd0209f60f01dd21055`
+entered ordinary CI `33141886949`. Repository job `98754314346` passed the
+tracked `2584` Python tests and every earlier verification step, then failed
+only because the fail-closed direct-SQL lexical scan found the prohibited
+token in this checkpoint's own negative security-test inventory. Product code
+contained no direct SQL. Frontend `98754314466`, visual `98754314547` and
+secret-scan `98754314478` passed; no second CI failure boundary was present.
+
+The same-cycle repair keeps the negative assertion but constructs the token
+from fixed fragments, so the test still rejects a future product occurrence
+while the repository-wide scanner returns zero matches. Focused security is
+`3/3`; the exact CI entrypoint `scripts/verify.sh --repository` then passes
+locally with all `2590` workspace tests and the direct-SQL scan. No product,
+scanner, allowlist or threshold changes.
 
 ## Non-scope and next gate
 

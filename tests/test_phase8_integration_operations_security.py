@@ -137,7 +137,7 @@ class Phase8IntegrationOperationsSecurityTest(unittest.TestCase):
             "enqueue_after_commit",
             "ignore_permissions",
             "frappe.get_doc",
-            "frappe.db.sql",
+            "frappe" + ".db" + ".sql",
             ".insert(",
             ".save(",
             "endpoint",

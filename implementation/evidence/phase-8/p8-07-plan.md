@@ -315,9 +315,19 @@ behavior is activated. Checkpoint 2 remains closed until this candidate's own
 exact-SHA ordinary CI passes.
 
 Checkpoint-1 Level 1 passes `18/18` focused, `550/550` affected predecessor,
-`2590/2590` full Python, `38/38` governance/reconciliation and `1073/1073`
+`2590/2590` local full Python (`2584` tracked CI tests plus six preserved
+untracked local-prerequisite tests), `38/38` governance/reconciliation and `1073/1073`
 frontend unit/coverage checks. Direct i18n covers `8496` English sources at
 `100%` in `zh` and `zh-TW`; type/lint/format/style/boundary/UI, compile,
 JSON/YAML, security, reconciliation, diff and exact `31`/unauthorized `32`
 manifest checks pass. Detailed evidence is
 `implementation/evidence/phase-8/p8-07-domain-metadata-checkpoint.md`.
+
+Initial product SHA `25c8450` / ordinary CI `33141886949` passed the tracked
+Python suite inside repository job `98754314346` before the final global
+direct-SQL lexical scan matched only a prohibited token in the new negative
+security-test inventory. Frontend `98754314466`, visual `98754314547` and
+secret-scan `98754314478` all passed, leaving that repository scanner as the
+sole ordinary-CI failure. The same-cycle tests-only repair splits that fixed
+test token, preserves the negative assertion, changes no product/scanner/
+threshold and makes the exact `verify.sh --repository` entrypoint pass locally.
