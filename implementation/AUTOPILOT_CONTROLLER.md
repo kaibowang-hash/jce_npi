@@ -7350,3 +7350,35 @@ repeat or rewrite it merely to restore context. See
   strict-reader/no-leak, direct-SQL and diff checks pass. Exact-five and
   union-71 manifests pass; an unauthorized sixth path is rejected. Product
   diff is zero and unrelated state remains intact.
+
+## 2026-08-28 P8-06 post-replay-final-failure diagnostics-off checkpoint
+
+- Diagnostic SHA `9697ecfdab082b442ccb324a8eb4d785e088ad9b` passes exact
+  ordinary `33126905169`: secret scan `98707106198`, frontend `98707106431`,
+  repository `98707106437` and visual `98707106449` pass. Sole controlled
+  `33127607660` passes preflight `98709367501` and cumulative runtime
+  `98709423526`; exact-92 success produces no safe tuple. No restricted
+  runtime, child, response or business content was read.
+- Freeze `p8-06-quality-link-post-replay-final-failure-combined-boundary` at
+  diagnostic `1/1`, repair `0/1`, final `0/1`. All 17 diagnostic activations
+  are false. Localized tests explicitly retain exact-92 activation,
+  precedence, strict reader and failed-child contracts; default execution
+  requires no trace, cursor or reader activity.
+- Exact paths remain quality runtime verifier/test, this controller, P8-06
+  plan and checkpoint. Product, CURRENT_TASK, workflow, API, repository,
+  permission, schema, transaction, migration, UI, network and ERP diffs are
+  zero. Exact-SHA ordinary PASS authorizes only one diagnostics-off Level 3.
+  Production fact/DoD governance, portal deferral and every B/C hold remain
+  queued.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; post-replay-final-failure diagnostic 1/1 repair 0/1 final 0/1; all diagnostics off`.
+- Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+  `110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+  current/reconciliation, frontend unit/coverage `1073/1073` and affected
+  nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format,
+  styles, boundaries, industrial UI and i18n `8436` with complete zh/zh-TW
+  coverage pass. Read-only compile checks `884` Python files; shell syntax,
+  JSON/CSV/YAML, all-off 17-flag dormancy, localized exact-92 activation,
+  strict-reader/no-leak, direct-SQL and diff checks pass. Exact-five and
+  union-71 manifests pass; an unauthorized sixth path is rejected. Product
+  diff is zero and unrelated state remains intact.

@@ -379,7 +379,7 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
             source,
         )
         self.assertIn(
-            "QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = True",
+            "QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = False",
             source,
         )
         tree = ast.parse(source)

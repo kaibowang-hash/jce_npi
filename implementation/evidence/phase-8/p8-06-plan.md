@@ -1790,3 +1790,34 @@ exact-one-of-17 activation, exact-92 allowlist and precedence, strict reader,
 no-leak, direct-SQL and diff checks pass. Exact-five and union-71 manifests
 pass; an unauthorized sixth path is rejected. Product diff is zero and
 unrelated state remains intact.
+
+## 50. Post-replay-final-failure diagnostics-off final checkpoint
+
+Diagnostic SHA `9697ecfdab082b442ccb324a8eb4d785e088ad9b` passes ordinary
+`33126905169`. Its sole controlled run `33127607660` passes preflight
+`98709367501` and cumulative runtime `98709423526`; exact-92 success writes no
+safe tuple. No restricted runtime, child, response or business content was
+read.
+
+Freeze post-replay-final-failure combined-boundary at diagnostic `1/1`, repair
+`0/1`, final `0/1`. Its activation and all 16 historical diagnostic flags are
+false. Localized tests retain exact-92 activation, precedence, strict reader
+and failed-child contracts; the default path requires no trace, cursor or
+reader and preserves response behavior.
+
+The exact-five paths remain runtime verifier/test, AUTOPILOT, this plan and
+the domain-metadata checkpoint. Product, CURRENT_TASK, workflow, API,
+repository, permission, schema, transaction, UI, network and ERP diffs are
+zero. Exact-SHA ordinary PASS permits only one diagnostics-off Level 3 final.
+Production governance, FR-CO-003/004 deferral and every B/C hold remain queued.
+
+Level 1 passes focused verifier `39/39`, quality-link `93/93`, projection/P7
+`110/110`, peer runtime/security `145/145`, full Python `2568/2568`,
+current/reconciliation, frontend unit/coverage `1073/1073` and affected
+nonvisual E2E `33/33`. Generated-source, typecheck, full lint, format, styles,
+boundaries, industrial UI and i18n `8436` with complete zh/zh-TW coverage pass.
+Read-only compile checks `884` Python files; shell syntax, JSON/CSV/YAML,
+all-off 17-flag dormancy, localized exact-92 activation, strict reader,
+no-leak, direct-SQL and diff checks pass. Exact-five and union-71 manifests
+pass; an unauthorized sixth path is rejected. Product diff is zero and
+unrelated state remains intact.
