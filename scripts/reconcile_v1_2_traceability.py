@@ -459,6 +459,10 @@ P8_06_COMPLETED_ALLOCATION = {
     "FR-TR-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_REFERENCE_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
     "FR-NP-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
 }
+P8_07_PLAN_EVIDENCE = (
+    "implementation/evidence/phase-8/p8-07-plan.md",
+)
+P8_07_PLAN_REQUIREMENTS = {"FR-RP-009", "UX-016", "NFR-INT-001"}
 ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE = (
     "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
 )
@@ -1034,6 +1038,17 @@ def _expanded_rows(
         ]
         row["evidence"] = "; ".join(
             dict.fromkeys((*evidence, *P8_06_COMPLETED_EVIDENCE))
+        )
+
+    for requirement_id in P8_07_PLAN_REQUIREMENTS:
+        row = expanded_by_id[requirement_id]
+        evidence = [
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        ]
+        row["evidence"] = "; ".join(
+            dict.fromkeys((*evidence, *P8_07_PLAN_EVIDENCE))
         )
 
     for requirement_id in ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_IDS:

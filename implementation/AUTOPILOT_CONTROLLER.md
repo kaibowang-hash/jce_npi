@@ -7485,3 +7485,32 @@ repeat or rewrite it merely to restore context. See
   release Gate. This transition satisfies none of those prerequisites.
 - Controller marker:
   `P8-07 audit active; ERPNext customization requirements documented; production fact check queued not effective; production contact prohibited`.
+
+## 2026-08-28 P8-07 operations audit PASS; checkpoint 1 awaits plan CI
+
+- The exact-20 ERPNext customization requirements baseline passes at
+  `6a82568329e2ec46eae02df76a9d697e26cdf61e`; ordinary CI `33137548825`
+  passes repository, frontend, secret and governed visual lanes. It collects no
+  production facts and changes no requirement status.
+- The bounded P8-07 audit is frozen in
+  `implementation/evidence/phase-8/p8-07-plan.md` for `FR-RP-009`, `UX-016`
+  and `NFR-INT-001`. Its fixed operation inventory is
+  `receive_project_submission`, `publish_item`, `publish_mbom`,
+  `create_tool_asset` and `update_tool_asset`.
+- The logical DLQ is a permission-safe derived classification of owning
+  Inbox/request/attempt/result truth. It is not a mutable copy. Replay is
+  allowed only through an operation-specific server command for exact
+  retryable, non-uncertain work with the original source and target
+  idempotency. Final, partial, uncertain, quarantined and conflict truth cannot
+  be redispatched.
+- Reconciliation requests record immutable operator intent only. A human
+  cannot supply target success, formal identity or replacement business data;
+  only trusted operation-specific evidence may confirm target truth, and any
+  forward mapping change remains with the owning repository's exact CAS.
+- Product code remains unauthorized until this transition's own exact-SHA
+  ordinary CI passes. After it passes, checkpoint 1 alone may add pure closed
+  domains, additive contracts, guarded zero-row action/reconciliation metadata,
+  translations and focused tests. It may not add a route, row, repository
+  writer, queue, adapter, target call, UI behavior or production contact.
+- Controller marker:
+  `P8-07 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI`.

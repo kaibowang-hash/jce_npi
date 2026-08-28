@@ -1,22 +1,20 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-07`
+`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-07`
 
-Recovery time: `2026-08-28T02:25:39Z`
+Recovery time: `2026-08-28T04:10:00Z`
 
-Current atomic action: complete only the exact-20 ERPNext customization
-requirements documentation baseline authorized by exact transition
-`74aa849dce34374521119b09eb2d59e8c2be0445` / ordinary CI `33136143519`. P8-07
-remains audit-only for `FR-RP-009`, `UX-016` and `NFR-INT-001`; product code
-remains unauthorized. The user's production read-only fact-check request is
-recorded as queued but is not effective authorization: current `AGENTS.md` and
-the controller still prohibit SSH, ERP connectors, endpoint probes,
-credentials, requests, responses and every other production contact. Do not
-use the new document only as a five-classification fact/status matrix and keep
-`implementation/REQUIRED_INPUTS.md` as the sole external request. No trace
-status, product, contract, workflow or external state changes in this task.
-External portals remain `USER_APPROVED_POST_V1_2_DEFERRED`.
+Current atomic action: retain the frozen P8-07 audit plan in
+`implementation/evidence/phase-8/p8-07-plan.md` and wait for this exact
+governance transition's ordinary CI. The accepted documentation base is
+`6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825`.
+Before plan CI passes, no product path may change. After it passes, checkpoint
+1 alone may add pure closed domains, additive contracts, guarded zero-row
+action/reconciliation metadata, translations and focused tests, with no route,
+row, queue, adapter, target call or UI behavior. Production contact remains
+prohibited and the queued fact-check request remains not effective. External
+portals remain `USER_APPROVED_POST_V1_2_DEFERRED`.
 
 Required branch:
 `codex/npi-v1.2-implementation`

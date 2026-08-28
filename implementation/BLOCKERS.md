@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-28T02:25:39Z`
+Updated: `2026-08-28T04:10:00Z`
 
 ## Active hard blockers
 
@@ -11,11 +11,13 @@ passes all required lanes. Final Level 3 `33132296565` passes frontend
 `98724376765`, preflight `98726515848` and cumulative Site `98726544430`.
 Runtime, visual and Gitleaks artifact hashes are recorded in
 `implementation/evidence/phase-8/p8-06-validation.md`; all 17 diagnostics are
-false, zero production traffic and cleanup pass. Only the P8-07 audit is
-active and requires no external login or production action.
+false, zero production traffic and cleanup pass. The P8-07 audit is frozen;
+checkpoint 1 awaits the plan transition's exact-SHA ordinary CI and requires
+no external login or production action.
 
-The exact-20 ERPNext customization requirements baseline is documentation
-only. The user's production read-only fact-check request is queued but not effective
+The exact-20 ERPNext customization requirements baseline passes at
+`6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825` and is
+documentation only. The user's production read-only fact-check request is queued but not effective
 under the current higher-priority `AGENTS.md` and controller prohibition. This
 is a scoped governance dependency, not an active Hard Blocker. A future
 document records unknowns and acceptance requirements but cannot connect to
@@ -28,8 +30,8 @@ historical evidence and final exact-SHA run `33132296565` is authoritative.
 The technical slice provides only an NPI-owned Project-first exact-observation
 link and read-only linked/current/drift facts. It authorizes no ERP target
 write, worker, adapter or target contact. Production adapters and formal
-mapping from Mock or Synthetic proof remain inactive. P8-07 operations,
-replay and reconciliation is audit-only; P8-08/P8-09 remain inactive.
+mapping from Mock or Synthetic proof remain inactive. P8-07 checkpoint 1 is
+still product-closed pending plan CI; P8-08/P8-09 remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer

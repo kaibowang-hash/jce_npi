@@ -39,10 +39,13 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-08")
         self.assertIn(
-            "P8_07_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_SEPARATE_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
+            "P8_07_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
             value["frozen_invariants"],
         )
-        self.assertEqual(value["status"], "IN_PROGRESS_AUDIT")
+        self.assertEqual(
+            value["status"],
+            "IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI",
+        )
         self.assertIn(
             "P8_06_LEVEL_3_EXACT_SHA_547421A059911DF6AEB90BBBF06E837F77A3E5E0_ORDINARY_33131533806_FINAL_33132296565_PASSED",
             value["frozen_invariants"],
@@ -52,36 +55,49 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             ["FR-RP-009", "UX-016", "NFR-INT-001"],
         )
         self.assertIn(
-            "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
+            "apps/npi_integration/npi_integration/integration_operations/**",
             value["allowed_paths"],
         )
         self.assertIn(
-            "implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md",
+            "implementation/evidence/phase-8/p8-07-*.md",
             value["allowed_paths"],
         )
         self.assertIn(
-            "PRODUCTION_READ_ONLY_FACT_CHECK_USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE_UNDER_CURRENT_AGENTS_AND_CONTROLLER_PROHIBITION",
+            "PRODUCTION_READ_ONLY_FACT_CHECK_REMAINS_QUEUED_NOT_EFFECTIVE_AND_CONTACT_PROHIBITED",
             value["frozen_invariants"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "74aa849dce34374521119b09eb2d59e8c2be0445",
+            "6a82568329e2ec46eae02df76a9d697e26cdf61e",
         )
         self.assertIn(
-            "ERP_CUSTOMIZATION_REQUIREMENTS_USES_FIVE_EXPLICIT_CLASSIFICATIONS_AND_PRESERVES_UNKNOWN_FACTS",
+            "LOGICAL_DLQ_IS_A_DERIVED_CLASSIFICATION_NOT_A_SECOND_MUTABLE_COPY_OF_BUSINESS_TRUTH",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 20)
+        self.assertEqual(len(value["allowed_paths"]), 66)
+        self.assertIn(
+            "apps/npi_integration/npi_integration/integration_operations/**",
+            value["allowed_paths"],
+        )
+        self.assertIn(
+            "frontend/src/pages/execution-page.tsx",
+            value["allowed_paths"],
+        )
+        self.assertIn(
+            "implementation/evidence/phase-8/p8-07-*.md",
+            value["allowed_paths"],
+        )
         self.assertNotIn("implementation/backlog.yaml", value["allowed_paths"])
-        self.assertFalse(
-            any(
-                path.startswith(("apps/", "frontend/", "contracts/"))
-                for path in value["allowed_paths"]
-            )
+        self.assertTrue(
+            any(path.startswith("apps/") for path in value["allowed_paths"])
         )
-        self.assertEqual(
-            [path for path in value["allowed_paths"] if "*" in path], []
+        self.assertTrue(
+            any(path.startswith("frontend/") for path in value["allowed_paths"])
         )
+        self.assertTrue(
+            any(path.startswith("contracts/") for path in value["allowed_paths"])
+        )
+        self.assertFalse(any(path == "**" for path in value["allowed_paths"]))
         self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
         affected_modules = {
             module

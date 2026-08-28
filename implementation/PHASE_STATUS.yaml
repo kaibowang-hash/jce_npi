@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-28T02:25:39Z'
+updated_at: '2026-08-28T04:10:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-07
-current_task_status: IN_PROGRESS_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI
 current_task_completed_stage: P8_06_LEVEL_3_PASS
-current_task_next_stage: P8_07_PRODUCTION_FACT_DOCUMENTATION_GOVERNANCE
-current_task_next_stage_status: TRANSITION_PENDING_EXACT_SHA_ORDINARY
+current_task_next_stage: P8_07_CHECKPOINT_1_PURE_DOMAIN_CONTRACT_METADATA
+current_task_next_stage_status: AUDIT_PLAN_TRANSITION_PENDING_EXACT_SHA_ORDINARY
 resumed_product_task: P8-07
-resumed_product_task_status: ACTIVE_AUDIT_ONLY_PRODUCT_CODE_AUTHORIZED_FALSE
+resumed_product_task_status: AUDIT_PASS_CHECKPOINT_1_PENDING_PLAN_CI_PRODUCT_CODE_AUTHORIZED_FALSE
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE
@@ -2568,7 +2568,7 @@ p8_06:
 p8_07:
   task: P8-07
   controller_task: P8-07_OPERATIONS_DLQ_REPLAY_RECONCILIATION
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI
   phase: 8
   milestone: M7-07
   requirements:
@@ -2576,17 +2576,23 @@ p8_07:
     - UX-016
     - NFR-INT-001
   predecessor_product_checkpoint: 547421a059911df6aeb90bbbf06e837f77a3e5e0
-  audit_base_checkpoint: 547421a059911df6aeb90bbbf06e837f77a3e5e0
+  audit_base_checkpoint: 6a82568329e2ec46eae02df76a9d697e26cdf61e
+  audit_plan: implementation/evidence/phase-8/p8-07-plan.md
+  audit_decision: PASS
   product_code_authorized: false
   product_code_changed: false
-  current_stage: AUDIT
+  current_stage: AUDIT_PLAN_TRANSITION
   erp_customization_requirements_status: GOVERNED_REQUIREMENTS_BASELINE_PRODUCTION_FACTS_NOT_COLLECTED
   production_fact_check_status: QUEUED_NOT_EFFECTIVE
   production_connection_status: PROHIBITED_PENDING_RULE_CHANGE_AND_GATE
-  next_stage_after_pass: FROZEN_AUDIT_PLAN_AND_SEPARATE_CONTROLLER_TRANSITION
+  next_stage_after_pass: CHECKPOINT_1_PURE_DOMAIN_CONTRACT_ZERO_ROW_METADATA
+  operation_inventory: [receive_project_submission, publish_item, publish_mbom, create_tool_asset, update_tool_asset]
+  logical_dlq_rule: DERIVED_FROM_OWNING_TERMINAL_TRUTH_NOT_A_SECOND_MUTABLE_COPY
   operation_rule: OPERATION_SPECIFIC_AUTHORITY_IDEMPOTENCY_REQUEST_ATTEMPT_RESULT_REPLAY_AND_RECONCILIATION_REMAIN_DISTINCT
   uncertainty_rule: TARGET_BOUNDARY_UNCERTAIN_NEVER_AUTO_REDISPATCHES
   operator_rule: PERMISSION_SAFE_PROJECT_SCOPED_TRUTH_WITHOUT_DATABASE_ACCESS
+  replay_rule: ONLY_EXACT_RETRYABLE_NON_UNCERTAIN_OPERATION_WITH_ORIGINAL_SOURCE_AND_TARGET_IDEMPOTENCY
+  reconciliation_rule: OPERATOR_INTENT_ONLY_TRUSTED_OPERATION_SPECIFIC_EVIDENCE_CAN_CONFIRM_TARGET_TRUTH
   non_scope:
     - PRODUCT_CODE_ROUTE_WRITER_WORKER_ADAPTER_UI_OR_NETWORK
     - GENERIC_BUSINESS_MUTATION_OR_PERMISSION_BYPASS
@@ -2600,6 +2606,7 @@ p8_07:
     - implementation/evidence/phase-8/p8-06-validation.md
     - docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md
     - implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md
+    - implementation/evidence/phase-8/p8-07-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

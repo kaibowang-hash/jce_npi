@@ -389,6 +389,10 @@ EXPECTED_P8_06_COMPLETED_ALLOCATION = {
     "FR-TR-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_REFERENCE_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
     "FR-NP-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
 }
+EXPECTED_P8_07_PLAN_EVIDENCE = {
+    "implementation/evidence/phase-8/p8-07-plan.md",
+}
+EXPECTED_P8_07_PLAN_REQUIREMENTS = {"FR-RP-009", "UX-016", "NFR-INT-001"}
 ERP_CUSTOMIZATION_REQUIREMENTS = ROOT / "docs" / "ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md"
 EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE = (
     "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md"
@@ -2294,6 +2298,10 @@ def verify_trace_sets() -> None:
             EXPECTED_P8_06_COMPLETED_EVIDENCE
             if requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
             else set()
+        ) | (
+            EXPECTED_P8_07_PLAN_EVIDENCE
+            if requirement_id in EXPECTED_P8_07_PLAN_REQUIREMENTS
+            else set()
         )
         if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
@@ -2414,6 +2422,10 @@ def verify_trace_sets() -> None:
             EXPECTED_P8_06_COMPLETED_EVIDENCE
             if requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
             else set()
+        ) | (
+            EXPECTED_P8_07_PLAN_EVIDENCE
+            if requirement_id in EXPECTED_P8_07_PLAN_REQUIREMENTS
+            else set()
         )
         if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
@@ -2487,6 +2499,10 @@ def verify_trace_sets() -> None:
         ) | (
             EXPECTED_P8_06_COMPLETED_EVIDENCE
             if requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
+            else set()
+        ) | (
+            EXPECTED_P8_07_PLAN_EVIDENCE
+            if requirement_id in EXPECTED_P8_07_PLAN_REQUIREMENTS
             else set()
         )
         if actual_evidence != permitted_evidence:
@@ -2590,6 +2606,11 @@ def verify_trace_sets() -> None:
                 | (
                     EXPECTED_P8_06_COMPLETED_EVIDENCE
                     if requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
+                    else set()
+                )
+                | (
+                    EXPECTED_P8_07_PLAN_EVIDENCE
+                    if requirement_id in EXPECTED_P8_07_PLAN_REQUIREMENTS
                     else set()
                 )
                 if completed_trace
@@ -2710,6 +2731,13 @@ def verify_trace_sets() -> None:
                 raise ReconciliationVerificationError(
                     f"{requirement_id} lacks the P8-06 completion evidence"
                 )
+            if (
+                requirement_id in EXPECTED_P8_07_PLAN_REQUIREMENTS
+                and not EXPECTED_P8_07_PLAN_EVIDENCE.issubset(evidence)
+            ):
+                raise ReconciliationVerificationError(
+                    f"{requirement_id} lacks the P8-07 plan evidence"
+                )
 
     for requirement_id, expected_trace in {
         **EXPECTED_P8_CARRIED_FOUNDATIONS,
@@ -2783,6 +2811,13 @@ def verify_trace_sets() -> None:
         ):
             raise ReconciliationVerificationError(
                 f"{requirement_id} lacks the P8-06 completion evidence"
+            )
+        if (
+            requirement_id in EXPECTED_P8_07_PLAN_REQUIREMENTS
+            and not EXPECTED_P8_07_PLAN_EVIDENCE.issubset(evidence)
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} lacks the P8-07 plan evidence"
             )
         missing_evidence = sorted(
             path for path in evidence if "/" in path and not (ROOT / path).is_file()

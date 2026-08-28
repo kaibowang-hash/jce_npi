@@ -328,6 +328,8 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION:
                 expected_evidence |= self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_07_PLAN_REQUIREMENTS:
+                expected_evidence |= self.verifier.EXPECTED_P8_07_PLAN_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -670,6 +672,36 @@ class V12ReconciliationTests(unittest.TestCase):
             self.assertTrue(
                 self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE.issubset(evidence)
             )
+
+    def test_p8_07_plan_is_traceable_without_product_overclaim(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        expected = {
+            "FR-RP-009": "ANCHORED_P8_07",
+            "NFR-INT-001": "ANCHORED_P8_07",
+            "UX-016": "TECHNICAL_VERIFIED_FOUNDATION",
+        }
+        for requirement_id, status in expected.items():
+            row = by_id[requirement_id]
+            self.assertEqual(row["phase"], "8")
+            self.assertEqual(row["status"], status)
+            evidence = {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            }
+            self.assertTrue(
+                self.verifier.EXPECTED_P8_07_PLAN_EVIDENCE.issubset(evidence)
+            )
+
+        phase_status = (ROOT / "implementation/PHASE_STATUS.yaml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("product_code_authorized: false", phase_status)
+        self.assertIn(
+            "DERIVED_FROM_OWNING_TERMINAL_TRUTH_NOT_A_SECOND_MUTABLE_COPY",
+            phase_status,
+        )
 
     def test_r1_04_trace_is_verified_with_runtime_evidence(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)

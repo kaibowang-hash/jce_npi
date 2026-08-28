@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-28T02:25:39Z`
+Updated: `2026-08-28T04:10:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P8-07`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -127,20 +127,21 @@ Updated: `2026-08-28T02:25:39Z`
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-07 — operations, DLQ, replay and reconciliation` (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P8-07` (`ACTIVE_AUDIT_ONLY`)
-- Active documentation task: establish the exact-20 ERPNext customization
-  requirements fact-status baseline authorized by transition
-  `74aa849dce34374521119b09eb2d59e8c2be0445` / ordinary CI `33136143519`.
-  The user's production
-  read-only fact-check request is `QUEUED_NOT_EFFECTIVE`; current `AGENTS.md`
-  and controller rules still prohibit every production connection. This
-  task collects no external fact, changes no trace status and authorizes no
-  product code or connection.
+- Resumed product task: `P8-07` (`AUDIT PASS — CHECKPOINT 1 PENDING PLAN CI`)
+- Latest accepted documentation checkpoint:
+  `6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825`.
+  The exact customization-requirements baseline is complete without any
+  production contact or requirement-status change.
+- Active atomic task: the bounded operation inventory, logical-DLQ state,
+  operation-specific replay/reconciliation authority, permissions, migration,
+  rollback, exact paths and affected tests are frozen in
+  `implementation/evidence/phase-8/p8-07-plan.md`. Product code remains
+  unauthorized until this exact plan transition passes ordinary CI.
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-07 AUDIT`)
+  (`IN_PROGRESS — P8-07 CHECKPOINT 1 PLAN CI`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -158,13 +159,14 @@ false. Only the bounded technical portions of `INT-007`, `FR-TR-006` and
 mapping, raw-code policy, approval and Gate/readiness interpretation remain
 held.
 
-Only P8-07 audit work is active for `FR-RP-009`, `UX-016` and
-`NFR-INT-001`. Product code is unauthorized. The audit must inventory the
-existing operation-specific Inbox/Outbox/request/attempt/result/replay and
-reconciliation truths, preserve Project and actor authority, uncertain
-no-redispatch and immutable history, and freeze a separate exact plan before
-any operator surface or command. It adds no product path, database access,
-generic writer, target traffic, production SSH or ERP customization work.
+The P8-07 audit for `FR-RP-009`, `UX-016` and `NFR-INT-001` is frozen in
+`implementation/evidence/phase-8/p8-07-plan.md`. It keeps a fixed five-operation
+inventory, derives the logical DLQ from owning truth, permits only
+operation-specific actor-authorized replay of exact retryable/non-uncertain
+work, and treats reconciliation as forward-only evidence rather than a human
+success assertion. Product code remains unauthorized until this plan's own
+exact-SHA ordinary CI passes. Production contact, generic writers, P8-08 and
+P8-09 remain inactive.
 
 P8-05 is sealed `PASS_LEVEL_3` at exact product SHA
 `f9c358018823f3af20aca38efb53f8fcbd13d406`. Ordinary CI `32937395289`

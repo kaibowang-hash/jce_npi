@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-06 LEVEL 3 PASS; P8-07 AUDIT ONLY**
+Status: **IN PROGRESS — P8-06 LEVEL 3 PASS; P8-07 AUDIT PASS / CHECKPOINT 1 PENDING PLAN CI**
 
 Anchor date: 2026-08-16
 
@@ -541,3 +541,13 @@ closeout, and P8-08/P8-09 remain inactive. The audit must preserve exact
 operation authority, Project/actor containment, immutable request/attempt/
 result/replay truth, uncertain no-redispatch and permission-safe operator
 visibility before a separate plan and authorization transition.
+
+The subsequent bounded audit is frozen in
+`implementation/evidence/phase-8/p8-07-plan.md` at accepted documentation base
+`6a82568329e2ec46eae02df76a9d697e26cdf61e`. It fixes five operation kinds,
+derives the logical DLQ without copying truth, permits replay only for an exact
+retryable/non-uncertain owning state through an operation-specific authority,
+and separates operator reconciliation intent from trusted target evidence.
+The plan transition must pass exact-SHA ordinary CI before checkpoint 1 pure
+domain/contracts/zero-row metadata work begins. Production contact, generic
+mutation, uncertain redispatch, P8-08 and P8-09 remain prohibited.
