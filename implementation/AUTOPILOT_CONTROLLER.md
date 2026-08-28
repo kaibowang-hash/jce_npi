@@ -7382,3 +7382,45 @@ repeat or rewrite it merely to restore context. See
   strict-reader/no-leak, direct-SQL and diff checks pass. Exact-five and
   union-71 manifests pass; an unauthorized sixth path is rejected. Product
   diff is zero and unrelated state remains intact.
+
+## 2026-08-28 P8-06 prepare diagnostic environment harness repair checkpoint
+
+- All-off SHA `3b6d9d0c0ca6f2ad808180b3cb1d04163e345504` passes exact
+  ordinary `33128516650`. Its sole Level 3 `33129221414` passes repository,
+  secret scan, frontend, visual and controlled preflight; cumulative runtime
+  `98716907771` stops at the fixed formal-quality-link outer label. No raw log,
+  failed-child output, response, business value, identifier, message or stack
+  was read.
+- Differential audit against diagnostic SHA
+  `9697ecfdab082b442ccb324a8eb4d785e088ad9b` and controlled
+  `33127607660` proves the runtime job has the same command, pinned tools,
+  runner class and no gate-mode environment or artifact input. The unique
+  first source is verifier harness activation: the shell exported the prepare
+  diagnostic scope unconditionally, the all-off parent omitted the trace, and
+  the child rejected that impossible scope/trace pair before Frappe
+  initialization or any product write.
+- The same cycle advances to diagnostic `1/1`, harness repair `1/1`, final
+  `0/1`. Child activation is parent-owned: ambient prepare scope is removed
+  from every subprocess environment and is injected only for the exact prepare
+  method when an enabled diagnostic supplies an exact trace. The shell no
+  longer exports the scope. Missing, malformed, unexpected and cleanup trace
+  combinations fail closed before the child; failed-child output remains
+  unread and exact-92 diagnostics remain available under localized tests.
+- All 17 diagnostics remain false. Exact paths are the quality runtime
+  verifier, runtime shell, verifier test, this controller, the P8-06 plan and
+  checkpoint. Product, CURRENT_TASK, workflow YAML, API, repository,
+  permission, schema, transaction, migration, UI, network and ERP diffs are
+  zero. The only workflow after exact-SHA ordinary PASS is the sole Level 3
+  final. Production fact/DoD governance, portal deferral and every B/C hold
+  remain queued.
+- Controller marker:
+  `P8-06 checkpoint 4 final held; prepare diagnostic environment harness repair 1/1; sole diagnostics-off final 0/1`.
+- Level 1 passes focused verifier `41/41`, quality-link `95/95`, projection/P7
+  `110/110`, peer config/contract/security `49/49`, peer runtime `96/96`, full
+  Python `2570/2570`, current/reconciliation, frontend unit/coverage
+  `1073/1073` and affected nonvisual E2E `33/33`. Generated-source, typecheck,
+  full lint/format/styles/boundaries/UI/i18n, compile, shell syntax,
+  JSON/YAML, all-off 17-flag dormancy, parent-owned scope/trace, direct-SQL and
+  diff checks pass. Exact-six and union-71 manifests pass; an unauthorized
+  seventh path is rejected. Product diff is zero and unrelated state remains
+  intact.

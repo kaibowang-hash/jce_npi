@@ -597,12 +597,28 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
     ):
         environment.pop(variable, None)
     diagnostic_trace_id = kwargs.get("diagnostic_trace_id")
+    environment.pop(_PREPARE_PROJECTION_DIAGNOSTIC_ENV, None)
+    prepare_diagnostic_active = (
+        method == "prepare_projection"
+        and _prepare_projection_diagnostics_enabled()
+    )
+    if prepare_diagnostic_active:
+        require(
+            isinstance(diagnostic_trace_id, str)
+            and _TRACE_PATTERN.fullmatch(diagnostic_trace_id) is not None,
+            "P8-06 prepare diagnostic arguments are invalid",
+        )
+        environment[_PREPARE_PROJECTION_DIAGNOSTIC_ENV] = (
+            _PREPARE_PROJECTION_DIAGNOSTIC_SCOPE
+        )
+    else:
+        require(
+            diagnostic_trace_id is None,
+            "P8-06 prepare diagnostic arguments are invalid",
+        )
     diagnostic_cursors = (
         item_runtime._replay_diagnostic_log_cursors()
-        if method == "prepare_projection"
-        and _prepare_projection_diagnostics_enabled()
-        and isinstance(diagnostic_trace_id, str)
-        and _TRACE_PATTERN.fullmatch(diagnostic_trace_id) is not None
+        if prepare_diagnostic_active
         else None
     )
     with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as output:

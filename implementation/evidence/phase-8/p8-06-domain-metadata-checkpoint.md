@@ -1154,3 +1154,43 @@ all-off 17-flag dormancy, localized exact-92 activation, strict reader,
 no-leak, direct-SQL and diff checks pass. Exact-five and union-71 manifests
 pass; an unauthorized sixth path is rejected. Product diff is zero and
 unrelated state remains intact.
+
+## Prepare diagnostic environment harness repair checkpoint
+
+All-off SHA `3b6d9d0c0ca6f2ad808180b3cb1d04163e345504` passes ordinary
+`33128516650`. Sole Level 3 `33129221414` passes repository, secret scan,
+frontend, visual and controlled preflight; runtime `98716907771` emits only
+the fixed formal-quality-link outer failure label. No raw runtime log,
+failed-child output, response, business value, identifier, message or stack
+was inspected.
+
+Static differential proof against exact-92 controlled PASS `33127607660`
+excludes gate-mode job commands, runtime environment, ordinary-lane
+concurrency, prior-gate artifacts and product changes. The shell's
+unconditional prepare diagnostic scope combined with the all-off parent's
+intentional absence of `diagnostic_trace_id`; the child rejected that
+inconsistent pair before Frappe initialization and all writes. This is the
+unique harness first source.
+
+The cycle is diagnostic `1/1`, harness repair `1/1`, final `0/1`. The parent
+now strips ambient scope and supplies exact scope only for active prepare plus
+exact trace; the shell export is removed. Tests lock all-off ambient isolation,
+active scope/trace equality, missing/malformed/unexpected fail-before-child,
+cleanup dormancy and failed-child-unread. All 17 diagnostics remain false.
+
+The governed exact-six paths are verifier, runtime shell, verifier test,
+AUTOPILOT, plan and this checkpoint. Product, CURRENT_TASK, workflow YAML,
+API, repository, permission, schema, transaction, UI, network and ERP diffs
+are zero. Production fact/DoD governance, portal deferral and all B/C holds
+remain queued. Exact-SHA ordinary PASS authorizes only one diagnostics-off
+Level 3 final.
+
+Level 1 passes focused verifier `41/41`, quality-link `95/95`, projection/P7
+`110/110`, peer config/contract/security `49/49`, peer runtime `96/96`, full
+Python `2570/2570`, current/reconciliation, frontend unit/coverage `1073/1073`
+and affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint,
+format, styles, boundaries, industrial UI, i18n `8436` with complete zh/zh-TW
+coverage, compile, shell syntax, JSON/YAML, all-off diagnostics, parent-owned
+scope/trace, direct-SQL and diff checks pass. Exact-six and union-71 manifests
+pass; an unauthorized seventh path is rejected. Product diff is zero and
+unrelated state remains intact.

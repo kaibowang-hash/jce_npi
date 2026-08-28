@@ -248,6 +248,135 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("--base-url", completed.stdout)
         self.assertIn("--read-diagnostic", completed.stdout)
 
+    def test_parent_owns_prepare_diagnostic_child_environment(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        calls: list[tuple[list[str], dict[str, str]]] = []
+
+        def complete_child(argv, **kwargs):
+            calls.append((argv, kwargs["env"]))
+            kwargs["stdout"].write('{"prepared":true}\n')
+            return types.SimpleNamespace(returncode=0)
+
+        common = {
+            "project_id": "10000000-0000-4000-8000-000000000002",
+            "readiness_id": "10000000-0000-4000-8000-000000000001",
+        }
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_ENV:
+                    self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_SCOPE,
+                },
+                clear=False,
+            ),
+            patch.object(
+                self.verifier.subprocess,
+                "run",
+                side_effect=complete_child,
+            ),
+            patch.object(
+                self.verifier.item_runtime,
+                "_replay_diagnostic_log_cursors",
+                return_value={"logs/npi_core.log": 0},
+            ) as cursors,
+        ):
+            self.assertEqual(
+                self.verifier.run_bench_fixture("prepare_projection", common),
+                {"prepared": True},
+            )
+            self.assertNotIn(
+                self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_ENV,
+                calls[-1][1],
+            )
+            self.assertNotIn("diagnostic_trace_id", json.loads(calls[-1][0][-1]))
+            cursors.assert_not_called()
+
+            with patch.object(
+                self.verifier,
+                "QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.run_bench_fixture(
+                        "prepare_projection",
+                        {**common, "diagnostic_trace_id": trace_id},
+                    ),
+                    {"prepared": True},
+                )
+            self.assertEqual(
+                calls[-1][1][self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_ENV],
+                self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_SCOPE,
+            )
+            self.assertEqual(
+                json.loads(calls[-1][0][-1])["diagnostic_trace_id"],
+                trace_id,
+            )
+            cursors.assert_called_once_with()
+
+            with patch.object(
+                self.verifier,
+                "QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.run_bench_fixture("cleanup", common),
+                    {"prepared": True},
+                )
+            self.assertNotIn(
+                self.verifier._PREPARE_PROJECTION_DIAGNOSTIC_ENV,
+                calls[-1][1],
+            )
+            self.assertNotIn("diagnostic_trace_id", json.loads(calls[-1][0][-1]))
+
+    def test_prepare_diagnostic_arguments_fail_before_child_or_cursor(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        common = {
+            "project_id": "10000000-0000-4000-8000-000000000002",
+            "readiness_id": "10000000-0000-4000-8000-000000000001",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p8-06-quality-link-runtime-diagnostic.json"
+            for method, active, supplied_trace in (
+                ("prepare_projection", True, None),
+                ("prepare_projection", True, "trace-invalid"),
+                ("prepare_projection", False, trace_id),
+                ("cleanup", True, trace_id),
+            ):
+                kwargs = dict(common)
+                if supplied_trace is not None:
+                    kwargs["diagnostic_trace_id"] = supplied_trace
+                with (
+                    self.subTest(
+                        method=method,
+                        active=active,
+                        supplied_trace=supplied_trace,
+                    ),
+                    patch.dict(
+                        os.environ,
+                        {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                        clear=False,
+                    ),
+                    patch.object(
+                        self.verifier,
+                        "QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED",
+                        active,
+                    ),
+                    patch.object(self.verifier.subprocess, "run") as child,
+                    patch.object(
+                        self.verifier.item_runtime,
+                        "_replay_diagnostic_log_cursors",
+                    ) as cursors,
+                    self.assertRaisesRegex(
+                        RuntimeError,
+                        "prepare diagnostic arguments are invalid",
+                    ),
+                ):
+                    self.verifier.run_bench_fixture(method, kwargs)
+                child.assert_not_called()
+                cursors.assert_not_called()
+                self.assertFalse(path.exists())
+
     def test_diagnostic_stage_allowlist_is_exact_and_lexically_unique(self) -> None:
         self.verifier.QUALITY_LINK_POST_REPLAY_FINAL_FAILURE_COMBINED_BOUNDARY_DIAGNOSTICS_ENABLED = (
             True
@@ -2150,9 +2279,16 @@ class Phase8QualityLinkRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("read_quality_link_runtime_diagnostic", source)
         self.assertIn("--expected-trace", source)
         self.assertIn("P8-06 formal quality link runtime diagnostic", source)
-        self.assertIn(
-            'NPI_P806_QUALITY_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE="p8-06-quality-link-prepare-projection-v1"',
+        self.assertNotIn(
+            "export NPI_P806_QUALITY_PREPARE_PROJECTION_DIAGNOSTIC_SCOPE=",
             source,
+        )
+        verifier_source = (
+            ROOT / "scripts/verify_quality_link_runtime.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "environment.pop(_PREPARE_PROJECTION_DIAGNOSTIC_ENV, None)",
+            verifier_source,
         )
 
     def test_bench_fixture_allowlist_and_arguments_are_closed(self) -> None:

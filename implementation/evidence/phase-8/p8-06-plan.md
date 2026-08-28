@@ -1821,3 +1821,46 @@ all-off 17-flag dormancy, localized exact-92 activation, strict reader,
 no-leak, direct-SQL and diff checks pass. Exact-five and union-71 manifests
 pass; an unauthorized sixth path is rejected. Product diff is zero and
 unrelated state remains intact.
+
+## 51. Prepare diagnostic environment harness repair
+
+All-off SHA `3b6d9d0c0ca6f2ad808180b3cb1d04163e345504` passes ordinary
+`33128516650`. Sole Level 3 `33129221414` passes the four ordinary lanes and
+controlled preflight, then cumulative runtime `98716907771` reaches only the
+fixed formal-quality-link outer failure label. Restricted runtime, child,
+response and business content remained unread.
+
+The successful exact-92 controlled run `33127607660` and failed all-off Level
+3 share the exact runtime command, pinned tools, runner class and runtime job
+environment contract. Level 3 ordinary lanes complete on isolated runners;
+the prior-gate attestation is Level-2-only and is never downloaded by runtime.
+The unique source difference is the prepare child activation contract: the
+shell exported the diagnostic scope in every run, while the parent supplied
+`diagnostic_trace_id` only when diagnostics were active. The all-off child
+therefore rejected the scope-without-trace pair before `frappe.init`, connect,
+fixture writes or product execution. Repeated diagnostic-pass/all-off-fail
+pairs follow this deterministic contract, not a gate-mode product branch.
+
+Freeze post-replay-final-failure at diagnostic `1/1`, harness repair `1/1`,
+final `0/1`. `run_bench_fixture` now removes ambient scope and injects the
+exact scope only for active prepare diagnostics with an exact trace. The
+shell's unconditional export is removed. All-off, active, invalid and cleanup
+paths are closed before subprocess execution; failed-child output and strict
+exact-92 behavior remain unchanged. All diagnostic flags stay false.
+
+The governed exact-six paths are runtime verifier, runtime shell, verifier
+test, AUTOPILOT, this plan and the checkpoint. Product, CURRENT_TASK, workflow
+YAML, API, repository, permissions, schema, transaction, migration, UI,
+network and ERP diffs are zero. Exact-SHA ordinary PASS permits only one
+diagnostics-off Level 3. Production governance, portal deferral and all B/C
+holds remain queued.
+
+Level 1 passes focused verifier `41/41`, quality-link `95/95`, projection/P7
+`110/110`, peer config/contract/security `49/49`, peer runtime `96/96`, full
+Python `2570/2570`, current/reconciliation, frontend unit/coverage `1073/1073`
+and affected nonvisual E2E `33/33`. Generated-source, typecheck, full lint,
+format, styles, boundaries, industrial UI, i18n `8436` with complete zh/zh-TW
+coverage, compile, shell syntax, JSON/YAML, all-off diagnostics, parent-owned
+scope/trace, direct-SQL and diff checks pass. Exact-six and union-71 manifests
+pass; an unauthorized seventh is rejected. Product diff is zero and unrelated
+state is preserved.
