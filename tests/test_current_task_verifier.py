@@ -46,9 +46,13 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_07_CHECKPOINT_1_EXACT_SHA_D45D1D560FEDFED9D9791A5C08CCF9C1402F7EF8_ORDINARY_33142594763_PASSED",
             value["frozen_invariants"],
         )
+        self.assertIn(
+            "P8_07_CHECKPOINT_2_EXACT_SHA_F7CF7C7EA490C10ACFC044AAEF236945E5118F01_ORDINARY_33187660221_PASSED",
+            value["frozen_invariants"],
+        )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI",
+            "IN_PROGRESS_CHECKPOINT_3_AWAITING_PRODUCT_CI",
         )
         self.assertIn(
             "P8_06_LEVEL_3_EXACT_SHA_547421A059911DF6AEB90BBBF06E837F77A3E5E0_ORDINARY_33131533806_FINAL_33132296565_PASSED",
@@ -78,13 +82,23 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "LOGICAL_DLQ_IS_A_DERIVED_CLASSIFICATION_NOT_A_SECOND_MUTABLE_COPY_OF_BUSINESS_TRUTH",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 66)
+        self.assertEqual(len(value["allowed_paths"]), 70)
         self.assertIn(
             "apps/npi_integration/npi_integration/integration_operations/**",
             value["allowed_paths"],
         )
         self.assertIn(
             "frontend/src/pages/execution-page.tsx",
+            value["allowed_paths"],
+        )
+        self.assertIn("frontend/src/app/app-shell.tsx", value["allowed_paths"])
+        self.assertIn("frontend/src/app/router.ts", value["allowed_paths"])
+        self.assertIn(
+            "frontend/tests/unit/pages-and-shell.test.tsx",
+            value["allowed_paths"],
+        )
+        self.assertIn(
+            "frontend/tests/unit/router.test.tsx",
             value["allowed_paths"],
         )
         self.assertIn(

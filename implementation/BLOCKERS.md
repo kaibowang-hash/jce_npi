@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-28T06:17:53Z`
+Updated: `2026-08-28T17:08:19Z`
 
 ## Active hard blockers
 
@@ -15,7 +15,9 @@ false, zero production traffic and cleanup pass. The P8-07 audit plan passes at
 exact SHA `2e573fa1757f7d9306f17bb47cb62c59e8493b7f` / ordinary CI
 `33139628396`; checkpoint 1 passes at exact SHA
 `d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` / ordinary CI `33142594763`.
-Checkpoint 2 is the only active scope and requires no external login or
+Checkpoint 2 passes at exact SHA
+`f7cf7c7ea490c10acfc044aaef236945e5118f01` / ordinary CI `33187660221`.
+Checkpoint 3 is the only active scope and requires no external login or
 production action.
 
 The exact-20 ERPNext customization requirements baseline passes at
@@ -53,6 +55,11 @@ latest complete Level 3 is `33132296565` at
 credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
+
+The active checkpoint-3 UI consumes only checkpoint-2 safe Project-scoped
+responses. It grants no new server authority, target call or production
+contact. Checkpoint 4 runtime and Level 3 remain inactive until the UI
+candidate passes exact-SHA ordinary CI.
 
 FR-CO-003/004 external portal login, identity, self-service submission,
 approval UI and portal API are a user-approved post-V1.2 deferral, not a Hard

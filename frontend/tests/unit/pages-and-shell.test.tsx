@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -8,7 +8,6 @@ import type { AppRoute } from "../../src/app/router";
 import { LiveMyWorkDataSource } from "../../src/api/my-work-data-source";
 import type { ProjectControlsDataSource } from "../../src/api/project-controls-data-source";
 import type { Locale } from "../../src/i18n/runtime";
-import ExecutionPage from "../../src/pages/execution-page";
 import GatePage from "../../src/pages/gate-page";
 import ProjectDemoPage from "../../src/pages/project-demo-page";
 import ToolingPage from "../../src/pages/tooling-page";
@@ -26,8 +25,14 @@ function route(
   const pathParts = pathname.split("/");
   const liveTooling = screen === "tooling" && pathname.startsWith("/projects/");
   const liveTrial = screen === "trial" && pathname.startsWith("/projects/");
+  const liveExecution =
+    screen === "execution" && pathname.startsWith("/projects/");
   const liveProjectGlobalId =
-    (screen === "project" || screen === "gate" || liveTooling || liveTrial) &&
+    (screen === "project" ||
+      screen === "gate" ||
+      liveTooling ||
+      liveTrial ||
+      liveExecution) &&
     !demo
       ? (pathParts[2] ?? null)
       : null;
@@ -639,6 +644,50 @@ describe("application shell behavior", () => {
     ).toBeVisible();
   });
 
+  it("keeps integration operations in exact live Project context", async () => {
+    const projectGlobalId = "11111111-1111-4111-8111-111111111111";
+    const path = `/projects/${projectGlobalId}/integration-operations`;
+    const dispatchEvent = vi.spyOn(globalThis, "dispatchEvent");
+    const navigate = vi.fn<(target: string) => void>();
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell navigate={navigate} route={route("execution", path)}>
+        <p>Live integration operation workspace</p>
+      </AppShell>,
+      "en",
+      path,
+    );
+
+    const domainNavigation = screen.getByRole("navigation", {
+      name: "Domain navigation",
+    });
+    expect(
+      within(domainNavigation).getByRole("button", {
+        current: "page",
+        name: "Execution and Reconciliation",
+      }),
+    ).toBeVisible();
+    expect(document.querySelector(".app-header__context")).toHaveTextContent(
+      projectGlobalId,
+    );
+    await user.click(
+      within(domainNavigation).getByRole("button", { name: "Project" }),
+    );
+    expect(navigate).toHaveBeenCalledWith(`/projects/${projectGlobalId}`);
+
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(dispatchEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "npi:refresh-integration-operations",
+      }),
+    );
+    expect(
+      screen.getByText(
+        "The live integration operation request is being refreshed.",
+      ),
+    ).toBeVisible();
+  });
+
   it("keeps a live Gate in Project context and dispatches its scoped refresh", async () => {
     const projectGlobalId = "11111111-1111-4111-8111-111111111111";
     const gateGlobalId = "44444444-4444-4444-8444-444444444444";
@@ -1195,163 +1244,6 @@ describe("core workspace page behavior", () => {
     expect(screen.getByText("Analysis in progress")).toBeVisible();
     expect(screen.getByText("T2")).toBeVisible();
   });
-
-  it("selects execution rows by keyboard and safely queues a failed retry", async () => {
-    const user = userEvent.setup();
-    renderWithLocale(<ExecutionPage scenario="normal" />);
-
-    expect(
-      screen.getByRole("heading", {
-        name: "ERPNext Execution and Reconciliation",
-      }),
-    ).toBeVisible();
-    const executionTable = screen.getByRole("table");
-    const retryableRow = within(executionTable)
-      .getByText("EX-260721-0048")
-      .closest("tr");
-    const partialRow = within(executionTable)
-      .getByText("EX-260721-0046")
-      .closest("tr");
-    expect(retryableRow).toHaveAttribute("aria-selected", "true");
-    expect(partialRow).not.toBeNull();
-    if (!partialRow)
-      throw new Error("The partial execution fixture is required.");
-    partialRow.focus();
-    fireEvent.keyDown(partialRow, { key: "Enter" });
-    expect(partialRow).toHaveAttribute("aria-selected", "true");
-    expect(
-      screen.getByRole("heading", { name: "EX-260721-0046" }),
-    ).toBeVisible();
-    expect(
-      screen.queryByRole("button", { name: "Review impact and retry" }),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText("Failure reason")).not.toBeInTheDocument();
-
-    expect(retryableRow).not.toBeNull();
-    if (!retryableRow)
-      throw new Error("The retryable execution fixture is required.");
-    retryableRow.focus();
-    fireEvent.keyDown(retryableRow, { key: " " });
-    expect(retryableRow).toHaveAttribute("aria-selected", "true");
-    await user.click(
-      screen.getByRole("button", { name: "Review impact and retry" }),
-    );
-    expect(
-      screen.getByRole("dialog", { name: "ERPNext retry impact review" }),
-    ).toHaveTextContent(
-      "Only the failed tool asset node will be retried. Completed ERPNext objects are unchanged.",
-    );
-    await user.type(
-      screen.getByRole("textbox", { name: "Reason" }),
-      "Retry mapping reviewed",
-    );
-    await user.click(screen.getByRole("button", { name: "Queue safe retry" }));
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Prototype retry command prepared. No request was queued in LaunchFlow or ERPNext.",
-    );
-
-    await user.click(
-      screen.getByRole("button", { name: "New execution request" }),
-    );
-    expect(
-      screen.getByRole("dialog", {
-        name: "New execution request impact review",
-      }),
-    ).toHaveTextContent(
-      "The approved tooling acceptance snapshot will be locked for a new tool asset execution request.",
-    );
-    await user.type(
-      screen.getByRole("textbox", { name: "Reason" }),
-      "Execution input reviewed",
-    );
-    await user.click(
-      screen.getByRole("button", { name: "Prepare execution request" }),
-    );
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Prototype execution command prepared. No request was queued in LaunchFlow or ERPNext.",
-    );
-  });
-
-  it("selects an exact execution request from focus and exposes governed field mapping state", async () => {
-    const user = userEvent.setup();
-    renderWithLocale(
-      <ExecutionPage scenario="normal" />,
-      "en",
-      "/execution?focus=EX-260721-0046",
-    );
-
-    const executionTable = screen.getByRole("table");
-    const focusedRow = within(executionTable)
-      .getByText("EX-260721-0046")
-      .closest("tr");
-    expect(focusedRow).toHaveAttribute("aria-selected", "true");
-    expect(
-      screen.getByRole("heading", { name: "EX-260721-0046" }),
-    ).toBeVisible();
-
-    const retryableRow = within(executionTable)
-      .getByText("EX-260721-0048")
-      .closest("tr");
-    expect(retryableRow).not.toBeNull();
-    if (!retryableRow)
-      throw new Error("The retryable execution fixture is required.");
-    await user.click(retryableRow);
-
-    const mapping = screen.getByRole("button", { name: "Open field mapping" });
-    expect(mapping).toHaveAttribute("aria-controls", "execution-field-mapping");
-    expect(mapping).toHaveAttribute("aria-expanded", "false");
-    expect(
-      screen.queryByRole("region", { name: "Field mapping preview" }),
-    ).not.toBeInTheDocument();
-
-    await user.click(mapping);
-    expect(
-      screen.getByRole("button", { name: "Close field mapping" }),
-    ).toHaveAttribute("aria-expanded", "true");
-    const preview = screen.getByRole("region", {
-      name: "Field mapping preview",
-    });
-    expect(preview).toHaveAttribute("id", "execution-field-mapping");
-    expect(preview).toHaveTextContent(
-      "No approved target value is available. Correct the governed mapping before preparing another request.",
-    );
-  });
-
-  it("requires a reason before preparing an honest reconciliation command", async () => {
-    const user = userEvent.setup();
-    renderWithLocale(<ExecutionPage scenario="normal" />);
-
-    await user.click(
-      screen.getByRole("button", { name: "Run reconciliation" }),
-    );
-    const review = screen.getByRole("dialog", {
-      name: "Reconciliation impact review",
-    });
-    expect(review).toHaveTextContent(
-      "Reconciliation compares LaunchFlow requests with ERPNext responses. It does not overwrite either system.",
-    );
-    const prepare = within(review).getByRole("button", {
-      name: "Prepare reconciliation",
-    });
-    expect(prepare).toBeDisabled();
-    expect(
-      within(review).getByRole("textbox", { name: "Reason" }),
-    ).toBeRequired();
-
-    await user.type(
-      within(review).getByRole("textbox", { name: "Reason" }),
-      "Daily comparison scope reviewed",
-    );
-    expect(prepare).toBeEnabled();
-    await user.click(prepare);
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Prototype reconciliation prepared. No ERPNext or LaunchFlow record was changed.",
-    );
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "The in-memory prototype command captured a reason; no audit record was persisted.",
-    );
-  });
 });
 
 describe("read-only mutation boundaries", () => {
@@ -1379,7 +1271,7 @@ describe("read-only mutation boundaries", () => {
     ).toBeDisabled();
   });
 
-  it("disables Tooling, Trial, and execution mutations", () => {
+  it("disables Tooling and Trial mutations", () => {
     const tooling = renderWithLocale(
       <ToolingPage navigate={vi.fn()} scenario="read_only" />,
     );
@@ -1408,19 +1300,5 @@ describe("read-only mutation boundaries", () => {
       screen.getByText("The released Trial version is immutable."),
     ).toBeVisible();
     trial.unmount();
-
-    renderWithLocale(<ExecutionPage scenario="read_only" />);
-    expect(
-      screen.getByRole("button", { name: "Run reconciliation" }),
-    ).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: "New execution request" }),
-    ).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: "Review impact and retry" }),
-    ).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: "Open field mapping" }),
-    ).toBeEnabled();
   });
 });

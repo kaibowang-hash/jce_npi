@@ -32,6 +32,10 @@ describe("application routing", () => {
     ],
     ["/trials/T1", "trial"],
     ["/projects/11111111-1111-4111-8111-111111111111/trials", "trial"],
+    [
+      "/projects/11111111-1111-4111-8111-111111111111/integration-operations",
+      "execution",
+    ],
     ["/execution", "execution"],
   ] as const)("maps %s to the %s screen", (path, screen) => {
     expect(parseRoute(locationFor(path)).screen).toBe(screen);
@@ -132,6 +136,17 @@ describe("application routing", () => {
     expect(
       parseRoute(
         locationFor(
+          "/projects/11111111-1111-4111-8111-111111111111/integration-operations?scenario=error",
+        ),
+      ),
+    ).toMatchObject({
+      projectGlobalId: "11111111-1111-4111-8111-111111111111",
+      scenario: "normal",
+      screen: "execution",
+    });
+    expect(
+      parseRoute(
+        locationFor(
           "/projects/11111111-1111-4111-8111-111111111111/tooling?workspace=import",
         ),
       ),
@@ -192,6 +207,7 @@ describe("application routing", () => {
       `/projects/${projectId}/tooling`,
       `/projects/${projectId}/tooling/${gateId}`,
       `/projects/${projectId}/trials`,
+      `/projects/${projectId}/integration-operations`,
       "/tooling/TL-26018-01",
       "/trials/T1",
       "/execution",
@@ -254,13 +270,18 @@ describe("application routing", () => {
       top: 0,
     });
 
-    globalThis.history.pushState({}, "", "/execution?scenario=processing");
+    globalThis.history.pushState(
+      {},
+      "",
+      "/projects/11111111-1111-4111-8111-111111111111/integration-operations?scenario=processing",
+    );
     act(() => {
       globalThis.dispatchEvent(new PopStateEvent("popstate"));
     });
     expect(result.current.route).toMatchObject({
       screen: "execution",
-      scenario: "processing",
+      scenario: "normal",
+      projectGlobalId: "11111111-1111-4111-8111-111111111111",
     });
   });
 });

@@ -1,19 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI — P8-07`
+`IN_PROGRESS_CHECKPOINT_3_AWAITING_PRODUCT_CI — P8-07`
 
-Recovery time: `2026-08-28T06:17:53Z`
+Recovery time: `2026-08-28T17:08:19Z`
 
-Current atomic action: seal checkpoint 2 Project-first list/detail/logical-DLQ
-reads and ten fixed operation-specific replay/reconciliation-request commands,
-then require its exact-SHA ordinary CI. Checkpoint 1 passes at
-`d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` / ordinary CI `33142594763`.
-The new routes remain default-disabled; replay is limited to exact
-pre-boundary retryable truth, reconciliation records intent only, and enqueue
-occurs after commit through the owning worker. Checkpoint 3 UI, adapters,
-target calls and production contact remain inactive. The queued fact-check
-request remains not effective and external portals remain
+Current atomic action: seal checkpoint 3 live Project integration-operations
+workspace and require its exact-SHA ordinary CI. Checkpoint 2 passes at
+`f7cf7c7ea490c10acfc044aaef236945e5118f01` / ordinary CI `33187660221`.
+The UI consumes only Project-first safe responses, exposes exactly one
+server-authorized replay or reconciliation action at a time, and never claims
+ERP success from queued, HTTP or synthetic truth. Checkpoint 4 disposable
+runtime, adapters, target calls and production contact remain inactive. The
+queued fact-check request remains not effective and external portals remain
 `USER_APPROVED_POST_V1_2_DEFERRED`.
 
 Required branch:

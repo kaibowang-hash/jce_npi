@@ -33,6 +33,7 @@ import { LiveToolingListDataSource } from "../api/tooling-list-data-source";
 import { LiveTrialDataSource } from "../api/trial-data-source";
 import { LiveReadinessDataSource } from "../api/readiness-data-source";
 import { LiveProductionTransitionDataSource } from "../api/production-transition-data-source";
+import { LiveIntegrationOperationsDataSource } from "../api/integration-operations-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -73,6 +74,8 @@ const liveTrialDataSource = new LiveTrialDataSource();
 const liveReadinessDataSource = new LiveReadinessDataSource();
 const liveProductionTransitionDataSource =
   new LiveProductionTransitionDataSource();
+const liveIntegrationOperationsDataSource =
+  new LiveIntegrationOperationsDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -240,7 +243,10 @@ export function App(): React.JSX.Element {
     ) : route.screen === "trial" ? (
       <TrialPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "execution" ? (
-      <ExecutionPage scenario={route.scenario} />
+      <ExecutionPage
+        dataSource={liveIntegrationOperationsDataSource}
+        projectId={route.projectGlobalId ?? ""}
+      />
     ) : route.workMode === "demo" ? (
       <WorkPage navigate={guardedNavigate} />
     ) : (

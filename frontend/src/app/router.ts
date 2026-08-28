@@ -28,6 +28,10 @@ const liveTrialRoutePattern = new RegExp(
   `^/projects/(${uuidRouteSegment})/trials/?$`,
   "u",
 );
+const liveIntegrationOperationsRoutePattern = new RegExp(
+  `^/projects/(${uuidRouteSegment})/integration-operations/?$`,
+  "u",
+);
 const approvedPathPatterns = [
   /^\/work\/?$/u,
   /^\/demo\/work\/?$/u,
@@ -41,6 +45,7 @@ const approvedPathPatterns = [
   liveToolingRoutePattern,
   liveToolingMasterRoutePattern,
   liveTrialRoutePattern,
+  liveIntegrationOperationsRoutePattern,
   new RegExp(`^/tooling/${fixtureRouteSegment}/?$`, "u"),
   new RegExp(`^/trials/${fixtureRouteSegment}/?$`, "u"),
   /^\/execution\/?$/u,
@@ -146,9 +151,12 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
   const liveToolingMatch = liveToolingRoutePattern.exec(pathname);
   const liveToolingMasterMatch = liveToolingMasterRoutePattern.exec(pathname);
   const liveTrialMatch = liveTrialRoutePattern.exec(pathname);
+  const liveIntegrationOperationsMatch =
+    liveIntegrationOperationsRoutePattern.exec(pathname);
   const demoWork = /^\/demo\/work\/?$/u.test(pathname);
-  const screen: ScreenId =
-    demoGateMatch || liveGateMatch || liveGatePathPattern.test(pathname)
+  const screen: ScreenId = liveIntegrationOperationsMatch
+    ? "execution"
+    : demoGateMatch || liveGateMatch || liveGatePathPattern.test(pathname)
       ? "gate"
       : liveTrialMatch
         ? "trial"
@@ -182,13 +190,17 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
     projectMode === "live" ||
     gateMode === "live" ||
     toolingMode === "live" ||
-    trialMode === "live";
+    trialMode === "live" ||
+    (screen === "execution" && liveIntegrationOperationsMatch !== null);
   return {
     gateGlobalId: liveGateMatch?.[2] ?? null,
     gateMode,
     screen,
     pathname,
-    scenario: liveRoute ? "normal" : parseScenario(parameters.get("scenario")),
+    scenario:
+      liveRoute || screen === "execution"
+        ? "normal"
+        : parseScenario(parameters.get("scenario")),
     qualityFailure: parameters.get("quality") === "failed",
     projectGlobalId:
       liveProjectMatch?.[1] ??
@@ -196,6 +208,7 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
       liveToolingMatch?.[1] ??
       liveToolingMasterMatch?.[1] ??
       liveTrialMatch?.[1] ??
+      liveIntegrationOperationsMatch?.[1] ??
       null,
     projectMode,
     toolingMasterGlobalId: liveToolingMasterMatch?.[2] ?? null,

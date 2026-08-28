@@ -1,6 +1,6 @@
 # P8-07 Checkpoint 2 — Project Operations and Fixed Actions
 
-Status: **LEVEL 1 CANDIDATE — AWAITING EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT 2 PASS**
 
 Date: 2026-08-28
 
@@ -49,10 +49,9 @@ ordinary CI `33142594763` (**PASS**)
 ## Checkpoint boundary
 
 The routes remain disabled unless the explicit non-production runtime flag is
-set to `false`. This checkpoint adds no adapter or target call and does not
-activate the live `/execution` UI. Checkpoint 3 remains closed until this exact
-candidate passes ordinary CI. Production ERPNext/JCE contact remains
-prohibited and the queued production fact check remains not effective.
+enabled. This checkpoint adds no adapter or target call and does not activate
+the live `/execution` UI. Production ERPNext/JCE contact remains prohibited
+and the queued production fact check remains not effective.
 
 ## Verification status
 
@@ -92,6 +91,10 @@ gitleaks ignore, scanner rule or threshold was added or weakened. Because the
 CI step scans `origin/main..HEAD`, the unaccepted candidate commit must be
 amended so its false-positive lexical form is not retained in branch history.
 
-The exact task manifest contains `38` paths; any thirty-ninth path is rejected.
-Exact-SHA ordinary CI remains the checkpoint Gate, so Checkpoint 3 is not yet
-authorized.
+The stable checkpoint SHA
+`f7cf7c7ea490c10acfc044aaef236945e5118f01` passes exact ordinary CI
+`33187660221`: repository `98904745085`, frontend `98904745277`, secret scan
+`98904745231` and governed visual `98904744908` all pass; controlled lanes
+correctly skip. Checkpoint 3 is therefore authorized only for the live
+Project-scoped operations workspace frozen in the plan. Checkpoint 4 runtime,
+target calls and production contact remain inactive.

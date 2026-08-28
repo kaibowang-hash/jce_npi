@@ -1,441 +1,945 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import type { ExecutionRow, Scenario, SyncState } from "../domain/view-models";
-import { executionRows } from "../fixtures/prototype";
-import { operationLabel, syncStateLabel } from "../i18n/copy";
-import { formatDateTime, formatNumber } from "../i18n/formatters";
-import { useI18n } from "../i18n/runtime";
-import { Button } from "../ui-adapters/npi-ui";
+import {
+  integrationOperationKinds,
+  integrationOperationStates,
+  type IntegrationOperationActionKind,
+  type IntegrationOperationActionResult,
+  type IntegrationOperationCollection,
+  type IntegrationOperationDetail,
+  type IntegrationOperationFilters,
+  type IntegrationOperationItem,
+  type IntegrationOperationKind,
+  type IntegrationOperationsDataSource,
+  type IntegrationOperationState,
+} from "../api/integration-operations-data-source";
+import {
+  NpiApiError,
+  toRequestFailure,
+  type RequestFailure,
+} from "../api/http";
+import { RequestFailurePanel } from "../components/problem-details-panel";
 import {
   DefinitionList,
   ImpactReview,
   Panel,
   SemanticStatus,
-  SourceBadge,
-  SyncBadge,
 } from "../components/primitives";
-import { MetricStrip } from "../components/object-components";
+import { formatDateTime, formatNumber } from "../i18n/formatters";
+import { useI18n } from "../i18n/runtime";
+import { Button, Select } from "../ui-adapters/npi-ui";
 
-const executionRequestSource = {
-  sourceSystem: "NPI_ONE" as const,
-  editableIn: "NONE" as const,
-  syncState: "failed_retryable" as const,
-  lastSyncedAt: "2026-07-21T14:20:00Z",
-};
+type T = ReturnType<typeof useI18n>["t"];
+type ResourceState =
+  | { kind: "loading" }
+  | { kind: "loaded"; value: IntegrationOperationCollection }
+  | { kind: "failed"; failure: RequestFailure };
+type DetailState =
+  | { kind: "idle" }
+  | { kind: "loading"; operationId: string }
+  | { kind: "loaded"; value: IntegrationOperationDetail }
+  | { kind: "failed"; operationId: string; failure: RequestFailure };
+type CommandState =
+  | { kind: "idle" }
+  | { kind: "processing"; action: IntegrationOperationActionKind }
+  | {
+      kind: "succeeded";
+      action: IntegrationOperationActionKind;
+      result: IntegrationOperationActionResult;
+    }
+  | {
+      kind: "failed";
+      action: IntegrationOperationActionKind;
+      failure: RequestFailure;
+      conflict: boolean;
+    };
 
-type ReviewMode = "new" | "retry" | "reconcile" | null;
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
+
+function operationLabel(t: T, kind: IntegrationOperationKind): string {
+  switch (kind) {
+    case "receive_project_submission":
+      return t("Receive Project submission");
+    case "publish_item":
+      return t("Publish Item");
+    case "publish_mbom":
+      return t("Publish MBOM");
+    case "create_tool_asset":
+      return t("Create Tool Asset");
+    case "update_tool_asset":
+      return t("Update Tool Asset");
+  }
+}
+
+function stateLabel(t: T, state: IntegrationOperationState): string {
+  switch (state) {
+    case "queued":
+      return t("Queued");
+    case "processing":
+      return t("Processing");
+    case "succeeded":
+      return t("Succeeded");
+    case "failed_retryable":
+      return t("Failed, replay available");
+    case "failed_final":
+      return t("Final failure");
+    case "uncertain":
+      return t("Outcome uncertain");
+    case "partial":
+      return t("Partial result");
+    case "conflict":
+      return t("Identity or version conflict");
+    case "quarantined":
+      return t("Quarantined");
+    case "unavailable":
+      return t("Evidence unavailable");
+  }
+}
 
 function stateTone(
-  state: ExecutionRow["state"],
+  state: IntegrationOperationState,
 ): "neutral" | "info" | "success" | "warning" | "danger" {
   if (state === "succeeded") return "success";
-  if (state === "failed_final") return "danger";
-  if (state === "failed_retryable" || state === "partial") return "warning";
-  if (state === "processing" || state === "queued") return "info";
+  if (state === "queued" || state === "processing") return "info";
+  if (state === "failed_final" || state === "quarantined") return "danger";
+  if (
+    state === "failed_retryable" ||
+    state === "uncertain" ||
+    state === "partial" ||
+    state === "conflict"
+  )
+    return "warning";
   return "neutral";
 }
 
-function sourceSyncState(state: ExecutionRow["state"]): SyncState {
-  if (state === "succeeded") return "synced";
-  if (state === "queued") return "pending";
-  if (state === "cancelled") return "local";
-  return state;
+function faultLabel(
+  t: T,
+  fault: IntegrationOperationItem["faultClass"],
+): string {
+  switch (fault) {
+    case "none":
+      return t("No classified fault");
+    case "retryable_before_uncertain_boundary":
+      return t("Retryable before the target boundary");
+    case "final_business_failure":
+      return t("Final business failure");
+    case "uncertain_after_boundary":
+      return t("Uncertain after the target boundary");
+    case "partial_result":
+      return t("Partial target result");
+    case "identity_conflict":
+      return t("Identity or version conflict");
+    case "authenticity_quarantine":
+      return t("Authenticity quarantine");
+    case "target_unavailable":
+      return t("Target evidence unavailable");
+    case "unknown_raw_state":
+      return t("Unknown owning state");
+  }
 }
 
-function executionCount(...states: readonly ExecutionRow["state"][]): number {
-  return executionRows.filter((row) => states.includes(row.state)).length;
+function availableAction(
+  item: IntegrationOperationItem,
+): IntegrationOperationActionKind | null {
+  if (item.replayEligible) return "replay";
+  if (item.reconciliationRequired) return "request_reconciliation";
+  return null;
 }
 
-export default function ExecutionPage({
-  scenario,
+function actionLabel(t: T, action: IntegrationOperationActionKind): string {
+  return action === "replay"
+    ? t("Review and request replay")
+    : t("Review and request reconciliation");
+}
+
+function LoadingSurface(): React.JSX.Element {
+  const { t } = useI18n();
+  return (
+    <section
+      aria-busy="true"
+      aria-label={t("Loading integration operations")}
+      className="workspace-resource-state workspace-resource-state--loading"
+      role="status"
+    >
+      <div className="skeleton skeleton--title" />
+      <div className="skeleton" />
+      <div className="skeleton" />
+      <span className="visually-hidden">
+        {t("Loading integration operations")}
+      </span>
+    </section>
+  );
+}
+
+function actionReviewDetails(
+  t: T,
+  operation: IntegrationOperationItem,
+  action: IntegrationOperationActionKind,
+) {
+  return {
+    objectIdentity: operation.operationGlobalId,
+    version: `${operation.rawState} · v${String(operation.operationVersion)}`,
+    impact:
+      action === "replay"
+        ? t(
+            "The owning operation will reuse its exact immutable source and target idempotency. No new payload or target identity is supplied.",
+          )
+        : t(
+            "This records reconciliation intent only. It does not assert target success, change a formal identity, or redispatch the operation.",
+          ),
+    permission: t(
+      "The exact Project and operation-specific authority are verified again by the server.",
+    ),
+    irreversible: t(
+      "The action receipt and audit history are append-only after the command commits.",
+    ),
+    failureHandling: t(
+      "A conflict or failure remains visible without reporting ERPNext completion.",
+    ),
+    audit: t(
+      "The server records the actor, trace, expected state, expected version and hashed idempotency identity. The review reason is not sent as business truth.",
+    ),
+  };
+}
+
+function DetailInspector({
+  detail,
 }: {
-  scenario: Scenario;
+  detail: IntegrationOperationDetail;
 }): React.JSX.Element {
   const { locale, t } = useI18n();
-  const requestedId = new URLSearchParams(globalThis.location.search).get(
-    "focus",
-  );
-  const [selectedId, setSelectedId] = useState(
-    executionRows.some((row) => row.id === requestedId)
-      ? (requestedId ?? "")
-      : (executionRows[0]?.id ?? ""),
-  );
-  const [reviewMode, setReviewMode] = useState<ReviewMode>(null);
-  const [mappingOpen, setMappingOpen] = useState(false);
-  const [preparedOperation, setPreparedOperation] = useState<{
-    mode: Exclude<ReviewMode, null>;
-    reason: string;
-  } | null>(null);
-  const selected =
-    executionRows.find((row) => row.id === selectedId) ?? executionRows[0];
-  const retryable = selected?.state === "failed_retryable";
-  const finalFailure = selected?.state === "failed_final";
+  const operation = detail.operation;
   return (
-    <article className="page page--execution">
-      <header className="page-heading page-heading--actions">
-        <div>
-          <h1>{t("ERPNext Execution and Reconciliation")}</h1>
-          <p>
-            {t(
-              "Engineering approval and ERPNext completion remain separate, traceable states.",
-            )}
-          </p>
-        </div>
-        <div>
-          <Button
-            disabled={scenario === "read_only"}
-            onClick={() => {
-              setReviewMode("reconcile");
-            }}
-          >
-            {t("Run reconciliation")}
-          </Button>
-          <Button
-            disabled={scenario === "read_only"}
-            onClick={() => {
-              setReviewMode("new");
-            }}
-            visual="primary"
-          >
-            {t("New execution request")}
-          </Button>
-        </div>
-      </header>
-      <MetricStrip
-        metrics={[
+    <div className="integration-operation-inspector__content">
+      <div className="detail-heading">
+        <h2 data-language-exempt="identifier">{operation.operationGlobalId}</h2>
+        <SemanticStatus
+          label={stateLabel(t, operation.sharedState)}
+          tone={stateTone(operation.sharedState)}
+        />
+      </div>
+      <DefinitionList
+        rows={[
           {
-            label: t("Queued"),
-            value: formatNumber(locale, executionCount("queued"), 0),
+            label: t("Operation"),
+            value: operationLabel(t, operation.operationKind),
           },
           {
-            label: t("Processing"),
-            value: formatNumber(locale, executionCount("processing"), 0),
+            label: t("Owning state"),
+            value: operation.rawState,
+            exempt: "identifier",
           },
           {
-            label: t("Partially succeeded"),
-            value: formatNumber(locale, executionCount("partial"), 0),
-            tone: "warning",
+            label: t("Fault classification"),
+            value: faultLabel(t, operation.faultClass),
           },
           {
-            label: t("Failed, retry available"),
-            value: formatNumber(locale, executionCount("failed_retryable"), 0),
-            tone: "warning",
+            label: t("Source identity"),
+            value: operation.sourceGlobalId,
+            exempt: "identifier",
           },
           {
-            label: t("Manual action required"),
-            value: formatNumber(locale, executionCount("failed_final"), 0),
-            tone: "danger",
+            label: t("Operation version"),
+            value: formatNumber(locale, operation.operationVersion, 0),
+          },
+          {
+            label: t("Last updated"),
+            value: formatDateTime(locale, operation.updatedAt),
           },
         ]}
       />
-      {preparedOperation ? (
-        <div className="scenario-banner scenario-banner--queued" role="status">
-          <span>
-            {preparedOperation.mode === "retry"
-              ? t(
-                  "Prototype retry command prepared. No request was queued in LaunchFlow or ERPNext.",
-                )
-              : preparedOperation.mode === "reconcile"
-                ? t(
-                    "Prototype reconciliation prepared. No ERPNext or LaunchFlow record was changed.",
-                  )
-                : t(
-                    "Prototype execution command prepared. No request was queued in LaunchFlow or ERPNext.",
-                  )}
-          </span>
-          <span>
-            {t(
-              "The in-memory prototype command captured a reason; no audit record was persisted.",
-            )}
-          </span>
-        </div>
-      ) : null}
-      <div className="execution-layout">
-        <Panel title={t("Execution requests")}>
-          <div className="table-scroll">
-            <table className="data-table">
+      <section aria-labelledby="operation-attempts-heading">
+        <h3 id="operation-attempts-heading">{t("Attempts")}</h3>
+        {operation.attempts.length ? (
+          <div aria-label={t("Attempts")} className="table-scroll" tabIndex={0}>
+            <table className="data-table data-table--compact">
               <thead>
                 <tr>
-                  <th>{t("Request number")}</th>
-                  <th>{t("Business action")}</th>
-                  <th>{t("Project or object")}</th>
-                  <th>{t("Created")}</th>
-                  <th>{t("Status")}</th>
+                  <th className="integration-operation-compact-cell">
+                    {t("Attempt")}
+                  </th>
+                  <th className="integration-operation-compact-cell">
+                    {t("Owning state")}
+                  </th>
+                  <th className="integration-operation-compact-cell">
+                    {t("Target boundary")}
+                  </th>
+                  <th className="integration-operation-compact-cell">
+                    {t("Reconciliation")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {executionRows.map((row) => (
-                  <tr
-                    aria-selected={row.id === selected?.id}
-                    className={
-                      row.id === selected?.id ? "is-selected" : undefined
-                    }
-                    key={row.id}
-                    onClick={() => {
-                      setSelectedId(row.id);
-                      setMappingOpen(false);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        setSelectedId(row.id);
-                        setMappingOpen(false);
-                      }
-                    }}
-                    tabIndex={0}
-                  >
-                    <td data-language-exempt="identifier">
-                      <strong>{row.id}</strong>
+                {operation.attempts.map((attempt) => (
+                  <tr key={`attempt-${String(attempt.attemptNumber)}`}>
+                    <td className="integration-operation-compact-cell">
+                      {formatNumber(locale, attempt.attemptNumber, 0)}
                     </td>
-                    <td>{operationLabel(t, row.operationCode)}</td>
-                    <td data-language-exempt="identifier">{row.context}</td>
-                    <td>
-                      <time dateTime={row.createdAt}>
-                        {formatDateTime(locale, row.createdAt)}
-                      </time>
+                    <td
+                      className="integration-operation-compact-cell"
+                      data-language-exempt="identifier"
+                    >
+                      {attempt.state}
                     </td>
-                    <td>
-                      <SemanticStatus
-                        label={syncStateLabel(t, row.state)}
-                        tone={stateTone(row.state)}
-                      />
+                    <td className="integration-operation-compact-cell">
+                      {attempt.adapterBoundaryCrossed
+                        ? t("Crossed")
+                        : t("Not crossed")}
+                    </td>
+                    <td className="integration-operation-compact-cell">
+                      {attempt.reconciliationRequired
+                        ? t("Required")
+                        : t("Not required")}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <footer className="table-footer">
-            <span>
-              {t("Showing {{start}}–{{end}} of {{total}} items", {
-                start: formatNumber(locale, 1, 0),
-                end: formatNumber(locale, 6, 0),
-                total: formatNumber(locale, executionRows.length, 0),
-              })}
-            </span>
-            <Button disabled>{t("Next page")}</Button>
-          </footer>
+        ) : (
+          <p className="empty-state-copy">
+            {t("No attempt has been recorded.")}
+          </p>
+        )}
+      </section>
+      <section aria-labelledby="operation-results-heading">
+        <h3 id="operation-results-heading">{t("Results")}</h3>
+        {operation.results.length ? (
+          <ul className="integration-operation-history">
+            {operation.results.map((result) => (
+              <li
+                className="integration-operation-history-item"
+                key={result.resultGlobalId}
+              >
+                <strong data-language-exempt="identifier">
+                  {result.state}
+                </strong>
+                <span>
+                  {result.authority === "authoritative_sandbox"
+                    ? t("Authenticated Sandbox evidence")
+                    : result.authority === "synthetic"
+                      ? t("Synthetic evidence, not formal target truth")
+                      : t("No target authority")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="empty-state-copy">
+            {t("No result has been recorded.")}
+          </p>
+        )}
+      </section>
+      <section aria-labelledby="operation-actions-heading">
+        <h3 id="operation-actions-heading">{t("Action history")}</h3>
+        {operation.actions.length ? (
+          <ul className="integration-operation-history">
+            {operation.actions.map((action) => (
+              <li
+                className="integration-operation-history-item"
+                key={action.actionGlobalId}
+              >
+                <strong>
+                  {action.actionKind === "replay"
+                    ? t("Replay requested")
+                    : t("Reconciliation requested")}
+                </strong>
+                <span data-language-exempt="identifier">
+                  {action.actorUserId} · {action.traceId}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="empty-state-copy">
+            {t("No operator action has been recorded.")}
+          </p>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default function ExecutionPage({
+  dataSource,
+  projectId,
+}: {
+  dataSource: IntegrationOperationsDataSource;
+  projectId: string;
+}): React.JSX.Element {
+  const { locale, sessionCommandContext, t } = useI18n();
+  const requestedId = new URLSearchParams(globalThis.location.search).get(
+    "focus",
+  );
+  const initialSelectedId =
+    requestedId && UUID.test(requestedId) ? requestedId : null;
+  const [filters, setFilters] = useState<IntegrationOperationFilters>({
+    limit: 50,
+  });
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [resource, setResource] = useState<ResourceState>({ kind: "loading" });
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialSelectedId,
+  );
+  const selectedIdRef = useRef<string | null>(initialSelectedId);
+  const [detail, setDetail] = useState<DetailState>({ kind: "idle" });
+  const [reviewAction, setReviewAction] =
+    useState<IntegrationOperationActionKind | null>(null);
+  const [command, setCommand] = useState<CommandState>({ kind: "idle" });
+  const actionButtonRef = useRef<HTMLElement | null>(null);
+  const commandAbort = useRef<AbortController | null>(null);
+  const projectReady = UUID.test(projectId);
+
+  useEffect(() => {
+    const refresh = (): void => {
+      setResource({ kind: "loading" });
+      setLoadAttempt((current) => current + 1);
+    };
+    globalThis.addEventListener("npi:refresh-integration-operations", refresh);
+    return () => {
+      globalThis.removeEventListener(
+        "npi:refresh-integration-operations",
+        refresh,
+      );
+    };
+  }, []);
+
+  useEffect(
+    () => () => {
+      commandAbort.current?.abort();
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!projectReady) return undefined;
+    const controller = new AbortController();
+    void dataSource
+      .loadOperations(projectId, filters, controller.signal)
+      .then((value) => {
+        if (controller.signal.aborted) return;
+        setResource({ kind: "loaded", value });
+        if (!value.permissions.view) {
+          selectedIdRef.current = null;
+          setSelectedId(null);
+          setDetail({ kind: "idle" });
+          return;
+        }
+        const current = selectedIdRef.current;
+        const next =
+          current &&
+          value.items.some((item) => item.operationGlobalId === current)
+            ? current
+            : (value.items[0]?.operationGlobalId ?? null);
+        selectedIdRef.current = next;
+        setSelectedId(next);
+        setDetail(
+          next ? { kind: "loading", operationId: next } : { kind: "idle" },
+        );
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        setResource({ kind: "failed", failure: toRequestFailure(error) });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [dataSource, filters, loadAttempt, projectId, projectReady]);
+
+  const selected = useMemo(() => {
+    if (resource.kind !== "loaded" || !selectedId) return null;
+    return (
+      resource.value.items.find(
+        (item) => item.operationGlobalId === selectedId,
+      ) ?? null
+    );
+  }, [resource, selectedId]);
+
+  useEffect(() => {
+    if (!selected) return undefined;
+    const controller = new AbortController();
+    void dataSource
+      .loadOperation(
+        projectId,
+        selected.operationKind,
+        selected.operationGlobalId,
+        controller.signal,
+      )
+      .then((value) => {
+        if (!controller.signal.aborted) setDetail({ kind: "loaded", value });
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        setDetail({
+          kind: "failed",
+          operationId: selected.operationGlobalId,
+          failure: toRequestFailure(error),
+        });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [dataSource, projectId, selected]);
+
+  const action = selected ? availableAction(selected) : null;
+  const detailCanAct =
+    detail.kind === "loaded" &&
+    detail.value.operation.operationGlobalId === selected?.operationGlobalId &&
+    detail.value.permissions.act;
+  const detailPermissionDenied =
+    detail.kind === "loaded" && !detail.value.permissions.act;
+  const canAct =
+    resource.kind === "loaded" &&
+    resource.value.permissions.act &&
+    detailCanAct &&
+    sessionCommandContext !== null;
+  const commandProcessing = command.kind === "processing";
+
+  const requestCommand = (reason: string): void => {
+    if (!selected || !reviewAction || !sessionCommandContext || !canAct) return;
+    // The reason confirms deliberate review locally. The frozen API accepts no
+    // caller-authored reason or target truth, so it is intentionally not sent.
+    if (!reason.trim()) return;
+    commandAbort.current?.abort();
+    const controller = new AbortController();
+    commandAbort.current = controller;
+    const requestedAction = reviewAction;
+    setReviewAction(null);
+    setCommand({ kind: "processing", action: requestedAction });
+    void dataSource
+      .requestAction(projectId, selected, requestedAction, {
+        csrfToken: sessionCommandContext.csrfToken,
+        idempotencyKey: `p807-${requestedAction}-${globalThis.crypto.randomUUID()}`,
+        signal: controller.signal,
+      })
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        commandAbort.current = null;
+        setCommand({ kind: "succeeded", action: requestedAction, result });
+        setResource({ kind: "loading" });
+        setLoadAttempt((current) => current + 1);
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        commandAbort.current = null;
+        setCommand({
+          kind: "failed",
+          action: requestedAction,
+          failure: toRequestFailure(error),
+          conflict:
+            error instanceof NpiApiError && error.problem.status === 409,
+        });
+      });
+  };
+
+  if (!projectReady) {
+    return (
+      <article className="page page--execution">
+        <header className="page-heading">
+          <h1>{t("Integration operations")}</h1>
+        </header>
+        <Panel title={t("Project context required")}>
+          <p>
+            {t(
+              "Open integration operations from an authorized Project. This workspace never uses a tenant-wide fallback.",
+            )}
+          </p>
         </Panel>
-        {selected ? (
-          <Panel title={t("Execution request details")}>
-            <div className="detail-heading">
-              <h2 data-language-exempt="identifier">{selected.id}</h2>
-              <SemanticStatus
-                label={syncStateLabel(t, selected.state)}
-                tone={stateTone(selected.state)}
-              />
+      </article>
+    );
+  }
+
+  return (
+    <article className="page page--execution">
+      <header className="page-heading page-heading--actions">
+        <div>
+          <h1>{t("Integration operations")}</h1>
+          <p>
+            {t(
+              "Inspect Project-scoped execution truth, logical DLQ classification, replay requests and reconciliation intent without treating them as ERPNext completion.",
+            )}
+          </p>
+        </div>
+        <Button
+          onClick={() => {
+            setResource({ kind: "loading" });
+            setLoadAttempt((current) => current + 1);
+          }}
+        >
+          {t("Refresh")}
+        </Button>
+      </header>
+
+      {resource.kind === "loading" ? <LoadingSurface /> : null}
+      {resource.kind === "failed" ? (
+        <Panel title={t("Integration operations unavailable")}>
+          <RequestFailurePanel failure={resource.failure} />
+          <Button
+            onClick={() => {
+              setResource({ kind: "loading" });
+              setLoadAttempt((current) => current + 1);
+            }}
+          >
+            {t("Retry loading")}
+          </Button>
+        </Panel>
+      ) : null}
+
+      {resource.kind === "loaded" && !resource.value.permissions.view ? (
+        <Panel title={t("Integration operations unavailable")}>
+          <p>
+            {t(
+              "You do not have permission to view integration operations for this Project.",
+            )}
+          </p>
+        </Panel>
+      ) : null}
+
+      {resource.kind === "loaded" && resource.value.permissions.view ? (
+        <>
+          {!resource.value.permissions.act ||
+          detailPermissionDenied ||
+          !sessionCommandContext ? (
+            <div
+              className="scenario-banner scenario-banner--read-only"
+              role="status"
+            >
+              <strong>{t("Read-only integration view")}</strong>
+              <span>
+                {!resource.value.permissions.act || detailPermissionDenied
+                  ? t(
+                      "You may inspect Project-contained operation truth, but no operator action is authorized.",
+                    )
+                  : t(
+                      "Session verification is required before an operator action can be submitted.",
+                    )}
+              </span>
             </div>
-            <DefinitionList
-              rows={[
-                {
-                  label: t("Business action"),
-                  value: operationLabel(t, selected.operationCode),
-                },
-                {
-                  label: t("Source object"),
-                  value: selected.context,
-                  exempt: "identifier",
-                },
-                {
-                  label: t("Target system"),
-                  value: "ERPNext",
-                  exempt: "business-data",
-                },
-                {
-                  label: t("Request version"),
-                  value: formatNumber(locale, 3, 0),
-                },
-                {
-                  label: t("Idempotency key"),
-                  value: `tool-asset:${selected.context}:v3`,
-                  exempt: "identifier",
-                },
-                {
-                  label: t("Last attempt"),
-                  value: formatDateTime(locale, "2026-07-21T14:20:00Z"),
-                },
-                {
-                  label: t("Trace ID"),
-                  value: selected.traceId,
-                  exempt: "identifier",
-                },
-              ]}
-            />
-            {retryable || finalFailure ? (
-              <div className="failure-explanation">
-                <SemanticStatus
-                  label={
-                    retryable
-                      ? t("Failure reason")
-                      : t("Manual action required")
-                  }
-                  tone={finalFailure ? "danger" : "warning"}
-                />
+          ) : null}
+
+          {command.kind === "processing" ? (
+            <div
+              aria-live="polite"
+              className="scenario-banner scenario-banner--processing"
+              role="status"
+            >
+              <strong>{t("Command in progress")}</strong>
+              <span>
+                {t(
+                  "The exact operation state and version are being verified and committed atomically.",
+                )}
+              </span>
+            </div>
+          ) : null}
+          {command.kind === "succeeded" ? (
+            <div
+              aria-live="polite"
+              className="scenario-banner scenario-banner--success"
+              role="status"
+            >
+              <strong>
+                {command.action === "replay"
+                  ? t("Replay request recorded")
+                  : t("Reconciliation request recorded")}
+              </strong>
+              <span>
+                {t(
+                  "The append-only operator action is recorded. This does not confirm ERPNext completion.",
+                )}
+              </span>
+            </div>
+          ) : null}
+          {command.kind === "failed" ? (
+            <Panel
+              title={
+                command.conflict
+                  ? t("Command conflict")
+                  : t("Operator action not completed")
+              }
+            >
+              {command.conflict ? (
                 <p>
                   {t(
-                    "ERPNext validation did not find an approved target asset category. No formal asset was written.",
+                    "The operation changed before this command committed. Refresh and review the current state before trying again.",
                   )}
                 </p>
-                <small>
-                  {retryable
+              ) : null}
+              <RequestFailurePanel failure={command.failure} />
+            </Panel>
+          ) : null}
+
+          <Panel
+            actions={
+              <div className="table-tools integration-operation-toolbar">
+                <label className="integration-operation-filter">
+                  <span>{t("Operation")}</span>
+                  <Select
+                    aria-label={t("Operation")}
+                    onChange={(event) => {
+                      const operationKind = event.currentTarget.value;
+                      selectedIdRef.current = null;
+                      setSelectedId(null);
+                      setDetail({ kind: "idle" });
+                      setResource({ kind: "loading" });
+                      setFilters((current) => ({
+                        ...current,
+                        cursor: undefined,
+                        operationKind: operationKind
+                          ? (operationKind as IntegrationOperationKind)
+                          : undefined,
+                      }));
+                    }}
+                    value={filters.operationKind ?? ""}
+                  >
+                    <option value="">{t("All operations")}</option>
+                    {integrationOperationKinds.map((kind) => (
+                      <option key={kind} value={kind}>
+                        {operationLabel(t, kind)}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                <label className="integration-operation-filter">
+                  <span>{t("Shared state")}</span>
+                  <Select
+                    aria-label={t("Shared state")}
+                    onChange={(event) => {
+                      const sharedState = event.currentTarget.value;
+                      selectedIdRef.current = null;
+                      setSelectedId(null);
+                      setDetail({ kind: "idle" });
+                      setResource({ kind: "loading" });
+                      setFilters((current) => ({
+                        ...current,
+                        cursor: undefined,
+                        sharedState: sharedState
+                          ? (sharedState as IntegrationOperationState)
+                          : undefined,
+                      }));
+                    }}
+                    value={filters.sharedState ?? ""}
+                  >
+                    <option value="">{t("All states")}</option>
+                    {integrationOperationStates.map((state) => (
+                      <option key={state} value={state}>
+                        {stateLabel(t, state)}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                <Button
+                  aria-pressed={filters.logicalDlq === true}
+                  onClick={() => {
+                    selectedIdRef.current = null;
+                    setSelectedId(null);
+                    setDetail({ kind: "idle" });
+                    setResource({ kind: "loading" });
+                    setFilters((current) => ({
+                      ...current,
+                      cursor: undefined,
+                      logicalDlq: !current.logicalDlq,
+                    }));
+                  }}
+                >
+                  {filters.logicalDlq
+                    ? t("Show all operations")
+                    : t("Show logical DLQ")}
+                </Button>
+              </div>
+            }
+            title={t("Project operation worklist")}
+          >
+            {resource.value.items.length ? (
+              <div className="integration-operation-layout">
+                <div className="integration-operation-worklist table-scroll">
+                  <table className="data-table integration-operation-table">
+                    <thead>
+                      <tr>
+                        <th>{t("Operation")}</th>
+                        <th>{t("Owning state")}</th>
+                        <th>{t("Shared state")}</th>
+                        <th>{t("Updated")}</th>
+                        <th>{t("Allowed action")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {resource.value.items.map((item) => (
+                        <tr
+                          aria-selected={selectedId === item.operationGlobalId}
+                          className={
+                            selectedId === item.operationGlobalId
+                              ? "is-selected"
+                              : undefined
+                          }
+                          key={item.operationGlobalId}
+                          onClick={() => {
+                            selectedIdRef.current = item.operationGlobalId;
+                            setSelectedId(item.operationGlobalId);
+                            setDetail({
+                              kind: "loading",
+                              operationId: item.operationGlobalId,
+                            });
+                            setCommand({ kind: "idle" });
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              selectedIdRef.current = item.operationGlobalId;
+                              setSelectedId(item.operationGlobalId);
+                              setDetail({
+                                kind: "loading",
+                                operationId: item.operationGlobalId,
+                              });
+                              setCommand({ kind: "idle" });
+                            }
+                          }}
+                          tabIndex={0}
+                        >
+                          <td className="integration-operation-identity-cell">
+                            <strong className="integration-operation-kind">
+                              {operationLabel(t, item.operationKind)}
+                            </strong>
+                            <small
+                              className="integration-operation-id"
+                              data-language-exempt="identifier"
+                            >
+                              {item.operationGlobalId}
+                            </small>
+                          </td>
+                          <td
+                            className="integration-operation-cell"
+                            data-language-exempt="identifier"
+                          >
+                            {item.rawState}
+                          </td>
+                          <td className="integration-operation-cell">
+                            <SemanticStatus
+                              label={stateLabel(t, item.sharedState)}
+                              tone={stateTone(item.sharedState)}
+                            />
+                          </td>
+                          <td className="integration-operation-cell">
+                            <time dateTime={item.updatedAt}>
+                              {formatDateTime(locale, item.updatedAt)}
+                            </time>
+                          </td>
+                          <td className="integration-operation-cell">
+                            {availableAction(item) === "replay"
+                              ? t("Replay request")
+                              : availableAction(item) ===
+                                  "request_reconciliation"
+                                ? t("Reconciliation request")
+                                : t("Observe only")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <aside
+                  aria-label={t("Operation inspector")}
+                  className="integration-operation-inspector docked-inspector"
+                >
+                  <Panel
+                    bodyClassName="integration-operation-inspector-body"
+                    className="integration-operation-inspector-panel"
+                    title={t("Operation inspector")}
+                  >
+                    {detail.kind === "loading" ? (
+                      <div aria-busy="true" role="status">
+                        {t("Loading operation detail")}
+                      </div>
+                    ) : null}
+                    {detail.kind === "failed" ? (
+                      <RequestFailurePanel failure={detail.failure} />
+                    ) : null}
+                    {selected && action ? (
+                      <div className="integration-operation-primary-action">
+                        <Button
+                          className="integration-operation-primary-button"
+                          disabled={!canAct || commandProcessing}
+                          onClick={(event) => {
+                            actionButtonRef.current = event.currentTarget;
+                            setReviewAction(action);
+                          }}
+                          visual="primary"
+                        >
+                          {actionLabel(t, action)}
+                        </Button>
+                      </div>
+                    ) : null}
+                    {selected && !action ? (
+                      <p className="integration-operation-no-action">
+                        {t(
+                          "This operation is observe-only. Correction or new owning commands remain outside this workspace.",
+                        )}
+                      </p>
+                    ) : null}
+                    {detail.kind === "loaded" ? (
+                      <DetailInspector detail={detail.value} />
+                    ) : null}
+                  </Panel>
+                </aside>
+              </div>
+            ) : (
+              <div className="workspace-resource-state" role="status">
+                <h2>{t("No integration operations")}</h2>
+                <p>
+                  {filters.logicalDlq
                     ? t(
-                        "Correct the mapping, review the impact, and then queue a safe retry with the same idempotency key.",
+                        "No operation currently belongs to the Project logical DLQ classification.",
                       )
                     : t(
-                        "This request reached a final failure. Correct the source data and prepare a new execution request.",
+                        "No Project-contained operation matches the current filters.",
                       )}
-                </small>
+                </p>
               </div>
-            ) : null}
-            <div className="inspector-badges">
-              <SourceBadge
-                source={{
-                  ...executionRequestSource,
-                  syncState: sourceSyncState(selected.state),
+            )}
+            <footer className="table-footer">
+              <span>
+                {t("Showing {{count}} operations", {
+                  count: formatNumber(locale, resource.value.items.length, 0),
+                })}
+              </span>
+              <Button
+                disabled={!resource.value.nextCursor}
+                onClick={() => {
+                  if (!resource.value.nextCursor) return;
+                  selectedIdRef.current = null;
+                  setSelectedId(null);
+                  setDetail({ kind: "idle" });
+                  setResource({ kind: "loading" });
+                  setFilters((current) => ({
+                    ...current,
+                    cursor: resource.value.nextCursor ?? undefined,
+                  }));
                 }}
-              />
-              <SyncBadge state={selected.state} />
-            </div>
-            {retryable || finalFailure ? (
-              <>
-                <div className="detail-actions">
-                  <Button
-                    aria-controls="execution-field-mapping"
-                    aria-expanded={mappingOpen}
-                    onClick={() => {
-                      setMappingOpen((current) => !current);
-                    }}
-                  >
-                    {mappingOpen
-                      ? t("Close field mapping")
-                      : t("Open field mapping")}
-                  </Button>
-                  {retryable ? (
-                    <Button
-                      disabled={scenario === "read_only"}
-                      onClick={() => {
-                        setReviewMode("retry");
-                      }}
-                    >
-                      {t("Review impact and retry")}
-                    </Button>
-                  ) : null}
-                </div>
-                {mappingOpen ? (
-                  <section
-                    aria-label={t("Field mapping preview")}
-                    className="failure-explanation"
-                    id="execution-field-mapping"
-                  >
-                    <h3>{t("Field mapping preview")}</h3>
-                    <DefinitionList
-                      rows={[
-                        {
-                          label: t("Source field"),
-                          value: "tooling_acceptance.asset_category",
-                          exempt: "identifier",
-                        },
-                        {
-                          label: t("Target field"),
-                          value: "Asset.asset_category",
-                          exempt: "identifier",
-                        },
-                        {
-                          label: t("Mapping result"),
-                          value: t(
-                            "No approved target value is available. Correct the governed mapping before preparing another request.",
-                          ),
-                        },
-                      ]}
-                    />
-                  </section>
-                ) : null}
-              </>
-            ) : null}
+              >
+                {t("Next page")}
+              </Button>
+            </footer>
           </Panel>
-        ) : null}
-      </div>
-      {reviewMode && (reviewMode !== "retry" || selected) ? (
+        </>
+      ) : null}
+
+      {reviewAction && selected ? (
         <ImpactReview
           confirmLabel={
-            reviewMode === "retry"
-              ? t("Queue safe retry")
-              : reviewMode === "reconcile"
-                ? t("Prepare reconciliation")
-                : t("Prepare execution request")
+            reviewAction === "replay"
+              ? t("Request exact replay")
+              : t("Request reconciliation")
           }
-          details={
-            reviewMode === "retry" && selected
-              ? {
-                  objectIdentity: selected.id,
-                  version: `v3 · ${selected.context}`,
-                  impact: t(
-                    "Only the failed tool asset node will be retried. Completed ERPNext objects are unchanged.",
-                  ),
-                  permission: t("Integration operator permission is required."),
-                  irreversible: t(
-                    "ERPNext may create a formal object only after its own validation succeeds.",
-                  ),
-                  failureHandling: t(
-                    "A failure remains visible and retryable or becomes a final failure with recovery guidance.",
-                  ),
-                  audit: t(
-                    "A submitted command would record the idempotency key, actor, reason, attempt, result, and trace ID.",
-                  ),
-                }
-              : reviewMode === "reconcile"
-                ? {
-                    objectIdentity: "NPI-ERP-RECONCILIATION",
-                    version: "2026-07-21T14:20:00Z",
-                    impact: t(
-                      "Reconciliation compares LaunchFlow requests with ERPNext responses. It does not overwrite either system.",
-                    ),
-                    permission: t(
-                      "Integration operator permission is required.",
-                    ),
-                    irreversible: t(
-                      "No formal ERPNext object is created or changed by this prototype reconciliation.",
-                    ),
-                    failureHandling: t(
-                      "Unmatched operations remain visible with their trace IDs and recovery state.",
-                    ),
-                    audit: t(
-                      "A submitted command would record the comparison scope, actor, timestamp, result, and trace IDs.",
-                    ),
-                  }
-                : {
-                    objectIdentity: "TL-26018-01 / TOOL-ASSET",
-                    version: "v3 / ACCEPTANCE-A01",
-                    impact: t(
-                      "The approved tooling acceptance snapshot will be locked for a new tool asset execution request.",
-                    ),
-                    permission: t(
-                      "Integration operator permission is required.",
-                    ),
-                    irreversible: t(
-                      "ERPNext may create a formal object only after its own validation succeeds.",
-                    ),
-                    failureHandling: t(
-                      "A validation or target-system failure remains visible and does not report ERPNext completion.",
-                    ),
-                    audit: t(
-                      "A submitted command would record the idempotency key, input hash, actor, reason, result, and trace ID.",
-                    ),
-                  }
-          }
+          details={actionReviewDetails(t, selected, reviewAction)}
           onCancel={() => {
-            setReviewMode(null);
+            setReviewAction(null);
           }}
-          onConfirm={(reason) => {
-            setPreparedOperation({ mode: reviewMode, reason });
-            setReviewMode(null);
-          }}
+          onConfirm={requestCommand}
+          returnFocusTarget={() => actionButtonRef.current}
           title={
-            reviewMode === "retry"
-              ? t("ERPNext retry impact review")
-              : reviewMode === "reconcile"
-                ? t("Reconciliation impact review")
-                : t("New execution request impact review")
+            reviewAction === "replay"
+              ? t("Replay impact review")
+              : t("Reconciliation impact review")
           }
         />
       ) : null}

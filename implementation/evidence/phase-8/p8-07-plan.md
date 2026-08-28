@@ -344,3 +344,26 @@ secret-scan `98754314478` all passed, leaving that repository scanner as the
 sole ordinary-CI failure. The same-cycle tests-only repair splits that fixed
 test token, preserves the negative assertion, changes no product/scanner/
 threshold and makes the exact `verify.sh --repository` entrypoint pass locally.
+
+## 17. Checkpoint-2 Gate and checkpoint-3 live workspace candidate
+
+Stable checkpoint-2 SHA
+`f7cf7c7ea490c10acfc044aaef236945e5118f01` passes ordinary CI
+`33187660221`: repository `98904745085`, frontend `98904745277`, secret
+`98904745231` and governed visual `98904744908` all pass; controlled lanes
+correctly skip.
+
+Checkpoint 3 is therefore active only for the live Project-scoped integration
+operations workspace. The strict browser data source consumes the frozen
+Project-first list, logical-DLQ, detail and fixed command routes; the dense
+industrial page covers all ten shared states, permission/read-only/unavailable
+and command outcomes, and exposes exactly one server-authorized replay or
+reconciliation action at a time. It does not add a server route, adapter,
+target call, formal-result authority or production contact.
+
+The current allowlist contains `70` exact patterns, including the shell/router
+and their focused unit tests that are materially changed by replacing the old
+prototype. Detailed checkpoint-3 evidence is recorded in
+`implementation/evidence/phase-8/p8-07-integration-operations-ui-checkpoint.md`.
+Checkpoint 4 remains inactive until this candidate passes exact-SHA ordinary
+CI.

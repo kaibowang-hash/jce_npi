@@ -151,9 +151,15 @@ export function AppShell({
   const isLiveTooling =
     route.screen === "tooling" && route.toolingMode === "live";
   const isLiveTrial = route.screen === "trial" && route.trialMode === "live";
+  const isLiveExecution =
+    route.screen === "execution" && route.projectGlobalId !== null;
   const isLiveWork = route.screen === "work" && route.workMode === "live";
   const isLiveProjectContext =
-    isLiveProject || isLiveGate || isLiveTooling || isLiveTrial;
+    isLiveProject ||
+    isLiveGate ||
+    isLiveTooling ||
+    isLiveTrial ||
+    isLiveExecution;
   const isLiveDataContext = isLiveWork || isLiveProjectContext;
   const prototypeNavigationAllowed = !isLiveDataContext;
   const liveProjectPath =
@@ -162,6 +168,9 @@ export function AppShell({
       : `/projects/${route.projectGlobalId}`;
   const liveToolingPath = liveProjectPath ? `${liveProjectPath}/tooling` : null;
   const liveTrialPath = liveProjectPath ? `${liveProjectPath}/trials` : null;
+  const liveExecutionPath = liveProjectPath
+    ? `${liveProjectPath}/integration-operations`
+    : null;
   const denied = route.scenario === "no_permission";
   const routeContext = denied
     ? { exempt: false, value: t("Protected object") }
@@ -201,7 +210,12 @@ export function AppShell({
                     ? (route.projectGlobalId ?? "")
                     : "TL-26018-01 · T1",
                 }
-              : { exempt: false, value: t("Cross-system operations") };
+              : isLiveExecution
+                ? {
+                    exempt: true,
+                    value: route.projectGlobalId ?? "",
+                  }
+                : { exempt: false, value: t("Cross-system operations") };
   const breadcrumbRoot =
     route.screen === "tooling"
       ? t("Tooling")
@@ -286,9 +300,13 @@ export function AppShell({
       id: "execution",
       icon: "apps",
       label: t("Execution and Reconciliation"),
-      ...(prototypeNavigationAllowed
-        ? { path: "/execution" }
-        : { unavailableReason: liveNavigationUnavailable }),
+      ...(isLiveProjectContext && liveExecutionPath
+        ? { path: liveExecutionPath }
+        : {
+            unavailableReason: t(
+              "Open a Project from an authorized link to view integration operations.",
+            ),
+          }),
       screen: "execution",
     },
     {
@@ -378,21 +396,26 @@ export function AppShell({
       },
       {
         id: "execution",
-        label: t("Open Execution prototype"),
+        label: t("Open Project integration operations"),
         description: t(
-          "Open the existing execution and reconciliation prototype.",
+          "Open the authorized live integration operation worklist for this Project.",
         ),
         icon: "apps",
         keywords: [t("Execution"), t("Reconciliation")],
-        ...(prototypeNavigationAllowed
-          ? { target: "/execution" }
-          : { unavailableReason: liveNavigationUnavailable }),
+        ...(isLiveProjectContext && liveExecutionPath
+          ? { target: liveExecutionPath }
+          : {
+              unavailableReason: t(
+                "Open a Project from an authorized link to view integration operations.",
+              ),
+            }),
       },
     ],
     [
       isLiveProjectContext,
       liveTrialPath,
       liveNavigationUnavailable,
+      liveExecutionPath,
       liveProjectPath,
       liveToolingPath,
       prototypeNavigationAllowed,
@@ -1023,6 +1046,17 @@ export function AppShell({
                     );
                     setUtilityMessage(
                       t("The live Gate evidence request is being refreshed."),
+                    );
+                    return;
+                  }
+                  if (isLiveExecution) {
+                    globalThis.dispatchEvent(
+                      new CustomEvent("npi:refresh-integration-operations"),
+                    );
+                    setUtilityMessage(
+                      t(
+                        "The live integration operation request is being refreshed.",
+                      ),
                     );
                     return;
                   }

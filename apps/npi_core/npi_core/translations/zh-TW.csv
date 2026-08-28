@@ -16,10 +16,8 @@ A failed command changes nothing and returns a trace ID.,命令失敗不會變�
 A failed command leaves the current released revision unchanged.,命令失敗時，目前已發布修訂版保持不變。
 A failed command leaves the Trial in analysis and returns field errors with a trace ID.,命令失敗時，試模保持分析中狀態，並返回欄位錯誤和追蹤編號。
 A failed command leaves Tooling in development and creates no ERPNext execution request.,命令失敗時，模具開發維持開發中狀態，且不會建立 ERPNext 執行請求。
-A failure remains visible and retryable or becomes a final failure with recovery guidance.,失敗狀態會持續可見且可重試，或轉為帶恢復指南的最終失敗。
 A newer version is available.,有更新的版本可用。
 A submitted round cannot be overwritten; correction requires a controlled reopen or a new round.,已提交輪次不可覆寫；矯正時需要受控重新開啟或新輪次。
-A validation or target-system failure remains visible and does not report ERPNext completion.,驗證失敗或目標系統失敗將保持可見，且不會報告 ERPNext 已完成。
 Acceptance,驗收
 Acceptance checklist,驗收檢查表
 "Acceptance will freeze the technical, quality, file, warranty, cost, and asset handover evidence.",驗收將凍結技術、品質、檔案、保固、成本和資產交接證據。
@@ -48,7 +46,6 @@ Blocker,阻斷項
 Blocking,阻斷中
 Breadcrumb,麵包屑導覽
 Budget used,已用預算
-Business action,業務操作
 Cancel,取消
 Cancelled,已取消
 Catalog,目錄
@@ -74,7 +71,6 @@ Conflict,衝突
 Context,上下文
 Cooling time,冷卻時間
 Correct the highlighted fields and submit again.,請更正醒目標示的欄位後重新提交。
-"Correct the mapping, review the impact, and then queue a safe retry with the same idempotency key.",更正對應並檢查影響，然後使用相同冪等鍵排隊安全重試。
 Create corrective action,建立矯正措施
 Create purchase request,建立採購申請
 Create T1 from T0,從 T0 建立 T1
@@ -110,19 +106,14 @@ Due,到期日
 Due today,今日到期
 Editable in,可編輯系統
 Empty,空資料
-"Engineering approval and ERPNext completion remain separate, traceable states.",工程核准與 ERPNext 完成仍為相互獨立且可追溯的狀態。
 Engineering projects,工程專案
 English,英語
 ERPNext,ERPNext
 ERPNext asset,ERPNext 資產
 ERPNext execution,ERPNext 執行
-ERPNext Execution and Reconciliation,ERPNext 執行與對帳
 ERPNext has not completed the requested action.,ERPNext 尚未完成請求的操作。
-ERPNext may create a formal object only after its own validation succeeds.,ERPNext 只能在其自身驗證成功後建立正式物件。
 "ERPNext owns the formal asset identifier, location, and maintenance state.",ERPNext 主責正式資產識別碼、位置和維護狀態。
 ERPNext reports a failed formal quality result. Readiness percentage cannot override this blocker.,ERPNext 報告正式品質結果失敗。就緒度百分比無法取代此阻斷項。
-ERPNext retry impact review,ERPNext 重試影響評審
-ERPNext validation did not find an approved target asset category. No formal asset was written.,ERPNext 驗證未找到已核准的目標資產類別。未寫入任何正式資產。
 ERPNext validation failed and requires your review.,ERPNext 驗證失敗，需要您評審。
 Error,錯誤
 Event ID,事件編號
@@ -130,9 +121,7 @@ Event Type,事件類型
 Evidence snapshot,證據快照
 Evidence state,證據狀態
 Execution and Reconciliation,執行與對帳
-Execution request details,執行請求詳情
 Execution request not created,未建立執行請求
-Execution requests,執行請求
 failed,失敗
 Failed in ERPNext,在 ERPNext 中失敗
 failed_final,最終失敗
@@ -140,7 +129,6 @@ failed_retryable,可重試失敗
 "Failed, manual action required",失敗，需要人工處理
 "Failed, retry available",失敗，可重試
 Failure handling,失敗處理
-Failure reason,失敗原因
 Feasibility,可行性
 File hash,檔案雜湊
 Filter,篩選
@@ -160,7 +148,6 @@ Global ID,全域識別碼
 Global search,全域搜尋
 Help,幫助
 Holding time,保壓時間
-Idempotency key,冪等鍵
 Impact,影響
 infected,已感染
 Inherited trial plan,繼承的試模計畫
@@ -171,13 +158,11 @@ Input versions locked,輸入版本已鎖定
 Inputs and evidence,輸入與證據
 Integration,整合
 Integration exceptions,整合異常
-Integration operator permission is required.,需要整合操作員權限。
 Irreversible effect,不可逆影響
 Item,專案
 Language,語言
 Language is managed by the Frappe session.,語言由 Frappe 會話管理。
 Language persistence uses the prototype fallback because no Frappe Site is active.,因目前沒有作用中的 Frappe 站台，語言持久儲存使用原型備援方案。
-Last attempt,最近嘗試
 Last Error Code,最近錯誤代碼
 Last updated,最近更新
 Link the T1 dimensional report,關聯 T1 尺寸報告
@@ -189,7 +174,6 @@ Machine,機台
 Major blocker,主要阻斷項
 Major blockers,主要阻斷項
 Major defects,主要缺陷
-Manual action required,需要人工處理
 Manufacturing,製造
 Manufacturing and future Trial references will use this released revision.,製造和後續試模引用將使用此已發布修訂版。
 Manufacturing complete,製造完成
@@ -201,8 +185,6 @@ Melt temperature,熔體溫度
 Milestones and trial records,里程碑與試模記錄
 Missing approved version,缺少已核准版本
 My Work,我的工作
-New execution request,新建執行請求
-New execution request impact review,新建執行請求影響評審
 Newest first,最新優先
 Next action,下一步操作
 Next actions and blockers,後續操作與阻斷項
@@ -235,10 +217,8 @@ Object properties and risk,物件屬性與風險
 Object Version,物件版本
 Oldest first,最早優先
 "One cross-object queue for assignments, blockers, decisions, and integration exceptions.",一個跨物件佇列，統一承載分配事項、阻斷項、決策和整合異常。
-Only the failed tool asset node will be retried. Completed ERPNext objects are unchanged.,僅重試失敗的模具資產節點。已完成的 ERPNext 物件保持不變。
 Open blockers,未解決阻斷項
 Open defect context,開啟缺陷上下文
-Open field mapping,開啟欄位對應
 Open Gate review,開啟階段門評審
 Open recovery guidance,開啟恢復指南
 Open review,開啟評審
@@ -268,7 +248,6 @@ Pre-submit checks,提交前檢查
 Prepare acceptance command,準備驗收命令
 Prepare conclusion command,準備結論命令
 Prepare decision command,準備決策命令
-Prepare execution request,準備執行請求
 Prepare G5 review,準備 G5 評審
 Prepare release command,準備發布命令
 Prepare the G5 review package,準備 G5 評審包
@@ -303,7 +282,6 @@ Quality,品質
 Quality and samples,品質與樣件
 Quality requested an engineering decision.,品質部門請求工程決策。
 quarantined,已隔離
-Queue safe retry,排隊安全重試
 Queued,已排隊
 Queued a safe retry for the execution request.,已為執行請求排隊安全重試。
 Queued operation,已排隊操作
@@ -324,10 +302,8 @@ Released for trial,已發布用於試模
 Released tooling design revision C.,已發布模具設計修訂版 C。
 Repeat trial required,需要再次試模
 Replay ID,重播編號
-Request number,請求編號
 Request project access from the project manager.,請向專案經理申請專案存取權限。
 Request quality inspection,請求品質檢驗
-Request version,請求版本
 Required permission,所需權限
 Requirement,需求
 Resolve defect,解決缺陷
@@ -343,7 +319,6 @@ Review differences,檢查差異
 Review fields,檢查欄位
 Review impact,檢查影響
 Review impact and decide,檢查影響並決策
-Review impact and retry,檢查影響並重試
 Review retry,檢查重試
 Review the differences before replacing your draft.,替換草稿前請檢查差異。
 Review the impact before queuing a safe retry.,排隊安全重試前請檢查影響。
@@ -351,7 +326,6 @@ Review the temporary dimensional deviation,評審臨時尺寸偏差
 Review tooling acceptance,評審模具開發驗收
 Revision,修訂版
 Round comparison,輪次對比
-Run reconciliation,執行對帳
 Sample approval,樣件核准
 Sample approval review,樣件核准評審
 Samples and cavities,樣件與型腔
@@ -387,11 +361,9 @@ T1 cavity 3 flash is not verified and blocks G5 sample approval.,T1 的 3 號型
 T1 dimensional report,T1 尺寸報告
 Target acceptance,目標驗收日期
 Target SOP,目標 SOP
-Target system,目標系統
 Task,任務
 Template value,模板值
 Test environment,測試環境
-The approved tooling acceptance snapshot will be locked for a new tool asset execution request.,已核准的模具開發驗收快照將被鎖定，用於新的模具資產執行請求。
 The command failed validation.,命令驗證失敗。
 The decision will lock five evidence versions and affect the next two Gates.,該決策將鎖定五個證據版本，並影響後續兩個階段門。
 The dimensional report is not approved and two major defects remain open.,尺寸報告未核准，且仍有兩個主要缺陷未關閉。
@@ -417,7 +389,6 @@ This blocks G5 and you own the corrective action.,此項阻斷 G5，且您負責
 This field is not allowed.,不允許使用此欄位。
 This field is required.,此欄位為必填欄位。
 This object is read only because the released version is immutable.,此物件為唯讀，因為已發布版本不可變。
-This request reached a final failure. Correct the source data and prepare a new execution request.,此請求已進入最終失敗。請更正來源資料並準備新的執行請求。
 Today,今天
 Tomorrow,明天
 Tool asset creation failed,模具資產建立失敗
@@ -528,23 +499,7 @@ Review the controlled evidence and complete the assigned Gate decision before {{
 Project review package,專案評審套件
 Generated {{generatedAt}},產生於 {{generatedAt}}
 Work item export,工作項目匯出
-Prototype retry command prepared. No request was queued in LaunchFlow or ERPNext.,已準備原型重試命令。未在 LaunchFlow 或 ERPNext 中排隊任何請求。
-Prototype reconciliation prepared. No ERPNext or LaunchFlow record was changed.,已準備原型對帳。未變更 ERPNext 或 LaunchFlow 中的任何記錄。
-Prototype execution command prepared. No request was queued in LaunchFlow or ERPNext.,已準備原型執行命令。未在 LaunchFlow 或 ERPNext 中排隊任何請求。
 The in-memory prototype command captured a reason; no audit record was persisted.,記憶體中的原型命令已記錄原因，但未持久儲存稽核記錄。
-Close field mapping,關閉欄位對應
-Field mapping preview,欄位對應預覽
-Source field,來源欄位
-Target field,目標欄位
-Mapping result,對應結果
-No approved target value is available. Correct the governed mapping before preparing another request.,沒有可用的已核准目標值。請更正受治理的對應後再準備請求。
-Prepare reconciliation,準備對帳
-"A submitted command would record the idempotency key, actor, reason, attempt, result, and trace ID.",提交後的命令會記錄冪等鍵、操作人、原因、嘗試、結果和追蹤編號。
-Reconciliation compares LaunchFlow requests with ERPNext responses. It does not overwrite either system.,對帳會比較 LaunchFlow 請求與 ERPNext 回應，不會覆寫任一系統。
-No formal ERPNext object is created or changed by this prototype reconciliation.,此原型對帳不會建立或變更任何正式 ERPNext 物件。
-Unmatched operations remain visible with their trace IDs and recovery state.,未配對的操作及其追蹤編號與復原狀態將保持可見。
-"A submitted command would record the comparison scope, actor, timestamp, result, and trace IDs.",提交後的命令會記錄比較範圍、操作人、時間戳記、結果和追蹤編號。
-"A submitted command would record the idempotency key, input hash, actor, reason, result, and trace ID.",提交後的命令會記錄冪等鍵、輸入雜湊、操作人、原因、結果和追蹤編號。
 Reconciliation impact review,對帳影響評審
 "A submitted command would record the actor, reason, versions, result, and trace ID.",提交後的命令會記錄操作人、原因、版本、結果和追蹤編號。
 "A submitted command would record the source files, hashes, approver, reason, and trace ID.",提交後的命令會記錄原始檔、雜湊、核准人、原因和追蹤編號。
@@ -2504,8 +2459,6 @@ Open the existing Tooling prototype workspace.,開啟現有的模具開發原型
 Mould,模具
 Open Trial prototype,開啟試模原型
 Open the existing Trial prototype workspace.,開啟現有的試模原型工作區。
-Open Execution prototype,開啟執行原型
-Open the existing execution and reconciliation prototype.,開啟現有的執行與對帳原型。
 Execution,執行
 Creation capabilities for this Project are unavailable.,此專案的建立能力無法使用。
 Open an authorized live Project before using contextual quick-create.,使用情境快速建立前，請先開啟已授權的即時專案。
@@ -8500,3 +8453,87 @@ Integration operations are temporarily unavailable.,整合操作暫時無法使�
 Select a supported operation state.,請選取受支援的操作狀態。
 The integration operation changed before the action was applied.,在套用操作前，整合操作已變更。
 The integration operation is unavailable.,整合操作無法使用。
+Open a Project from an authorized link to view integration operations.,從授權連結開啟專案以檢視整合操作。
+Open Project integration operations,開啟專案整合操作
+Open the authorized live integration operation worklist for this Project.,開啟此專案的授權即時整合操作工作清單。
+The live integration operation request is being refreshed.,正在重新整理即時整合操作請求。
+Receive Project submission,接收專案提交
+Publish Item,發佈物料
+Publish MBOM,發佈 MBOM
+Create Tool Asset,建立模具資產
+Update Tool Asset,更新模具資產
+"Failed, replay available",失敗，可重播
+Outcome uncertain,結果不確定
+Partial result,部分結果
+Identity or version conflict,識別或版本衝突
+Quarantined,已隔離
+Evidence unavailable,證據無法使用
+No classified fault,無已分類故障
+Retryable before the target boundary,可在目標邊界前重試
+Final business failure,最終業務失敗
+Uncertain after the target boundary,跨越目標邊界後結果不確定
+Partial target result,部分目標結果
+Authenticity quarantine,真實性隔離
+Target evidence unavailable,目標證據無法使用
+Unknown owning state,未知主責狀態
+Review and request replay,審查並請求重播
+Review and request reconciliation,審查並請求對帳
+Loading integration operations,正在載入整合操作
+The owning operation will reuse its exact immutable source and target idempotency. No new payload or target identity is supplied.,主責操作將重複使用其精確且不可變的來源資料和目標冪等性。不會提供新承載資料或目標識別。
+"This records reconciliation intent only. It does not assert target success, change a formal identity, or redispatch the operation.",這僅記錄對帳意圖。它不會斷言目標成功、變更正式識別或重新分派操作。
+The exact Project and operation-specific authority are verified again by the server.,伺服器將再次驗證精確專案和操作特定權限。
+The action receipt and audit history are append-only after the command commits.,命令提交後，操作回執和稽核歷史僅可附加。
+A conflict or failure remains visible without reporting ERPNext completion.,衝突或失敗保持可見，且不會回報 ERPNext 已完成。
+"The server records the actor, trace, expected state, expected version and hashed idempotency identity. The review reason is not sent as business truth.",伺服器記錄操作者、追蹤識別、預期狀態、預期版本和雜湊冪等識別。審查理由不會作為業務事實傳送。
+Owning state,主責狀態
+Fault classification,故障分類
+Operation version,操作版本
+Attempts,嘗試記錄
+Target boundary,目標邊界
+No attempt has been recorded.,尚未記錄嘗試。
+Results,結果
+Authenticated Sandbox evidence,已驗證的沙箱證據
+"Synthetic evidence, not formal target truth",合成證據，不是正式目標事實
+No result has been recorded.,尚未記錄結果。
+Action history,操作歷史
+Replay requested,已請求重播
+Reconciliation requested,已請求對帳
+No operator action has been recorded.,尚未記錄操作者操作。
+Integration operations,整合操作
+Project context required,需要專案內容
+Open integration operations from an authorized Project. This workspace never uses a tenant-wide fallback.,從授權專案開啟整合操作。此工作區絕不使用租用戶範圍回退。
+"Inspect Project-scoped execution truth, logical DLQ classification, replay requests and reconciliation intent without treating them as ERPNext completion.",檢查專案範圍的執行事實、邏輯失敗佇列分類、重播請求和對帳意圖，且不將其視為 ERPNext 已完成。
+Integration operations unavailable,整合操作無法使用
+You do not have permission to view integration operations for this Project.,您無權檢視此專案的整合操作。
+Retry loading,重試載入
+Read-only integration view,唯讀整合檢視
+"You may inspect Project-contained operation truth, but no operator action is authorized.",您可以檢查專案所包含的操作事實，但未獲授權執行任何操作者操作。
+Session verification is required before an operator action can be submitted.,提交操作者操作前需要驗證工作階段。
+Command in progress,命令處理中
+The exact operation state and version are being verified and committed atomically.,正在以不可分割方式驗證並提交精確操作狀態和版本。
+Replay request recorded,已記錄重播請求
+Reconciliation request recorded,已記錄對帳請求
+The append-only operator action is recorded. This does not confirm ERPNext completion.,已記錄僅可附加的操作者操作。這不確認 ERPNext 已完成。
+Command conflict,命令衝突
+Operator action not completed,操作者操作未完成
+The operation changed before this command committed. Refresh and review the current state before trying again.,此命令提交前操作已變更。請重新整理並審查目前狀態後再試。
+All operations,全部操作
+Shared state,共用狀態
+All states,全部狀態
+Show all operations,顯示全部操作
+Show logical DLQ,顯示邏輯失敗佇列
+Project operation worklist,專案操作工作清單
+Allowed action,允許的操作
+Replay request,重播請求
+Reconciliation request,對帳請求
+Observe only,僅檢視
+Operation inspector,操作檢查器
+Loading operation detail,正在載入操作詳細資料
+This operation is observe-only. Correction or new owning commands remain outside this workspace.,此操作僅供檢視。更正命令或新的主責命令不屬於此工作區。
+No integration operations,無整合操作
+No operation currently belongs to the Project logical DLQ classification.,目前沒有操作屬於專案邏輯失敗佇列分類。
+No Project-contained operation matches the current filters.,專案所包含的操作中沒有符合目前篩選條件的記錄。
+Showing {{count}} operations,顯示 {{count}} 個操作
+Request exact replay,請求精確重播
+Request reconciliation,請求對帳
+Replay impact review,重播影響審查

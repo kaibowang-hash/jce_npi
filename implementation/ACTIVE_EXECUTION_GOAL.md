@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-28T06:17:53Z`
+Updated: `2026-08-28T17:08:19Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI — P8-07`
+- Mode: `IN_PROGRESS_CHECKPOINT_3_AWAITING_PRODUCT_CI — P8-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -31,10 +31,16 @@ Updated: `2026-08-28T06:17:53Z`
   `d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` (`CHECKPOINT 1 PASS`;
   ordinary CI `33142594763`; repository, frontend, secret and governed visual
   lanes pass; controlled lanes correctly skipped)
-- Active atomic scope: checkpoint 2 Project-first list/detail/logical-DLQ reads
-  and ten fixed operation-specific replay/reconciliation-request routes. The
-  candidate remains default-disabled and awaits its own exact-SHA ordinary CI;
-  checkpoint 3 UI, target calls and production contact remain inactive.
+- P8-07 checkpoint-2 final checkpoint:
+  `f7cf7c7ea490c10acfc044aaef236945e5118f01` (`CHECKPOINT 2 PASS`;
+  ordinary CI `33187660221`; repository `98904745085`, frontend
+  `98904745277`, secret `98904745231` and governed visual `98904744908` pass;
+  controlled lanes correctly skipped)
+- Active atomic scope: checkpoint 3 replaces only the in-memory execution
+  prototype with the live Project-scoped dense trilingual integration job
+  center and one server-authorized operation-specific action at a time. The
+  candidate awaits its own exact-SHA ordinary CI; checkpoint 4 runtime, target
+  calls and production contact remain inactive.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

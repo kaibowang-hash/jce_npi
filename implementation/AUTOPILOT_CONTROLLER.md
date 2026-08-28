@@ -7582,3 +7582,27 @@ repeat or rewrite it merely to restore context. See
   P8-08 or P8-09 behavior is authorized.
 - Controller marker:
   `P8-07 checkpoint 1 exact-SHA ordinary PASS; checkpoint 2 awaits exact-SHA ordinary CI`.
+
+## 2026-08-29 P8-07 checkpoint 2 PASS; checkpoint 3 awaits product CI
+
+- Stable checkpoint-2 SHA
+  `f7cf7c7ea490c10acfc044aaef236945e5118f01` passes ordinary CI
+  `33187660221`: repository `98904745085`, frontend `98904745277`, secret
+  `98904745231` and governed visual `98904744908` all pass; controlled lanes
+  correctly skip.
+- Checkpoint 2 seals only default-disabled Project-first list/detail/logical-DLQ
+  reads and ten fixed operation-specific replay or reconciliation-intent
+  commands. Replay remains limited to exact pre-boundary retryable truth;
+  reconciliation cannot assert target result; no adapter or target call is
+  installed.
+- Standing authority activates checkpoint 3 only. It may replace the in-memory
+  execution prototype with a strict Project-scoped data source and dense
+  trilingual integration job center. Every lifecycle, permission, read-only,
+  unavailable, conflict and command state must be truthful, and at most one
+  server-authorized operation-specific action may be presented.
+- Checkpoint 4 disposable runtime, migrations and Level 3 remain inactive until
+  checkpoint 3 passes its own exact-SHA ordinary CI. Production ERPNext/JCE
+  contact, the queued fact check, P8-08, P8-09 and deferred external portals
+  remain prohibited or inactive under their existing holds.
+- Controller marker:
+  `P8-07 checkpoint 2 exact-SHA ordinary PASS; checkpoint 3 awaits exact-SHA ordinary CI`.
