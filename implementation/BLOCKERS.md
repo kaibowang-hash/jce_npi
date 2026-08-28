@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-28T17:08:19Z`
+Updated: `2026-08-29T00:30:00Z`
 
 ## Active hard blockers
 
@@ -17,8 +17,11 @@ exact SHA `2e573fa1757f7d9306f17bb47cb62c59e8493b7f` / ordinary CI
 `d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` / ordinary CI `33142594763`.
 Checkpoint 2 passes at exact SHA
 `f7cf7c7ea490c10acfc044aaef236945e5118f01` / ordinary CI `33187660221`.
-Checkpoint 3 is the only active scope and requires no external login or
-production action.
+Checkpoint 3 passes at exact SHA
+`758bb222a1477474af50fc6b84d5d2c56e379adc` / ordinary CI `33204451677`;
+repository `98961818348`, frontend `98961818460`, secret `98961818358` and
+visual `98961818084` all pass. Checkpoint 4 is the only active scope and
+requires no external login or production action.
 
 The exact-20 ERPNext customization requirements baseline passes at
 `6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825` and is
@@ -35,11 +38,10 @@ historical evidence and final exact-SHA run `33132296565` is authoritative.
 The technical slice provides only an NPI-owned Project-first exact-observation
 link and read-only linked/current/drift facts. It authorizes no ERP target
 write, worker, adapter or target contact. Production adapters and formal
-mapping from Mock or Synthetic proof remain inactive. P8-07 checkpoint 2 is
-the only active product scope. It adds Project-first safe reads and fixed
-operation-specific action requests, remains default-disabled, and adds no
-adapter, target call or UI behavior; checkpoint 3 and P8-08/P8-09 remain
-inactive.
+mapping from Mock or Synthetic proof remain inactive. P8-07 checkpoint 3 is
+sealed. Checkpoint 4 adds only fixed disposable network-free runtime and the
+final Level 3 evidence; it adds no production profile, adapter, target call or
+new UI behavior. P8-08/P8-09 remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -56,10 +58,10 @@ credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
 
-The active checkpoint-3 UI consumes only checkpoint-2 safe Project-scoped
-responses. It grants no new server authority, target call or production
-contact. Checkpoint 4 runtime and Level 3 remain inactive until the UI
-candidate passes exact-SHA ordinary CI.
+The sealed checkpoint-3 UI consumes only checkpoint-2 safe Project-scoped
+responses and grants no new server authority, target call or production
+contact. Checkpoint 4 runtime and Level 3 are now the only active scope after
+that UI's exact-SHA ordinary CI passed.
 
 FR-CO-003/004 external portal login, identity, self-service submission,
 approval UI and portal API are a user-approved post-V1.2 deferral, not a Hard

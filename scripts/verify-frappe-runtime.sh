@@ -59,7 +59,12 @@ unset \
   NPI_P8_04_RUNTIME_MARKER \
   NPI_P8_04_RUNTIME_PROJECT_ID \
   NPI_P8_04_RUNTIME_REQUESTER \
-  NPI_P8_04_RUNTIME_WORKER
+  NPI_P8_04_RUNTIME_WORKER \
+  NPI_P8_07_RUNTIME_ENABLED \
+  NPI_P8_07_RUNTIME_MARKER \
+  NPI_P8_07_RUNTIME_PROJECT_ID \
+  NPI_P8_07_RUNTIME_REQUESTER \
+  NPI_P8_07_RUNTIME_WORKER
 
 # shellcheck disable=SC1090
 source "${toolchain_file}"
@@ -497,6 +502,22 @@ else:
     "${bench_path}/sites/${site_name}/site_config.json"
 }
 
+integration_operations_route_switch_state() {
+  "${bench_path}/env/bin/python" -c \
+    'import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+switch_name = "npi_p8_07_routes_disabled"
+if switch_name not in config:
+    print("absent")
+elif config[switch_name] is True:
+    print("true")
+elif config[switch_name] is False:
+    print("false")
+else:
+    print("invalid")' \
+    "${bench_path}/sites/${site_name}/site_config.json"
+}
+
 verify_p405_route_switch_state() {
   local expected="$1"
   local actual
@@ -864,6 +885,13 @@ if [[ "${projection_route_disable_original_state}" != "absent" ]]; then
   echo "Runtime Site must start without the P8-01 route-disable switch." >&2
   exit 2
 fi
+integration_operations_route_disable_original_state="$(
+  integration_operations_route_switch_state
+)"
+if [[ "${integration_operations_route_disable_original_state}" != "absent" ]]; then
+  echo "Runtime Site must start without the P8-07 route-disable switch." >&2
+  exit 2
+fi
 if [[ "${verification_mode}" == "all" ||
       "${verification_mode}" == "--document-only" ||
       "${verification_mode}" == "--tooling-only" ||
@@ -911,6 +939,8 @@ inbound_project_runtime_environment_active=false
 item_publish_runtime_environment_active=false
 mbom_publish_runtime_environment_active=false
 tool_asset_runtime_environment_active=false
+integration_operations_route_disable_config_changed=false
+integration_operations_runtime_environment_active=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -1252,6 +1282,22 @@ set_projection_route_switch() {
   verify_projection_route_switch_state "${expected}"
 }
 
+set_integration_operations_route_switch() {
+  local value="$1"
+  local expected="$2"
+  (
+    cd "${bench_path}"
+    bench --site "${site_name}" set-config \
+      npi_p8_07_routes_disabled "${value}"
+  )
+  local actual
+  actual="$(integration_operations_route_switch_state)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "P8-07 route-disable switch state is ${actual}, expected ${expected}." >&2
+    return 1
+  fi
+}
+
 restore_p405_route_switch() {
   if ! set_p405_route_switch None absent; then
     return 1
@@ -1413,6 +1459,13 @@ restore_projection_route_switch() {
   projection_route_disable_config_changed=false
 }
 
+restore_integration_operations_route_switch() {
+  if ! set_integration_operations_route_switch None absent; then
+    return 1
+  fi
+  integration_operations_route_disable_config_changed=false
+}
+
 cleanup() {
   local exit_status=$?
   trap - EXIT
@@ -1434,6 +1487,10 @@ cleanup() {
   if [[ "${tool_asset_runtime_environment_active}" == true ]]; then
     clear_tool_asset_runtime_environment
     tool_asset_runtime_environment_active=false
+  fi
+  if [[ "${integration_operations_runtime_environment_active}" == true ]]; then
+    clear_integration_operations_runtime_environment
+    integration_operations_runtime_environment_active=false
   fi
   if [[ "${route_disable_config_changed}" == true ]]; then
     if ! restore_p405_route_switch; then
@@ -1570,6 +1627,12 @@ cleanup() {
   if [[ "${projection_route_disable_config_changed}" == true ]]; then
     if ! restore_projection_route_switch; then
       echo "Failed to restore the P8-01 route-disable switch to absent." >&2
+      exit_status=1
+    fi
+  fi
+  if [[ "${integration_operations_route_disable_config_changed}" == true ]]; then
+    if ! restore_integration_operations_route_switch; then
+      echo "Failed to restore the P8-07 route-disable switch to absent." >&2
       exit_status=1
     fi
   fi
@@ -3131,6 +3194,67 @@ run_tool_asset_runtime_verifier() {
   )
 }
 
+export_integration_operations_runtime_environment() {
+  export NPI_P8_07_RUNTIME_ENABLED=1
+  export NPI_P8_07_RUNTIME_MARKER=npi-one-integration-operations-disposable-v1
+  export NPI_P8_07_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
+  export NPI_P8_07_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
+  export NPI_P8_07_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+}
+
+clear_integration_operations_runtime_environment() {
+  unset \
+    NPI_P8_07_RUNTIME_ENABLED \
+    NPI_P8_07_RUNTIME_MARKER \
+    NPI_P8_07_RUNTIME_PROJECT_ID \
+    NPI_P8_07_RUNTIME_REQUESTER \
+    NPI_P8_07_RUNTIME_WORKER
+}
+
+run_integration_operations_runtime_verifier() {
+  local mode="$1"
+  (
+    unset FRAPPE_DB_HOST FRAPPE_DB_PORT FRAPPE_DB_SOCKET FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD NPI_DATABASE_ROOT_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    if [[ "${mode}" == "disabled" ]]; then
+      clear_integration_operations_runtime_environment
+      exec python "${repo_root}/scripts/verify_integration_operations_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}" \
+        --disabled-probe
+    fi
+    export_integration_operations_runtime_environment
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_integration_operations_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}"
+    fi
+    if [[ "${mode}" == "replay-only" ]]; then
+      exec python "${repo_root}/scripts/verify_integration_operations_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}" \
+        --replay-only
+    fi
+    if [[ "${mode}" == "recovered" ]]; then
+      exec python "${repo_root}/scripts/verify_integration_operations_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}" \
+        --recovered-probe
+    fi
+    if [[ "${mode}" == "post-migration-cleanup" ]]; then
+      exec python "${repo_root}/scripts/verify_integration_operations_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}" \
+        --post-migration-cleanup
+    fi
+    echo "Unknown P8-07 integration operations runtime verification mode." >&2
+    exit 2
+  )
+}
+
 run_quality_link_runtime_verifier() {
   (
     unset \
@@ -3334,6 +3458,26 @@ verify_item_publish_runtime_log_redaction() {
       return 1
     fi
   done
+}
+
+verify_integration_operations_runtime_log_redaction() {
+  local marker
+  for marker in \
+    "P807-RTRY-" \
+    "P807_DISPOSABLE_TARGET_UNAVAILABLE" \
+    "network-free-synthetic-v1" \
+    "targetRequest" \
+    "targetResponse" \
+    "/private/files/"; do
+    if grep --fixed-strings --quiet -- "${marker}" "${runtime_log}"; then
+      echo "P8-07 runtime fixture, target or private value leaked into the runtime log." >&2
+      return 1
+    fi
+  done
+}
+
+report_integration_operations_runtime_failure() {
+  echo "P8-07 runtime log output withheld because it may contain integration history or target identities." >&2
 }
 
 report_item_publish_runtime_failure() {
@@ -4232,6 +4376,64 @@ if [[ "${verification_mode}" == "all" ||
     report_item_publish_runtime_failure
     exit 1
   fi
+  # P8-07 is a derived Project-scoped view over the exact retained P8-02
+  # through P8-05 rows.  Its route remains default-disabled until the fixed
+  # disposable Project/actors are bound into a newly started process.
+  if ! run_integration_operations_runtime_verifier disabled; then
+    echo "Local Frappe integration operations default-disabled probe failed." >&2
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_integration_operations_route_switch false false
+  integration_operations_route_disable_config_changed=true
+  export_integration_operations_runtime_environment
+  integration_operations_runtime_environment_active=true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
+  if ! run_integration_operations_runtime_verifier fresh; then
+    echo "Local Frappe integration operations runtime verification failed." >&2
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
+  if ! run_integration_operations_runtime_verifier replay-only; then
+    echo "Local Frappe integration operations cross-process replay verification failed." >&2
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_integration_operations_route_switch true true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
+  if ! run_integration_operations_runtime_verifier disabled; then
+    echo "Local Frappe integration operations route-disable verification failed." >&2
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_integration_operations_route_switch false false
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
+  if ! run_integration_operations_runtime_verifier recovered; then
+    echo "Local Frappe integration operations route recovery verification failed." >&2
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
   # Insert one marker-gated 8dd-shaped row after the executable proof, run the
   # pinned migration twice, and prove the old row is readable but cannot be
   # promoted or claimed.  The fixture removes its exact rows after inspection.
@@ -4270,8 +4472,17 @@ if [[ "${verification_mode}" == "all" ||
     report_item_publish_runtime_failure
     exit 1
   fi
+  if ! run_integration_operations_runtime_verifier post-migration-cleanup; then
+    echo "Local Frappe integration operations post-migration cleanup verification failed." >&2
+    report_integration_operations_runtime_failure
+    exit 1
+  fi
   if ! verify_item_publish_runtime_log_redaction; then
     report_item_publish_runtime_failure
+    exit 1
+  fi
+  if ! verify_integration_operations_runtime_log_redaction; then
+    report_integration_operations_runtime_failure
     exit 1
   fi
 fi

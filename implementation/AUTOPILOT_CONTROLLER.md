@@ -7656,3 +7656,31 @@ repeat or rewrite it merely to restore context. See
   frontend unit/coverage `1086/1086`, complete non-visual E2E `458/458`, the
   exact CI-governed visual matrix `135/135`, and repository verification
   `2606/2606`; checkpoint 4, production contact and P8-08 remain closed.
+
+## 2026-08-29 P8-07 checkpoint 3 PASS; checkpoint 4 awaits exact-SHA ordinary CI
+
+- Stable checkpoint-3 SHA
+  `758bb222a1477474af50fc6b84d5d2c56e379adc` passes ordinary CI
+  `33204451677`: repository `98961818348`, frontend `98961818460`, secret
+  `98961818358` and governed visual `98961818084` all pass; controlled lanes
+  correctly skip.
+- Checkpoint 3 seals the strict Project-scoped integration-operations data
+  source and dense trilingual job center while retaining the existing
+  `/execution` prototype. It adds no server authority, adapter, target call or
+  production profile beyond checkpoint 2.
+- Standing continuous-delivery authority activates checkpoint 4 only. It may
+  add the fixed disposable, network-free runtime proof for Project containment,
+  immutable history, logical DLQ, exact retryable replay, uncertain
+  no-redispatch, reconciliation intent/observation, cross-process idempotency,
+  rollback, route disable/recovery, migration twice, redaction and exact
+  cleanup, followed by the sole final Level 3 Gate.
+- The runtime may reuse only retained P8-02 through P8-05 disposable facts and
+  existing operation-specific owners. Synthetic failure stops before an
+  adapter boundary and no production/Sandbox target is contacted. Failed
+  child output remains unread and exact cleanup is limited to its deterministic
+  fixture identities.
+- Production ERPNext/JCE contact and the queued fact check remain prohibited
+  and not effective during this checkpoint. P8-08/P8-09 and deferred external
+  portals remain inactive.
+- Controller marker:
+  `P8-07 checkpoint 3 exact-SHA ordinary PASS; checkpoint 4 awaits exact-SHA ordinary CI`.

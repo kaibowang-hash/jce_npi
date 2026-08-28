@@ -1,0 +1,1196 @@
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import subprocess
+import tempfile
+from dataclasses import replace
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+from uuid import UUID
+
+import verify_document_runtime as document_runtime
+import verify_publish_request_runtime as publish_runtime
+from verify_frappe_runtime import (
+    login,
+    require,
+    secret_from_environment,
+    validate_local_fixture_inputs,
+    validate_problem,
+)
+from verify_project_runtime import bootstrap_csrf
+
+
+ROOT = Path(__file__).resolve().parents[1]
+BENCH_PATH = ROOT / "tmp" / "frappe-bench"
+SITE_NAME = document_runtime.SITE_NAME
+FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
+TENANT_ID = document_runtime.TENANT_ID
+ACTOR_USER = publish_runtime.ACTOR_USER
+RUNTIME_MARKER = "npi-one-integration-operations-disposable-v1"
+_TRACE_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
+_FORBIDDEN_KEYS = frozenset(
+    {
+        "authorization",
+        "cookie",
+        "credential",
+        "credentials",
+        "password",
+        "payload",
+        "rawbody",
+        "rawpayload",
+        "requestbody",
+        "responsebody",
+        "secret",
+        "targetrequest",
+        "targetresponse",
+        "token",
+    }
+)
+_OPERATION_SLUG = {
+    "receive_project_submission": "receive-project-submissions",
+    "publish_item": "item-publishes",
+    "publish_mbom": "mbom-publishes",
+    "create_tool_asset": "tool-asset-creates",
+    "update_tool_asset": "tool-asset-updates",
+}
+
+
+def _fixture_uuid(label: str) -> UUID:
+    raw = bytearray(hashlib.sha256(f"{FIXTURE_RUN_ID}:{label}".encode()).digest()[:16])
+    raw[6] = (raw[6] & 0x0F) | 0x40
+    raw[8] = (raw[8] & 0x3F) | 0x80
+    return UUID(bytes=bytes(raw))
+
+
+def _fixture_hash(label: str) -> str:
+    return hashlib.sha256(f"{FIXTURE_RUN_ID}:{label}".encode()).hexdigest()
+
+
+def _fixture_trace(label: str) -> str:
+    return f"trace-{_fixture_hash(label)[:32]}"
+
+
+def _require_project_id(value: object) -> str:
+    try:
+        parsed = UUID(str(value))
+    except (TypeError, ValueError) as error:
+        raise RuntimeError("P8-07 runtime Project identity is invalid") from error
+    require(parsed.version == 4 and str(parsed) == str(value), "P8-07 runtime Project identity drifted")
+    return str(parsed)
+
+
+def _collection_path(project_id: str, *, dlq: bool = False) -> str:
+    suffix = "/dlq" if dlq else ""
+    return f"/api/npi/v1/projects/{project_id}/integration-operations{suffix}"
+
+
+def _detail_path(project_id: str, operation_kind: str, operation_id: str) -> str:
+    return (
+        f"/api/npi/v1/projects/{project_id}/integration-operations/"
+        f"{operation_kind}/{operation_id}"
+    )
+
+
+def _action_path(
+    project_id: str,
+    operation_kind: str,
+    operation_id: str,
+    action: str,
+) -> str:
+    require(operation_kind in _OPERATION_SLUG, "P8-07 runtime operation kind drifted")
+    require(action in {"replay", "request-reconciliation"}, "P8-07 runtime action drifted")
+    return (
+        f"/api/npi/v1/projects/{project_id}/integration-operations/"
+        f"{_OPERATION_SLUG[operation_kind]}/{operation_id}:{action}"
+    )
+
+
+def _request(
+    opener: Any,
+    base_url: str,
+    path: str,
+    *,
+    label: str,
+    method: str = "GET",
+    payload: dict[str, object] | None = None,
+    csrf_token: str | None = None,
+    idempotency_key: str | None = None,
+) -> Any:
+    headers = (
+        document_runtime.command_headers(csrf_token, idempotency_key)
+        if idempotency_key is not None
+        else document_runtime.query_headers(f"p807-{label}")
+    )
+    result = document_runtime.request(
+        opener,
+        base_url,
+        path,
+        method=method,
+        payload=payload,
+        request_headers=headers,
+    )
+    require(
+        result.headers.get("X-Request-ID") == headers["X-Request-ID"],
+        "P8-07 request identity was not echoed",
+    )
+    require(
+        result.headers.get("Cache-Control") == "private, no-store",
+        "P8-07 response cache control drifted",
+    )
+    _assert_safe(result.body)
+    return result
+
+
+def _assert_safe(value: object) -> None:
+    if isinstance(value, dict):
+        for key, child in value.items():
+            normalized = re.sub(r"[^a-z0-9]", "", str(key).casefold())
+            require(
+                not any(
+                    normalized == forbidden
+                    or normalized.startswith(forbidden)
+                    or normalized.endswith(forbidden)
+                    for forbidden in _FORBIDDEN_KEYS
+                ),
+                "P8-07 response leaked restricted material",
+            )
+            _assert_safe(child)
+    elif isinstance(value, list):
+        for child in value:
+            _assert_safe(child)
+
+
+def _items(result: Any, *, project_id: str) -> list[dict[str, Any]]:
+    require(result.status == 200, "P8-07 operation collection is unavailable")
+    body = result.body
+    items = body.get("items")
+    require(
+        body.get("projectGlobalId") == project_id
+        and isinstance(body.get("permissions"), dict)
+        and isinstance(items, list)
+        and all(isinstance(item, dict) for item in items),
+        "P8-07 operation collection shape drifted",
+    )
+    return items
+
+
+def _detail(result: Any, *, project_id: str) -> dict[str, Any]:
+    require(result.status == 200, "P8-07 operation detail is unavailable")
+    operation = result.body.get("operation")
+    require(
+        result.body.get("projectGlobalId") == project_id
+        and isinstance(result.body.get("permissions"), dict)
+        and isinstance(operation, dict),
+        "P8-07 operation detail shape drifted",
+    )
+    return operation
+
+
+def _action(
+    opener: Any,
+    base_url: str,
+    *,
+    project_id: str,
+    operation: dict[str, Any],
+    action: str,
+    csrf_token: str,
+    idempotency_key: str,
+    label: str,
+) -> Any:
+    operation_kind = str(operation.get("operationKind"))
+    operation_id = str(operation.get("operationGlobalId"))
+    payload = {
+        "expectedRawState": operation.get("rawState"),
+        "expectedVersion": operation.get("operationVersion"),
+    }
+    return _request(
+        opener,
+        base_url,
+        _action_path(project_id, operation_kind, operation_id, action),
+        label=label,
+        method="POST",
+        payload=payload,
+        csrf_token=csrf_token,
+        idempotency_key=idempotency_key,
+    )
+
+
+def _exact_item(
+    items: list[dict[str, Any]],
+    *,
+    operation_id: str | None = None,
+    raw_state: str | None = None,
+) -> dict[str, Any]:
+    matches = [
+        item
+        for item in items
+        if item.get("operationKind") == "publish_item"
+        and (operation_id is None or item.get("operationGlobalId") == operation_id)
+        and (raw_state is None or item.get("rawState") == raw_state)
+    ]
+    require(len(matches) == 1, "P8-07 exact Item operation cardinality drifted")
+    return matches[0]
+
+
+def run_disabled_probe(
+    base_url: str,
+    fixture_password: str,
+    project_id: str,
+) -> dict[str, object]:
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    result = _request(
+        actor,
+        base_url,
+        _collection_path(project_id),
+        label="disabled",
+    )
+    validate_problem(result, 503, "INTEGRATION_OPERATIONS_ROUTES_DISABLED")
+    return {"routesDisabled": True}
+
+
+def run_fresh(
+    base_url: str,
+    fixture_password: str,
+    project_id: str,
+) -> dict[str, object]:
+    _require_active_environment(project_id)
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
+    seeded = run_bench_fixture(
+        "seed_retryable",
+        {"fixture_run_id": FIXTURE_RUN_ID, "project_id": project_id},
+    )
+    require(
+        seeded == {
+            "failedRetryable": True,
+            "networkContactCount": 0,
+            "seeded": True,
+        },
+        "P8-07 retryable fixture drifted",
+    )
+
+    collection = _request(
+        actor,
+        base_url,
+        _collection_path(project_id),
+        label="fresh-list",
+    )
+    items = _items(collection, project_id=project_id)
+    kinds = {str(item.get("operationKind")) for item in items}
+    require(
+        {
+            "receive_project_submission",
+            "publish_item",
+            "publish_mbom",
+            "create_tool_asset",
+        }.issubset(kinds),
+        "P8-07 retained operation inventory drifted",
+    )
+    retryable_id = str(_fixture_uuid("retryable-request"))
+    retryable = _exact_item(items, operation_id=retryable_id)
+    uncertain = _exact_item(items, raw_state="uncertain_after_timeout")
+    require(
+        retryable.get("sharedState") == "failed_retryable"
+        and retryable.get("replayEligible") is True
+        and uncertain.get("sharedState") == "uncertain"
+        and uncertain.get("replayEligible") is False
+        and uncertain.get("reconciliationRequired") is True,
+        "P8-07 retry and uncertainty classification drifted",
+    )
+
+    dlq = _items(
+        _request(actor, base_url, _collection_path(project_id, dlq=True), label="fresh-dlq"),
+        project_id=project_id,
+    )
+    dlq_ids = {str(item.get("operationGlobalId")) for item in dlq}
+    require(
+        retryable_id in dlq_ids
+        and str(uncertain.get("operationGlobalId")) in dlq_ids,
+        "P8-07 logical DLQ omitted governed operations",
+    )
+
+    first_page = _request(
+        actor,
+        base_url,
+        f"{_collection_path(project_id)}?limit=2",
+        label="page-one",
+    )
+    first_items = _items(first_page, project_id=project_id)
+    cursor = first_page.body.get("nextCursor")
+    require(len(first_items) == 2 and isinstance(cursor, str), "P8-07 cursor page drifted")
+    second_page = _request(
+        actor,
+        base_url,
+        f"{_collection_path(project_id)}?limit=2&cursor={cursor}",
+        label="page-two",
+    )
+    second_items = _items(second_page, project_id=project_id)
+    require(
+        {item["operationGlobalId"] for item in first_items}.isdisjoint(
+            {item["operationGlobalId"] for item in second_items}
+        ),
+        "P8-07 cursor repeated an operation",
+    )
+
+    foreign_project = str(_fixture_uuid("foreign-project"))
+    foreign = _request(
+        actor,
+        base_url,
+        _collection_path(foreign_project),
+        label="foreign-project",
+    )
+    validate_problem(foreign, 404, "INTEGRATION_OPERATION_NOT_FOUND")
+
+    retryable_detail = _detail(
+        _request(
+            actor,
+            base_url,
+            _detail_path(project_id, "publish_item", retryable_id),
+            label="retryable-detail",
+        ),
+        project_id=project_id,
+    )
+    uncertain_id = str(uncertain["operationGlobalId"])
+    uncertain_detail = _detail(
+        _request(
+            actor,
+            base_url,
+            _detail_path(project_id, "publish_item", uncertain_id),
+            label="uncertain-detail",
+        ),
+        project_id=project_id,
+    )
+    require(
+        len(retryable_detail.get("attempts", [])) == 1
+        and len(retryable_detail.get("results", [])) == 1
+        and len(uncertain_detail.get("attempts", [])) >= 1
+        and len(uncertain_detail.get("results", [])) == 1,
+        "P8-07 immutable operation history drifted",
+    )
+
+    before_uncertain = run_bench_fixture(
+        "snapshot",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "uncertain_operation_id": uncertain_id,
+        },
+    )
+    rejected = _action(
+        actor,
+        base_url,
+        project_id=project_id,
+        operation=uncertain,
+        action="replay",
+        csrf_token=csrf,
+        idempotency_key=f"p807-uncertain-replay-{FIXTURE_RUN_ID}",
+        label="uncertain-replay",
+    )
+    validate_problem(rejected, 409, "INTEGRATION_OPERATION_CONFLICT")
+    after_uncertain = run_bench_fixture(
+        "snapshot",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "uncertain_operation_id": uncertain_id,
+        },
+    )
+    require(
+        before_uncertain == after_uncertain
+        and before_uncertain.get("adapterCalls") == 0,
+        "P8-07 uncertain replay changed or redispatched owning truth",
+    )
+
+    reconciliation = _action(
+        actor,
+        base_url,
+        project_id=project_id,
+        operation=uncertain,
+        action="request-reconciliation",
+        csrf_token=csrf,
+        idempotency_key=f"p807-reconcile-{FIXTURE_RUN_ID}",
+        label="reconciliation",
+    )
+    require(
+        reconciliation.status == 201
+        and reconciliation.headers.get("Idempotency-Replayed") == "false"
+        and reconciliation.body.get("outcomeState") == "reconciliation_requested"
+        and reconciliation.body.get("outcomeReferenceGlobalId") is None,
+        "P8-07 reconciliation intent was not appended",
+    )
+    observed = run_bench_fixture(
+        "append_observation",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "operation_id": uncertain_id,
+            "action_receipt_id": str(reconciliation.body.get("actionGlobalId")),
+        },
+    )
+    require(
+        observed == {
+            "appendOnly": True,
+            "authoritativeSuccess": False,
+            "observationCount": 1,
+        },
+        "P8-07 reconciliation observation boundary drifted",
+    )
+
+    replay = _action(
+        actor,
+        base_url,
+        project_id=project_id,
+        operation=retryable,
+        action="replay",
+        csrf_token=csrf,
+        idempotency_key=f"p807-replay-{FIXTURE_RUN_ID}",
+        label="retryable-replay",
+    )
+    require(
+        replay.status == 201
+        and replay.headers.get("Idempotency-Replayed") == "false"
+        and replay.body.get("outcomeState") == "replay_requested"
+        and replay.body.get("outcomeReferenceGlobalId")
+        == str(_fixture_uuid("retryable-outbox")),
+        "P8-07 retryable action did not requeue exact owning work",
+    )
+
+    stale = dict(uncertain)
+    stale["operationVersion"] = int(uncertain["operationVersion"]) + 1
+    stale_result = _action(
+        actor,
+        base_url,
+        project_id=project_id,
+        operation=stale,
+        action="request-reconciliation",
+        csrf_token=csrf,
+        idempotency_key=f"p807-stale-{FIXTURE_RUN_ID}",
+        label="stale-reconciliation",
+    )
+    validate_problem(stale_result, 409, "INTEGRATION_OPERATION_CONFLICT")
+    sealed = run_bench_fixture(
+        "verify_counts",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "uncertain_operation_id": uncertain_id,
+        },
+    )
+    require(
+        sealed == {"actionCount": 2, "observationCount": 1, "rollbackClean": True},
+        "P8-07 action transaction or rollback cardinality drifted",
+    )
+    return {
+        "crossProcessReplayReady": True,
+        "immutableHistory": True,
+        "logicalDlq": True,
+        "networkContactCount": 0,
+        "projectContainment": True,
+        "reconciliationIntentAndObservation": True,
+        "retryableReplay": True,
+        "rollback": True,
+        "uncertainNoRedispatch": True,
+    }
+
+
+def run_replay(
+    base_url: str,
+    fixture_password: str,
+    project_id: str,
+) -> dict[str, object]:
+    _require_active_environment(project_id)
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
+    items = _items(
+        _request(actor, base_url, _collection_path(project_id), label="replay-list"),
+        project_id=project_id,
+    )
+    retryable_id = str(_fixture_uuid("retryable-request"))
+    queued = _exact_item(items, operation_id=retryable_id)
+    uncertain = _exact_item(items, raw_state="uncertain_after_timeout")
+    require(
+        queued.get("rawState") == "queued" and queued.get("replayEligible") is False,
+        "P8-07 replay did not retain exact queued owning state",
+    )
+    replay = _action(
+        actor,
+        base_url,
+        project_id=project_id,
+        operation={**queued, "rawState": "failed_retryable", "operationVersion": 3},
+        action="replay",
+        csrf_token=csrf,
+        idempotency_key=f"p807-replay-{FIXTURE_RUN_ID}",
+        label="replay-idempotency",
+    )
+    reconciliation = _action(
+        actor,
+        base_url,
+        project_id=project_id,
+        operation=uncertain,
+        action="request-reconciliation",
+        csrf_token=csrf,
+        idempotency_key=f"p807-reconcile-{FIXTURE_RUN_ID}",
+        label="reconciliation-idempotency",
+    )
+    require(
+        replay.status == 200
+        and reconciliation.status == 200
+        and replay.headers.get("Idempotency-Replayed") == "true"
+        and reconciliation.headers.get("Idempotency-Replayed") == "true",
+        "P8-07 cross-process action idempotency drifted",
+    )
+    counts = run_bench_fixture(
+        "verify_counts",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "uncertain_operation_id": str(uncertain["operationGlobalId"]),
+        },
+    )
+    require(
+        counts == {"actionCount": 2, "observationCount": 1, "rollbackClean": True},
+        "P8-07 cross-process replay appended duplicate history",
+    )
+    return {"crossProcessIdempotency": True, "historyCardinalityStable": True}
+
+
+def run_recovered(
+    base_url: str,
+    fixture_password: str,
+    project_id: str,
+) -> dict[str, object]:
+    _require_active_environment(project_id)
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    items = _items(
+        _request(actor, base_url, _collection_path(project_id), label="route-recovered"),
+        project_id=project_id,
+    )
+    require(
+        any(item.get("operationGlobalId") == str(_fixture_uuid("retryable-request")) for item in items),
+        "P8-07 route recovery lost retained operation history",
+    )
+    return {"routeRecovered": True}
+
+
+def run_post_migration_cleanup(
+    base_url: str,
+    fixture_password: str,
+    project_id: str,
+) -> dict[str, object]:
+    _require_active_environment(project_id)
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    items = _items(
+        _request(actor, base_url, _collection_path(project_id), label="post-migration"),
+        project_id=project_id,
+    )
+    uncertain = _exact_item(items, raw_state="uncertain_after_timeout")
+    cleaned = run_bench_fixture(
+        "verify_and_cleanup",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "uncertain_operation_id": str(uncertain["operationGlobalId"]),
+        },
+    )
+    require(
+        cleaned
+        == {
+            "actionHistoryImmutable": True,
+            "cleanupComplete": True,
+            "migrationPreservedHistory": True,
+            "observationHistoryImmutable": True,
+        },
+        "P8-07 migration or cleanup proof drifted",
+    )
+    return cleaned
+
+
+def _require_active_environment(project_id: str) -> str:
+    worker = os.environ.get("NPI_P8_07_RUNTIME_WORKER", "")
+    require(
+        os.environ.get("NPI_P8_07_RUNTIME_ENABLED") == "1"
+        and os.environ.get("NPI_P8_07_RUNTIME_MARKER") == RUNTIME_MARKER
+        and os.environ.get("NPI_P8_07_RUNTIME_PROJECT_ID") == project_id
+        and os.environ.get("NPI_P8_07_RUNTIME_REQUESTER") == ACTOR_USER
+        and bool(worker)
+        and worker != ACTOR_USER,
+        "P8-07 runtime environment is not exact",
+    )
+    return worker
+
+
+def _validate_fixture(fixture_run_id: str, project_id: str) -> str:
+    import frappe
+
+    document_runtime._validated_runtime_site()
+    project_id = _require_project_id(project_id)
+    worker = _require_active_environment(project_id)
+    require(fixture_run_id == FIXTURE_RUN_ID, "P8-07 fixture namespace drifted")
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    require(
+        str(project.global_id) == project_id and str(project.tenant_id) == TENANT_ID,
+        "P8-07 fixture Project containment drifted",
+    )
+    return worker
+
+
+def seed_retryable(fixture_run_id: str, project_id: str) -> dict[str, object]:
+    import frappe
+    from npi_integration.item_publish.adapters import failed_before_adapter_boundary_result
+    from npi_integration.item_publish.domain import ItemSourceSnapshot, create_item_publish_request
+    from npi_integration.item_publish.frappe_repository import (
+        FrappeItemPublishRepository,
+        _locked_stream_guard,
+        _set_stream_guard_active,
+    )
+    from npi_integration.item_publish.frappe_validation import (
+        item_request_transaction_write,
+        item_service_actor_scope,
+    )
+    from npi_integration.item_publish.worker_repository import (
+        FrappeItemPublishWorkerRepository,
+        _request_value,
+    )
+
+    worker = _validate_fixture(fixture_run_id, project_id)
+    frappe.set_user(ACTOR_USER)
+    source_names = frappe.get_all(
+        "NPI Item Publish Request",
+        filters={"project_global_id": project_id, "state": "synthetic_verified"},
+        pluck="name",
+        order_by="name asc",
+        limit_page_length=2,
+    )
+    require(len(source_names) == 1, "P8-07 source fixture cardinality drifted")
+    source_value = _request_value(frappe.get_doc("NPI Item Publish Request", source_names[0]))
+    engineering_id = f"P807-RTRY-{FIXTURE_RUN_ID[:12]}"
+    occurrences = tuple(
+        replace(occurrence, engineering_item_id=engineering_id)
+        for occurrence in source_value.source.occurrences
+    )
+    source = ItemSourceSnapshot(
+        tenant_id=source_value.source.tenant_id,
+        project_global_id=source_value.source.project_global_id,
+        engineering_item_id=engineering_id,
+        selected_publish_node_global_id=source_value.source.selected_publish_node_global_id,
+        description=source_value.source.description,
+        engineering_uom=source_value.source.engineering_uom,
+        attributes=source_value.source.attributes,
+        occurrences=occurrences,
+    )
+    now = datetime.now(UTC).replace(microsecond=0)
+    request_id = _fixture_uuid("retryable-request")
+    outbox_id = _fixture_uuid("retryable-outbox")
+    value = create_item_publish_request(
+        source=source,
+        released_evidence=source_value.released_evidence,
+        profile=source_value.profile,
+        mapping_expectation=source_value.mapping_expectation,
+        actor_user_id=ACTOR_USER,
+        request_id=_fixture_uuid("request-identity"),
+        trace_id=_fixture_trace("retryable"),
+        idempotency_key_hash=_fixture_hash("request-idempotency"),
+        service_actor_user_id=worker,
+        global_id=request_id,
+        created_at=now,
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id, for_update=True)
+    with item_request_transaction_write(ACTOR_USER) as capability:
+        guard = _locked_stream_guard(source, create=True, now=now, capability=capability)
+        require(guard is not None, "P8-07 retryable stream guard is unavailable")
+        FrappeItemPublishRepository._insert_item_request(
+            project,
+            value,
+            outbox_event_id=outbox_id,
+            now=now,
+            capability=capability,
+        )
+        FrappeItemPublishRepository._insert_outbox(
+            project,
+            value,
+            event_id=outbox_id,
+            capability=capability,
+        )
+        _set_stream_guard_active(guard, value, now=now, capability=capability)
+    frappe.db.commit()
+
+    repository = FrappeItemPublishWorkerRepository()
+    with item_service_actor_scope(worker):
+        claim = repository.claim(outbox_id, now=now)
+        require(claim is not None, "P8-07 retryable fixture could not be claimed")
+        frappe.db.commit()
+        classified = failed_before_adapter_boundary_result(
+            command=claim.command,
+            observed_at=now,
+            safe_error_code="P807_DISPOSABLE_TARGET_UNAVAILABLE",
+            retryable=True,
+        )
+        outcome = repository.seal_result(claim, profile=None, result=classified, now=now)
+        require(
+            outcome.state == "failed_retryable" and outcome.mapping_advanced is False,
+            "P8-07 retryable fixture did not stop before target authority",
+        )
+        frappe.db.commit()
+    require(
+        str(getattr(frappe.session, "user", "")) == ACTOR_USER,
+        "P8-07 retryable fixture did not restore requester session",
+    )
+    return {"failedRetryable": True, "networkContactCount": 0, "seeded": True}
+
+
+def snapshot(
+    fixture_run_id: str,
+    project_id: str,
+    uncertain_operation_id: str,
+) -> dict[str, object]:
+    import frappe
+    from npi_integration.item_publish.runtime_fixture import synthetic_adapter_call_count
+    from npi_integration.integration_operations.domain import canonical_hash
+
+    _validate_fixture(fixture_run_id, project_id)
+    uncertain_operation_id = _require_project_id(uncertain_operation_id)
+    row = frappe.get_doc("NPI Item Publish Request", uncertain_operation_id)
+    attempts = frappe.get_all(
+        "NPI Item Publish Attempt",
+        filters={"request_global_id": uncertain_operation_id},
+        fields=["name", "state", "attempt_hash"],
+        order_by="name asc",
+        limit_page_length=20,
+    )
+    results = frappe.get_all(
+        "NPI Item Publish Result",
+        filters={"request_global_id": uncertain_operation_id},
+        fields=["name", "state", "result_hash"],
+        order_by="name asc",
+        limit_page_length=20,
+    )
+    actions = frappe.get_all(
+        "NPI Integration Action Receipt",
+        filters={"operation_global_id": uncertain_operation_id},
+        pluck="name",
+        order_by="name asc",
+        limit_page_length=20,
+    )
+    return {
+        "adapterCalls": synthetic_adapter_call_count(),
+        "digest": canonical_hash(
+            {
+                "request": {
+                    "name": str(row.name),
+                    "state": str(row.state),
+                    "optimisticVersion": int(row.optimistic_version),
+                    "resultGlobalId": row.result_global_id or None,
+                },
+                "attempts": attempts,
+                "results": results,
+                "actions": actions,
+            }
+        ),
+    }
+
+
+def _operation_reference(project_id: str, operation_id: str) -> tuple[Any, Any]:
+    import frappe
+    from npi_core.foundation.security import Principal, ProjectAccess
+    from npi_integration.integration_operations.domain import IntegrationOperationKind
+    from npi_integration.integration_operations.frappe_repository import (
+        FrappeIntegrationOperationsRepository,
+    )
+
+    row = frappe.get_doc("NPI Item Publish Request", operation_id)
+    principal = Principal(
+        ACTOR_USER,
+        roles=frozenset(frappe.get_roles(ACTOR_USER)),
+        project_access={project_id: ProjectAccess.ADMINISTER},
+        tenant_id=TENANT_ID,
+    )
+    repository = FrappeIntegrationOperationsRepository(
+        principal=principal,
+        request_id=str(_fixture_uuid("observation-request")),
+        trace_id=_fixture_trace("observation"),
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    value = repository._operation_value(
+        project,
+        repository_module_spec("publish_item"),
+        row,
+    )
+    require(
+        value is not None
+        and value.operation_kind is IntegrationOperationKind.PUBLISH_ITEM,
+        "P8-07 reconciliation operation reference is unavailable",
+    )
+    return value, row
+
+
+def repository_module_spec(operation_kind: str) -> Any:
+    from npi_integration.integration_operations.domain import IntegrationOperationKind
+    from npi_integration.integration_operations.frappe_repository import _SPECS
+
+    return _SPECS[IntegrationOperationKind(operation_kind)]
+
+
+def append_observation(
+    fixture_run_id: str,
+    project_id: str,
+    operation_id: str,
+    action_receipt_id: str,
+) -> dict[str, object]:
+    import frappe
+    from npi_core.documents.frappe_repository import _database_datetime
+    from npi_integration.integration_operations.domain import (
+        INTEGRATION_OPERATIONS_SCHEMA_VERSION,
+        IntegrationReconciliationObservation,
+        ReconciliationAuthority,
+        ReconciliationObservationState,
+        ReconciliationObserverKind,
+        canonical_hash,
+    )
+    from npi_integration.integration_operations.frappe_validation import (
+        insert_integration_operations_support_document,
+        integration_operations_write_capability,
+    )
+
+    worker = _validate_fixture(fixture_run_id, project_id)
+    operation_id = _require_project_id(operation_id)
+    action_id = UUID(_require_project_id(action_receipt_id))
+    value, row = _operation_reference(project_id, operation_id)
+    attempt_id = frappe.db.get_value(
+        "NPI Item Publish Attempt",
+        {"request_global_id": operation_id},
+        "global_id",
+        order_by="attempt_number desc",
+    )
+    evidence = {
+        "sourceSnapshotHash": value.source_snapshot_hash,
+        "targetIdempotencyKeyHash": value.target_idempotency_key_hash,
+        "resultReferenceHash": None,
+    }
+    observed_at = datetime.now(UTC).replace(microsecond=0)
+    observation = IntegrationReconciliationObservation(
+        global_id=_fixture_uuid("reconciliation-observation"),
+        operation=value,
+        action_receipt_global_id=action_id,
+        attempt_global_id=UUID(str(attempt_id)) if attempt_id else None,
+        state=ReconciliationObservationState.TARGET_UNAVAILABLE,
+        observer_kind=ReconciliationObserverKind.TRUSTED_OPERATION_SERVICE,
+        authority=ReconciliationAuthority.NONE,
+        response_authenticated=False,
+        profile_id=str(row.profile_id),
+        profile_version=int(row.profile_version),
+        adapter_code="network-free-synthetic-v1",
+        evidence_snapshot=evidence,
+        evidence_hash=canonical_hash(evidence),
+        observer_id=worker,
+        trace_id=_fixture_trace("observation"),
+        observed_at=observed_at,
+    )
+    frappe.set_user(worker)
+    allowed = frozenset({("NPI Integration Reconciliation Observation", "insert")})
+    payload = observation.payload()
+    with integration_operations_write_capability(
+        service_actor_user_id=worker,
+        scope=f"runtime:{observation.global_id}",
+        allowed=allowed,
+    ) as capability:
+        insert_integration_operations_support_document(
+            frappe.get_doc(
+                {
+                    "doctype": "NPI Integration Reconciliation Observation",
+                    "global_id": str(observation.global_id),
+                    "schema_version": INTEGRATION_OPERATIONS_SCHEMA_VERSION,
+                    "tenant_id": value.tenant_id,
+                    "project_global_id": str(value.project_global_id),
+                    "operation_kind": value.operation_kind.value,
+                    "operation_global_id": str(value.operation_global_id),
+                    "source_global_id": str(value.source_global_id),
+                    "operation_version": value.operation_version,
+                    "raw_state": value.raw_state,
+                    "shared_state": value.shared_state.value,
+                    "source_snapshot_hash": value.source_snapshot_hash,
+                    "target_idempotency_key_hash": value.target_idempotency_key_hash,
+                    "action_receipt_global_id": str(action_id),
+                    "attempt_global_id": str(observation.attempt_global_id) if observation.attempt_global_id else None,
+                    "reconciliation_state": observation.state.value,
+                    "observer_kind": observation.observer_kind.value,
+                    "authority": observation.authority.value,
+                    "response_authenticated": 0,
+                    "profile_id": observation.profile_id,
+                    "profile_version": observation.profile_version,
+                    "adapter_code": observation.adapter_code,
+                    "evidence_snapshot": evidence,
+                    "evidence_hash": observation.evidence_hash,
+                    "observer_id": worker,
+                    "trace_id": observation.trace_id,
+                    "observed_at": _database_datetime(observed_at),
+                    "observation_snapshot": payload,
+                    "observation_hash": observation.observation_hash,
+                }
+            ),
+            capability=capability,
+        )
+    frappe.db.commit()
+    frappe.set_user(ACTOR_USER)
+    return {"appendOnly": True, "authoritativeSuccess": False, "observationCount": 1}
+
+
+def verify_counts(
+    fixture_run_id: str,
+    project_id: str,
+    uncertain_operation_id: str,
+) -> dict[str, object]:
+    import frappe
+
+    _validate_fixture(fixture_run_id, project_id)
+    operation_ids = [str(_fixture_uuid("retryable-request")), _require_project_id(uncertain_operation_id)]
+    action_names = frappe.get_all(
+        "NPI Integration Action Receipt",
+        filters={"operation_global_id": ["in", operation_ids]},
+        pluck="name",
+        order_by="name asc",
+        limit_page_length=10,
+    )
+    observation_names = frappe.get_all(
+        "NPI Integration Reconciliation Observation",
+        filters={"project_global_id": project_id},
+        pluck="name",
+        order_by="name asc",
+        limit_page_length=10,
+    )
+    return {
+        "actionCount": len(action_names),
+        "observationCount": len(observation_names),
+        "rollbackClean": len(action_names) == 2 and len(observation_names) == 1,
+    }
+
+
+def verify_and_cleanup(
+    fixture_run_id: str,
+    project_id: str,
+    uncertain_operation_id: str,
+) -> dict[str, object]:
+    import frappe
+
+    worker = _validate_fixture(fixture_run_id, project_id)
+    retryable_id = str(_fixture_uuid("retryable-request"))
+    uncertain_operation_id = _require_project_id(uncertain_operation_id)
+    operation_ids = [retryable_id, uncertain_operation_id]
+    action_names = frappe.get_all(
+        "NPI Integration Action Receipt",
+        filters={"operation_global_id": ["in", operation_ids]},
+        pluck="name",
+        order_by="name asc",
+        limit_page_length=10,
+    )
+    observation_names = frappe.get_all(
+        "NPI Integration Reconciliation Observation",
+        filters={"project_global_id": project_id},
+        pluck="name",
+        order_by="name asc",
+        limit_page_length=10,
+    )
+    require(
+        len(action_names) == 2 and len(observation_names) == 1,
+        "P8-07 migration did not preserve exact action history",
+    )
+    action_immutable = False
+    observation_immutable = False
+    frappe.set_user(worker)
+    action = frappe.get_doc("NPI Integration Action Receipt", action_names[0])
+    action.outcome_state = "changed"
+    try:
+        action.save()
+    except frappe.PermissionError:
+        action_immutable = True
+        frappe.db.rollback()
+    observation = frappe.get_doc(
+        "NPI Integration Reconciliation Observation",
+        observation_names[0],
+    )
+    observation.reconciliation_state = "changed"
+    try:
+        observation.save()
+    except frappe.PermissionError:
+        observation_immutable = True
+        frappe.db.rollback()
+    require(action_immutable and observation_immutable, "P8-07 history mutation was not denied")
+
+    attempt_names = frappe.get_all(
+        "NPI Item Publish Attempt",
+        filters={"request_global_id": retryable_id},
+        pluck="name",
+        limit_page_length=10,
+    )
+    result_names = frappe.get_all(
+        "NPI Item Publish Result",
+        filters={"request_global_id": retryable_id},
+        pluck="name",
+        limit_page_length=10,
+    )
+    frappe.db.delete(
+        "NPI Integration Reconciliation Observation",
+        {"name": ["in", observation_names]},
+    )
+    frappe.db.delete(
+        "NPI Integration Action Receipt",
+        {"name": ["in", action_names]},
+    )
+    frappe.db.delete(
+        "NPI Audit Event",
+        {
+            "global_id": ["in", operation_ids],
+            "operation": ["in", ["integration_operations.replay", "integration_operations.request_reconciliation"]],
+        },
+    )
+    if result_names:
+        frappe.db.delete("NPI Item Publish Result", {"name": ["in", result_names]})
+    if attempt_names:
+        frappe.db.delete("NPI Item Publish Attempt", {"name": ["in", attempt_names]})
+    frappe.db.delete("NPI Outbox Message", {"request_global_id": retryable_id})
+    frappe.db.delete("NPI Item Publish Request", {"name": retryable_id})
+    frappe.db.delete(
+        "NPI Item Publish Stream Guard",
+        {"engineering_item_id": f"P807-RTRY-{FIXTURE_RUN_ID[:12]}"},
+    )
+    frappe.db.commit()
+    cleaned = all(
+        frappe.db.count(doctype, filters) == 0
+        for doctype, filters in (
+            ("NPI Integration Action Receipt", {"operation_global_id": ["in", operation_ids]}),
+            ("NPI Integration Reconciliation Observation", {"project_global_id": project_id}),
+            ("NPI Item Publish Request", {"name": retryable_id}),
+            ("NPI Outbox Message", {"request_global_id": retryable_id}),
+            ("NPI Item Publish Attempt", {"request_global_id": retryable_id}),
+            ("NPI Item Publish Result", {"request_global_id": retryable_id}),
+            ("NPI Item Publish Stream Guard", {"engineering_item_id": f"P807-RTRY-{FIXTURE_RUN_ID[:12]}"}),
+        )
+    )
+    return {
+        "actionHistoryImmutable": action_immutable,
+        "cleanupComplete": cleaned,
+        "migrationPreservedHistory": True,
+        "observationHistoryImmutable": observation_immutable,
+    }
+
+
+def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "scripts")
+    with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as output:
+        completed = subprocess.run(
+            [
+                str(BENCH_PATH / "env/bin/python"),
+                str(Path(__file__).resolve()),
+                "--bench-fixture",
+                method,
+                "--fixture-kwargs",
+                json.dumps(kwargs, separators=(",", ":"), sort_keys=True),
+            ],
+            cwd=BENCH_PATH / "sites",
+            env=environment,
+            check=False,
+            stdout=output,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+        require(completed.returncode == 0, "P8-07 Bench fixture failed")
+        output.seek(0)
+        lines = [line for line in output if line.strip()]
+    require(len(lines) == 1, "P8-07 Bench fixture output shape drifted")
+    result = json.loads(lines[0])
+    require(isinstance(result, dict), "P8-07 Bench fixture result is invalid")
+    return result
+
+
+def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
+    import frappe
+
+    fixtures = {
+        "append_observation": append_observation,
+        "seed_retryable": seed_retryable,
+        "snapshot": snapshot,
+        "verify_and_cleanup": verify_and_cleanup,
+        "verify_counts": verify_counts,
+    }
+    require(method in fixtures, "P8-07 Bench fixture is unavailable")
+    frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
+    frappe.connect()
+    try:
+        result = fixtures[method](**kwargs)
+        frappe.db.commit()
+        print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+    except Exception:
+        frappe.db.rollback()
+        raise
+    finally:
+        frappe.destroy()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--base-url")
+    parser.add_argument("--project-id")
+    parser.add_argument("--disabled-probe", action="store_true")
+    parser.add_argument("--replay-only", action="store_true")
+    parser.add_argument("--recovered-probe", action="store_true")
+    parser.add_argument("--post-migration-cleanup", action="store_true")
+    parser.add_argument("--bench-fixture")
+    parser.add_argument("--fixture-kwargs")
+    arguments = parser.parse_args()
+    if arguments.bench_fixture:
+        require(
+            arguments.base_url is None
+            and arguments.project_id is None
+            and arguments.fixture_kwargs is not None
+            and not any(
+                (
+                    arguments.disabled_probe,
+                    arguments.replay_only,
+                    arguments.recovered_probe,
+                    arguments.post_migration_cleanup,
+                )
+            ),
+            "P8-07 fixture invocation drifted",
+        )
+        kwargs = json.loads(arguments.fixture_kwargs)
+        require(isinstance(kwargs, dict), "P8-07 fixture arguments are invalid")
+        run_local_bench_fixture(arguments.bench_fixture, kwargs)
+        return
+    require(
+        sum(
+            map(
+                int,
+                (
+                    arguments.disabled_probe,
+                    arguments.replay_only,
+                    arguments.recovered_probe,
+                    arguments.post_migration_cleanup,
+                ),
+            )
+        )
+        <= 1,
+        "P8-07 runtime mode is ambiguous",
+    )
+    base_url = validate_local_fixture_inputs(arguments.base_url, "Administrator", ACTOR_USER)
+    project_id = _require_project_id(arguments.project_id)
+    fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
+    if arguments.disabled_probe:
+        result = run_disabled_probe(base_url, fixture_password, project_id)
+    elif arguments.replay_only:
+        result = run_replay(base_url, fixture_password, project_id)
+    elif arguments.recovered_probe:
+        result = run_recovered(base_url, fixture_password, project_id)
+    elif arguments.post_migration_cleanup:
+        result = run_post_migration_cleanup(base_url, fixture_password, project_id)
+    else:
+        result = run_fresh(base_url, fixture_password, project_id)
+    print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()

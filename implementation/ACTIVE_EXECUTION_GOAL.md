@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-28T17:08:19Z`
+Updated: `2026-08-29T00:30:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3_AWAITING_PRODUCT_CI — P8-07`
+- Mode: `IN_PROGRESS_CHECKPOINT_4_AWAITING_PRODUCT_CI — P8-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -36,11 +36,18 @@ Updated: `2026-08-28T17:08:19Z`
   ordinary CI `33187660221`; repository `98904745085`, frontend
   `98904745277`, secret `98904745231` and governed visual `98904744908` pass;
   controlled lanes correctly skipped)
-- Active atomic scope: checkpoint 3 replaces only the in-memory execution
-  prototype with the live Project-scoped dense trilingual integration job
-  center and one server-authorized operation-specific action at a time. The
-  candidate awaits its own exact-SHA ordinary CI; checkpoint 4 runtime, target
-  calls and production contact remain inactive.
+- P8-07 checkpoint-3 final checkpoint:
+  `758bb222a1477474af50fc6b84d5d2c56e379adc` (`CHECKPOINT 3 PASS`;
+  ordinary CI `33204451677`; repository `98961818348`, frontend
+  `98961818460`, secret `98961818358` and governed visual `98961818084` pass;
+  controlled lanes correctly skipped)
+- Active atomic scope: checkpoint 4 adds only cumulative fixed-disposable,
+  network-free runtime proof for Project containment, logical DLQ, immutable
+  history, retryable replay, uncertain no-redispatch, reconciliation intent
+  and observation, cross-process idempotency, rollback, route recovery,
+  migration twice, redaction and exact cleanup. It adds no production profile,
+  adapter or target call and awaits its own exact-SHA ordinary CI before the
+  sole Level 3 Gate.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

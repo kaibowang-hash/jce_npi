@@ -50,9 +50,13 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_07_CHECKPOINT_2_EXACT_SHA_F7CF7C7EA490C10ACFC044AAEF236945E5118F01_ORDINARY_33187660221_PASSED",
             value["frozen_invariants"],
         )
+        self.assertIn(
+            "P8_07_CHECKPOINT_3_EXACT_SHA_758BB222A1477474AF50FC6B84D5D2C56E379ADC_ORDINARY_33204451677_PASSED",
+            value["frozen_invariants"],
+        )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_3_AWAITING_PRODUCT_CI",
+            "IN_PROGRESS_CHECKPOINT_4_AWAITING_PRODUCT_CI",
         )
         self.assertIn(
             "P8_06_LEVEL_3_EXACT_SHA_547421A059911DF6AEB90BBBF06E837F77A3E5E0_ORDINARY_33131533806_FINAL_33132296565_PASSED",
@@ -141,6 +145,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests.test_phase8_integration_operations_domain",
                 "tests.test_phase8_integration_operations_metadata",
                 "tests.test_phase8_integration_operations_repository",
+                "tests.test_phase8_integration_operations_runtime_verifier",
                 "tests.test_phase8_integration_operations_security",
                 "tests.test_phase8_item_publish_security",
                 "tests.test_phase8_mbom_publish_security",

@@ -1,6 +1,6 @@
 # P8-07 Checkpoint 3 — Live Integration Operations Workspace
 
-Status: **LEVEL 1/2 CANDIDATE — AWAITING EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT 3 PASS — EXACT-SHA ORDINARY CI PASS**
 
 Date: 2026-08-29
 
@@ -72,8 +72,11 @@ The checkpoint-3 Level 1/2 candidate passes:
   brand and install-script guards, production and full npm audit, Python
   compile, governed shell syntax and `git diff --check`.
 
-The candidate still requires an exact task manifest, commit and exact-SHA
-ordinary CI PASS before this checkpoint can activate checkpoint 4.
+Stable exact SHA `758bb222a1477474af50fc6b84d5d2c56e379adc`
+passes ordinary CI `33204451677`: repository `98961818348`, frontend
+`98961818460`, secret `98961818358` and governed visual `98961818084` are all
+`SUCCESS`; controlled lanes correctly skip. Checkpoint 4 is therefore active
+only for the frozen cumulative disposable runtime and final Gate.
 
 ### Same-cycle branch-history scan remediation
 
@@ -131,13 +134,13 @@ screens plus all `3` P8-07 screens and passes `21/21`; no visual baseline is
 changed. The final same-cycle Level 1/2 run additionally passes focused units
 `69/69`, full frontend unit/coverage `1086/1086`, complete non-visual E2E
 `458/458`, the exact CI-governed visual matrix `135/135`, and repository
-verification `2606/2606`. A fresh exact-SHA ordinary CI remains mandatory
-before checkpoint 4.
+verification `2606/2606`. The required fresh exact-SHA ordinary CI completed at
+`758bb222a` / `33204451677`, activating checkpoint 4 without expanding scope.
 
 ## Holds
 
 Checkpoint 3 adds no backend route, permission, Schema, worker, adapter,
 target call or production profile. Checkpoint 4 disposable runtime/migration
-proof and Level 3 remain inactive. Production ERPNext/JCE contact and the
-queued fact check remain prohibited/not effective; P8-08, P8-09 and deferred
-external portals remain inactive.
+proof and Level 3 are the only active scope. Production ERPNext/JCE contact and
+the queued fact check remain prohibited/not effective; P8-08, P8-09 and
+deferred external portals remain inactive.

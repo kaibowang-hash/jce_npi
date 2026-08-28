@@ -367,3 +367,38 @@ prototype. Detailed checkpoint-3 evidence is recorded in
 `implementation/evidence/phase-8/p8-07-integration-operations-ui-checkpoint.md`.
 Checkpoint 4 remains inactive until this candidate passes exact-SHA ordinary
 CI.
+
+## 18. Checkpoint-3 Gate and checkpoint-4 runtime candidate
+
+Stable checkpoint-3 SHA
+`758bb222a1477474af50fc6b84d5d2c56e379adc` passes ordinary CI
+`33204451677`: repository `98961818348`, frontend `98961818460`, secret
+`98961818358` and governed visual `98961818084` all pass; controlled lanes
+correctly skip. Checkpoint 4 is now the only active scope.
+
+The checkpoint-4 candidate adds one standalone runtime verifier and composes it
+into the existing `--projection-only` cumulative disposable Site. It:
+
+- confirms the routes are default-disabled, then verifies explicit disable and
+  recovery across fresh server processes;
+- reuses retained P8-02 through P8-05 rows to prove Project-first inventory,
+  logical DLQ, bounded cursor pagination and permission-safe foreign scope;
+- creates one deterministic Item failure that stops before any adapter or
+  target boundary, then proves exact retryable replay and immutable history;
+- rejects uncertain replay before owner mutation or redispatch, records only a
+  reconciliation intent, and appends one trusted `target_unavailable`
+  observation that cannot claim authoritative success;
+- proves stale action rollback and cross-process action-idempotency replay;
+- runs the pinned migration twice, verifies action and observation history are
+  immutable afterward, scans for fixture/target/private log markers and removes
+  only deterministic runtime rows; and
+- sends failed Bench stdout to an unread temporary file and stderr to
+  `DEVNULL`; only a zero-exit child may be parsed as one JSON object.
+
+No production profile, endpoint, credential, adapter registry, target call,
+generic writer, target-success assertion or P8-08/P8-09 behavior is added.
+The local workstation lacks the pinned Frappe application, so the guarded
+runtime entrypoint correctly exits before Site creation; the exact-SHA
+controlled runtime remains the applicable execution proof after ordinary CI.
+Detailed candidate evidence is in
+`implementation/evidence/phase-8/p8-07-controlled-runtime-checkpoint.md`.

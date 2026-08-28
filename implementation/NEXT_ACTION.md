@@ -1,19 +1,19 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3_AWAITING_PRODUCT_CI — P8-07`
+`IN_PROGRESS_CHECKPOINT_4_AWAITING_PRODUCT_CI — P8-07`
 
-Recovery time: `2026-08-28T17:08:19Z`
+Recovery time: `2026-08-29T00:30:00Z`
 
-Current atomic action: seal checkpoint 3 live Project integration-operations
-workspace and require its exact-SHA ordinary CI. Checkpoint 2 passes at
-`f7cf7c7ea490c10acfc044aaef236945e5118f01` / ordinary CI `33187660221`.
-The UI consumes only Project-first safe responses, exposes exactly one
-server-authorized replay or reconciliation action at a time, and never claims
-ERP success from queued, HTTP or synthetic truth. Checkpoint 4 disposable
-runtime, adapters, target calls and production contact remain inactive. The
-queued fact-check request remains not effective and external portals remain
-`USER_APPROVED_POST_V1_2_DEFERRED`.
+Current atomic action: seal checkpoint 4 cumulative disposable runtime and its
+exact-SHA ordinary CI, then run the sole final Level 3 Gate. Checkpoint 3 passes
+at `758bb222a1477474af50fc6b84d5d2c56e379adc` / ordinary CI
+`33204451677`. The runtime is fixed-Site, network-free and Project-scoped; it
+proves the logical DLQ, immutable history, exact retryable replay, uncertain
+no-redispatch, reconciliation intent/observation, cross-process idempotency,
+rollback, route disable/recovery, migration twice, redaction and exact cleanup.
+It adds no adapter or target call. Production contact remains prohibited and
+the queued fact-check request remains not effective during this checkpoint.
 
 Required branch:
 `codex/npi-v1.2-implementation`
