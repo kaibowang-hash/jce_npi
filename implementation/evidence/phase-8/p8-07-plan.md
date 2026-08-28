@@ -498,3 +498,41 @@ reconciliation scripts, JSON/YAML/CSV checks, diff hygiene, exact-five,
 union-78 and unauthorized-six rejection all pass. Product/API/schema/frontend/
 workflow diff remains zero. Only exact-SHA ordinary CI can activate the one
 controlled diagnostic.
+
+## 22. Fresh-combined result and collection-shape diagnostic
+
+Exact-five SHA `0d5ea573f9d9e981674157e23c3b175afa56ece8` passes
+ordinary CI `33217741527`: visual `99005066818`, frontend `99005066999`,
+secret scan `99005067008` and repository `99005067058` are all successful.
+The sole controlled diagnostic `33218657373` passes preflight `99007832827`;
+runtime `99007879572` initializes the fixed Bench/Site and fails in the
+cumulative verifier. Strict exact-code/type/trace filtering yields exactly:
+`P807_FRESH_COLLECTION_SHAPE / RuntimeError /
+trace-5f309e82918c5bd2bdd54526bd7dd1b0`.
+
+This same-run boundary proves environment, login, CSRF, retryable seeding and
+the collection HTTP helper completed. It does not distinguish the collection
+status, Project identity, permissions, items container or item element shape.
+No response status/body, business value, identity, child output, message or
+stack was read. Freeze fresh-combined at diagnostic `1/1`, repair `0/1`, final
+`0/1`; do not infer a product repair.
+
+The next independent product-zero cycle retains the same exact five paths.
+Only `COLLECTION_SHAPE_DIAGNOSTICS_ENABLED` is true. It adds five ordered
+subpredicate codes to the existing `45` outer and `52` fixture codes for an
+exact active set of `102`; the prior activation is false and mutual activation
+fails closed. The trace, parent-owned child environment, exact-name `0600`
+`O_EXCL` exact-three-key record, inner-before-outer precedence, strict reader,
+failed-child unread rule and success-zero behavior remain unchanged. Product,
+API, repository, contract, schema, frontend and workflow diffs stay zero.
+Exact-SHA ordinary PASS is required before the cycle's one Level 2 controlled
+run. P8-07F, SSH/ERP contact and P8-08 remain inactive.
+
+Collection-shape Level 1 passes focused verifier `28/28`, complete P8-07
+`62/62`, affected contract/security/API `82/82`, governance/reconciliation
+`59/59` and full local Python `2634/2634`. Frontend unit/coverage passes
+`1086/1086`; focused nonvisual P8-07 E2E passes `3/3`; generate, typecheck,
+full lint/format/style/boundary/UI and `8585`-source `100%` `zh`/`zh-TW` i18n
+pass. Compile, shell syntax, current/reconciliation, JSON/YAML/CSV, exact-102
+lexical equality, diff hygiene, exact-five/union-78 and unauthorized-six
+rejection pass. Product/API/repository/contract/frontend/workflow diff is zero.

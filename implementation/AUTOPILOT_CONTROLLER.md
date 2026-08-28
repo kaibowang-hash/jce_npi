@@ -7774,3 +7774,44 @@ repeat or rewrite it merely to restore context. See
   source i18n at `100%` `zh`/`zh-TW`, compile, shell syntax, current/
   reconciliation, JSON/YAML/CSV, diff, exact-five/union-78 and unauthorized-
   six rejection all pass. Product and workflow diffs remain zero.
+
+### P8-07 checkpoint-4 collection-shape diagnostic cycle
+
+- Fresh-combined SHA `0d5ea573f9d9e981674157e23c3b175afa56ece8`
+  passes ordinary CI `33217741527`: visual `99005066818`, frontend
+  `99005066999`, secret scan `99005067008` and repository `99005067058` all
+  pass. Its sole Level 2 controlled run `33218657373` passes preflight
+  `99007832827`; runtime `99007879572` initializes the exact Bench/Site and
+  fails in the cumulative verifier. Cleanup passes.
+- Strict exact-97 filtering returns one safe tuple:
+  `P807_FRESH_COLLECTION_SHAPE / RuntimeError /
+  trace-5f309e82918c5bd2bdd54526bd7dd1b0`. Environment, login, CSRF, the
+  retryable seed child and collection transport therefore passed in that
+  run. Failed-child output, response status/body, business values, identities,
+  messages and stack remain unread.
+- `COLLECTION_SHAPE` still contains the ordered status, Project identity,
+  permissions, item-container and item-element predicates. The HTTP helper
+  already guarantees a dictionary body, but no remaining predicate is unique;
+  product/API/repository repair is prohibited. Freeze the fresh-combined cycle
+  at diagnostic `1/1`, repair `0/1`, final `0/1`.
+- Start one independent product-zero collection-shape cycle at diagnostic
+  `0/1`, repair `0/1`, final `0/1`. Only
+  `COLLECTION_SHAPE_DIAGNOSTICS_ENABLED=True`; the prior fresh-combined and
+  default-disabled activations are false. The active set is exact `102`: the
+  retained `97` outer/fixture boundaries plus five ordered collection-shape
+  subpredicates. Mutual activation fails closed. Existing exact trace,
+  parent-owned child environment, `0600` `O_EXCL` exact-three-key record,
+  inner precedence, strict reader, unread failed-child output and success-zero
+  contracts remain unchanged.
+- The candidate is limited to the same exact five verifier/test/governance
+  paths and must pass exact-SHA ordinary CI before one controlled Level 2 run.
+  Product, API, repository, schema, frontend, workflow, production ERPNext,
+  P8-07F and P8-08 remain unchanged or closed.
+- Collection-shape Level 1 passes focused verifier `28/28`, complete P8-07
+  `62/62`, affected contract/security/API `82/82`, governance/reconciliation
+  `59/59` and full local Python `2634/2634`. Frontend unit/coverage passes
+  `1086/1086`, the focused nonvisual P8-07 matrix passes `3/3`, and generate,
+  typecheck, full lint/format/style/boundary/UI plus `8585`-source `100%`
+  `zh`/`zh-TW` i18n pass. Compile, shell syntax, current/reconciliation,
+  JSON/YAML/CSV, exact-102/lexical, diff, exact-five/union-78 and unauthorized-
+  six rejection pass; product/workflow diff remains zero.

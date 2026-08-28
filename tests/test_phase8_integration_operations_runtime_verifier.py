@@ -357,17 +357,20 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 )
             record.assert_called_once_with(expected, label="disabled")
 
-    def test_fresh_combined_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
+    def test_collection_shape_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
         codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-        self.assertTrue(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
+        self.assertFalse(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
+        self.assertTrue(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
-        self.assertEqual(len(codes), 97)
+        self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
+        self.assertEqual(len(codes), 102)
         self.assertEqual(
             codes,
             frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
-                self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES
+                self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
+                self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES,
             ),
         )
         self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
@@ -375,6 +378,66 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertTrue(all(source.count(f'"{code}"') == 2 for code in codes))
         self.assertNotIn("str(error)", source)
         self.assertNotIn("repr(error)", source)
+
+    def test_fresh_diagnostic_activations_are_mutually_exclusive(self) -> None:
+        with patch.object(
+            self.verifier,
+            "FRESH_COMBINED_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            self.verifier,
+            "COLLECTION_SHAPE_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
+            self.assertFalse(self.verifier._fresh_runtime_diagnostics_enabled())
+
+    def test_collection_shape_subpredicates_record_the_first_exact_boundary(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        valid_body = {
+            "projectGlobalId": PROJECT_ID,
+            "permissions": {"view": True},
+            "items": [],
+        }
+        cases = (
+            (
+                "P807_COLLECTION_STATUS",
+                SimpleNamespace(status=503, body=dict(valid_body)),
+            ),
+            (
+                "P807_COLLECTION_PROJECT",
+                SimpleNamespace(status=200, body={**valid_body, "projectGlobalId": "wrong"}),
+            ),
+            (
+                "P807_COLLECTION_PERMISSIONS",
+                SimpleNamespace(status=200, body={**valid_body, "permissions": None}),
+            ),
+            (
+                "P807_COLLECTION_ITEMS",
+                SimpleNamespace(status=200, body={**valid_body, "items": {}}),
+            ),
+            (
+                "P807_COLLECTION_ITEM_SHAPES",
+                SimpleNamespace(status=200, body={**valid_body, "items": [None]}),
+            ),
+        )
+        for expected, result in cases:
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+                with patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), self.assertRaises(
+                    RuntimeError
+                ):
+                    self.verifier._items(result, project_id=PROJECT_ID)
+                diagnostic = self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+                self.assertIsNotNone(diagnostic)
+                self.assertEqual(diagnostic[1], expected)
 
     def test_fresh_diagnostic_is_exact_three_key_o_excl_and_inner_wins(self) -> None:
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()

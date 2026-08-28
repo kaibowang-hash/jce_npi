@@ -221,3 +221,42 @@ JSON/YAML/CSV governance checks and diff hygiene pass. Exact-five and
 post-commit union-78 manifests are accepted; an unauthorized sixth path is
 rejected. App, contract, frontend and workflow diffs are zero, and preserved
 unrelated workspace state is untouched.
+
+## Fresh-combined diagnostic result
+
+- Exact SHA `0d5ea573f9d9e981674157e23c3b175afa56ece8` passes
+  ordinary CI `33217741527` in all four lanes: visual `99005066818`, frontend
+  `99005066999`, secret scan `99005067008` and repository `99005067058`.
+- Its only Level 2 controlled run `33218657373` passes preflight
+  `99007832827`. Runtime `99007879572` initializes the pinned Bench and fixed
+  disposable Site, then fails in the cumulative verifier; cleanup passes.
+- Strict exact-97 filtering yields one safe tuple:
+  `P807_FRESH_COLLECTION_SHAPE / RuntimeError /
+  trace-5f309e82918c5bd2bdd54526bd7dd1b0`. Failed-child output, response
+  status/body, business values, identities, messages and stack were not read.
+- The tuple proves the fresh environment, login, CSRF, retryable seed and
+  collection transport completed, but the shape helper still contains five
+  independent ordered predicates. Fresh-combined freezes at diagnostic `1/1`,
+  repair `0/1`, final `0/1`; no product repair is authorized.
+
+## Collection-shape diagnostic candidate
+
+The next product-zero exact-five candidate sets only
+`COLLECTION_SHAPE_DIAGNOSTICS_ENABLED=True` and turns the previous activation
+off. Five ordered collection subpredicate codes extend the retained `97`
+outer/fixture codes to exact `102`. The test locks exact code equality and
+lexical uniqueness, mutual-exclusion fail-closed behavior, each first
+subpredicate boundary, exact-three-key `O_EXCL` inner precedence, strict
+reader rejection, parent-owned child environment, failed-child unread and
+success-zero behavior. No product/API/repository/schema/frontend/workflow or
+production behavior changes. Its own exact-SHA ordinary CI must pass before
+one Level 2 controlled run. P8-07F/SSH/ERP and P8-08 remain closed.
+
+Collection-shape Level 1 passes focused verifier `28/28`, complete P8-07
+`62/62`, affected contract/security/API `82/82`, governance/reconciliation
+`59/59`, full local Python `2634/2634`, frontend unit/coverage `1086/1086`
+and focused nonvisual P8-07 E2E `3/3`. Generate, typecheck, full lint/format/
+style/boundary/UI, `8585`-source `100%` `zh`/`zh-TW` i18n, compile, shell
+syntax, current/reconciliation, JSON/YAML/CSV, exact-102 lexical equality,
+diff hygiene, exact-five/union-78 and unauthorized-six rejection pass.
+Product/API/repository/contract/frontend/workflow diff remains zero.

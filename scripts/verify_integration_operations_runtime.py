@@ -36,7 +36,8 @@ TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = publish_runtime.ACTOR_USER
 RUNTIME_MARKER = "npi-one-integration-operations-disposable-v1"
 DEFAULT_DISABLED_DIAGNOSTICS_ENABLED = False
-FRESH_COMBINED_DIAGNOSTICS_ENABLED = True
+FRESH_COMBINED_DIAGNOSTICS_ENABLED = False
+COLLECTION_SHAPE_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -154,6 +155,13 @@ FRESH_FIXTURE_DIAGNOSTIC_CODES = (
     "P807_COUNTS_OBSERVATIONS",
     "P807_COUNTS_RESULT",
 )
+COLLECTION_SHAPE_DIAGNOSTIC_CODES = (
+    "P807_COLLECTION_STATUS",
+    "P807_COLLECTION_PROJECT",
+    "P807_COLLECTION_PERMISSIONS",
+    "P807_COLLECTION_ITEMS",
+    "P807_COLLECTION_ITEM_SHAPES",
+)
 _FRESH_FIXTURE_CALL_CODES = {
     "append_observation": "P807_FIXTURE_OBSERVATION_CALL",
     "seed_retryable": "P807_FIXTURE_SEED_CALL",
@@ -222,18 +230,29 @@ def fresh_runtime_diagnostic_trace() -> str:
 
 
 def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
-    if not FRESH_COMBINED_DIAGNOSTICS_ENABLED:
+    activations = (
+        FRESH_COMBINED_DIAGNOSTICS_ENABLED,
+        COLLECTION_SHAPE_DIAGNOSTICS_ENABLED,
+    )
+    if sum(map(int, activations)) != 1:
         return frozenset()
-    return frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+    codes = frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
         FRESH_FIXTURE_DIAGNOSTIC_CODES
     )
+    if COLLECTION_SHAPE_DIAGNOSTICS_ENABLED:
+        return codes.union(COLLECTION_SHAPE_DIAGNOSTIC_CODES)
+    return codes
+
+
+def _fresh_runtime_diagnostics_enabled() -> bool:
+    return bool(_active_fresh_runtime_diagnostic_codes())
 
 
 @contextmanager
 def fresh_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
     state = None
     if (
-        FRESH_COMBINED_DIAGNOSTICS_ENABLED
+        _fresh_runtime_diagnostics_enabled()
         and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
     ):
         state = {"trace_id": trace_id, "recorded": False}
@@ -458,16 +477,30 @@ def _assert_safe(value: object) -> None:
 
 
 def _items(result: Any, *, project_id: str) -> list[dict[str, Any]]:
-    require(result.status == 200, "P8-07 operation collection is unavailable")
+    with fresh_runtime_diagnostic_step("P807_COLLECTION_STATUS"):
+        require(result.status == 200, "P8-07 operation collection is unavailable")
     body = result.body
     items = body.get("items")
-    require(
-        body.get("projectGlobalId") == project_id
-        and isinstance(body.get("permissions"), dict)
-        and isinstance(items, list)
-        and all(isinstance(item, dict) for item in items),
-        "P8-07 operation collection shape drifted",
-    )
+    with fresh_runtime_diagnostic_step("P807_COLLECTION_PROJECT"):
+        require(
+            body.get("projectGlobalId") == project_id,
+            "P8-07 operation collection Project drifted",
+        )
+    with fresh_runtime_diagnostic_step("P807_COLLECTION_PERMISSIONS"):
+        require(
+            isinstance(body.get("permissions"), dict),
+            "P8-07 operation collection permissions drifted",
+        )
+    with fresh_runtime_diagnostic_step("P807_COLLECTION_ITEMS"):
+        require(
+            isinstance(items, list),
+            "P8-07 operation collection items drifted",
+        )
+    with fresh_runtime_diagnostic_step("P807_COLLECTION_ITEM_SHAPES"):
+        require(
+            all(isinstance(item, dict) for item in items),
+            "P8-07 operation collection item shape drifted",
+        )
     return items
 
 
@@ -1528,7 +1561,7 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
     ):
         environment.pop(variable, None)
     diagnostic_active = (
-        FRESH_COMBINED_DIAGNOSTICS_ENABLED
+        _fresh_runtime_diagnostics_enabled()
         and isinstance(trace_id, str)
         and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
     )
@@ -1608,7 +1641,7 @@ def run_scoped_local_bench_fixture(method: str, kwargs: dict[str, object]) -> No
     path_value = os.environ.get(_DIAGNOSTIC_PATH_ENV, "")
     path = Path(path_value) if path_value else None
     scope_is_exact = (
-        FRESH_COMBINED_DIAGNOSTICS_ENABLED
+        _fresh_runtime_diagnostics_enabled()
         and os.environ.get(_DIAGNOSTIC_SCOPE_ENV) == _DIAGNOSTIC_SCOPE
         and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
         and path is not None
@@ -1694,7 +1727,7 @@ def main() -> int:
             arguments.post_migration_cleanup,
         )
     )
-    if FRESH_COMBINED_DIAGNOSTICS_ENABLED and fresh_requested:
+    if _fresh_runtime_diagnostics_enabled() and fresh_requested:
         trace_id = fresh_runtime_diagnostic_trace()
         previous_path = os.environ.get(_DIAGNOSTIC_PATH_ENV)
         with tempfile.TemporaryDirectory() as directory:
