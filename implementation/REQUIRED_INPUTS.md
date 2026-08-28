@@ -9,6 +9,11 @@ rather than sending credentials or incremental production extracts. Production
 ERPNext access is prohibited; any future sandbox access requires separate
 approval and must reject production endpoints.
 
+The acceptance/status matrix for these inputs is
+`docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md`. That matrix is not a second
+request and contains no production values. This file remains the sole source
+for requesting, receiving and recording external fact provenance.
+
 ## 1. Current ERPNext reconciliation package
 
 Provide:

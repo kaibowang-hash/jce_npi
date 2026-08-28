@@ -5,17 +5,18 @@ Status:
 
 Recovery time: `2026-08-28T02:25:39Z`
 
-Current atomic action: complete only the governance transition that freezes a
-future exact-20 ERPNext customization-requirements documentation task. P8-07
+Current atomic action: complete only the exact-20 ERPNext customization
+requirements documentation baseline authorized by exact transition
+`74aa849dce34374521119b09eb2d59e8c2be0445` / ordinary CI `33136143519`. P8-07
 remains audit-only for `FR-RP-009`, `UX-016` and `NFR-INT-001`; product code
 remains unauthorized. The user's production read-only fact-check request is
 recorded as queued but is not effective authorization: current `AGENTS.md` and
 the controller still prohibit SSH, ERP connectors, endpoint probes,
 credentials, requests, responses and every other production contact. Do not
-create `docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md` or modify any other future
-documentation path until this transition passes exact-SHA ordinary CI. No
-trace status, product, contract, workflow or external state changes in this
-transition. External portals remain `USER_APPROVED_POST_V1_2_DEFERRED`.
+use the new document only as a five-classification fact/status matrix and keep
+`implementation/REQUIRED_INPUTS.md` as the sole external request. No trace
+status, product, contract, workflow or external state changes in this task.
+External portals remain `USER_APPROVED_POST_V1_2_DEFERRED`.
 
 Required branch:
 `codex/npi-v1.2-implementation`

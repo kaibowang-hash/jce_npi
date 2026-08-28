@@ -459,6 +459,29 @@ P8_06_COMPLETED_ALLOCATION = {
     "FR-TR-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_REFERENCE_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
     "FR-NP-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
 }
+ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE = (
+    "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
+)
+ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_IDS = {
+    "INT-001",
+    "INT-002",
+    "INT-003",
+    "INT-004",
+    "INT-005",
+    "INT-006",
+    "INT-007",
+    "INT-010",
+    "FR-PM-002",
+    "FR-DS-013",
+    "FR-TL-011",
+    "FR-TL-012",
+    "FR-TL-013",
+    "FR-TL-014",
+    "FR-TL-015",
+    "FR-TL-016",
+    "FR-TR-006",
+    "FR-NP-006",
+}
 P8_ANCHOR_ALLOCATION = {
     "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
     "P8-02": {"FR-PM-002", "INT-002"},
@@ -1011,6 +1034,17 @@ def _expanded_rows(
         ]
         row["evidence"] = "; ".join(
             dict.fromkeys((*evidence, *P8_06_COMPLETED_EVIDENCE))
+        )
+
+    for requirement_id in ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_IDS:
+        row = expanded_by_id[requirement_id]
+        evidence = [
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        ]
+        row["evidence"] = "; ".join(
+            dict.fromkeys((*evidence, *ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE))
         )
 
     for requirement_id in POST_V1_2_DEFERRED_PORTAL_REQUIREMENTS:

@@ -14,11 +14,12 @@ Runtime, visual and Gitleaks artifact hashes are recorded in
 false, zero production traffic and cleanup pass. Only the P8-07 audit is
 active and requires no external login or production action.
 
-The user's production read-only fact-check request is queued but not effective
+The exact-20 ERPNext customization requirements baseline is documentation
+only. The user's production read-only fact-check request is queued but not effective
 under the current higher-priority `AGENTS.md` and controller prohibition. This
 is a scoped governance dependency, not an active Hard Blocker. A future
-documentation task may record unknowns and acceptance requirements only after
-its exact transition passes ordinary CI; it cannot connect to production.
+document records unknowns and acceptance requirements but cannot connect to
+production or prove that any production customization exists.
 
 ## Active recovery
 

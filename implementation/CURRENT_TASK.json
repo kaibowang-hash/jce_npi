@@ -6,7 +6,7 @@
   "status": "IN_PROGRESS_AUDIT",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-08",
-  "base_checkpoint": "d39b24e4169d6116ab0721440b1f7dc01b599c96",
+  "base_checkpoint": "74aa849dce34374521119b09eb2d59e8c2be0445",
   "predecessor_product_checkpoint": "547421a059911df6aeb90bbbf06e837f77a3e5e0",
   "requirement_ids": [
     "FR-RP-009",
@@ -20,7 +20,8 @@
     "Preserve every operation-specific authority, Project containment, idempotency scope, target-boundary uncertainty and no-redispatch invariant; an operator view must never reinterpret target success or formal quality pass.",
     "Keep production ERPNext and JCE endpoints, credentials, data and traffic prohibited; use only repository facts, pure fixtures, Mock and explicitly bounded disposable network-free evidence during planning.",
     "Produce a separate governed P8-07 audit plan with exact requirements, operation inventories, ownership, authority, state and fault matrix, migration, rollback, exact product paths and affected tests before any P8-07 product code is authorized.",
-    "Freeze a separate governance-only documentation task that may create an ERPNext customization requirements fact-status matrix only after this transition passes exact-SHA ordinary CI.",
+    "Create the governed ERPNext customization requirements fact-status matrix from repository-confirmed facts and explicit unknowns without asserting that production ERPNext must change.",
+    "Preserve implementation/REQUIRED_INPUTS.md as the sole external-fact request and attach this document only to the exact integration-hold trace evidence set without changing any requirement status.",
     "Record the user's production read-only fact-check request as queued but not effective; AGENTS.md and this controller continue to prohibit production ERPNext contact until a separately approved higher-priority rule change and release Gate."
   ],
   "non_scope": [
@@ -30,7 +31,7 @@
     "Any rewrite or deletion of Inbox, Outbox, request, attempt, result, mapping, observation, formal-quality link, receipt, audit, Project, Gate, Trial, Tooling, Item, MBOM or Asset truth.",
     "Any inferred pass, target success, automatic redispatch after an uncertain boundary, cross-operation replay, broad administrator fallback or database access for normal operators.",
     "Any production SSH, ERP connector, endpoint probe, credential use, fact collection, response read or other production contact; the user request is queued but not effective.",
-    "Creating or modifying the frozen ERP customization documentation task before this transition passes exact-SHA ordinary CI.",
+    "Any use of this documentation baseline as evidence that a production field, method, role, workflow, customization or connection exists.",
     "Any P8-08/P8-09 behavior, deferred FR-CO-003/004 external portal surface, new dependency, core patch, cross-database access, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
@@ -49,7 +50,9 @@
     "FR_CO_003_004_EXTERNAL_PORTALS_REMAIN_USER_APPROVED_POST_V1_2_DEFERRED",
     "P8_08_P8_09_AND_PRODUCTION_FACT_DOD_GOVERNANCE_REMAIN_INACTIVE",
     "PRODUCTION_READ_ONLY_FACT_CHECK_USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE_UNDER_CURRENT_AGENTS_AND_CONTROLLER_PROHIBITION",
-    "FUTURE_ERP_CUSTOMIZATION_REQUIREMENTS_DOCUMENTATION_EXACT20_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_PASS",
+    "ERP_CUSTOMIZATION_REQUIREMENTS_DOCUMENTATION_EXACT20_AUTHORIZED_BY_TRANSITION_74AA849DCE34374521119B09EB2D59E8C2BE0445_ORDINARY_33136143519_PASS",
+    "ERP_CUSTOMIZATION_REQUIREMENTS_USES_FIVE_EXPLICIT_CLASSIFICATIONS_AND_PRESERVES_UNKNOWN_FACTS",
+    "REQUIRED_INPUTS_REMAINS_SOLE_EXTERNAL_FACT_REQUEST_AND_TRACE_STATUSES_REMAIN_UNCHANGED",
     "P8_07_AUDIT_ONLY_AND_PRODUCT_CODE_AUTHORIZED_FALSE_REMAIN_UNCHANGED",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
@@ -102,10 +105,10 @@
     "phase_status_resumed_product_task": "P8-07",
     "active_goal_marker": "P8-07",
     "next_action_marker": "P8-07",
-    "controller_marker": "P8-07 audit active; production fact documentation transition pending exact-SHA ordinary; production contact prohibited"
+    "controller_marker": "P8-07 audit active; ERPNext customization requirements documented; production fact check queued not effective; production contact prohibited"
   },
   "rollback": {
-    "before_product_resume": "Revert only this governance transition to accepted P8-06 closeout/P8-07 audit checkpoint d39b24e4169d6116ab0721440b1f7dc01b599c96 while retaining exact predecessor product checkpoint 547421a059911df6aeb90bbbf06e837f77a3e5e0 and every Inbox, Outbox, request, idempotency row, claim, attempt, result, uncertainty, mapping, observation, formal-quality link, receipt and audit; the transition changes no product or external state.",
+    "before_product_resume": "Revert only this documentation task to accepted production-fact governance transition 74aa849dce34374521119b09eb2d59e8c2be0445 while retaining exact predecessor product checkpoint 547421a059911df6aeb90bbbf06e837f77a3e5e0 and every Inbox, Outbox, request, idempotency row, claim, attempt, result, uncertainty, mapping, observation, formal-quality link, receipt and audit; this task changes no product or external state.",
     "after_product_resume": "Not authorized until the P8-07 audit freezes exact operation inventories, authority, retry/final/uncertain classification, replay and reconciliation state, permissions, migration and forward-repair boundaries."
   }
 }

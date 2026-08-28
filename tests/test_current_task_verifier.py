@@ -63,6 +63,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "PRODUCTION_READ_ONLY_FACT_CHECK_USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE_UNDER_CURRENT_AGENTS_AND_CONTROLLER_PROHIBITION",
             value["frozen_invariants"],
         )
+        self.assertEqual(
+            value["base_checkpoint"],
+            "74aa849dce34374521119b09eb2d59e8c2be0445",
+        )
+        self.assertIn(
+            "ERP_CUSTOMIZATION_REQUIREMENTS_USES_FIVE_EXPLICIT_CLASSIFICATIONS_AND_PRESERVES_UNKNOWN_FACTS",
+            value["frozen_invariants"],
+        )
         self.assertEqual(len(value["allowed_paths"]), 20)
         self.assertNotIn("implementation/backlog.yaml", value["allowed_paths"])
         self.assertFalse(

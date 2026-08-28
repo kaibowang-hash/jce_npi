@@ -63,6 +63,30 @@ class V12ReconciliationTests(unittest.TestCase):
     def test_trace_sets_are_complete_and_consistent(self) -> None:
         self.verifier.verify_trace_sets()
 
+    def test_erp_customization_requirements_and_exact_hold_evidence(self) -> None:
+        self.verifier.verify_erp_customization_requirements_document()
+        with self.verifier.TRACE.open(newline="", encoding="utf-8") as handle:
+            rows = {
+                row["requirement_id"]: row
+                for row in csv.DictReader(handle)
+            }
+        expected = self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES
+        actual = {
+            requirement_id
+            for requirement_id, row in rows.items()
+            if self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE
+            in {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            }
+        }
+        self.assertEqual(actual, set(expected))
+        self.assertEqual(
+            {requirement_id: rows[requirement_id]["status"] for requirement_id in expected},
+            expected,
+        )
+
     def test_external_portals_are_deferred_without_rewriting_requirements(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
@@ -266,6 +290,13 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION:
                 expected_evidence |= self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE
+            if (
+                requirement_id
+                in self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES
+            ):
+                expected_evidence.add(
+                    self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE
+                )
             self.assertEqual(
                 {
                     value.strip()
@@ -383,6 +414,13 @@ class V12ReconciliationTests(unittest.TestCase):
                         expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
                     if requirement_id in self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION:
                         expected_evidence |= self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE
+                    if (
+                        requirement_id
+                        in self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES
+                    ):
+                        expected_evidence.add(
+                            self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE
+                        )
                     self.assertEqual(evidence, expected_evidence)
                 for evidence_path in evidence:
                     self.assertTrue(

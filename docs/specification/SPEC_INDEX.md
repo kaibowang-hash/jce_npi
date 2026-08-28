@@ -15,7 +15,9 @@
 - Goal compatibility entry: `GOAL.md` (the sole goal document; no duplicate alias)
 - Product: `docs/PRODUCT_SPEC.md`, `docs/DETAILED_REQUIREMENTS.md`
 - Domain: `docs/DOMAIN_MODEL.md`, `docs/TOOLING_AND_TRIAL.md`
-- Architecture/integration: `docs/ARCHITECTURE.md`, `docs/ERPNEXT_INTEGRATION.md`
+- Architecture/integration: `docs/ARCHITECTURE.md`, `docs/ERPNEXT_INTEGRATION.md`,
+  `docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md` (governed fact-status and
+  activation requirements; not evidence that production customization exists)
 - UX/i18n: `docs/UX_INTERACTION_SPEC.md`, `docs/LOCALIZATION_SPEC.md`, `design/*`
 - Acceptance: `docs/ACCEPTANCE_TESTS.md`
 - Contracts: `contracts/data-ownership.yaml`, `contracts/npi-api.openapi.yaml`, `contracts/integration-event.schema.json`, `contracts/terminology-allowlist.yaml`

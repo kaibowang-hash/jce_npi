@@ -2580,6 +2580,9 @@ p8_07:
   product_code_authorized: false
   product_code_changed: false
   current_stage: AUDIT
+  erp_customization_requirements_status: GOVERNED_REQUIREMENTS_BASELINE_PRODUCTION_FACTS_NOT_COLLECTED
+  production_fact_check_status: QUEUED_NOT_EFFECTIVE
+  production_connection_status: PROHIBITED_PENDING_RULE_CHANGE_AND_GATE
   next_stage_after_pass: FROZEN_AUDIT_PLAN_AND_SEPARATE_CONTROLLER_TRANSITION
   operation_rule: OPERATION_SPECIFIC_AUTHORITY_IDEMPOTENCY_REQUEST_ATTEMPT_RESULT_REPLAY_AND_RECONCILIATION_REMAIN_DISTINCT
   uncertainty_rule: TARGET_BOUNDARY_UNCERTAIN_NEVER_AUTO_REDISPATCHES
@@ -2595,6 +2598,8 @@ p8_07:
   evidence:
     - implementation/phase-8-requirement-anchor.md
     - implementation/evidence/phase-8/p8-06-validation.md
+    - docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md
+    - implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -12,6 +12,9 @@
 ### 必交付
 - 仓库地图、运行/测试/CI 方式；
 - ERPNext 版本、现有自定义 App/DocType/Hooks/API/权限/文件策略盘点；
+- `docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md` 中每个相关项具有明确的
+  Required / Optional / Already Present / Not Required / Blocked Pending Fact
+  分类、证据状态与责任人；未知项不得猜测；
 - 当前数据主责和痛点；
 - 上下文/容器/数据流图；
 - ADR-001~010 草案，包括 Siemens 式视觉基线、组件适配、Frappe 翻译格式与 React 翻译适配；
@@ -139,6 +142,8 @@ Exit：AT-01/02 的 NPI 侧黄金路径通过。
    adapter；正式目标显示身份等待批准资产，禁止生产连接。
 
 每种写操作独立幂等和契约测试。不得用一个“通用写 DocType API”绕过业务规则。
+任何 Sandbox 或生产集成激活前，必须逐项闭合 ERPNext 定制需求矩阵中的精确
+方法、字段、权限、迁移、测试、上线与回滚事实；缺失事实保持 unavailable/held。
 
 ## M8 — 变更、组合与外部协作
 
@@ -167,6 +172,9 @@ Exit：AT-01/02 的 NPI 侧黄金路径通过。
 - 指标与可用性复测；
 - 在完整产品和两类试点上量化 Project Workspace 80% 日常工作目标；
 - 分批上线和回滚演练。
+- ERPNext 定制需求矩阵、外部事实 provenance/checksum、Sandbox/UAT、监控支持、
+  回滚/forward-fix 与明确 no-change 清单通过最终 Release Gate；生产只读核对仍需
+  单独更高优先级规则修订和 Gate，不能由文档基线自动授权。
 
 ## 任务粒度
 

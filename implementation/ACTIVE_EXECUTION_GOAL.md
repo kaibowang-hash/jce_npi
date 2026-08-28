@@ -128,12 +128,14 @@ Updated: `2026-08-28T02:25:39Z`
 - Current controller task:
   `P8-07 — operations, DLQ, replay and reconciliation` (`IN_PROGRESS_AUDIT`)
 - Resumed product task: `P8-07` (`ACTIVE_AUDIT_ONLY`)
-- Active governance transition: freeze the future exact-20 ERPNext
-  customization-requirements documentation task. The user's production
+- Active documentation task: establish the exact-20 ERPNext customization
+  requirements fact-status baseline authorized by transition
+  `74aa849dce34374521119b09eb2d59e8c2be0445` / ordinary CI `33136143519`.
+  The user's production
   read-only fact-check request is `QUEUED_NOT_EFFECTIVE`; current `AGENTS.md`
   and controller rules still prohibit every production connection. This
-  transition creates no document, collects no external fact, changes no trace
-  status and authorizes no product code.
+  task collects no external fact, changes no trace status and authorizes no
+  product code or connection.
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:

@@ -31,4 +31,15 @@ Gate.
 
 Release is blocked by fake success, accepted-path TODOs, permission bypass, direct ERP database access, core patches, dual-master fields, undocumented migration, failed checks, Desk as the user product, non-industrial UI, missing translations or mixed UI languages. Gate criteria cannot be weakened to fit implementation.
 
+An ERPNext-integrated release must also reconcile every applicable row in
+`docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md`: one of the five explicit
+classifications, exact requirement/ownership/ERP-owner binding, proven exact
+field or method (or a still-blocking fact), least privilege, migration,
+compatibility, fault tests, Sandbox/UAT, deployment, monitoring/support and
+rollback/forward-fix evidence. Repository contracts, Mock/Synthetic fixtures,
+screenshots and samples do not prove production configuration. Any future
+production read-only collection is a separate Gate that first changes the
+higher-priority prohibition and freezes an exact least-privilege allowlist;
+this documentation task grants no connection authority.
+
 Environment remediation cannot pass on configuration inspection alone. After a Codespaces rebuild, `make verify-dev-environment` must succeed and record actual Node, package-manager, Python, Docker/Compose, Bench, Vite and Frappe pin evidence. Phase 1.1 satisfied this rule on 2026-07-21; future toolchain changes require equivalent fresh-target evidence.

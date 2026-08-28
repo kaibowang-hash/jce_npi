@@ -2,7 +2,7 @@
 
 Date: `2026-08-28`
 
-Status: **TRANSITION PENDING EXACT-SHA ORDINARY CI**
+Status: **TRANSITION PASS; DOCUMENTATION BASELINE CANDIDATE**
 
 ## Authority boundary
 
@@ -22,6 +22,11 @@ The task-diff base is the accepted P8-06 closeout/P8-07 activation checkpoint
 `33134622237` passed. The predecessor product checkpoint remains
 `547421a059911df6aeb90bbbf06e837f77a3e5e0`; advancing the governance base
 does not rewrite or supersede the product checkpoint.
+
+The transition itself is accepted at exact SHA
+`74aa849dce34374521119b09eb2d59e8c2be0445`; ordinary CI `33136143519`
+passes repository `98736441843`, visual `98736441983`, frontend
+`98736441999` and secret `98736442002`. Controlled lanes correctly skip.
 
 ## Exact transition paths
 
@@ -70,3 +75,28 @@ and checksums, and its own release Gate. Any mismatch must fail closed.
   checks pass.
 - The exact-ten task manifest accepts this transition and an unauthorized
   eleventh path is rejected.
+
+## Documentation baseline candidate
+
+The subsequent exact-20 task creates
+`docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md`, links it only to the frozen
+integration-hold evidence set and leaves every requirement status unchanged.
+It records the five explicit classifications and the independent evidence
+axis, keeps `implementation/REQUIRED_INPUTS.md` as the sole external request,
+and preserves P8-07 audit-only/product-code-false state. Its changed-files to
+checks map is the current/reconciliation scripts and their two unit modules;
+product, contract, workflow and external-state diffs remain zero.
+
+Level 1 candidate verification on `2026-08-28` passes:
+
+- current-task, canonical reconcile and reconciliation verifier;
+- `37/37` focused current/reconciliation unit tests;
+- JSON, YAML and strict CSV parsing, Python compile and diff hygiene;
+- the document classification/section/security scan and exact 18-ID
+  integration-hold evidence set with all `282` trace statuses unchanged;
+- exact twenty changed paths accepted, unauthorized path twenty-one rejected;
+- zero app, frontend, contract or workflow diff and no production connection,
+  endpoint, credential, secret, response or business value collected.
+
+The documentation candidate still requires its own exact-SHA ordinary CI.
+That CI does not authorize production fact collection or P8-07 product code.

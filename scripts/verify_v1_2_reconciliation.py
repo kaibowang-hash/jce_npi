@@ -389,6 +389,30 @@ EXPECTED_P8_06_COMPLETED_ALLOCATION = {
     "FR-TR-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_REFERENCE_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
     "FR-NP-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
 }
+ERP_CUSTOMIZATION_REQUIREMENTS = ROOT / "docs" / "ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md"
+EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE = (
+    "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md"
+)
+EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES = {
+    "INT-001": "TECHNICAL_VERIFIED_READ_ONLY_PROJECTION_FOUNDATION_INBOUND_RECONCILIATION_HELD",
+    "INT-002": "TECHNICAL_VERIFIED_SIGNED_INBOX_PROJECT_DRAFT_FOUNDATION_PRODUCTION_INBOUND_RECONCILIATION_HELD",
+    "INT-003": "TECHNICAL_VERIFIED_ITEM_EXECUTION_FOUNDATION_PRODUCTION_SANDBOX_MAPPING_HELD",
+    "INT-004": "TECHNICAL_VERIFIED_MBOM_EXECUTION_FOUNDATION_PRODUCTION_SANDBOX_MAPPING_HELD",
+    "INT-005": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_FOUNDATION_PRODUCTION_SANDBOX_MAPPING_HELD",
+    "INT-006": "TECHNICAL_VERIFIED_READ_ONLY_COST_PROJECTION_FOUNDATION_INBOUND_RECONCILIATION_HELD",
+    "INT-007": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_FOUNDATION_PRODUCTION_SANDBOX_POLICY_HELD",
+    "INT-010": "TECHNICAL_VERIFIED_READ_ONLY_PROJECT_COST_PROJECTION_FOUNDATION_EAC_POLICY_HELD",
+    "FR-PM-002": "TECHNICAL_VERIFIED_INBOUND_PROJECT_DRAFT_FOUNDATION_PRODUCTION_MAPPING_HELD",
+    "FR-DS-013": "TECHNICAL_VERIFIED_ITEM_AND_MBOM_PORTIONS_PRODUCTION_SANDBOX_MAPPING_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-011": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-012": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-013": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-014": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-015": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TL-016": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-TR-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_REFERENCE_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-NP-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
+}
 EXPECTED_P8_CARRIED_FOUNDATIONS = {
     "FR-DS-013": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "FR-TL-008": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
@@ -1514,6 +1538,74 @@ def _require_unique(
     return set(values)
 
 
+def verify_erp_customization_requirements_document() -> None:
+    text = ERP_CUSTOMIZATION_REQUIREMENTS.read_text(encoding="utf-8")
+    required_tokens = {
+        "Required",
+        "Optional",
+        "Already Present",
+        "Not Required",
+        "Blocked Pending Fact",
+        "REPOSITORY_CONFIRMED",
+        "EXTERNAL_EVIDENCE_REQUIRED",
+        "OWNER_APPROVAL_REQUIRED",
+        "PROHIBITED_PENDING_RULE_CHANGE_AND_GATE",
+        "QUEUED_NOT_EFFECTIVE",
+        "## Read-only fact-collection activation Gate",
+        "## Validation and acceptance checklist",
+        "## Explicit no-change list",
+        "BatchMode",
+        "no TTY",
+        "no port forwarding",
+        "no agent forwarding",
+        "strict host-key verification",
+        "Immediate stop on permission insufficiency",
+        "implementation/REQUIRED_INPUTS.md",
+    }
+    missing = sorted(token for token in required_tokens if token not in text)
+    if missing:
+        raise ReconciliationVerificationError(
+            f"ERP customization requirements document lacks tokens: {missing}"
+        )
+    required_sections = {
+        "### Platform, apps and extension inventory",
+        "### Metadata, workflow and permissions",
+        "### Operation APIs, events and reliability",
+        "### Master data, capacity, files and security",
+        "### Delivery, migration and operations",
+    }
+    if not required_sections.issubset(set(text.splitlines())):
+        raise ReconciliationVerificationError(
+            "ERP customization requirements document section set drifted"
+        )
+    if "http://" in text or "https://" in text:
+        raise ReconciliationVerificationError(
+            "ERP customization requirements document must not contain endpoints"
+        )
+    register_rows = [
+        line for line in text.splitlines() if line.startswith("|") and "---" not in line
+    ]
+    if len(register_rows) < 16:
+        raise ReconciliationVerificationError(
+            "ERP customization requirements register is incomplete"
+        )
+    classifications = {
+        "Required",
+        "Optional",
+        "Already Present",
+        "Not Required",
+        "Blocked Pending Fact",
+    }
+    for row in register_rows:
+        if row.startswith("| Item |"):
+            continue
+        columns = [value.strip() for value in row.strip("|").split("|")]
+        if len(columns) != 11 or columns[1] not in classifications:
+            raise ReconciliationVerificationError(
+                "ERP customization requirements register row shape/classification drifted"
+            )
+
+
 def verify_trace_sets() -> None:
     requirements = _read_csv(REQUIREMENTS)
     coverage = _read_csv(COVERAGE)
@@ -1554,6 +1646,48 @@ def verify_trace_sets() -> None:
         )
 
     by_id = {row["requirement_id"]: row for row in trace}
+    for requirement_id, expected_status in (
+        EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES.items()
+    ):
+        row = by_id[requirement_id]
+        evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        if row["status"] != expected_status:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} integration-hold status drifted"
+            )
+        if EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE not in evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} lacks ERP customization requirements evidence"
+            )
+    for requirement_id, row in by_id.items():
+        evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        if (
+            EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE in evidence
+            and requirement_id
+            not in EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} has unauthorized ERP requirements evidence"
+            )
+    # All legacy exact-evidence assertions below continue to prove their
+    # historical sets. The new evidence path is independently proven above,
+    # then removed from this in-memory view so it cannot weaken those checks.
+    for row in by_id.values():
+        row["evidence"] = "; ".join(
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+            and value.strip()
+            != EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE
+        )
     for requirement_id in EXPECTED_POST_V1_2_DEFERRED_PORTALS:
         row = by_id[requirement_id]
         evidence = {
@@ -2996,6 +3130,7 @@ def verify_generated_artifacts() -> None:
 
 def main() -> int:
     verify_generated_artifacts()
+    verify_erp_customization_requirements_document()
     verify_trace_sets()
     verify_brand_package()
     print("V1.2 reconciliation verification passed")
