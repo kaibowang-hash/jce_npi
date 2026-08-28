@@ -1864,3 +1864,20 @@ coverage, compile, shell syntax, JSON/YAML, all-off diagnostics, parent-owned
 scope/trace, direct-SQL and diff checks pass. Exact-six and union-71 manifests
 pass; an unauthorized seventh is rejected. Product diff is zero and unrelated
 state is preserved.
+
+## Final closeout
+
+P8-06 is complete at exact product SHA
+`547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806` and
+final Level 3 `33132296565` pass the repository, frontend, secret, `132/132`
+visual, controlled preflight and cumulative disposable runtime lanes. Exact
+jobs and artifact hashes are frozen in `p8-06-validation.md`; all 17
+diagnostics are false, target traffic is zero and cleanup passes.
+
+Only the bounded technical portions of `INT-007`, `FR-TR-006` and
+`FR-NP-006` are verified. Formal ERPNext Quality Inspection/NCR/CAPA mapping,
+lifecycle, approval and raw-code pass/Gate/readiness policy remain held, as do
+authenticated Sandbox and production operations. P8-07 activates audit-only;
+this closeout creates no P8-07 plan or product path and grants no product
+authorization. Production SSH/ERP customization fact governance remains a
+separate queued atomic task.

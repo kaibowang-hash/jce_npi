@@ -1,36 +1,33 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION — P8-06`
+`IN_PROGRESS_AUDIT — P8-07`
 
-Recovery time: `2026-08-26T12:00:00Z`
+Recovery time: `2026-08-28T01:40:00Z`
 
-Current atomic action: complete the separate P8-06 checkpoint-4 product
-authorization transition. Checkpoint 3 passes exact product SHA
-`f09f7baed565b232f37530ede3df0a13fb466a1e` and ordinary CI `32971175544`;
-frontend `98185026209`, repository `98185025979`, visual `98185026270` and
-secret `98185026147` pass. This transition changes governance only. After its
-own exact-SHA ordinary CI, checkpoint 4 may implement only the frozen exact44
-read-only inspector, direct trilingual/a11y/visual evidence and disposable
-network-free runtime proof. The sole visible action is the existing NPI-only
-exact-observation link command behind both query permission and the exact
-owning source workspace capability. No new route, ERP write, retry/reconcile/
-submit/approval control, worker, adapter, browser target network or pass/Gate
-interpretation is authorized. External portals remain
-`USER_APPROVED_POST_V1_2_DEFERRED` and no product work begins before the
-transition CI.
+Current atomic action: perform only the P8-07 requirement/domain/security
+audit for `FR-RP-009`, `UX-016` and `NFR-INT-001`. P8-06 is sealed at exact
+SHA `547421a059911df6aeb90bbbf06e837f77a3e5e0`; ordinary CI `33131533806`
+and Level 3 `33132296565` pass all six final jobs, `132/132` governed visuals
+and the cumulative disposable runtime. P8-07 product code remains
+unauthorized. The separate audit must freeze existing operation inventories,
+Project/actor authority, retryable/final/uncertain truth, no-redispatch,
+actor-authorized replay, forward-only reconciliation, migration, rollback,
+exact paths and tests before any product transition. No generic writer,
+database access, production SSH, ERP customization work or target traffic is
+authorized. External portals remain `USER_APPROVED_POST_V1_2_DEFERRED`.
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-P8-05 final product checkpoint and P8-06 audit base:
-`f9c358018823f3af20aca38efb53f8fcbd13d406`
+P8-06 final product checkpoint and P8-07 audit base:
+`547421a059911df6aeb90bbbf06e837f77a3e5e0`
 
-P8-05 final ordinary CI:
-`32937395289`
+P8-06 final ordinary CI:
+`33131533806`
 
-P8-05 final Level 3 workflow:
-`32938622250`
+P8-06 final Level 3 workflow:
+`33132296565`
 
 Completed P7-04 product checkpoint:
 `02781c0c712c4d8c739114ead24545daa537329d`

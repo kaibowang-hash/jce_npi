@@ -34,92 +34,43 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P8-06")
+        self.assertEqual(value["task_id"], "P8-07")
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P8-07")
+        self.assertEqual(value["authorized_next_task"], "P8-08")
         self.assertIn(
-            "P8_06_CHECKPOINT_4_PRODUCT_AUTHORIZED_ONLY_AFTER_THIS_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
+            "P8_07_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_SEPARATE_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
+            value["frozen_invariants"],
+        )
+        self.assertEqual(value["status"], "IN_PROGRESS_AUDIT")
+        self.assertIn(
+            "P8_06_LEVEL_3_EXACT_SHA_547421A059911DF6AEB90BBBF06E837F77A3E5E0_ORDINARY_33131533806_FINAL_33132296565_PASSED",
             value["frozen_invariants"],
         )
         self.assertEqual(
-            value["status"],
-            "IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION",
+            value["requirement_ids"],
+            ["FR-RP-009", "UX-016", "NFR-INT-001"],
         )
         self.assertIn(
-            "P8_06_CHECKPOINT_3_EXACT_SHA_F09F7BAED565B232F37530EDE3DF0A13FB466A1E_ORDINARY_32971175544_PASSED",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "P8_05_LEVEL_3_EXACT_SHA_F9C358018823F3AF20ACA38EFB53F8FCBD13D406_ORDINARY_32937395289_FINAL_32938622250_PASSED",
-            value["frozen_invariants"],
-        )
-        self.assertEqual(value["requirement_ids"], ["INT-007", "FR-TR-006", "FR-NP-006"])
-        self.assertIn(
-            "implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md",
+            "implementation/evidence/phase-8/p8-06-validation.md",
             value["allowed_paths"],
         )
         self.assertIn(
-            "P8_06_CHECKPOINT_4_ONE_LINK_ACTION_REQUIRES_SERVER_QUERY_PERMISSION_AND_EXACT_SOURCE_CAPABILITY",
-            value["frozen_invariants"],
-        )
-        self.assertEqual(len(value["allowed_paths"]), 71)
-        self.assertIn(
-            "frontend/src/pages/formal-quality-link-inspector.tsx",
+            "implementation/evidence/phase-8/p8-07-*.md",
             value["allowed_paths"],
         )
-        self.assertIn(
-            "frontend/src/api/formal-quality-link-data-source.ts",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "scripts/verify_quality_link_runtime.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "scripts/verify_projection_runtime.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "apps/npi_integration/npi_integration/quality_link/frappe_validation.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_revision/npi_formal_quality_link_revision.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "apps/npi_integration/npi_integration/npi_integration/doctype/npi_formal_quality_link_head/npi_formal_quality_link_head.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "tests/test_phase8_quality_link_metadata.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "tests/test_phase8_projection_runtime_verifier.py",
-            value["allowed_paths"],
-        )
-        self.assertIn("contracts/npi-api.openapi.yaml", value["allowed_paths"])
-        self.assertNotIn("apps/npi_core/npi_core/bff.py", value["allowed_paths"])
-        self.assertNotIn(
-            "apps/npi_core/npi_core/readiness/frappe_repository.py",
-            value["allowed_paths"],
-        )
+        self.assertEqual(len(value["allowed_paths"]), 18)
         self.assertNotIn("implementation/backlog.yaml", value["allowed_paths"])
-        self.assertNotIn("contracts/integration-event.schema.json", value["allowed_paths"])
         self.assertFalse(
             any(
-                any(token in path for token in ("outbox", "worker.py", "adapters.py"))
+                path.startswith(("apps/", "frontend/", "contracts/"))
                 for path in value["allowed_paths"]
             )
         )
-        self.assertIn(
-            "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts-snapshots/p8-06-formal-quality-link-zh-TW-1920x1080-150-linux.png",
-            value["allowed_paths"],
+        self.assertEqual(
+            [path for path in value["allowed_paths"] if "*" in path],
+            ["implementation/evidence/phase-8/p8-07-*.md"],
         )
-        self.assertFalse(any("darwin" in path.casefold() for path in value["allowed_paths"]))
-        self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
         affected_modules = {
             module
@@ -127,21 +78,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             for module in command
             if isinstance(module, str) and module.startswith("tests.")
         }
-        self.assertIn(
-            "tests.test_phase7_readiness_repository",
+        self.assertEqual(
             affected_modules,
-        )
-        self.assertIn(
-            "tests.test_phase7_readiness_repository_seams",
-            affected_modules,
-        )
-        self.assertNotIn(
-            "tests.test_phase7_readiness_source_resolver",
-            affected_modules,
-        )
-        self.assertIn(
-            "tests.test_phase8_projection_runtime_verifier",
-            affected_modules,
+            {"tests.test_current_task_verifier", "tests.test_v1_2_reconciliation"},
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:

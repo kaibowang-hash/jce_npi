@@ -264,8 +264,8 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_04_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION:
                 expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
-            if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
-                expected_evidence |= self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION:
+                expected_evidence |= self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -295,8 +295,8 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_04_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION:
                 expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
-            if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
-                expected_evidence |= self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION:
+                expected_evidence |= self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -339,8 +339,13 @@ class V12ReconciliationTests(unittest.TestCase):
                 completed_trace = self.verifier.EXPECTED_P7_COMPLETED_TRACES.get(
                     requirement_id
                 )
+                p8_06_status = self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION.get(
+                    requirement_id
+                )
                 expected_phase, expected_status = (
-                    completed_trace[:2]
+                    ("8", p8_06_status)
+                    if p8_06_status
+                    else completed_trace[:2]
                     if completed_trace
                     else ("7", anchored_status)
                 )
@@ -376,8 +381,8 @@ class V12ReconciliationTests(unittest.TestCase):
                         expected_evidence |= self.verifier.EXPECTED_P8_04_COMPLETED_EVIDENCE
                     if requirement_id in self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION:
                         expected_evidence |= self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE
-                    if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
-                        expected_evidence |= self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE
+                    if requirement_id in self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION:
+                        expected_evidence |= self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE
                     self.assertEqual(evidence, expected_evidence)
                 for evidence_path in evidence:
                     self.assertTrue(
@@ -407,7 +412,8 @@ class V12ReconciliationTests(unittest.TestCase):
             anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
             for requirement_id in requirement_ids:
                 row = by_id[requirement_id]
-                completed_status = (
+                completed_status = self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION.get(
+                    requirement_id,
                     self.verifier.EXPECTED_P8_01_COMPLETED_ALLOCATION.get(
                         requirement_id,
                         self.verifier.EXPECTED_P8_02_COMPLETED_ALLOCATION.get(
@@ -423,7 +429,7 @@ class V12ReconciliationTests(unittest.TestCase):
                                 ),
                             ),
                         ),
-                    )
+                    ),
                 )
                 expected_trace = (
                     ("8", completed_status)
@@ -472,9 +478,9 @@ class V12ReconciliationTests(unittest.TestCase):
                             evidence
                         )
                     )
-                if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
+                if requirement_id in self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION:
                     self.assertTrue(
-                        self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE.issubset(
+                        self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE.issubset(
                             evidence
                         )
                     )
@@ -484,12 +490,15 @@ class V12ReconciliationTests(unittest.TestCase):
             **self.verifier.EXPECTED_P8_SCOPED_HOLDS,
         }.items():
             row = by_id[requirement_id]
-            completed_status = self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION.get(
+            completed_status = self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION.get(
                 requirement_id,
-                self.verifier.EXPECTED_P8_04_COMPLETED_ALLOCATION.get(
+                self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION.get(
                     requirement_id,
-                    self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION.get(
-                        requirement_id
+                    self.verifier.EXPECTED_P8_04_COMPLETED_ALLOCATION.get(
+                        requirement_id,
+                        self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION.get(
+                            requirement_id
+                        ),
                     ),
                 ),
             )
@@ -537,9 +546,9 @@ class V12ReconciliationTests(unittest.TestCase):
                         evidence
                     )
                 )
-            if requirement_id in self.verifier.EXPECTED_P8_06_AUDIT_REQUIREMENTS:
+            if requirement_id in self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION:
                 self.assertTrue(
-                    self.verifier.EXPECTED_P8_06_AUDIT_EVIDENCE.issubset(
+                    self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE.issubset(
                         evidence
                     )
                 )
@@ -573,36 +582,40 @@ class V12ReconciliationTests(unittest.TestCase):
                 self.verifier.EXPECTED_P8_05_COMPLETED_EVIDENCE.issubset(evidence)
             )
 
-    def test_p8_05_gitleaks_artifact_hash_uses_non_secret_evidence_key(self) -> None:
+    def test_completed_p8_tasks_use_non_secret_gitleaks_evidence_keys(self) -> None:
         phase_status = (ROOT / "implementation/PHASE_STATUS.yaml").read_text(
             encoding="utf-8"
         )
         expected_key = "final_gitleaks_artifact_sha256:"
-        self.assertEqual(phase_status.count(expected_key), 1)
+        self.assertEqual(phase_status.count(expected_key), 2)
         self.assertNotIn("final_secret_artifact_sha256:", phase_status)
-        digest = next(
+        digests = [
             line.split(":", 1)[1].strip()
             for line in phase_status.splitlines()
             if line.strip().startswith(expected_key)
-        )
-        self.assertEqual(len(digest), 64)
-        self.assertTrue(all(character in "0123456789abcdef" for character in digest))
+        ]
+        self.assertEqual(len(set(digests)), 2)
+        for digest in digests:
+            self.assertEqual(len(digest), 64)
+            self.assertTrue(
+                all(character in "0123456789abcdef" for character in digest)
+            )
 
-    def test_p8_06_frozen_audit_retains_existing_quality_holds(self) -> None:
+    def test_p8_06_completion_verifies_only_bounded_quality_portions(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
         expected = {
             "INT-007": (
                 "8",
-                "TECHNICAL_VERIFIED_READ_ONLY_QUALITY_STATUS_PROJECTION_FOUNDATION_LINKAGE_POLICY_HELD",
+                "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_FOUNDATION_PRODUCTION_SANDBOX_POLICY_HELD",
             ),
             "FR-TR-006": (
-                "7",
-                "TECHNICAL_VERIFIED_NPI_REFERENCE_FOUNDATION_FORMAL_ERP_PROJECTION_HELD",
+                "8",
+                "TECHNICAL_VERIFIED_FORMAL_QUALITY_REFERENCE_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
             ),
             "FR-NP-006": (
-                "7",
-                "TECHNICAL_VERIFIED_CONTROLLED_REPORT_FOUNDATION_FORMAL_ERP_QUALITY_HELD",
+                "8",
+                "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
             ),
         }
         for requirement_id, expected_trace in expected.items():
@@ -616,9 +629,8 @@ class V12ReconciliationTests(unittest.TestCase):
             self.assertTrue(
                 self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE.issubset(evidence)
             )
-            self.assertIn(
-                "implementation/evidence/phase-8/p8-06-plan.md",
-                evidence,
+            self.assertTrue(
+                self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE.issubset(evidence)
             )
 
     def test_r1_04_trace_is_verified_with_runtime_evidence(self) -> None:

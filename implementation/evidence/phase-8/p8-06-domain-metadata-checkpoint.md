@@ -1194,3 +1194,14 @@ coverage, compile, shell syntax, JSON/YAML, all-off diagnostics, parent-owned
 scope/trace, direct-SQL and diff checks pass. Exact-six and union-71 manifests
 pass; an unauthorized seventh path is rejected. Product diff is zero and
 unrelated state remains intact.
+
+## P8-06 final acceptance
+
+The checkpoint foundation is accepted as part of exact product SHA
+`547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806` and
+final Level 3 `33132296565` pass; the complete jobs, artifact digests,
+`132/132` visual proof, security, runtime and rollback ledger is
+`p8-06-validation.md`. Only the bounded technical quality-link portions are
+verified. Zero-row/additive metadata, immutable history and ERP-owned formal
+identity/lifecycle/result remain unchanged; production/Sandbox mapping,
+approval and policy holds remain open.

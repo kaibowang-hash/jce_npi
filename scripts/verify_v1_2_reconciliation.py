@@ -379,13 +379,15 @@ EXPECTED_P8_05_COMPLETED_ALLOCATION = {
     "FR-TL-015": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
     "FR-TL-016": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
 }
-EXPECTED_P8_06_AUDIT_EVIDENCE = {
+EXPECTED_P8_06_COMPLETED_EVIDENCE = {
     "implementation/evidence/phase-8/p8-06-plan.md",
+    "implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-8/p8-06-validation.md",
 }
-EXPECTED_P8_06_AUDIT_REQUIREMENTS = {
-    "INT-007",
-    "FR-TR-006",
-    "FR-NP-006",
+EXPECTED_P8_06_COMPLETED_ALLOCATION = {
+    "INT-007": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_FOUNDATION_PRODUCTION_SANDBOX_POLICY_HELD",
+    "FR-TR-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_REFERENCE_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-NP-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
 }
 EXPECTED_P8_CARRIED_FOUNDATIONS = {
     "FR-DS-013": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
@@ -2155,8 +2157,8 @@ def verify_trace_sets() -> None:
             if requirement_id in EXPECTED_P8_05_COMPLETED_ALLOCATION
             else set()
         ) | (
-            EXPECTED_P8_06_AUDIT_EVIDENCE
-            if requirement_id in EXPECTED_P8_06_AUDIT_REQUIREMENTS
+            EXPECTED_P8_06_COMPLETED_EVIDENCE
+            if requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
             else set()
         )
         if actual_evidence != permitted_evidence:
@@ -2275,8 +2277,8 @@ def verify_trace_sets() -> None:
             if requirement_id in EXPECTED_P8_05_COMPLETED_ALLOCATION
             else set()
         ) | (
-            EXPECTED_P8_06_AUDIT_EVIDENCE
-            if requirement_id in EXPECTED_P8_06_AUDIT_REQUIREMENTS
+            EXPECTED_P8_06_COMPLETED_EVIDENCE
+            if requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
             else set()
         )
         if actual_evidence != permitted_evidence:
@@ -2349,8 +2351,8 @@ def verify_trace_sets() -> None:
             if requirement_id in EXPECTED_P8_05_COMPLETED_ALLOCATION
             else set()
         ) | (
-            EXPECTED_P8_06_AUDIT_EVIDENCE
-            if requirement_id in EXPECTED_P8_06_AUDIT_REQUIREMENTS
+            EXPECTED_P8_06_COMPLETED_EVIDENCE
+            if requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
             else set()
         )
         if actual_evidence != permitted_evidence:
@@ -2395,8 +2397,13 @@ def verify_trace_sets() -> None:
         for requirement_id in requirement_ids:
             row = by_id[requirement_id]
             completed_trace = EXPECTED_P7_COMPLETED_TRACES.get(requirement_id)
+            p8_06_status = EXPECTED_P8_06_COMPLETED_ALLOCATION.get(requirement_id)
             expected_phase, expected_status = (
-                completed_trace[:2] if completed_trace else ("7", anchored_status)
+                ("8", p8_06_status)
+                if p8_06_status
+                else completed_trace[:2]
+                if completed_trace
+                else ("7", anchored_status)
             )
             if (row["phase"], row["status"]) != (
                 expected_phase,
@@ -2447,8 +2454,8 @@ def verify_trace_sets() -> None:
                     else set()
                 )
                 | (
-                    EXPECTED_P8_06_AUDIT_EVIDENCE
-                    if requirement_id in EXPECTED_P8_06_AUDIT_REQUIREMENTS
+                    EXPECTED_P8_06_COMPLETED_EVIDENCE
+                    if requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
                     else set()
                 )
                 if completed_trace
@@ -2487,17 +2494,20 @@ def verify_trace_sets() -> None:
         anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
         for requirement_id in requirement_ids:
             row = by_id[requirement_id]
-            completed_status = EXPECTED_P8_01_COMPLETED_ALLOCATION.get(
+            completed_status = EXPECTED_P8_06_COMPLETED_ALLOCATION.get(
                 requirement_id,
-                EXPECTED_P8_02_COMPLETED_ALLOCATION.get(
+                EXPECTED_P8_01_COMPLETED_ALLOCATION.get(
                     requirement_id,
-                    EXPECTED_P8_03_COMPLETED_ALLOCATION.get(
+                    EXPECTED_P8_02_COMPLETED_ALLOCATION.get(
                         requirement_id,
-                        EXPECTED_P8_04_COMPLETED_ALLOCATION.get(
+                        EXPECTED_P8_03_COMPLETED_ALLOCATION.get(
                             requirement_id,
-                            EXPECTED_P8_05_COMPLETED_ALLOCATION.get(
+                            EXPECTED_P8_04_COMPLETED_ALLOCATION.get(
                                 requirement_id,
-                                anchored_status,
+                                EXPECTED_P8_05_COMPLETED_ALLOCATION.get(
+                                    requirement_id,
+                                    anchored_status,
+                                ),
                             ),
                         ),
                     ),
@@ -2560,11 +2570,11 @@ def verify_trace_sets() -> None:
                     f"{requirement_id} lacks the P8-05 completion evidence"
                 )
             if (
-                requirement_id in EXPECTED_P8_06_AUDIT_REQUIREMENTS
-                and not EXPECTED_P8_06_AUDIT_EVIDENCE.issubset(evidence)
+                requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
+                and not EXPECTED_P8_06_COMPLETED_EVIDENCE.issubset(evidence)
             ):
                 raise ReconciliationVerificationError(
-                    f"{requirement_id} lacks the P8-06 audit evidence"
+                    f"{requirement_id} lacks the P8-06 completion evidence"
                 )
 
     for requirement_id, expected_trace in {
@@ -2572,11 +2582,14 @@ def verify_trace_sets() -> None:
         **EXPECTED_P8_SCOPED_HOLDS,
     }.items():
         row = by_id[requirement_id]
-        completed_status = EXPECTED_P8_05_COMPLETED_ALLOCATION.get(
+        completed_status = EXPECTED_P8_06_COMPLETED_ALLOCATION.get(
             requirement_id,
-            EXPECTED_P8_04_COMPLETED_ALLOCATION.get(
+            EXPECTED_P8_05_COMPLETED_ALLOCATION.get(
                 requirement_id,
-                EXPECTED_P8_03_COMPLETED_ALLOCATION.get(requirement_id),
+                EXPECTED_P8_04_COMPLETED_ALLOCATION.get(
+                    requirement_id,
+                    EXPECTED_P8_03_COMPLETED_ALLOCATION.get(requirement_id),
+                ),
             ),
         )
         effective_trace = (
@@ -2631,11 +2644,11 @@ def verify_trace_sets() -> None:
                 f"{requirement_id} lacks the P8-05 completion evidence"
             )
         if (
-            requirement_id in EXPECTED_P8_06_AUDIT_REQUIREMENTS
-            and not EXPECTED_P8_06_AUDIT_EVIDENCE.issubset(evidence)
+            requirement_id in EXPECTED_P8_06_COMPLETED_ALLOCATION
+            and not EXPECTED_P8_06_COMPLETED_EVIDENCE.issubset(evidence)
         ):
             raise ReconciliationVerificationError(
-                f"{requirement_id} lacks the P8-06 audit evidence"
+                f"{requirement_id} lacks the P8-06 completion evidence"
             )
         missing_evidence = sorted(
             path for path in evidence if "/" in path and not (ROOT / path).is_file()

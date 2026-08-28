@@ -449,13 +449,15 @@ P8_05_COMPLETED_ALLOCATION = {
     "FR-TL-015": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
     "FR-TL-016": "TECHNICAL_VERIFIED_TOOL_ASSET_EXECUTION_PORTION_PRODUCTION_SANDBOX_BUSINESS_APPROVAL_AND_WHOLE_REQUIREMENT_HELD",
 }
-P8_06_AUDIT_EVIDENCE = (
+P8_06_COMPLETED_EVIDENCE = (
     "implementation/evidence/phase-8/p8-06-plan.md",
+    "implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-8/p8-06-validation.md",
 )
-P8_06_AUDIT_REQUIREMENTS = {
-    "INT-007",
-    "FR-TR-006",
-    "FR-NP-006",
+P8_06_COMPLETED_ALLOCATION = {
+    "INT-007": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_FOUNDATION_PRODUCTION_SANDBOX_POLICY_HELD",
+    "FR-TR-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_REFERENCE_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
+    "FR-NP-006": "TECHNICAL_VERIFIED_FORMAL_QUALITY_LINK_PORTION_PRODUCTION_SANDBOX_POLICY_AND_WHOLE_REQUIREMENT_HELD",
 }
 P8_ANCHOR_ALLOCATION = {
     "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
@@ -998,15 +1000,17 @@ def _expanded_rows(
             dict.fromkeys((*evidence, *P8_05_COMPLETED_EVIDENCE))
         )
 
-    for requirement_id in P8_06_AUDIT_REQUIREMENTS:
+    for requirement_id, status in P8_06_COMPLETED_ALLOCATION.items():
         row = expanded_by_id[requirement_id]
+        row["phase"] = "8"
+        row["status"] = status
         evidence = [
             value.strip()
             for value in row["evidence"].split(";")
             if value.strip()
         ]
         row["evidence"] = "; ".join(
-            dict.fromkeys((*evidence, *P8_06_AUDIT_EVIDENCE))
+            dict.fromkeys((*evidence, *P8_06_COMPLETED_EVIDENCE))
         )
 
     for requirement_id in POST_V1_2_DEFERRED_PORTAL_REQUIREMENTS:

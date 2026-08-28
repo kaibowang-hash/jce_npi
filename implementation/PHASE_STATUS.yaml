@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-26T12:00:00Z'
+updated_at: '2026-08-28T01:40:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P8-06
-current_task_status: IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION
-current_task_completed_stage: P8_06_CHECKPOINT_3_EXACT_SHA_ORDINARY_CI_PASS
-current_task_next_stage: P8_06_CHECKPOINT_4_AUTHORIZATION_TRANSITION_EXACT_SHA_ORDINARY_CI
-current_task_next_stage_status: GOVERNANCE_LEVEL_1_ACTIVE
-resumed_product_task: P8-06
-resumed_product_task_status: AWAITS_CHECKPOINT_4_TRANSITION_EXACT_SHA_ORDINARY_CI
+current_task: P8-07
+current_task_status: IN_PROGRESS_AUDIT
+current_task_completed_stage: P8_06_LEVEL_3_PASS
+current_task_next_stage: P8_07_AUDIT_PLAN
+current_task_next_stage_status: AUDIT_ONLY_ACTIVE
+resumed_product_task: P8-07
+resumed_product_task_status: ACTIVE_AUDIT_ONLY_PRODUCT_CODE_AUTHORIZED_FALSE
 scope_decisions:
   fr_co_003_004_external_portals:
     decision_marker: USER_APPROVED_POST_V1_2_DEFERRED
@@ -2466,14 +2466,14 @@ p8_05:
 p8_06:
   task: P8-06
   controller_task: P8-06_QUALITY_LINKAGE
-  status: IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION
+  status: COMPLETE_LEVEL_3
   phase: 8
   milestone: M7-06
   requirements:
     - INT-007
     - FR-TR-006
     - FR-NP-006
-  predecessor_product_checkpoint: f09f7baed565b232f37530ede3df0a13fb466a1e
+  predecessor_product_checkpoint: 547421a059911df6aeb90bbbf06e837f77a3e5e0
   audit_base_checkpoint: f9c358018823f3af20aca38efb53f8fcbd13d406
   audit: PASS_FROZEN
   audit_plan_checkpoint: b3cf6ac722c71c4bdd95cddc16aed4e2544bb037
@@ -2503,11 +2503,34 @@ p8_06:
     secret_scan: 98185026147
   portal_scope_decision_checkpoint: 51c552a0863d7c2cdb818585aa7017e5996501b3
   portal_scope_decision_ordinary_ci: 32957762888
-  product_code_authorized: CHECKPOINT_4_BOUNDED_AFTER_TRANSITION_EXACT_SHA_ORDINARY_PASS
-  product_code_authorization_reason: EXACT44_READ_ONLY_INSPECTOR_RUNTIME_TRANSITION_ACTIVE
-  product_code_changed: false
-  current_stage: CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION
-  next_stage_after_pass: CHECKPOINT_4_INDUSTRIAL_INSPECTOR_AND_LEVEL_3
+  final_product_checkpoint: 547421a059911df6aeb90bbbf06e837f77a3e5e0
+  final_ordinary_ci: 33131533806
+  final_ordinary_jobs:
+    frontend: 98721945574
+    repository: 98721945724
+    secret_scan: 98721945740
+    visual_regression: 98721945774
+  final_level_3_ci: 33132296565
+  final_level_3_jobs:
+    frontend: 98724376602
+    secret_scan: 98724376742
+    visual_regression: 98724376760
+    repository: 98724376765
+    controlled_preflight: 98726515848
+    cumulative_runtime: 98726544430
+  final_runtime_artifact: 9671109131
+  final_runtime_artifact_sha256: 9f20f7e4d8706e6d257460676cfc9edf06c4723d7d8f20a5f8b658bfb521962a
+  final_visual_artifact: 9670779223
+  final_visual_artifact_sha256: 1a92751e7f4e917d2b13c1e5eb2e79017ab142f657a86b4d5e3895ae672471c9
+  final_secret_artifact: 9670710440
+  final_gitleaks_artifact_sha256: 40128ee7ce2d4ad7ac467780e6d4dd01b194764e19aaa195c21510ef1bacd6ad
+  governed_visual_cases: 132
+  diagnostic_activations: ALL_17_FALSE
+  product_code_authorized: COMPLETE_RETAINED
+  product_code_authorization_reason: P8_06_LEVEL_3_PASS
+  product_code_changed: true
+  current_stage: COMPLETE
+  next_stage_after_pass: P8_07_AUDIT
   checkpoint_1_boundary: BEHAVIOR_FREE_DOMAIN_CONFIG_VALIDATION_ZERO_ROW_METADATA_OWNERSHIP_OPENAPI_I18N_TESTS
   checkpoint_2_boundary: PROJECT_FIRST_LIST_DETAIL_EXACT_OBSERVATION_LINK_ATOMIC_REVISION_HEAD_RECEIPT_AUDIT_REPLAY_CONFLICT
   checkpoint_3_boundary: PROJECT_FIRST_READ_ONLY_LINK_RECONCILIATION_CURRENT_DRIFTED_UNAVAILABLE
@@ -2533,6 +2556,37 @@ p8_06:
     - implementation/evidence/phase-8/p8-05-validation.md
     - implementation/evidence/phase-8/p8-06-plan.md
     - implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-8/p8-06-validation.md
+p8_07:
+  task: P8-07
+  controller_task: P8-07_OPERATIONS_DLQ_REPLAY_RECONCILIATION
+  status: IN_PROGRESS_AUDIT
+  phase: 8
+  milestone: M7-07
+  requirements:
+    - FR-RP-009
+    - UX-016
+    - NFR-INT-001
+  predecessor_product_checkpoint: 547421a059911df6aeb90bbbf06e837f77a3e5e0
+  audit_base_checkpoint: 547421a059911df6aeb90bbbf06e837f77a3e5e0
+  product_code_authorized: false
+  product_code_changed: false
+  current_stage: AUDIT
+  next_stage_after_pass: FROZEN_AUDIT_PLAN_AND_SEPARATE_CONTROLLER_TRANSITION
+  operation_rule: OPERATION_SPECIFIC_AUTHORITY_IDEMPOTENCY_REQUEST_ATTEMPT_RESULT_REPLAY_AND_RECONCILIATION_REMAIN_DISTINCT
+  uncertainty_rule: TARGET_BOUNDARY_UNCERTAIN_NEVER_AUTO_REDISPATCHES
+  operator_rule: PERMISSION_SAFE_PROJECT_SCOPED_TRUTH_WITHOUT_DATABASE_ACCESS
+  non_scope:
+    - PRODUCT_CODE_ROUTE_WRITER_WORKER_ADAPTER_UI_OR_NETWORK
+    - GENERIC_BUSINESS_MUTATION_OR_PERMISSION_BYPASS
+    - ERP_TARGET_PASS_APPROVAL_OR_GATE_INTERPRETATION
+    - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_OR_TRAFFIC
+    - FR_CO_003_004_EXTERNAL_PORTALS
+    - P8_08_P8_09
+    - QUEUED_PRODUCTION_SSH_ERP_CUSTOMIZATION_GOVERNANCE
+  evidence:
+    - implementation/phase-8-requirement-anchor.md
+    - implementation/evidence/phase-8/p8-06-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -2559,5 +2613,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05], current_task: P8-06}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06], current_task: P8-07}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

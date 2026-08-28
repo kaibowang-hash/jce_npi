@@ -1,27 +1,26 @@
 # Active Execution Goal
 
-Updated: `2026-08-26T12:00:00Z`
+Updated: `2026-08-28T01:40:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION — P8-06`
+- Mode: `IN_PROGRESS_AUDIT — P8-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `f9c358018823f3af20aca38efb53f8fcbd13d406` (pushed; P8-05
-  `PASS_LEVEL_3`; P8-06 audit base)
+  `547421a059911df6aeb90bbbf06e837f77a3e5e0` (pushed; P8-06
+  `PASS_LEVEL_3`; P8-07 audit base)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `32938622250` (`PASS — LEVEL 3` at
-  `f9c358018823f3af20aca38efb53f8fcbd13d406`; repository, frontend,
-  secret, `129/129` visual, controlled preflight and cumulative controlled Site)
+  `33132296565` (`PASS — LEVEL 3` at
+  `547421a059911df6aeb90bbbf06e837f77a3e5e0`; repository, frontend,
+  secret, `132/132` visual, controlled preflight and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `32971175544` (`PASS` at
-  `f09f7baed565b232f37530ede3df0a13fb466a1e`; P8-06 checkpoint 3
-  read-only reconciliation)
+  `33131533806` (`PASS` at
+  `547421a059911df6aeb90bbbf06e837f77a3e5e0`; P8-06 final)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -117,23 +116,44 @@ Updated: `2026-08-26T12:00:00Z`
 - P8-05 final product Gate:
   `f9c358018823f3af20aca38efb53f8fcbd13d406` (`LEVEL 3 PASS`;
   ordinary CI `32937395289`; exact-SHA Level 3 `32938622250`)
+- P8-06 final product Gate:
+  `547421a059911df6aeb90bbbf06e837f77a3e5e0` (`LEVEL 3 PASS`;
+  ordinary CI `33131533806`; exact-SHA Level 3 `33132296565`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-06 — quality linkage`
-  (`IN_PROGRESS_CHECKPOINT_4_PRODUCT_AUTHORIZATION_TRANSITION`)
-- Resumed product task: `P8-06`
-  (`AWAITING_CHECKPOINT_4_TRANSITION_EXACT_SHA_ORDINARY_CI`)
+  `P8-07 — operations, DLQ, replay and reconciliation` (`IN_PROGRESS_AUDIT`)
+- Resumed product task: `P8-07` (`ACTIVE_AUDIT_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-06 CHECKPOINT 4 AUTHORIZATION TRANSITION`)
+  (`IN_PROGRESS — P8-07 AUDIT`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
+
+P8-06 is sealed `PASS_LEVEL_3` at exact product SHA
+`547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806`
+and final Level 3 `33132296565` pass all required lanes, `132/132` governed
+visuals, secret scanning, controlled preflight and cumulative disposable
+runtime. Runtime artifact `9671109131`, visual artifact `9670779223` and
+Gitleaks artifact `9670710440` retain the verified hashes recorded in
+`implementation/evidence/phase-8/p8-06-validation.md`. All 17 diagnostics are
+false. Only the bounded technical portions of `INT-007`, `FR-TR-006` and
+`FR-NP-006` are verified; production/Sandbox Quality Inspection/NCR/CAPA
+mapping, raw-code policy, approval and Gate/readiness interpretation remain
+held.
+
+Only P8-07 audit work is active for `FR-RP-009`, `UX-016` and
+`NFR-INT-001`. Product code is unauthorized. The audit must inventory the
+existing operation-specific Inbox/Outbox/request/attempt/result/replay and
+reconciliation truths, preserve Project and actor authority, uncertain
+no-redispatch and immutable history, and freeze a separate exact plan before
+any operator surface or command. It adds no product path, database access,
+generic writer, target traffic, production SSH or ERP customization work.
 
 P8-05 is sealed `PASS_LEVEL_3` at exact product SHA
 `f9c358018823f3af20aca38efb53f8fcbd13d406`. Ordinary CI `32937395289`

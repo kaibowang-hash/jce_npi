@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-06 CHECKPOINT 3 PASS; CHECKPOINT 4 AUTHORIZATION TRANSITION**
+Status: **IN PROGRESS — P8-06 LEVEL 3 PASS; P8-07 AUDIT ONLY**
 
 Anchor date: 2026-08-16
 
@@ -527,3 +527,17 @@ query permission and exact source capability, direct EN/zh/zh-TW/a11y/visual
 proof and disposable network-free runtime before Level 3. ERP approve/submit/
 retry/reconcile, target writes/network, worker/adapter/Outbox, raw-code pass/
 Gate mapping, P8-07 operations and FR-CO-003/004 portals remain closed.
+
+P8-06 closes at exact product SHA
+`547421a059911df6aeb90bbbf06e837f77a3e5e0`, ordinary CI `33131533806` and
+final Level 3 `33132296565`. The bounded technical portions of `INT-007`,
+`FR-TR-006` and `FR-NP-006` are verified by `p8-06-validation.md`; the whole
+Trial/reporting requirements and production/Sandbox Quality Inspection/NCR/
+CAPA mapping, lifecycle, approval and raw-code pass/Gate policy remain held.
+
+P8-07 is now audit-only for `FR-RP-009`, `UX-016` and `NFR-INT-001`.
+Product code is unauthorized, no P8-07 plan or product path is created by this
+closeout, and P8-08/P8-09 remain inactive. The audit must preserve exact
+operation authority, Project/actor containment, immutable request/attempt/
+result/replay truth, uncertain no-redispatch and permission-safe operator
+visibility before a separate plan and authorization transition.

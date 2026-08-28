@@ -7424,3 +7424,34 @@ repeat or rewrite it merely to restore context. See
   diff checks pass. Exact-six and union-71 manifests pass; an unauthorized
   seventh path is rejected. Product diff is zero and unrelated state remains
   intact.
+
+## 2026-08-28 P8-06 Level 3 closeout and P8-07 audit activation
+
+- Exact P8-06 product SHA
+  `547421a059911df6aeb90bbbf06e837f77a3e5e0` passes ordinary CI
+  `33131533806` and sole final Level 3 `33132296565`. Final jobs are frontend
+  `98724376602`, secret `98724376742`, visual `98724376760`, repository
+  `98724376765`, controlled preflight `98726515848` and cumulative runtime
+  `98726544430`; governed native Linux x64 visual evidence is `132/132`.
+- Runtime artifact `9671109131` has digest
+  `sha256:9f20f7e4d8706e6d257460676cfc9edf06c4723d7d8f20a5f8b658bfb521962a`,
+  visual artifact `9670779223` has digest
+  `sha256:1a92751e7f4e917d2b13c1e5eb2e79017ab142f657a86b4d5e3895ae672471c9`,
+  and Gitleaks artifact `9670710440` has digest
+  `sha256:40128ee7ce2d4ad7ac467780e6d4dd01b194764e19aaa195c21510ef1bacd6ad`.
+  All 17 diagnostics are false; runtime is network-free and cleanup passes.
+- Only bounded technical portions of `INT-007`, `FR-TR-006` and `FR-NP-006`
+  are verified. Production/Sandbox Quality Inspection/NCR/CAPA mapping,
+  lifecycle, approval, raw-code pass/Gate policy and target operations remain
+  explicit holds. `FR-CO-003/004` external portals remain
+  `USER_APPROVED_POST_V1_2_DEFERRED`; P8-08/P8-09 remain inactive.
+- P8-07 activates audit-only for `FR-RP-009`, `UX-016` and `NFR-INT-001`.
+  Product code is unauthorized. No P8-07 plan or product path is created by
+  this closeout. A later atomic audit must freeze operation-specific authority,
+  Inbox/Outbox/request/attempt/result/replay/reconciliation truth, uncertain
+  no-redispatch, operator permissions, fault matrix, rollback, exact paths and
+  tests before any implementation transition.
+- The separately queued production SSH/ERP customization fact and DoD task is
+  not part of this closeout and remains inactive.
+- Controller marker:
+  `P8-06 Level 3 PASS; P8-07 audit active; product code unauthorized`.
