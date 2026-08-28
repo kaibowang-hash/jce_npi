@@ -114,6 +114,70 @@
       "if": {
         "properties": {
           "event_type": {
+            "anyOf": [
+              {"const": "npi.integration_action.recorded"},
+              {"const": "npi.integration_reconciliation.observed"}
+            ]
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "NPI_ONE"},
+          "target_system": {"const": "NPI_ONE"},
+          "object_version": {"const": 1},
+          "correlation_id": {"type": "string", "format": "uuid"},
+          "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "sensitivity": {"const": "internal"},
+          "actor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "id"],
+            "properties": {
+              "type": {"const": "service"},
+              "id": {"type": "string", "minLength": 1, "maxLength": 254}
+            }
+          }
+        },
+        "required": [
+          "target_system",
+          "correlation_id",
+          "payload_hash",
+          "sensitivity",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {"event_type": {"const": "npi.integration_action.recorded"}},
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "object_type": {"const": "IntegrationActionReceipt"},
+          "payload": {"$ref": "#/$defs/integration_action_recorded_v1"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"event_type": {"const": "npi.integration_reconciliation.observed"}},
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "object_type": {"const": "IntegrationReconciliationObservation"},
+          "payload": {"$ref": "#/$defs/integration_reconciliation_observed_v1"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
             "const": "erpnext.ebom_publish_result.observed"
           }
         },
@@ -425,6 +489,8 @@
         "erpnext.mbom_publish_result.observed",
         "npi.tool_asset_request.ready",
         "erpnext.tool_asset_result.observed",
+        "npi.integration_action.recorded",
+        "npi.integration_reconciliation.observed",
         "npi.tooling_asset_request.ready",
         "erpnext.tooling_asset_result.observed",
         "erpnext.customer_master.observed",
@@ -1542,6 +1608,123 @@
         "unit": {"type": "string", "minLength": 1, "maxLength": 32},
         "supplierId": {"type": ["string", "null"], "minLength": 1, "maxLength": 128}
       }
+    },
+    "integration_operation_reference_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tenant_id",
+        "project_global_id",
+        "operation_kind",
+        "operation_global_id",
+        "source_global_id",
+        "operation_version",
+        "raw_state",
+        "shared_state",
+        "source_snapshot_hash",
+        "target_idempotency_key_hash"
+      ],
+      "properties": {
+        "tenant_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "operation_kind": {
+          "enum": [
+            "receive_project_submission",
+            "publish_item",
+            "publish_mbom",
+            "create_tool_asset",
+            "update_tool_asset"
+          ]
+        },
+        "operation_global_id": {"type": "string", "format": "uuid"},
+        "source_global_id": {"type": "string", "format": "uuid"},
+        "operation_version": {"type": "integer", "minimum": 1},
+        "raw_state": {"type": "string", "minLength": 1, "maxLength": 140},
+        "shared_state": {
+          "enum": [
+            "queued",
+            "processing",
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "uncertain",
+            "partial",
+            "conflict",
+            "quarantined",
+            "unavailable"
+          ]
+        },
+        "source_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target_idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "integration_action_recorded_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "receipt_global_id",
+        "operation",
+        "action_kind",
+        "outcome_state",
+        "receipt_hash"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "receipt_global_id": {"type": "string", "format": "uuid"},
+        "operation": {"$ref": "#/$defs/integration_operation_reference_v1"},
+        "action_kind": {"enum": ["replay", "request_reconciliation"]},
+        "outcome_state": {"enum": ["replay_requested", "reconciliation_requested"]},
+        "receipt_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"action_kind": {"const": "replay"}}, "required": ["action_kind"]},
+          "then": {"properties": {"outcome_state": {"const": "replay_requested"}}}
+        },
+        {
+          "if": {"properties": {"action_kind": {"const": "request_reconciliation"}}, "required": ["action_kind"]},
+          "then": {"properties": {"outcome_state": {"const": "reconciliation_requested"}}}
+        }
+      ]
+    },
+    "integration_reconciliation_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "observation_global_id",
+        "operation",
+        "action_receipt_global_id",
+        "reconciliation_state",
+        "authority",
+        "response_authenticated",
+        "evidence_hash",
+        "observation_hash"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "observation_global_id": {"type": "string", "format": "uuid"},
+        "operation": {"$ref": "#/$defs/integration_operation_reference_v1"},
+        "action_receipt_global_id": {"type": "string", "format": "uuid"},
+        "reconciliation_state": {
+          "enum": ["confirmed_succeeded", "confirmed_failed", "still_uncertain", "target_unavailable"]
+        },
+        "authority": {"enum": ["none", "authoritative_sandbox"]},
+        "response_authenticated": {"type": "boolean"},
+        "evidence_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "observation_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"reconciliation_state": {"enum": ["confirmed_succeeded", "confirmed_failed"]}}, "required": ["reconciliation_state"]},
+          "then": {"properties": {"authority": {"const": "authoritative_sandbox"}, "response_authenticated": {"const": true}}}
+        },
+        {
+          "if": {"properties": {"reconciliation_state": {"const": "target_unavailable"}}, "required": ["reconciliation_state"]},
+          "then": {"properties": {"authority": {"const": "none"}, "response_authenticated": {"const": false}}}
+        }
+      ]
     },
     "tooling_asset_result_observed_v1": {
       "type": "object",

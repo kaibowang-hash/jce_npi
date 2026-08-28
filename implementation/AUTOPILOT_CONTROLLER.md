@@ -7514,3 +7514,27 @@ repeat or rewrite it merely to restore context. See
   writer, queue, adapter, target call, UI behavior or production contact.
 - Controller marker:
   `P8-07 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI`.
+
+## 2026-08-28 P8-07 audit-plan CI PASS; checkpoint 1 awaits product CI
+
+- Exact audit-plan SHA `2e573fa1757f7d9306f17bb47cb62c59e8493b7f`
+  passes ordinary CI `33139628396`: repository `98747332932`, frontend
+  `98747332845`, governed visual `98747332990` and secret `98747333064` all
+  pass; controlled lanes correctly skip.
+- Checkpoint 1 is the only active P8-07 product scope. It adds closed pure
+  operation/action/state/fault/replay/reconciliation domains, additive
+  version-1 OpenAPI/event/ownership components, guarded zero-row action receipt
+  and reconciliation observation metadata, direct translations and focused
+  tests.
+- Action response and reconciliation evidence shapes are exact and immutable;
+  unknown raw states, unsafe evidence, drifted source/idempotency hashes and
+  human target-success assertions fail closed. The logical DLQ remains derived
+  from owning P8-02 through P8-05 truth.
+- No route, repository writer, persisted row, queue, adapter, target call or UI
+  behavior is active. Checkpoint 2 remains unauthorized until checkpoint 1
+  exact-SHA ordinary CI passes.
+- Production ERPNext/JCE contact and the queued production fact check remain
+  prohibited/not effective. P8-08, P8-09 and deferred external portals remain
+  inactive.
+- Controller marker:
+  `P8-07 audit-plan CI PASS; checkpoint 1 awaits exact-SHA ordinary CI`.

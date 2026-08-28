@@ -8434,3 +8434,63 @@ Links one exact observed ERPNext quality reference to this internal source.,将�
 The retained link revision is immutable; a correction appends a successor.,保留的关联修订不可变；更正将追加后继修订。
 The server requires exact Project and source-workspace authority.,服务器要求精确的项目和来源工作区权限。
 Source version {{version}},来源版本 {{version}}
+Expected Integration Operation Version,预期集成操作版本
+Expected Integration Raw State,预期集成原始状态
+Integration Action Idempotency Key Hash,集成操作幂等键哈希
+Integration Action Kind,集成操作类型
+Integration Action Outcome,集成操作结果
+Integration Action Outcome Reference,集成操作结果引用
+Integration Action Receipt,集成操作回执
+Integration Action Receipt Hash,集成操作回执哈希
+Integration Action Receipt Snapshot,集成操作回执快照
+Integration Action Recorded At,集成操作记录时间
+Integration Action Request Hash,集成操作请求哈希
+Integration Action Response Hash,集成操作响应哈希
+Integration Action Response Snapshot,集成操作响应快照
+Integration Attempt Global ID,集成尝试全局标识
+Integration Operation Global ID,集成操作全局标识
+Integration Operation Kind,集成操作类型
+Integration Operation Version,集成操作版本
+Integration Raw State,集成原始状态
+Integration Reconciliation Adapter Code,集成对账适配器代码
+Integration Reconciliation Authority,集成对账权威性
+Integration Reconciliation Evidence Hash,集成对账证据哈希
+Integration Reconciliation Evidence Snapshot,集成对账证据快照
+Integration Reconciliation Observation Hash,集成对账观测哈希
+Integration Reconciliation Observation Snapshot,集成对账观测快照
+Integration Reconciliation Observed At,集成对账观测时间
+Integration Reconciliation Observer ID,集成对账观测者标识
+Integration Reconciliation Observer Kind,集成对账观测者类型
+Integration Reconciliation Profile ID,集成对账配置标识
+Integration Reconciliation Profile Version,集成对账配置版本
+Integration Reconciliation State,集成对账状态
+Integration Shared State,集成共享状态
+Integration Source Global ID,集成来源全局标识
+Integration Source Snapshot Hash,集成来源快照哈希
+Integration operation history can only be appended by the controlled operation service.,只有受控操作服务才能追加集成操作历史。
+Integration operation history cannot be changed.,不能更改集成操作历史。
+Integration operation history cannot be deleted.,不能删除集成操作历史。
+NPI Integration Action Receipt,NPI 集成操作回执
+NPI Integration Reconciliation Observation,NPI 集成对账观测
+Reconciliation Response Authenticated,对账响应已认证
+The integration action receipt hash does not match its fields.,集成操作回执哈希与其字段不匹配。
+The integration action receipt is invalid.,集成操作回执无效。
+The integration action receipt schema version is unsupported.,不支持此集成操作回执架构版本。
+The integration reconciliation observation hash does not match its fields.,集成对账观测哈希与其字段不匹配。
+The integration reconciliation observation is invalid.,集成对账观测无效。
+The integration reconciliation observation schema version is unsupported.,不支持此集成对账观测架构版本。
+The reconciliation observation does not match its exact action receipt.,对账观测与其精确操作回执不匹配。
+receive_project_submission,接收项目提交
+publish_item,发布物料
+publish_mbom,发布 MBOM
+create_tool_asset,创建模具资产
+update_tool_asset,更新模具资产
+partial,部分完成
+replay,重放
+request_reconciliation,请求对账
+replay_requested,已请求重放
+reconciliation_requested,已请求对账
+confirmed_succeeded,已确认成功
+confirmed_failed,已确认失败
+still_uncertain,仍不确定
+trusted_operation_service,受信任操作服务

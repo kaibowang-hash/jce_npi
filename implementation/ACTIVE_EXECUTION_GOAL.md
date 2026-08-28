@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-28T04:10:00Z`
+Updated: `2026-08-28T04:15:17Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-07`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_PRODUCT_CI — P8-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -24,6 +24,9 @@ Updated: `2026-08-28T04:10:00Z`
 - Latest governance closeout checkpoint:
   `d39b24e4169d6116ab0721440b1f7dc01b599c96` (`PASS`; ordinary CI
   `33134622237`; P8-06 closeout and P8-07 audit activation)
+- P8-07 audit-plan checkpoint:
+  `2e573fa1757f7d9306f17bb47cb62c59e8493b7f` (`AUDIT PLAN PASS`;
+  ordinary CI `33139628396`; controlled lanes correctly skipped)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -126,22 +129,22 @@ Updated: `2026-08-28T04:10:00Z`
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-07 — operations, DLQ, replay and reconciliation` (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P8-07` (`AUDIT PASS — CHECKPOINT 1 PENDING PLAN CI`)
+  `P8-07 — operations, DLQ, replay and reconciliation` (`IN_PROGRESS_CHECKPOINT_1`)
+- Resumed product task: `P8-07` (`AUDIT PLAN CI PASS — CHECKPOINT 1 PENDING PRODUCT CI`)
 - Latest accepted documentation checkpoint:
   `6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825`.
   The exact customization-requirements baseline is complete without any
   production contact or requirement-status change.
-- Active atomic task: the bounded operation inventory, logical-DLQ state,
-  operation-specific replay/reconciliation authority, permissions, migration,
-  rollback, exact paths and affected tests are frozen in
-  `implementation/evidence/phase-8/p8-07-plan.md`. Product code remains
-  unauthorized until this exact plan transition passes ordinary CI.
+- Active atomic task: checkpoint 1 adds only closed pure operation/action/state/
+  fault/replay/reconciliation domains, additive versioned contracts, guarded
+  zero-row action/reconciliation metadata, direct translations and focused
+  tests. It awaits its own exact-SHA ordinary CI. No route, repository writer,
+  persisted row, queue, adapter, target call or UI behavior is active.
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-07 CHECKPOINT 1 PLAN CI`)
+  (`IN_PROGRESS — P8-07 CHECKPOINT 1 PRODUCT CI`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -159,14 +162,14 @@ false. Only the bounded technical portions of `INT-007`, `FR-TR-006` and
 mapping, raw-code policy, approval and Gate/readiness interpretation remain
 held.
 
-The P8-07 audit for `FR-RP-009`, `UX-016` and `NFR-INT-001` is frozen in
-`implementation/evidence/phase-8/p8-07-plan.md`. It keeps a fixed five-operation
-inventory, derives the logical DLQ from owning truth, permits only
-operation-specific actor-authorized replay of exact retryable/non-uncertain
-work, and treats reconciliation as forward-only evidence rather than a human
-success assertion. Product code remains unauthorized until this plan's own
-exact-SHA ordinary CI passes. Production contact, generic writers, P8-08 and
-P8-09 remain inactive.
+The P8-07 audit plan passes at exact SHA
+`2e573fa1757f7d9306f17bb47cb62c59e8493b7f` and ordinary CI `33139628396`.
+Checkpoint 1 now implements the plan's behavior-free domain, additive contract
+and guarded zero-row metadata foundation. The five-operation inventory,
+derived logical DLQ, exact retryable/non-uncertain replay rule and forward-only
+reconciliation evidence remain closed. Checkpoint 2 stays unauthorized until
+checkpoint 1 exact-SHA ordinary CI passes. Production contact, generic writers,
+P8-08 and P8-09 remain inactive.
 
 P8-05 is sealed `PASS_LEVEL_3` at exact product SHA
 `f9c358018823f3af20aca38efb53f8fcbd13d406`. Ordinary CI `32937395289`

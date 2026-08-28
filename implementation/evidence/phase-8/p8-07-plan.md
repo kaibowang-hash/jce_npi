@@ -1,6 +1,6 @@
 # P8-07 Plan — Operations, DLQ, Replay and Reconciliation
 
-Status: **AUDIT PASS — CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
+Status: **AUDIT-PLAN CI PASS — CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-28
 
@@ -11,9 +11,13 @@ Predecessor product checkpoint:
 
 Requirements: `FR-RP-009`, `UX-016`, `NFR-INT-001`
 
-Product-code authorization: **false until this audit-plan transition itself
-passes exact-SHA ordinary CI**. After that Gate, only checkpoint 1 is
-authorized. Production ERPNext/JCE contact remains prohibited throughout.
+Audit-plan checkpoint: `2e573fa1757f7d9306f17bb47cb62c59e8493b7f`
+
+Audit-plan ordinary CI: `33139628396` (**PASS**)
+
+Product-code authorization: **checkpoint 1 only**. Checkpoint 2 remains closed
+until checkpoint 1 exact-SHA ordinary CI passes. Production ERPNext/JCE contact
+remains prohibited throughout.
 
 ## 1. Audit conclusion
 
@@ -171,7 +175,7 @@ capabilities rather than unrestricted permission bypass.
 
 ### Checkpoint 1 — pure domain, contracts and guarded metadata
 
-After this plan's exact-SHA ordinary CI passes, add only:
+The plan Gate has passed. Checkpoint 1 adds only:
 
 - closed operation/action/state/fault/replay/reconciliation domain values;
 - pure classifiers that preserve every owning raw state;
@@ -285,3 +289,35 @@ The uncommitted exact-fifteen transition passes:
 The task changes only the fifteen frozen governance, evidence, trace script and
 test paths. App, frontend, contract and workflow diffs are zero. Existing
 unrelated tracked and untracked workspace state remains untouched.
+
+## 15. Audit-plan Gate and checkpoint-1 candidate
+
+Exact audit-plan SHA `2e573fa1757f7d9306f17bb47cb62c59e8493b7f`
+passes ordinary CI `33139628396`: repository `98747332932`, frontend
+`98747332845`, governed visual `98747332990` and secret scan `98747333064`
+all pass; controlled lanes correctly skip.
+
+Checkpoint 1 now contains only the authorized behavior-free foundation:
+
+- closed five-operation, action, state, fault, replay and reconciliation
+  domain values with raw-state preservation and fail-closed unknowns;
+- exact immutable operation references, action receipts and trusted
+  reconciliation observations with canonical hashes and bounded safe shapes;
+- additive version-1 OpenAPI, internal event and data-ownership components,
+  with no new route;
+- two guarded append-only support DocTypes with zero default rows and no direct
+  operator create/write/delete authority; and
+- direct Simplified/Traditional Chinese metadata translations plus focused
+  domain, metadata, security and contract tests.
+
+No repository writer, persisted row, route, queue, adapter, target call or UI
+behavior is activated. Checkpoint 2 remains closed until this candidate's own
+exact-SHA ordinary CI passes.
+
+Checkpoint-1 Level 1 passes `18/18` focused, `550/550` affected predecessor,
+`2590/2590` full Python, `38/38` governance/reconciliation and `1073/1073`
+frontend unit/coverage checks. Direct i18n covers `8496` English sources at
+`100%` in `zh` and `zh-TW`; type/lint/format/style/boundary/UI, compile,
+JSON/YAML, security, reconciliation, diff and exact `31`/unauthorized `32`
+manifest checks pass. Detailed evidence is
+`implementation/evidence/phase-8/p8-07-domain-metadata-checkpoint.md`.

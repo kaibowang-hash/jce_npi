@@ -8434,3 +8434,63 @@ Links one exact observed ERPNext quality reference to this internal source.,將�
 The retained link revision is immutable; a correction appends a successor.,保留的關聯修訂不可變；更正將追加後繼修訂。
 The server requires exact Project and source-workspace authority.,伺服器要求精確的專案和來源工作區權限。
 Source version {{version}},來源版本 {{version}}
+Expected Integration Operation Version,預期整合操作版本
+Expected Integration Raw State,預期整合原始狀態
+Integration Action Idempotency Key Hash,整合操作冪等鍵雜湊
+Integration Action Kind,整合操作類型
+Integration Action Outcome,整合操作結果
+Integration Action Outcome Reference,整合操作結果參照
+Integration Action Receipt,整合操作回執
+Integration Action Receipt Hash,整合操作回執雜湊
+Integration Action Receipt Snapshot,整合操作回執快照
+Integration Action Recorded At,整合操作記錄時間
+Integration Action Request Hash,整合操作請求雜湊
+Integration Action Response Hash,整合操作回應雜湊
+Integration Action Response Snapshot,整合操作回應快照
+Integration Attempt Global ID,整合嘗試全域識別碼
+Integration Operation Global ID,整合操作全域識別碼
+Integration Operation Kind,整合操作類型
+Integration Operation Version,整合操作版本
+Integration Raw State,整合原始狀態
+Integration Reconciliation Adapter Code,整合對帳適配器代碼
+Integration Reconciliation Authority,整合對帳權威性
+Integration Reconciliation Evidence Hash,整合對帳證據雜湊
+Integration Reconciliation Evidence Snapshot,整合對帳證據快照
+Integration Reconciliation Observation Hash,整合對帳觀測雜湊
+Integration Reconciliation Observation Snapshot,整合對帳觀測快照
+Integration Reconciliation Observed At,整合對帳觀測時間
+Integration Reconciliation Observer ID,整合對帳觀測者識別碼
+Integration Reconciliation Observer Kind,整合對帳觀測者類型
+Integration Reconciliation Profile ID,整合對帳設定識別碼
+Integration Reconciliation Profile Version,整合對帳設定版本
+Integration Reconciliation State,整合對帳狀態
+Integration Shared State,整合共享狀態
+Integration Source Global ID,整合來源全域識別碼
+Integration Source Snapshot Hash,整合來源快照雜湊
+Integration operation history can only be appended by the controlled operation service.,只有受控操作服務才能追加整合操作歷史。
+Integration operation history cannot be changed.,不能變更整合操作歷史。
+Integration operation history cannot be deleted.,不能刪除整合操作歷史。
+NPI Integration Action Receipt,NPI 整合操作回執
+NPI Integration Reconciliation Observation,NPI 整合對帳觀測
+Reconciliation Response Authenticated,對帳回應已驗證
+The integration action receipt hash does not match its fields.,整合操作回執雜湊與其欄位不相符。
+The integration action receipt is invalid.,整合操作回執無效。
+The integration action receipt schema version is unsupported.,不支援此整合操作回執結構版本。
+The integration reconciliation observation hash does not match its fields.,整合對帳觀測雜湊與其欄位不相符。
+The integration reconciliation observation is invalid.,整合對帳觀測無效。
+The integration reconciliation observation schema version is unsupported.,不支援此整合對帳觀測結構版本。
+The reconciliation observation does not match its exact action receipt.,對帳觀測與其精確操作回執不相符。
+receive_project_submission,接收專案提交
+publish_item,發佈物料
+publish_mbom,發佈 MBOM
+create_tool_asset,建立模具資產
+update_tool_asset,更新模具資產
+partial,部分完成
+replay,重播
+request_reconciliation,請求對帳
+replay_requested,已請求重播
+reconciliation_requested,已請求對帳
+confirmed_succeeded,已確認成功
+confirmed_failed,已確認失敗
+still_uncertain,仍不確定
+trusted_operation_service,受信任操作服務

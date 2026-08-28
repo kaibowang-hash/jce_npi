@@ -1466,6 +1466,36 @@ objects:
       response_seal_transition: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [NPI_ONE_CONTROLLED_PRINT_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
       sealed_response_and_snapshot_identity: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
 
+  IntegrationOperationProjection:
+    owner_system: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE
+    erp_view: derived_project_scoped_read_model
+    fields:
+      exact_operation_source_attempt_result_and_mapping_references: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      raw_operation_state_and_fault_code: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: NEVER_REWRITE_OR_TRANSLATE}
+      shared_state_and_logical_dlq_classification: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: REBUILD_FROM_OWNING_TRUTH}
+      replay_and_reconciliation_authority: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: NONE, conflict: OPERATION_SPECIFIC_FAIL_CLOSED}
+
+  IntegrationActionReceipt:
+    owner_system: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE
+    erp_view: none
+    fields:
+      tenant_project_operation_source_state_and_version: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_EXACT_SOURCE}
+      action_actor_trace_and_hashed_idempotency: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_ACTION_IDENTITY}
+      replay_payload_and_target_idempotency: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: REUSE_ORIGINAL_EXACTLY}
+      reconciliation_request: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: NONE, conflict: OPERATOR_INTENT_ONLY_NEVER_TARGET_TRUTH}
+      sealed_safe_response_and_receipt_hash: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_REPLAY}
+      raw_payload_response_credentials_and_secrets: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  IntegrationReconciliationObservation:
+    owner_system: NPI_ONE_OPERATION_SPECIFIC_RECONCILIATION_SERVICE
+    erp_view: authenticated_append_only_observation
+    fields:
+      exact_action_operation_source_attempt_profile_and_adapter: {owner: NPI_ONE_OPERATION_SPECIFIC_RECONCILIATION_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_EXACT_SOURCE}
+      observation_state_and_authenticated_authority: {owner: TRUSTED_OPERATION_SPECIFIC_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY_EVIDENCE}
+      forward_state_or_mapping_change: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER], direction: NONE, conflict: EXISTING_LOCKED_CAS_ONLY}
+      human_asserted_target_success_or_identity: {owner: NEVER_ACCEPT, editable_in: [], direction: NONE, conflict: REJECT}
+      raw_target_request_response_credentials_and_secrets: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
 exception_policy:
   create_object: IntegrationException
   required_fields:

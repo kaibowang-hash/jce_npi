@@ -3,7 +3,7 @@
   "task_id": "P8-07",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI",
+  "status": "IN_PROGRESS_CHECKPOINT_1_AWAITING_PRODUCT_CI",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-08",
   "base_checkpoint": "6a82568329e2ec46eae02df76a9d697e26cdf61e",
@@ -20,7 +20,7 @@
     "Retain docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md and implementation/REQUIRED_INPUTS.md as the truthful production-fact/hold boundary; the queued production fact check remains not effective authorization."
   ],
   "non_scope": [
-    "Any P8-07 product implementation before this frozen audit-plan transition passes exact-SHA ordinary CI, or any behavior beyond the currently active checkpoint.",
+    "Any P8-07 behavior beyond checkpoint 1 before its exact-SHA ordinary CI passes, or any behavior beyond the currently active checkpoint.",
     "Any production ERPNext or JCE endpoint, credential, data, request, response, network contact, replay, reconciliation, correction or compensating transaction.",
     "Any generic DocType writer, caller-selected tenant, actor, operation, target method, endpoint, identity, payload, desired status, target success, retry policy, reconciliation result or authority.",
     "Any rewrite or deletion of Inbox, Outbox, request, attempt, result, mapping, observation, formal-quality link, receipt, audit, Project, Gate, Trial, Tooling, Item, MBOM or Asset truth.",
@@ -32,7 +32,7 @@
     "P8_06_LEVEL_3_EXACT_SHA_547421A059911DF6AEB90BBBF06E837F77A3E5E0_ORDINARY_33131533806_FINAL_33132296565_PASSED",
     "P8_06_CLOSEOUT_EXACT_SHA_D39B24E4169D6116AB0721440B1F7DC01B599C96_ORDINARY_33134622237_PASSED",
     "P8_07_CUSTOMIZATION_REQUIREMENTS_EXACT_SHA_6A82568329E2EC46EAE02DF76A9D697E26CDF61E_ORDINARY_33137548825_PASSED",
-    "P8_07_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
+    "P8_07_AUDIT_PLAN_EXACT_SHA_2E573FA1757F7D9306F17BB47CB62C59E8493B7F_ORDINARY_33139628396_PASSED",
     "FIXED_OPERATION_KINDS_RECEIVE_PROJECT_SUBMISSION_PUBLISH_ITEM_PUBLISH_MBOM_CREATE_TOOL_ASSET_UPDATE_TOOL_ASSET",
     "OPERATION_SPECIFIC_AUTHORITY_IDEMPOTENCY_REQUEST_ATTEMPT_RESULT_REPLAY_AND_RECONCILIATION_REMAIN_DISTINCT",
     "LOGICAL_DLQ_IS_A_DERIVED_CLASSIFICATION_NOT_A_SECOND_MUTABLE_COPY_OF_BUSINESS_TRUTH",
@@ -150,7 +150,7 @@
     "phase_status_resumed_product_task": "P8-07",
     "active_goal_marker": "P8-07",
     "next_action_marker": "P8-07",
-    "controller_marker": "P8-07 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI"
+    "controller_marker": "P8-07 audit-plan CI PASS; checkpoint 1 awaits exact-SHA ordinary CI"
   },
   "rollback": {
     "before_product_resume": "Restore exact accepted customization-requirements checkpoint 6a82568329e2ec46eae02df76a9d697e26cdf61e while retaining exact predecessor product checkpoint 547421a059911df6aeb90bbbf06e837f77a3e5e0 and every Inbox, Outbox, request, idempotency row, claim, attempt, result, uncertainty, mapping, observation, formal-quality link, receipt and audit; this audit-plan transition changes no product or external state.",

@@ -22389,6 +22389,102 @@ components:
         responseAuthenticated: { type: boolean, const: true }
         observationHash: { $ref: "#/components/schemas/MbomPublishSha256" }
         updatedAt: { type: string, format: date-time }
+    IntegrationOperationKind:
+      type: string
+      description: Server-resolved operation kind; it is never caller-selected authority.
+      enum: [receive_project_submission, publish_item, publish_mbom, create_tool_asset, update_tool_asset]
+    IntegrationOperationViewState:
+      type: string
+      enum: [queued, processing, succeeded, failed_retryable, failed_final, uncertain, partial, conflict, quarantined, unavailable]
+    IntegrationOperationReference:
+      type: object
+      additionalProperties: false
+      description: Exact immutable reference to truth owned by the operation-specific P8-02 through P8-05 repository.
+      required: [tenantId, projectGlobalId, operationKind, operationGlobalId, sourceGlobalId, operationVersion, rawState, sharedState, sourceSnapshotHash, targetIdempotencyKeyHash]
+      properties:
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        operationKind: { $ref: "#/components/schemas/IntegrationOperationKind" }
+        operationGlobalId: { type: string, format: uuid }
+        sourceGlobalId: { type: string, format: uuid }
+        operationVersion: { type: integer, minimum: 1 }
+        rawState: { type: string, minLength: 1, maxLength: 140 }
+        sharedState: { $ref: "#/components/schemas/IntegrationOperationViewState" }
+        sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        targetIdempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    IntegrationActionReceipt:
+      type: object
+      additionalProperties: false
+      description: Append-only actor-bound replay or reconciliation-request receipt. It is a response/history component and grants no generic mutation route.
+      required: [schemaVersion, globalId, operation, actionKind, actionIdempotencyKeyHash, expectedRawState, expectedVersion, requestHash, outcomeState, outcomeReferenceGlobalId, response, responseHash, actorUserId, traceId, createdAt, receiptHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        operation: { $ref: "#/components/schemas/IntegrationOperationReference" }
+        actionKind: { type: string, enum: [replay, request_reconciliation] }
+        actionIdempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedRawState: { type: string, minLength: 1, maxLength: 140 }
+        expectedVersion: { type: integer, minimum: 1 }
+        requestHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        outcomeState: { type: string, enum: [replay_requested, reconciliation_requested] }
+        outcomeReferenceGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        response:
+          type: object
+          additionalProperties: false
+          description: Operation-specific safe response reference; never a target request/response body.
+          required: [actionGlobalId, operationGlobalId, outcomeState, outcomeReferenceGlobalId]
+          properties:
+            actionGlobalId: { type: string, format: uuid }
+            operationGlobalId: { type: string, format: uuid }
+            outcomeState: { type: string, enum: [replay_requested, reconciliation_requested] }
+            outcomeReferenceGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        responseHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        createdAt: { type: string, format: date-time }
+        receiptHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+      allOf:
+        - if: { properties: { actionKind: { const: replay } }, required: [actionKind] }
+          then: { properties: { expectedRawState: { const: failed_retryable }, outcomeState: { const: replay_requested } } }
+        - if: { properties: { actionKind: { const: request_reconciliation } }, required: [actionKind] }
+          then: { properties: { outcomeState: { const: reconciliation_requested } } }
+    IntegrationReconciliationObservation:
+      type: object
+      additionalProperties: false
+      description: Trusted append-only operation-specific evidence. Operator input cannot assert target success or formal identity.
+      required: [schemaVersion, globalId, operation, actionReceiptGlobalId, attemptGlobalId, reconciliationState, observerKind, authority, responseAuthenticated, profileId, profileVersion, adapterCode, evidence, evidenceHash, observerId, traceId, observedAt, observationHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        operation: { $ref: "#/components/schemas/IntegrationOperationReference" }
+        actionReceiptGlobalId: { type: string, format: uuid }
+        attemptGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        reconciliationState: { type: string, enum: [confirmed_succeeded, confirmed_failed, still_uncertain, target_unavailable] }
+        observerKind: { type: string, const: trusted_operation_service }
+        authority: { type: string, enum: [none, authoritative_sandbox] }
+        responseAuthenticated: { type: boolean }
+        profileId: { type: string, minLength: 1, maxLength: 128 }
+        profileVersion: { type: integer, minimum: 1 }
+        adapterCode: { type: string, minLength: 1, maxLength: 140 }
+        evidence:
+          type: object
+          additionalProperties: false
+          description: Bounded safe evidence references and hashes only; raw target bodies and sensitive transport material are prohibited.
+          required: [sourceSnapshotHash, targetIdempotencyKeyHash, resultReferenceHash]
+          properties:
+            sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+            targetIdempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+            resultReferenceHash: { oneOf: [{ type: string, pattern: "^[a-f0-9]{64}$" }, { type: "null" }] }
+        evidenceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        observerId: { type: string, minLength: 1, maxLength: 254 }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        observedAt: { type: string, format: date-time }
+        observationHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+      allOf:
+        - if: { properties: { reconciliationState: { enum: [confirmed_succeeded, confirmed_failed] } }, required: [reconciliationState] }
+          then: { properties: { authority: { const: authoritative_sandbox }, responseAuthenticated: { const: true } } }
+        - if: { properties: { reconciliationState: { const: target_unavailable } }, required: [reconciliationState] }
+          then: { properties: { authority: { const: none }, responseAuthenticated: { const: false } } }
     ProblemDetails:
       type: object
       additionalProperties: false
