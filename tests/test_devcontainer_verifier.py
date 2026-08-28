@@ -137,6 +137,11 @@ class DevcontainerVerifierTest(unittest.TestCase):
                 "implementation/evidence/phase-7/p7-07-plan.md:generic-api-key:419"
             ),
             (
+                "a5bc713d3cac8eb82b511a6aa73dc2262aa58dc6:"
+                "frontend/tests/unit/integration-operations-data-source.test.ts:"
+                "generic-api-key:146"
+            ),
+            (
                 "bfa9c9bb4fa70d0c66938b940b286c7f9bbb3d47:"
                 "frontend/tests/unit/item-publish-data-source.test.ts:generic-api-key:26"
             ),

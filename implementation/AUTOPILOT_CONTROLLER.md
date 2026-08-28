@@ -7622,3 +7622,10 @@ repeat or rewrite it merely to restore context. See
 - Checkpoint 3 remains inactive until the repaired exact SHA passes a fresh
   ordinary CI. Checkpoint 4 and every production-contact authority remain
   closed.
+- Replacement SHA `da7e80a4225d984e9129a6816818fdbb0b4366a0` proves the
+  full-history secret scan PASS in job `98938823857`; repository job
+  `98938824087` then fails only because the independent verifier correctly
+  rejects a fingerprint absent from its frozen reviewed set. The next
+  same-cycle commit mirrors only that exact fingerprint in the verifier and
+  its negative contract test. No wildcard, second finding or scanner-policy
+  relaxation is authorized.

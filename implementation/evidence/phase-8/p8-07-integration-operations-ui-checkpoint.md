@@ -91,6 +91,14 @@ rules, history coverage, exit code or threshold. The replacement candidate
 must pass a new exact-SHA ordinary CI; evidence from the failed run cannot
 activate checkpoint 4.
 
+Replacement SHA `da7e80a4225d984e9129a6816818fdbb0b4366a0` entered
+ordinary CI `33197642272`. Full-history secret scan job `98938823857` passed,
+closing the original classification. Repository job `98938824087` then
+failed at the independent fail-closed verifier because the newly reviewed
+fingerprint was not yet mirrored in its exact allowlist. The follow-up adds
+that same immutable fingerprint to the verifier and its negative contract
+test; it does not broaden the accepted shape or permit any second finding.
+
 ## Holds
 
 Checkpoint 3 adds no backend route, permission, Schema, worker, adapter,
