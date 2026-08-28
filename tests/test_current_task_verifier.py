@@ -82,7 +82,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "LOGICAL_DLQ_IS_A_DERIVED_CLASSIFICATION_NOT_A_SECOND_MUTABLE_COPY_OF_BUSINESS_TRUTH",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 73)
+        self.assertEqual(len(value["allowed_paths"]), 74)
         self.assertIn(".gitleaksignore", value["allowed_paths"])
         self.assertIn("scripts/verify_devcontainer.py", value["allowed_paths"])
         self.assertIn("tests/test_devcontainer_verifier.py", value["allowed_paths"])
@@ -92,6 +92,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertIn(
             "frontend/src/pages/execution-page.tsx",
+            value["allowed_paths"],
+        )
+        self.assertIn(
+            "frontend/src/pages/execution-prototype-page.tsx",
             value["allowed_paths"],
         )
         self.assertIn("frontend/src/app/app-shell.tsx", value["allowed_paths"])

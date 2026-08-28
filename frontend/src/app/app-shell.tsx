@@ -300,13 +300,11 @@ export function AppShell({
       id: "execution",
       icon: "apps",
       label: t("Execution and Reconciliation"),
-      ...(isLiveProjectContext && liveExecutionPath
+      ...(isLiveExecution && liveExecutionPath
         ? { path: liveExecutionPath }
-        : {
-            unavailableReason: t(
-              "Open a Project from an authorized link to view integration operations.",
-            ),
-          }),
+        : prototypeNavigationAllowed
+          ? { path: "/execution" }
+          : { unavailableReason: liveNavigationUnavailable }),
       screen: "execution",
     },
     {
@@ -396,19 +394,21 @@ export function AppShell({
       },
       {
         id: "execution",
-        label: t("Open Project integration operations"),
-        description: t(
-          "Open the authorized live integration operation worklist for this Project.",
-        ),
+        label: isLiveProjectContext
+          ? t("Open Project integration operations")
+          : t("Open Execution prototype"),
+        description: isLiveProjectContext
+          ? t(
+              "Open the authorized live integration operation worklist for this Project.",
+            )
+          : t("Open the existing execution and reconciliation prototype."),
         icon: "apps",
         keywords: [t("Execution"), t("Reconciliation")],
         ...(isLiveProjectContext && liveExecutionPath
           ? { target: liveExecutionPath }
-          : {
-              unavailableReason: t(
-                "Open a Project from an authorized link to view integration operations.",
-              ),
-            }),
+          : prototypeNavigationAllowed
+            ? { target: "/execution" }
+            : { unavailableReason: liveNavigationUnavailable }),
       },
     ],
     [

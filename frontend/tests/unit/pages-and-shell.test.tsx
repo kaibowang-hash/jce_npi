@@ -8,6 +8,7 @@ import type { AppRoute } from "../../src/app/router";
 import { LiveMyWorkDataSource } from "../../src/api/my-work-data-source";
 import type { ProjectControlsDataSource } from "../../src/api/project-controls-data-source";
 import type { Locale } from "../../src/i18n/runtime";
+import ExecutionPrototypePage from "../../src/pages/execution-prototype-page";
 import GatePage from "../../src/pages/gate-page";
 import ProjectDemoPage from "../../src/pages/project-demo-page";
 import ToolingPage from "../../src/pages/tooling-page";
@@ -81,6 +82,40 @@ function response(body: unknown, status = 200, traceId?: string): Response {
 }
 
 describe("application shell behavior", () => {
+  it("keeps the legacy execution route backed by the explicit prototype", async () => {
+    const user = userEvent.setup();
+    renderWithLocale(
+      <ExecutionPrototypePage scenario="normal" />,
+      "en",
+      "/execution?focus=EX-260721-0048",
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "ERPNext Execution and Reconciliation",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "EX-260721-0048" }),
+    ).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", { name: "Run reconciliation" }),
+    );
+    expect(
+      screen.getByRole("heading", {
+        name: "Reconciliation impact review",
+      }),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(
+      screen.queryByRole("heading", {
+        name: "Reconciliation impact review",
+      }),
+    ).not.toBeInTheDocument();
+  });
+
   it("records a privacy-safe normalized route view from the running App", async () => {
     const record = vi
       .spyOn(UsabilityRecorder.prototype, "record")
@@ -550,7 +585,7 @@ describe("application shell behavior", () => {
   it("labels live Project data, hides fixture controls, and dispatches a real refresh", async () => {
     const globalId = "11111111-1111-4111-8111-111111111111";
     const dispatchEvent = vi.spyOn(globalThis, "dispatchEvent");
-    const navigate = vi.fn();
+    const navigate = vi.fn<(target: string) => void>();
     const user = userEvent.setup();
     renderWithLocale(
       <AppShell
@@ -586,6 +621,41 @@ describe("application shell behavior", () => {
     expect(tooling).not.toHaveAttribute("aria-disabled");
     await user.click(tooling);
     expect(navigate).toHaveBeenCalledWith(`/projects/${globalId}/tooling`);
+    expect(
+      within(domainNavigation).getByRole("button", {
+        name: "Execution and Reconciliation",
+      }),
+    ).toHaveAttribute("aria-disabled", "true");
+
+    await user.click(
+      screen.getByRole("button", { name: "Open command palette" }),
+    );
+    const commandDialog = screen.getByRole("dialog", {
+      name: "Command palette",
+    });
+    await user.type(
+      within(commandDialog).getByRole("searchbox", {
+        name: "Search commands",
+      }),
+      "integration operations",
+    );
+    await user.click(
+      within(commandDialog).getByRole("button", {
+        name: /Open Project integration operations/u,
+      }),
+    );
+    const integrationTarget = navigate.mock.lastCall?.[0];
+    expect(integrationTarget).toBeDefined();
+    const integrationUrl = new URL(
+      String(integrationTarget),
+      "https://npi.test",
+    );
+    expect(integrationUrl.pathname).toBe(
+      `/projects/${globalId}/integration-operations`,
+    );
+    expect(integrationUrl.searchParams.get("returnTo")).toContain(
+      `/projects/${globalId}`,
+    );
 
     await user.click(screen.getByRole("button", { name: "Refresh" }));
     expect(dispatchEvent).toHaveBeenCalledWith(

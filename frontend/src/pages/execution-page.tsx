@@ -774,6 +774,10 @@ export default function ExecutionPage({
                           }
                           key={item.operationGlobalId}
                           onClick={() => {
+                            if (
+                              selectedIdRef.current === item.operationGlobalId
+                            )
+                              return;
                             selectedIdRef.current = item.operationGlobalId;
                             setSelectedId(item.operationGlobalId);
                             setDetail({
@@ -785,6 +789,10 @@ export default function ExecutionPage({
                           onKeyDown={(event) => {
                             if (event.key === "Enter" || event.key === " ") {
                               event.preventDefault();
+                              if (
+                                selectedIdRef.current === item.operationGlobalId
+                              )
+                                return;
                               selectedIdRef.current = item.operationGlobalId;
                               setSelectedId(item.operationGlobalId);
                               setDetail({

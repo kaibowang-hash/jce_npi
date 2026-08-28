@@ -8453,7 +8453,6 @@ Integration operations are temporarily unavailable.,整合操作暫時無法使�
 Select a supported operation state.,請選取受支援的操作狀態。
 The integration operation changed before the action was applied.,在套用操作前，整合操作已變更。
 The integration operation is unavailable.,整合操作無法使用。
-Open a Project from an authorized link to view integration operations.,從授權連結開啟專案以檢視整合操作。
 Open Project integration operations,開啟專案整合操作
 Open the authorized live integration operation worklist for this Project.,開啟此專案的授權即時整合操作工作清單。
 The live integration operation request is being refreshed.,正在重新整理即時整合操作請求。
@@ -8537,3 +8536,50 @@ Showing {{count}} operations,顯示 {{count}} 個操作
 Request exact replay,請求精確重播
 Request reconciliation,請求對帳
 Replay impact review,重播影響審查
+A failure remains visible and retryable or becomes a final failure with recovery guidance.,失敗狀態會持續可見且可重試，或轉為帶恢復指南的最終失敗。
+A validation or target-system failure remains visible and does not report ERPNext completion.,驗證失敗或目標系統失敗將保持可見，且不會報告 ERPNext 已完成。
+Business action,業務操作
+"Correct the mapping, review the impact, and then queue a safe retry with the same idempotency key.",更正對應並檢查影響，然後使用相同冪等鍵排隊安全重試。
+"Engineering approval and ERPNext completion remain separate, traceable states.",工程核准與 ERPNext 完成仍為相互獨立且可追溯的狀態。
+ERPNext Execution and Reconciliation,ERPNext 執行與對帳
+ERPNext may create a formal object only after its own validation succeeds.,ERPNext 只能在其自身驗證成功後建立正式物件。
+ERPNext retry impact review,ERPNext 重試影響評審
+ERPNext validation did not find an approved target asset category. No formal asset was written.,ERPNext 驗證未找到已核准的目標資產類別。未寫入任何正式資產。
+Execution request details,執行請求詳情
+Execution requests,執行請求
+Failure reason,失敗原因
+Idempotency key,冪等鍵
+Integration operator permission is required.,需要整合操作員權限。
+Last attempt,最近嘗試
+Manual action required,需要人工處理
+New execution request,新建執行請求
+New execution request impact review,新建執行請求影響評審
+Only the failed tool asset node will be retried. Completed ERPNext objects are unchanged.,僅重試失敗的模具資產節點。已完成的 ERPNext 物件保持不變。
+Open field mapping,開啟欄位對應
+Prepare execution request,準備執行請求
+Queue safe retry,排隊安全重試
+Request number,請求編號
+Request version,請求版本
+Review impact and retry,檢查影響並重試
+Run reconciliation,執行對帳
+Target system,目標系統
+The approved tooling acceptance snapshot will be locked for a new tool asset execution request.,已核准的模具開發驗收快照將被鎖定，用於新的模具資產執行請求。
+This request reached a final failure. Correct the source data and prepare a new execution request.,此請求已進入最終失敗。請更正來源資料並準備新的執行請求。
+Prototype retry command prepared. No request was queued in LaunchFlow or ERPNext.,已準備原型重試命令。未在 LaunchFlow 或 ERPNext 中排隊任何請求。
+Prototype reconciliation prepared. No ERPNext or LaunchFlow record was changed.,已準備原型對帳。未變更 ERPNext 或 LaunchFlow 中的任何記錄。
+Prototype execution command prepared. No request was queued in LaunchFlow or ERPNext.,已準備原型執行命令。未在 LaunchFlow 或 ERPNext 中排隊任何請求。
+Close field mapping,關閉欄位對應
+Field mapping preview,欄位對應預覽
+Source field,來源欄位
+Target field,目標欄位
+Mapping result,對應結果
+No approved target value is available. Correct the governed mapping before preparing another request.,沒有可用的已核准目標值。請更正受治理的對應後再準備請求。
+Prepare reconciliation,準備對帳
+"A submitted command would record the idempotency key, actor, reason, attempt, result, and trace ID.",提交後的命令會記錄冪等鍵、操作人、原因、嘗試、結果和追蹤編號。
+Reconciliation compares LaunchFlow requests with ERPNext responses. It does not overwrite either system.,對帳會比較 LaunchFlow 請求與 ERPNext 回應，不會覆寫任一系統。
+No formal ERPNext object is created or changed by this prototype reconciliation.,此原型對帳不會建立或變更任何正式 ERPNext 物件。
+Unmatched operations remain visible with their trace IDs and recovery state.,未配對的操作及其追蹤編號與復原狀態將保持可見。
+"A submitted command would record the comparison scope, actor, timestamp, result, and trace IDs.",提交後的命令會記錄比較範圍、操作人、時間戳記、結果和追蹤編號。
+"A submitted command would record the idempotency key, input hash, actor, reason, result, and trace ID.",提交後的命令會記錄冪等鍵、輸入雜湊、操作人、原因、結果和追蹤編號。
+Open Execution prototype,開啟執行原型
+Open the existing execution and reconciliation prototype.,開啟現有的執行與對帳原型。

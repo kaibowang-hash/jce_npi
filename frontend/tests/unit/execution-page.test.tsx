@@ -74,7 +74,9 @@ function renderPage(dataSource: IntegrationOperationsDataSource): void {
 }
 
 function operationRow(operationId: string): HTMLTableRowElement {
-  const row = screen.getByText(operationId).closest("tr");
+  const row = screen
+    .getByText(operationId, { selector: ".integration-operation-id" })
+    .closest("tr");
   if (!(row instanceof HTMLTableRowElement)) {
     throw new Error(`Operation row was not rendered for ${operationId}`);
   }
@@ -87,6 +89,29 @@ afterEach(() => {
 });
 
 describe("live integration operations workspace", () => {
+  it("keeps loaded detail stable when the selected row is selected again", async () => {
+    const first = integrationOperationItem("queued", 1);
+    const loadOperation = vi.fn<
+      IntegrationOperationsDataSource["loadOperation"]
+    >(() => Promise.resolve(integrationOperationDetail(first)));
+    renderPage(source({ loadOperation }));
+    const user = userEvent.setup();
+
+    expect(
+      await screen.findByRole("heading", {
+        name: first.operationGlobalId,
+      }),
+    ).toBeVisible();
+    expect(loadOperation).toHaveBeenCalledTimes(1);
+
+    await user.click(operationRow(first.operationGlobalId));
+
+    expect(
+      screen.getByRole("heading", { name: first.operationGlobalId }),
+    ).toBeVisible();
+    expect(loadOperation).toHaveBeenCalledTimes(1);
+  });
+
   it("renders all closed states and opens operation detail with keyboard selection", async () => {
     const loadOperation = vi.fn<
       IntegrationOperationsDataSource["loadOperation"]

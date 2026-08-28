@@ -197,10 +197,7 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
     gateMode,
     screen,
     pathname,
-    scenario:
-      liveRoute || screen === "execution"
-        ? "normal"
-        : parseScenario(parameters.get("scenario")),
+    scenario: liveRoute ? "normal" : parseScenario(parameters.get("scenario")),
     qualityFailure: parameters.get("quality") === "failed",
     projectGlobalId:
       liveProjectMatch?.[1] ??

@@ -53,6 +53,9 @@ const ToolingImportWorkspace = lazy(
 const TrialPage = lazy(() => import("../pages/trial-page"));
 const LiveTrialPage = lazy(() => import("../pages/live-trial-page"));
 const ExecutionPage = lazy(() => import("../pages/execution-page"));
+const ExecutionPrototypePage = lazy(
+  () => import("../pages/execution-prototype-page"),
+);
 const liveProjectDataSource = new LiveProjectCockpitDataSource();
 const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
 const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
@@ -242,11 +245,13 @@ export function App(): React.JSX.Element {
       />
     ) : route.screen === "trial" ? (
       <TrialPage navigate={guardedNavigate} scenario={route.scenario} />
-    ) : route.screen === "execution" ? (
+    ) : route.screen === "execution" && route.projectGlobalId !== null ? (
       <ExecutionPage
         dataSource={liveIntegrationOperationsDataSource}
-        projectId={route.projectGlobalId ?? ""}
+        projectId={route.projectGlobalId}
       />
+    ) : route.screen === "execution" ? (
+      <ExecutionPrototypePage scenario={route.scenario} />
     ) : route.workMode === "demo" ? (
       <WorkPage navigate={guardedNavigate} />
     ) : (

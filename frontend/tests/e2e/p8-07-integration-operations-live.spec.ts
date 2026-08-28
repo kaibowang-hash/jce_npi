@@ -212,9 +212,11 @@ test.describe("P8-07 live integration operations", () => {
       .locator(".integration-operation-worklist")
       .getByText(replayable.operationGlobalId)
       .click();
-    await page
-      .getByRole("button", { name: "Review and request replay" })
-      .click();
+    const replayButton = page.getByRole("button", {
+      name: "Review and request replay",
+    });
+    await expect(replayButton).toBeEnabled();
+    await replayButton.click();
     const review = page.getByRole("dialog", { name: "Replay impact review" });
     await review
       .getByRole("textbox", { name: "Reason" })

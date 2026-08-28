@@ -11,9 +11,10 @@ ordinary CI `33187660221` (**PASS**)
 
 ## Scope delivered
 
-- Replaces only the in-memory `/execution` prototype with the canonical live
-  `/projects/{projectId}/integration-operations` workspace; a missing Project
-  fails closed before transport.
+- Adds the canonical live `/projects/{projectId}/integration-operations`
+  workspace while retaining `/execution` as the explicitly in-memory
+  prototype. The live workspace has no missing-Project or tenant-wide
+  transport fallback.
 - Adds one strict data source for Project-first collection, logical-DLQ,
   detail, replay and reconciliation-request routes. Unknown, foreign,
   malformed or internally inconsistent response truth is rejected.
@@ -28,9 +29,10 @@ ordinary CI `33187660221` (**PASS**)
 - Keeps Impact Review local to command confirmation, submits only the frozen
   expected raw state/version, and never turns HTTP acceptance, queued,
   synthetic or operator intent into formal ERPNext success.
-- Integrates Project shell navigation, context display and refresh while
-  retaining the legacy route only as an explicit Project-context-required
-  compatibility boundary.
+- Integrates Project command-palette navigation plus exact live-page rail
+  context and refresh while retaining the legacy prototype route and its
+  existing visible navigation/evidence contract. Unrelated live workspaces
+  keep the prior disabled rail item, avoiding a global shell-baseline change.
 
 ## Safety, UX and localization evidence
 
@@ -56,14 +58,15 @@ ordinary CI `33187660221` (**PASS**)
 
 The checkpoint-3 Level 1/2 candidate passes:
 
-- `67/67` focused data-source, page, shell and router unit tests;
-- the complete frontend suite at `1084/1084`, with `80.24%` statements,
-  `80.08%` branches, `82.71%` functions and `82.84%` lines coverage;
+- `69/69` focused data-source, live page, prototype page, shell and router unit
+  tests;
+- the complete frontend suite at `1086/1086`, with `80.19%` statements,
+  `80.00%` branches, `82.60%` functions and `82.80%` lines coverage;
 - `34/34` P8-07 backend tests, `7/7` focused security tests and `38/38`
   current-task/reconciliation tests plus both independent verification
   scripts;
-- `3/3` affected non-visual E2E cases and `3/3` governed trilingual visual
-  cases in the pinned Linux browser environment used by CI; and
+- complete non-visual E2E at `458/458` and the exact CI-governed Linux visual
+  matrix at `135/135`, including all three P8-07 language/viewports; and
 - translation generation and `100%` direct Simplified/Traditional Chinese
   coverage, type checking, full lint/format/style/boundary/UI checks, build,
   brand and install-script guards, production and full npm audit, Python
@@ -98,6 +101,38 @@ failed at the independent fail-closed verifier because the newly reviewed
 fingerprint was not yet mirrored in its exact allowlist. The follow-up adds
 that same immutable fingerprint to the verifier and its negative contract
 test; it does not broaden the accepted shape or permit any second finding.
+
+### Same-cycle route and selection compatibility remediation
+
+Verifier-repair SHA `aee201fed52726ea490313003c67e3cdd1d803fc`
+entered ordinary CI `33198074871`. Repository job `98940316657` and the full
+branch-history secret job `98940316917` passed. Visual job `98940316932`
+failed because checkpoint 3 had changed the visible Execution navigation and
+replaced the existing `/execution` prototype across the durable P0 matrix;
+the three new P8-07 Project-scoped visual cases themselves passed. Frontend
+job `98940317013` passed `451/458`; six failures were the same legacy
+`/execution` contract, while one P8-07 case exposed that selecting the already
+selected logical-DLQ row reset loaded detail to `loading` without changing the
+effect dependency, leaving its guarded action disabled.
+
+The bounded repair keeps the new Project-scoped route, data source and action
+contracts unchanged. It restores the existing in-memory prototype at
+`/execution`, preserves its visible navigation and direct translations,
+keeps Project-scoped navigation in the command palette plus the live page's
+exact current rail item, and isolates the prototype in a separate page
+module. The live worklist now treats selecting the already selected row as a
+no-op, preserving the loaded exact detail and its server-authorized action.
+The unit contract locks this behavior and the E2E command test waits for the
+detail-backed capability before acting.
+
+Affected non-visual E2E passes `67/67`. A clean Debian Bookworm x64-compatible
+Node `24.18.0`/Chromium run compares, without updating, all `18` durable P0
+screens plus all `3` P8-07 screens and passes `21/21`; no visual baseline is
+changed. The final same-cycle Level 1/2 run additionally passes focused units
+`69/69`, full frontend unit/coverage `1086/1086`, complete non-visual E2E
+`458/458`, the exact CI-governed visual matrix `135/135`, and repository
+verification `2606/2606`. A fresh exact-SHA ordinary CI remains mandatory
+before checkpoint 4.
 
 ## Holds
 

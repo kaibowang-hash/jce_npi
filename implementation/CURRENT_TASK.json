@@ -94,6 +94,7 @@
     "frontend/src/app/router.ts",
     "frontend/src/generated/catalogs.ts",
     "frontend/src/pages/execution-page.tsx",
+    "frontend/src/pages/execution-prototype-page.tsx",
     "frontend/src/styles/app.css",
     "frontend/tests/e2e/p8-07-integration-operations-live.spec.ts",
     "frontend/tests/e2e/p8-07-integration-operations-live.spec.ts-snapshots/**",

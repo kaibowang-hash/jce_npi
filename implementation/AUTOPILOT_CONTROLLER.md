@@ -7629,3 +7629,30 @@ repeat or rewrite it merely to restore context. See
   same-cycle commit mirrors only that exact fingerprint in the verifier and
   its negative contract test. No wildcard, second finding or scanner-policy
   relaxation is authorized.
+
+### P8-07 checkpoint-3 same-cycle route and row-selection remediation
+
+- Verifier-repair SHA `aee201fed52726ea490313003c67e3cdd1d803fc`
+  entered ordinary CI `33198074871`. Repository `98940316657` and full-history
+  secret scan `98940316917` pass. Visual `98940316932` fails because the live
+  page had replaced the durable `/execution` prototype and changed its visible
+  rail item across existing P0 baselines; the three new Project-scoped P8-07
+  visuals pass. Frontend `98940317013` passes `451/458`; six failures are the
+  same legacy route contract and one is a selected-row detail race.
+- The repair retains `/execution` as the existing in-memory evidence surface
+  and keeps `/projects/{projectId}/integration-operations` as the only live,
+  Project-first route. It restores the old visible prototype navigation,
+  leaves unrelated live rails disabled, and exposes Project-scoped navigation
+  through the command palette plus the live page's current rail item. Direct
+  translations return without changing the live data source, API, permissions
+  or command semantics. Re-selecting the current live row is a no-op so loaded
+  detail and capability evidence cannot be reset to a non-resolving loading
+  state.
+- Affected non-visual E2E passes `67/67`; a clean Bookworm/x64-compatible Node
+  `24.18.0` Chromium comparison passes the `18` durable P0 and `3` new P8-07
+  visual cases at `21/21` without updating any snapshot. Checkpoint 3 remains
+  inactive until this bounded repair passes a fresh exact-SHA ordinary CI.
+  Final local Level 1/2 verification also passes focused units `69/69`, full
+  frontend unit/coverage `1086/1086`, complete non-visual E2E `458/458`, the
+  exact CI-governed visual matrix `135/135`, and repository verification
+  `2606/2606`; checkpoint 4, production contact and P8-08 remain closed.
