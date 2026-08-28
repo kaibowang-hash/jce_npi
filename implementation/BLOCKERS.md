@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-28T04:15:17Z`
+Updated: `2026-08-28T06:17:53Z`
 
 ## Active hard blockers
 
@@ -13,8 +13,10 @@ Runtime, visual and Gitleaks artifact hashes are recorded in
 `implementation/evidence/phase-8/p8-06-validation.md`; all 17 diagnostics are
 false, zero production traffic and cleanup pass. The P8-07 audit plan passes at
 exact SHA `2e573fa1757f7d9306f17bb47cb62c59e8493b7f` / ordinary CI
-`33139628396`; checkpoint 1 is behavior-free and awaits its own exact-SHA
-ordinary CI. It requires no external login or production action.
+`33139628396`; checkpoint 1 passes at exact SHA
+`d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` / ordinary CI `33142594763`.
+Checkpoint 2 is the only active scope and requires no external login or
+production action.
 
 The exact-20 ERPNext customization requirements baseline passes at
 `6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825` and is
@@ -31,9 +33,11 @@ historical evidence and final exact-SHA run `33132296565` is authoritative.
 The technical slice provides only an NPI-owned Project-first exact-observation
 link and read-only linked/current/drift facts. It authorizes no ERP target
 write, worker, adapter or target contact. Production adapters and formal
-mapping from Mock or Synthetic proof remain inactive. P8-07 checkpoint 1 is
-the only active product scope and adds no route, row, queue, adapter, target
-call or UI behavior; checkpoint 2 and P8-08/P8-09 remain inactive.
+mapping from Mock or Synthetic proof remain inactive. P8-07 checkpoint 2 is
+the only active product scope. It adds Project-first safe reads and fixed
+operation-specific action requests, remains default-disabled, and adds no
+adapter, target call or UI behavior; checkpoint 3 and P8-08/P8-09 remain
+inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -66,10 +70,10 @@ read-only projection obligations remain V1.2.
   lifecycle, raw-code interpretation, approval, Gate/readiness policy and
   authenticated Sandbox operation remain scoped Class-B holds. They do not
   invalidate the network-free technical quality-link foundation.
-- P8-07 audit-plan CI passes for `FR-RP-009`, `UX-016` and `NFR-INT-001`.
-  Only checkpoint 1 pure domains/contracts/guarded zero-row metadata are
-  authorized; route/repository behavior, generic replay controls, operator
-  database access and target traffic remain unauthorized.
+- P8-07 checkpoint 1 passes exact-SHA ordinary CI. Checkpoint 2 alone is
+  authorized for Project-first reads and fixed operation-specific replay or
+  reconciliation-intent commands; generic mutation, operator database access,
+  target traffic and checkpoint-3 UI remain unauthorized.
 - `USER_APPROVED_POST_V1_2_DEFERRED` applies only to FR-CO-003/004 external
   portal surfaces. Restoration requires a separate future-release controller
   entry with approved external identity/authorization, evidence/approval,
@@ -78,7 +82,7 @@ read-only projection obligations remain V1.2.
 - The ERP customization requirements baseline is complete without production
   contact. The separate production fact-collection request remains
   `QUEUED_NOT_EFFECTIVE`; it changes neither the production-contact prohibition
-  nor checkpoint-1-only P8-07 product authorization.
+  nor checkpoint-2-only P8-07 product authorization.
 
 ## Historical recovery
 

@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-06 LEVEL 3 PASS; P8-07 AUDIT PASS / CHECKPOINT 1 PENDING PLAN CI**
+Status: **IN PROGRESS — P8-06 LEVEL 3 PASS; P8-07 CHECKPOINT 1 PASS / CHECKPOINT 2 PENDING CI**
 
 Anchor date: 2026-08-16
 
@@ -551,3 +551,13 @@ and separates operator reconciliation intent from trusted target evidence.
 The plan transition must pass exact-SHA ordinary CI before checkpoint 1 pure
 domain/contracts/zero-row metadata work begins. Production contact, generic
 mutation, uncertain redispatch, P8-08 and P8-09 remain prohibited.
+
+P8-07 checkpoint 1 passes at exact product SHA
+`d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` and ordinary CI `33142594763`.
+Checkpoint 2 is the only active boundary: Project-first bounded list/detail and
+derived logical-DLQ reads plus ten literal replay/reconciliation-intent
+commands. Replay is limited to exact pre-boundary retryable owning truth,
+preserves the original source and target idempotency, and queues the owning
+worker only after atomic receipt/audit commit. Reconciliation cannot assert
+target success. Routes remain default-disabled; checkpoint-3 UI, adapters,
+target calls, production contact, P8-08 and P8-09 remain closed.

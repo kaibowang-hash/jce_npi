@@ -22,7 +22,7 @@
     {"fieldname": "source_snapshot_hash", "fieldtype": "Data", "label": "Integration Source Snapshot Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "target_idempotency_key_hash", "fieldtype": "Data", "label": "Target Idempotency Key Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "action_kind", "fieldtype": "Select", "label": "Integration Action Kind", "options": "replay\nrequest_reconciliation", "reqd": 1, "read_only": 1},
-    {"fieldname": "action_idempotency_key_hash", "fieldtype": "Data", "label": "Integration Action Idempotency Key Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "action_idempotency_key_hash", "fieldtype": "Data", "label": "Integration Action Idempotency Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
     {"fieldname": "expected_raw_state", "fieldtype": "Data", "label": "Expected Integration Raw State", "reqd": 1, "read_only": 1},
     {"fieldname": "expected_version", "fieldtype": "Int", "label": "Expected Integration Operation Version", "reqd": 1, "read_only": 1},
     {"fieldname": "request_hash", "fieldtype": "Data", "label": "Integration Action Request Hash", "reqd": 1, "read_only": 1},

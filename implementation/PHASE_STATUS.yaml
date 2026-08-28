@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-28T04:15:17Z'
+updated_at: '2026-08-28T06:17:53Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-07
-current_task_status: IN_PROGRESS_CHECKPOINT_1_AWAITING_PRODUCT_CI
-current_task_completed_stage: P8_07_AUDIT_PLAN_EXACT_SHA_ORDINARY_PASS
+current_task_status: IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI
+current_task_completed_stage: P8_07_CHECKPOINT_1_EXACT_SHA_ORDINARY_PASS
 current_task_next_stage: P8_07_CHECKPOINT_2_PROJECT_FIRST_READ_AND_OPERATION_SPECIFIC_COMMANDS
-current_task_next_stage_status: CHECKPOINT_1_PRODUCT_PENDING_EXACT_SHA_ORDINARY
+current_task_next_stage_status: CHECKPOINT_2_PRODUCT_PENDING_EXACT_SHA_ORDINARY
 resumed_product_task: P8-07
-resumed_product_task_status: AUDIT_PLAN_CI_PASS_CHECKPOINT_1_PENDING_PRODUCT_CI
+resumed_product_task_status: CHECKPOINT_1_CI_PASS_CHECKPOINT_2_PENDING_PRODUCT_CI
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE
@@ -2568,7 +2568,7 @@ p8_06:
 p8_07:
   task: P8-07
   controller_task: P8-07_OPERATIONS_DLQ_REPLAY_RECONCILIATION
-  status: IN_PROGRESS_CHECKPOINT_1_AWAITING_PRODUCT_CI
+  status: IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI
   phase: 8
   milestone: M7-07
   requirements:
@@ -2581,13 +2581,15 @@ p8_07:
   audit_decision: PASS
   audit_plan_checkpoint: 2e573fa1757f7d9306f17bb47cb62c59e8493b7f
   audit_plan_ordinary_ci: 33139628396
+  checkpoint_1_product_checkpoint: d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8
+  checkpoint_1_ordinary_ci: 33142594763
   product_code_authorized: true
   product_code_changed: true
-  current_stage: CHECKPOINT_1_PURE_DOMAIN_CONTRACT_ZERO_ROW_METADATA
+  current_stage: CHECKPOINT_2_PROJECT_FIRST_READ_AND_OPERATION_SPECIFIC_COMMANDS
   erp_customization_requirements_status: GOVERNED_REQUIREMENTS_BASELINE_PRODUCTION_FACTS_NOT_COLLECTED
   production_fact_check_status: QUEUED_NOT_EFFECTIVE
   production_connection_status: PROHIBITED_PENDING_RULE_CHANGE_AND_GATE
-  next_stage_after_pass: CHECKPOINT_2_PROJECT_FIRST_READ_AND_OPERATION_SPECIFIC_COMMANDS
+  next_stage_after_pass: CHECKPOINT_3_TRILINGUAL_INDUSTRIAL_JOB_CENTER
   operation_inventory: [receive_project_submission, publish_item, publish_mbom, create_tool_asset, update_tool_asset]
   logical_dlq_rule: DERIVED_FROM_OWNING_TERMINAL_TRUTH_NOT_A_SECOND_MUTABLE_COPY
   operation_rule: OPERATION_SPECIFIC_AUTHORITY_IDEMPOTENCY_REQUEST_ATTEMPT_RESULT_REPLAY_AND_RECONCILIATION_REMAIN_DISTINCT
@@ -2596,7 +2598,9 @@ p8_07:
   replay_rule: ONLY_EXACT_RETRYABLE_NON_UNCERTAIN_OPERATION_WITH_ORIGINAL_SOURCE_AND_TARGET_IDEMPOTENCY
   reconciliation_rule: OPERATOR_INTENT_ONLY_TRUSTED_OPERATION_SPECIFIC_EVIDENCE_CAN_CONFIRM_TARGET_TRUTH
   non_scope:
-    - PRODUCT_CODE_ROUTE_WRITER_WORKER_ADAPTER_UI_OR_NETWORK
+    - GENERIC_ROUTE_WRITER_OR_CALLER_SELECTED_TARGET_MUTATION
+    - WORKER_ADAPTER_TARGET_NETWORK_OR_RECONCILIATION_RESULT_CONFIRMATION
+    - CHECKPOINT_3_LIVE_UI_BEHAVIOR
     - GENERIC_BUSINESS_MUTATION_OR_PERMISSION_BYPASS
     - ERP_TARGET_PASS_APPROVAL_OR_GATE_INTERPRETATION
     - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_OR_TRAFFIC

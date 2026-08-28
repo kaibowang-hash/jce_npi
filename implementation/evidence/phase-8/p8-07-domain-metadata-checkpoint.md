@@ -1,6 +1,6 @@
 # P8-07 Checkpoint 1 — Domain, Contracts and Guarded Metadata
 
-Status: **LEVEL 1 PASS — AWAITING EXACT-SHA ORDINARY CI**
+Status: **EXACT-SHA ORDINARY CI PASS**
 
 Date: 2026-08-28
 
@@ -8,6 +8,9 @@ Requirements: `FR-RP-009`, `UX-016`, `NFR-INT-001`
 
 Audit-plan Gate: `2e573fa1757f7d9306f17bb47cb62c59e8493b7f` /
 ordinary CI `33139628396` (**PASS**)
+
+Checkpoint-1 Gate: `d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` /
+ordinary CI `33142594763` (**PASS**)
 
 Predecessor product checkpoint:
 `547421a059911df6aeb90bbbf06e837f77a3e5e0`
@@ -103,7 +106,7 @@ scanner, allowlist or threshold changes.
 ## Non-scope and next gate
 
 This checkpoint creates no route, repository writer, persisted row, queue,
-adapter, target call, UI behavior or production contact. Checkpoint 2 may open
-only after this checkpoint's exact-SHA ordinary CI passes; it remains limited
-to Project-first read/DLQ projections and fixed operation-specific replay and
-reconciliation-request commands under the frozen plan.
+adapter, target call, UI behavior or production contact. Its exact-SHA Gate is
+now closed. Checkpoint 2 is limited to Project-first read/DLQ projections and
+fixed operation-specific replay and reconciliation-request commands under the
+frozen plan.

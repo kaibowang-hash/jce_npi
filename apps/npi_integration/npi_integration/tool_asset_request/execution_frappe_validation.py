@@ -76,6 +76,13 @@ _RESULT_WRITES = frozenset(
         ("NPI Outbox Message", "save"),
     }
 )
+_MANUAL_REPLAY_WRITES = frozenset(
+    {
+        ("NPI Tool Asset Request", "save"),
+        ("NPI Tool Asset Stream Guard", "save"),
+        ("NPI Outbox Message", "save"),
+    }
+)
 
 
 class ToolAssetServiceActorUnavailable(RuntimeError):
@@ -205,6 +212,31 @@ def tool_asset_claim_write(service_actor_user_id: str) -> Iterator[ToolAssetSupp
 @contextmanager
 def tool_asset_result_transaction_write(service_actor_user_id: str) -> Iterator[ToolAssetSupportWriteCapability]:
     with _tool_asset_support_write(service_actor_user_id, "result", _RESULT_WRITES) as capability, _flag_scope(AUDIT_APPEND_FLAG):
+        yield capability
+
+
+@contextmanager
+def tool_asset_manual_replay_write(
+    service_actor_user_id: str,
+    *,
+    operation_kind: str,
+) -> Iterator[ToolAssetSupportWriteCapability]:
+    """Authorize one exact Tool Asset failed-retryable CAS back to queued."""
+
+    from npi_integration.integration_operations.frappe_validation import (
+        integration_operation_manual_replay,
+    )
+
+    if operation_kind not in {"create_tool_asset", "update_tool_asset"}:
+        raise ValueError("Tool Asset replay operation is unsupported.")
+    with _tool_asset_support_write(
+        service_actor_user_id,
+        "manual_replay",
+        _MANUAL_REPLAY_WRITES,
+    ) as capability, integration_operation_manual_replay(
+        actor_user_id=service_actor_user_id,
+        operation_kind=operation_kind,
+    ), _flag_scope(AUDIT_APPEND_FLAG):
         yield capability
 
 

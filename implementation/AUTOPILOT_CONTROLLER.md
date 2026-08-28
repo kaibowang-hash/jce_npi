@@ -7556,3 +7556,29 @@ repeat or rewrite it merely to restore context. See
 - Focused security `3/3`, the zero-match scanner and the exact
   `scripts/verify.sh --repository` entrypoint pass locally. Checkpoint 1 still
   awaits a new exact-SHA ordinary CI; checkpoint 2 remains closed.
+
+## 2026-08-28 P8-07 checkpoint 1 PASS; checkpoint 2 awaits product CI
+
+- Stable checkpoint-1 SHA
+  `d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` passes ordinary CI
+  `33142594763`: frontend `98756508481`, secret `98756508634`, governed visual
+  `98756508652` and repository `98756508685` all pass; controlled lanes
+  correctly skip.
+- Checkpoint 1 remains behavior-free and sealed: five closed operation kinds,
+  immutable action/reconciliation domains, additive contracts, two guarded
+  zero-row support DocTypes and direct translations activate no route, writer,
+  queue, adapter, target call or UI.
+- Standing authority activates only checkpoint 2. It may add Project-first
+  list/detail/logical-DLQ reads and the ten literal replay or
+  reconciliation-request routes frozen in the plan. Each command requires
+  internal Project administration, `NPI API User`, CSRF, trace, action
+  idempotency and exact current raw state/version.
+- Replay may reset only a proven pre-boundary `failed_retryable` owning row,
+  keeps the original source and target idempotency, appends one actor-bound
+  receipt plus audit atomically and queues the owning worker after commit.
+  Reconciliation records operator intent only and cannot assert target result.
+- The routes remain default-disabled. No generic mutation, caller-selected
+  target authority, adapter, target call, checkpoint-3 UI, production contact,
+  P8-08 or P8-09 behavior is authorized.
+- Controller marker:
+  `P8-07 checkpoint 1 exact-SHA ordinary PASS; checkpoint 2 awaits exact-SHA ordinary CI`.

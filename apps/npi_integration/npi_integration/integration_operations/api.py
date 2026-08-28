@@ -1,0 +1,477 @@
+from __future__ import annotations
+
+import re
+from typing import Any, Protocol
+from uuid import UUID
+
+import frappe
+from frappe import _
+
+from npi_core.api import frappe_domain_call
+from npi_core.foundation.errors import PermissionDenied, RequestValidationFailed
+from npi_core.foundation.security import Principal
+from npi_core.foundation.tracing import current_trace_id
+from npi_core.project.domain import actor_idempotency_key_hash
+from npi_core.request_security import (
+    authenticated_principal,
+    authenticated_user,
+    reject_unexpected_request_fields,
+    require_csrf_token,
+    require_request_fields,
+    response_request_id,
+)
+
+from .domain import (
+    IntegrationActionKind,
+    IntegrationOperationKind,
+    IntegrationViewState,
+)
+from .problems import (
+    IntegrationOperationsRoutesDisabled,
+    IntegrationOperationsUnavailable,
+)
+
+
+_RAW_STATE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$")
+_LIST_FIELDS = frozenset({"operationKind", "sharedState", "cursor", "limit"})
+_ACTION_FIELDS = frozenset({"expectedRawState", "expectedVersion"})
+_DEFAULT_LIMIT = 50
+_MAX_LIMIT = 200
+_FORBIDDEN_RESPONSE_KEYS = frozenset(
+    {
+        "authorization",
+        "cookie",
+        "credential",
+        "credentials",
+        "password",
+        "payload",
+        "rawbody",
+        "rawpayload",
+        "requestbody",
+        "responsebody",
+        "secret",
+        "targetrequest",
+        "targetresponse",
+        "token",
+    }
+)
+
+
+class _Repository(Protocol):
+    def authorize_scope(
+        self,
+        project_id: UUID,
+        *,
+        administer: bool = False,
+    ) -> bool: ...
+
+    def list_operations(self, project_id: UUID, **values: Any) -> dict[str, Any] | None: ...
+
+    def operation_detail(self, project_id: UUID, **values: Any) -> dict[str, Any] | None: ...
+
+    def request_action(self, project_id: UUID, **values: Any) -> Any | None: ...
+
+
+def _repository_factory(
+    *,
+    principal: Principal,
+    request_id: str,
+    trace_id: str,
+) -> _Repository:
+    from .frappe_repository import FrappeIntegrationOperationsRepository
+
+    return FrappeIntegrationOperationsRepository(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
+def integration_operations_routes_are_disabled() -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p8_07_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_integration_operations(
+    operationKind: Any = None,
+    sharedState: Any = None,
+    cursor: Any = None,
+    limit: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _list(
+        operation_kind=operationKind,
+        shared_state=sharedState,
+        cursor=cursor,
+        limit=limit,
+        logical_dlq=False,
+        request_fields=request_fields,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_integration_operation_dlq(
+    operationKind: Any = None,
+    sharedState: Any = None,
+    cursor: Any = None,
+    limit: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _list(
+        operation_kind=operationKind,
+        shared_state=sharedState,
+        cursor=cursor,
+        limit=limit,
+        logical_dlq=True,
+        request_fields=request_fields,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_integration_operation(**request_fields: Any) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository, project_id, _actor = _context(
+            request_fields,
+            allowed_fields=frozenset(),
+            administer=False,
+        )
+        response = repository.operation_detail(
+            project_id,
+            operation_kind=_route_operation_kind(),
+            operation_id=_route_uuid("integration_operation_id"),
+        )
+        if response is None:
+            raise IntegrationOperationsUnavailable()
+        headers["X-Request-ID"] = request_id
+        return _response(response, project_id=project_id)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+def _fixed_action(
+    operation_kind: IntegrationOperationKind,
+    action_kind: IntegrationActionKind,
+    *,
+    expectedRawState: Any,
+    expectedVersion: Any,
+    request_fields: dict[str, Any],
+) -> dict[str, Any] | None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+    replayed = False
+
+    def handle() -> dict[str, Any]:
+        nonlocal replayed
+        require_csrf_token()
+        command_fields = {
+            **request_fields,
+            "expectedRawState": expectedRawState,
+            "expectedVersion": expectedVersion,
+        }
+        reject_unexpected_request_fields(_ACTION_FIELDS, command_fields)
+        require_request_fields(_ACTION_FIELDS, command_fields)
+        request_id, repository, project_id, actor = _context(
+            request_fields,
+            allowed_fields=_ACTION_FIELDS,
+            administer=True,
+        )
+        outcome = repository.request_action(
+            project_id,
+            operation_kind=operation_kind,
+            operation_id=_route_uuid("integration_operation_id"),
+            action_kind=action_kind,
+            expected_raw_state=_raw_state(expectedRawState),
+            expected_version=_positive(expectedVersion, "expectedVersion"),
+            action_idempotency_key_hash=actor_idempotency_key_hash(
+                actor,
+                frappe.get_request_header("Idempotency-Key"),
+            ),
+        )
+        if outcome is None or type(outcome.replayed) is not bool:
+            raise IntegrationOperationsUnavailable()
+        if not isinstance(outcome.response, dict):
+            raise RuntimeError("The integration operation action result is invalid.")
+        safe_response = _response(
+            outcome.response,
+            project_id=project_id,
+            action=True,
+        )
+        try:
+            frappe.db.commit()
+        except Exception:
+            try:
+                frappe.db.rollback()
+            except Exception:
+                pass
+            raise
+        replayed = outcome.replayed
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(replayed).lower()
+        return safe_response
+
+    result = frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+    if replayed and frappe.local.response.http_status_code == 201:
+        frappe.local.response.http_status_code = 200
+    return result
+
+
+def _list(
+    *,
+    operation_kind: Any,
+    shared_state: Any,
+    cursor: Any,
+    limit: Any,
+    logical_dlq: bool,
+    request_fields: dict[str, Any],
+) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        supplied = {
+            **request_fields,
+            "operationKind": operation_kind,
+            "sharedState": shared_state,
+            "cursor": cursor,
+            "limit": limit,
+        }
+        reject_unexpected_request_fields(_LIST_FIELDS, supplied)
+        request_id, repository, project_id, _actor = _context(
+            request_fields,
+            allowed_fields=_LIST_FIELDS,
+            administer=False,
+        )
+        response = repository.list_operations(
+            project_id,
+            operation_kind=_optional_operation_kind(operation_kind),
+            shared_state=_optional_shared_state(shared_state),
+            cursor=_optional_cursor(cursor),
+            limit=_limit(limit),
+            logical_dlq=logical_dlq,
+        )
+        if response is None:
+            raise IntegrationOperationsUnavailable()
+        headers["X-Request-ID"] = request_id
+        return _response(response, project_id=project_id)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+def _context(
+    request_fields: dict[str, Any],
+    *,
+    allowed_fields: frozenset[str],
+    administer: bool,
+) -> tuple[str, _Repository, UUID, str]:
+    actor = authenticated_user()
+    principal = authenticated_principal(actor)
+    if principal.is_external:
+        raise PermissionDenied()
+    request_id = _request_id()
+    trace_id = current_trace_id.get()
+    if trace_id is None:
+        raise RuntimeError("The integration operation request has no trace identity.")
+    repository = _repository_factory(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+    project_id = _route_uuid("project_id")
+    if not repository.authorize_scope(project_id, administer=administer):
+        raise IntegrationOperationsUnavailable()
+    reject_unexpected_request_fields(allowed_fields, request_fields)
+    if integration_operations_routes_are_disabled():
+        raise IntegrationOperationsRoutesDisabled()
+    return request_id, repository, project_id, actor
+
+
+def _request_id() -> str:
+    value = response_request_id()
+    try:
+        parsed = UUID(str(value))
+    except (TypeError, ValueError) as error:
+        raise _field("X-Request-ID", _("Enter a valid request identifier.")) from error
+    if str(parsed) != str(value).casefold():
+        raise _field("X-Request-ID", _("Enter a valid request identifier."))
+    return str(parsed)
+
+
+def _route_uuid(name: str) -> UUID:
+    raw = getattr(frappe.flags, "npi_route_params", {}).get(name)
+    try:
+        parsed = UUID(str(raw))
+    except (TypeError, ValueError) as error:
+        raise IntegrationOperationsUnavailable() from error
+    if str(parsed) != str(raw).casefold():
+        raise IntegrationOperationsUnavailable()
+    return parsed
+
+
+def _route_operation_kind() -> IntegrationOperationKind:
+    raw = getattr(frappe.flags, "npi_route_params", {}).get("operation_kind")
+    try:
+        return IntegrationOperationKind(str(raw))
+    except (TypeError, ValueError) as error:
+        raise IntegrationOperationsUnavailable() from error
+
+
+def _optional_operation_kind(value: Any) -> IntegrationOperationKind | None:
+    if value in (None, ""):
+        return None
+    try:
+        return IntegrationOperationKind(str(value))
+    except (TypeError, ValueError) as error:
+        raise _field("operationKind", _("Select a supported value.")) from error
+
+
+def _optional_shared_state(value: Any) -> IntegrationViewState | None:
+    if value in (None, ""):
+        return None
+    try:
+        return IntegrationViewState(str(value))
+    except (TypeError, ValueError) as error:
+        raise _field("sharedState", _("Select a supported value.")) from error
+
+
+def _optional_cursor(value: Any) -> str | None:
+    if value in (None, ""):
+        return None
+    if not isinstance(value, str) or value != value.strip() or len(value) > 512:
+        raise _field("cursor", _("Enter a valid cursor."))
+    return value
+
+
+def _limit(value: Any) -> int:
+    if value in (None, ""):
+        return _DEFAULT_LIMIT
+    if isinstance(value, str) and value.isascii() and value.isdigit():
+        value = int(value)
+    if type(value) is not int or not 1 <= value <= _MAX_LIMIT:
+        raise _field("limit", _("Enter a whole number from 1 to 200."))
+    return value
+
+
+def _raw_state(value: Any) -> str:
+    if not isinstance(value, str) or _RAW_STATE.fullmatch(value) is None:
+        raise _field("expectedRawState", _("Select a supported operation state."))
+    return value
+
+
+def _positive(value: Any, field: str) -> int:
+    if type(value) is not int or value < 1:
+        raise _field(field, _("Enter a positive whole number."))
+    return value
+
+
+def _field(field: str, message: str) -> RequestValidationFailed:
+    return RequestValidationFailed({field: message})
+
+
+def _response(
+    value: object,
+    *,
+    project_id: UUID,
+    action: bool = False,
+) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise RuntimeError("The integration operation response is invalid.")
+    if not action and str(value.get("projectGlobalId")) != str(project_id):
+        raise RuntimeError("The integration operation response Project is invalid.")
+    _reject_unsafe_response(value)
+    return value
+
+
+def _reject_unsafe_response(value: object) -> None:
+    if isinstance(value, dict):
+        for key, child in value.items():
+            normalized = re.sub(r"[^a-z0-9]", "", str(key).casefold())
+            if normalized in _FORBIDDEN_RESPONSE_KEYS:
+                raise RuntimeError("The integration operation response is unsafe.")
+            _reject_unsafe_response(child)
+    elif isinstance(value, list):
+        for child in value:
+            _reject_unsafe_response(child)
+
+
+def _bind_action(
+    operation_kind: IntegrationOperationKind,
+    action_kind: IntegrationActionKind,
+):
+    def invoke(
+        expectedRawState: Any = None,
+        expectedVersion: Any = None,
+        **request_fields: Any,
+    ) -> dict[str, Any] | None:
+        return _fixed_action(
+            operation_kind,
+            action_kind,
+            expectedRawState=expectedRawState,
+            expectedVersion=expectedVersion,
+            request_fields=request_fields,
+        )
+
+    return frappe.whitelist(allow_guest=True, methods=["POST"])(invoke)
+
+
+replay_receive_project_submission = _bind_action(
+    IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION,
+    IntegrationActionKind.REPLAY,
+)
+request_reconciliation_receive_project_submission = _bind_action(
+    IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION,
+    IntegrationActionKind.REQUEST_RECONCILIATION,
+)
+replay_publish_item = _bind_action(
+    IntegrationOperationKind.PUBLISH_ITEM,
+    IntegrationActionKind.REPLAY,
+)
+request_reconciliation_publish_item = _bind_action(
+    IntegrationOperationKind.PUBLISH_ITEM,
+    IntegrationActionKind.REQUEST_RECONCILIATION,
+)
+replay_publish_mbom = _bind_action(
+    IntegrationOperationKind.PUBLISH_MBOM,
+    IntegrationActionKind.REPLAY,
+)
+request_reconciliation_publish_mbom = _bind_action(
+    IntegrationOperationKind.PUBLISH_MBOM,
+    IntegrationActionKind.REQUEST_RECONCILIATION,
+)
+replay_create_tool_asset = _bind_action(
+    IntegrationOperationKind.CREATE_TOOL_ASSET,
+    IntegrationActionKind.REPLAY,
+)
+request_reconciliation_create_tool_asset = _bind_action(
+    IntegrationOperationKind.CREATE_TOOL_ASSET,
+    IntegrationActionKind.REQUEST_RECONCILIATION,
+)
+replay_update_tool_asset = _bind_action(
+    IntegrationOperationKind.UPDATE_TOOL_ASSET,
+    IntegrationActionKind.REPLAY,
+)
+request_reconciliation_update_tool_asset = _bind_action(
+    IntegrationOperationKind.UPDATE_TOOL_ASSET,
+    IntegrationActionKind.REQUEST_RECONCILIATION,
+)

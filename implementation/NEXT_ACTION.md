@@ -1,20 +1,20 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_AWAITING_PRODUCT_CI — P8-07`
+`IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI — P8-07`
 
-Recovery time: `2026-08-28T04:15:17Z`
+Recovery time: `2026-08-28T06:17:53Z`
 
-Current atomic action: seal checkpoint 1 pure closed domains, additive
-OpenAPI/event/ownership components, guarded zero-row action/reconciliation
-metadata, direct translations and focused tests, then wait for its exact-SHA
-ordinary CI. The frozen audit plan passes at
-`2e573fa1757f7d9306f17bb47cb62c59e8493b7f` / ordinary CI `33139628396`.
-Checkpoint 2 Project-first reads and operation-specific commands remain closed
-until checkpoint 1 CI passes. No route, repository writer, persisted row,
-queue, adapter, target call or UI behavior is active. Production contact
-remains prohibited and the queued fact-check request remains not effective.
-External portals remain `USER_APPROVED_POST_V1_2_DEFERRED`.
+Current atomic action: seal checkpoint 2 Project-first list/detail/logical-DLQ
+reads and ten fixed operation-specific replay/reconciliation-request commands,
+then require its exact-SHA ordinary CI. Checkpoint 1 passes at
+`d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` / ordinary CI `33142594763`.
+The new routes remain default-disabled; replay is limited to exact
+pre-boundary retryable truth, reconciliation records intent only, and enqueue
+occurs after commit through the owning worker. Checkpoint 3 UI, adapters,
+target calls and production contact remain inactive. The queued fact-check
+request remains not effective and external portals remain
+`USER_APPROVED_POST_V1_2_DEFERRED`.
 
 Required branch:
 `codex/npi-v1.2-implementation`

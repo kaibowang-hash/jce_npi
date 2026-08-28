@@ -85,6 +85,14 @@ _RESULT_WRITES = frozenset(
         ("NPI Outbox Message", "save"),
     }
 )
+_MANUAL_REPLAY_WRITES = frozenset(
+    {
+        ("NPI MBOM Publish Request", "save"),
+        ("NPI MBOM Publish Node", "save"),
+        ("NPI MBOM Publish Stream Guard", "save"),
+        ("NPI Outbox Message", "save"),
+    }
+)
 
 
 def require_mbom_outbox_write() -> None:
@@ -290,6 +298,38 @@ def mbom_result_transaction_write(
             _flag_scope(MBOM_ATTEMPT_WRITE_FLAG),
             _flag_scope(MBOM_RESULT_WRITE_FLAG),
             _flag_scope(MBOM_MAPPING_WRITE_FLAG),
+            _flag_scope(MBOM_OUTBOX_WRITE_FLAG),
+            _flag_scope(AUDIT_APPEND_FLAG),
+        ):
+            yield capability
+
+
+@contextmanager
+def mbom_manual_replay_write(
+    service_actor_user_id: str,
+) -> Iterator[MbomSupportWriteCapability]:
+    """Authorize only a failed-retryable MBOM aggregate CAS back to queued."""
+
+    from npi_integration.integration_operations.frappe_validation import (
+        integration_operation_manual_replay,
+    )
+
+    _require_session_actor(service_actor_user_id)
+    _require_internal_npi_api_user(service_actor_user_id)
+    capability = _capability(
+        service_actor_user_id,
+        "manual_replay",
+        _MANUAL_REPLAY_WRITES,
+    )
+    with _capability_scope(capability):
+        with (
+            integration_operation_manual_replay(
+                actor_user_id=service_actor_user_id,
+                operation_kind="publish_mbom",
+            ),
+            _flag_scope(MBOM_REQUEST_WRITE_FLAG),
+            _flag_scope(MBOM_NODE_WRITE_FLAG),
+            _flag_scope(MBOM_STREAM_GUARD_WRITE_FLAG),
             _flag_scope(MBOM_OUTBOX_WRITE_FLAG),
             _flag_scope(AUDIT_APPEND_FLAG),
         ):

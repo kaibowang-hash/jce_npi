@@ -42,9 +42,13 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_07_AUDIT_PLAN_EXACT_SHA_2E573FA1757F7D9306F17BB47CB62C59E8493B7F_ORDINARY_33139628396_PASSED",
             value["frozen_invariants"],
         )
+        self.assertIn(
+            "P8_07_CHECKPOINT_1_EXACT_SHA_D45D1D560FEDFED9D9791A5C08CCF9C1402F7EF8_ORDINARY_33142594763_PASSED",
+            value["frozen_invariants"],
+        )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_AWAITING_PRODUCT_CI",
+            "IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI",
         )
         self.assertIn(
             "P8_06_LEVEL_3_EXACT_SHA_547421A059911DF6AEB90BBBF06E837F77A3E5E0_ORDINARY_33131533806_FINAL_33132296565_PASSED",
@@ -107,7 +111,20 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         }
         self.assertEqual(
             affected_modules,
-            {"tests.test_current_task_verifier", "tests.test_v1_2_reconciliation"},
+            {
+                "tests.test_current_task_verifier",
+                "tests.test_phase8_inbound_project_metadata",
+                "tests.test_phase8_integration_operations_api",
+                "tests.test_phase8_integration_operations_contract",
+                "tests.test_phase8_integration_operations_domain",
+                "tests.test_phase8_integration_operations_metadata",
+                "tests.test_phase8_integration_operations_repository",
+                "tests.test_phase8_integration_operations_security",
+                "tests.test_phase8_item_publish_security",
+                "tests.test_phase8_mbom_publish_security",
+                "tests.test_phase8_tool_asset_security",
+                "tests.test_v1_2_reconciliation",
+            },
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:

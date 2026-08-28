@@ -83,7 +83,7 @@ class Phase8IntegrationOperationsMetadataTest(unittest.TestCase):
         ):
             self.assertIn(marker, source)
 
-    def test_controllers_are_append_only_hash_validated_and_have_no_writer_bypass(self) -> None:
+    def test_controllers_are_append_only_hash_validated_with_one_exact_writer(self) -> None:
         base = (PACKAGE / "doctype_base.py").read_text(encoding="utf-8")
         guard = (PACKAGE / "frappe_validation.py").read_text(encoding="utf-8")
         for marker in (
@@ -101,10 +101,55 @@ class Phase8IntegrationOperationsMetadataTest(unittest.TestCase):
             'service_actor_user_id.casefold() in {"guest", "administrator"}',
         ):
             self.assertIn(marker, guard)
+        bypasses: list[tuple[str, str, str]] = []
         for path in PACKAGE.glob("*.py"):
             source = path.read_text(encoding="utf-8")
-            ast.parse(source)
-            self.assertNotIn("ignore_permissions", source)
+            tree = ast.parse(source)
+            for node in ast.walk(tree):
+                if not (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and any(
+                        keyword.arg == "ignore_permissions"
+                        and isinstance(keyword.value, ast.Constant)
+                        and keyword.value.value is True
+                        for keyword in node.keywords
+                    )
+                ):
+                    continue
+                function = next(
+                    (
+                        parent
+                        for parent in ast.walk(tree)
+                        if isinstance(parent, ast.FunctionDef)
+                        and node in tuple(ast.walk(parent))
+                    ),
+                    None,
+                )
+                bypasses.append(
+                    (
+                        path.name,
+                        function.name if isinstance(function, ast.FunctionDef) else "",
+                        node.func.attr,
+                    )
+                )
+        self.assertEqual(
+            bypasses,
+            [
+                (
+                    "frappe_validation.py",
+                    "insert_integration_operations_support_document",
+                    "insert",
+                )
+            ],
+        )
+        action_metadata = self.load("npi_integration_action_receipt")
+        action_key = next(
+            field
+            for field in action_metadata["fields"]
+            if field["fieldname"] == "action_idempotency_key_hash"
+        )
+        self.assertEqual(action_key.get("unique"), 1)
         for folder in self.FOLDERS:
             source = (DOCTYPE_ROOT / folder / f"{folder}.py").read_text(
                 encoding="utf-8"
@@ -195,6 +240,10 @@ class Phase8IntegrationOperationsMetadataTest(unittest.TestCase):
                 ast.parse((PACKAGE / "frappe_validation.py").read_text(encoding="utf-8"))
             )
         )
+        for path in (PACKAGE / "api.py", PACKAGE / "problems.py"):
+            sources.update(
+                _translation_literals(ast.parse(path.read_text(encoding="utf-8")))
+            )
         for locale in ("zh", "zh-TW"):
             with (TRANSLATIONS / f"{locale}.csv").open(
                 encoding="utf-8",

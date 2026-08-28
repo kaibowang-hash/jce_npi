@@ -23,6 +23,16 @@ class Phase8IntegrationOperationsSecurityTest(unittest.TestCase):
         frappe.session = types.SimpleNamespace(user="service@example.invalid")
         roles = {"service@example.invalid": ["NPI API User", "System Manager"]}
         frappe.get_roles = lambda user: roles.get(user, [])
+        frappe.db = types.SimpleNamespace(
+            get_value=lambda doctype, name, fields, *, as_dict=False: (
+                {"enabled": 1, "user_type": "System User"}
+                if doctype == "User"
+                and name == "service@example.invalid"
+                and fields == ["enabled", "user_type"]
+                and as_dict
+                else None
+            )
+        )
 
         def throw(message, error=None):
             raise (error or permission_error)(message)
@@ -122,27 +132,38 @@ class Phase8IntegrationOperationsSecurityTest(unittest.TestCase):
                 ):
                     pass
 
-    def test_checkpoint_one_has_no_route_repository_queue_adapter_or_permission_bypass(self) -> None:
+    def test_checkpoint_two_routes_repository_and_queue_are_fixed_and_bounded(self) -> None:
         files = list(PACKAGE.glob("*.py"))
         self.assertEqual(
             {path.name for path in files},
-            {"__init__.py", "domain.py", "doctype_base.py", "frappe_validation.py"},
+            {
+                "__init__.py",
+                "api.py",
+                "domain.py",
+                "doctype_base.py",
+                "frappe_repository.py",
+                "frappe_validation.py",
+                "problems.py",
+            },
         )
         combined = "\n".join(path.read_text(encoding="utf-8") for path in files)
         for forbidden in (
-            "@frappe.whitelist",
             "requests.",
             "httpx.",
-            "enqueue(",
-            "enqueue_after_commit",
-            "ignore_permissions",
-            "frappe.get_doc",
             "frappe" + ".db" + ".sql",
-            ".insert(",
-            ".save(",
             "endpoint",
         ):
             self.assertNotIn(forbidden, combined)
+        api = (PACKAGE / "api.py").read_text(encoding="utf-8")
+        repository = (PACKAGE / "frappe_repository.py").read_text(encoding="utf-8")
+        validation = (PACKAGE / "frappe_validation.py").read_text(encoding="utf-8")
+        self.assertEqual(api.count("@frappe.whitelist"), 3)
+        self.assertEqual(repository.count("frappe.enqueue("), 1)
+        self.assertIn("enqueue_after_commit=True", repository)
+        self.assertIn("deduplicate=True", repository)
+        self.assertEqual(validation.count("ignore_permissions=True"), 1)
+        self.assertNotIn("ignore_permissions", api)
+        self.assertNotIn("ignore_permissions", repository)
         for path in files:
             ast.parse(path.read_text(encoding="utf-8"))
 

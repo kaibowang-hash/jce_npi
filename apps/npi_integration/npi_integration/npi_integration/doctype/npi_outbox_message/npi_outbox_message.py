@@ -54,6 +54,9 @@ from npi_integration.tool_asset_request.execution_frappe_validation import (
     deny_tool_asset_outbox_conversion,
     require_tool_asset_execution_outbox_write,
 )
+from npi_integration.integration_operations.frappe_validation import (
+    integration_operation_manual_replay_is_active,
+)
 
 
 _ITEM_STATES = {
@@ -211,7 +214,12 @@ class NPIOutboxMessage(Document):
             deny_tool_asset_outbox_conversion()
         if self._is_tool_asset_v3() or (previous is not None and self._was_tool_asset_v3(previous)):
             require_tool_asset_execution_outbox_write()
-            if previous is not None and self._was_tool_asset_v3(previous) and previous.state in _TOOL_ASSET_TERMINAL_STATES:
+            if (
+                previous is not None
+                and self._was_tool_asset_v3(previous)
+                and previous.state in _TOOL_ASSET_TERMINAL_STATES
+                and not _is_exact_manual_replay(previous, self)
+            ):
                 deny_tool_asset_execution_history_update()
             return
         if previous is not None and (
@@ -223,7 +231,10 @@ class NPIOutboxMessage(Document):
         if self._is_mbom_v2() or (previous is not None and self._was_mbom_v2(previous)):
             require_mbom_outbox_write()
         if previous is not None and self._was_mbom_v2(previous):
-            if previous.state in _MBOM_TERMINAL_STATES:
+            if (
+                previous.state in _MBOM_TERMINAL_STATES
+                and not _is_exact_manual_replay(previous, self)
+            ):
                 deny_mbom_history_update()
             return
         if previous is not None and not self._was_item_v1(previous) and self._is_item_v1():
@@ -233,7 +244,10 @@ class NPIOutboxMessage(Document):
         if previous is not None and self._was_item_v1(previous) and _is_legacy_item_v1(previous):
             deny_item_history_update()
         if previous is not None and self._was_item_v1(previous):
-            if previous.state in _ITEM_TERMINAL_STATES:
+            if (
+                previous.state in _ITEM_TERMINAL_STATES
+                and not _is_exact_manual_replay(previous, self)
+            ):
                 deny_item_history_update()
 
     def before_validate(self) -> None:
@@ -327,15 +341,17 @@ class NPIOutboxMessage(Document):
         if not self._is_item_v1():
             return
         if previous is not None:
-            if previous.state in _ITEM_TERMINAL_STATES:
+            manual_replay = _is_exact_manual_replay(previous, self)
+            if previous.state in _ITEM_TERMINAL_STATES and not manual_replay:
                 deny_item_history_update()
             assert_immutable_fields(self, previous, _IMMUTABLE_V1_FIELDS)
-            validate_one_way_transition(
-                previous.state,
-                self.state,
-                allowed=_ITEM_STATES,
-                label=_("Item Outbox Message"),
-            )
+            if not manual_replay:
+                validate_one_way_transition(
+                    previous.state,
+                    self.state,
+                    allowed=_ITEM_STATES,
+                    label=_("Item Outbox Message"),
+                )
             if int(self.attempt_count or 0) < int(previous.attempt_count or 0):
                 frappe.throw(
                     _("Item Outbox attempt count cannot decrease."),
@@ -483,10 +499,15 @@ class NPIOutboxMessage(Document):
         if previous is not None:
             if not self._was_tool_asset_v3(previous):
                 deny_tool_asset_outbox_conversion()
-            if getattr(previous, "state", None) in _TOOL_ASSET_TERMINAL_STATES:
+            manual_replay = _is_exact_manual_replay(previous, self)
+            if (
+                getattr(previous, "state", None) in _TOOL_ASSET_TERMINAL_STATES
+                and not manual_replay
+            ):
                 deny_tool_asset_execution_history_update()
             assert_immutable_fields(self, previous, _IMMUTABLE_V3_FIELDS)
-            validate_one_way_transition(previous.state, self.state, allowed=_TOOL_ASSET_STATES, label=_("Tool Asset Outbox Message"))
+            if not manual_replay:
+                validate_one_way_transition(previous.state, self.state, allowed=_TOOL_ASSET_STATES, label=_("Tool Asset Outbox Message"))
             if int(self.attempt_count or 0) < int(previous.attempt_count or 0):
                 frappe.throw(_("Tool Asset Outbox attempt count cannot decrease."), frappe.ValidationError)
             if bool(previous.adapter_boundary_crossed) and not bool(self.adapter_boundary_crossed):
@@ -574,15 +595,20 @@ class NPIOutboxMessage(Document):
         if previous is not None:
             if not self._was_mbom_v2(previous):
                 deny_outbox_operation_conversion()
-            if getattr(previous, "state", None) in _MBOM_TERMINAL_STATES:
+            manual_replay = _is_exact_manual_replay(previous, self)
+            if (
+                getattr(previous, "state", None) in _MBOM_TERMINAL_STATES
+                and not manual_replay
+            ):
                 deny_mbom_history_update()
             assert_immutable_fields(self, previous, _IMMUTABLE_V2_FIELDS)
-            validate_one_way_transition(
-                previous.state,
-                self.state,
-                allowed=_MBOM_STATES,
-                label=_("MBOM Outbox Message"),
-            )
+            if not manual_replay:
+                validate_one_way_transition(
+                    previous.state,
+                    self.state,
+                    allowed=_MBOM_STATES,
+                    label=_("MBOM Outbox Message"),
+                )
             if int(self.attempt_count or 0) < int(previous.attempt_count or 0):
                 frappe.throw(
                     _("MBOM Outbox attempt count cannot decrease."),
@@ -791,6 +817,20 @@ class NPIOutboxMessage(Document):
                 utc_datetime_text(self.last_error_at, _("Last Error At")),
                 _("Last Error At"),
             )
+
+def _is_exact_manual_replay(previous: object, current: object) -> bool:
+    if str(getattr(previous, "state", "")) != "failed_retryable":
+        return False
+    if str(getattr(current, "state", "")) != "pending":
+        return False
+    operation = str(getattr(current, "operation", ""))
+    kind = {
+        ITEM_PUBLISH_OPERATION: "publish_item",
+        MBOM_PUBLISH_OPERATION: "publish_mbom",
+        "create_tool_asset": "create_tool_asset",
+        "update_tool_asset": "update_tool_asset",
+    }.get(operation)
+    return bool(kind and integration_operation_manual_replay_is_active(kind))
 
 
 def _is_legacy_item_v1(value: object) -> bool:

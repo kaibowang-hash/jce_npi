@@ -1,6 +1,6 @@
 # P8-07 Plan — Operations, DLQ, Replay and Reconciliation
 
-Status: **AUDIT-PLAN CI PASS — CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT 1 CI PASS — CHECKPOINT 2 AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-28
 
@@ -15,8 +15,12 @@ Audit-plan checkpoint: `2e573fa1757f7d9306f17bb47cb62c59e8493b7f`
 
 Audit-plan ordinary CI: `33139628396` (**PASS**)
 
-Product-code authorization: **checkpoint 1 only**. Checkpoint 2 remains closed
-until checkpoint 1 exact-SHA ordinary CI passes. Production ERPNext/JCE contact
+Checkpoint-1 product Gate:
+`d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` / ordinary CI `33142594763`
+(**PASS**)
+
+Product-code authorization: **checkpoint 2 only**. Checkpoint 3 remains closed
+until checkpoint 2 exact-SHA ordinary CI passes. Production ERPNext/JCE contact
 remains prohibited throughout.
 
 ## 1. Audit conclusion
@@ -271,6 +275,15 @@ Mock or disposable technical work and cannot be guessed.
 P8-08, P8-09, Phase 9, external FR-CO-003/004 portals and every production
 connection remain inactive. The queued production read-only fact check is not
 effective authorization under current repository rules.
+
+## 16. Checkpoint-1 Gate and checkpoint-2 candidate
+
+Stable checkpoint-1 SHA `d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8`
+passes ordinary CI `33142594763`: repository `98756508685`, frontend
+`98756508481`, secret `98756508634` and governed visual `98756508652` all
+pass; controlled lanes correctly skip. Checkpoint 2 is therefore active and
+its bounded candidate evidence is
+`implementation/evidence/phase-8/p8-07-project-operations-checkpoint.md`.
 
 ## 14. Audit-plan Level 1 evidence
 

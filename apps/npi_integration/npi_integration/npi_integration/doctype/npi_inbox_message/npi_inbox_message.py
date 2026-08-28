@@ -29,6 +29,9 @@ from npi_integration.inbound_project.frappe_validation import (
     deny_legacy_inbox_update,
     require_inbox_write,
 )
+from npi_integration.integration_operations.frappe_validation import (
+    integration_operation_manual_replay_is_active,
+)
 
 
 _IMMUTABLE_V1_FIELDS = (
@@ -106,6 +109,19 @@ class NPIInboxMessage(Document):
         require_inbox_write()
         previous = self.get_doc_before_save()
         if previous is not None and not _is_v1(previous):
+            deny_legacy_inbox_update()
+        if (
+            previous is not None
+            and str(previous.state) in _TERMINAL_STATES
+            and str(self.state) != str(previous.state)
+            and not (
+                str(previous.state) == "failed_retryable"
+                and str(self.state) == "pending"
+                and integration_operation_manual_replay_is_active(
+                    "receive_project_submission"
+                )
+            )
+        ):
             deny_legacy_inbox_update()
 
     def before_validate(self) -> None:
@@ -347,8 +363,16 @@ def _validate_processing_state(document: NPIInboxMessage, previous: object | Non
 
     valid = False
     if state == "pending":
-        valid = disposition == "pending" and attempt_count == 0 and not any(
-            (has_claim, has_result, has_error)
+        manual_replay = integration_operation_manual_replay_is_active(
+            "receive_project_submission"
+        )
+        valid = (
+            disposition == "pending"
+            and (
+                attempt_count == 0
+                or (manual_replay and previous is not None and attempt_count >= 1)
+            )
+            and not any((has_claim, has_result, has_error))
         )
     elif state == "processing":
         valid = (

@@ -36,6 +36,9 @@ from npi_integration.tool_asset_request.execution_frappe_validation import (
     require_tool_asset_execution_capability,
     require_tool_asset_execution_request_write,
 )
+from npi_integration.integration_operations.frappe_validation import (
+    integration_operation_manual_replay_is_active,
+)
 
 
 class NPIToolAssetRequest(Document):
@@ -178,7 +181,11 @@ class NPIToolAssetRequest(Document):
         previous = self.get_doc_before_save()
         if previous is not None:
             assert_immutable_fields(self, previous, _EXECUTION_IMMUTABLE_FIELDS)
-            _require_execution_transition(str(previous.execution_state), str(self.execution_state))
+            _require_execution_transition(
+                str(previous.execution_state),
+                str(self.execution_state),
+                operation=str(self.operation),
+            )
         if int(self.schema_version or 0) != TOOL_ASSET_EXECUTION_SCHEMA_VERSION or self.api_version != TOOL_ASSET_EXECUTION_API_VERSION or self.operation not in TOOL_ASSET_EXECUTION_OPERATIONS:
             frappe.throw(_("The Tool Asset execution request version or operation is invalid."), frappe.ValidationError)
         source = json_object(self.source_snapshot, _("Exact Tool Asset Source Snapshot"))
@@ -288,7 +295,19 @@ _EXECUTION_TRANSITIONS = {
 }
 
 
-def _require_execution_transition(previous: str, current: str) -> None:
+def _require_execution_transition(
+    previous: str,
+    current: str,
+    *,
+    operation: str,
+) -> None:
+    if (
+        previous == "failed_retryable"
+        and current == "queued"
+        and operation in {"create_tool_asset", "update_tool_asset"}
+        and integration_operation_manual_replay_is_active(operation)
+    ):
+        return
     if current not in _EXECUTION_TRANSITIONS.get(previous, frozenset({previous})):
         frappe.throw(_("The Tool Asset execution request state transition is invalid."), frappe.ValidationError)
 

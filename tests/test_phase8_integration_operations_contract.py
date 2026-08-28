@@ -103,14 +103,32 @@ class Phase8IntegrationOperationsContractTest(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
-    def test_openapi_adds_components_without_activating_any_operation_route(self) -> None:
+    def test_openapi_activates_only_project_first_fixed_checkpoint_two_routes(self) -> None:
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
+        fixed_paths = (
+            "/projects/{projectId}/integration-operations:",
+            "/projects/{projectId}/integration-operations/dlq:",
+            "/projects/{projectId}/integration-operations/{operationKind}/{integrationOperationId}:",
+            "/projects/{projectId}/integration-operations/receive-project-submissions/{integrationOperationId}:replay:",
+            "/projects/{projectId}/integration-operations/receive-project-submissions/{integrationOperationId}:request-reconciliation:",
+            "/projects/{projectId}/integration-operations/item-publishes/{integrationOperationId}:replay:",
+            "/projects/{projectId}/integration-operations/item-publishes/{integrationOperationId}:request-reconciliation:",
+            "/projects/{projectId}/integration-operations/mbom-publishes/{integrationOperationId}:replay:",
+            "/projects/{projectId}/integration-operations/mbom-publishes/{integrationOperationId}:request-reconciliation:",
+            "/projects/{projectId}/integration-operations/tool-asset-creates/{integrationOperationId}:replay:",
+            "/projects/{projectId}/integration-operations/tool-asset-creates/{integrationOperationId}:request-reconciliation:",
+            "/projects/{projectId}/integration-operations/tool-asset-updates/{integrationOperationId}:replay:",
+            "/projects/{projectId}/integration-operations/tool-asset-updates/{integrationOperationId}:request-reconciliation:",
+        )
+        for path in fixed_paths:
+            self.assertEqual(paths.count(path), 1)
         for forbidden in (
-            "/integration-operations",
-            ":replay",
-            ":request-reconciliation",
+            "/integration-operations/{integrationOperationId}:replay",
+            "/integration-operations/{integrationOperationId}:request-reconciliation",
             "replayIntegrationOperation",
             "requestIntegrationReconciliation",
+            "targetMethod",
+            "targetDoctype",
         ):
             self.assertNotIn(forbidden, paths)
         schemas = OPENAPI[OPENAPI.index("  schemas:\n") :]
@@ -118,6 +136,14 @@ class Phase8IntegrationOperationsContractTest(unittest.TestCase):
             "IntegrationOperationKind",
             "IntegrationOperationViewState",
             "IntegrationOperationReference",
+            "IntegrationOperationItemFields",
+            "IntegrationOperationItem",
+            "IntegrationOperationCollection",
+            "IntegrationOperationAttempt",
+            "IntegrationOperationResult",
+            "IntegrationOperationDetail",
+            "IntegrationOperationActionRequest",
+            "IntegrationOperationActionResult",
             "IntegrationActionReceipt",
             "IntegrationReconciliationObservation",
         ):
@@ -144,6 +170,36 @@ class Phase8IntegrationOperationsContractTest(unittest.TestCase):
             "raw target bodies and sensitive transport material are prohibited",
             block,
         )
+        self.assertNotIn("additionalproperties: true", block)
+        self.assertIn(
+            'unevaluatedproperties: false\n      allof:\n        - $ref: "#/components/schemas/integrationoperationitemfields"',
+            block,
+        )
+        self.assertEqual(
+            block.count(
+                '$ref: "#/components/schemas/integrationoperationitemfields"'
+            ),
+            2,
+        )
+        self.assertNotIn("#/components/pathItems/", OPENAPI)
+        self.assertEqual(OPENAPI.count("<<: *integration-replay-action"), 5)
+        self.assertEqual(
+            OPENAPI.count("<<: *integration-reconciliation-action"),
+            5,
+        )
+        for operation_id in (
+            "replayProjectSubmissionIntegrationOperation",
+            "requestProjectSubmissionIntegrationOperationReconciliation",
+            "replayItemPublishIntegrationOperation",
+            "requestItemPublishIntegrationOperationReconciliation",
+            "replayMbomPublishIntegrationOperation",
+            "requestMbomPublishIntegrationOperationReconciliation",
+            "replayToolAssetCreateIntegrationOperation",
+            "requestToolAssetCreateIntegrationOperationReconciliation",
+            "replayToolAssetUpdateIntegrationOperation",
+            "requestToolAssetUpdateIntegrationOperationReconciliation",
+        ):
+            self.assertEqual(OPENAPI.count(f"operationId: {operation_id}"), 1)
 
     def test_ownership_keeps_original_operation_and_formal_target_truth_authoritative(self) -> None:
         for marker in (

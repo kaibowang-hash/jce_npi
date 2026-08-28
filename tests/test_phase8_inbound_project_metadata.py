@@ -163,9 +163,10 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
         self.assertEqual(set(catalogs["zh"]), set(catalogs["zh-TW"]))
 
     def test_checkpoint_three_activates_only_fixed_ingress_and_bounded_worker(self) -> None:
-        combined = "\n".join(
+        fixed_ingress = "\n".join(
             path.read_text(encoding="utf-8")
             for path in INBOUND_ROOT.glob("*.py")
+            if path.name != "frappe_validation.py"
         ).casefold()
         for forbidden in (
             "requests" + ".",
@@ -176,7 +177,17 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
             "dead_letter",
             "manual_replay",
         ):
-            self.assertNotIn(forbidden, combined)
+            self.assertNotIn(forbidden, fixed_ingress)
+        validation = (INBOUND_ROOT / "frappe_validation.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertEqual(validation.count("def inbound_project_manual_replay_write("), 1)
+        self.assertEqual(
+            validation.count("def save_inbound_project_replay_document("),
+            1,
+        )
+        self.assertNotIn("requests" + ".", validation.casefold())
+        self.assertNotIn("frappe.db" + ".sql", validation.casefold())
         bff = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
         api = (
             ROOT / "apps/npi_integration/npi_integration/inbound_project_api.py"

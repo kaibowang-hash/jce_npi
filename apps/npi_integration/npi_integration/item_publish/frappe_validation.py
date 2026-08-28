@@ -78,6 +78,13 @@ _MAPPING_SUPPORT_WRITES = frozenset(
         ("NPI Item Mapping Head", "save"),
     }
 )
+_MANUAL_REPLAY_SUPPORT_WRITES = frozenset(
+    {
+        ("NPI Item Publish Request", "save"),
+        ("NPI Outbox Message", "save"),
+        ("NPI Item Publish Stream Guard", "save"),
+    }
+)
 
 
 class ItemServiceActorUnavailable(RuntimeError):
@@ -224,6 +231,37 @@ def item_result_transaction_write(
             _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
             _flag_scope(ITEM_RESULT_WRITE_FLAG),
             _flag_scope(ITEM_MAPPING_WRITE_FLAG),
+            _flag_scope(AUDIT_APPEND_FLAG),
+        ):
+            yield capability
+
+
+@contextmanager
+def item_manual_replay_write(
+    service_actor_user_id: str,
+) -> Iterator[ItemSupportWriteCapability]:
+    """Authorize only a failed-retryable Item request CAS back to queued."""
+
+    from npi_integration.integration_operations.frappe_validation import (
+        integration_operation_manual_replay,
+    )
+
+    _require_session_actor(service_actor_user_id)
+    _require_internal_npi_api_user(service_actor_user_id)
+    capability = ItemSupportWriteCapability(
+        actor=service_actor_user_id,
+        scope="manual_replay",
+        allowed=_MANUAL_REPLAY_SUPPORT_WRITES,
+    )
+    with _capability_scope(capability):
+        with (
+            integration_operation_manual_replay(
+                actor_user_id=service_actor_user_id,
+                operation_kind="publish_item",
+            ),
+            _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+            _flag_scope(ITEM_STREAM_GUARD_WRITE_FLAG),
+            _flag_scope(ITEM_REQUEST_WRITE_FLAG),
             _flag_scope(AUDIT_APPEND_FLAG),
         ):
             yield capability

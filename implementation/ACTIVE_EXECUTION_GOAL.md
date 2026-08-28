@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-28T04:15:17Z`
+Updated: `2026-08-28T06:17:53Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_PRODUCT_CI — P8-07`
+- Mode: `IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI — P8-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -27,6 +27,14 @@ Updated: `2026-08-28T04:15:17Z`
 - P8-07 audit-plan checkpoint:
   `2e573fa1757f7d9306f17bb47cb62c59e8493b7f` (`AUDIT PLAN PASS`;
   ordinary CI `33139628396`; controlled lanes correctly skipped)
+- P8-07 checkpoint-1 final checkpoint:
+  `d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8` (`CHECKPOINT 1 PASS`;
+  ordinary CI `33142594763`; repository, frontend, secret and governed visual
+  lanes pass; controlled lanes correctly skipped)
+- Active atomic scope: checkpoint 2 Project-first list/detail/logical-DLQ reads
+  and ten fixed operation-specific replay/reconciliation-request routes. The
+  candidate remains default-disabled and awaits its own exact-SHA ordinary CI;
+  checkpoint 3 UI, target calls and production contact remain inactive.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

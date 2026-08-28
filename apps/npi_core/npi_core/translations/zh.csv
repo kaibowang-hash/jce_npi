@@ -8494,3 +8494,9 @@ confirmed_succeeded,已确认成功
 confirmed_failed,已确认失败
 still_uncertain,仍不确定
 trusted_operation_service,受信任操作服务
+Enter a whole number from 1 to 200.,请输入 1 到 200 之间的整数。
+Inbound Project replay can only be requested by the controlled integration service.,只有受控集成服务才能请求重放入站项目。
+Integration operations are temporarily unavailable.,集成操作暂时不可用。
+Select a supported operation state.,请选择受支持的操作状态。
+The integration operation changed before the action was applied.,在应用操作前，集成操作已发生变化。
+The integration operation is unavailable.,集成操作不可用。

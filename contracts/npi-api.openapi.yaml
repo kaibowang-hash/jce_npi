@@ -24,6 +24,64 @@ tags:
   - { name: ProductionTransition }
   - { name: Execution }
   - { name: Integration }
+
+x-integration-operation-actions:
+  replay: &integration-replay-action
+    tags: [Projects, Integration]
+    description: Reuses only the exact immutable owning payload/source hash and target idempotency after a proven pre-boundary retryable failure. The operation kind is fixed by the literal route.
+    x-required-roles: [System Manager, NPI API User]
+    x-transaction-boundary: integration-operation-action
+    x-integration-action: replay
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+      - $ref: "#/components/parameters/IntegrationOperationId"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/CsrfToken"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/IntegrationOperationActionRequest" }
+    responses:
+      "200": { $ref: "#/components/responses/IntegrationOperationActionResponse" }
+      "201": { $ref: "#/components/responses/IntegrationOperationActionResponse" }
+      "401": { $ref: "#/components/responses/AuthenticationError" }
+      "403": { $ref: "#/components/responses/PermissionError" }
+      "404": { $ref: "#/components/responses/NotFoundError" }
+      "409": { $ref: "#/components/responses/ProjectConflict" }
+      "422": { $ref: "#/components/responses/ProjectValidationError" }
+      "500": { $ref: "#/components/responses/InternalError" }
+      "503": { $ref: "#/components/responses/ServiceUnavailable" }
+      default: { $ref: "#/components/responses/ProjectError" }
+  reconciliation: &integration-reconciliation-action
+    tags: [Projects, Integration]
+    description: Appends operator reconciliation intent only; it cannot assert target success, formal identity or replacement business values. The operation kind is fixed by the literal route.
+    x-required-roles: [System Manager, NPI API User]
+    x-transaction-boundary: integration-operation-action
+    x-integration-action: request_reconciliation
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+      - $ref: "#/components/parameters/IntegrationOperationId"
+      - $ref: "#/components/parameters/IdempotencyKey"
+      - $ref: "#/components/parameters/RequestId"
+      - $ref: "#/components/parameters/CsrfToken"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/IntegrationOperationActionRequest" }
+    responses:
+      "200": { $ref: "#/components/responses/IntegrationOperationActionResponse" }
+      "201": { $ref: "#/components/responses/IntegrationOperationActionResponse" }
+      "401": { $ref: "#/components/responses/AuthenticationError" }
+      "403": { $ref: "#/components/responses/PermissionError" }
+      "404": { $ref: "#/components/responses/NotFoundError" }
+      "409": { $ref: "#/components/responses/ProjectConflict" }
+      "422": { $ref: "#/components/responses/ProjectValidationError" }
+      "500": { $ref: "#/components/responses/InternalError" }
+      "503": { $ref: "#/components/responses/ServiceUnavailable" }
+      default: { $ref: "#/components/responses/ProjectError" }
 paths:
   /integration/erpnext/project-source-events:
     post:
@@ -632,6 +690,116 @@ paths:
         "422": { $ref: "#/components/responses/ProjectValidationError" }
         "500": { $ref: "#/components/responses/InternalError" }
         default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/integration-operations:
+    get:
+      tags: [Projects, Integration]
+      operationId: getProjectIntegrationOperations
+      description: >-
+        Returns a bounded Project-first projection over the five fixed P8-02
+        through P8-05 operation owners. It preserves owning raw state and never
+        exposes payloads, target request/response bodies, credentials or secrets.
+      x-required-roles: [System User]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - { in: query, name: operationKind, required: false, schema: { $ref: "#/components/schemas/IntegrationOperationKind" } }
+        - { in: query, name: sharedState, required: false, schema: { $ref: "#/components/schemas/IntegrationOperationViewState" } }
+        - { in: query, name: cursor, required: false, schema: { type: string, minLength: 1, maxLength: 512 } }
+        - { in: query, name: limit, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        "200": { $ref: "#/components/responses/IntegrationOperationCollectionResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/integration-operations/dlq:
+    get:
+      tags: [Projects, Integration]
+      operationId: getProjectIntegrationOperationDlq
+      description: >-
+        Returns the logical DLQ classification derived from existing operation
+        state. It does not move, copy or mutate an owning Inbox/request/Outbox row.
+      x-required-roles: [System User]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - { in: query, name: operationKind, required: false, schema: { $ref: "#/components/schemas/IntegrationOperationKind" } }
+        - { in: query, name: sharedState, required: false, schema: { $ref: "#/components/schemas/IntegrationOperationViewState" } }
+        - { in: query, name: cursor, required: false, schema: { type: string, minLength: 1, maxLength: 512 } }
+        - { in: query, name: limit, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        "200": { $ref: "#/components/responses/IntegrationOperationCollectionResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/integration-operations/{operationKind}/{integrationOperationId}:
+    get:
+      tags: [Projects, Integration]
+      operationId: getProjectIntegrationOperation
+      description: Returns one exact Project-contained operation with bounded immutable attempt, result and action history.
+      x-required-roles: [System User]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IntegrationOperationKindParam"
+        - $ref: "#/components/parameters/IntegrationOperationId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/IntegrationOperationDetailResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/integration-operations/receive-project-submissions/{integrationOperationId}:replay:
+    post:
+      <<: *integration-replay-action
+      operationId: replayProjectSubmissionIntegrationOperation
+  /projects/{projectId}/integration-operations/receive-project-submissions/{integrationOperationId}:request-reconciliation:
+    post:
+      <<: *integration-reconciliation-action
+      operationId: requestProjectSubmissionIntegrationOperationReconciliation
+  /projects/{projectId}/integration-operations/item-publishes/{integrationOperationId}:replay:
+    post:
+      <<: *integration-replay-action
+      operationId: replayItemPublishIntegrationOperation
+  /projects/{projectId}/integration-operations/item-publishes/{integrationOperationId}:request-reconciliation:
+    post:
+      <<: *integration-reconciliation-action
+      operationId: requestItemPublishIntegrationOperationReconciliation
+  /projects/{projectId}/integration-operations/mbom-publishes/{integrationOperationId}:replay:
+    post:
+      <<: *integration-replay-action
+      operationId: replayMbomPublishIntegrationOperation
+  /projects/{projectId}/integration-operations/mbom-publishes/{integrationOperationId}:request-reconciliation:
+    post:
+      <<: *integration-reconciliation-action
+      operationId: requestMbomPublishIntegrationOperationReconciliation
+  /projects/{projectId}/integration-operations/tool-asset-creates/{integrationOperationId}:replay:
+    post:
+      <<: *integration-replay-action
+      operationId: replayToolAssetCreateIntegrationOperation
+  /projects/{projectId}/integration-operations/tool-asset-creates/{integrationOperationId}:request-reconciliation:
+    post:
+      <<: *integration-reconciliation-action
+      operationId: requestToolAssetCreateIntegrationOperationReconciliation
+  /projects/{projectId}/integration-operations/tool-asset-updates/{integrationOperationId}:replay:
+    post:
+      <<: *integration-replay-action
+      operationId: replayToolAssetUpdateIntegrationOperation
+  /projects/{projectId}/integration-operations/tool-asset-updates/{integrationOperationId}:request-reconciliation:
+    post:
+      <<: *integration-reconciliation-action
+      operationId: requestToolAssetUpdateIntegrationOperationReconciliation
 
   /projects/{projectId}/erp-projections:
     get:
@@ -6827,6 +6995,17 @@ components:
       required: true
       description: Immutable Engineering Project global_id; never a mutable business code
       schema: { type: string, format: uuid }
+    IntegrationOperationKindParam:
+      in: path
+      name: operationKind
+      required: true
+      schema: { $ref: "#/components/schemas/IntegrationOperationKind" }
+    IntegrationOperationId:
+      in: path
+      name: integrationOperationId
+      required: true
+      description: Exact owning Inbox or request global identifier within the authorized Project.
+      schema: { type: string, format: uuid }
     TrialRoundId:
       in: path
       name: trialRoundId
@@ -6978,6 +7157,31 @@ components:
       description: Current Frappe session CSRF token returned by SessionBootstrap
       schema: { type: string, minLength: 32, maxLength: 128 }
   responses:
+    IntegrationOperationCollectionResult:
+      description: Authorized bounded Project integration-operation collection
+      headers:
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/IntegrationOperationCollection" }
+    IntegrationOperationDetailResult:
+      description: Authorized exact Project integration-operation detail
+      headers:
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/IntegrationOperationDetail" }
+    IntegrationOperationActionResponse:
+      description: New or exactly replayed append-only operator action receipt
+      headers:
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        Idempotency-Replayed: { required: true, schema: { type: string, enum: ["true", "false"] } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/IntegrationOperationActionResult" }
     Error:
       description: Problem response for an otherwise undocumented error status
       headers:
@@ -22412,6 +22616,144 @@ components:
         sharedState: { $ref: "#/components/schemas/IntegrationOperationViewState" }
         sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         targetIdempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    IntegrationOperationItemFields:
+      type: object
+      description: Shared field fragment; closed only by the item or detail schema that composes it.
+      required: [tenantId, projectGlobalId, operationKind, operationGlobalId, sourceGlobalId, operationVersion, rawState, sharedState, sourceSnapshotHash, targetIdempotencyKeyHash, logicalDlq, faultClass, replayEligible, replayEligibilityReason, reconciliationRequired, updatedAt]
+      properties:
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        operationKind: { $ref: "#/components/schemas/IntegrationOperationKind" }
+        operationGlobalId: { type: string, format: uuid }
+        sourceGlobalId: { type: string, format: uuid }
+        operationVersion: { type: integer, minimum: 1 }
+        rawState: { type: string, minLength: 1, maxLength: 140 }
+        sharedState: { $ref: "#/components/schemas/IntegrationOperationViewState" }
+        sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        targetIdempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        logicalDlq: { type: boolean }
+        faultClass:
+          type: string
+          enum: [none, retryable_before_uncertain_boundary, final_business_failure, uncertain_after_boundary, partial_result, identity_conflict, authenticity_quarantine, target_unavailable, unknown_raw_state]
+        replayEligible: { type: boolean }
+        replayEligibilityReason:
+          type: string
+          enum: [eligible, unknown_raw_state, state_not_retryable, uncertain_boundary, reconciliation_required, partial_result]
+        reconciliationRequired: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+    IntegrationOperationItem:
+      type: object
+      unevaluatedProperties: false
+      allOf:
+        - $ref: "#/components/schemas/IntegrationOperationItemFields"
+    IntegrationOperationCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, items, nextCursor]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions:
+          type: object
+          additionalProperties: false
+          required: [view, act]
+          properties:
+            view: { type: boolean }
+            act: { type: boolean }
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/IntegrationOperationItem" }
+        nextCursor: { oneOf: [{ type: string, minLength: 1, maxLength: 512 }, { type: "null" }] }
+    IntegrationOperationAttempt:
+      description: Bounded safe owning-attempt summary with no request or response body.
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [attemptNumber, state, adapterBoundaryCrossed, reconciliationRequired, safeErrorCode]
+          properties:
+            attemptNumber: { type: integer, minimum: 1 }
+            state: { type: string, minLength: 1, maxLength: 140 }
+            adapterBoundaryCrossed: { type: boolean }
+            reconciliationRequired: { type: boolean }
+            safeErrorCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
+        - type: object
+          additionalProperties: false
+          required: [attemptGlobalId, attemptNumber, state, adapterBoundaryCrossed, reconciliationRequired, safeErrorCode, startedAt, finishedAt]
+          properties:
+            attemptGlobalId: { type: string, format: uuid }
+            attemptNumber: { type: integer, minimum: 1 }
+            state: { type: string, minLength: 1, maxLength: 140 }
+            adapterBoundaryCrossed: { type: boolean }
+            reconciliationRequired: { type: boolean }
+            safeErrorCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
+            startedAt: { type: [string, "null"], format: date-time }
+            finishedAt: { type: [string, "null"], format: date-time }
+    IntegrationOperationResult:
+      type: object
+      additionalProperties: false
+      description: Bounded safe owning-result summary with no target payload or formal-success inference.
+      required: [resultGlobalId, attemptGlobalId, attemptNumber, state, authority, responseAuthenticated, faultKind, observedAt]
+      properties:
+        resultGlobalId: { type: string, format: uuid }
+        attemptGlobalId: { type: string, format: uuid }
+        attemptNumber: { type: integer, minimum: 1 }
+        state: { type: string, minLength: 1, maxLength: 140 }
+        authority: { type: string, enum: [none, synthetic, authoritative_sandbox] }
+        responseAuthenticated: { type: boolean }
+        faultKind: { type: [string, "null"], minLength: 1, maxLength: 128 }
+        observedAt: { type: [string, "null"], format: date-time }
+    IntegrationOperationActionHistoryItem:
+      type: object
+      additionalProperties: false
+      required: [actionGlobalId, actionKind, outcomeState, outcomeReferenceGlobalId, actorUserId, traceId, createdAt]
+      properties:
+        actionGlobalId: { type: string, format: uuid }
+        actionKind: { type: string, enum: [replay, request_reconciliation] }
+        outcomeState: { type: string, enum: [replay_requested, reconciliation_requested] }
+        outcomeReferenceGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        createdAt: { type: string, format: date-time }
+    IntegrationOperationDetail:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, operation]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions:
+          type: object
+          additionalProperties: false
+          required: [view, act]
+          properties:
+            view: { type: boolean }
+            act: { type: boolean }
+        operation:
+          type: object
+          unevaluatedProperties: false
+          allOf:
+            - $ref: "#/components/schemas/IntegrationOperationItemFields"
+            - type: object
+              required: [attempts, results, actions]
+              properties:
+                attempts: { type: array, maxItems: 256, items: { $ref: "#/components/schemas/IntegrationOperationAttempt" } }
+                results: { type: array, maxItems: 256, items: { $ref: "#/components/schemas/IntegrationOperationResult" } }
+                actions: { type: array, maxItems: 256, items: { $ref: "#/components/schemas/IntegrationOperationActionHistoryItem" } }
+    IntegrationOperationActionRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedRawState, expectedVersion]
+      properties:
+        expectedRawState: { type: string, minLength: 1, maxLength: 140, pattern: "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$" }
+        expectedVersion: { type: integer, minimum: 1 }
+    IntegrationOperationActionResult:
+      type: object
+      additionalProperties: false
+      required: [actionGlobalId, operationGlobalId, outcomeState, outcomeReferenceGlobalId]
+      properties:
+        actionGlobalId: { type: string, format: uuid }
+        operationGlobalId: { type: string, format: uuid }
+        outcomeState: { type: string, enum: [replay_requested, reconciliation_requested] }
+        outcomeReferenceGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
     IntegrationActionReceipt:
       type: object
       additionalProperties: false

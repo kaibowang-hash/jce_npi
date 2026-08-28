@@ -110,6 +110,64 @@ _PROJECT_FORMAL_QUALITY_LINK_COMMAND_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/"
     r"formal-quality-links:link-observed-reference$"
 )
+_PROJECT_INTEGRATION_OPERATIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/integration-operations$"
+)
+_PROJECT_INTEGRATION_OPERATION_DLQ_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/integration-operations/dlq$"
+)
+_PROJECT_INTEGRATION_OPERATION_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/integration-operations/"
+    r"(?P<operation_kind>receive_project_submission|publish_item|publish_mbom|"
+    r"create_tool_asset|update_tool_asset)/"
+    r"(?P<integration_operation_id>[^/:]+)$"
+)
+_PROJECT_INTEGRATION_OPERATION_COMMAND_ROUTES = tuple(
+    (
+        re.compile(
+            rf"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/"
+            rf"integration-operations/{slug}/"
+            rf"(?P<integration_operation_id>[^/:]+):{action}$"
+        ),
+        f"npi_integration.integration_operations.api.{command}",
+    )
+    for slug, action, command in (
+        (
+            "receive-project-submissions",
+            "replay",
+            "replay_receive_project_submission",
+        ),
+        (
+            "receive-project-submissions",
+            "request-reconciliation",
+            "request_reconciliation_receive_project_submission",
+        ),
+        ("item-publishes", "replay", "replay_publish_item"),
+        (
+            "item-publishes",
+            "request-reconciliation",
+            "request_reconciliation_publish_item",
+        ),
+        ("mbom-publishes", "replay", "replay_publish_mbom"),
+        (
+            "mbom-publishes",
+            "request-reconciliation",
+            "request_reconciliation_publish_mbom",
+        ),
+        ("tool-asset-creates", "replay", "replay_create_tool_asset"),
+        (
+            "tool-asset-creates",
+            "request-reconciliation",
+            "request_reconciliation_create_tool_asset",
+        ),
+        ("tool-asset-updates", "replay", "replay_update_tool_asset"),
+        (
+            "tool-asset-updates",
+            "request-reconciliation",
+            "request_reconciliation_update_tool_asset",
+        ),
+    )
+)
 _PROJECT_TRIALS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trials$"
 )
@@ -800,6 +858,26 @@ def route_request() -> None:
     if command is None and request.method == "GET":
         for route, candidate in (
             (
+                _PROJECT_INTEGRATION_OPERATIONS_ROUTE,
+                "npi_integration.integration_operations.api.get_integration_operations",
+            ),
+            (
+                _PROJECT_INTEGRATION_OPERATION_DLQ_ROUTE,
+                "npi_integration.integration_operations.api.get_integration_operation_dlq",
+            ),
+            (
+                _PROJECT_INTEGRATION_OPERATION_ROUTE,
+                "npi_integration.integration_operations.api.get_integration_operation",
+            ),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
+        for route, candidate in (
+            (
                 _PROJECT_FORMAL_QUALITY_LINKS_ROUTE,
                 "npi_integration.quality_link_api.get_formal_quality_links",
             ),
@@ -845,6 +923,13 @@ def route_request() -> None:
                 "npi_core.production_transition_api.get_project_production_transition_workspace",
             ),
         ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "POST":
+        for route, candidate in _PROJECT_INTEGRATION_OPERATION_COMMAND_ROUTES:
             match = route.fullmatch(path)
             if match is not None:
                 command = candidate
@@ -2310,6 +2395,14 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _PROJECT_ERP_PROJECTIONS_ROUTE.fullmatch(path) is not None
         or _PROJECT_FORMAL_QUALITY_LINKS_ROUTE.fullmatch(path) is not None
         or _PROJECT_FORMAL_QUALITY_LINK_ROUTE.fullmatch(path) is not None
+        or _PROJECT_INTEGRATION_OPERATIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_INTEGRATION_OPERATION_DLQ_ROUTE.fullmatch(path) is not None
+        or _PROJECT_INTEGRATION_OPERATION_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "POST" and any(
+        route.fullmatch(path) is not None
+        for route, _command in _PROJECT_INTEGRATION_OPERATION_COMMAND_ROUTES
     ):
         return True
     if method == "POST" and (

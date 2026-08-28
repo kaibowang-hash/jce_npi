@@ -35,6 +35,9 @@ from npi_integration.item_publish.frappe_validation import (
     require_item_request_write,
     validate_one_way_transition,
 )
+from npi_integration.integration_operations.frappe_validation import (
+    integration_operation_manual_replay_is_active,
+)
 
 
 _REQUEST_TRANSITIONS = {
@@ -139,18 +142,28 @@ class NPIItemPublishRequest(Document):
         previous = self.get_doc_before_save()
         if previous is not None:
             assert_immutable_fields(self, previous, _IMMUTABLE_FIELDS)
-            validate_one_way_transition(
-                previous.state,
-                self.state,
-                allowed=_REQUEST_TRANSITIONS,
-                label=_("Item Publish Request"),
+            manual_replay = bool(
+                str(previous.state) == "failed_retryable"
+                and str(self.state) == "queued"
+                and integration_operation_manual_replay_is_active("publish_item")
             )
+            if not manual_replay:
+                validate_one_way_transition(
+                    previous.state,
+                    self.state,
+                    allowed=_REQUEST_TRANSITIONS,
+                    label=_("Item Publish Request"),
+                )
             if bool(previous.outbox_event_id) and self.outbox_event_id != previous.outbox_event_id:
                 frappe.throw(
                     _("The Item publish Outbox reference cannot be replaced."),
                     frappe.ValidationError,
                 )
-            if bool(previous.result_global_id) and self.result_global_id != previous.result_global_id:
+            if (
+                bool(previous.result_global_id)
+                and self.result_global_id != previous.result_global_id
+                and not (manual_replay and not self.result_global_id)
+            ):
                 frappe.throw(
                     _("The Item publish result reference cannot be replaced."),
                     frappe.ValidationError,
