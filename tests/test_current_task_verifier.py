@@ -52,14 +52,18 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             ["FR-RP-009", "UX-016", "NFR-INT-001"],
         )
         self.assertIn(
-            "implementation/evidence/phase-8/p8-06-validation.md",
+            "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
             value["allowed_paths"],
         )
         self.assertIn(
-            "implementation/evidence/phase-8/p8-07-*.md",
+            "implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md",
             value["allowed_paths"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 18)
+        self.assertIn(
+            "PRODUCTION_READ_ONLY_FACT_CHECK_USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE_UNDER_CURRENT_AGENTS_AND_CONTROLLER_PROHIBITION",
+            value["frozen_invariants"],
+        )
+        self.assertEqual(len(value["allowed_paths"]), 20)
         self.assertNotIn("implementation/backlog.yaml", value["allowed_paths"])
         self.assertFalse(
             any(
@@ -68,8 +72,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             )
         )
         self.assertEqual(
-            [path for path in value["allowed_paths"] if "*" in path],
-            ["implementation/evidence/phase-8/p8-07-*.md"],
+            [path for path in value["allowed_paths"] if "*" in path], []
         )
         self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
         affected_modules = {

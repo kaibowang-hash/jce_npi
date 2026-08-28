@@ -6,7 +6,7 @@
   "status": "IN_PROGRESS_AUDIT",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-08",
-  "base_checkpoint": "547421a059911df6aeb90bbbf06e837f77a3e5e0",
+  "base_checkpoint": "d39b24e4169d6116ab0721440b1f7dc01b599c96",
   "predecessor_product_checkpoint": "547421a059911df6aeb90bbbf06e837f77a3e5e0",
   "requirement_ids": [
     "FR-RP-009",
@@ -19,7 +19,9 @@
     "Freeze immutable operation truth, classified retryable, final and uncertain states, actor-authorized replay and forward-only reconciliation without granting a generic business mutation API or database access.",
     "Preserve every operation-specific authority, Project containment, idempotency scope, target-boundary uncertainty and no-redispatch invariant; an operator view must never reinterpret target success or formal quality pass.",
     "Keep production ERPNext and JCE endpoints, credentials, data and traffic prohibited; use only repository facts, pure fixtures, Mock and explicitly bounded disposable network-free evidence during planning.",
-    "Produce a separate governed P8-07 audit plan with exact requirements, operation inventories, ownership, authority, state and fault matrix, migration, rollback, exact product paths and affected tests before any P8-07 product code is authorized."
+    "Produce a separate governed P8-07 audit plan with exact requirements, operation inventories, ownership, authority, state and fault matrix, migration, rollback, exact product paths and affected tests before any P8-07 product code is authorized.",
+    "Freeze a separate governance-only documentation task that may create an ERPNext customization requirements fact-status matrix only after this transition passes exact-SHA ordinary CI.",
+    "Record the user's production read-only fact-check request as queued but not effective; AGENTS.md and this controller continue to prohibit production ERPNext contact until a separately approved higher-priority rule change and release Gate."
   ],
   "non_scope": [
     "Any P8-07 product implementation before its separate audit plan and controller transition pass exact-SHA ordinary CI; product_code_authorized remains false.",
@@ -27,10 +29,13 @@
     "Any generic DocType writer, caller-selected tenant, actor, operation, target method, endpoint, identity, payload, status, success, retry policy or authority.",
     "Any rewrite or deletion of Inbox, Outbox, request, attempt, result, mapping, observation, formal-quality link, receipt, audit, Project, Gate, Trial, Tooling, Item, MBOM or Asset truth.",
     "Any inferred pass, target success, automatic redispatch after an uncertain boundary, cross-operation replay, broad administrator fallback or database access for normal operators.",
-    "Any P8-08/P8-09 behavior, deferred FR-CO-003/004 external portal surface, production SSH fact collection, ERP customization document, new dependency, core patch, cross-database access, test deletion or threshold reduction."
+    "Any production SSH, ERP connector, endpoint probe, credential use, fact collection, response read or other production contact; the user request is queued but not effective.",
+    "Creating or modifying the frozen ERP customization documentation task before this transition passes exact-SHA ordinary CI.",
+    "Any P8-08/P8-09 behavior, deferred FR-CO-003/004 external portal surface, new dependency, core patch, cross-database access, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
     "P8_06_LEVEL_3_EXACT_SHA_547421A059911DF6AEB90BBBF06E837F77A3E5E0_ORDINARY_33131533806_FINAL_33132296565_PASSED",
+    "P8_06_CLOSEOUT_EXACT_SHA_D39B24E4169D6116AB0721440B1F7DC01B599C96_ORDINARY_33134622237_PASSED",
     "P8_07_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_SEPARATE_FROZEN_AUDIT_PLAN_TRANSITION_PASSES_EXACT_SHA_ORDINARY_CI",
     "P8_06_BOUNDED_TECHNICAL_QUALITY_LINK_PORTIONS_VERIFIED_WITH_PRODUCTION_SANDBOX_POLICY_HELD",
     "OPERATION_SPECIFIC_AUTHORITY_IDEMPOTENCY_REQUEST_ATTEMPT_RESULT_AND_RECONCILIATION_REMAIN_DISTINCT",
@@ -43,9 +48,15 @@
     "NO_DEFAULT_PROFILE_ENDPOINT_CREDENTIAL_REPLAY_POLICY_PRODUCTION_TRAFFIC_OR_TARGET_WRITE",
     "FR_CO_003_004_EXTERNAL_PORTALS_REMAIN_USER_APPROVED_POST_V1_2_DEFERRED",
     "P8_08_P8_09_AND_PRODUCTION_FACT_DOD_GOVERNANCE_REMAIN_INACTIVE",
+    "PRODUCTION_READ_ONLY_FACT_CHECK_USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE_UNDER_CURRENT_AGENTS_AND_CONTROLLER_PROHIBITION",
+    "FUTURE_ERP_CUSTOMIZATION_REQUIREMENTS_DOCUMENTATION_EXACT20_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_PASS",
+    "P8_07_AUDIT_ONLY_AND_PRODUCT_CODE_AUTHORIZED_FALSE_REMAIN_UNCHANGED",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
+    "docs/REPOSITORY_FACTS.md",
+    "docs/specification/SPEC_INDEX.md",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/BLOCKERS.md",
@@ -53,13 +64,12 @@
     "implementation/DECISION_LOG.md",
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
+    "implementation/QUALITY_GATE.md",
+    "implementation/REQUIRED_INPUTS.md",
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/RISK_REGISTER.md",
-    "implementation/phase-8-requirement-anchor.md",
-    "implementation/evidence/phase-8/p8-06-plan.md",
-    "implementation/evidence/phase-8/p8-06-domain-metadata-checkpoint.md",
-    "implementation/evidence/phase-8/p8-06-validation.md",
-    "implementation/evidence/phase-8/p8-07-*.md",
+    "implementation/ROADMAP.md",
+    "implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md",
     "scripts/reconcile_v1_2_traceability.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
@@ -92,10 +102,10 @@
     "phase_status_resumed_product_task": "P8-07",
     "active_goal_marker": "P8-07",
     "next_action_marker": "P8-07",
-    "controller_marker": "P8-06 Level 3 PASS; P8-07 audit active"
+    "controller_marker": "P8-07 audit active; production fact documentation transition pending exact-SHA ordinary; production contact prohibited"
   },
   "rollback": {
-    "before_product_resume": "Restore exact P8-06 final product checkpoint 547421a059911df6aeb90bbbf06e837f77a3e5e0 while retaining every Inbox, Outbox, request, idempotency row, claim, attempt, result, uncertainty, mapping, observation, formal-quality link, receipt and audit; the P8-07 audit changes no product or external state.",
+    "before_product_resume": "Revert only this governance transition to accepted P8-06 closeout/P8-07 audit checkpoint d39b24e4169d6116ab0721440b1f7dc01b599c96 while retaining exact predecessor product checkpoint 547421a059911df6aeb90bbbf06e837f77a3e5e0 and every Inbox, Outbox, request, idempotency row, claim, attempt, result, uncertainty, mapping, observation, formal-quality link, receipt and audit; the transition changes no product or external state.",
     "after_product_resume": "Not authorized until the P8-07 audit freezes exact operation inventories, authority, retry/final/uncertain classification, replay and reconciliation state, permissions, migration and forward-repair boundaries."
   }
 }

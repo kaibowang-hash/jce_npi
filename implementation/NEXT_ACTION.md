@@ -3,19 +3,19 @@
 Status:
 `IN_PROGRESS_AUDIT — P8-07`
 
-Recovery time: `2026-08-28T01:40:00Z`
+Recovery time: `2026-08-28T02:25:39Z`
 
-Current atomic action: perform only the P8-07 requirement/domain/security
-audit for `FR-RP-009`, `UX-016` and `NFR-INT-001`. P8-06 is sealed at exact
-SHA `547421a059911df6aeb90bbbf06e837f77a3e5e0`; ordinary CI `33131533806`
-and Level 3 `33132296565` pass all six final jobs, `132/132` governed visuals
-and the cumulative disposable runtime. P8-07 product code remains
-unauthorized. The separate audit must freeze existing operation inventories,
-Project/actor authority, retryable/final/uncertain truth, no-redispatch,
-actor-authorized replay, forward-only reconciliation, migration, rollback,
-exact paths and tests before any product transition. No generic writer,
-database access, production SSH, ERP customization work or target traffic is
-authorized. External portals remain `USER_APPROVED_POST_V1_2_DEFERRED`.
+Current atomic action: complete only the governance transition that freezes a
+future exact-20 ERPNext customization-requirements documentation task. P8-07
+remains audit-only for `FR-RP-009`, `UX-016` and `NFR-INT-001`; product code
+remains unauthorized. The user's production read-only fact-check request is
+recorded as queued but is not effective authorization: current `AGENTS.md` and
+the controller still prohibit SSH, ERP connectors, endpoint probes,
+credentials, requests, responses and every other production contact. Do not
+create `docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md` or modify any other future
+documentation path until this transition passes exact-SHA ordinary CI. No
+trace status, product, contract, workflow or external state changes in this
+transition. External portals remain `USER_APPROVED_POST_V1_2_DEFERRED`.
 
 Required branch:
 `codex/npi-v1.2-implementation`

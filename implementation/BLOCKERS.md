@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-28T01:40:00Z`
+Updated: `2026-08-28T02:25:39Z`
 
 ## Active hard blockers
 
@@ -13,6 +13,12 @@ Runtime, visual and Gitleaks artifact hashes are recorded in
 `implementation/evidence/phase-8/p8-06-validation.md`; all 17 diagnostics are
 false, zero production traffic and cleanup pass. Only the P8-07 audit is
 active and requires no external login or production action.
+
+The user's production read-only fact-check request is queued but not effective
+under the current higher-priority `AGENTS.md` and controller prohibition. This
+is a scoped governance dependency, not an active Hard Blocker. A future
+documentation task may record unknowns and acceptance requirements only after
+its exact transition passes ordinary CI; it cannot connect to production.
 
 ## Active recovery
 
@@ -65,7 +71,9 @@ read-only projection obligations remain V1.2.
   privacy/security, rollback and release-gate facts; it is not a global
   blocker and does not defer internal collaboration truth.
 - The separately queued production SSH/ERP customization documentation task
-  remains inactive and is not part of this closeout or P8-07 audit activation.
+  remains inactive pending this governance transition's exact-SHA ordinary
+  PASS. The queued request changes neither the production-contact prohibition
+  nor P8-07 product authorization.
 
 ## Historical recovery
 

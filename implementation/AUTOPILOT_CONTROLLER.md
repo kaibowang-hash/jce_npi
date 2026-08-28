@@ -7455,3 +7455,31 @@ repeat or rewrite it merely to restore context. See
   not part of this closeout and remains inactive.
 - Controller marker:
   `P8-06 Level 3 PASS; P8-07 audit active; product code unauthorized`.
+
+## 2026-08-28 P8-07 production-fact documentation governance transition
+
+- The user's request for future production read-only ERPNext fact checking is
+  recorded as `QUEUED_NOT_EFFECTIVE`. Current `AGENTS.md` and this controller
+  continue to prohibit production ERPNext contact. No SSH command, connector,
+  endpoint probe, credential use, request, response read or other production
+  action is authorized by this transition.
+- P8-07 remains audit-only for `FR-RP-009`, `UX-016` and `NFR-INT-001`;
+  product code remains unauthorized. Product, contract and trace-status diffs
+  are zero.
+- This governance-only transition changes exactly ten controller/evidence/test
+  paths. After its own exact-SHA ordinary CI passes, and only then, a separate
+  documentation task may modify the exact twenty literal paths frozen in
+  `implementation/CURRENT_TASK.json` and create
+  `docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md` as a fact-status matrix.
+- The future document cannot guess an ERPNext endpoint, credential, field,
+  schema, workflow, status, identity, count or business value. It preserves
+  `implementation/REQUIRED_INPUTS.md` as the sole external-input request and
+  leaves every production fact as required external evidence until accepted
+  with provenance.
+- Any later production connection requires a separately approved
+  higher-priority rule change, fixed read-only allowlist, least privilege,
+  strict host-key verification, bounded non-interactive execution, timeouts,
+  redaction, no write/side-effect methods, provenance/checksum evidence and a
+  release Gate. This transition satisfies none of those prerequisites.
+- Controller marker:
+  `P8-07 audit active; production fact documentation transition pending exact-SHA ordinary; production contact prohibited`.

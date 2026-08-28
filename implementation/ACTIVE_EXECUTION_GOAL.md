@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-08-28T01:40:00Z`
+Updated: `2026-08-28T02:25:39Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
@@ -21,6 +21,9 @@ Updated: `2026-08-28T01:40:00Z`
 - Latest checkpoint exact-SHA CI:
   `33131533806` (`PASS` at
   `547421a059911df6aeb90bbbf06e837f77a3e5e0`; P8-06 final)
+- Latest governance closeout checkpoint:
+  `d39b24e4169d6116ab0721440b1f7dc01b599c96` (`PASS`; ordinary CI
+  `33134622237`; P8-06 closeout and P8-07 audit activation)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -125,6 +128,12 @@ Updated: `2026-08-28T01:40:00Z`
 - Current controller task:
   `P8-07 — operations, DLQ, replay and reconciliation` (`IN_PROGRESS_AUDIT`)
 - Resumed product task: `P8-07` (`ACTIVE_AUDIT_ONLY`)
+- Active governance transition: freeze the future exact-20 ERPNext
+  customization-requirements documentation task. The user's production
+  read-only fact-check request is `QUEUED_NOT_EFFECTIVE`; current `AGENTS.md`
+  and controller rules still prohibit every production connection. This
+  transition creates no document, collects no external fact, changes no trace
+  status and authorizes no product code.
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:

@@ -1,17 +1,25 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-28T01:40:00Z'
+updated_at: '2026-08-28T02:25:39Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-07
 current_task_status: IN_PROGRESS_AUDIT
 current_task_completed_stage: P8_06_LEVEL_3_PASS
-current_task_next_stage: P8_07_AUDIT_PLAN
-current_task_next_stage_status: AUDIT_ONLY_ACTIVE
+current_task_next_stage: P8_07_PRODUCTION_FACT_DOCUMENTATION_GOVERNANCE
+current_task_next_stage_status: TRANSITION_PENDING_EXACT_SHA_ORDINARY
 resumed_product_task: P8-07
 resumed_product_task_status: ACTIVE_AUDIT_ONLY_PRODUCT_CODE_AUTHORIZED_FALSE
 scope_decisions:
+  production_read_only_fact_check:
+    decision_marker: USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE
+    connection_authorized: false
+    documentation_authorized_after_transition_ordinary: true
+    current_rule: PRODUCTION_ERP_NEXT_CONTACT_PROHIBITED_BY_AGENTS_AND_AUTOPILOT
+    future_activation_trigger: SEPARATE_HIGHER_PRIORITY_RULE_CHANGE_EXACT_READ_ONLY_ALLOWLIST_LEAST_PRIVILEGE_REDACTION_TIMEOUTS_AND_RELEASE_GATE
+    product_code_authorized: false
+    trace_status_changed: false
   fr_co_003_004_external_portals:
     decision_marker: USER_APPROVED_POST_V1_2_DEFERRED
     trace_status: REMAPPED_PHASE_9
