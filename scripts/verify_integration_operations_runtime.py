@@ -37,7 +37,8 @@ ACTOR_USER = publish_runtime.ACTOR_USER
 RUNTIME_MARKER = "npi-one-integration-operations-disposable-v1"
 DEFAULT_DISABLED_DIAGNOSTICS_ENABLED = False
 FRESH_COMBINED_DIAGNOSTICS_ENABLED = False
-COLLECTION_SHAPE_DIAGNOSTICS_ENABLED = True
+COLLECTION_SHAPE_DIAGNOSTICS_ENABLED = False
+COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -162,6 +163,15 @@ COLLECTION_SHAPE_DIAGNOSTIC_CODES = (
     "P807_COLLECTION_ITEMS",
     "P807_COLLECTION_ITEM_SHAPES",
 )
+COLLECTION_RESPONSE_DIAGNOSTIC_CODES = (
+    "P807_COLLECTION_STATUS_INVALID",
+    "P807_COLLECTION_STATUS_INFORMATIONAL",
+    "P807_COLLECTION_STATUS_OTHER_SUCCESS",
+    "P807_COLLECTION_STATUS_REDIRECTION",
+    "P807_COLLECTION_STATUS_CLIENT_ERROR",
+    "P807_COLLECTION_STATUS_SERVER_ERROR",
+    "P807_COLLECTION_STATUS_OUT_OF_RANGE",
+)
 _FRESH_FIXTURE_CALL_CODES = {
     "append_observation": "P807_FIXTURE_OBSERVATION_CALL",
     "seed_retryable": "P807_FIXTURE_SEED_CALL",
@@ -233,6 +243,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
     activations = (
         FRESH_COMBINED_DIAGNOSTICS_ENABLED,
         COLLECTION_SHAPE_DIAGNOSTICS_ENABLED,
+        COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED,
     )
     if sum(map(int, activations)) != 1:
         return frozenset()
@@ -241,6 +252,8 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
     )
     if COLLECTION_SHAPE_DIAGNOSTICS_ENABLED:
         return codes.union(COLLECTION_SHAPE_DIAGNOSTIC_CODES)
+    if COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED:
+        return codes.union(COLLECTION_RESPONSE_DIAGNOSTIC_CODES)
     return codes
 
 
@@ -476,9 +489,30 @@ def _assert_safe(value: object) -> None:
             _assert_safe(child)
 
 
+def _collection_status_diagnostic_code(status: object) -> str:
+    if COLLECTION_SHAPE_DIAGNOSTICS_ENABLED:
+        return "P807_COLLECTION_STATUS"
+    if type(status) is not int:
+        return "P807_COLLECTION_STATUS_INVALID"
+    if 100 <= status < 200:
+        return "P807_COLLECTION_STATUS_INFORMATIONAL"
+    if 200 <= status < 300:
+        return "P807_COLLECTION_STATUS_OTHER_SUCCESS"
+    if 300 <= status < 400:
+        return "P807_COLLECTION_STATUS_REDIRECTION"
+    if 400 <= status < 500:
+        return "P807_COLLECTION_STATUS_CLIENT_ERROR"
+    if 500 <= status < 600:
+        return "P807_COLLECTION_STATUS_SERVER_ERROR"
+    return "P807_COLLECTION_STATUS_OUT_OF_RANGE"
+
+
 def _items(result: Any, *, project_id: str) -> list[dict[str, Any]]:
-    with fresh_runtime_diagnostic_step("P807_COLLECTION_STATUS"):
-        require(result.status == 200, "P8-07 operation collection is unavailable")
+    if result.status != 200:
+        with fresh_runtime_diagnostic_step(
+            _collection_status_diagnostic_code(result.status)
+        ):
+            require(False, "P8-07 operation collection is unavailable")
     body = result.body
     items = body.get("items")
     with fresh_runtime_diagnostic_step("P807_COLLECTION_PROJECT"):

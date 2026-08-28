@@ -7815,3 +7815,42 @@ repeat or rewrite it merely to restore context. See
   `zh`/`zh-TW` i18n pass. Compile, shell syntax, current/reconciliation,
   JSON/YAML/CSV, exact-102/lexical, diff, exact-five/union-78 and unauthorized-
   six rejection pass; product/workflow diff remains zero.
+
+### P8-07 checkpoint-4 collection-response diagnostic cycle
+
+- Collection-shape SHA `ef6ad3a6be46cd6d23409f7f37eb37f4eb7c7edd`
+  passes ordinary CI `33220082395`: secret scan `99012088629`, frontend
+  `99012088793`, repository `99012088842` and visual `99012088925` all pass.
+  Its sole Level 2 controlled run `33220922811` passes preflight
+  `99014580690`; runtime `99014619374` initializes the fixed Bench/Site and
+  fails in the cumulative verifier. Cleanup completes.
+- Strict exact-102 filtering yields one safe tuple:
+  `P807_COLLECTION_STATUS / RuntimeError /
+  trace-070a0c335c8553aaa6204d1ccbf25a46`. The collection request returned,
+  request-ID echo, private no-store and recursively safe dictionary response
+  checks passed, but the status was not `200`. The actual status, response
+  body, business values, identities, child output, message and stack remain
+  unread.
+- That boundary still spans informational, other-success, redirect, client,
+  server and invalid/out-of-range status classes and cannot authorize a
+  product repair. Freeze collection-shape at diagnostic `1/1`, repair `0/1`,
+  final `0/1`; start one independent product-zero collection-response cycle at
+  `0/1,0/1,0/1`.
+- Only `COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED=True`; prior activations are
+  false. Seven value-free status-class codes replace the five shape codes in
+  the retained `97` outer/fixture set for exact `104`. The verifier never
+  emits the actual status/body. Existing exact trace, parent-owned child
+  environment, `0600` `O_EXCL` exact-three-key record, inner precedence,
+  strict reader, failed-child unread and success-zero contracts remain.
+- The candidate stays exact-five: runtime verifier/test plus this controller,
+  plan and checkpoint evidence. Product/API/repository/schema/frontend/
+  workflow, P8-07F/SSH/ERP and P8-08 remain unchanged or closed. Its own
+  exact-SHA ordinary PASS is required before one Level 2 controlled run.
+- Collection-response Level 1 passes focused verifier `29/29`, complete P8-07
+  `63/63`, affected integration/security/API `83/83`, governance/
+  reconciliation `59/59` and full local Python `2635/2635`. Frontend unit/
+  coverage passes `1086/1086`, focused nonvisual P8-07 E2E `3/3`, and
+  generate/typecheck/full lint plus `8585`-source `100%` `zh`/`zh-TW` i18n
+  pass. Compile, shell syntax, current/reconciliation, JSON/CSV, exact-104
+  lexical equality, diff hygiene, exact-five/union-78 and unauthorized-six
+  rejection pass; product/workflow diff is zero.

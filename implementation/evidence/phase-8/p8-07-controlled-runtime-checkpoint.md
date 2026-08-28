@@ -260,3 +260,43 @@ style/boundary/UI, `8585`-source `100%` `zh`/`zh-TW` i18n, compile, shell
 syntax, current/reconciliation, JSON/YAML/CSV, exact-102 lexical equality,
 diff hygiene, exact-five/union-78 and unauthorized-six rejection pass.
 Product/API/repository/contract/frontend/workflow diff remains zero.
+
+## Collection-shape diagnostic result
+
+- Exact SHA `ef6ad3a6be46cd6d23409f7f37eb37f4eb7c7edd` passes
+  ordinary CI `33220082395`: secret scan `99012088629`, frontend
+  `99012088793`, repository `99012088842` and visual `99012088925` all pass.
+- The sole Level 2 controlled run `33220922811` passes preflight
+  `99014580690`. Runtime `99014619374` initializes the fixed Bench and
+  disposable Site, then fails in the cumulative verifier; cleanup completes.
+- Strict exact-102 filtering returns one safe tuple:
+  `P807_COLLECTION_STATUS / RuntimeError /
+  trace-070a0c335c8553aaa6204d1ccbf25a46`. No child output, actual status/body,
+  business value, identity, message or stack was read.
+- The request itself returned and had already passed request-ID echo,
+  `private, no-store` and recursively safe dictionary-body checks. The tuple
+  proves only that status was not `200`; its class and root remain nonunique.
+  Freeze this cycle at diagnostic `1/1`, repair `0/1`, final `0/1`.
+
+## Collection-response diagnostic candidate
+
+The next product-zero exact-five candidate enables only
+`COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED`. Seven fixed codes classify the
+non-`200` response as invalid, informational, other-success, redirection,
+client error, server error or out of range without exposing its value. The
+active set is exact `104`: retained `45` outer plus `52` fixture stages and
+seven response classes. Prior flags are false; mutual activation fails closed.
+The existing exact trace, parent-owned child environment, exact-three-key
+`0600` `O_EXCL` file, nearest-inner precedence, strict reader, failed-child
+unread and success-zero contracts remain unchanged. Product, API, repository,
+schema, contract, frontend, workflow and production behavior remain unchanged.
+P8-07F/SSH/ERP and P8-08 stay closed until P8-07 reaches Level 3 PASS.
+
+Collection-response Level 1 passes focused verifier `29/29`, complete P8-07
+`63/63`, affected integration/security/API `83/83`, governance/reconciliation
+`59/59`, full local Python `2635/2635`, frontend unit/coverage `1086/1086`
+and focused nonvisual P8-07 E2E `3/3`. Generate/typecheck/full lint,
+`8585`-source `100%` `zh`/`zh-TW` i18n, compile, shell syntax, current/
+reconciliation, JSON/CSV, exact-104 lexical equality, diff, exact-five/
+union-78 and unauthorized-six rejection pass. Product/API/repository/contract/
+frontend/workflow diff remains zero.

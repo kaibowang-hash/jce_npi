@@ -357,20 +357,22 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 )
             record.assert_called_once_with(expected, label="disabled")
 
-    def test_collection_shape_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
+    def test_collection_response_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
         codes = self.verifier._active_fresh_runtime_diagnostic_codes()
         self.assertFalse(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
-        self.assertTrue(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
+        self.assertTrue(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
         self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
-        self.assertEqual(len(codes), 102)
+        self.assertEqual(len(self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES), 7)
+        self.assertEqual(len(codes), 104)
         self.assertEqual(
             codes,
             frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
                 self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
-                self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES,
+                self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
             ),
         )
         self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
@@ -388,6 +390,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "COLLECTION_SHAPE_DIAGNOSTICS_ENABLED",
             True,
+        ), patch.object(
+            self.verifier,
+            "COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
             self.assertFalse(self.verifier._fresh_runtime_diagnostics_enabled())
@@ -422,7 +428,15 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             ),
         )
         for expected, result in cases:
-            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as directory:
+            with self.subTest(expected=expected), patch.object(
+                self.verifier,
+                "COLLECTION_SHAPE_DIAGNOSTICS_ENABLED",
+                True,
+            ), patch.object(
+                self.verifier,
+                "COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED",
+                False,
+            ), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
                 with patch.dict(
                     os.environ,
@@ -432,6 +446,43 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     RuntimeError
                 ):
                     self.verifier._items(result, project_id=PROJECT_ID)
+                diagnostic = self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+                self.assertIsNotNone(diagnostic)
+                self.assertEqual(diagnostic[1], expected)
+
+    def test_collection_response_classifies_status_without_recording_value(self) -> None:
+        cases = (
+            ("P807_COLLECTION_STATUS_INVALID", None),
+            ("P807_COLLECTION_STATUS_INFORMATIONAL", 101),
+            ("P807_COLLECTION_STATUS_OTHER_SUCCESS", 201),
+            ("P807_COLLECTION_STATUS_REDIRECTION", 301),
+            ("P807_COLLECTION_STATUS_CLIENT_ERROR", 401),
+            ("P807_COLLECTION_STATUS_SERVER_ERROR", 501),
+            ("P807_COLLECTION_STATUS_OUT_OF_RANGE", 601),
+        )
+        valid_body = {
+            "projectGlobalId": PROJECT_ID,
+            "permissions": {"view": True},
+            "items": [],
+        }
+        for expected, status in cases:
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+                trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+                with patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), self.assertRaises(
+                    RuntimeError
+                ):
+                    self.verifier._items(
+                        SimpleNamespace(status=status, body=dict(valid_body)),
+                        project_id=PROJECT_ID,
+                    )
                 diagnostic = self.verifier.read_fresh_runtime_diagnostic(
                     path,
                     expected_trace=trace_id,
