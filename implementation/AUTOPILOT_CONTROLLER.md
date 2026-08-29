@@ -8786,3 +8786,38 @@ repeat or rewrite it merely to restore context. See
   rejection pass. Frontend remains zero-diff; the immediately preceding exact
   ordinary proves its full frontend/visual lanes. Dirty full Python has only
   the preserved M9 marker-count mismatch (`2664/2665`).
+
+### P8-07 checkpoint-4 migrated-legacy collection cardinality repair
+
+- Collection-fallback SHA `e660a288d1c00cc320429a69f49625ef8c59e8de`
+  passes ordinary `33275904484`: frontend `99162448937`, visual
+  `99162449031`, repository `99162449100` and secret `99162449144`. Sole
+  Level 2 `33276550689` passes preflight `99164169444`; runtime
+  `99164192113` fails in cumulative verification and cleanup passes.
+- Strict exact-39 reading accepts exactly
+  `P803_LEGACY_COLLECTION_CARDINALITY / RuntimeError /
+  trace-186533ccbe1c5b569c2e579ec4862e03`. Status and collection shape passed;
+  no raw response, actual count, child output, business value, identity,
+  message or stack was read.
+- Static ordered proof closes the cause as a verifier-only contract drift:
+  P8-03 fresh retains two terminal requests, P8-07 `seed_retryable` appends
+  one request and deliberately keeps it until post-migration cleanup, then the
+  legacy fixture appends one read-only migrated request. The unfiltered
+  Project collection therefore has exactly four rows. The verifier still
+  expected its pre-P8-07 cardinality of three; repository/API behavior is
+  correct and unchanged.
+- Freeze collection-fallback diagnostic `1/1`; apply one product-zero harness
+  repair `1/1` by locking the expected cardinality to four and turning all
+  seven Item diagnostic activations off. Final remains `0/1` pending one
+  exact-SHA ordinary PASS followed by the sole diagnostics-off Level 3.
+  Product/API/repository/schema/migration/permission/ownership/frontend/
+  workflow remain zero-diff. P8-07F/production ERP/P8-08 stay closed, and the
+  user-owned M9 deferral and permission-ownership documents remain untouched.
+- Level 1 passes focused verifier `29/29`, complete Item `150/150`, P8-07
+  `89/89`, adjacent runtime/security `153/153`, clean-overlay full Python
+  `2659/2659`, compile, shell syntax, current/reconciliation, exact-seven-all-
+  off/cardinality-four, diff, exact-five and unauthorized-six rejection.
+  Frontend remains zero-diff and passes unit `1086/1086`, generate, typecheck,
+  full lint and i18n (`8585`, `100%` zh/zh-TW). The dirty governance run's
+  sole failure remains the preserved user M9 marker-count mismatch (`4 != 2`);
+  the clean-overlay full suite includes and passes that test.

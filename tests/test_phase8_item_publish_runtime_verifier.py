@@ -288,9 +288,17 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
 
         complete = SimpleNamespace(
             status=200,
-            body={"items": [{}, {}, {}]},
+            body={
+                "items": [
+                    {"fixture": "p8-03-synthetic"},
+                    {"fixture": "p8-03-uncertain"},
+                    {"fixture": "p8-07-retryable"},
+                    {"fixture": "p8-03-migrated-legacy"},
+                ]
+            },
             trace_id=_TRACE_ID,
         )
+        self.assertEqual(module._LEGACY_COLLECTION_EXPECTED_CARDINALITY, 4)
         self.assertIsNone(module.legacy_collection_failure_message(complete))
 
     def test_legacy_collection_diagnostic_falls_back_closed(self) -> None:
@@ -347,7 +355,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(len(assignments), 7)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED"},
+            set(),
         )
         with patch.object(
             module,

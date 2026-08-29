@@ -1570,3 +1570,36 @@ new-only/server-first/parent-fallback/strict-reader/no-leak/success-zero,
 diff, exact-five/union-80 and unauthorized-six rejection pass. Frontend is
 zero-diff with the preceding exact ordinary's frontend/visual proof. Dirty
 full Python differs only at the preserved M9 assertion (`2664/2665`).
+
+## Migrated-legacy collection cardinality repair
+
+Collection-fallback SHA `e660a288d1c00cc320429a69f49625ef8c59e8de`
+passes ordinary `33275904484` in all four lanes. Sole Level 2
+`33276550689` passes preflight `99164169444`; runtime `99164192113` fails in
+cumulative verification and cleanup succeeds. Strict exact-39 reading returns
+only `P803_LEGACY_COLLECTION_CARDINALITY / RuntimeError /
+trace-186533ccbe1c5b569c2e579ec4862e03`. Status and list shape passed. No actual
+count, response content, child output, value, identity, message or stack was
+read.
+
+The runtime order uniquely closes a verifier-only stale count. P8-03 fresh
+retains two terminal requests. P8-07 then inserts one retryable Item request
+and intentionally removes it only in the post-migration cleanup that follows
+the legacy proof. The legacy seed adds one read-only migrated request, while
+the repository correctly returns the complete unfiltered Project collection.
+The expected cardinality is therefore four, not the pre-P8-07 value three.
+
+Freeze collection-fallback diagnostic `1/1`; apply one product-zero harness
+repair `1/1`, disable all seven Item diagnostic activations and hold final at
+`0/1`. Exact five remains verifier/test plus controller, this plan and the
+controlled checkpoint. One exact-SHA ordinary PASS must precede the sole
+diagnostics-off Level 3. P8-07F/production ERP/P8-08 remain inactive, and all
+unrelated user M9 and permission-ownership documentation remains preserved.
+
+Level 1 passes focused `29/29`, Item `150/150`, P8-07 `89/89`, adjacent
+runtime/security `153/153`, clean-overlay full Python `2659/2659`, frontend
+unit `1086/1086`, generate/type/full lint and i18n (`8585`, `100%` zh/zh-TW).
+Compile, shell, current/reconciliation, all-seven-off/cardinality-four, diff,
+exact-five and unauthorized-six rejection pass. The only dirty governance
+failure is the preserved user M9 marker assertion (`4 != 2`); it passes in the
+clean overlay and is not changed by this task.

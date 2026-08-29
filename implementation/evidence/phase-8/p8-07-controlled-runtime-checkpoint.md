@@ -1089,3 +1089,29 @@ frontend/workflow diff remains zero.
   strict reader/no-leak/success-zero, diff, exact-five/union-80 and
   unauthorized-six rejection pass. Dirty full Python retains only the user
   M9 marker mismatch (`2664/2665`); frontend/product/workflow remain zero-diff.
+
+## Collection-fallback result and cardinality repair
+
+- SHA `e660a288d1c00cc320429a69f49625ef8c59e8de` passes ordinary
+  `33275904484`: frontend `99162448937`, visual `99162449031`, repository
+  `99162449100`, secret `99162449144`. Level 2 `33276550689` passes preflight
+  `99164169444`; runtime `99164192113` fails and cleanup passes.
+- Strict exact-39 yields only `P803_LEGACY_COLLECTION_CARDINALITY /
+  RuntimeError / trace-186533ccbe1c5b569c2e579ec4862e03`. Status and list
+  shape passed; actual count and all restricted output remain unread.
+- Ordered source facts prove four intended rows at this point: two retained
+  P8-03 terminal requests, one P8-07 retryable fixture retained until the
+  later post-migration cleanup, and one migrated legacy row. The unfiltered
+  repository collection is correct; only the verifier's pre-P8-07 expected
+  count of three is stale.
+- Freeze diagnostic `1/1`; the exact-five product-zero harness repair updates
+  that expected count to four and switches every Item diagnostic activation
+  off. Repair is `1/1`; final stays `0/1` until exact-SHA ordinary PASS and one
+  diagnostics-off Level 3. Product/workflow/P8-07 scope do not change.
+  P8-07F/production ERP/P8-08 remain closed and unrelated user changes stay
+  untouched.
+- Level 1 passes focused `29/29`, Item `150/150`, P8-07 `89/89`, adjacent
+  runtime/security `153/153`, clean full Python `2659/2659`, frontend
+  `1086/1086`, generate/type/full lint/i18n, compile/shell/current/
+  reconciliation/diff and exact-five/unauthorized-six manifest checks. The
+  preserved M9 dirty-tree marker mismatch remains unrelated and untouched.

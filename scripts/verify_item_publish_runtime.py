@@ -45,7 +45,7 @@ LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = False
 LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED = False
 LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED = False
 LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = False
-LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED = True
+LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED = False
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _LEGACY_QUERY_DIAGNOSTIC_SCOPE = "p803-legacy-query-v1"
@@ -55,6 +55,10 @@ _TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
 _LEGACY_COLLECTION_FAILURE = (
     "P8-03 migrated legacy Item was not readable in the collection"
 )
+# Two retained P8-03 terminal requests, one P8-07 retryable fixture and the
+# migrated legacy request are all intentionally visible in this unfiltered
+# Project collection before the later P8-07 cleanup boundary.
+_LEGACY_COLLECTION_EXPECTED_CARDINALITY = 4
 _LEGACY_COLLECTION_DIAGNOSTIC_CODES = frozenset(
     {
         "P803_LEGACY_COLLECTION_STATUS",
@@ -513,7 +517,11 @@ def legacy_collection_failure_message(
 
     body = result.body
     items = body.get("items") if isinstance(body, dict) else None
-    if result.status == 200 and isinstance(items, list) and len(items) == 3:
+    if (
+        result.status == 200
+        and isinstance(items, list)
+        and len(items) == _LEGACY_COLLECTION_EXPECTED_CARDINALITY
+    ):
         return None
     trace_id = result.trace_id
     if _legacy_query_server_diagnostics_enabled():
