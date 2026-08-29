@@ -51,6 +51,19 @@ INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER = (
 INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_SCOPE = (
     "p8-07-integration-operations-uncertain-replay-v1"
 )
+INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES = (
+    "P807_ACTION_ENTRY_OPERATION_KIND",
+    "P807_ACTION_ENTRY_ACTION_KIND",
+    "P807_ACTION_ENTRY_REQUEST_FIELDS",
+    "P807_ACTION_ENTRY_METHOD",
+    "P807_ACTION_ENTRY_QUERY",
+    "P807_ACTION_ENTRY_ROUTE",
+    "P807_ACTION_ENTRY_FORM",
+    "P807_ACTION_ENTRY_COMMAND",
+    "P807_ACTION_ENTRY_EXPECTED_RAW_STATE",
+    "P807_ACTION_ENTRY_EXPECTED_VERSION",
+    "P807_ACTION_ENTRY_RUNTIME_SHAPE",
+)
 _COLLECTION_DIAGNOSTIC_ACTIVE: ContextVar[bool] = ContextVar(
     "p807_integration_operations_collection_api_diagnostic",
     default=False,
@@ -460,12 +473,13 @@ def _integration_operations_action_diagnostic_active(
     expected_version: Any,
     request_fields: dict[str, Any],
 ) -> bool:
+    authorized_trace: str | None = None
     try:
         request = getattr(getattr(frappe, "local", None), "request", None)
         arguments = getattr(request, "args", None)
         route = getattr(frappe.flags, "npi_route_params", None)
         form = getattr(getattr(frappe, "local", None), "form_dict", None)
-        return bool(
+        if not (
             frappe.get_request_header(
                 INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER
             )
@@ -473,24 +487,90 @@ def _integration_operations_action_diagnostic_active(
             and frappe.get_request_header("X-Trace-ID") == trace_id
             and isinstance(trace_id, str)
             and re.fullmatch(r"trace-[a-f0-9]{32}", trace_id) is not None
-            and operation_kind is IntegrationOperationKind.PUBLISH_ITEM
-            and action_kind is IntegrationActionKind.REPLAY
-            and isinstance(request_fields, dict)
-            and list(request_fields.keys()) == []
-            and getattr(request, "method", None) == "POST"
-            and arguments is not None
-            and list(arguments.keys()) == []
-            and isinstance(route, dict)
-            and set(route) == {"project_id", "integration_operation_id"}
-            and isinstance(form, dict)
-            and set(form) == {"cmd", "expectedRawState", "expectedVersion"}
-            and form.get("cmd")
-            == "npi_integration.integration_operations.api.replay_publish_item"
-            and form.get("expectedRawState") == expected_raw_state
-            and form.get("expectedVersion") == expected_version
+        ):
+            return False
+        authorized_trace = trace_id
+        predicates = (
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[0],
+                lambda: operation_kind is IntegrationOperationKind.PUBLISH_ITEM,
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[1],
+                lambda: action_kind is IntegrationActionKind.REPLAY,
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[2],
+                lambda: isinstance(request_fields, dict)
+                and list(request_fields.keys()) == [],
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[3],
+                lambda: getattr(request, "method", None) == "POST",
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[4],
+                lambda: arguments is not None and list(arguments.keys()) == [],
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[5],
+                lambda: isinstance(route, dict)
+                and set(route) == {"project_id", "integration_operation_id"},
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[6],
+                lambda: isinstance(form, dict)
+                and set(form) == {"cmd", "expectedRawState", "expectedVersion"},
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[7],
+                lambda: isinstance(form, dict)
+                and form.get("cmd")
+                == "npi_integration.integration_operations.api.replay_publish_item",
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[8],
+                lambda: isinstance(form, dict)
+                and form.get("expectedRawState") == expected_raw_state,
+            ),
+            (
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[9],
+                lambda: isinstance(form, dict)
+                and form.get("expectedVersion") == expected_version,
+            ),
+        )
+        for code, predicate in predicates:
+            if not predicate():
+                _record_action_entry_diagnostic(code, authorized_trace)
+                return False
+        return True
+    except Exception:
+        if authorized_trace is not None:
+            _record_action_entry_diagnostic(
+                INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[10],
+                authorized_trace,
+            )
+        return False
+
+
+def _record_action_entry_diagnostic(code: str, trace_id: str) -> None:
+    try:
+        if (
+            code not in INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES
+            or re.fullmatch(r"trace-[a-f0-9]{32}", trace_id) is None
+        ):
+            return
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=code,
+            title="NPI integration operation action entry predicate failed",
+            exception_type="RuntimeError",
+            trace_id=trace_id,
         )
     except Exception:
-        return False
+        # Diagnostics must never alter the request, response or transaction.
+        pass
 
 
 def _context(

@@ -55,7 +55,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
 
     def setUp(self) -> None:
         # Existing diagnostic contract tests intentionally exercise the prior
-        # response-only activation. The current action-boundary activation is
+        # response-only activation. The current action-entry activation is
         # tested explicitly through action_server_diagnostics().
         self.previous_response_activation = patch.object(
             self.verifier,
@@ -67,10 +67,17 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
             False,
         )
+        self.current_action_entry_activation = patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
+            False,
+        )
         self.previous_response_activation.start()
         self.current_action_activation.start()
+        self.current_action_entry_activation.start()
 
     def tearDown(self) -> None:
+        self.current_action_entry_activation.stop()
         self.current_action_activation.stop()
         self.previous_response_activation.stop()
 
@@ -83,6 +90,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
             True,
         ):
             yield
@@ -665,8 +676,11 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.assertFalse(
                 self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
             )
-            self.assertTrue(
+            self.assertFalse(
                 self.verifier.UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
+            )
+            self.assertTrue(
+                self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
             )
             self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
@@ -686,9 +700,13 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             len(self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES),
             22,
         )
+        self.assertEqual(
+            len(self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES),
+            11,
+        )
         with self.action_server_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 188)
+            self.assertEqual(len(codes), 199)
             self.assertEqual(
                 codes,
                 frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
@@ -698,6 +716,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
                     self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES,
                     self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES,
                 ),
             )
         with patch.object(
@@ -723,6 +742,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -751,6 +774,12 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             all(
                 source.count(f'"{code}"') == 1
                 for code in self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES
+            )
+        )
+        self.assertTrue(
+            all(
+                source.count(f'"{code}"') == 1
+                for code in self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES
             )
         )
         self.assertNotIn("str(error)", source)
@@ -794,6 +823,28 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             ROOT
             / "apps/npi_integration/npi_integration/integration_operations/api.py"
         ).read_text(encoding="utf-8")
+        api_tree = ast.parse(api_source)
+        entry_assignment = next(
+            node
+            for node in api_tree.body
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name)
+                and target.id
+                == "INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES"
+                for target in node.targets
+            )
+        )
+        self.assertEqual(
+            tuple(self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES),
+            ast.literal_eval(entry_assignment.value),
+        )
+        self.assertTrue(
+            all(
+                api_source.count(f'"{code}"') == 1
+                for code in self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES
+            )
+        )
         self.assertEqual(
             api_source.count(self.verifier._COLLECTION_SERVER_DIAGNOSTIC_HEADER),
             1,
@@ -880,6 +931,14 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.verifier._require_collection_kinds(
@@ -1292,6 +1351,8 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     "code_prefix": "P807_ACTION_",
                     "allowed_codes": frozenset(
                         self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES
+                    ).union(
+                        self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES
                     ),
                 },
             )

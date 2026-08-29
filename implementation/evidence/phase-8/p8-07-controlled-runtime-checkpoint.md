@@ -724,3 +724,43 @@ frontend/workflow diff remains zero.
   failed before navigation because the frontend `baseURL` was unavailable;
   the unchanged six tests pass under the canonical frontend working
   directory. No test/configuration/timeout change was made.
+
+## Uncertain-replay action result and API-entry checkpoint
+
+- Exact-nine SHA `ea1ffae30ee914461ac78c013d9d787bd15f910f` passes ordinary
+  `33257945711`: visual `99114818739`, secret scan `99114818849`, repository
+  `99114818865` and frontend `99114818875`. Sole controlled `33258423341`
+  passes preflight `99116069520`; runtime `99116098370` passes fixed
+  Bench/Site initialization, fails in cumulative verification and completes
+  cleanup.
+- Strict exact-188 reading returns only
+  `P807_UNCERTAIN_REPLAY_STATUS_OTHER_CLIENT_ERROR / RuntimeError /
+  trace-94bcb1ffb3a35123b38723aae07842f5`. No trusted server tuple exists. The
+  helper completed request-ID/cache-control/restricted-key checks, but the
+  safe evidence cannot distinguish pre-API rejection from an API-entry shape
+  mismatch. Raw log, failed child output, actual status/body, values,
+  identities, message and stack remain unread.
+- Freeze the action-boundary cycle at `1/1,0/1,0/1`; no product repair is
+  authorized. Independent
+  `p8-07-checkpoint-4-uncertain-replay-api-entry-boundary` starts
+  `0/1,0/1,0/1`.
+- The new activation is the only true flag. Exact `199` retains exact `188`
+  and adds eleven fixed API-entry predicate codes under one exact header and
+  trace. A predicate mismatch records its code and fixed `RuntimeError` type,
+  never the value; exact entry delegates to the existing 22 innermost action
+  stages. Cursors, strict mirror, exact-three-key `0600` `O_EXCL`, same
+  exception, finally restoration, response neutrality, failed-child unread
+  and success-zero remain locked.
+- Exact-seven paths are verifier/test, API/test and AUTOPILOT, plan and this
+  checkpoint. Repository/contracts/schema/permissions/ownership/write order/
+  frontend/workflow do not change. Exact-SHA ordinary PASS must precede one
+  Level 2 diagnostic. P8-07F, `JCE-Core`, production ERPNext and P8-08 remain
+  closed; unrelated user-authorized documentation is preserved.
+- Level 1 passes focused verifier/API/repository `60/60`, complete P8-07
+  `78/78`, affected integration/security/API `98/98`, clean-overlay
+  governance/reconciliation `59/59`, full Python `2644/2644`, frontend unit
+  `1086/1086` and focused functional/three-locale visual E2E `6/6`.
+  Generate/type/full lint/i18n (`8585`, `100%` zh/zh-TW), compile, shell,
+  current/reconciliation, exact-199/new-only/ordered-entry/cross-file equality/
+  precedence/dormancy, diff, exact-seven/union-78 and unauthorized-eight
+  rejection pass. Repository/contracts/frontend/workflow diff remains zero.

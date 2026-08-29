@@ -1150,3 +1150,49 @@ unauthorized-ten rejection pass. The initial E2E command was run from the
 repository root, so Playwright had no frontend `baseURL` and failed before
 navigation; the unchanged six tests pass from the canonical frontend working
 directory. No test, configuration or timeout was changed.
+
+## 36. Action-boundary result and API-entry diagnostic
+
+Exact-nine SHA `ea1ffae30ee914461ac78c013d9d787bd15f910f` passes
+ordinary `33257945711` in visual `99114818739`, secret scan `99114818849`,
+repository `99114818865` and frontend `99114818875`. Sole controlled
+`33258423341` passes preflight `99116069520`; runtime `99116098370` passes
+the pinned Bench/disposable Site setup, fails in cumulative verification and
+completes cleanup.
+
+The strict exact-188 reader returns only
+`P807_UNCERTAIN_REPLAY_STATUS_OTHER_CLIENT_ERROR / RuntimeError /
+trace-94bcb1ffb3a35123b38723aae07842f5`; no trusted action server tuple is
+present. The HTTP helper completed request-ID, cache-control and safe-response
+checks. This does not select between rejection before the fixed API function
+and a mismatch in one exact runtime activation predicate. Actual status/body,
+raw/child output, values, identities, message and stack remain unread. Freeze
+the action-boundary cycle at `1/1,0/1,0/1`; no repair follows.
+
+Independent `p8-07-checkpoint-4-uncertain-replay-api-entry-boundary` begins
+at `0/1,0/1,0/1`. Its only activation is
+`UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED=True`; all twelve history
+flags are false. Exact `199` is retained exact `188` plus eleven ordered,
+value-free API-entry predicate codes. Exact header and trace authorize the
+scope; a failed operation/action/request-field/method/query/route/form/
+command/raw-state/version/runtime-shape predicate records one fixed
+`RuntimeError` code without exposing the actual value. If entry is exact,
+the existing action API/repository stages remain innermost and win.
+
+The task is exact-seven: verifier/test, API/test and the three governance
+files. Repository, contracts, schema, permissions, ownership, response,
+transaction/write order, frontend and workflow are unchanged. This is
+compatibility/minimal-difference diagnosis only. Exact-SHA ordinary PASS must
+precede one Level 2 diagnostic. P8-07F, production SSH/ERP and P8-08 remain
+closed; unrelated user changes remain preserved.
+
+API-entry Level 1 passes focused verifier/API/repository `60/60`, complete
+P8-07 `78/78`, affected integration/security/API `98/98`, clean-overlay
+governance/reconciliation `59/59` and full Python `2644/2644`. Frontend
+generate/type/full lint/i18n passes with `8585` literal English sources and
+`100%` zh/zh-TW coverage; unit passes `1086/1086`; focused functional plus
+three-locale visual E2E passes `6/6`. Compile, shell, structured parse,
+current/reconciliation, exact-199/new-only/ordered-entry/cross-file equality/
+inner-precedence/dormancy, diff, exact-seven/union-78 and unauthorized-eight
+rejection pass. Repository/contracts/schema/frontend/workflow diffs remain
+zero; unrelated user changes remain excluded and preserved.

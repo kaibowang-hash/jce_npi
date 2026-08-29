@@ -68,6 +68,7 @@ class Phase8IntegrationOperationsApiTest(unittest.TestCase):
         for name in self.MODULES:
             sys.modules.pop(name, None)
         self.events: list[str] = []
+        self.diagnostics: list[dict[str, object]] = []
         self.replayed = False
         self.external = False
         self.headers = {
@@ -166,6 +167,7 @@ class Phase8IntegrationOperationsApiTest(unittest.TestCase):
             return result
 
         api.frappe_domain_call = domain_call
+        api.record_safe_diagnostic = lambda **values: self.diagnostics.append(values)
         sys.modules[api.__name__] = api
         security = types.ModuleType("npi_core.foundation.security")
         security.Principal = object
@@ -440,6 +442,173 @@ class Phase8IntegrationOperationsApiTest(unittest.TestCase):
                         request_fields={},
                     )
                 )
+
+    def test_action_entry_diagnostic_records_first_exact_predicate_without_values(self) -> None:
+        trace_id = "trace-" + "d" * 32
+        command = "npi_integration.integration_operations.api.replay_publish_item"
+        payload = {"expectedRawState": "failed_retryable", "expectedVersion": 3}
+        self.headers.update(
+            {
+                "X-Trace-ID": trace_id,
+                self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER:
+                    self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_SCOPE,
+            }
+        )
+        cases = (
+            (
+                "P807_ACTION_ENTRY_OPERATION_KIND",
+                self.module.IntegrationOperationKind.PUBLISH_MBOM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "POST",
+                {},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload},
+            ),
+            (
+                "P807_ACTION_ENTRY_ACTION_KIND",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REQUEST_RECONCILIATION,
+                {},
+                "POST",
+                {},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload},
+            ),
+            (
+                "P807_ACTION_ENTRY_REQUEST_FIELDS",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {"extra": "withheld"},
+                "POST",
+                {},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload},
+            ),
+            (
+                "P807_ACTION_ENTRY_METHOD",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "GET",
+                {},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload},
+            ),
+            (
+                "P807_ACTION_ENTRY_QUERY",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "POST",
+                {"limit": "1"},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload},
+            ),
+            (
+                "P807_ACTION_ENTRY_ROUTE",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "POST",
+                {},
+                {"project_id": PROJECT},
+                {"cmd": command, **payload},
+            ),
+            (
+                "P807_ACTION_ENTRY_FORM",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "POST",
+                {},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload, "extra": "withheld"},
+            ),
+            (
+                "P807_ACTION_ENTRY_COMMAND",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "POST",
+                {},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": "wrong", **payload},
+            ),
+            (
+                "P807_ACTION_ENTRY_EXPECTED_RAW_STATE",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "POST",
+                {},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload, "expectedRawState": "wrong"},
+            ),
+            (
+                "P807_ACTION_ENTRY_EXPECTED_VERSION",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "POST",
+                {},
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload, "expectedVersion": 4},
+            ),
+            (
+                "P807_ACTION_ENTRY_RUNTIME_SHAPE",
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                {},
+                "POST",
+                object(),
+                {"project_id": PROJECT, "integration_operation_id": OPERATION},
+                {"cmd": command, **payload},
+            ),
+        )
+        for expected, operation_kind, action_kind, fields, method, query, route, form in cases:
+            with self.subTest(expected=expected):
+                self.diagnostics.clear()
+                self.frappe.local.request.method = method
+                self.frappe.local.request.args = query
+                self.frappe.flags.npi_route_params = route
+                self.frappe.local.form_dict = form
+                self.assertFalse(
+                    self.module._integration_operations_action_diagnostic_active(
+                        trace_id,
+                        operation_kind=operation_kind,
+                        action_kind=action_kind,
+                        expected_raw_state=payload["expectedRawState"],
+                        expected_version=payload["expectedVersion"],
+                        request_fields=fields,
+                    )
+                )
+                self.assertEqual(
+                    self.diagnostics,
+                    [
+                        {
+                            "code": expected,
+                            "title": "NPI integration operation action entry predicate failed",
+                            "exception_type": "RuntimeError",
+                            "trace_id": trace_id,
+                        }
+                    ],
+                )
+                self.assertNotIn("withheld", repr(self.diagnostics))
+
+        self.diagnostics.clear()
+        self.headers.pop(self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER)
+        self.assertFalse(
+            self.module._integration_operations_action_diagnostic_active(
+                trace_id,
+                operation_kind=self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                action_kind=self.module.IntegrationActionKind.REPLAY,
+                expected_raw_state=payload["expectedRawState"],
+                expected_version=payload["expectedVersion"],
+                request_fields={},
+            )
+        )
+        self.assertEqual(self.diagnostics, [])
 
     def test_fixed_replay_is_csrf_actor_idempotent_and_commits_before_response(self) -> None:
         result = self.call_action()

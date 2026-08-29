@@ -8363,3 +8363,50 @@ repeat or rewrite it merely to restore context. See
   resolve its frontend `baseURL`; the same six tests pass from the canonical
   frontend working directory. No code, test or timeout changed for that
   command correction.
+
+### P8-07 checkpoint-4 uncertain-replay API-entry diagnostic cycle
+
+- Action-boundary SHA `ea1ffae30ee914461ac78c013d9d787bd15f910f`
+  passes ordinary CI `33257945711`: visual `99114818739`, secret scan
+  `99114818849`, repository `99114818865` and frontend `99114818875` all
+  pass. Its sole Level 2 controlled run `33258423341` passes preflight
+  `99116069520`; runtime `99116098370` passes pinned Bench and disposable
+  Site initialization, fails in the cumulative verifier and completes
+  cleanup.
+- Strict exact-188 parsing again accepts only
+  `P807_UNCERTAIN_REPLAY_STATUS_OTHER_CLIENT_ERROR / RuntimeError /
+  trace-94bcb1ffb3a35123b38723aae07842f5`. No trusted action server tuple is
+  present. The request returned and passed request-ID, cache-control and
+  restricted-key checks, but the evidence remains nonunique between a
+  pre-API rejection and an exact API-entry runtime-shape mismatch. No raw
+  log, child output, actual status/body, business value, identity, message or
+  stack was read.
+- Freeze `p8-07-checkpoint-4-uncertain-replay-action-boundary` at diagnostic
+  `1/1`, repair `0/1`, final `0/1`; do not infer a product repair. Open
+  independent `p8-07-checkpoint-4-uncertain-replay-api-entry-boundary` at
+  `0/1,0/1,0/1`.
+- Only `UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED=True`; all twelve
+  historical activations are false. Active exact `199` retains exact `188`
+  and adds eleven value-free API-entry codes: operation kind, action kind,
+  request-field shape, method, query, route, form, command, expected raw
+  state, expected version and runtime shape. Exact header plus trace is the
+  minimum authorization to record one first failed predicate; if all entry
+  predicates pass, the existing 22 API/repository stages retain inner
+  precedence. No actual predicate value is recorded.
+- The exact-seven task is runtime verifier/test, integration-operations API
+  and API test, plus this controller, P8-07 plan and controlled checkpoint.
+  Repository/product contract/schema/permissions/ownership/transaction/
+  write order/response/frontend/workflow stay unchanged. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed; unrelated
+  user-authorized pilot-deferral and permission-ownership documentation is
+  excluded and preserved.
+- API-entry Level 1 passes focused verifier/API/repository `60/60`, complete
+  P8-07 `78/78`, affected integration/security/API `98/98`, clean-overlay
+  governance/reconciliation `59/59` and clean-overlay full Python
+  `2644/2644`. Frontend generate/type/full lint/i18n passes with `8585`
+  literal sources and `100%` zh/zh-TW coverage; unit passes `1086/1086` and
+  focused functional plus three-locale visual E2E passes `6/6`. Compile,
+  shell, current/reconciliation, exact-199/new-only/ordered-entry/cross-file
+  equality/inner-precedence/dormancy, diff, exact-seven/union-78 and
+  unauthorized-eight rejection pass. Repository/contracts/frontend/workflow
+  diff remains zero; unrelated user changes remain excluded and preserved.
