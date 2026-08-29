@@ -7854,3 +7854,47 @@ repeat or rewrite it merely to restore context. See
   pass. Compile, shell syntax, current/reconciliation, JSON/CSV, exact-104
   lexical equality, diff hygiene, exact-five/union-78 and unauthorized-six
   rejection pass; product/workflow diff is zero.
+
+### P8-07 checkpoint-4 collection-response result and mock-only projection repair
+
+- Collection-response SHA `48871b94ae9bee7dda5e9d6fe6171d772b75ab4b`
+  passes ordinary CI `33221910716` in all four lanes. Its sole Level 2
+  controlled run `33222456752` passes preflight `99019233634`; runtime
+  `99019272929` initializes the pinned Bench and fixed disposable Site, then
+  fails in the cumulative verifier. Cleanup completes.
+- Strict exact-104 filtering yields one value-free tuple:
+  `P807_COLLECTION_STATUS_SERVER_ERROR / RuntimeError /
+  trace-2fcaaa171b4f51fba5bafa3c447f1a73`. The collection request returned and
+  passed request-ID, private no-store and recursively safe dictionary-response
+  checks. The actual status/body, child output, business values, identities,
+  message and stack remain unread.
+- Static cross-proof identifies one deterministic compatibility defect in the
+  retained cumulative fixture. P8-03 intentionally persists a
+  `validated_mock` Item publish validation with no target idempotency key and
+  no dispatch, while the P8-07 derived operations repository attempted to
+  construct a formal ERP operation reference for every matching Item publish
+  row. The operation contract correctly rejects the absent target identity.
+  Such a mock-only validation is not an ERP integration operation.
+- The same-cycle repair is deliberately local: exclude only
+  `publish_item + validated_mock + absent target key` from the derived P8-07
+  read model. Any queued, processing, failed, uncertain, conflict or other
+  non-mock operation without its target key remains fail-closed; a valid key
+  still produces the unchanged operation reference. No identifier is
+  fabricated, no contract is made nullable and no domain, API, ownership,
+  frontend or ERP behavior is redesigned.
+- Freeze collection-response at diagnostic `1/1`, repair `1/1`, final `0/1`.
+  Its diagnostic flag is false by default; focused tests activate the exact-104
+  mechanism only locally and lock dormant/no-reader release behavior. The
+  repair is exact-seven: repository and focused repository test, runtime
+  verifier and focused verifier test, plus this controller, plan and checkpoint
+  evidence. Exact-SHA ordinary PASS is required before the sole diagnostics-off
+  Level 3. P8-07F, SSH/ERP contact and P8-08 remain closed.
+- Repair Level 1 passes focused verifier/repository `40/40`, complete P8-07
+  `64/64`, governance/reconciliation `59/59`, full local Python `2636/2636`,
+  frontend unit/coverage `1086/1086` and focused nonvisual P8-07 E2E `3/3`.
+  Generate, typecheck, full lint/format/style/boundary/UI, `8585`-source
+  `100%` `zh`/`zh-TW` i18n, compile, shell syntax, current/reconciliation,
+  JSON/YAML, direct-SQL/network/permission scans, exact-104 localized
+  diagnostics, diff hygiene, exact-seven/union-78 and unauthorized-eight
+  rejection pass. Product API, contracts, schema, frontend and workflow diffs
+  remain zero outside the exact derived-read repair.

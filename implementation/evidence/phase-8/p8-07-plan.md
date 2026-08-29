@@ -575,3 +575,49 @@ full lint plus `8585`-source `100%` `zh`/`zh-TW` i18n pass. Compile, shell
 syntax, current/reconciliation, JSON/CSV, exact-104 lexical equality, diff,
 exact-five/union-78 and unauthorized-six rejection pass. Product/API/
 repository/contract/frontend/workflow diff is zero.
+
+## 24. Collection-response result and minimal mock-only compatibility repair
+
+Exact-five SHA `48871b94ae9bee7dda5e9d6fe6171d772b75ab4b` passes
+ordinary CI `33221910716` in all four lanes. Its sole controlled diagnostic
+`33222456752` passes preflight `99019233634`; runtime `99019272929`
+initializes the fixed Bench/Site and fails in the cumulative verifier. Strict
+exact-104 filtering returns exactly
+`P807_COLLECTION_STATUS_SERVER_ERROR / RuntimeError /
+trace-2fcaaa171b4f51fba5bafa3c447f1a73`. The response class is recorded without
+its actual value; status/body, failed-child output, business values,
+identities, message and stack were not read.
+
+The cumulative P8-03 fixture intentionally leaves one `validated_mock` Item
+publish validation in the disposable Site. That state proves validation only:
+dispatch is false and there is no target idempotency key. P8-07 nevertheless
+enumerated every matching Item publish row and constructed a formal operation
+reference whose existing contract requires a valid target key. The absent key
+therefore deterministically fails the collection. This is a narrow derived-read
+compatibility defect, not evidence for changing the approved contract,
+ownership, workflow or integration architecture.
+
+The minimal repair excludes only an exact `publish_item` row whose state is
+`validated_mock` and whose target key is absent. It does not invent a target
+identity or relax the operation contract. A missing target key in any non-mock
+state still fails closed, while a queued row with a valid key retains the
+unchanged operation reference. The collection-response diagnostic activation
+is false in release code and is activated only inside its focused mechanism
+tests. The exact-seven task changes repository/test, verifier/test and the
+three governance/evidence files. Product behavior outside this derived
+collection filter, API, contracts, schema, frontend, workflow and production
+ERP remain unchanged.
+
+Freeze the cycle at diagnostic `1/1`, repair `1/1`, final `0/1`. A new
+exact-SHA ordinary PASS must precede the sole diagnostics-off Level 3. P8-07F,
+SSH/ERP contact and P8-08 remain closed until that Level 3 passes.
+
+Repair Level 1 passes focused verifier/repository `40/40`, complete P8-07
+`64/64`, governance/reconciliation `59/59`, full Python `2636/2636`, frontend
+unit/coverage `1086/1086` and focused nonvisual P8-07 E2E `3/3`. Generate,
+typecheck, full lint/format/style/boundary/UI, `8585`-source `100%` `zh`/
+`zh-TW` i18n, compile, shell syntax, current/reconciliation, JSON/YAML,
+direct-SQL/network/permission scans, exact-104 localized diagnostics, diff,
+exact-seven/union-78 manifests and unauthorized-eight rejection pass. Product
+API, contracts, schema, frontend and workflow diffs remain zero outside the
+minimal derived-read change.

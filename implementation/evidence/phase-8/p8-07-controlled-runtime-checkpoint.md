@@ -300,3 +300,39 @@ and focused nonvisual P8-07 E2E `3/3`. Generate/typecheck/full lint,
 reconciliation, JSON/CSV, exact-104 lexical equality, diff, exact-five/
 union-78 and unauthorized-six rejection pass. Product/API/repository/contract/
 frontend/workflow diff remains zero.
+
+## Collection-response result and mock-only operation boundary repair
+
+- Collection-response candidate `48871b94ae9bee7dda5e9d6fe6171d772b75ab4b`
+  passes ordinary CI `33221910716`. Its sole Level 2 controlled run
+  `33222456752` passes preflight `99019233634`; runtime `99019272929` fails
+  after fixed Bench/Site initialization and cleanup completes.
+- The strict reader accepts one safe tuple only:
+  `P807_COLLECTION_STATUS_SERVER_ERROR / RuntimeError /
+  trace-2fcaaa171b4f51fba5bafa3c447f1a73`. Actual response status/body,
+  failed-child output, business values, identities, message and stack were not
+  read or emitted.
+- The retained P8-03 `validated_mock` Item publish row has no dispatch and no
+  target idempotency key by design. P8-07's derived collection incorrectly
+  treated it as an ERP operation, whose closed reference contract requires the
+  target key. The repair returns no operation only for that exact mock-only
+  combination. Non-mock rows without a key remain rejected, and rows with a
+  valid key retain their existing projection.
+- This is a minimal compatibility adjustment to the P8-07 read model. It does
+  not redesign/refactor domains, contracts, ownership, APIs, workflow,
+  permissions or ERP integration; it does not fabricate a key or make one
+  nullable. The response diagnostic is off by default and focused tests alone
+  activate its exact-104 machinery.
+- Freeze collection-response at diagnostic `1/1`, repair `1/1`, final `0/1`.
+  The exact-seven repair comprises repository/test, verifier/test and the
+  three governance/evidence paths. Its exact-SHA ordinary CI must pass before
+  the sole all-diagnostics-off Level 3. P8-07F, SSH/ERP contact and P8-08 stay
+  closed.
+- Repair Level 1 passes focused verifier/repository `40/40`, complete P8-07
+  `64/64`, governance/reconciliation `59/59`, full Python `2636/2636`,
+  frontend unit/coverage `1086/1086` and focused nonvisual P8-07 E2E `3/3`.
+  Generate/typecheck/full lint, `8585`-source `100%` `zh`/`zh-TW` i18n,
+  compile, shell syntax, current/reconciliation, JSON/YAML, security scans,
+  exact-104 localized diagnostics, diff, exact-seven/union-78 manifests and
+  unauthorized-eight rejection pass. Product API, contracts, schema,
+  frontend and workflow remain unchanged beyond the exact derived-read filter.

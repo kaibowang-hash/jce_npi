@@ -9,6 +9,7 @@ import sys
 import tempfile
 import types
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -51,6 +52,15 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.verifier = load_verifier()
+
+    @contextmanager
+    def collection_response_diagnostics(self):
+        with patch.object(
+            self.verifier,
+            "COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            yield
 
     def test_fixture_identities_are_stable_uuid4_values_and_disjoint(self) -> None:
         first = self.verifier._fixture_uuid("retryable-request")
@@ -358,26 +368,28 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             record.assert_called_once_with(expected, label="disabled")
 
     def test_collection_response_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
-        codes = self.verifier._active_fresh_runtime_diagnostic_codes()
         self.assertFalse(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
-        self.assertTrue(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
+        self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
         self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
         self.assertEqual(len(self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES), 7)
-        self.assertEqual(len(codes), 104)
-        self.assertEqual(
-            codes,
-            frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
-                self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
-                self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
-            ),
-        )
-        self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
-        source = SCRIPT.read_text(encoding="utf-8")
-        self.assertTrue(all(source.count(f'"{code}"') == 2 for code in codes))
+        with self.collection_response_diagnostics():
+            codes = self.verifier._active_fresh_runtime_diagnostic_codes()
+            self.assertEqual(len(codes), 104)
+            self.assertEqual(
+                codes,
+                frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+                    self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
+                ),
+            )
+            self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
+            source = SCRIPT.read_text(encoding="utf-8")
+            self.assertTrue(all(source.count(f'"{code}"') == 2 for code in codes))
         self.assertNotIn("str(error)", source)
         self.assertNotIn("repr(error)", source)
 
@@ -469,7 +481,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "items": [],
         }
         for expected, status in cases:
-            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as directory:
+            with self.subTest(expected=expected), self.collection_response_diagnostics(), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
                 trace_id = self.verifier.fresh_runtime_diagnostic_trace()
                 with patch.dict(
@@ -492,7 +504,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
 
     def test_fresh_diagnostic_is_exact_three_key_o_excl_and_inner_wins(self) -> None:
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()
-        with tempfile.TemporaryDirectory() as directory:
+        with self.collection_response_diagnostics(), tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
             with patch.dict(
                 os.environ,
@@ -533,7 +545,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             {**valid, "exceptionType": "bad type"},
             {**valid, "traceId": "trace-00000000000000000000000000000000"},
         )
-        with tempfile.TemporaryDirectory() as directory:
+        with self.collection_response_diagnostics(), tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
             for record in invalid_records:
                 with self.subTest(record=record):
@@ -562,7 +574,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
     def test_fresh_diagnostic_step_rethrows_same_exception_and_restores_scope(self) -> None:
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()
         error = RuntimeError("withheld")
-        with tempfile.TemporaryDirectory() as directory:
+        with self.collection_response_diagnostics(), tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
             with patch.dict(
                 os.environ,
@@ -578,7 +590,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
 
     def test_fresh_diagnostic_success_writes_no_record(self) -> None:
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()
-        with tempfile.TemporaryDirectory() as directory:
+        with self.collection_response_diagnostics(), tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
             with patch.dict(
                 os.environ,
@@ -617,7 +629,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.assertNotIn(self.verifier._DIAGNOSTIC_TRACE_ENV, captured)
 
             captured.clear()
-            with patch.dict(
+            with self.collection_response_diagnostics(), patch.dict(
                 os.environ,
                 {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
                 clear=False,
@@ -646,7 +658,11 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 self.verifier._DIAGNOSTIC_SCOPE_ENV: self.verifier._DIAGNOSTIC_SCOPE,
                 self.verifier._DIAGNOSTIC_TRACE_ENV: trace_id,
             }
-            with patch.dict(os.environ, exact, clear=False), patch.object(
+            with self.collection_response_diagnostics(), patch.dict(
+                os.environ,
+                exact,
+                clear=False,
+            ), patch.object(
                 self.verifier,
                 "run_local_bench_fixture",
                 side_effect=observe,
@@ -654,7 +670,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 self.verifier.run_scoped_local_bench_fixture("snapshot", {})
             self.assertEqual(states[-1], {"trace_id": trace_id, "recorded": False})
 
-            with patch.dict(
+            with self.collection_response_diagnostics(), patch.dict(
                 os.environ,
                 {**exact, self.verifier._DIAGNOSTIC_SCOPE_ENV: "wrong"},
                 clear=False,
@@ -683,7 +699,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "--project-id",
             PROJECT_ID,
         ]
-        with patch.dict(
+        with self.collection_response_diagnostics(), patch.dict(
             os.environ,
             {self.verifier._DIAGNOSTIC_PATH_ENV: "/tmp/preserved-ambient-path"},
             clear=False,

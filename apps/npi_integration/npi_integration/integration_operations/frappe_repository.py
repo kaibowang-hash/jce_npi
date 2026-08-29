@@ -413,15 +413,21 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         } and str(_value(row, "operation")) != spec.kind.value:
             return None
         raw_state = str(_value(row, spec.state_field))
-        classification = classify_operation_state(spec.kind, raw_state)
-        operation_id = _uuid(_value(row, "name") or _value(row, "global_id"))
-        source_id = _uuid(_value(row, spec.source_id_field))
-        version = max(1, int(_value(row, spec.version_field) or 0))
         target_key = (
             _value(row, "source_key_hash")
             if spec.kind is IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION
             else _value(row, "target_idempotency_key_hash")
         )
+        if (
+            spec.kind is IntegrationOperationKind.PUBLISH_ITEM
+            and raw_state == "validated_mock"
+            and not target_key
+        ):
+            return None
+        classification = classify_operation_state(spec.kind, raw_state)
+        operation_id = _uuid(_value(row, "name") or _value(row, "global_id"))
+        source_id = _uuid(_value(row, spec.source_id_field))
+        version = max(1, int(_value(row, spec.version_field) or 0))
         return IntegrationOperationReference(
             tenant_id=str(project.tenant_id),
             project_global_id=UUID(str(project.global_id)),

@@ -264,6 +264,31 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
         self.assertEqual(item["targetIdempotencyKeyHash"], "b" * 64)
         self.assertNotIn("payload", repr(item).casefold())
 
+    def test_mock_only_item_validation_is_not_an_erp_operation(self) -> None:
+        spec = self.module._SPECS[self.module.IntegrationOperationKind.PUBLISH_ITEM]
+        row = AttrDict(
+            name=str(OPERATION),
+            tenant_id=TENANT,
+            project_global_id=str(PROJECT),
+            state="validated_mock",
+            optimistic_version=1,
+            selected_publish_node_global_id=str(SOURCE),
+            source_hash="a" * 64,
+            target_idempotency_key_hash=None,
+        )
+
+        self.assertIsNone(self.repository._operation_value(self.project, spec, row))
+
+        row.state = "queued"
+        with self.assertRaisesRegex(Exception, "targetIdempotencyKeyHash is invalid"):
+            self.repository._operation_value(self.project, spec, row)
+
+        row.target_idempotency_key_hash = "b" * 64
+        operation = self.repository._operation_value(self.project, spec, row)
+        self.assertIsNotNone(operation)
+        self.assertEqual(operation.raw_state, "queued")
+        self.assertEqual(operation.target_idempotency_key_hash, "b" * 64)
+
     def test_action_permission_projection_matches_command_authority(self) -> None:
         operation = self.operation()
         row = AttrDict(doctype="NPI Item Publish Request")
