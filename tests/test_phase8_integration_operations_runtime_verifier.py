@@ -70,6 +70,15 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ):
             yield
 
+    @contextmanager
+    def collection_server_diagnostics(self):
+        with patch.object(
+            self.verifier,
+            "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            yield
+
     def test_fixture_identities_are_stable_uuid4_values_and_disjoint(self) -> None:
         first = self.verifier._fixture_uuid("retryable-request")
         repeated = self.verifier._fixture_uuid("retryable-request")
@@ -208,7 +217,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             body={"items": []},
         )
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()
-        with patch.object(
+        with self.collection_server_diagnostics(), patch.object(
             self.verifier.document_runtime,
             "query_headers",
             return_value={"X-Request-ID": "p807-list"},
@@ -228,6 +237,28 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             headers[self.verifier._COLLECTION_SERVER_DIAGNOSTIC_HEADER],
             self.verifier._COLLECTION_SERVER_DIAGNOSTIC_SCOPE,
+        )
+
+        with patch.object(
+            self.verifier.document_runtime,
+            "query_headers",
+            return_value={"X-Request-ID": "p807-list"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=response,
+        ) as dormant_request, self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+            self.verifier._request(
+                object(),
+                "http://127.0.0.1",
+                "/safe",
+                label="fresh-list",
+            )
+        dormant_headers = dormant_request.call_args.kwargs["request_headers"]
+        self.assertNotIn("X-Trace-ID", dormant_headers)
+        self.assertNotIn(
+            self.verifier._COLLECTION_SERVER_DIAGNOSTIC_HEADER,
+            dormant_headers,
         )
 
     def test_disabled_probe_requires_the_fixed_disabled_problem(self) -> None:
@@ -412,23 +443,27 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED)
-        self.assertTrue(self.verifier.COLLECTION_SERVER_DIAGNOSTICS_ENABLED)
+        self.assertFalse(self.verifier.COLLECTION_SERVER_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
         self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
         self.assertEqual(len(self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES), 7)
         self.assertEqual(len(self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES), 46)
-        codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-        self.assertEqual(len(codes), 150)
         self.assertEqual(
-            codes,
-            frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
-                self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
-                self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
-                self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
-            ),
+            self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset()
         )
+        with self.collection_server_diagnostics():
+            codes = self.verifier._active_fresh_runtime_diagnostic_codes()
+            self.assertEqual(len(codes), 150)
+            self.assertEqual(
+                codes,
+                frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+                    self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
+                ),
+            )
         self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
         source = SCRIPT.read_text(encoding="utf-8")
         self.assertTrue(
@@ -604,7 +639,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()
         result = SimpleNamespace(status=500, body={})
         cursors = {"logs/npi_core.log": 0, "sites/npi.localhost/logs/npi_core.log": 0}
-        with tempfile.TemporaryDirectory() as directory:
+        with (
+            self.collection_server_diagnostics(),
+            tempfile.TemporaryDirectory() as directory,
+        ):
             path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
             with patch.dict(
                 os.environ,
@@ -642,7 +680,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 },
             )
 
-        with tempfile.TemporaryDirectory() as directory:
+        with (
+            self.collection_server_diagnostics(),
+            tempfile.TemporaryDirectory() as directory,
+        ):
             path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
             with patch.dict(
                 os.environ,

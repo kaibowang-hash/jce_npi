@@ -38,6 +38,10 @@ def uid(value: int) -> UUID:
     return UUID(f"00000000-0000-4000-8000-{value:012d}")
 
 
+def stable_uid(value: int) -> UUID:
+    return UUID(f"00000000-0000-5000-8000-{value:012d}")
+
+
 def operation(
     kind: IntegrationOperationKind = IntegrationOperationKind.PUBLISH_ITEM,
     raw_state: str = "failed_retryable",
@@ -45,7 +49,7 @@ def operation(
     classification = classify_operation_state(kind, raw_state)
     return IntegrationOperationReference(
         tenant_id="tenant-p807",
-        project_global_id=uid(1),
+        project_global_id=stable_uid(1),
         operation_kind=kind,
         operation_global_id=uid(2),
         source_global_id=uid(3),
@@ -204,7 +208,15 @@ class Phase8IntegrationOperationsDomainTest(unittest.TestCase):
 
     def test_operation_reference_rejects_state_version_identity_and_hash_drift(self) -> None:
         exact = operation()
-        self.assertEqual(exact.classification.shared_state, IntegrationViewState.FAILED_RETRYABLE)
+        self.assertEqual(exact.project_global_id.version, 5)
+        self.assertEqual(
+            replace(exact, project_global_id=uid(1)).project_global_id.version,
+            4,
+        )
+        self.assertEqual(
+            exact.classification.shared_state,
+            IntegrationViewState.FAILED_RETRYABLE,
+        )
         for mutation in (
             {"shared_state": IntegrationViewState.SUCCEEDED},
             {"operation_version": 0},

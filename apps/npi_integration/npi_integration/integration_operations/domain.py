@@ -696,8 +696,10 @@ def _uuid(value: object, field: str) -> UUID:
         raise IntegrationOperationsContractError(
             f"{field} must be a valid global ID."
         ) from error
-    if parsed.version != 4:
-        raise IntegrationOperationsContractError(f"{field} must be a UUIDv4 global ID.")
+    if parsed.version not in {4, 5}:
+        raise IntegrationOperationsContractError(
+            f"{field} must be a UUIDv4 or UUIDv5 global ID."
+        )
     return parsed
 
 

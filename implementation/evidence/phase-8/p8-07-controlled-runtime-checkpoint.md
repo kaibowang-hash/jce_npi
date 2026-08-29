@@ -399,3 +399,42 @@ frontend/workflow diff remains zero.
   `zh`/`zh-TW` i18n pass. Compile, current/reconciliation, exact-150
   cross-file equality, no-leak, diff, exact-nine/union-78 and unauthorized-ten
   rejection pass.
+
+## Collection-server result and canonical global-ID repair
+
+- Exact-nine SHA `0ad8a586605440b4ab0f19bbbc150c3893161997`
+  passes ordinary CI `33227714991`: secret scan `99034556661`, visual
+  `99034556721`, frontend `99034556725` and repository `99034556802` all pass.
+  The sole controlled run `33228195619` passes preflight `99035925803`;
+  runtime `99035958214` fails after fixed Bench/Site initialization and
+  cleanup completes.
+- Strict exact-150 filtering returns one safe tuple:
+  `P807_COLLECTION_ITEM_VALUE / IntegrationOperationsContractError /
+  trace-28d37423125450c2a8a4c09833a31ba6`. Failed-child output, response
+  status/body, business values, identities, messages and stack remain unread.
+- The stage enters `IntegrationOperationReference` for a retained Item row.
+  Its first global identity check is the owning Project identity. The current
+  Project service deterministically creates canonical UUIDv5 identities, but
+  the P8-07 validator required UUIDv4. Later operation/source/state/version/
+  hash predicates therefore were not reached. The API contract specifies a
+  UUID without a version restriction, and UUIDv4/UUIDv5 are both established
+  repository identity forms.
+- The same-cycle repair accepts canonical UUIDv4 and UUIDv5 in the P8-07
+  global-ID validator and keeps UUIDv1/malformed values fail-closed. Focused
+  domain and repository tests use a UUIDv5 Project and retain the prior UUIDv4
+  path and version-one rejection. Collection-server diagnostics are disabled
+  in release code; mechanism tests activate them only locally and prove the
+  request header/trace is dormant by default.
+- Freeze this cycle at diagnostic `1/1`, repair `1/1`, final `0/1`. The repair
+  is exact-eight: domain, domain/repository tests, verifier/test and the three
+  governance/evidence files. No contract, schema, frontend, workflow,
+  ownership, permission or production ERP change is included. Exact-SHA
+  ordinary PASS is required before the sole all-diagnostics-off Level 3.
+  P8-07F/SSH/ERP and P8-08 remain inactive.
+- Repair Level 1 passes focused domain/repository/verifier `49/49`, complete
+  P8-07 `69/69`, affected integration/security/API `89/89`, governance/
+  reconciliation `59/59` and full repository Python `2641/2641`. Frontend
+  unit/coverage passes `1086/1086`; focused P8-07 functional and three-locale
+  visual E2E passes `6/6`. Compile, shell syntax, current/reconciliation,
+  all-diagnostics-off, diff, exact-eight/union-78 manifests and unauthorized-
+  nine rejection pass.

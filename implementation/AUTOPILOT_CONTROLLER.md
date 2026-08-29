@@ -7973,3 +7973,35 @@ repeat or rewrite it merely to restore context. See
   current/reconciliation, JSON/YAML, exact-150 cross-file equality, no-leak,
   diff, exact-nine/union-78 and unauthorized-ten rejection pass. No contract,
   schema, frontend or workflow diff is introduced.
+
+### P8-07 checkpoint-4 collection-server result and UUID compatibility repair
+
+- Collection-server SHA `0ad8a586605440b4ab0f19bbbc150c3893161997`
+  passes ordinary CI `33227714991` in all four lanes. Its sole Level 2 run
+  `33228195619` passes preflight `99035925803`; runtime `99035958214` fails
+  after fixed Bench/Site initialization and cleanup completes.
+- Strict exact-150 filtering yields only
+  `P807_COLLECTION_ITEM_VALUE / IntegrationOperationsContractError /
+  trace-28d37423125450c2a8a4c09833a31ba6`. No restricted child/response/
+  business content, identity, message or stack was read.
+- The exact stage constructs an Item operation reference. Its first identity
+  predicate checks the Project global ID. Approved Project creation uses a
+  canonical UUIDv5, but the P8-07 validator accepted only UUIDv4, so the later
+  source/state/version/hash predicates cannot be the first source. OpenAPI
+  requires `format: uuid` and does not authorize a version-four-only drift.
+- Apply only the local compatibility repair: accept UUIDv4 and UUIDv5 in the
+  P8-07 canonical global-ID validator, preserve UUIDv1/malformed rejection,
+  lock the real UUIDv5 Project shape in domain/repository tests, and disable
+  the server diagnostic activation in release code. Do not change ownership,
+  API, workflow, permissions, schema, frontend or ERP behavior.
+- Freeze the cycle at diagnostic `1/1`, repair `1/1`, final `0/1`. The
+  exact-eight repair requires its own ordinary exact-SHA PASS before one sole
+  all-diagnostics-off Level 3. P8-07F, `JCE-Core`, production ERPNext and
+  P8-08 remain closed until that Level 3 succeeds.
+- Repair Level 1 passes focused domain/repository/verifier `49/49`, complete
+  P8-07 `69/69`, affected integration/security/API `89/89`, governance/
+  reconciliation `59/59` and full repository Python `2641/2641`. Frontend
+  unit/coverage passes `1086/1086` and focused P8-07 functional plus
+  three-locale visual E2E passes `6/6`. Compile, shell syntax, current/
+  reconciliation, all-diagnostics-off, diff, exact-eight/union-78 manifests
+  and unauthorized-nine rejection pass.

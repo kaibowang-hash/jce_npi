@@ -705,3 +705,48 @@ current/reconciliation, JSON/YAML, exact-150 cross-file equality, no-leak,
 diff hygiene, exact-nine/union-78 manifests and unauthorized-ten rejection
 pass. Diagnostic recording is reachable only for the exact request and remains
 response-neutral; contracts, schema, frontend and workflow diffs remain zero.
+
+## 27. Collection-server result and canonical UUID compatibility repair
+
+Collection-server SHA `0ad8a586605440b4ab0f19bbbc150c3893161997`
+passes ordinary CI `33227714991`: secret scan `99034556661`, visual
+`99034556721`, frontend `99034556725` and repository `99034556802` all pass.
+Its sole Level 2 controlled run `33228195619` passes preflight `99035925803`;
+runtime `99035958214` initializes the fixed Bench/Site, then fails in the
+cumulative verifier. Strict exact-150 filtering accepts only
+`P807_COLLECTION_ITEM_VALUE / IntegrationOperationsContractError /
+trace-28d37423125450c2a8a4c09833a31ba6`. No response status/body, child
+output, business value, identity, message or stack was read.
+
+The failing lexical stage calls `_operation_value` for an Item operation.
+`IntegrationOperationReference` validates `projectGlobalId` before its
+operation/source identities, state, version and hashes. The approved Project
+domain deterministically owns canonical UUIDv5 identities, while the P8-07
+global-ID validator accepted only UUIDv4. The retained Project therefore
+fails at that first identity predicate in every such collection. OpenAPI uses
+the standard `format: uuid` contract, and both UUIDv4 and UUIDv5 are existing
+repository-owned global identities. This is a narrow compatibility defect;
+it is not evidence to redesign ownership, APIs, workflows or integration.
+
+The minimal repair lets this P8-07 canonical global-ID validator accept UUIDv4
+or UUIDv5 while continuing to reject UUIDv1 and malformed identities. Domain
+and repository tests use the real UUIDv5 Project shape and retain UUIDv4 and
+UUIDv1 boundaries. The collection-server activation is off in release code;
+focused tests activate its exact-150 mechanism locally and lock dormant
+headers/readers by default. The exact-eight task changes only the domain and
+its focused domain/repository tests, runtime verifier/test, and the three
+governance/evidence files. Contracts, schema, frontend, workflow, permissions,
+data ownership and production ERP remain unchanged.
+
+Freeze the collection-server cycle at diagnostic `1/1`, repair `1/1`, final
+`0/1`. Its exact-SHA ordinary PASS must precede the sole diagnostics-off Level
+3. P8-07F, `JCE-Core`, production ERPNext and P8-08 remain closed until that
+Level 3 passes.
+
+Repair Level 1 passes focused domain/repository/verifier `49/49`, complete
+P8-07 `69/69`, the manifest's affected integration/security/API set `89/89`,
+governance/reconciliation `59/59` and full repository Python `2641/2641`.
+Frontend unit/coverage passes `1086/1086` and the focused P8-07 functional plus
+three-locale visual set passes `6/6`; the task has no frontend diff. Compile,
+shell syntax, current/reconciliation, all-diagnostics-off, diff hygiene,
+exact-eight/union-78 manifests and unauthorized-nine rejection pass.
