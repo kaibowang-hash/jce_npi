@@ -8506,3 +8506,44 @@ repeat or rewrite it merely to restore context. See
   exact-five/union-78 and unauthorized-six rejection pass. Dirty-tree M9
   marker drift remains an excluded user-authorized documentation fact; the
   exact overlay is green.
+
+### P8-07 checkpoint-4 retryable-replay-shape diagnostic cycle
+
+- Exact-five diagnostic SHA `a38318137605dfebc028ad8302bbdcf81318dabb`
+  passes ordinary `33264732789`: secret scan `99132676780`, repository
+  `99132676892`, frontend `99132676922` and visual `99132676927` all pass.
+  Its sole controlled run `33265414935` passes preflight `99134502694`;
+  runtime `99134536661` fails after fixed Bench/Site initialization and
+  cleanup. Strict exact-199 reading yields only `P807_FRESH_REPLAY_SHAPE /
+  RuntimeError / trace-b275f9a1b540532784e494ddc092b8e9`.
+- The tuple proves every preceding fresh boundary, including uncertain
+  rejection, reconciliation intent and observation, passed. The retryable
+  replay HTTP helper also returned after validating request identity,
+  cache-control and a recursively safe dictionary. It does not identify
+  which of status, idempotency marker, outcome state or owning-work reference
+  failed. Do not infer a product repair from the combined predicate.
+- Freeze `p8-07-checkpoint-4-post-action-actor-combined-boundary` at
+  `1/1,0/1,0/1`. Start independent product-zero
+  `p8-07-checkpoint-4-retryable-replay-shape` at `0/1,0/1,0/1`. Only
+  `POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED=True`; all fourteen
+  historical activations are false.
+- Reuse exact-199 and add four ordered, value-free codes for retryable replay
+  status, idempotency marker, outcome state and exact owning-work reference
+  (`203` total). The strict exact-three-key `0600` `O_EXCL` record, exact
+  trace/scope/cursors, inner precedence, same exception/finally,
+  failed-child unread and success-zero contracts remain.
+- This task is exact five: runtime verifier/test plus this controller, P8-07
+  plan and controlled checkpoint. Product/API/repository/contracts/schema/
+  permissions/ownership/frontend/workflow remain unchanged. Its exact-SHA
+  ordinary PASS must precede one sole Level 2 controlled diagnostic. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed; preserve the
+  user-approved M9 pilot deferral and permission-ownership documentation.
+- Level 1 passes focused verifier `41/41`, complete P8-07 `83/83`, affected
+  integration peers `230/230` and clean exact-overlay full Python
+  `2649/2649`. Frontend unit `1086/1086`, focused functional/three-locale
+  visual E2E `6/6`, generate/type/full lint/i18n (`8585`, `100%` zh/zh-TW),
+  compile, shell, current/reconciliation, exact-203/new-only/ordered
+  predicates/no-leak/success-zero, diff, exact-five/union-78 and
+  unauthorized-six rejection pass. Dirty full Python has only the preserved
+  M9 marker-count mismatch (`2654/2655`); apps/contracts/frontend/workflow
+  tracked product diff remains zero.

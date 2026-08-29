@@ -881,3 +881,32 @@ frontend/workflow diff remains zero.
   six unchanged tests pass from the canonical frontend directory. Dirty-tree
   full Python has only the preserved M9 marker-count mismatch; no such
   failure exists in the exact overlay.
+
+## Post-action controlled result and replay-shape boundary
+
+- Diagnostic SHA `a38318137605dfebc028ad8302bbdcf81318dabb`
+  passes ordinary `33264732789`: secret scan `99132676780`, repository
+  `99132676892`, frontend `99132676922` and visual `99132676927`.
+- Sole controlled `33265414935` passes preflight `99134502694`. Runtime
+  `99134536661` initializes the fixed Bench/Site, fails in cumulative P8-07
+  verification and completes cleanup. Strict exact-199 reading accepts only
+  `P807_FRESH_REPLAY_SHAPE / RuntimeError /
+  trace-b275f9a1b540532784e494ddc092b8e9`.
+- Failed child output, response status/body/header values, business values,
+  identifiers, messages and stack were not read. The safe tuple proves all
+  earlier fresh boundaries and the replay HTTP helper passed; it cannot
+  distinguish four combined response predicates.
+- Freeze the post-action-actor cycle at `1/1,0/1,0/1`. The independent
+  retryable-replay-shape cycle begins `0/1,0/1,0/1`, exact five and product
+  zero. Its single activation adds four value-free ordered codes to the
+  existing 199-code set (`203` total); all fourteen history flags remain
+  false. One exact-SHA ordinary PASS must precede its sole Level 2 diagnostic.
+- P8-07F, `JCE-Core`, production ERPNext and P8-08 remain closed. Unrelated
+  M9 pilot-deferral and permission-ownership changes are preserved.
+- Level 1 passes verifier `41/41`, P8-07 `83/83`, affected peers `230/230`,
+  clean exact-overlay full Python `2649/2649`, frontend unit `1086/1086` and
+  focused E2E/visual `6/6`. Generate/type/full lint/i18n (`8585`, `100%`
+  zh/zh-TW), compile, shell, current/reconciliation, exact-203/new-only/
+  ordered predicates/no-leak/success-zero, diff, exact-five/union-78 and
+  unauthorized-six rejection pass. Product and workflow diff is zero; the
+  dirty-only M9 marker mismatch remains excluded and untouched.

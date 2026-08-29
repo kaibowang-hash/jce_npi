@@ -51,7 +51,8 @@ POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED = False
 UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED = False
 UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED = False
 UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED = False
-POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED = True
+POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED = False
+POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -198,6 +199,12 @@ UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES = (
     "P807_UNCERTAIN_REPLAY_MEDIA_TYPE",
     "P807_UNCERTAIN_REPLAY_TRACE",
     "P807_UNCERTAIN_REPLAY_ENVELOPE",
+)
+FRESH_REPLAY_SHAPE_DIAGNOSTIC_CODES = (
+    "P807_RETRYABLE_REPLAY_STATUS",
+    "P807_RETRYABLE_REPLAY_IDEMPOTENCY",
+    "P807_RETRYABLE_REPLAY_OUTCOME",
+    "P807_RETRYABLE_REPLAY_REFERENCE",
 )
 UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES = (
     "P807_ACTION_API_DOMAIN_CALL",
@@ -391,6 +398,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED,
         UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED,
         POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED,
+        POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED,
     )
     if sum(map(int, activations)) != 1:
         return frozenset()
@@ -415,6 +423,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
         or POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+        or POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED
     ):
         codes = codes.union(COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES)
     if (
@@ -422,19 +431,24 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
         or POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+        or POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED
     ):
         codes = codes.union(UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES)
     if (
         UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
         or POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+        or POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED
     ):
         codes = codes.union(UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES)
     if (
         UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
         or POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+        or POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED
     ):
-        return codes.union(UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES)
+        codes = codes.union(UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES)
+    if POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED:
+        codes = codes.union(FRESH_REPLAY_SHAPE_DIAGNOSTIC_CODES)
     if codes != frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
         FRESH_FIXTURE_DIAGNOSTIC_CODES
     ):
@@ -461,6 +475,7 @@ def _collection_server_diagnostics_enabled() -> bool:
         UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED,
         UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED,
         POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED,
+        POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED,
     )
     return sum(map(int, activations)) == 1 and (
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED
@@ -472,6 +487,7 @@ def _collection_server_diagnostics_enabled() -> bool:
         or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
         or POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+        or POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED
     )
 
 
@@ -481,6 +497,7 @@ def _action_server_diagnostics_enabled() -> bool:
             UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
             or UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
             or POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+            or POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED
         )
         and _fresh_runtime_diagnostics_enabled()
     )
@@ -791,6 +808,7 @@ def _validate_uncertain_replay_problem(
         or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
         or POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+        or POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED
     ):
         validate_problem(result, 409, "INTEGRATION_OPERATION_CONFLICT")
         return
@@ -841,6 +859,43 @@ def _validate_uncertain_replay_problem(
             ),
             "P8-07 uncertain replay problem envelope drifted",
         )
+
+
+def _validate_retryable_replay_shape(result: Any) -> None:
+    if not POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED:
+        with fresh_runtime_diagnostic_step("P807_FRESH_REPLAY_SHAPE"):
+            require(
+                result.status == 201
+                and result.headers.get("Idempotency-Replayed") == "false"
+                and result.body.get("outcomeState") == "replay_requested"
+                and result.body.get("outcomeReferenceGlobalId")
+                == str(_fixture_uuid("retryable-outbox")),
+                "P8-07 retryable action did not requeue exact owning work",
+            )
+        return
+    predicates = (
+        (result.status == 201, "P8-07 retryable replay status drifted"),
+        (
+            result.headers.get("Idempotency-Replayed") == "false",
+            "P8-07 retryable replay idempotency marker drifted",
+        ),
+        (
+            result.body.get("outcomeState") == "replay_requested",
+            "P8-07 retryable replay outcome drifted",
+        ),
+        (
+            result.body.get("outcomeReferenceGlobalId")
+            == str(_fixture_uuid("retryable-outbox")),
+            "P8-07 retryable replay reference drifted",
+        ),
+    )
+    for code, (predicate, message) in zip(
+        FRESH_REPLAY_SHAPE_DIAGNOSTIC_CODES,
+        predicates,
+        strict=True,
+    ):
+        with fresh_runtime_diagnostic_step(code):
+            require(predicate, message)
 
 
 def _record_collection_server_diagnostic(
@@ -1024,6 +1079,7 @@ def _require_collection_kinds(items: list[dict[str, Any]]) -> None:
         or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
         or POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+        or POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED
     ):
         for code, operation_kind, expected_present in _EXPECTED_COLLECTION_MEMBERSHIP:
             with fresh_runtime_diagnostic_step(code):
@@ -1349,15 +1405,7 @@ def run_fresh(
             idempotency_key=f"p807-replay-{FIXTURE_RUN_ID}",
             label="retryable-replay",
         )
-    with fresh_runtime_diagnostic_step("P807_FRESH_REPLAY_SHAPE"):
-        require(
-            replay.status == 201
-            and replay.headers.get("Idempotency-Replayed") == "false"
-            and replay.body.get("outcomeState") == "replay_requested"
-            and replay.body.get("outcomeReferenceGlobalId")
-            == str(_fixture_uuid("retryable-outbox")),
-            "P8-07 retryable action did not requeue exact owning work",
-        )
+    _validate_retryable_replay_shape(replay)
 
     stale = dict(uncertain)
     stale["operationVersion"] = int(uncertain["operationVersion"]) + 1

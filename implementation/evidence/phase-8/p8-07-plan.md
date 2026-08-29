@@ -1321,3 +1321,40 @@ documentation remains excluded and preserved.
   navigation because it did not resolve the frontend `baseURL`; the same six
   unchanged tests pass from the canonical frontend working directory. The
   dirty-tree-only M9 marker mismatch is absent from the clean exact overlay.
+
+## Retryable replay shape diagnostic
+
+Post-action diagnostic SHA `a38318137605dfebc028ad8302bbdcf81318dabb`
+passes ordinary `33264732789` in all four lanes. Sole controlled
+`33265414935` passes preflight `99134502694`; runtime `99134536661` fails in
+the cumulative verifier and completes cleanup. Strict exact-199 parsing
+returns only `P807_FRESH_REPLAY_SHAPE / RuntimeError /
+trace-b275f9a1b540532784e494ddc092b8e9`; no restricted output was read.
+
+The successful ordered predecessors prove the retryable action HTTP call
+returned a recursively safe dictionary with request-ID and cache-control
+contracts intact. The combined predicate still covers four independent
+facts: create status, first-command idempotency marker, replay outcome state
+and exact owning Outbox reference. Repository/API static contracts support
+the expected values but cannot establish which runtime predicate differed.
+No repair is authorized.
+
+Freeze the post-action-actor cycle at diagnostic `1/1`, repair `0/1`, final
+`0/1`. Open independent `p8-07-checkpoint-4-retryable-replay-shape` at
+`0/1,0/1,0/1`. The exact-five product-zero task enables only
+`POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED`, keeps fourteen history
+flags false, reuses exact-199 and adds four ordered value-free replay-shape
+codes for exact-203 coverage. Exact trace/scope/cursors, strict mirror,
+`0600` `O_EXCL` exact-three-key output, inner precedence, failed-child unread
+and success-zero remain unchanged. Exact-SHA ordinary PASS is required before
+one Level 2 controlled diagnostic. P8-07F, production ERP and P8-08 remain
+inactive.
+
+Level 1 passes focused verifier `41/41`, complete P8-07 `83/83`, affected
+integration peers `230/230`, clean exact-overlay full Python `2649/2649`,
+frontend unit `1086/1086` and focused E2E/visual `6/6`. Generate/type/full
+lint/i18n (`8585`, `100%` zh/zh-TW), compile, shell, current/reconciliation,
+exact-203/new-only/ordered predicates/no-leak/success-zero, diff,
+exact-five/union-78 and unauthorized-six rejection pass. The dirty-tree-only
+M9 marker count remains the preserved user-authorized documentation change;
+product/API/repository/contracts/schema/frontend/workflow diff is zero.
