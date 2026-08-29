@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import io
 import json
 import os
 import re
@@ -228,15 +229,24 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         cls.module = load_verifier()
 
     def setUp(self) -> None:
-        self.post_p807_activation = patch.object(
-            self.module,
-            "LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED",
-            False,
+        self.post_p807_activations = (
+            patch.object(
+                self.module,
+                "LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED",
+                False,
+            ),
+            patch.object(
+                self.module,
+                "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
+                False,
+            ),
         )
-        self.post_p807_activation.start()
+        for activation in self.post_p807_activations:
+            activation.start()
 
     def tearDown(self) -> None:
-        self.post_p807_activation.stop()
+        for activation in reversed(self.post_p807_activations):
+            activation.stop()
 
     def test_legacy_collection_diagnostic_is_exact_and_response_neutral(self) -> None:
         module = self.module
@@ -312,7 +322,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(rendered, module._LEGACY_COLLECTION_FAILURE)
         self.assertNotIn(_TRACE_ID, rendered)
 
-    def test_legacy_query_server_diagnostic_activation_is_exact(self) -> None:
+    def test_legacy_full_boundary_diagnostic_activation_is_exact(self) -> None:
         module = self.module
         self.assertFalse(module.LEGACY_COLLECTION_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED)
@@ -329,18 +339,30 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.value, ast.Constant)
             and isinstance(node.value.value, bool)
         }
-        self.assertEqual(len(assignments), 5)
+        self.assertEqual(len(assignments), 6)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED"},
+            {"LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED"},
         )
         with patch.object(
             module,
-            "LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED",
+            "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
             True,
         ):
+            self.assertTrue(module._legacy_full_boundary_diagnostics_enabled())
             self.assertTrue(module._legacy_collection_diagnostics_enabled())
             self.assertTrue(module._legacy_query_server_diagnostics_enabled())
+            self.assertEqual(
+                module._active_legacy_full_diagnostic_codes(),
+                frozenset(module._LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES).union(
+                    module._LEGACY_COLLECTION_DIAGNOSTIC_CODES,
+                    module._LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES,
+                ),
+            )
+            self.assertEqual(
+                len(module._active_legacy_full_diagnostic_codes()),
+                39,
+            )
         run_legacy = source.split("def run_legacy(", 1)[1].split("\ndef ", 1)[0]
         self.assertIn(
             "legacy_query_diagnostic=legacy_query_diagnostics",
@@ -349,6 +371,206 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("diagnostic_cursors", run_legacy)
         self.assertNotIn("_sanitized_server_diagnostic", run_legacy)
         self.assertEqual(source.count("legacy_query_diagnostic=True"), 0)
+        for code in module._LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES[2:]:
+            self.assertEqual(run_legacy.count(f'"{code}"'), 1, code)
+        requested = source.split(
+            "def _run_requested_runtime(", 1
+        )[1].split("\ndef ", 1)[0]
+        for code in module._LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES[:2]:
+            self.assertEqual(requested.count(f'"{code}"'), 1, code)
+
+    def test_legacy_full_boundary_diagnostic_is_exact_three_key_and_first_wins(
+        self,
+    ) -> None:
+        module = self.module
+        private = "released Item /tmp/private actor value"
+        trace_id = module.legacy_full_boundary_diagnostic_trace()
+        original = RuntimeError(private)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / module._LEGACY_FULL_DIAGNOSTIC_FILE_NAME
+            with patch.object(
+                module,
+                "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
+                True,
+            ), patch.dict(
+                os.environ,
+                {module._LEGACY_FULL_DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), module.legacy_full_boundary_diagnostic_scope(
+                trace_id
+            ), self.assertRaises(
+                RuntimeError
+            ) as failure:
+                with module.legacy_full_boundary_diagnostic_step(
+                    "P803_LEGACY_FULL_COLLECTION_CONTRACT"
+                ):
+                    module._record_embedded_legacy_diagnostic(
+                        "safe [diagnostic_code=P803_LEGACY_QUERY_ROWS; "
+                        "exception_type=RuntimeError; "
+                        f"trace_id={_TRACE_ID}]"
+                    )
+                    raise original
+            self.assertIs(failure.exception, original)
+            with patch.object(
+                module,
+                "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    module.read_legacy_full_boundary_diagnostic(
+                        path,
+                        expected_trace=_TRACE_ID,
+                    ),
+                    ("RuntimeError", "P803_LEGACY_QUERY_ROWS", _TRACE_ID),
+                )
+            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+            payload = path.read_text(encoding="utf-8")
+            self.assertEqual(
+                set(json.loads(payload)),
+                {"code", "exceptionType", "traceId"},
+            )
+            self.assertNotIn(private, payload)
+
+    def test_legacy_full_boundary_reader_and_scope_fail_closed(self) -> None:
+        module = self.module
+        trace_id = module.legacy_full_boundary_diagnostic_trace()
+        valid = {
+            "code": "P803_LEGACY_FULL_DETAIL_HTTP",
+            "exceptionType": "RuntimeError",
+            "traceId": trace_id,
+        }
+        invalid_records = (
+            {**valid, "code": "P803_LEGACY_FULL_NOT_ALLOWED"},
+            {**valid, "exceptionType": "Bad Type /tmp/private"},
+            {**valid, "traceId": _TRACE_ID},
+            {**valid, "privateValue": "released Item"},
+        )
+        with tempfile.TemporaryDirectory() as directory, patch.object(
+            module,
+            "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            path = Path(directory) / module._LEGACY_FULL_DIAGNOSTIC_FILE_NAME
+            path.write_text(json.dumps(valid) + "\n", encoding="utf-8")
+            self.assertEqual(
+                module.read_legacy_full_boundary_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("RuntimeError", "P803_LEGACY_FULL_DETAIL_HTTP", trace_id),
+            )
+            for record in invalid_records:
+                with self.subTest(record=record):
+                    path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+                    self.assertIsNone(
+                        module.read_legacy_full_boundary_diagnostic(
+                            path,
+                            expected_trace=trace_id,
+                        )
+                    )
+            path.write_text(
+                json.dumps(valid) + "\n" + json.dumps(valid) + "\n",
+                encoding="utf-8",
+            )
+            self.assertIsNone(
+                module.read_legacy_full_boundary_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+            )
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / module._LEGACY_FULL_DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {module._LEGACY_FULL_DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), module.legacy_full_boundary_diagnostic_scope(trace_id):
+                with self.assertRaises(RuntimeError):
+                    with module.legacy_full_boundary_diagnostic_step(
+                        "P803_LEGACY_FULL_DETAIL_HTTP"
+                    ):
+                        raise RuntimeError("private")
+            self.assertFalse(path.exists())
+
+    def test_legacy_full_boundary_main_renders_only_safe_tuple_and_success_zero(
+        self,
+    ) -> None:
+        module = self.module
+        private = "released Item /tmp/private actor payload"
+        request_id = "00000000-0000-4000-8000-000000000001"
+        node_id = "00000000-0000-4000-8000-000000000002"
+        argv = [
+            str(SCRIPT),
+            "--base-url",
+            "http://127.0.0.1:8000",
+            "--legacy-only",
+            "--legacy-request-id",
+            request_id,
+            "--legacy-node-id",
+            node_id,
+        ]
+
+        def fail(_arguments):
+            with module.legacy_full_boundary_diagnostic_step(
+                "P803_LEGACY_FULL_INPUTS"
+            ):
+                raise ValueError(private)
+
+        failure_output = io.StringIO()
+        with patch.object(
+            module,
+            "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            module,
+            "_run_requested_runtime",
+            side_effect=fail,
+        ), patch.object(
+            sys,
+            "argv",
+            argv,
+        ), patch(
+            "sys.stderr",
+            failure_output,
+        ):
+            self.assertEqual(module.main(), 1)
+        rendered = failure_output.getvalue()
+        self.assertRegex(
+            rendered,
+            r"^P8-03 migrated legacy runtime diagnostic "
+            r"\[diagnostic_code=P803_LEGACY_FULL_INPUTS; "
+            r"exception_type=ValueError; trace_id=trace-[a-f0-9]{32}\]\n$",
+        )
+        self.assertNotIn(private, rendered)
+
+        success_output = io.StringIO()
+        success_error = io.StringIO()
+        with patch.object(
+            module,
+            "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            module,
+            "_run_requested_runtime",
+            return_value={"legacyComplete": True},
+        ), patch.object(
+            sys,
+            "argv",
+            argv,
+        ), patch(
+            "sys.stdout",
+            success_output,
+        ), patch(
+            "sys.stderr",
+            success_error,
+        ):
+            self.assertEqual(module.main(), 0)
+        self.assertEqual(success_error.getvalue(), "")
+        self.assertEqual(
+            json.loads(success_output.getvalue()),
+            {"legacyComplete": True},
+        )
 
     def test_legacy_query_scope_header_requires_exact_collection_request(self) -> None:
         module = self.module

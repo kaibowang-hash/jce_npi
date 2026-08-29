@@ -5,9 +5,11 @@ import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
 import urllib.request
 from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Iterator, Mapping
@@ -41,7 +43,8 @@ ITEM_CREATE_DIAGNOSTICS_ENABLED = False
 REPLAY_TERMINAL_DIAGNOSTICS_ENABLED = False
 LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = False
 LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED = False
-LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED = True
+LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED = False
+LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = True
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _LEGACY_QUERY_DIAGNOSTIC_SCOPE = "p803-legacy-query-v1"
@@ -116,6 +119,42 @@ _REPLAY_TERMINAL_DIAGNOSTIC_CODES = frozenset(
 _REPLAY_DIAGNOSTIC_LOG_LIMIT = 64 * 1024
 _REPLAY_DIAGNOSTIC_RECORD_KEYS = frozenset(
     {"code", "exceptionType", "traceId"}
+)
+_LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES = (
+    "P803_LEGACY_FULL_INPUTS",
+    "P803_LEGACY_FULL_ARGUMENTS",
+    "P803_LEGACY_FULL_ADMIN_LOGIN",
+    "P803_LEGACY_FULL_ACTOR_LOGIN",
+    "P803_LEGACY_FULL_CSRF",
+    "P803_LEGACY_FULL_RELEASED_CONTEXT",
+    "P803_LEGACY_FULL_PROJECT",
+    "P803_LEGACY_FULL_RUNTIME_MARKER",
+    "P803_LEGACY_FULL_PATH",
+    "P803_LEGACY_FULL_CURSORS",
+    "P803_LEGACY_FULL_COLLECTION_HTTP",
+    "P803_LEGACY_FULL_COLLECTION_CONTRACT",
+    "P803_LEGACY_FULL_COLLECTION_MEMBERSHIP",
+    "P803_LEGACY_FULL_COLLECTION_PUBLIC",
+    "P803_LEGACY_FULL_DETAIL_HTTP",
+    "P803_LEGACY_FULL_DETAIL_CONTRACT",
+    "P803_LEGACY_FULL_REDACTION",
+    "P803_LEGACY_FULL_BINDINGS",
+    "P803_LEGACY_FULL_RECONCILIATION_HTTP",
+    "P803_LEGACY_FULL_RECONCILIATION_CONTRACT",
+    "P803_LEGACY_FULL_INSPECT",
+    "P803_LEGACY_FULL_CLEANUP",
+    "P803_LEGACY_FULL_PROOF",
+    "P803_LEGACY_FULL_RESPONSE",
+)
+_LEGACY_FULL_DIAGNOSTIC_NAMESPACE = UUID(
+    "29192886-6ec3-4c0e-bef9-a89d4c7ce803"
+)
+_LEGACY_FULL_DIAGNOSTIC_PATH_ENV = "NPI_P803_LEGACY_FULL_DIAGNOSTIC_PATH"
+_LEGACY_FULL_DIAGNOSTIC_FILE_NAME = "p8-03-legacy-full-runtime-diagnostic.json"
+_LEGACY_FULL_DIAGNOSTIC_RECORD_LIMIT = 4096
+_LEGACY_FULL_DIAGNOSTIC_STATE: ContextVar[dict[str, object] | None] = ContextVar(
+    "p803_legacy_full_runtime_diagnostic_state",
+    default=None,
 )
 
 LEGACY_OUTBOX_PAYLOAD_KEYS = frozenset(
@@ -264,6 +303,7 @@ def _legacy_collection_diagnostics_enabled() -> bool:
     return bool(
         LEGACY_COLLECTION_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED
+        or LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
     )
 
 
@@ -271,7 +311,184 @@ def _legacy_query_server_diagnostics_enabled() -> bool:
     return bool(
         LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED
+        or LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
     )
+
+
+def _legacy_full_boundary_diagnostics_enabled() -> bool:
+    activations = (
+        ITEM_CREATE_DIAGNOSTICS_ENABLED,
+        REPLAY_TERMINAL_DIAGNOSTICS_ENABLED,
+        LEGACY_COLLECTION_DIAGNOSTICS_ENABLED,
+        LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED,
+        LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED,
+        LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED,
+    )
+    return (
+        sum(map(int, activations)) == 1
+        and LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+    )
+
+
+def _active_legacy_full_diagnostic_codes() -> frozenset[str]:
+    if not _legacy_full_boundary_diagnostics_enabled():
+        return frozenset()
+    return frozenset(_LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES).union(
+        _LEGACY_COLLECTION_DIAGNOSTIC_CODES,
+        _LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES,
+    )
+
+
+def legacy_full_boundary_diagnostic_trace() -> str:
+    return (
+        "trace-"
+        + uuid5(
+            _LEGACY_FULL_DIAGNOSTIC_NAMESPACE,
+            f"legacy-full:{FIXTURE_RUN_ID}",
+        ).hex
+    )
+
+
+@contextmanager
+def legacy_full_boundary_diagnostic_scope(trace_id: str) -> Iterator[None]:
+    state = None
+    if (
+        _legacy_full_boundary_diagnostics_enabled()
+        and _valid_replay_diagnostic_trace(trace_id)
+    ):
+        state = {
+            "trace_id": trace_id,
+            "record_trace_id": trace_id,
+            "recorded": False,
+        }
+    token = _LEGACY_FULL_DIAGNOSTIC_STATE.set(state)
+    try:
+        yield
+    finally:
+        _LEGACY_FULL_DIAGNOSTIC_STATE.reset(token)
+
+
+@contextmanager
+def legacy_full_boundary_diagnostic_step(code: str) -> Iterator[None]:
+    try:
+        yield
+    except Exception as error:
+        _record_legacy_full_boundary_diagnostic(code, error)
+        raise
+
+
+def _record_legacy_full_boundary_diagnostic(
+    code: str,
+    error: Exception,
+) -> None:
+    try:
+        state = _LEGACY_FULL_DIAGNOSTIC_STATE.get()
+        exception_type = type(error).__name__
+        if (
+            state is None
+            or state.get("recorded") is True
+            or code not in _active_legacy_full_diagnostic_codes()
+            or _TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["record_trace_id"] = state["trace_id"]
+        state["recorded"] = True
+        _write_legacy_full_boundary_diagnostic(
+            {
+                "code": code,
+                "exceptionType": exception_type,
+                "traceId": str(state["trace_id"]),
+            }
+        )
+    except Exception:
+        # Diagnostic recording must never replace the original verifier failure.
+        pass
+
+
+def _record_embedded_legacy_diagnostic(message: str | None) -> None:
+    """Promote only one existing value-free legacy tuple ahead of its parent."""
+
+    if not isinstance(message, str):
+        return
+    matched = re.search(
+        r"\[diagnostic_code=([A-Z][A-Z0-9_]{0,79}); "
+        r"exception_type=([A-Za-z][A-Za-z0-9_.]{0,127}); "
+        r"trace_id=(trace-[a-f0-9]{32})\]$",
+        message,
+    )
+    if matched is None:
+        return
+    code, exception_type, request_trace = matched.groups()
+    try:
+        state = _LEGACY_FULL_DIAGNOSTIC_STATE.get()
+        if (
+            state is None
+            or state.get("recorded") is True
+            or code
+            not in _LEGACY_COLLECTION_DIAGNOSTIC_CODES.union(
+                _LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES
+            )
+        ):
+            return
+        state["record_trace_id"] = request_trace
+        state["recorded"] = True
+        _write_legacy_full_boundary_diagnostic(
+            {
+                "code": code,
+                "exceptionType": exception_type,
+                "traceId": request_trace,
+            }
+        )
+    except Exception:
+        pass
+
+
+def _write_legacy_full_boundary_diagnostic(record: dict[str, str]) -> None:
+    path_value = os.environ.get(_LEGACY_FULL_DIAGNOSTIC_PATH_ENV)
+    if not isinstance(path_value, str) or not path_value:
+        return
+    path = Path(path_value)
+    if not path.is_absolute() or path.name != _LEGACY_FULL_DIAGNOSTIC_FILE_NAME:
+        return
+    payload = json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        stream.write(payload)
+
+
+def read_legacy_full_boundary_diagnostic(
+    path: Path,
+    *,
+    expected_trace: str,
+) -> tuple[str, str, str] | None:
+    if not _valid_replay_diagnostic_trace(expected_trace):
+        return None
+    try:
+        payload = path.read_bytes()
+        if not payload or len(payload) > _LEGACY_FULL_DIAGNOSTIC_RECORD_LIMIT:
+            return None
+        text = payload.decode("utf-8")
+        lines = [line for line in text.splitlines() if line]
+        if len(lines) != 1:
+            return None
+        record = json.loads(lines[0])
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(record, dict) or set(record) != _REPLAY_DIAGNOSTIC_RECORD_KEYS:
+        return None
+    code = record.get("code")
+    exception_type = record.get("exceptionType")
+    trace_id = record.get("traceId")
+    if (
+        not isinstance(code, str)
+        or code not in _active_legacy_full_diagnostic_codes()
+        or not isinstance(exception_type, str)
+        or _TYPE_PATTERN.fullmatch(exception_type) is None
+        or trace_id != expected_trace
+    ):
+        return None
+    return exception_type, code, expected_trace
 
 
 def legacy_collection_failure_message(
@@ -732,145 +949,186 @@ def run_legacy(
 ) -> dict[str, object]:
     """Exercise the post-migration read-only legacy boundary over HTTP."""
 
-    administrator = login(
-        base_url,
-        "Administrator",
-        secret_from_environment("NPI_RUNTIME_ADMINISTRATOR_PASSWORD"),
-    )
-    actor = login(base_url, ACTOR_USER, fixture_password)
-    actor_csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
-    context = released_item_context(administrator, actor, base_url)
-    project_id = str(context["projectGlobalId"])
-    _require_enabled_runtime_marker(project_id)
-    path = item_publish_path(project_id)
-    legacy_query_diagnostics = _legacy_query_server_diagnostics_enabled()
-    diagnostic_cursors = (
-        _replay_diagnostic_log_cursors() if legacy_query_diagnostics else None
-    )
-    listed = item_publish_request(
-        actor,
-        base_url,
-        path,
-        query_key="legacy-list",
-        legacy_query_diagnostic=legacy_query_diagnostics,
-    )
-    collection_failure = legacy_collection_failure_message(
-        listed,
-        diagnostic_cursors,
-    )
-    require(
-        collection_failure is None,
-        collection_failure or _LEGACY_COLLECTION_FAILURE,
-    )
-    items = listed.body["items"]
-    legacy_items = [
-        item
-        for item in items
-        if isinstance(item, dict) and item.get("globalId") == legacy_request_id
-    ]
-    require(
-        len(legacy_items) == 1,
-        "P8-03 migrated legacy Item was not projected",
-    )
-    legacy_public = legacy_items[0]
-    require(
-        legacy_public.get("dispatchAllowed") is False
-        and legacy_public.get("legacyReadOnly") is True
-        and legacy_public.get("current") is False
-        and legacy_public.get("outboxEventId") is None
-        and legacy_public.get("resultGlobalId") is None,
-        "P8-03 legacy Item was exposed as executable work",
-    )
-    detail = item_publish_request(
-        actor,
-        base_url,
-        item_publish_path(project_id, legacy_request_id),
-        query_key="legacy-detail",
-    )
-    require(detail.status == 200, "P8-03 migrated legacy Item detail is unavailable")
-    require(
-        detail.body.get("requestGlobalId") == legacy_request_id
-        and detail.body.get("request", {}).get("legacyReadOnly") is True
-        and detail.body.get("request", {}).get("current") is False
-        and detail.body.get("currentMapping") is None
-        and detail.body.get("attempts") == []
-        and detail.body.get("result") is None
-        and detail.body.get("permissions") == {"canView": True, "canExecute": False},
-        "P8-03 legacy Item detail was not read-only",
-    )
-    _assert_no_formal_target(legacy_public)
-    _assert_no_formal_target(detail.body)
-    _assert_no_private_execution_metadata(legacy_public)
-    _assert_no_private_execution_metadata(detail.body)
-    expected_request_ids = [
-        str(item.get("globalId")) for item in items if isinstance(item, dict)
-    ]
-    legacy_outbox_id = os.environ.get("NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID", "")
-    legacy_stream_hash = os.environ.get("NPI_P8_03_RUNTIME_LEGACY_STREAM_HASH", "")
-    require(
-        str(UUID(legacy_outbox_id)) == legacy_outbox_id
-        and len(legacy_stream_hash) == 64
-        and all(character in "0123456789abcdef" for character in legacy_stream_hash),
-        "P8-03 legacy runtime binding is incomplete",
-    )
-    rejected = item_publish_request(
-        actor,
-        base_url,
-        path,
-        method="POST",
-        payload=create_payload(context, legacy_node_id),
-        csrf_token=actor_csrf,
-        idempotency_key=f"p8-03-legacy-reconcile-{FIXTURE_RUN_ID}",
-    )
-    validate_problem(
-        rejected,
-        409,
-        "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
-    )
-    inspected = run_bench_fixture(
-        "inspect_legacy",
-        {
-            "fixture_run_id": FIXTURE_RUN_ID,
-            "project_id": project_id,
-            "legacy_request_id": legacy_request_id,
-            "legacy_outbox_id": legacy_outbox_id,
-            "source_stream_key_hash": legacy_stream_hash,
-            "expected_request_ids": expected_request_ids,
-        },
-    )
-    cleaned = run_bench_fixture(
-        "cleanup_legacy",
-        {
-            "fixture_run_id": FIXTURE_RUN_ID,
-            "project_id": project_id,
-            "legacy_request_id": legacy_request_id,
-            "legacy_outbox_id": legacy_outbox_id,
-            "source_stream_key_hash": legacy_stream_hash,
-        },
-    )
-    require(
-        inspected.get("guardBlocked") is True
-        and inspected.get("legacyBindingsNull") is True
-        and inspected.get("legacyState") == "queued"
-        and inspected.get("legacyOptimisticVersion") == 1
-        and inspected.get("legacyTimestampsEqual") is True
-        and inspected.get("workerRoute") is None
-        and inspected.get("adapterCalls") == 0
-        and cleaned.get("legacyRowsRemoved") is True,
-        "P8-03 legacy migration boundary proof drifted",
-    )
-    return {
-        "commandReconciliationRequired": True,
-        "detailReadOnly": True,
-        "guardBlocked": inspected["guardBlocked"],
-        "legacyState": inspected["legacyState"],
-        "legacyOptimisticVersion": inspected["legacyOptimisticVersion"],
-        "legacyTimestampsEqual": inspected["legacyTimestampsEqual"],
-        "legacyBindingsNull": inspected["legacyBindingsNull"],
-        "legacyRowsRemoved": cleaned["legacyRowsRemoved"],
-        "listAndDetailReadable": True,
-        "workerZeroClaimAdapter": inspected["workerRoute"] is None,
-    }
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_ADMIN_LOGIN"):
+        administrator = login(
+            base_url,
+            "Administrator",
+            secret_from_environment("NPI_RUNTIME_ADMINISTRATOR_PASSWORD"),
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_ACTOR_LOGIN"):
+        actor = login(base_url, ACTOR_USER, fixture_password)
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_CSRF"):
+        actor_csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_RELEASED_CONTEXT"):
+        context = released_item_context(administrator, actor, base_url)
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_PROJECT"):
+        project_id = str(context["projectGlobalId"])
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_RUNTIME_MARKER"):
+        _require_enabled_runtime_marker(project_id)
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_PATH"):
+        path = item_publish_path(project_id)
+        legacy_query_diagnostics = _legacy_query_server_diagnostics_enabled()
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_CURSORS"):
+        diagnostic_cursors = (
+            _replay_diagnostic_log_cursors() if legacy_query_diagnostics else None
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_COLLECTION_HTTP"):
+        listed = item_publish_request(
+            actor,
+            base_url,
+            path,
+            query_key="legacy-list",
+            legacy_query_diagnostic=legacy_query_diagnostics,
+        )
+    with legacy_full_boundary_diagnostic_step(
+        "P803_LEGACY_FULL_COLLECTION_CONTRACT"
+    ):
+        collection_failure = legacy_collection_failure_message(
+            listed,
+            diagnostic_cursors,
+        )
+        _record_embedded_legacy_diagnostic(collection_failure)
+        require(
+            collection_failure is None,
+            collection_failure or _LEGACY_COLLECTION_FAILURE,
+        )
+        items = listed.body["items"]
+    with legacy_full_boundary_diagnostic_step(
+        "P803_LEGACY_FULL_COLLECTION_MEMBERSHIP"
+    ):
+        legacy_items = [
+            item
+            for item in items
+            if isinstance(item, dict) and item.get("globalId") == legacy_request_id
+        ]
+        require(
+            len(legacy_items) == 1,
+            "P8-03 migrated legacy Item was not projected",
+        )
+        legacy_public = legacy_items[0]
+    with legacy_full_boundary_diagnostic_step(
+        "P803_LEGACY_FULL_COLLECTION_PUBLIC"
+    ):
+        require(
+            legacy_public.get("dispatchAllowed") is False
+            and legacy_public.get("legacyReadOnly") is True
+            and legacy_public.get("current") is False
+            and legacy_public.get("outboxEventId") is None
+            and legacy_public.get("resultGlobalId") is None,
+            "P8-03 legacy Item was exposed as executable work",
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_DETAIL_HTTP"):
+        detail = item_publish_request(
+            actor,
+            base_url,
+            item_publish_path(project_id, legacy_request_id),
+            query_key="legacy-detail",
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_DETAIL_CONTRACT"):
+        require(
+            detail.status == 200,
+            "P8-03 migrated legacy Item detail is unavailable",
+        )
+        require(
+            detail.body.get("requestGlobalId") == legacy_request_id
+            and detail.body.get("request", {}).get("legacyReadOnly") is True
+            and detail.body.get("request", {}).get("current") is False
+            and detail.body.get("currentMapping") is None
+            and detail.body.get("attempts") == []
+            and detail.body.get("result") is None
+            and detail.body.get("permissions")
+            == {"canView": True, "canExecute": False},
+            "P8-03 legacy Item detail was not read-only",
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_REDACTION"):
+        _assert_no_formal_target(legacy_public)
+        _assert_no_formal_target(detail.body)
+        _assert_no_private_execution_metadata(legacy_public)
+        _assert_no_private_execution_metadata(detail.body)
+        expected_request_ids = [
+            str(item.get("globalId")) for item in items if isinstance(item, dict)
+        ]
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_BINDINGS"):
+        legacy_outbox_id = os.environ.get("NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID", "")
+        legacy_stream_hash = os.environ.get(
+            "NPI_P8_03_RUNTIME_LEGACY_STREAM_HASH", ""
+        )
+        require(
+            str(UUID(legacy_outbox_id)) == legacy_outbox_id
+            and len(legacy_stream_hash) == 64
+            and all(
+                character in "0123456789abcdef" for character in legacy_stream_hash
+            ),
+            "P8-03 legacy runtime binding is incomplete",
+        )
+    with legacy_full_boundary_diagnostic_step(
+        "P803_LEGACY_FULL_RECONCILIATION_HTTP"
+    ):
+        rejected = item_publish_request(
+            actor,
+            base_url,
+            path,
+            method="POST",
+            payload=create_payload(context, legacy_node_id),
+            csrf_token=actor_csrf,
+            idempotency_key=f"p8-03-legacy-reconcile-{FIXTURE_RUN_ID}",
+        )
+    with legacy_full_boundary_diagnostic_step(
+        "P803_LEGACY_FULL_RECONCILIATION_CONTRACT"
+    ):
+        validate_problem(
+            rejected,
+            409,
+            "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_INSPECT"):
+        inspected = run_bench_fixture(
+            "inspect_legacy",
+            {
+                "fixture_run_id": FIXTURE_RUN_ID,
+                "project_id": project_id,
+                "legacy_request_id": legacy_request_id,
+                "legacy_outbox_id": legacy_outbox_id,
+                "source_stream_key_hash": legacy_stream_hash,
+                "expected_request_ids": expected_request_ids,
+            },
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_CLEANUP"):
+        cleaned = run_bench_fixture(
+            "cleanup_legacy",
+            {
+                "fixture_run_id": FIXTURE_RUN_ID,
+                "project_id": project_id,
+                "legacy_request_id": legacy_request_id,
+                "legacy_outbox_id": legacy_outbox_id,
+                "source_stream_key_hash": legacy_stream_hash,
+            },
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_PROOF"):
+        require(
+            inspected.get("guardBlocked") is True
+            and inspected.get("legacyBindingsNull") is True
+            and inspected.get("legacyState") == "queued"
+            and inspected.get("legacyOptimisticVersion") == 1
+            and inspected.get("legacyTimestampsEqual") is True
+            and inspected.get("workerRoute") is None
+            and inspected.get("adapterCalls") == 0
+            and cleaned.get("legacyRowsRemoved") is True,
+            "P8-03 legacy migration boundary proof drifted",
+        )
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_RESPONSE"):
+        return {
+            "commandReconciliationRequired": True,
+            "detailReadOnly": True,
+            "guardBlocked": inspected["guardBlocked"],
+            "legacyState": inspected["legacyState"],
+            "legacyOptimisticVersion": inspected["legacyOptimisticVersion"],
+            "legacyTimestampsEqual": inspected["legacyTimestampsEqual"],
+            "legacyBindingsNull": inspected["legacyBindingsNull"],
+            "legacyRowsRemoved": cleaned["legacyRowsRemoved"],
+            "listAndDetailReadable": True,
+            "workerZeroClaimAdapter": inspected["workerRoute"] is None,
+        }
 
 
 def capture_project(fixture_run_id: str) -> dict[str, object]:
@@ -2382,7 +2640,48 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
         frappe.destroy()
 
 
-def main() -> None:
+def _run_requested_runtime(arguments: Any) -> dict[str, object]:
+    with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_INPUTS"):
+        require(
+            arguments.base_url is not None
+            and FIXTURE_RUN_ID != "0" * 32
+            and ACTOR_USER.endswith("@example.invalid")
+            and int(arguments.disabled_probe)
+            + int(arguments.replay_only)
+            + int(arguments.legacy_only)
+            <= 1,
+            "P8-03 runtime invocation is incomplete",
+        )
+        base_url = validate_local_fixture_inputs(
+            arguments.base_url,
+            "Administrator",
+            ACTOR_USER,
+        )
+        fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
+    if arguments.disabled_probe:
+        return run_disabled_probe(base_url, fixture_password)
+    if arguments.replay_only:
+        return run_replay(base_url, fixture_password)
+    if arguments.legacy_only:
+        with legacy_full_boundary_diagnostic_step("P803_LEGACY_FULL_ARGUMENTS"):
+            require(
+                isinstance(arguments.legacy_request_id, str)
+                and isinstance(arguments.legacy_node_id, str)
+                and str(UUID(arguments.legacy_request_id))
+                == arguments.legacy_request_id
+                and str(UUID(arguments.legacy_node_id)) == arguments.legacy_node_id,
+                "P8-03 legacy runtime invocation is incomplete",
+            )
+        return run_legacy(
+            base_url,
+            fixture_password,
+            arguments.legacy_request_id,
+            arguments.legacy_node_id,
+        )
+    return run_fresh(base_url, fixture_password)
+
+
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url")
     parser.add_argument("--disabled-probe", action="store_true")
@@ -2405,45 +2704,48 @@ def main() -> None:
         kwargs = json.loads(arguments.fixture_kwargs)
         require(isinstance(kwargs, dict), "P8-03 fixture arguments are invalid")
         run_local_bench_fixture(arguments.bench_fixture, kwargs)
-        return
-    require(
-        arguments.base_url is not None
-        and FIXTURE_RUN_ID != "0" * 32
-        and ACTOR_USER.endswith("@example.invalid")
-        and int(arguments.disabled_probe)
-        + int(arguments.replay_only)
-        + int(arguments.legacy_only)
-        <= 1,
-        "P8-03 runtime invocation is incomplete",
-    )
-    base_url = validate_local_fixture_inputs(
-        arguments.base_url,
-        "Administrator",
-        ACTOR_USER,
-    )
-    fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
-    if arguments.disabled_probe:
-        result = run_disabled_probe(base_url, fixture_password)
-    elif arguments.replay_only:
-        result = run_replay(base_url, fixture_password)
-    elif arguments.legacy_only:
-        require(
-            isinstance(arguments.legacy_request_id, str)
-            and isinstance(arguments.legacy_node_id, str)
-            and str(UUID(arguments.legacy_request_id)) == arguments.legacy_request_id
-            and str(UUID(arguments.legacy_node_id)) == arguments.legacy_node_id,
-            "P8-03 legacy runtime invocation is incomplete",
-        )
-        result = run_legacy(
-            base_url,
-            fixture_password,
-            arguments.legacy_request_id,
-            arguments.legacy_node_id,
-        )
+        return 0
+    if _legacy_full_boundary_diagnostics_enabled() and arguments.legacy_only:
+        trace_id = legacy_full_boundary_diagnostic_trace()
+        previous_path = os.environ.get(_LEGACY_FULL_DIAGNOSTIC_PATH_ENV)
+        with tempfile.TemporaryDirectory() as directory:
+            diagnostic_path = Path(directory) / _LEGACY_FULL_DIAGNOSTIC_FILE_NAME
+            os.environ[_LEGACY_FULL_DIAGNOSTIC_PATH_ENV] = str(diagnostic_path)
+            try:
+                with legacy_full_boundary_diagnostic_scope(trace_id):
+                    try:
+                        result = _run_requested_runtime(arguments)
+                    except Exception:
+                        diagnostic_state = _LEGACY_FULL_DIAGNOSTIC_STATE.get()
+                        expected_record_trace = (
+                            str(diagnostic_state.get("record_trace_id"))
+                            if diagnostic_state is not None
+                            else trace_id
+                        )
+                        diagnostic = read_legacy_full_boundary_diagnostic(
+                            diagnostic_path,
+                            expected_trace=expected_record_trace,
+                        )
+                        if diagnostic is not None:
+                            exception_type, code, validated_trace = diagnostic
+                            print(
+                                "P8-03 migrated legacy runtime diagnostic "
+                                f"[diagnostic_code={code}; "
+                                f"exception_type={exception_type}; "
+                                f"trace_id={validated_trace}]",
+                                file=sys.stderr,
+                            )
+                        return 1
+            finally:
+                if previous_path is None:
+                    os.environ.pop(_LEGACY_FULL_DIAGNOSTIC_PATH_ENV, None)
+                else:
+                    os.environ[_LEGACY_FULL_DIAGNOSTIC_PATH_ENV] = previous_path
     else:
-        result = run_fresh(base_url, fixture_password)
+        result = _run_requested_runtime(arguments)
     print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

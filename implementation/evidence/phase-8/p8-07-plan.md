@@ -1500,3 +1500,40 @@ and clean governance/reconciliation `38/38`. Exact-fifteen/new-only/
 precedence/fallback/no-leak, current/reconciliation, compile, shell, diff,
 exact-seven/union-78 and unauthorized-eight rejection pass. Frontend remains
 zero-diff with retained unit `1086/1086` and focused E2E/visual `3/3 + 3/3`.
+
+## Post-guard migrated-legacy full-boundary diagnostic
+
+Combined SHA `269292f0be6f3f4264f2d498dbe6db22ca1fdcb4` passes
+ordinary `33272690973`. Sole Level 2 `33273374059` passes preflight
+`99155759834`; runtime `99155793046` fails in cumulative verification and
+cleanup passes. Strict exact-fifteen reading returns zero tuple. No failed
+child output, raw response, status/body, business value, identity, message or
+stack was read.
+
+Zero evidence cannot distinguish the pre-collection login/context/cursor
+stages, request and reader gaps, or the post-collection membership/detail/
+reconciliation/inspect/cleanup/proof stages. Freeze the combined cycle at
+`1/1,0/1,0/1`; no product repair follows. Open independent product-zero
+`p8-07-checkpoint-4-post-guard-legacy-full-boundary` at `0/1,0/1,0/1`.
+
+Exact five is Item runtime verifier/test plus AUTOPILOT, this plan and the
+controlled checkpoint. Only the new full-boundary activation is true. It
+reuses twelve server-query and three collection codes, adds twenty-four
+ordered outer stages and therefore accepts exactly thirty-nine codes. Inner
+server/collection evidence records first; otherwise the outer stage writes a
+single exact-three-key `0600` `O_EXCL` artifact. The parent reads only that
+strict code/type/exact-trace tuple, rethrows the original failure, and
+writes no record on success. Product, migration, contract, ownership,
+permissions, frontend and workflow remain zero-diff. One exact-SHA ordinary
+PASS precedes one Level 2 diagnostic. P8-07F/production ERP/P8-08 remain
+inactive and unrelated user documentation remains preserved.
+
+Level 1 passes focused verifier `28/28`, Item `149/149`, P8-07 `89/89`,
+adjacent runtime/security `85/85`, clean exact-overlay full Python
+`2658/2658` and clean governance/reconciliation `59/59`. Frontend is
+zero-diff and passes unit `1086/1086`, generate/type/full lint and i18n
+(`8585`, `100%` zh/zh-TW). Compile, shell syntax, current/reconciliation,
+exact-39/new-only/lexical/inner-first/strict-reader/no-leak/success-zero,
+diff, exact-five/union-80 and unauthorized-six rejection pass. The dirty-only
+M9 marker assertion remains the sole excluded failure (`2663/2664`) and is
+untouched.

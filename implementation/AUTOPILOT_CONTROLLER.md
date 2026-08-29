@@ -8708,3 +8708,43 @@ repeat or rewrite it merely to restore context. See
   Exact-SHA ordinary PASS must precede one sole Level 2 diagnostic. P8-07F,
   `JCE-Core`, production ERPNext and P8-08 remain closed. Preserve all
   user-approved pilot-deferral and permission-ownership documentation.
+
+### P8-07 checkpoint-4 post-guard legacy full-boundary diagnostic
+
+- Combined diagnostic SHA `269292f0be6f3f4264f2d498dbe6db22ca1fdcb4`
+  passes ordinary `33272690973`: secret `99153918943`, repository
+  `99153919021`, frontend `99153919032` and visual `99153919061`. Its sole
+  Level 2 `33273374059` passes preflight `99155759834`; runtime
+  `99155793046` fails in cumulative verification and cleanup passes.
+- Strict exact-fifteen reading returns zero valid tuple. Failed-child output,
+  raw response, status/body, business values, identities, message and stack
+  remain unread. This excludes only a successfully recorded initial
+  collection failure; it cannot distinguish pre-collection login/context/
+  cursor work from collection request gaps or the detail, reconciliation,
+  inspect, cleanup and final-proof stages after a successful collection.
+- Freeze `p8-07-checkpoint-4-post-guard-legacy-combined` at diagnostic `1/1`,
+  repair `0/1`, final `0/1`. No product repair is authorized. Start independent
+  product-zero `p8-07-checkpoint-4-post-guard-legacy-full-boundary` at
+  `0/1,0/1,0/1`.
+- This exact-five task changes only Item runtime verifier/test plus this
+  controller, P8-07 plan and controlled checkpoint. The new-only activation
+  reuses the twelve server-query and three collection codes and adds twenty-
+  four ordered outer verifier stages (`39` exact codes). One trusted embedded
+  server/collection tuple wins; otherwise the first outer stage records one
+  exact-three-key `0600` `O_EXCL` file. The strict reader emits only code,
+  exception type and exact bound trace; the original exception is rethrown,
+  success creates no record and dormant execution performs no read.
+- Product/API/repository/schema/migration/permissions/ownership/frontend/
+  workflow remain unchanged. Exact-SHA ordinary PASS must precede the sole
+  Level 2 diagnostic. P8-07F, `JCE-Core`, production ERPNext and P8-08 remain
+  closed. Preserve the user-approved post-V1.2 M9 pilot deferral and the
+  permission-ownership documentation exactly as unrelated user work.
+- Level 1 passes focused verifier `28/28`, complete Item `149/149`, P8-07
+  `89/89`, adjacent runtime/security `85/85`, clean exact-overlay full Python
+  `2658/2658` and clean governance/reconciliation `59/59`. Frontend remains
+  zero-diff and passes unit `1086/1086`, generate/type/full lint and i18n
+  (`8585`, `100%` zh/zh-TW). Compile, shell syntax, current/reconciliation,
+  exact-39/new-only/lexical/inner-first/O_EXCL/strict-reader/no-leak/
+  success-zero, diff, exact-five/union-80 and unauthorized-six rejection pass.
+  The dirty full run has only the preserved M9 marker-count mismatch
+  (`2663/2664`); no task path is involved.

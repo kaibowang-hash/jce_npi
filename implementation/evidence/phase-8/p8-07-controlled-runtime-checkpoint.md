@@ -1030,3 +1030,35 @@ frontend/workflow diff remains zero.
   governance `38/38`. Static exact-fifteen/new-only, compile/shell,
   current/reconciliation, diff, exact-seven/union-78 and unauthorized-eight
   rejection pass. Frontend is unchanged with retained local/CI evidence.
+
+## Migrated-legacy combined result and full-boundary handoff
+
+- Exact-seven combined SHA `269292f0be6f3f4264f2d498dbe6db22ca1fdcb4`
+  passes ordinary `33272690973` in all four lanes. Sole Level 2
+  `33273374059` passes preflight `99155759834`; runtime `99155793046` fails
+  after fixed Bench/Site initialization and cleanup succeeds.
+- Strict exact-fifteen filtering returns zero valid tuple. Failed child and raw
+  response content, status/body, business values, identifiers, message and
+  stack remain unread. The result cannot distinguish pre-collection, request/
+  reader gaps or any successful-collection downstream stage, so no product
+  repair is authorized.
+- Freeze post-guard legacy combined at `1/1,0/1,0/1`. Independent product-zero
+  post-guard legacy full-boundary begins `0/1,0/1,0/1` on exact five: Item
+  verifier/test plus AUTOPILOT, plan and this checkpoint.
+- Only the new full-boundary activation is true. Exact thirty-nine comprises
+  twenty-four ordered outer stages plus the existing three collection and
+  twelve server-query stages. Trusted inner evidence wins; outer fallback uses
+  an exact-three-key `0600` `O_EXCL` record and exact bound trace. Strict
+  reader, original exception, no-leak, dormant and success-zero contracts are
+  locked. Product/workflow diff is zero.
+- Exact-SHA ordinary PASS is mandatory before one sole Level 2 controlled
+  diagnostic. P8-07F, `JCE-Core`, production ERPNext and P8-08 stay closed;
+  user-approved M9 pilot deferral and permission-ownership changes remain
+  untouched.
+- Level 1 passes verifier `28/28`, complete Item `149/149`, P8-07 `89/89`,
+  adjacent runtime/security `85/85`, clean full Python `2658/2658`, clean
+  governance/reconciliation `59/59` and unchanged frontend unit `1086/1086`.
+  Generate/type/full lint/i18n, compile, shell, current/reconciliation,
+  exact-39/new-only/inner-first/strict-reader/no-leak/success-zero, diff,
+  exact-five/union-80 and unauthorized-six rejection pass. Dirty full Python
+  differs only at the preserved user M9 marker assertion (`2663/2664`).
