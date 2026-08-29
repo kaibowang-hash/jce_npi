@@ -1062,3 +1062,30 @@ frontend/workflow diff remains zero.
   exact-39/new-only/inner-first/strict-reader/no-leak/success-zero, diff,
   exact-five/union-80 and unauthorized-six rejection pass. Dirty full Python
   differs only at the preserved user M9 marker assertion (`2663/2664`).
+
+## Legacy full-boundary result and collection-fallback handoff
+
+- SHA `a9904b4db4fdc4c092371926698a7a1eca4f2607` passes ordinary
+  `33274552969`: visual `99158881774`, secret `99158881888`, repository
+  `99158881899`, frontend `99158881906`. Level 2 `33275169618` passes
+  preflight `99160496913`; runtime `99160521641` fails and cleanup passes.
+- Strict exact-39 yields only `P803_LEGACY_FULL_COLLECTION_CONTRACT /
+  RuntimeError / trace-0b3951a89f075967a30c9e6a59b51f91`. Inputs through
+  collection HTTP/request identity/cache control passed. Restricted output
+  remains unread.
+- No trusted server tuple was promoted. Static code shows the generic
+  no-server return prevents the existing status/shape/cardinality parents from
+  running under this activation. Freeze full-boundary `1/1,0/1,0/1`; do not
+  infer a product repair.
+- Independent product-zero collection-fallback starts `0/1,0/1,0/1` on the
+  same exact five. New-only exact 39 keeps server-first precedence and lets
+  no-server evidence reach one existing response parent. Exact trace/cursors,
+  three-key `0600` `O_EXCL`, strict reader, same exception, no-leak, dormant
+  and success-zero remain. P8-07F/production ERP/P8-08 stay closed; unrelated
+  user documents stay untouched.
+- Level 1 passes focused `29/29`, Item `150/150`, P8-07 `89/89`, adjacent
+  `85/85`, clean full Python `2659/2659` and clean governance `59/59`.
+  Compile/shell/current/reconciliation, exact-39 server-parent precedence,
+  strict reader/no-leak/success-zero, diff, exact-five/union-80 and
+  unauthorized-six rejection pass. Dirty full Python retains only the user
+  M9 marker mismatch (`2664/2665`); frontend/product/workflow remain zero-diff.

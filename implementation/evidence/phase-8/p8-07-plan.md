@@ -1537,3 +1537,36 @@ exact-39/new-only/lexical/inner-first/strict-reader/no-leak/success-zero,
 diff, exact-five/union-80 and unauthorized-six rejection pass. The dirty-only
 M9 marker assertion remains the sole excluded failure (`2663/2664`) and is
 untouched.
+
+## Post-guard migrated-legacy collection-fallback diagnostic
+
+Full-boundary SHA `a9904b4db4fdc4c092371926698a7a1eca4f2607` passes
+ordinary `33274552969` in all four lanes. Sole Level 2 `33275169618` passes
+preflight `99160496913`; runtime `99160521641` fails in cumulative verification
+and cleanup succeeds. Strict exact-39 reading returns only
+`P803_LEGACY_FULL_COLLECTION_CONTRACT / RuntimeError /
+trace-0b3951a89f075967a30c9e6a59b51f91` without reading restricted content.
+
+The tuple closes inputs through the collection HTTP helper, request identity
+and cache control. It does not distinguish status, items shape or cardinality,
+because the full activation's no-server branch returns a generic failure
+before those existing parents. This is a verifier fallback blind spot, not a
+product fact. Freeze full-boundary `1/1,0/1,0/1`; no repair is authorized.
+
+Open independent product-zero
+`p8-07-checkpoint-4-post-guard-legacy-collection-fallback` at
+`0/1,0/1,0/1`. Exact five remains verifier/test plus the three governance
+files. New-only activation retains exact 39. A trusted twelve-code server
+tuple wins; otherwise the existing status/shape/cardinality classifier writes
+the first safe tuple. Exact trace/cursor, three-key `0600` `O_EXCL`, strict
+reader, same failure, no-leak, dormant and success-zero contracts remain.
+Product and workflow are zero-diff. P8-07F, production ERP and P8-08 stay
+inactive; user M9/permission documents remain preserved.
+
+Level 1 passes verifier `29/29`, Item `150/150`, P8-07 `89/89`, adjacent
+runtime/security `85/85`, clean full Python `2659/2659` and clean governance/
+reconciliation `59/59`. Compile, shell, current/reconciliation, exact-39/
+new-only/server-first/parent-fallback/strict-reader/no-leak/success-zero,
+diff, exact-five/union-80 and unauthorized-six rejection pass. Frontend is
+zero-diff with the preceding exact ordinary's frontend/visual proof. Dirty
+full Python differs only at the preserved M9 assertion (`2664/2665`).

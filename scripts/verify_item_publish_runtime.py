@@ -44,7 +44,8 @@ REPLAY_TERMINAL_DIAGNOSTICS_ENABLED = False
 LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = False
 LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED = False
 LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED = False
-LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = True
+LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = False
+LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED = True
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _LEGACY_QUERY_DIAGNOSTIC_SCOPE = "p803-legacy-query-v1"
@@ -304,6 +305,7 @@ def _legacy_collection_diagnostics_enabled() -> bool:
         LEGACY_COLLECTION_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+        or LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
     )
 
 
@@ -312,6 +314,7 @@ def _legacy_query_server_diagnostics_enabled() -> bool:
         LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+        or LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
     )
 
 
@@ -323,10 +326,21 @@ def _legacy_full_boundary_diagnostics_enabled() -> bool:
         LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED,
         LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED,
         LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED,
+        LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED,
     )
     return (
         sum(map(int, activations)) == 1
-        and LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+        and (
+            LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+            or LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
+        )
+    )
+
+
+def _legacy_collection_parent_fallback_enabled() -> bool:
+    return bool(
+        LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
+        and _legacy_full_boundary_diagnostics_enabled()
     )
 
 
@@ -504,14 +518,15 @@ def legacy_collection_failure_message(
     trace_id = result.trace_id
     if _legacy_query_server_diagnostics_enabled():
         diagnostic = _sanitized_legacy_query_diagnostic(trace_id, cursors)
-        if diagnostic is None:
+        if diagnostic is None and not _legacy_collection_parent_fallback_enabled():
             return _LEGACY_COLLECTION_FAILURE
-        exception_type, code, validated_trace = diagnostic
-        return (
-            "P8-03 migrated legacy Item collection check failed"
-            f" [diagnostic_code={code}; exception_type={exception_type}; "
-            f"trace_id={validated_trace}]"
-        )
+        if diagnostic is not None:
+            exception_type, code, validated_trace = diagnostic
+            return (
+                "P8-03 migrated legacy Item collection check failed"
+                f" [diagnostic_code={code}; exception_type={exception_type}; "
+                f"trace_id={validated_trace}]"
+            )
     if not _legacy_collection_diagnostics_enabled() or not (
         _valid_replay_diagnostic_trace(trace_id)
     ):

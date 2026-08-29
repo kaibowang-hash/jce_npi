@@ -240,6 +240,11 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
                 "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
                 False,
             ),
+            patch.object(
+                self.module,
+                "LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED",
+                False,
+            ),
         )
         for activation in self.post_p807_activations:
             activation.start()
@@ -339,14 +344,14 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.value, ast.Constant)
             and isinstance(node.value.value, bool)
         }
-        self.assertEqual(len(assignments), 6)
+        self.assertEqual(len(assignments), 7)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED"},
+            {"LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED"},
         )
         with patch.object(
             module,
-            "LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED",
+            "LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED",
             True,
         ):
             self.assertTrue(module._legacy_full_boundary_diagnostics_enabled())
@@ -378,6 +383,64 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         )[1].split("\ndef ", 1)[0]
         for code in module._LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES[:2]:
             self.assertEqual(requested.count(f'"{code}"'), 1, code)
+
+    def test_legacy_collection_parent_fallback_is_ordered_after_server_reader(
+        self,
+    ) -> None:
+        module = self.module
+        cases = (
+            (
+                SimpleNamespace(status=503, body={}, trace_id=_TRACE_ID),
+                "P803_LEGACY_COLLECTION_STATUS",
+            ),
+            (
+                SimpleNamespace(status=200, body={}, trace_id=_TRACE_ID),
+                "P803_LEGACY_COLLECTION_SHAPE",
+            ),
+            (
+                SimpleNamespace(status=200, body={"items": []}, trace_id=_TRACE_ID),
+                "P803_LEGACY_COLLECTION_CARDINALITY",
+            ),
+        )
+        with patch.object(
+            module,
+            "LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            module,
+            "_sanitized_legacy_query_diagnostic",
+            return_value=None,
+        ) as reader:
+            for result, code in cases:
+                with self.subTest(code=code):
+                    rendered = module.legacy_collection_failure_message(
+                        result,
+                        {"logs/npi_core.log": 0},
+                    )
+                    self.assertEqual(
+                        rendered,
+                        "P8-03 migrated legacy Item collection check failed "
+                        f"[diagnostic_code={code}; "
+                        "exception_type=RuntimeError; "
+                        f"trace_id={_TRACE_ID}]",
+                    )
+            self.assertEqual(reader.call_count, len(cases))
+
+        with patch.object(
+            module,
+            "LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            module,
+            "_sanitized_legacy_query_diagnostic",
+            return_value=("ValidationError", "P803_LEGACY_QUERY_ROWS", _TRACE_ID),
+        ):
+            rendered = module.legacy_collection_failure_message(
+                cases[0][0],
+                {"logs/npi_core.log": 0},
+            )
+        self.assertIn("diagnostic_code=P803_LEGACY_QUERY_ROWS", rendered)
+        self.assertNotIn("P803_LEGACY_COLLECTION_STATUS", rendered)
 
     def test_legacy_full_boundary_diagnostic_is_exact_three_key_and_first_wins(
         self,

@@ -8748,3 +8748,41 @@ repeat or rewrite it merely to restore context. See
   success-zero, diff, exact-five/union-80 and unauthorized-six rejection pass.
   The dirty full run has only the preserved M9 marker-count mismatch
   (`2663/2664`); no task path is involved.
+
+### P8-07 checkpoint-4 post-guard legacy collection-fallback diagnostic
+
+- Full-boundary SHA `a9904b4db4fdc4c092371926698a7a1eca4f2607`
+  passes ordinary `33274552969`: visual `99158881774`, secret
+  `99158881888`, repository `99158881899` and frontend `99158881906`.
+  Sole Level 2 `33275169618` passes preflight `99160496913`; runtime
+  `99160521641` fails in cumulative verification and cleanup passes.
+- Strict exact-39 reading accepts exactly `P803_LEGACY_FULL_COLLECTION_CONTRACT /
+  RuntimeError / trace-0b3951a89f075967a30c9e6a59b51f91`. This proves
+  inputs, both logins, CSRF, released context, Project, runtime marker, path,
+  cursors and collection HTTP including request-ID/cache-control all passed.
+  No failed-child/raw response, status/body, value, identity, message or stack
+  was read.
+- Static verifier order identifies one instrumentation blind spot: when the
+  trusted server reader returns no tuple, the full-boundary activation returns
+  a generic collection failure before the existing status/shape/cardinality
+  parents. Therefore the tuple cannot authorize a product repair. Freeze
+  full-boundary at `1/1,0/1,0/1`; start independent product-zero
+  `p8-07-checkpoint-4-post-guard-legacy-collection-fallback` at
+  `0/1,0/1,0/1`.
+- Exact five remains Item verifier/test plus controller/plan/checkpoint. Only
+  the new fallback activation is true; six history flags are false. Exact 39
+  and all outer stages remain, but a trusted twelve-code server tuple wins and
+  an absent server tuple now falls through to exactly one of the existing
+  status, shape or cardinality parents. Exact trace, cursor, `0600` `O_EXCL`,
+  strict reader, original exception, no-leak, dormant and success-zero
+  contracts remain. Product/API/repository/migration/contract/permission/
+  ownership/frontend/workflow stay zero-diff. P8-07F/production ERP/P8-08
+  remain closed and unrelated user documents remain untouched.
+- Level 1 passes focused verifier `29/29`, complete Item `150/150`, P8-07
+  `89/89`, adjacent runtime/security `85/85`, clean exact-overlay full Python
+  `2659/2659` and clean governance/reconciliation `59/59`. Compile, shell,
+  current/reconciliation, exact-39/new-only/server-before-parent/O_EXCL/strict-
+  reader/no-leak/success-zero, diff, exact-five/union-80 and unauthorized-six
+  rejection pass. Frontend remains zero-diff; the immediately preceding exact
+  ordinary proves its full frontend/visual lanes. Dirty full Python has only
+  the preserved M9 marker-count mismatch (`2664/2665`).
