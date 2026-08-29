@@ -75,6 +75,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
         ):
             yield
 
@@ -91,6 +95,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED",
             True,
         ):
             yield
@@ -203,6 +211,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
+            self.verifier,
+            "POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.verifier.document_runtime,
             "query_headers",
             return_value={"X-Request-ID": "p807-list"},
@@ -270,6 +282,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.document_runtime,
@@ -482,6 +498,9 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.verifier.POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
+        )
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
@@ -511,6 +530,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -645,6 +668,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.verifier._require_collection_kinds(
                 [{"operationKind": kind} for kind in required]
@@ -685,6 +712,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
@@ -753,6 +784,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             ), patch.object(
                 self.verifier,
                 "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
+                self.verifier,
+                "POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED",
                 False,
             ), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME

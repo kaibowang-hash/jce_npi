@@ -44,6 +44,7 @@ POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED = False
 COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
 POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
 POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED = False
+POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -322,6 +323,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
         POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
         POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED,
+        POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED,
     )
     if sum(map(int, activations)) != 1:
         return frozenset()
@@ -338,7 +340,10 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         codes = codes.union(COLLECTION_RESPONSE_DIAGNOSTIC_CODES)
     if _collection_server_diagnostics_enabled():
         codes = codes.union(COLLECTION_SERVER_DIAGNOSTIC_CODES)
-    if POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED:
+    if (
+        POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
+        or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
+    ):
         return codes.union(COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES)
     if codes != frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
         FRESH_FIXTURE_DIAGNOSTIC_CODES
@@ -360,11 +365,13 @@ def _collection_server_diagnostics_enabled() -> bool:
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
         POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
         POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED,
+        POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED,
     )
     return sum(map(int, activations)) == 1 and (
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED
         or POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED
         or POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
+        or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
     )
 
 
@@ -761,7 +768,10 @@ def _exact_item(
 
 def _require_collection_kinds(items: list[dict[str, Any]]) -> None:
     kinds = {str(item.get("operationKind")) for item in items}
-    if POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED:
+    if (
+        POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
+        or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
+    ):
         for code, operation_kind, expected_present in _EXPECTED_COLLECTION_MEMBERSHIP:
             with fresh_runtime_diagnostic_step(code):
                 require(

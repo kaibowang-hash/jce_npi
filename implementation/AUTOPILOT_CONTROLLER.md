@@ -8136,3 +8136,47 @@ repeat or rewrite it merely to restore context. See
   current/reconciliation, all-diagnostics-off, diff, exact-five/union-78 and
   unauthorized-six rejection pass. Pre-existing user-authorized unrelated
   documentation changes remain excluded and preserved.
+
+### P8-07 checkpoint-4 post-membership combined diagnostic cycle
+
+- Membership harness repair SHA
+  `a06b92ccdc66578be15041aa13d5582848913493` passes ordinary
+  `33234483071`: visual `99052933833`, secret scan `99052933900`, frontend
+  `99052933922` and repository `99052933934` all pass. Its sole Level 3
+  `33235040758` passes visual `99054437169`, secret `99054437266`, repository
+  `99054437273`, frontend `99054437314` and preflight `99055922499`.
+  Runtime `99055946528` passes fixed Bench/Site initialization, fails in the
+  cumulative verifier and completes cleanup.
+- Fixed allowlist classification returns only
+  `Local Frappe integration operations runtime verification failed.` P8-01
+  through P8-06 passed; P8-07 fresh returned nonzero before later replay,
+  route-disable, recovery or cleanup. All eight diagnostic activations were
+  false, so the inner predicate is nonunique. No raw/child output, response
+  status/body, business value, identity, message or stack was read.
+- The accepted Project-containment harness repair closes only the prior
+  impossible inbound-presence expectation; it does not prove every later
+  fresh predicate passed. Freeze that cycle at diagnostic `1/1`, harness
+  repair `1/1`, final `1/1`. No product repair follows from the outer label.
+- Open independent product-zero
+  `p8-07-checkpoint-4-post-membership-combined-boundary` at `0/1,0/1,0/1`.
+  Only `POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED=True`; all eight
+  historical flags are false. It reuses exact `154`: 45 outer, 52 fixture,
+  seven response, 46 API/repository and four Project-membership safe codes.
+  Exact scope/trace/cursors, mirrored reader, exact-three-key `0600` `O_EXCL`,
+  inner precedence, same exception, finally restoration, failed-child unread
+  and success-zero behavior remain unchanged.
+- The cycle remains exact-five: runtime verifier/test plus this controller,
+  P8-07 plan and checkpoint. Product/API/repository/contracts/schema/
+  permissions/ownership/frontend/workflow stay unchanged. Exact-SHA ordinary
+  PASS must precede one sole Level 2 diagnostic. P8-07F, `JCE-Core`,
+  production ERPNext and P8-08 remain closed.
+- Diagnostic Level 1 passes focused verifier `32/32`, complete P8-07 `70/70`,
+  affected integration/security/API `90/90`, clean-overlay governance/
+  reconciliation `59/59` and clean-overlay full Python `2636/2636`. Frontend
+  generate/type/lint/i18n passes with `8585` literal sources and `100%`
+  zh/zh-TW coverage; unit/coverage passes `1086/1086`; focused functional plus
+  three-locale visual E2E passes `6/6`. Compile, shell syntax, current/
+  reconciliation, exact-154/new-only/dormancy, diff, exact-five/union-78 and
+  unauthorized-six rejection pass. Product/API/repository/contracts/schema/
+  frontend/workflow diffs remain zero. User-authorized unrelated documentation
+  changes remain outside the exact-five and are preserved.

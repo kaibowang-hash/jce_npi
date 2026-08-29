@@ -909,3 +909,53 @@ three-locale visual E2E passes `6/6`. Compile, shell syntax, current/
 reconciliation, all-diagnostics-off, diff, exact-five/union-78 and
 unauthorized-six rejection pass. Pre-existing user-authorized unrelated
 documentation changes remain outside the exact-five and are preserved.
+
+## 31. Membership-repair final and post-membership combined diagnostic
+
+Membership harness repair SHA `a06b92ccdc66578be15041aa13d5582848913493`
+passes ordinary `33234483071`: visual `99052933833`, secret scan
+`99052933900`, frontend `99052933922` and repository `99052933934` all pass.
+Its sole Level 3 `33235040758` passes visual `99054437169`, secret
+`99054437266`, repository `99054437273`, frontend `99054437314` and
+preflight `99055922499`. Runtime `99055946528` passes fixed Bench/Site
+initialization, fails in the cumulative verifier and completes cleanup.
+
+Fixed source-label filtering yields only
+`Local Frappe integration operations runtime verification failed.` P8-01
+through P8-06 therefore completed; P8-07 fresh returned nonzero before later
+replay, route-disable, recovery or cleanup. All eight P8-07 diagnostic
+activations were false. The label cannot select an inner outer/fixture/
+response/server/membership predicate. Runtime/child output, response
+status/body, business values, identities, message and stack remain unread.
+The Project-contained membership repair closes only its proven harness root
+and is not evidence that every later predicate passed.
+
+Freeze the membership cycle at diagnostic `1/1`, harness repair `1/1`, final
+`1/1`. Open independent product-zero
+`p8-07-checkpoint-4-post-membership-combined-boundary` at diagnostic `0/1`,
+repair `0/1`, final `0/1`. Its sole new activation is
+`POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED=True`; all eight historical
+flags are false. The active set remains exact `154`: 45 ordered fresh outer,
+52 fixture, seven value-free response, 46 API/repository collection and four
+Project-membership codes. Existing exact request scope/trace, cursors,
+strict mirrored reader, exact-three-key `0600` `O_EXCL`, inner precedence,
+same exception, finally restoration, failed-child unread and success-zero
+contracts remain intact.
+
+The exact-five task changes runtime verifier/test plus AUTOPILOT, this plan and
+the controlled-runtime checkpoint only. Product/API/repository/contracts/
+schema/permissions/ownership/frontend/workflow remain unchanged. This is
+bounded compatibility diagnosis, not redesign or refactoring. One exact-SHA
+ordinary PASS must precede its sole Level 2 controlled diagnostic. P8-07F,
+SSH/ERP contact and P8-08 remain closed.
+
+Diagnostic Level 1 passes focused verifier `32/32`, complete P8-07 `70/70`,
+affected integration/security/API `90/90`, clean-overlay governance/
+reconciliation `59/59` and clean-overlay full Python `2636/2636`. Frontend
+generate/type/lint/i18n passes with `8585` literal sources and `100%`
+zh/zh-TW coverage; unit/coverage passes `1086/1086`; focused functional plus
+three-locale visual E2E passes `6/6`. Compile, shell syntax, current/
+reconciliation, exact-154/new-only/dormancy, diff, exact-five/union-78 and
+unauthorized-six rejection pass. Product/API/repository/contracts/schema/
+frontend/workflow diffs remain zero. User-authorized unrelated documentation
+changes remain outside the exact-five and are preserved.

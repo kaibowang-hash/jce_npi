@@ -547,3 +547,37 @@ frontend/workflow diff remains zero.
   reconciliation, all-diagnostics-off, diff, exact-five/union-78 and
   unauthorized-six rejection pass. User-authorized unrelated documentation
   changes remain excluded and preserved.
+
+## Membership-repair final and post-membership combined checkpoint
+
+- Membership harness repair SHA
+  `a06b92ccdc66578be15041aa13d5582848913493` passes ordinary
+  `33234483071` in all four lanes. Its sole Level 3 `33235040758` passes visual
+  `99054437169`, secret `99054437266`, repository `99054437273`, frontend
+  `99054437314` and preflight `99055922499`; runtime `99055946528` passes
+  fixed Bench/Site initialization, fails in the cumulative verifier and
+  completes cleanup.
+- Fixed allowlist classification returns only
+  `Local Frappe integration operations runtime verification failed.` P8-01
+  through P8-06 passed; P8-07 fresh returned nonzero. With all eight
+  diagnostics off, no unique inner predicate follows. No raw/child output,
+  response status/body, business value, identity, message or stack was read.
+- Freeze the membership cycle at `1/1,1/1,1/1`; its Project containment root
+  remains closed but does not prove later stages. Independent
+  `p8-07-checkpoint-4-post-membership-combined-boundary` starts at
+  `0/1,0/1,0/1`. Only its new flag is true; all eight historical flags are
+  false. Exact `154`, scope/trace/cursors, strict mirrored reader,
+  exact-three-key `0600` `O_EXCL`, inner precedence, same exception, finally,
+  failed-child unread and success-zero remain locked.
+- The new task remains exact-five and product-zero. Exact-SHA ordinary PASS
+  must precede one sole Level 2 diagnostic. P8-07F, SSH/ERP and P8-08 stay
+  closed.
+- Diagnostic Level 1 passes focused verifier `32/32`, complete P8-07 `70/70`,
+  affected integration/security/API `90/90`, clean-overlay governance/
+  reconciliation `59/59`, clean-overlay full Python `2636/2636`, frontend
+  unit/coverage `1086/1086` and focused functional plus three-locale visual
+  E2E `6/6`. Generate/type/lint/i18n, compile, shell syntax, current/
+  reconciliation, exact-154/new-only/dormancy, diff, exact-five/union-78 and
+  unauthorized-six rejection pass. Product/frontend diffs remain zero and
+  user-authorized unrelated documentation changes remain excluded and
+  preserved.
