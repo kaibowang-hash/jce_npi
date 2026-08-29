@@ -8170,6 +8170,16 @@ repeat or rewrite it merely to restore context. See
   permissions/ownership/frontend/workflow stay unchanged. Exact-SHA ordinary
   PASS must precede one sole Level 2 diagnostic. P8-07F, `JCE-Core`,
   production ERPNext and P8-08 remain closed.
+- Diagnostic Level 1 passes focused verifier `33/33`, complete P8-07 `71/71`,
+  affected integration/security/API `91/91`, clean-overlay governance/
+  reconciliation `59/59` and clean-overlay full Python `2637/2637`. Frontend
+  generate/type/lint/i18n passes with `8585` literal sources and `100%`
+  zh/zh-TW coverage; unit/coverage passes `1086/1086`; focused functional plus
+  three-locale visual E2E passes `6/6`. Compile, shell syntax, structured parse,
+  current/reconciliation, exact-154/new-only/dormancy, diff, exact-five/
+  union-78 and unauthorized-six rejection pass. Product/API/repository/
+  contracts/schema/frontend/workflow diffs remain zero; unrelated user changes
+  remain excluded and preserved.
 - Diagnostic Level 1 passes focused verifier `32/32`, complete P8-07 `70/70`,
   affected integration/security/API `90/90`, clean-overlay governance/
   reconciliation `59/59` and clean-overlay full Python `2636/2636`. Frontend
@@ -8218,3 +8228,39 @@ repeat or rewrite it merely to restore context. See
   reconciliation, all-nine-diagnostics-off, diff, exact-five/union-78 and
   unauthorized-six rejection pass. Product/API/repository/contracts/schema/
   frontend/workflow diffs remain zero; unrelated user changes remain excluded.
+
+### P8-07 checkpoint-4 post-operation-ID combined diagnostic cycle
+
+- Operation-identity repair SHA
+  `19466302b3657e3d59ec8998007c0bdc287b7904` passes ordinary
+  `33237869493`: visual `99061924462`, repository `99061924540`, secret scan
+  `99061924560` and frontend `99061924582` all pass. Its sole diagnostics-off
+  Level 3 `33238439561` passes secret `99063473008`, visual `99063473047`,
+  frontend `99063473086`, repository `99063473172` and controlled preflight
+  `99064937942`. Runtime `99064966245` passes fixed Bench/Site initialization,
+  fails in the cumulative verifier and completes cleanup.
+- Source-literal allowlist filtering yields exactly
+  `Local Frappe integration operations runtime verification failed.` P8-01
+  through P8-06 passed; P8-07 fresh returned nonzero before its later replay,
+  route-disable, recovery and post-migration cleanup phases. All nine
+  diagnostic activations were false, so transport, fixture, collection,
+  snapshot, DLQ, replay, reconciliation, observation, count and cleanup
+  predicates remain nonunique. No raw/child output, response status/body,
+  business value, identity, message or stack was read.
+- Freeze the operation-identity cycle at diagnostic `1/1`, harness repair
+  `1/1`, final `1/1`. Its UUIDv4/UUIDv5 harness root remains closed but does
+  not prove later predicates. No product repair follows from the outer label.
+- Open independent product-zero
+  `p8-07-checkpoint-4-post-operation-id-combined-boundary` at
+  `0/1,0/1,0/1`. Only
+  `POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED=True`; all nine historical
+  flags are false. It reuses exact `154`: 45 outer, 52 fixture, seven response,
+  46 API/repository and four Project-membership safe codes. Exact scope/trace,
+  cursors, mirrored strict reader, exact-three-key `0600` `O_EXCL`, inner
+  precedence, same exception, finally restoration, failed-child unread and
+  success-zero behavior remain unchanged.
+- The cycle remains exact-five: runtime verifier/test plus this controller,
+  P8-07 plan and checkpoint. Product/API/repository/contracts/schema/
+  permissions/ownership/frontend/workflow stay unchanged. Exact-SHA ordinary
+  PASS must precede one sole Level 2 diagnostic. P8-07F, `JCE-Core`,
+  production ERPNext and P8-08 remain closed.

@@ -611,3 +611,38 @@ frontend/workflow diff remains zero.
   reconciliation, all-nine-diagnostics-off, diff, exact-five/union-78 and
   unauthorized-six rejection pass. Product/frontend diffs remain zero;
   unrelated user changes remain excluded and preserved.
+
+## Operation-identity repair final and next combined checkpoint
+
+- Repair SHA `19466302b3657e3d59ec8998007c0bdc287b7904` passes ordinary
+  `33237869493`: visual `99061924462`, repository `99061924540`, secret scan
+  `99061924560` and frontend `99061924582` all pass. Its sole Level 3
+  `33238439561` passes secret `99063473008`, visual `99063473047`, frontend
+  `99063473086`, repository `99063473172` and preflight `99064937942`.
+  Runtime `99064966245` passes Bench/Site initialization, fails in the
+  cumulative verifier and completes cleanup.
+- Fixed allowlist filtering returns only
+  `Local Frappe integration operations runtime verification failed.` P8-01
+  through P8-06 passed and P8-07 fresh returned nonzero; all nine diagnostics
+  were off, so the P8-07 inner boundary remains nonunique. Raw/child output,
+  response status/body, business values, identities, message and stack remain
+  unread.
+- Freeze the operation-identity cycle at `1/1,1/1,1/1`. Independent
+  `p8-07-checkpoint-4-post-operation-id-combined-boundary` starts at
+  `0/1,0/1,0/1`, with only
+  `POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED=True`. The exact-154 safe
+  mechanism and its trace/scope/cursors, strict mirrored reader, `0600`
+  `O_EXCL` exact-three-key record, precedence, same exception, finally,
+  failed-child unread and success-zero contracts remain unchanged.
+- The task stays exact-five and product-zero. Exact-SHA ordinary PASS must
+  precede its one Level 2 diagnostic. P8-07F, `JCE-Core`, production ERPNext
+  and P8-08 remain inactive; user-authorized unrelated documentation remains
+  excluded and preserved.
+- Diagnostic Level 1 passes focused verifier `33/33`, complete P8-07 `71/71`,
+  affected integration/security/API `91/91`, clean-overlay governance/
+  reconciliation `59/59`, clean-overlay full Python `2637/2637`, frontend
+  unit/coverage `1086/1086` and focused functional plus three-locale visual
+  E2E `6/6`. Generate/type/lint/i18n (`8585`, `100%` zh/zh-TW), compile, shell
+  syntax, structured parse, current/reconciliation, exact-154/new-only/
+  dormancy, diff, exact-five/union-78 and unauthorized-six rejection pass.
+  Product/frontend diffs remain zero.

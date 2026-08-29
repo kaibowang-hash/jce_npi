@@ -1001,3 +1001,46 @@ reconciliation, all-nine-diagnostics-off, diff, exact-five/union-78 and
 unauthorized-six rejection pass. Product/API/repository/contracts/schema/
 frontend/workflow diffs remain zero; unrelated user changes remain excluded
 and preserved.
+
+## 33. Operation-identity repair final and post-operation-ID boundary
+
+Operation-identity repair SHA
+`19466302b3657e3d59ec8998007c0bdc287b7904` passes ordinary
+`33237869493`: visual `99061924462`, repository `99061924540`, secret scan
+`99061924560` and frontend `99061924582` all pass. Its sole diagnostics-off
+Level 3 `33238439561` passes secret `99063473008`, visual `99063473047`,
+frontend `99063473086`, repository `99063473172` and preflight `99064937942`.
+Runtime `99064966245` passes fixed Bench/Site initialization, fails in the
+cumulative verifier and completes cleanup.
+
+Fixed source-literal allowlist filtering yields only
+`Local Frappe integration operations runtime verification failed.` This proves
+P8-01 through P8-06 passed and P8-07 fresh returned nonzero before later P8-07
+phases. With all nine diagnostic activations false, no unique inner predicate
+follows. Raw/child output, response status/body, business value, identity,
+message and stack remain unread.
+
+Freeze the operation-identity cycle at `1/1,1/1,1/1`. Open independent
+product-zero `p8-07-checkpoint-4-post-operation-id-combined-boundary` at
+`0/1,0/1,0/1`. Its sole new activation is
+`POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED=True`; all historical flags
+are false. It reuses exact `154`, the existing exact trace/scope/cursors,
+mirrored strict reader, exact-three-key `0600` `O_EXCL` record, inner
+precedence, same exception, finally restoration, failed-child unread and
+success-zero behavior.
+
+Runtime verifier/test and the three governance files remain the complete
+exact-five. Product/API/repository/contracts/schema/permissions/ownership/
+frontend/workflow remain unchanged. Exact-SHA ordinary PASS must precede the
+sole Level 2 controlled diagnostic. P8-07F, SSH/ERP contact and P8-08 remain
+closed.
+
+Diagnostic Level 1 passes focused verifier `33/33`, complete P8-07 `71/71`,
+affected integration/security/API `91/91`, clean-overlay governance/
+reconciliation `59/59` and clean-overlay full Python `2637/2637`. Frontend
+generate/type/lint/i18n passes with `8585` literal sources and `100%` zh/zh-TW
+coverage; unit/coverage passes `1086/1086`; focused functional plus
+three-locale visual E2E passes `6/6`. Compile, shell syntax, structured parse,
+current/reconciliation, exact-154/new-only/dormancy, diff, exact-five/union-78
+and unauthorized-six rejection pass. Product and frontend diffs remain zero;
+unrelated user changes remain outside the exact-five and are preserved.
