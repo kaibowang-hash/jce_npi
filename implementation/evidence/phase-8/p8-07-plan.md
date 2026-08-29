@@ -1092,3 +1092,61 @@ reconciliation scripts, exact-166/new-only/ordered-response/dormancy, diff,
 exact-five and unauthorized-six rejection pass. Product/API/repository/
 contracts/schema/frontend/workflow diffs remain zero; unrelated user changes
 remain excluded and preserved.
+
+## 35. Uncertain-replay response result and action-boundary diagnostic
+
+Response-contract SHA `3d4e8c50460103c7d4231afaefb4b22f5795e535`
+passes ordinary `33255870752`: secret scan `99109346481`, visual
+`99109346520`, frontend `99109346567` and repository `99109346573` all pass.
+Its sole Level 2 controlled run `33256523484` passes preflight `99111126477`;
+runtime `99111156327` passes fixed Bench/Site initialization, fails in the
+cumulative verifier and completes cleanup.
+
+The strict exact-166 reader accepts only
+`P807_UNCERTAIN_REPLAY_STATUS_OTHER_CLIENT_ERROR / RuntimeError /
+trace-20fcc0670625572f940fe17e5ee6f37a`. The request returned and its
+request-ID, cache-control and restricted-key checks passed. The safe code
+reports no actual HTTP status, body, field, identity, business value, message
+or stack. The result therefore selects only another 4xx class, not its source.
+
+CSRF, exact request fields, actor/administer authorization, Project and
+operation lookup, expected source/version and replay eligibility are distinct
+ordered client-error boundaries. Static contracts establish the intended 409
+for uncertain replay but cannot prove which earlier boundary produced this
+run. Freeze `p8-07-checkpoint-4-uncertain-replay-response-contract` at
+diagnostic `1/1`, repair `0/1`, final `0/1`. Do not guess a product repair.
+
+Open independent
+`p8-07-checkpoint-4-uncertain-replay-action-boundary` at `0/1,0/1,0/1`.
+`UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED=True` is the only activation;
+all eleven historical flags are false. Active exact `188` is retained exact
+`166` plus 22 fixed, lexically unique action API/repository stages. Activation
+requires the one exact uncertain Item replay POST, fixed diagnostic header,
+trace, empty query, exact route and exact command/form keys. Same-trace server
+evidence wins over the safe status-class fallback. The mechanism retains
+exact log cursors, mirrored strict reading, three-key `0600` `O_EXCL`,
+innermost precedence, same exception, finally restoration, failed-child
+unread, no-value logging and success-zero behavior.
+
+The exact-nine task contains the verifier/test, integration-operations API,
+repository and their tests, AUTOPILOT, this plan and the controlled-runtime
+checkpoint. The diagnostic scope is dormant for every non-exact request and
+does not alter response, commit, rollback, write order or product contracts.
+This remains compatibility/minimal-difference diagnosis, not redesign or
+refactoring. One exact-SHA ordinary PASS must precede one sole Level 2
+diagnostic. P8-07F, production SSH/ERP and P8-08 remain closed; unrelated
+user-authorized pilot-deferral and permission-ownership documentation stays
+excluded and preserved.
+
+Action-boundary Level 1 passes focused verifier/API/repository `59/59`,
+complete P8-07 `77/77`, affected integration/security/API `97/97`,
+clean-overlay governance/reconciliation `59/59` and full Python `2643/2643`.
+Frontend generate/type/full lint/i18n passes with `8585` literal English
+sources and `100%` zh/zh-TW coverage; unit passes `1086/1086`; focused
+functional plus three-locale visual E2E passes `6/6`. Compile, shell syntax,
+structured parse, current/reconciliation, exact-188/new-only/cross-file
+lexical equality/precedence/dormancy, diff, exact-nine/union-78 and
+unauthorized-ten rejection pass. The initial E2E command was run from the
+repository root, so Playwright had no frontend `baseURL` and failed before
+navigation; the unchanged six tests pass from the canonical frontend working
+directory. No test, configuration or timeout was changed.

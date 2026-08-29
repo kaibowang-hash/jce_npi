@@ -53,6 +53,40 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.verifier = load_verifier()
 
+    def setUp(self) -> None:
+        # Existing diagnostic contract tests intentionally exercise the prior
+        # response-only activation. The current action-boundary activation is
+        # tested explicitly through action_server_diagnostics().
+        self.previous_response_activation = patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            True,
+        )
+        self.current_action_activation = patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        )
+        self.previous_response_activation.start()
+        self.current_action_activation.start()
+
+    def tearDown(self) -> None:
+        self.current_action_activation.stop()
+        self.previous_response_activation.stop()
+
+    @contextmanager
+    def action_server_diagnostics(self):
+        with patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            yield
+
     @contextmanager
     def collection_response_diagnostics(self):
         with patch.object(
@@ -361,6 +395,77 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             dormant_headers,
         )
 
+    def test_uncertain_action_request_binds_only_the_exact_scope_and_trace(self) -> None:
+        response = SimpleNamespace(
+            status=409,
+            headers={
+                "X-Request-ID": "p807-action",
+                "Cache-Control": "private, no-store",
+            },
+            body={},
+        )
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        with self.action_server_diagnostics(), patch.object(
+            self.verifier.document_runtime,
+            "command_headers",
+            return_value={"X-Request-ID": "p807-action"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=response,
+        ) as request, self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+            self.verifier._request(
+                object(),
+                "http://127.0.0.1",
+                "/safe",
+                label="uncertain-replay",
+                method="POST",
+                payload={"expectedRawState": "uncertain_after_timeout"},
+                csrf_token="csrf",
+                idempotency_key="fixed-key",
+            )
+        headers = request.call_args.kwargs["request_headers"]
+        self.assertEqual(headers["X-Trace-ID"], trace_id)
+        self.assertEqual(
+            headers[self.verifier._ACTION_SERVER_DIAGNOSTIC_HEADER],
+            self.verifier._ACTION_SERVER_DIAGNOSTIC_SCOPE,
+        )
+        self.assertNotIn(self.verifier._COLLECTION_SERVER_DIAGNOSTIC_HEADER, headers)
+
+        with patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier.document_runtime,
+            "command_headers",
+            return_value={"X-Request-ID": "p807-action"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=response,
+        ) as dormant, self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+            self.verifier._request(
+                object(),
+                "http://127.0.0.1",
+                "/safe",
+                label="uncertain-replay",
+                method="POST",
+                payload={},
+                csrf_token="csrf",
+                idempotency_key="fixed-key",
+            )
+        dormant_headers = dormant.call_args.kwargs["request_headers"]
+        self.assertNotIn("X-Trace-ID", dormant_headers)
+        self.assertNotIn(
+            self.verifier._ACTION_SERVER_DIAGNOSTIC_HEADER,
+            dormant_headers,
+        )
+
     def test_disabled_probe_requires_the_fixed_disabled_problem(self) -> None:
         response = SimpleNamespace(
             status=503,
@@ -539,27 +644,31 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             record.assert_called_once_with(expected, label="disabled")
 
     def test_collection_server_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
-        self.assertFalse(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
-        self.assertFalse(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
-        self.assertFalse(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
-        self.assertFalse(self.verifier.POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED)
-        self.assertFalse(self.verifier.COLLECTION_SERVER_DIAGNOSTICS_ENABLED)
-        self.assertFalse(
-            self.verifier.POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED
-        )
-        self.assertFalse(
-            self.verifier.POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
-        )
-        self.assertFalse(
-            self.verifier.POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
-        )
-        self.assertFalse(
-            self.verifier.POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
-        )
-        self.assertTrue(
-            self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
-        )
-        self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
+        with self.action_server_diagnostics():
+            self.assertFalse(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
+            self.assertFalse(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
+            self.assertFalse(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
+            self.assertFalse(self.verifier.POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED)
+            self.assertFalse(self.verifier.COLLECTION_SERVER_DIAGNOSTICS_ENABLED)
+            self.assertFalse(
+                self.verifier.POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+            )
+            self.assertFalse(
+                self.verifier.POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
+            )
+            self.assertFalse(
+                self.verifier.POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
+            )
+            self.assertFalse(
+                self.verifier.POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
+            )
+            self.assertFalse(
+                self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
+            )
+            self.assertTrue(
+                self.verifier.UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
+            )
+            self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
         self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
@@ -573,9 +682,13 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             len(self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES),
             12,
         )
-        with self.collection_server_diagnostics():
+        self.assertEqual(
+            len(self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES),
+            22,
+        )
+        with self.action_server_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 166)
+            self.assertEqual(len(codes), 188)
             self.assertEqual(
                 codes,
                 frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
@@ -584,6 +697,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES,
                     self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
                     self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES,
                 ),
             )
         with patch.object(
@@ -607,6 +721,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.verifier.item_runtime,
             "_sanitized_server_log_diagnostic",
         ) as reader:
@@ -627,6 +745,12 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             all(
                 source.count(f'"{code}"') == 1
                 for code in self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES
+            )
+        )
+        self.assertTrue(
+            all(
+                source.count(f'"{code}"') == 1
+                for code in self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES
             )
         )
         self.assertNotIn("str(error)", source)
@@ -1119,6 +1243,87 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     expected_trace=trace_id,
                 ),
                 ("RuntimeError", "P807_COLLECTION_STATUS_SERVER_ERROR", trace_id),
+            )
+
+    def test_action_server_tuple_wins_and_safe_status_is_fallback(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        result = SimpleNamespace(status=404, body={})
+        cursors = {
+            "logs/npi_core.log": 0,
+            "sites/npi.localhost/logs/npi_core.log": 0,
+        }
+        with (
+            self.action_server_diagnostics(),
+            tempfile.TemporaryDirectory() as directory,
+        ):
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=(
+                    "IntegrationOperationsUnavailable",
+                    "P807_ACTION_API_CONTEXT",
+                    trace_id,
+                ),
+            ) as reader, self.assertRaises(RuntimeError):
+                self.verifier._validate_uncertain_replay_problem(
+                    result,
+                    diagnostic_cursors=cursors,
+                )
+            self.assertEqual(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                (
+                    "IntegrationOperationsUnavailable",
+                    "P807_ACTION_API_CONTEXT",
+                    trace_id,
+                ),
+            )
+            self.assertEqual(reader.call_args.args, (trace_id, cursors))
+            self.assertEqual(
+                reader.call_args.kwargs,
+                {
+                    "code_prefix": "P807_ACTION_",
+                    "allowed_codes": frozenset(
+                        self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES
+                    ),
+                },
+            )
+
+        with (
+            self.action_server_diagnostics(),
+            tempfile.TemporaryDirectory() as directory,
+        ):
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=None,
+            ), self.assertRaises(RuntimeError):
+                self.verifier._validate_uncertain_replay_problem(
+                    result,
+                    diagnostic_cursors=cursors,
+                )
+            self.assertEqual(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                (
+                    "RuntimeError",
+                    "P807_UNCERTAIN_REPLAY_STATUS_OTHER_CLIENT_ERROR",
+                    trace_id,
+                ),
             )
 
     def test_fresh_diagnostic_is_exact_three_key_o_excl_and_inner_wins(self) -> None:

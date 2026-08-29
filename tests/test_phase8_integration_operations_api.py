@@ -342,6 +342,105 @@ class Phase8IntegrationOperationsApiTest(unittest.TestCase):
                     )
                 )
 
+    def test_action_diagnostic_requires_one_exact_post_and_preserves_response(self) -> None:
+        trace_id = "trace-" + "c" * 32
+        command = "npi_integration.integration_operations.api.replay_publish_item"
+        payload = {"expectedRawState": "failed_retryable", "expectedVersion": 3}
+        self.headers.update(
+            {
+                "X-Trace-ID": trace_id,
+                self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER:
+                    self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_SCOPE,
+            }
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = {}
+        self.frappe.flags.npi_route_params = {
+            "project_id": PROJECT,
+            "integration_operation_id": OPERATION,
+        }
+        self.frappe.local.form_dict = {"cmd": command, **payload}
+        scopes: list[tuple[str | None, bool]] = []
+        steps: list[str] = []
+
+        @contextmanager
+        def scope(value, *, active):
+            scopes.append((value, active))
+            yield
+
+        @contextmanager
+        def step(code):
+            steps.append(code)
+            yield
+
+        with patch.object(
+            self.module,
+            "integration_operations_action_diagnostics",
+            side_effect=scope,
+        ), patch.object(
+            self.module,
+            "integration_operations_action_step",
+            side_effect=step,
+        ):
+            result = self.module._fixed_action(
+                self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                self.module.IntegrationActionKind.REPLAY,
+                expectedRawState=payload["expectedRawState"],
+                expectedVersion=payload["expectedVersion"],
+                request_fields={},
+            )
+
+        self.assertEqual(result, self.action_response)
+        self.assertEqual(scopes, [(trace_id, True)])
+        self.assertEqual(
+            steps,
+            [
+                "P807_ACTION_API_DOMAIN_CALL",
+                "P807_ACTION_API_CSRF",
+                "P807_ACTION_API_FIELDS",
+                "P807_ACTION_API_CONTEXT",
+                "P807_ACTION_API_REPOSITORY",
+                "P807_ACTION_API_OUTCOME",
+                "P807_ACTION_API_RESPONSE",
+                "P807_ACTION_API_COMMIT",
+                "P807_ACTION_API_HEADERS",
+            ],
+        )
+
+        for mutation in (
+            lambda: self.headers.pop(
+                self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER
+            ),
+            lambda: setattr(self.frappe.local.request, "method", "GET"),
+            lambda: self.frappe.local.request.args.update({"limit": "1"}),
+            lambda: self.frappe.flags.npi_route_params.update(
+                {"operation_kind": "publish_item"}
+            ),
+            lambda: self.frappe.local.form_dict.update({"extra": "withheld"}),
+        ):
+            with self.subTest(mutation=mutation):
+                self.headers[
+                    self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER
+                ] = self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_SCOPE
+                self.frappe.local.request.method = "POST"
+                self.frappe.local.request.args = {}
+                self.frappe.flags.npi_route_params = {
+                    "project_id": PROJECT,
+                    "integration_operation_id": OPERATION,
+                }
+                self.frappe.local.form_dict = {"cmd": command, **payload}
+                mutation()
+                self.assertFalse(
+                    self.module._integration_operations_action_diagnostic_active(
+                        trace_id,
+                        operation_kind=self.module.IntegrationOperationKind.PUBLISH_ITEM,
+                        action_kind=self.module.IntegrationActionKind.REPLAY,
+                        expected_raw_state=payload["expectedRawState"],
+                        expected_version=payload["expectedVersion"],
+                        request_fields={},
+                    )
+                )
+
     def test_fixed_replay_is_csrf_actor_idempotent_and_commits_before_response(self) -> None:
         result = self.call_action()
         self.assertEqual(result, self.action_response)

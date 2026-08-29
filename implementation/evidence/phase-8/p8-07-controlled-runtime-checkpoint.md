@@ -681,3 +681,46 @@ frontend/workflow diff remains zero.
   shell syntax, current/reconciliation scripts, exact-166/new-only/ordered-
   response/dormancy, diff, exact-five and unauthorized-six rejection pass.
   Product/frontend diffs remain zero; unrelated user changes stay excluded.
+
+## Uncertain-replay response result and action-boundary checkpoint
+
+- Exact-five SHA `3d4e8c50460103c7d4231afaefb4b22f5795e535` passes ordinary
+  `33255870752`: secret scan `99109346481`, visual `99109346520`, frontend
+  `99109346567` and repository `99109346573` all pass. Sole controlled
+  `33256523484` passes preflight `99111126477`; runtime `99111156327` passes
+  fixed Bench/Site initialization, fails in cumulative verification and
+  completes cleanup.
+- Strict exact-166 reading returns only
+  `P807_UNCERTAIN_REPLAY_STATUS_OTHER_CLIENT_ERROR / RuntimeError /
+  trace-20fcc0670625572f940fe17e5ee6f37a`. The request helper completed its
+  request-ID, cache-control and safe-response checks. No actual status/body,
+  child output, business value, identity, message or stack was read.
+- The 4xx class remains nonunique across CSRF, request fields, administer
+  authorization, Project/operation lookup and replay-conflict boundaries.
+  Freeze the prior cycle at `1/1,0/1,0/1`; no repair follows from this code.
+- Independent exact-nine
+  `p8-07-checkpoint-4-uncertain-replay-action-boundary` begins
+  `0/1,0/1,0/1`. Only its new activation is true; all eleven prior flags are
+  false. Exact `188` is retained exact `166` plus 22 fixed API/repository
+  stages. Exact POST/header/trace/route/query/form scope, pre-request cursors,
+  strict mirrored reader, server-inner precedence, status fallback,
+  three-key `0600` `O_EXCL`, same exception, finally restoration,
+  failed-child unread and success-zero are locked.
+- Runtime verifier/test, API/repository and their tests plus AUTOPILOT, plan
+  and this checkpoint are the complete task. Exact diagnostic scope absent
+  means product behavior, response, transaction/write order, contracts,
+  schema, permissions, ownership, frontend and workflow remain unchanged.
+  Exact-SHA ordinary PASS must precede one Level 2 diagnostic. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed; unrelated user
+  changes remain preserved.
+- Level 1 passes focused verifier/API/repository `59/59`, complete P8-07
+  `77/77`, affected integration/security/API `97/97`, clean-overlay
+  governance/reconciliation `59/59`, full Python `2643/2643`, frontend unit
+  `1086/1086` and focused functional/three-locale visual E2E `6/6`.
+  Generate/type/full lint/i18n (`8585`, `100%` zh/zh-TW), compile, shell,
+  current/reconciliation, exact-188/new-only/cross-file equality/precedence/
+  dormancy, diff, exact-nine/union-78 and unauthorized-ten rejection pass.
+  The first E2E command used the wrong repository-root working directory and
+  failed before navigation because the frontend `baseURL` was unavailable;
+  the unchanged six tests pass under the canonical frontend working
+  directory. No test/configuration/timeout change was made.

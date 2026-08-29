@@ -45,8 +45,18 @@ INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_HEADER = (
 INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_SCOPE = (
     "p8-07-integration-operations-collection-v1"
 )
+INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER = (
+    "X-NPI-P807-Action-Diagnostic"
+)
+INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_SCOPE = (
+    "p8-07-integration-operations-uncertain-replay-v1"
+)
 _COLLECTION_DIAGNOSTIC_ACTIVE: ContextVar[bool] = ContextVar(
     "p807_integration_operations_collection_api_diagnostic",
+    default=False,
+)
+_ACTION_DIAGNOSTIC_ACTIVE: ContextVar[bool] = ContextVar(
+    "p807_integration_operations_action_api_diagnostic",
     default=False,
 )
 _FORBIDDEN_RESPONSE_KEYS = frozenset(
@@ -112,6 +122,42 @@ def integration_operations_collection_step(code: str) -> Iterator[None]:
     if _COLLECTION_DIAGNOSTIC_ACTIVE.get():
         from .frappe_repository import (
             integration_operations_collection_step as server_step,
+        )
+
+        with server_step(code):
+            yield
+        return
+    yield
+
+
+@contextmanager
+def integration_operations_action_diagnostics(
+    trace_id: str | None,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    """Bind one exact, response-neutral action diagnostic request."""
+
+    token = _ACTION_DIAGNOSTIC_ACTIVE.set(active)
+    try:
+        if active:
+            from .frappe_repository import (
+                integration_operations_action_diagnostics as server_scope,
+            )
+
+            with server_scope(trace_id, active=True):
+                yield
+        else:
+            yield
+    finally:
+        _ACTION_DIAGNOSTIC_ACTIVE.reset(token)
+
+
+@contextmanager
+def integration_operations_action_step(code: str) -> Iterator[None]:
+    if _ACTION_DIAGNOSTIC_ACTIVE.get():
+        from .frappe_repository import (
+            integration_operations_action_step as server_step,
         )
 
         with server_step(code):
@@ -224,6 +270,34 @@ def _fixed_action(
     expectedVersion: Any,
     request_fields: dict[str, Any],
 ) -> dict[str, Any] | None:
+    trace_id = frappe.get_request_header("X-Trace-ID")
+    active = _integration_operations_action_diagnostic_active(
+        trace_id,
+        operation_kind=operation_kind,
+        action_kind=action_kind,
+        expected_raw_state=expectedRawState,
+        expected_version=expectedVersion,
+        request_fields=request_fields,
+    )
+    with integration_operations_action_diagnostics(trace_id, active=active):
+        with integration_operations_action_step("P807_ACTION_API_DOMAIN_CALL"):
+            return _fixed_action_in_scope(
+                operation_kind,
+                action_kind,
+                expectedRawState=expectedRawState,
+                expectedVersion=expectedVersion,
+                request_fields=request_fields,
+            )
+
+
+def _fixed_action_in_scope(
+    operation_kind: IntegrationOperationKind,
+    action_kind: IntegrationActionKind,
+    *,
+    expectedRawState: Any,
+    expectedVersion: Any,
+    request_fields: dict[str, Any],
+) -> dict[str, Any] | None:
     headers = {
         "X-Request-ID": response_request_id(),
         "Idempotency-Replayed": "false",
@@ -232,52 +306,60 @@ def _fixed_action(
 
     def handle() -> dict[str, Any]:
         nonlocal replayed
-        require_csrf_token()
-        command_fields = {
-            **request_fields,
-            "expectedRawState": expectedRawState,
-            "expectedVersion": expectedVersion,
-        }
-        reject_unexpected_request_fields(_ACTION_FIELDS, command_fields)
-        require_request_fields(_ACTION_FIELDS, command_fields)
-        request_id, repository, project_id, actor = _context(
-            request_fields,
-            allowed_fields=_ACTION_FIELDS,
-            administer=True,
-        )
-        outcome = repository.request_action(
-            project_id,
-            operation_kind=operation_kind,
-            operation_id=_route_uuid("integration_operation_id"),
-            action_kind=action_kind,
-            expected_raw_state=_raw_state(expectedRawState),
-            expected_version=_positive(expectedVersion, "expectedVersion"),
-            action_idempotency_key_hash=actor_idempotency_key_hash(
-                actor,
-                frappe.get_request_header("Idempotency-Key"),
-            ),
-        )
-        if outcome is None or type(outcome.replayed) is not bool:
-            raise IntegrationOperationsUnavailable()
-        if not isinstance(outcome.response, dict):
-            raise RuntimeError("The integration operation action result is invalid.")
-        safe_response = _response(
-            outcome.response,
-            project_id=project_id,
-            action=True,
-        )
-        try:
-            frappe.db.commit()
-        except Exception:
+        with integration_operations_action_step("P807_ACTION_API_CSRF"):
+            require_csrf_token()
+        with integration_operations_action_step("P807_ACTION_API_FIELDS"):
+            command_fields = {
+                **request_fields,
+                "expectedRawState": expectedRawState,
+                "expectedVersion": expectedVersion,
+            }
+            reject_unexpected_request_fields(_ACTION_FIELDS, command_fields)
+            require_request_fields(_ACTION_FIELDS, command_fields)
+        with integration_operations_action_step("P807_ACTION_API_CONTEXT"):
+            request_id, repository, project_id, actor = _context(
+                request_fields,
+                allowed_fields=_ACTION_FIELDS,
+                administer=True,
+            )
+        with integration_operations_action_step("P807_ACTION_API_REPOSITORY"):
+            outcome = repository.request_action(
+                project_id,
+                operation_kind=operation_kind,
+                operation_id=_route_uuid("integration_operation_id"),
+                action_kind=action_kind,
+                expected_raw_state=_raw_state(expectedRawState),
+                expected_version=_positive(expectedVersion, "expectedVersion"),
+                action_idempotency_key_hash=actor_idempotency_key_hash(
+                    actor,
+                    frappe.get_request_header("Idempotency-Key"),
+                ),
+            )
+        with integration_operations_action_step("P807_ACTION_API_OUTCOME"):
+            if outcome is None or type(outcome.replayed) is not bool:
+                raise IntegrationOperationsUnavailable()
+            if not isinstance(outcome.response, dict):
+                raise RuntimeError("The integration operation action result is invalid.")
+        with integration_operations_action_step("P807_ACTION_API_RESPONSE"):
+            safe_response = _response(
+                outcome.response,
+                project_id=project_id,
+                action=True,
+            )
+        with integration_operations_action_step("P807_ACTION_API_COMMIT"):
             try:
-                frappe.db.rollback()
+                frappe.db.commit()
             except Exception:
-                pass
-            raise
-        replayed = outcome.replayed
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(replayed).lower()
-        return safe_response
+                try:
+                    frappe.db.rollback()
+                except Exception:
+                    pass
+                raise
+        with integration_operations_action_step("P807_ACTION_API_HEADERS"):
+            replayed = outcome.replayed
+            headers["X-Request-ID"] = request_id
+            headers["Idempotency-Replayed"] = str(replayed).lower()
+            return safe_response
 
     result = frappe_domain_call(
         handle,
@@ -364,6 +446,48 @@ def _integration_operations_collection_diagnostic_active(trace_id: object) -> bo
             and set(form) == {"cmd"}
             and form.get("cmd")
             == "npi_integration.integration_operations.api.get_integration_operations"
+        )
+    except Exception:
+        return False
+
+
+def _integration_operations_action_diagnostic_active(
+    trace_id: object,
+    *,
+    operation_kind: IntegrationOperationKind,
+    action_kind: IntegrationActionKind,
+    expected_raw_state: Any,
+    expected_version: Any,
+    request_fields: dict[str, Any],
+) -> bool:
+    try:
+        request = getattr(getattr(frappe, "local", None), "request", None)
+        arguments = getattr(request, "args", None)
+        route = getattr(frappe.flags, "npi_route_params", None)
+        form = getattr(getattr(frappe, "local", None), "form_dict", None)
+        return bool(
+            frappe.get_request_header(
+                INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_HEADER
+            )
+            == INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_SCOPE
+            and frappe.get_request_header("X-Trace-ID") == trace_id
+            and isinstance(trace_id, str)
+            and re.fullmatch(r"trace-[a-f0-9]{32}", trace_id) is not None
+            and operation_kind is IntegrationOperationKind.PUBLISH_ITEM
+            and action_kind is IntegrationActionKind.REPLAY
+            and isinstance(request_fields, dict)
+            and list(request_fields.keys()) == []
+            and getattr(request, "method", None) == "POST"
+            and arguments is not None
+            and list(arguments.keys()) == []
+            and isinstance(route, dict)
+            and set(route) == {"project_id", "integration_operation_id"}
+            and isinstance(form, dict)
+            and set(form) == {"cmd", "expectedRawState", "expectedVersion"}
+            and form.get("cmd")
+            == "npi_integration.integration_operations.api.replay_publish_item"
+            and form.get("expectedRawState") == expected_raw_state
+            and form.get("expectedVersion") == expected_version
         )
     except Exception:
         return False

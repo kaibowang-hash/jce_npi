@@ -46,7 +46,8 @@ POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
 POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED = False
 POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED = False
 POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED = False
-UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED = True
+UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED = False
+UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -194,6 +195,30 @@ UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES = (
     "P807_UNCERTAIN_REPLAY_TRACE",
     "P807_UNCERTAIN_REPLAY_ENVELOPE",
 )
+UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES = (
+    "P807_ACTION_API_DOMAIN_CALL",
+    "P807_ACTION_API_CSRF",
+    "P807_ACTION_API_FIELDS",
+    "P807_ACTION_API_CONTEXT",
+    "P807_ACTION_API_REPOSITORY",
+    "P807_ACTION_API_OUTCOME",
+    "P807_ACTION_API_RESPONSE",
+    "P807_ACTION_API_COMMIT",
+    "P807_ACTION_API_HEADERS",
+    "P807_ACTION_REPOSITORY_PROJECT",
+    "P807_ACTION_REPOSITORY_REQUEST",
+    "P807_ACTION_REPOSITORY_REPLAY_LOOKUP",
+    "P807_ACTION_REPOSITORY_MUTABLE",
+    "P807_ACTION_REPOSITORY_OPERATION",
+    "P807_ACTION_REPOSITORY_EXPECTATION",
+    "P807_ACTION_REPOSITORY_REQUEUE",
+    "P807_ACTION_REPOSITORY_RESPONSE",
+    "P807_ACTION_REPOSITORY_RECEIPT",
+    "P807_ACTION_REPOSITORY_RECEIPT_INSERT",
+    "P807_ACTION_REPOSITORY_AUDIT",
+    "P807_ACTION_REPOSITORY_ENQUEUE",
+    "P807_ACTION_REPOSITORY_OUTCOME",
+)
 COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES = (
     "P807_FRESH_COLLECTION_INBOUND_ABSENT",
     "P807_FRESH_COLLECTION_ITEM_KIND",
@@ -262,6 +287,10 @@ COLLECTION_SERVER_DIAGNOSTIC_CODES = (
 _COLLECTION_SERVER_DIAGNOSTIC_HEADER = "X-NPI-P807-Collection-Diagnostic"
 _COLLECTION_SERVER_DIAGNOSTIC_SCOPE = (
     "p8-07-integration-operations-collection-v1"
+)
+_ACTION_SERVER_DIAGNOSTIC_HEADER = "X-NPI-P807-Action-Diagnostic"
+_ACTION_SERVER_DIAGNOSTIC_SCOPE = (
+    "p8-07-integration-operations-uncertain-replay-v1"
 )
 _FRESH_FIXTURE_CALL_CODES = {
     "append_observation": "P807_FIXTURE_OBSERVATION_CALL",
@@ -342,6 +371,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED,
         POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED,
         UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED,
+        UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED,
     )
     if sum(map(int, activations)) != 1:
         return frozenset()
@@ -363,10 +393,16 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
         or POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
+        or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
     ):
         codes = codes.union(COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES)
-    if UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED:
-        return codes.union(UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES)
+    if (
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
+        or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
+    ):
+        codes = codes.union(UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES)
+    if UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED:
+        return codes.union(UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES)
     if codes != frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
         FRESH_FIXTURE_DIAGNOSTIC_CODES
     ):
@@ -390,6 +426,7 @@ def _collection_server_diagnostics_enabled() -> bool:
         POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED,
         POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED,
         UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED,
+        UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED,
     )
     return sum(map(int, activations)) == 1 and (
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED
@@ -398,6 +435,14 @@ def _collection_server_diagnostics_enabled() -> bool:
         or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
         or POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
+        or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
+    )
+
+
+def _action_server_diagnostics_enabled() -> bool:
+    return bool(
+        UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
+        and _fresh_runtime_diagnostics_enabled()
     )
 
 
@@ -569,6 +614,18 @@ def _request(
         headers[_COLLECTION_SERVER_DIAGNOSTIC_HEADER] = (
             _COLLECTION_SERVER_DIAGNOSTIC_SCOPE
         )
+    if _action_server_diagnostics_enabled() and label == "uncertain-replay":
+        state = _DIAGNOSTIC_STATE.get()
+        trace_id = state.get("trace_id") if isinstance(state, dict) else None
+        require(
+            isinstance(trace_id, str)
+            and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None,
+            "P8-07 action server diagnostic trace is invalid",
+        )
+        headers["X-Trace-ID"] = trace_id
+        headers[_ACTION_SERVER_DIAGNOSTIC_HEADER] = (
+            _ACTION_SERVER_DIAGNOSTIC_SCOPE
+        )
     try:
         result = document_runtime.request(
             opener,
@@ -684,11 +741,21 @@ def _uncertain_replay_status_diagnostic_code(status: object) -> str:
     return UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[6]
 
 
-def _validate_uncertain_replay_problem(result: Any) -> None:
-    if not UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED:
+def _validate_uncertain_replay_problem(
+    result: Any,
+    *,
+    diagnostic_cursors: dict[str, int] | None = None,
+) -> None:
+    if not (
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
+        or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
+    ):
         validate_problem(result, 409, "INTEGRATION_OPERATION_CONFLICT")
         return
     if result.status != 409:
+        state = _DIAGNOSTIC_STATE.get()
+        trace_id = state.get("trace_id") if isinstance(state, dict) else None
+        _record_action_server_diagnostic(trace_id, diagnostic_cursors)
         with fresh_runtime_diagnostic_step(
             _uncertain_replay_status_diagnostic_code(result.status)
         ):
@@ -745,6 +812,42 @@ def _record_collection_server_diagnostic(
         cursors,
         code_prefix="P807_COLLECTION_",
         allowed_codes=frozenset(COLLECTION_SERVER_DIAGNOSTIC_CODES),
+    )
+    if diagnostic is None:
+        return False
+    exception_type, code, validated_trace = diagnostic
+    state = _DIAGNOSTIC_STATE.get()
+    if (
+        not isinstance(state, dict)
+        or state.get("recorded") is True
+        or state.get("trace_id") != validated_trace
+    ):
+        return False
+    try:
+        _write_fresh_runtime_diagnostic(
+            {
+                "code": code,
+                "exceptionType": exception_type,
+                "traceId": validated_trace,
+            }
+        )
+    except Exception:
+        return False
+    state["recorded"] = True
+    return True
+
+
+def _record_action_server_diagnostic(
+    trace_id: object,
+    cursors: dict[str, int] | None,
+) -> bool:
+    if not _action_server_diagnostics_enabled():
+        return False
+    diagnostic = item_runtime._sanitized_server_log_diagnostic(
+        trace_id,
+        cursors,
+        code_prefix="P807_ACTION_",
+        allowed_codes=frozenset(UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES),
     )
     if diagnostic is None:
         return False
@@ -874,6 +977,7 @@ def _require_collection_kinds(items: list[dict[str, Any]]) -> None:
         or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
         or POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
         or UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
+        or UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED
     ):
         for code, operation_kind, expected_present in _EXPECTED_COLLECTION_MEMBERSHIP:
             with fresh_runtime_diagnostic_step(code):
@@ -1106,6 +1210,11 @@ def run_fresh(
                 "uncertain_operation_id": uncertain_id,
             },
         )
+    uncertain_replay_diagnostic_cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if _action_server_diagnostics_enabled()
+        else None
+    )
     with fresh_runtime_diagnostic_step("P807_FRESH_UNCERTAIN_REPLAY_HTTP"):
         rejected = _action(
             actor,
@@ -1118,7 +1227,10 @@ def run_fresh(
             label="uncertain-replay",
         )
     with fresh_runtime_diagnostic_step("P807_FRESH_UNCERTAIN_REPLAY_CONTRACT"):
-        _validate_uncertain_replay_problem(rejected)
+        _validate_uncertain_replay_problem(
+            rejected,
+            diagnostic_cursors=uncertain_replay_diagnostic_cursors,
+        )
     with fresh_runtime_diagnostic_step("P807_FRESH_SNAPSHOT_AFTER"):
         after_uncertain = run_bench_fixture(
             "snapshot",

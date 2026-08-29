@@ -314,6 +314,50 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
                     raise RuntimeError("withheld")
         self.assertEqual(self.diagnostics, [])
 
+    def test_action_diagnostics_are_exact_innermost_and_response_neutral(self) -> None:
+        trace_id = "trace-" + "c" * 32
+        error = RuntimeError("withheld business detail")
+        with self.assertRaises(RuntimeError) as raised:
+            with self.module.integration_operations_action_diagnostics(
+                trace_id,
+                active=True,
+            ):
+                with self.module.integration_operations_action_step(
+                    "P807_ACTION_API_REPOSITORY"
+                ):
+                    with self.module.integration_operations_action_step(
+                        "P807_ACTION_REPOSITORY_PROJECT"
+                    ):
+                        raise error
+        self.assertIs(raised.exception, error)
+        self.assertEqual(
+            self.diagnostics,
+            [
+                {
+                    "code": "P807_ACTION_REPOSITORY_PROJECT",
+                    "title": "NPI integration operation action stage failed",
+                    "exception_type": "RuntimeError",
+                    "trace_id": trace_id,
+                }
+            ],
+        )
+        self.assertFalse(
+            hasattr(self.frappe.flags, self.module._ACTION_DIAGNOSTIC_FLAG)
+        )
+        self.assertNotIn("withheld business detail", repr(self.diagnostics))
+
+        self.diagnostics.clear()
+        with self.assertRaises(RuntimeError):
+            with self.module.integration_operations_action_diagnostics(
+                "wrong-trace",
+                active=True,
+            ):
+                with self.module.integration_operations_action_step(
+                    "P807_ACTION_REPOSITORY_PROJECT"
+                ):
+                    raise RuntimeError("withheld")
+        self.assertEqual(self.diagnostics, [])
+
     def test_collection_diagnostic_code_contract_matches_api_and_repository(self) -> None:
         api_source = (
             ROOT
@@ -325,6 +369,28 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
         codes = self.module.INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_CODES
         self.assertEqual(len(codes), 46)
+        self.assertTrue(
+            all(
+                api_source.count(f'"{code}"')
+                + repository_source.count(f'"{code}"')
+                == 2
+                for code in codes
+            )
+        )
+        self.assertNotIn("str(error)", repository_source)
+        self.assertNotIn("repr(error)", repository_source)
+
+    def test_action_diagnostic_code_contract_matches_api_and_repository(self) -> None:
+        api_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/integration_operations/api.py"
+        ).read_text(encoding="utf-8")
+        repository_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        codes = self.module.INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_CODES
+        self.assertEqual(len(codes), 22)
         self.assertTrue(
             all(
                 api_source.count(f'"{code}"')

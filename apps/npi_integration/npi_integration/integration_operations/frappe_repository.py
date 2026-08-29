@@ -114,7 +114,34 @@ INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_CODES = frozenset(
         "P807_COLLECTION_TOOL_UPDATE_SHAPE",
     }
 )
+INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P807_ACTION_API_DOMAIN_CALL",
+        "P807_ACTION_API_CSRF",
+        "P807_ACTION_API_FIELDS",
+        "P807_ACTION_API_CONTEXT",
+        "P807_ACTION_API_REPOSITORY",
+        "P807_ACTION_API_OUTCOME",
+        "P807_ACTION_API_RESPONSE",
+        "P807_ACTION_API_COMMIT",
+        "P807_ACTION_API_HEADERS",
+        "P807_ACTION_REPOSITORY_PROJECT",
+        "P807_ACTION_REPOSITORY_REQUEST",
+        "P807_ACTION_REPOSITORY_REPLAY_LOOKUP",
+        "P807_ACTION_REPOSITORY_MUTABLE",
+        "P807_ACTION_REPOSITORY_OPERATION",
+        "P807_ACTION_REPOSITORY_EXPECTATION",
+        "P807_ACTION_REPOSITORY_REQUEUE",
+        "P807_ACTION_REPOSITORY_RESPONSE",
+        "P807_ACTION_REPOSITORY_RECEIPT",
+        "P807_ACTION_REPOSITORY_RECEIPT_INSERT",
+        "P807_ACTION_REPOSITORY_AUDIT",
+        "P807_ACTION_REPOSITORY_ENQUEUE",
+        "P807_ACTION_REPOSITORY_OUTCOME",
+    }
+)
 _COLLECTION_DIAGNOSTIC_FLAG = "npi_p807_collection_diagnostic"
+_ACTION_DIAGNOSTIC_FLAG = "npi_p807_action_diagnostic"
 _COLLECTION_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _COLLECTION_DIAGNOSTIC_TYPE_PATTERN = re.compile(
     r"^[A-Za-z][A-Za-z0-9_.]{0,127}$"
@@ -167,6 +194,52 @@ def integration_operations_collection_step(code: str) -> Iterator[None]:
         raise
 
 
+@contextmanager
+def integration_operations_action_diagnostics(
+    trace_id: str | None,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    """Enable one exact action diagnostic scope without changing behavior."""
+
+    try:
+        state = None
+        if (
+            active
+            and isinstance(trace_id, str)
+            and _COLLECTION_DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+        ):
+            state = {"trace_id": trace_id, "recorded": False}
+        flags = frappe.flags
+        missing = object()
+        previous = getattr(flags, _ACTION_DIAGNOSTIC_FLAG, missing)
+        setattr(flags, _ACTION_DIAGNOSTIC_FLAG, state)
+    except Exception:
+        yield
+        return
+    try:
+        yield
+    finally:
+        try:
+            if previous is missing:
+                delattr(flags, _ACTION_DIAGNOSTIC_FLAG)
+            else:
+                setattr(flags, _ACTION_DIAGNOSTIC_FLAG, previous)
+        except Exception:
+            pass
+
+
+@contextmanager
+def integration_operations_action_step(code: str) -> Iterator[None]:
+    """Record one innermost allowlisted action stage and re-raise unchanged."""
+
+    try:
+        yield
+    except Exception as error:
+        _record_integration_operations_action_failure(code, error)
+        raise
+
+
 def _record_integration_operations_collection_failure(
     code: str,
     error: Exception,
@@ -194,6 +267,41 @@ def _record_integration_operations_collection_failure(
         record_safe_diagnostic(
             code=code,
             title="NPI integration operations collection stage failed",
+            exception_type=exception_type,
+            trace_id=str(state["trace_id"]),
+        )
+    except Exception:
+        # Diagnostics must never alter the original response or transaction.
+        pass
+
+
+def _record_integration_operations_action_failure(
+    code: str,
+    error: Exception,
+) -> None:
+    try:
+        state = getattr(frappe.flags, _ACTION_DIAGNOSTIC_FLAG, None)
+        exception_type = type(error).__name__
+        if (
+            not isinstance(state, dict)
+            or set(state) != {"trace_id", "recorded"}
+            or state.get("recorded") is True
+            or type(state.get("recorded")) is not bool
+            or code not in INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_CODES
+            or not isinstance(state.get("trace_id"), str)
+            or _COLLECTION_DIAGNOSTIC_TRACE_PATTERN.fullmatch(
+                str(state["trace_id"])
+            )
+            is None
+            or _COLLECTION_DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["recorded"] = True
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=code,
+            title="NPI integration operation action stage failed",
             exception_type=exception_type,
             trace_id=str(state["trace_id"]),
         )
@@ -473,81 +581,98 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         expected_version: int,
         action_idempotency_key_hash: str,
     ) -> IntegrationActionCommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_PROJECT"):
+            project = self._locked_authorized_project(project_id)
         if project is None:
             return None
-        request_payload = {
-            "projectGlobalId": str(project_id),
-            "operationKind": operation_kind.value,
-            "operationGlobalId": str(operation_id),
-            "actionKind": action_kind.value,
-            "expectedRawState": expected_raw_state,
-            "expectedVersion": expected_version,
-        }
-        request_hash = canonical_hash(request_payload)
-        prior = self._action_replay(
-            project,
-            operation_kind=operation_kind,
-            operation_id=operation_id,
-            action_kind=action_kind,
-            action_idempotency_key_hash=action_idempotency_key_hash,
-            request_hash=request_hash,
-        )
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_REQUEST"):
+            request_payload = {
+                "projectGlobalId": str(project_id),
+                "operationKind": operation_kind.value,
+                "operationGlobalId": str(operation_id),
+                "actionKind": action_kind.value,
+                "expectedRawState": expected_raw_state,
+                "expectedVersion": expected_version,
+            }
+            request_hash = canonical_hash(request_payload)
+        with integration_operations_action_step(
+            "P807_ACTION_REPOSITORY_REPLAY_LOOKUP"
+        ):
+            prior = self._action_replay(
+                project,
+                operation_kind=operation_kind,
+                operation_id=operation_id,
+                action_kind=action_kind,
+                action_idempotency_key_hash=action_idempotency_key_hash,
+                request_hash=request_hash,
+            )
         if prior is not None:
             return IntegrationActionCommandOutcome(prior, replayed=True)
-        require_mutable_project(project)
-        resolved = self._operation_for_project(
-            project,
-            operation_kind=operation_kind,
-            operation_id=operation_id,
-            lock=True,
-        )
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_MUTABLE"):
+            require_mutable_project(project)
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_OPERATION"):
+            resolved = self._operation_for_project(
+                project,
+                operation_kind=operation_kind,
+                operation_id=operation_id,
+                lock=True,
+            )
         if resolved is None:
             return None
         operation, row, _updated_at = resolved
-        if (
-            operation.raw_state != expected_raw_state
-            or operation.operation_version != expected_version
-        ):
-            raise IntegrationOperationConflict()
-        action_id = uuid4()
-        outcome_state = (
-            IntegrationActionOutcome.REPLAY_REQUESTED
-            if action_kind is IntegrationActionKind.REPLAY
-            else IntegrationActionOutcome.RECONCILIATION_REQUESTED
-        )
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_EXPECTATION"):
+            if (
+                operation.raw_state != expected_raw_state
+                or operation.operation_version != expected_version
+            ):
+                raise IntegrationOperationConflict()
         outcome_reference = None
         if action_kind is IntegrationActionKind.REPLAY:
-            outcome_reference = self._requeue_failed_retryable(operation, row)
-        response = {
-            "actionGlobalId": str(action_id),
-            "operationGlobalId": str(operation.operation_global_id),
-            "outcomeState": outcome_state.value,
-            "outcomeReferenceGlobalId": (
-                str(outcome_reference) if outcome_reference is not None else None
-            ),
-        }
-        receipt = IntegrationActionReceipt(
-            global_id=action_id,
-            operation=operation,
-            action_kind=action_kind,
-            action_idempotency_key_hash=action_idempotency_key_hash,
-            expected_raw_state=expected_raw_state,
-            expected_version=expected_version,
-            request_hash=request_hash,
-            outcome_state=outcome_state,
-            outcome_reference_global_id=outcome_reference,
-            response_snapshot=response,
-            response_hash=canonical_hash(response),
-            actor_user_id=self.actor,
-            trace_id=self.trace_id,
-            created_at=datetime.now(UTC),
-        )
-        self._insert_action_receipt(receipt)
-        self._append_action_audit(receipt)
+            with integration_operations_action_step("P807_ACTION_REPOSITORY_REQUEUE"):
+                outcome_reference = self._requeue_failed_retryable(operation, row)
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_RESPONSE"):
+            action_id = uuid4()
+            outcome_state = (
+                IntegrationActionOutcome.REPLAY_REQUESTED
+                if action_kind is IntegrationActionKind.REPLAY
+                else IntegrationActionOutcome.RECONCILIATION_REQUESTED
+            )
+            response = {
+                "actionGlobalId": str(action_id),
+                "operationGlobalId": str(operation.operation_global_id),
+                "outcomeState": outcome_state.value,
+                "outcomeReferenceGlobalId": (
+                    str(outcome_reference) if outcome_reference is not None else None
+                ),
+            }
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_RECEIPT"):
+            receipt = IntegrationActionReceipt(
+                global_id=action_id,
+                operation=operation,
+                action_kind=action_kind,
+                action_idempotency_key_hash=action_idempotency_key_hash,
+                expected_raw_state=expected_raw_state,
+                expected_version=expected_version,
+                request_hash=request_hash,
+                outcome_state=outcome_state,
+                outcome_reference_global_id=outcome_reference,
+                response_snapshot=response,
+                response_hash=canonical_hash(response),
+                actor_user_id=self.actor,
+                trace_id=self.trace_id,
+                created_at=datetime.now(UTC),
+            )
+        with integration_operations_action_step(
+            "P807_ACTION_REPOSITORY_RECEIPT_INSERT"
+        ):
+            self._insert_action_receipt(receipt)
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_AUDIT"):
+            self._append_action_audit(receipt)
         if action_kind is IntegrationActionKind.REPLAY:
-            self._enqueue_replay(operation_kind, outcome_reference, action_id)
-        return IntegrationActionCommandOutcome(response)
+            with integration_operations_action_step("P807_ACTION_REPOSITORY_ENQUEUE"):
+                self._enqueue_replay(operation_kind, outcome_reference, action_id)
+        with integration_operations_action_step("P807_ACTION_REPOSITORY_OUTCOME"):
+            return IntegrationActionCommandOutcome(response)
 
     def _can_act_on_project(self, project: Any, project_id: UUID) -> bool:
         return bool(
