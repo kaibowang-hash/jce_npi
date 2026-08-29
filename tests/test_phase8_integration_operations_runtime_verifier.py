@@ -434,7 +434,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             readiness_source,
         )
 
-    def test_post_action_replay_client_error_diagnostic_is_the_only_default_activation(self) -> None:
+    def test_all_runtime_diagnostics_are_disabled_by_default(self) -> None:
         assignments = {
             node.targets[0].id: node.value.value
             for node in ast.parse(SCRIPT.read_text(encoding="utf-8")).body
@@ -446,10 +446,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.value.value, bool)
         }
         self.assertEqual(len(assignments), 17)
-        self.assertEqual(
-            {name for name, value in assignments.items() if value is True},
-            {"POST_ACTION_ACTOR_REPLAY_CLIENT_ERROR_DIAGNOSTICS_ENABLED"},
-        )
+        self.assertFalse({name for name, value in assignments.items() if value is True})
 
     def test_safe_response_scanner_rejects_restricted_keys_recursively(self) -> None:
         self.verifier._assert_safe(

@@ -1047,7 +1047,12 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         if not _safe_retryable_boundary(outbox, attempt, result):
             raise IntegrationOperationConflict()
         actor = str(_value(row, "service_actor_user_id"))
-        guard = self._stream_guard("NPI Item Publish Stream Guard", row, lock=True)
+        guard = self._stream_guard(
+            "NPI Item Publish Stream Guard",
+            row,
+            lock=True,
+            active_retryable=True,
+        )
         with item_service_actor_scope(actor), item_manual_replay_write(actor) as capability:
             _activate_guard(guard, row, "queued")
             save_item_support_document(guard, capability=capability)
@@ -1188,7 +1193,14 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         except frappe.DoesNotExistError:
             return None
 
-    def _stream_guard(self, doctype: str, row: Any, *, lock: bool) -> Any:
+    def _stream_guard(
+        self,
+        doctype: str,
+        row: Any,
+        *,
+        lock: bool,
+        active_retryable: bool = False,
+    ) -> Any:
         name = frappe.db.get_value(
             doctype,
             {"source_stream_key_hash": str(_value(row, "source_stream_key_hash"))},
@@ -1200,11 +1212,25 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
             guard = frappe.get_doc(doctype, str(name), for_update=lock)
         except frappe.DoesNotExistError as error:
             raise IntegrationOperationConflict() from error
-        if (
-            _value(guard, "active_request_global_id")
-            or str(_value(guard, "last_request_global_id")) != str(_value(row, "name"))
-            or str(_value(guard, "last_state")) != "failed_retryable"
-        ):
+        request_id = str(_value(row, "name"))
+        target_key = str(_value(row, "target_idempotency_key_hash"))
+        active_binding = bool(
+            str(_value(guard, "active_request_global_id")) == request_id
+            and str(_value(guard, "active_target_idempotency_key_hash"))
+            == target_key
+            and str(_value(guard, "active_state")) == "failed_retryable"
+        )
+        retained_binding = bool(
+            not _value(guard, "active_request_global_id")
+            and not _value(guard, "active_target_idempotency_key_hash")
+            and not _value(guard, "active_state")
+            and str(_value(guard, "last_request_global_id")) == request_id
+            and str(_value(guard, "last_target_idempotency_key_hash"))
+            == target_key
+            and str(_value(guard, "last_state")) == "failed_retryable"
+        )
+        expected_binding = active_binding if active_retryable else retained_binding
+        if not expected_binding:
             raise IntegrationOperationConflict()
         return guard
 

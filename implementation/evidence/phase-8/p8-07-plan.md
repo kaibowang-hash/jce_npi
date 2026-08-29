@@ -1427,3 +1427,41 @@ Frontend focused unit `13/13`, full unit `1086/1086`, nonvisual plus
 three-locale visual E2E `3/3 + 3/3`, generate/type/full lint/i18n (`8585`,
 `100%` zh/zh-TW) pass. Product/workflow diff is zero. The dirty-only M9 marker
 count remains excluded and untouched.
+
+## Retryable replay guard-binding repair
+
+Client-error diagnostic SHA `3b68fc4b8d57d6e03723a758ea10f9e791b5667f`
+passes ordinary `33269043517`. Sole controlled `33269644888` passes preflight
+`99145713153`; runtime `99145749288` fails in cumulative verification and
+cleans up. Strict exact-211 parsing yields only
+`P807_ACTION_REPOSITORY_REQUEUE / IntegrationOperationConflict /
+trace-f8dcfa8929cf50c587459dd0f91ea0f4`. No restricted output was read.
+
+The server-stage order proves all action repository predecessors passed. The
+fixture seals an Item result before the adapter boundary with retryable state,
+NONE authority, unauthenticated response and no reconciliation requirement;
+the same transaction writes matching request/outbox/result references. Item
+worker policy includes `failed_retryable` in its active stream states and
+therefore preserves the exact request/key/state in active guard fields. The
+operations replay helper required no active binding and a retained last-state
+binding for every owner, so Item replay could never reach its reset writes.
+
+The minimal exact-seven repair accepts only the canonical Item active
+retryable binding, while MBOM and Tool Asset continue to require canonical
+retained bindings. Exact request identity, target idempotency-key hash and
+state are mandatory; mixed or partial bindings fail before writes. Runtime
+diagnostics return to all-off. Freeze this cycle at diagnostic `1/1`, repair
+`1/1`, final `0/1`; exact-SHA ordinary PASS is required before the sole
+diagnostics-off Level 3. This is a local compatibility fix, not an ownership,
+contract, workflow or architecture change. P8-07F/production ERP/P8-08 remain
+inactive and all unrelated user documentation stays untouched.
+
+Level 1 passes focused repository/runtime `62/62`, complete P8-07 `89/89`,
+adjacent Phase 8 runtime/security `182/182`, full P7 readiness `129/129`,
+clean exact-overlay full Python `2655/2655` and clean governance/reconciliation
+`38/38`. Current/reconciliation scripts, compile, shell, exact owner binding,
+all diagnostics off, no-leak/security, diff, exact-seven/union-78 and
+unauthorized-eight rejection pass. Frontend unit `1086/1086`, focused
+functional/visual E2E `3/3 + 3/3` and full generate/type/lint/i18n (`8585`,
+`100%` zh/zh-TW) pass. The dirty full run has only the user-approved M9 marker
+count mismatch (`2660/2661`); it remains excluded and unchanged.

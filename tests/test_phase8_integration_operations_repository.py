@@ -642,6 +642,7 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
             name=str(OPERATION),
             service_actor_user_id="service@example.invalid",
             source_hash="a" * 64,
+            source_stream_key_hash="f" * 64,
             target_idempotency_key_hash="b" * 64,
             result_global_id=str(WORK),
             optimistic_version=3,
@@ -653,13 +654,14 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
         )
         attempt = retryable_attempt()
         result = retryable_result()
-        guard = retryable_guard(row)
+        guard = active_retryable_guard(row)
+        self.frappe.db.get_value = lambda *_args, **_kwargs: guard.name
+        self.frappe.get_doc = lambda *_args, **_kwargs: guard
         with patch.multiple(
             self.repository,
             _outbox=lambda *_args, **_kwargs: outbox,
             _last_attempt=lambda *_args, **_kwargs: attempt,
             _result=lambda *_args, **_kwargs: result,
-            _stream_guard=lambda *_args, **_kwargs: guard,
         ):
             reference = self.repository._requeue_item(operation, row)
         self.assertEqual(reference, UUID(str(outbox.event_id)))
@@ -671,6 +673,78 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
         assert_outbox_reset(self, outbox, "result_global_id")
         self.assertEqual(guard.active_request_global_id, str(OPERATION))
         self.assertEqual(guard.active_target_idempotency_key_hash, "b" * 64)
+
+    def test_retryable_stream_guard_requires_the_owner_canonical_binding(self) -> None:
+        row = AttrDict(
+            name=str(OPERATION),
+            source_stream_key_hash="f" * 64,
+            target_idempotency_key_hash="b" * 64,
+        )
+        guard = AttrDict(
+            name="guard-p807",
+            active_request_global_id=str(OPERATION),
+            active_target_idempotency_key_hash="b" * 64,
+            active_state="failed_retryable",
+            last_request_global_id=None,
+            last_target_idempotency_key_hash=None,
+            last_state=None,
+        )
+        self.frappe.db.get_value = lambda *_args, **_kwargs: guard.name
+        self.frappe.get_doc = lambda *_args, **_kwargs: guard
+
+        self.assertIs(
+            self.repository._stream_guard(
+                "NPI Item Publish Stream Guard",
+                row,
+                lock=True,
+                active_retryable=True,
+            ),
+            guard,
+        )
+        with self.assertRaises(self.module.IntegrationOperationConflict):
+            self.repository._stream_guard(
+                "NPI MBOM Publish Stream Guard",
+                row,
+                lock=True,
+            )
+
+        guard.active_request_global_id = None
+        guard.active_target_idempotency_key_hash = None
+        guard.active_state = None
+        guard.last_request_global_id = str(OPERATION)
+        guard.last_target_idempotency_key_hash = "b" * 64
+        guard.last_state = "failed_retryable"
+        self.assertIs(
+            self.repository._stream_guard(
+                "NPI MBOM Publish Stream Guard",
+                row,
+                lock=True,
+            ),
+            guard,
+        )
+        with self.assertRaises(self.module.IntegrationOperationConflict):
+            self.repository._stream_guard(
+                "NPI Item Publish Stream Guard",
+                row,
+                lock=True,
+                active_retryable=True,
+            )
+
+        for field, wrong_value in (
+            ("last_target_idempotency_key_hash", "c" * 64),
+            ("last_state", "failed_final"),
+            ("active_state", "failed_retryable"),
+        ):
+            with self.subTest(field=field):
+                original = guard[field]
+                guard[field] = wrong_value
+                with self.assertRaises(self.module.IntegrationOperationConflict):
+                    self.repository._stream_guard(
+                        "NPI Tool Asset Stream Guard",
+                        row,
+                        lock=True,
+                    )
+                guard[field] = original
 
     def test_mbom_and_tool_replay_reset_only_exact_owned_work(self) -> None:
         for kind, method_name, request_state in (
@@ -915,6 +989,21 @@ def retryable_guard(row: AttrDict) -> AttrDict:
         active_state=None,
         last_request_global_id=row.name,
         last_state="failed_retryable",
+        optimistic_version=3,
+        updated_at="old",
+    )
+
+
+def active_retryable_guard(row: AttrDict) -> AttrDict:
+    return AttrDict(
+        doctype="NPI Item Publish Stream Guard",
+        name="guard-p807-active",
+        active_request_global_id=row.name,
+        active_target_idempotency_key_hash=row.target_idempotency_key_hash,
+        active_state="failed_retryable",
+        last_request_global_id=None,
+        last_target_idempotency_key_hash=None,
+        last_state=None,
         optimistic_version=3,
         updated_at="old",
     )

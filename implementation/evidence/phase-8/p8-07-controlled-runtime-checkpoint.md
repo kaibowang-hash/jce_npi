@@ -969,3 +969,36 @@ frontend/workflow diff remains zero.
   pass. Frontend focused/full unit `13/13 + 1086/1086`, nonvisual/visual E2E
   `3/3 + 3/3` and full static/i18n checks pass. Product/workflow diff is zero;
   the dirty-only M9 marker mismatch remains excluded and untouched.
+
+## Client-error controlled result and owner guard repair
+
+- Exact-five SHA `3b68fc4b8d57d6e03723a758ea10f9e791b5667f`
+  passes ordinary `33269043517`: secret `99144109948`, repository
+  `99144109958`, frontend `99144109969` and visual `99144109994`.
+- Sole controlled `33269644888` passes preflight `99145713153`; runtime
+  `99145749288` fails at cumulative P8-07 verification and cleanup passes.
+  Strict exact-211 parsing accepts only
+  `P807_ACTION_REPOSITORY_REQUEUE / IntegrationOperationConflict /
+  trace-f8dcfa8929cf50c587459dd0f91ea0f4`. Failed-child output and all
+  response/business values, identifiers, messages and stack remain unread.
+- Ordered cross-proof closes all repository predecessors and all retry-safe
+  Outbox/Attempt/Result predicates. The remaining deterministic first source
+  is the guard model: Item worker retains `failed_retryable` as an active
+  request/key/state binding, while operations replay required a terminal
+  retained binding. The conflict occurs before any reset, receipt, audit,
+  enqueue or commit.
+- The exact-seven repair makes replay validation owner-specific: Item requires
+  its exact active retryable binding; MBOM/Tool Asset retain exact terminal
+  bindings. Wrong or missing request/key/state and mixed active/retained truth
+  fail closed without writes. Runtime diagnostics are all disabled.
+- Freeze diagnostic `1/1`, repair `1/1`, final `0/1`. One exact ordinary PASS
+  must precede the only diagnostics-off Level 3. P8-07F, production ERPNext,
+  P8-08 and unrelated user documentation remain untouched.
+- Repair Level 1 passes focused repository/runtime `62/62`, complete P8-07
+  `89/89`, adjacent runtime/security `182/182`, P7 readiness `129/129`, clean
+  full Python `2655/2655` and clean governance/reconciliation `38/38`.
+  Frontend unit `1086/1086`, focused nonvisual/visual E2E `3/3 + 3/3`, full
+  static/i18n, current/reconciliation, compile, shell, security/diff,
+  exact-seven/union-78 and unauthorized-eight rejection pass. The sole dirty
+  failure is the preserved M9 marker assertion (`4 != 2`); no task path is
+  involved.

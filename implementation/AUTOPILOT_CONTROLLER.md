@@ -8498,6 +8498,48 @@ repeat or rewrite it merely to restore context. See
   PASS is required before one sole Level 2 controlled diagnostic. P8-07F,
   `JCE-Core`, production ERPNext and P8-08 remain closed. Preserve all
   user-approved pilot-deferral and permission-ownership documentation.
+
+### P8-07 checkpoint-4 retryable replay guard-binding repair
+
+- Client-error diagnostic SHA `3b68fc4b8d57d6e03723a758ea10f9e791b5667f`
+  passes ordinary `33269043517`: secret scan `99144109948`, repository
+  `99144109958`, frontend `99144109969` and visual `99144109994`. Its sole
+  controlled `33269644888` passes preflight `99145713153`; runtime
+  `99145749288` fails in cumulative verification and cleanup passes.
+- Strict exact-211 filtering accepts only
+  `P807_ACTION_REPOSITORY_REQUEUE / IntegrationOperationConflict /
+  trace-f8dcfa8929cf50c587459dd0f91ea0f4`. Failed-child output, actual
+  status/body, business values, identifiers, message and stack remain unread.
+- Ordered predecessors prove Project containment, request shape, receipt
+  replay lookup, mutable Project, operation lookup and exact expected
+  state/version passed. The deterministic fixture claims the Item Outbox
+  without crossing the adapter boundary and seals a `failed_retryable`
+  NONE-authority result, so Outbox, Attempt and Result meet the safe replay
+  boundary. Item worker ownership deliberately keeps `failed_retryable` as an
+  exact active stream-guard state; operations instead required every owner to
+  expose a terminal retained guard. That incompatible predicate necessarily
+  raises the observed conflict.
+- The minimal exact-seven repair changes only the integration operations
+  repository/test, runtime verifier/test and this controller/plan/checkpoint.
+  Item replay now requires its owner-canonical active request/key/state
+  binding. MBOM and Tool Asset retain their canonical terminal binding;
+  partial, mixed, wrong-request, wrong-key and wrong-state guards remain
+  fail-closed. No ownership, API, schema, permissions, write order or generic
+  replay authority changes.
+- Freeze retryable-replay-client-error at diagnostic `1/1`, repair `1/1`,
+  final `0/1`. All seventeen runtime diagnostics return to false; the sole
+  diagnostics-off Level 3 may run only after this exact-seven SHA has one
+  exact ordinary PASS. P8-07F, `JCE-Core`, production ERPNext and P8-08 remain
+  closed; unrelated user documentation stays preserved.
+- Repair Level 1 passes focused repository/runtime `62/62`, complete P8-07
+  `89/89`, adjacent Phase 8 runtime/security `182/182`, full P7 readiness
+  `129/129`, and clean exact-overlay full Python `2655/2655`. Clean
+  governance/reconciliation passes `38/38`; current/reconciliation scripts,
+  compile, shell, exact owner binding/all-diagnostics-off/no-leak/security,
+  diff, exact-seven/union-78 and unauthorized-eight rejection pass. Frontend
+  unit `1086/1086`, focused functional/three-locale visual E2E `3/3 + 3/3`,
+  generate/type/full lint/i18n (`8585`, `100%` zh/zh-TW) pass. The main dirty
+  full run has only the preserved M9 marker-count mismatch (`2660/2661`).
 - Level 1 passes focused verifier `46/46`, complete P8-07 `88/88`, adjacent
   Phase 8 runtime/security `182/182`, retained P7 readiness runtime `29/29`
   and clean exact-overlay full Python `2654/2654`. Clean-overlay governance
