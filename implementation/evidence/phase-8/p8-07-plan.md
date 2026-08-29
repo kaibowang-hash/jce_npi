@@ -804,3 +804,57 @@ final brand check alone rejects the preserved unrelated untracked
 `frontend/public/images/npi-one-project-management-sketch.png`; no task file
 or threshold was changed, and the diagnostic task has zero frontend/product/
 contract/workflow diff. Exact-SHA ordinary CI remains the clean-tree authority.
+
+## 29. Post-UUID collection result and membership diagnostic
+
+Post-UUID collection-server SHA
+`ce5c5f9f0bdd0fa6ad9401c7049d5e7c0328ec8b` passes ordinary CI
+`33231249944`: visual `99044370199`, repository `99044370245`, frontend
+`99044370282` and secret scan `99044370329` all pass. Its sole Level 2
+controlled run `33231872946` passes preflight `99045986038`; runtime
+`99046014591` initializes the fixed Bench/Site, fails in the cumulative
+verifier and completes cleanup. Strict exact-150 filtering accepts only
+`P807_FRESH_COLLECTION_KINDS / RuntimeError /
+trace-3ed958513004503cb3dc0380225c731d`.
+
+The tuple proves P8-07 fresh environment/login/CSRF, retryable seed, first
+collection HTTP/shape and all reached API/repository mapping stages completed.
+It proves only that at least one of inbound, Item, MBOM or Tool Asset create is
+absent from the returned kind set. The actual set, counts, response body/status,
+identities, child output, values, message and stack remain unread. Static
+same-run predecessor evidence establishes retained Project-scoped rows for all
+four capabilities, but a per-kind repository query returning zero rows raises
+no server-stage exception. The aggregate predicate therefore cannot select a
+unique repair. Freeze the post-UUID collection-server cycle at diagnostic
+`1/1`, repair `0/1`, final `0/1`.
+
+Open independent product-zero
+`p8-07-checkpoint-4-post-uuid-collection-membership` at diagnostic `0/1`,
+repair `0/1`, final `0/1`. Only
+`POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED=True`; all seven
+historical flags are false. The activation retains the exact `150` safe stages
+and adds four ordered membership predicates for
+`receive_project_submission`, `publish_item`, `publish_mbom` and
+`create_tool_asset`, producing exact `154`. Each predicate records only a
+fixed code/type/trace tuple; it records no kind set, count or business value.
+Exact request scope/trace, cursors, strict mirrored reader, `0600` `O_EXCL`
+exact-three-key record, inner precedence, same exception, finally restoration,
+failed-child unread and success-zero behavior remain unchanged.
+
+The exact-five task changes only runtime verifier/test, AUTOPILOT, this plan
+and the controlled-runtime checkpoint. Product, API, repository, contracts,
+schema, permissions, ownership, frontend and workflow diffs remain zero. The
+work is compatibility/minimal-difference diagnosis and does not authorize a
+redesign, refactor or product repair. Exact-SHA ordinary PASS is required
+before one Level 2 controlled diagnostic. P8-07F, `JCE-Core`, production
+ERPNext and P8-08 remain closed.
+
+Membership-diagnostic Level 1 passes focused verifier `32/32`, complete P8-07
+`70/70`, affected integration/security/API `90/90`, governance/reconciliation
+`59/59` and full repository Python `2642/2642`. Frontend unit/coverage passes
+`1086/1086`; focused functional and three-locale visual E2E passes `6/6`.
+Generate, typecheck, full lint/format/style/boundary/UI, `8585`-source `100%`
+`zh`/`zh-TW` i18n, compile, shell syntax, current/reconciliation,
+exact-154/new-only/ordered-membership/dormancy, diff, exact-five/union-78 and
+unauthorized-six rejection pass. Product/API/repository/contracts/schema/
+frontend/workflow diffs remain zero.

@@ -42,7 +42,8 @@ COLLECTION_SHAPE_DIAGNOSTICS_ENABLED = False
 COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED = False
 POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED = False
 COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
-POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED = True
+POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
+POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -176,6 +177,18 @@ COLLECTION_RESPONSE_DIAGNOSTIC_CODES = (
     "P807_COLLECTION_STATUS_SERVER_ERROR",
     "P807_COLLECTION_STATUS_OUT_OF_RANGE",
 )
+COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES = (
+    "P807_FRESH_COLLECTION_INBOUND_KIND",
+    "P807_FRESH_COLLECTION_ITEM_KIND",
+    "P807_FRESH_COLLECTION_MBOM_KIND",
+    "P807_FRESH_COLLECTION_TOOL_CREATE_KIND",
+)
+_REQUIRED_COLLECTION_KINDS = (
+    "receive_project_submission",
+    "publish_item",
+    "publish_mbom",
+    "create_tool_asset",
+)
 COLLECTION_SERVER_DIAGNOSTIC_CODES = (
     "P807_COLLECTION_API_DOMAIN_CALL",
     "P807_COLLECTION_API_FIELDS",
@@ -303,6 +316,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED,
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
         POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
+        POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED,
     )
     if sum(map(int, activations)) != 1:
         return frozenset()
@@ -318,7 +332,9 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
     ):
         codes = codes.union(COLLECTION_RESPONSE_DIAGNOSTIC_CODES)
     if _collection_server_diagnostics_enabled():
-        return codes.union(COLLECTION_SERVER_DIAGNOSTIC_CODES)
+        codes = codes.union(COLLECTION_SERVER_DIAGNOSTIC_CODES)
+    if POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED:
+        return codes.union(COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES)
     if codes != frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
         FRESH_FIXTURE_DIAGNOSTIC_CODES
     ):
@@ -338,10 +354,12 @@ def _collection_server_diagnostics_enabled() -> bool:
         POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED,
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
         POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
+        POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED,
     )
     return sum(map(int, activations)) == 1 and (
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED
         or POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+        or POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
     )
 
 
@@ -736,6 +754,27 @@ def _exact_item(
     return matches[0]
 
 
+def _require_collection_kinds(items: list[dict[str, Any]]) -> None:
+    kinds = {str(item.get("operationKind")) for item in items}
+    if POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED:
+        for code, required_kind in zip(
+            COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES,
+            _REQUIRED_COLLECTION_KINDS,
+            strict=True,
+        ):
+            with fresh_runtime_diagnostic_step(code):
+                require(
+                    required_kind in kinds,
+                    "P8-07 retained operation inventory drifted",
+                )
+        return
+    with fresh_runtime_diagnostic_step("P807_FRESH_COLLECTION_KINDS"):
+        require(
+            set(_REQUIRED_COLLECTION_KINDS).issubset(kinds),
+            "P8-07 retained operation inventory drifted",
+        )
+
+
 def run_disabled_probe(
     base_url: str,
     fixture_password: str,
@@ -839,17 +878,7 @@ def run_fresh(
             project_id=project_id,
             diagnostic_cursors=collection_diagnostic_cursors,
         )
-    with fresh_runtime_diagnostic_step("P807_FRESH_COLLECTION_KINDS"):
-        kinds = {str(item.get("operationKind")) for item in items}
-        require(
-            {
-                "receive_project_submission",
-                "publish_item",
-                "publish_mbom",
-                "create_tool_asset",
-            }.issubset(kinds),
-            "P8-07 retained operation inventory drifted",
-        )
+    _require_collection_kinds(items)
     retryable_id = str(_fixture_uuid("retryable-request"))
     with fresh_runtime_diagnostic_step("P807_FRESH_RETRYABLE_ITEM"):
         retryable = _exact_item(items, operation_id=retryable_id)

@@ -8047,3 +8047,51 @@ repeat or rewrite it merely to restore context. See
   full-frontend wrapper reaches only the final brand guard before rejecting a
   preserved unrelated untracked public image; the task has zero frontend diff
   and exact-SHA ordinary CI remains the clean-tree authority.
+
+### P8-07 checkpoint-4 post-UUID collection-membership diagnostic cycle
+
+- Post-UUID collection-server SHA
+  `ce5c5f9f0bdd0fa6ad9401c7049d5e7c0328ec8b` passes ordinary CI
+  `33231249944`: visual `99044370199`, repository `99044370245`, frontend
+  `99044370282` and secret scan `99044370329` all pass. Its sole Level 2
+  controlled run `33231872946` passes preflight `99045986038`; runtime
+  `99046014591` initializes the fixed Bench/Site, then fails in the cumulative
+  verifier and completes cleanup.
+- Strict exact-150 filtering returns only
+  `P807_FRESH_COLLECTION_KINDS / RuntimeError /
+  trace-3ed958513004503cb3dc0380225c731d`. This proves the fresh environment,
+  login, CSRF, retryable seed, first collection HTTP/shape and every reached
+  API/repository row/value/time/shape stage passed. It proves only that the
+  returned operation kinds omit at least one required kind; it does not reveal
+  which kind. Response status/body, the kind set, counts, identities, child
+  output, business values, message and stack remain unread.
+- Same-run static evidence confirms the predecessor verifiers retained one or
+  more Project-scoped inbound, Item, MBOM and Tool Asset rows, while an empty
+  per-kind repository query produces no server diagnostic. The aggregate set
+  predicate therefore cannot distinguish four independently safe empty-query
+  boundaries. Freeze the post-UUID collection-server cycle at diagnostic
+  `1/1`, repair `0/1`, final `0/1`; no product repair is authorized.
+- Open independent product-zero
+  `p8-07-checkpoint-4-post-uuid-collection-membership` at `0/1,0/1,0/1`.
+  Only `POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED=True`; all seven
+  historical flags are false. It reuses exact `150` and adds four ordered,
+  value-free membership codes for inbound, Item, MBOM and Tool Asset create,
+  for exact `154`. It records neither the returned set nor any count. Existing
+  exact request scope/trace, cursors, strict mirrored server reader,
+  exact-three-key `0600` `O_EXCL`, inner precedence, same exception, finally
+  restoration, failed-child unread and success-zero contracts remain intact.
+- The exact-five task is runtime verifier/test plus this controller, P8-07 plan
+  and controlled-runtime checkpoint. Product/API/repository/contracts/schema/
+  permissions/ownership/frontend/workflow remain unchanged. This is bounded
+  compatibility diagnosis only, not redesign or refactoring. Its exact-SHA
+  ordinary PASS must precede one Level 2 controlled diagnostic. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed.
+- Membership-diagnostic Level 1 passes focused verifier `32/32`, complete
+  P8-07 `70/70`, affected integration/security/API `90/90`, governance/
+  reconciliation `59/59` and full repository Python `2642/2642`. Frontend
+  unit/coverage passes `1086/1086`, focused functional plus three-locale visual
+  E2E passes `6/6`, and generate/type/lint/i18n remain green with `8585`
+  literal sources and `100%` `zh`/`zh-TW` coverage. Compile, shell syntax,
+  current/reconciliation, exact-154/new-only/ordered-membership/dormancy,
+  diff, exact-five/union-78 and unauthorized-six rejection pass. Product and
+  frontend diffs remain zero.

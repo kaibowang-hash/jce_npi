@@ -474,3 +474,41 @@ frontend/workflow diff remains zero.
   unrelated untracked public image is the sole final-brand-guard rejection in
   the optional local frontend wrapper; the task has no frontend diff and clean
   exact-SHA ordinary CI remains required.
+
+## Post-UUID collection result and membership checkpoint
+
+- Exact-five SHA `ce5c5f9f0bdd0fa6ad9401c7049d5e7c0328ec8b` passes ordinary
+  `33231249944` in all four lanes. The sole controlled diagnostic
+  `33231872946` passes preflight `99045986038`; runtime `99046014591` passes
+  fixed Bench/Site initialization, fails in the cumulative verifier and
+  completes cleanup.
+- Strict exact-150 reading yields exactly
+  `P807_FRESH_COLLECTION_KINDS / RuntimeError /
+  trace-3ed958513004503cb3dc0380225c731d`. No response status/body, returned
+  kind set, count, identity, child output, business value, message or stack was
+  read. The boundary proves the collection HTTP and shape passed but only that
+  at least one required kind is absent.
+- Same-run predecessor contracts retain Project-scoped inbound, Item, MBOM and
+  Tool Asset records, while zero-row per-kind queries are normal and emit no
+  server exception. The aggregate membership assertion is therefore
+  nonunique. Freeze the prior diagnostic at `1/1,0/1,0/1`; do not guess a
+  product repair.
+- Independent exact-five
+  `p8-07-checkpoint-4-post-uuid-collection-membership` starts at
+  `0/1,0/1,0/1`. Its sole new activation is true and all seven historical
+  flags are false. Exact `154` comprises the retained `150` plus four ordered,
+  value-free required-kind codes. Exact scope/trace/cursors, mirrored strict
+  reader, exact-three-key `0600` `O_EXCL`, inner precedence, original
+  exception, finally restoration, failed-child unread and success-zero are
+  unchanged.
+- Runtime verifier/test and the three governance files are the complete task.
+  Product/API/repository/contracts/schema/permissions/ownership/frontend/
+  workflow remain unchanged. Exact-SHA ordinary PASS must precede the sole
+  Level 2 controlled diagnostic. P8-07F, SSH/ERP contact and P8-08 stay closed.
+- Level 1 passes focused verifier `32/32`, complete P8-07 `70/70`, affected
+  integration/security/API `90/90`, governance/reconciliation `59/59`, full
+  Python `2642/2642`, frontend unit/coverage `1086/1086` and focused P8-07
+  functional plus three-locale visual E2E `6/6`. Generate/type/lint/i18n,
+  compile/shell/current/reconciliation, exact-154/new-only/dormancy, diff,
+  exact-five/union-78 and unauthorized-six rejection pass. Product and
+  frontend diffs remain zero.

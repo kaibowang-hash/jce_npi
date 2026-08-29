@@ -71,6 +71,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
+            False,
         ):
             yield
 
@@ -83,6 +87,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
             True,
         ):
             yield
@@ -191,6 +199,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.verifier.document_runtime,
             "query_headers",
             return_value={"X-Request-ID": "p807-list"},
@@ -254,6 +266,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             self.verifier,
             "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.document_runtime,
@@ -460,29 +476,41 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.COLLECTION_SERVER_DIAGNOSTICS_ENABLED)
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
         )
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
         self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
         self.assertEqual(len(self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES), 7)
+        self.assertEqual(
+            len(self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES),
+            4,
+        )
         self.assertEqual(len(self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES), 46)
         with self.collection_server_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 150)
+            self.assertEqual(len(codes), 154)
             self.assertEqual(
                 codes,
                 frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
                     self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
                     self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES,
                     self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
                 ),
             )
         with patch.object(
             self.verifier,
             "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -509,6 +537,12 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertNotIn("str(error)", source)
         self.assertNotIn("repr(error)", source)
+        self.assertTrue(
+            all(
+                source.count(f'"{code}"') == 1
+                for code in self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES
+            )
+        )
 
         repository_path = (
             ROOT
@@ -545,6 +579,56 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             1,
         )
 
+    def test_collection_membership_records_the_first_missing_required_kind(self) -> None:
+        required = tuple(self.verifier._REQUIRED_COLLECTION_KINDS)
+        codes = tuple(self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES)
+        self.assertEqual(len(required), 4)
+        self.assertEqual(len(codes), 4)
+        for missing, expected in zip(required, codes, strict=True):
+            with (
+                self.subTest(expected=expected),
+                self.collection_server_diagnostics(),
+                tempfile.TemporaryDirectory() as directory,
+            ):
+                path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+                trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+                items = [
+                    {"operationKind": kind}
+                    for kind in required
+                    if kind != missing
+                ]
+                with patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), self.assertRaises(
+                    RuntimeError
+                ):
+                    self.verifier._require_collection_kinds(items)
+                self.assertEqual(
+                    self.verifier.read_fresh_runtime_diagnostic(
+                        path,
+                        expected_trace=trace_id,
+                    ),
+                    ("RuntimeError", expected, trace_id),
+                )
+
+        with (
+            self.collection_server_diagnostics(),
+            tempfile.TemporaryDirectory() as directory,
+        ):
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+                self.verifier._require_collection_kinds(
+                    [{"operationKind": kind} for kind in required]
+                )
+            self.assertFalse(path.exists())
+
     def test_fresh_diagnostic_activations_are_mutually_exclusive(self) -> None:
         with patch.object(
             self.verifier,
@@ -569,6 +653,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
@@ -633,6 +721,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             ), patch.object(
                 self.verifier,
                 "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
+                self.verifier,
+                "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
                 False,
             ), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
