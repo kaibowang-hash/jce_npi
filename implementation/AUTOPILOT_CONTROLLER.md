@@ -8473,3 +8473,36 @@ repeat or rewrite it merely to restore context. See
   unauthorized-six rejection pass. The sole dirty-tree full-suite mismatch is
   the preserved user-authorized M9 marker-count change and is absent from the
   exact overlay. Apps/contracts/frontend/workflow diff remains zero.
+
+### P8-07 checkpoint-4 post-action-actor combined-boundary diagnostic cycle
+
+- Actor-repair SHA `0c56cc49d45689f39372c625cc46ebb60cac6dee`
+  passes ordinary `33262315840`. Its sole Level 3 `33263064040` passes all
+  four ordinary-equivalent jobs and controlled preflight, while cumulative
+  runtime `99129909331` fails after fixed Bench/Site initialization and
+  completes cleanup.
+- Fixed source-label filtering yields only
+  `Local Frappe integration operations runtime verification failed.` The
+  chain through P8-06 passed, P8-07 returned nonzero and the later
+  migrated-legacy lane was not reached. With all thirteen diagnostics off,
+  the P8-07 first source remains nonunique; do not guess a repair.
+- Freeze the API-context cycle at `1/1,1/1,1/1`. Start independent
+  `p8-07-checkpoint-4-post-action-actor-combined-boundary` at
+  `0/1,0/1,0/1`. Only
+  `POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED=True`; all historical flags
+  are false. The activation reuses exact-199 safe codes, exact trace/scope/
+  cursors, strict mirror, `0600` `O_EXCL` exact-three-key record, inner
+  precedence, same exception/finally, failed-child unread and success-zero.
+- This is an exact-five, product-zero diagnostic task: runtime verifier/test,
+  this controller, P8-07 plan and controlled checkpoint. Exact-SHA ordinary
+  PASS is required before one sole Level 2 controlled diagnostic. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed. Preserve all
+  user-approved pilot-deferral and permission-ownership documentation.
+- Level 1 passes focused verifier `39/39`, complete P8-07 `81/81`, affected
+  integration/security/API `101/101`, clean-overlay full Python `2647/2647`,
+  frontend affected/full unit `69/69` and `1086/1086`, and focused
+  functional/three-locale visual E2E `6/6`. Generate/type/full lint/i18n,
+  compile, shell, current/reconciliation, exact-199/new-only/dormancy, diff,
+  exact-five/union-78 and unauthorized-six rejection pass. Dirty-tree M9
+  marker drift remains an excluded user-authorized documentation fact; the
+  exact overlay is green.

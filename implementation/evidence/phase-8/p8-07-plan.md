@@ -1281,3 +1281,43 @@ separation and all six action call sites. Exact-SHA ordinary PASS must precede
 one diagnostics-off Level 3 final. P8-07F, `JCE-Core`, production ERPNext and
 P8-08 remain closed; user-authorized pilot deferral and permission-ownership
 documentation remains excluded and preserved.
+
+### Post-action-actor combined-boundary diagnostic
+
+- Actor-repair SHA `0c56cc49d45689f39372c625cc46ebb60cac6dee`
+  passes ordinary `33262315840` in all four lanes. Sole Level 3
+  `33263064040` passes repository `99128207827`, frontend `99128207833`,
+  secret scan `99128207845`, visual `99128207880` and preflight
+  `99129883980`; runtime `99129909331` passes fixed Bench/Site setup, fails
+  during cumulative verification and completes cleanup.
+- Exact fixed-label filtering yields only
+  `Local Frappe integration operations runtime verification failed.` This
+  proves the cumulative chain through P8-06 passed and P8-07 returned
+  nonzero, but all thirteen internal diagnostics were disabled. Raw/child
+  output, response values, business values, identities, message and stack
+  remain unread, so no product repair is authorized.
+- Freeze the API-context cycle at `1/1,1/1,1/1`. Open independent
+  `p8-07-checkpoint-4-post-action-actor-combined-boundary` at
+  `0/1,0/1,0/1`. Its sole true flag is
+  `POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED`; all thirteen historical
+  activations remain false.
+- Reuse the exact-199 safe boundary set and existing exact trace/header/scope,
+  log cursors, strict mirrored reader, exact-three-key `0600` `O_EXCL`,
+  inner-to-outer precedence, same-exception/finally behavior, failed-child
+  unread and success-zero contract. The exact-five task is verifier/test plus
+  AUTOPILOT, this plan and the controlled checkpoint. Product, API,
+  repository, contracts, schema, permissions, ownership, frontend and
+  workflow remain unchanged.
+- Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic. P8-07F,
+  production SSH/ERPNext and P8-08 remain inactive; user-approved M9 pilot
+  deferral and permission-ownership changes stay unrelated and preserved.
+- Level 1 passes focused verifier `39/39`, complete P8-07 `81/81`, affected
+  integration/security/API `101/101`, clean-overlay full Python `2647/2647`,
+  frontend affected unit `69/69`, full unit `1086/1086` and focused
+  functional/three-locale visual E2E `6/6`. Generate/type/full lint/i18n
+  (`8585`, `100%` zh/zh-TW), compile, shell, current/reconciliation,
+  exact-199/new-only/dormancy, diff, exact-five/union-78 and unauthorized-six
+  rejection pass. The repository-root E2E invocation failed before
+  navigation because it did not resolve the frontend `baseURL`; the same six
+  unchanged tests pass from the canonical frontend working directory. The
+  dirty-tree-only M9 marker mismatch is absent from the clean exact overlay.

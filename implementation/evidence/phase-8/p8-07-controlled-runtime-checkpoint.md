@@ -829,3 +829,55 @@ frontend/workflow diff remains zero.
   The dirty-tree-only M9 marker-count mismatch belongs to preserved user
   documentation; no such failure exists in the exact overlay. Frontend and
   product diffs remain zero.
+
+## Action-actor repair final and post-action-actor combined boundary
+
+- Harness-repair SHA `0c56cc49d45689f39372c625cc46ebb60cac6dee`
+  passes ordinary CI `33262315840`: secret scan `99126254318`, repository
+  `99126254371`, visual `99126254404` and frontend `99126254335` all pass.
+  Its sole diagnostics-off Level 3 `33263064040` passes repository
+  `99128207827`, frontend `99128207833`, secret scan `99128207845`, visual
+  `99128207880` and controlled preflight `99129883980`. Runtime
+  `99129909331` passes pinned Bench and disposable Site initialization,
+  fails in cumulative verification and completes cleanup.
+- Fixed source-label filtering returns exactly
+  `Local Frappe integration operations runtime verification failed.` The
+  cumulative chain through P8-06 passed and P8-07 returned nonzero; the later
+  migrated-legacy lane was not reached. Raw or child output, response status
+  or body, business values, identities, message and stack remain unread.
+- The retained action actor closes the prior `P807_ACTION_API_CONTEXT` root,
+  but all thirteen diagnostics were off in this Level 3. P8-07 internal
+  first source therefore remains nonunique across the fresh outer, fixture,
+  collection, response, action and API-entry boundaries. Do not infer a
+  product repair from the fixed outer label.
+- Freeze the API-context cycle at diagnostic `1/1`, harness repair `1/1`,
+  final `1/1`. Independent product-zero
+  `p8-07-checkpoint-4-post-action-actor-combined-boundary` starts at
+  `0/1,0/1,0/1`. Only
+  `POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED=True`; all thirteen history
+  activations are false.
+- The new activation reuses exact `199`: 45 ordered fresh boundaries, 52
+  fixture/server boundaries, seven collection response classes, four
+  membership predicates, 46 collection server stages, twelve uncertain
+  replay response predicates, 22 action API/repository stages and eleven API
+  entry predicates. Exact trace/scope/cursors, strict mirrored reading,
+  exact-three-key `0600` `O_EXCL`, inner precedence, same exception, finally
+  restoration, failed-child unread and success-zero remain unchanged.
+- The exact-five task is runtime verifier/test plus AUTOPILOT, P8-07 plan and
+  this checkpoint. Product/API/repository/contracts/schema/permissions/
+  ownership/frontend/workflow stay unchanged. Exact-SHA ordinary PASS must
+  precede one sole Level 2 controlled diagnostic. P8-07F, `JCE-Core`,
+  production ERPNext and P8-08 remain closed. User-approved pilot deferral
+  and permission-ownership documentation remain excluded and preserved.
+- Diagnostic Level 1 passes focused verifier `39/39`, complete P8-07
+  `81/81`, affected integration/security/API `101/101`, clean exact-overlay
+  full Python `2647/2647`, frontend affected unit `69/69`, full unit
+  `1086/1086` and focused functional plus three-locale visual E2E `6/6`.
+  Generate/type/full lint/i18n (`8585`, `100%` zh/zh-TW), compile, shell,
+  current/reconciliation, exact-199/new-only/mutual-exclusion/dormancy,
+  security/diff, exact-five/union-78 and unauthorized-six rejection pass.
+  The first E2E command used the repository-root working directory and failed
+  before navigation because Playwright had no frontend `baseURL`; the same
+  six unchanged tests pass from the canonical frontend directory. Dirty-tree
+  full Python has only the preserved M9 marker-count mismatch; no such
+  failure exists in the exact overlay.

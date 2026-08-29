@@ -72,11 +72,18 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
             False,
         )
+        self.post_action_actor_activation = patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        )
         self.previous_response_activation.start()
         self.current_action_activation.start()
         self.current_action_entry_activation.start()
+        self.post_action_actor_activation.start()
 
     def tearDown(self) -> None:
+        self.post_action_actor_activation.stop()
         self.current_action_entry_activation.stop()
         self.current_action_activation.stop()
         self.previous_response_activation.stop()
@@ -94,6 +101,27 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            yield
+
+    @contextmanager
+    def post_action_actor_diagnostics(self):
+        with patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED",
             True,
         ):
             yield
@@ -298,7 +326,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             readiness_source,
         )
 
-    def test_all_runtime_diagnostics_are_default_off_after_actor_repair(self) -> None:
+    def test_post_action_actor_diagnostic_is_the_only_default_activation(self) -> None:
         assignments = {
             node.targets[0].id: node.value.value
             for node in ast.parse(SCRIPT.read_text(encoding="utf-8")).body
@@ -309,8 +337,11 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.value, ast.Constant)
             and isinstance(node.value.value, bool)
         }
-        self.assertEqual(len(assignments), 13)
-        self.assertTrue(all(value is False for value in assignments.values()))
+        self.assertEqual(len(assignments), 14)
+        self.assertEqual(
+            {name for name, value in assignments.items() if value is True},
+            {"POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED"},
+        )
 
     def test_safe_response_scanner_rejects_restricted_keys_recursively(self) -> None:
         self.verifier._assert_safe(
@@ -820,6 +851,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 for code in self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES
             )
         )
+
         self.assertTrue(
             all(
                 source.count(f'"{code}"') == 1
@@ -903,6 +935,43 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             api_source.count(self.verifier._COLLECTION_SERVER_DIAGNOSTIC_SCOPE),
             1,
         )
+
+    def test_post_action_actor_diagnostic_reuses_exact_199_full_boundary(self) -> None:
+        with self.post_action_actor_diagnostics():
+            self.assertTrue(
+                self.verifier.POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED
+            )
+            self.assertFalse(
+                self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
+            )
+            codes = self.verifier._active_fresh_runtime_diagnostic_codes()
+            self.assertEqual(len(codes), 199)
+            self.assertTrue(self.verifier._collection_server_diagnostics_enabled())
+            self.assertTrue(self.verifier._action_server_diagnostics_enabled())
+            self.assertEqual(
+                codes,
+                frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+                    self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES,
+                ),
+            )
+            with patch.object(
+                self.verifier,
+                "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier._active_fresh_runtime_diagnostic_codes(),
+                    frozenset(),
+                )
+                self.assertFalse(
+                    self.verifier._fresh_runtime_diagnostics_enabled()
+                )
 
     def test_collection_membership_records_the_first_project_containment_mismatch(self) -> None:
         required = tuple(self.verifier._REQUIRED_COLLECTION_KINDS)
