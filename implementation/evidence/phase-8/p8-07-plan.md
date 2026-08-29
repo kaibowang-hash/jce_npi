@@ -858,3 +858,54 @@ Generate, typecheck, full lint/format/style/boundary/UI, `8585`-source `100%`
 exact-154/new-only/ordered-membership/dormancy, diff, exact-five/union-78 and
 unauthorized-six rejection pass. Product/API/repository/contracts/schema/
 frontend/workflow diffs remain zero.
+
+## 30. Membership result and Project-contained harness repair
+
+Membership diagnostic SHA `6525b1a3bba696645d87398f9c5670b6c655b7f2`
+passes ordinary CI `33232889207`: secret scan `99048676971`, repository
+`99048677082`, visual `99048677126` and frontend `99048677129` all pass. The
+sole Level 2 controlled run `33233419060` passes preflight `99050088916`;
+runtime `99050119128` passes fixed Bench/Site initialization, fails in the
+cumulative verifier and completes cleanup.
+
+The runtime verifier first validates the diagnostic file against the exact
+same-run trace before emitting its fixed safe line. Strict exact-154 parsing
+then accepts only `P807_FRESH_COLLECTION_INBOUND_KIND / RuntimeError /
+trace-8326b7285d2c53e0a6699ecd71717d70`. The returned kind set, counts,
+response status/body, identities, failed-child output, business values,
+message and stack remain unread.
+
+This result exposes a harness expectation defect. P8-03 captures the retained
+P5-01 Project whose business code is `P5-01-*`; P8-07 uses that exact Project
+as its route and repository scope. P8-02 creates and binds its Inbox receipt
+to a different Project whose business code is the independent
+`QTN-P802-*` source identity. The integration-operations repository correctly
+filters each operation by the selected Project's exact tenant and global ID.
+Consequently, the P5-01 collection must not contain the retained P8-02 Inbox
+row. Earlier wording that called all four predecessor rows Project-scoped to
+one collection is superseded by this exact identity proof.
+
+The smallest compatible repair changes only the runtime verifier contract:
+the selected disposable collection must omit `receive_project_submission`
+and must contain `publish_item`, `publish_mbom` and `create_tool_asset`.
+Ordered mechanism tests retain one fixed inbound-absence code plus three
+positive membership codes without recording a set or count. All diagnostic
+activations are false by default. The repair does not move, clone or fabricate
+P8-02 truth and does not change product, API, repository, contract, schema,
+permission, ownership, frontend or workflow behavior.
+
+Freeze `p8-07-checkpoint-4-post-uuid-collection-membership` at diagnostic
+`1/1`, harness repair `1/1`, final `0/1`. The exact-five repair is the runtime
+verifier/test plus AUTOPILOT, this plan and the controlled-runtime checkpoint.
+Its exact-SHA ordinary CI must pass before the sole diagnostics-off Level 3.
+P8-07F, SSH/ERP contact and P8-08 remain closed until that Level 3 passes.
+
+Repair Level 1 passes focused verifier `32/32`, complete P8-07 `70/70`,
+affected integration/security/API `90/90`, clean-overlay governance/
+reconciliation `59/59` and clean-overlay full Python `2636/2636`. Frontend
+generate/type/lint/i18n passes with `8585` literal sources and `100%`
+zh/zh-TW coverage; unit/coverage passes `1086/1086`; focused functional plus
+three-locale visual E2E passes `6/6`. Compile, shell syntax, current/
+reconciliation, all-diagnostics-off, diff, exact-five/union-78 and
+unauthorized-six rejection pass. Pre-existing user-authorized unrelated
+documentation changes remain outside the exact-five and are preserved.

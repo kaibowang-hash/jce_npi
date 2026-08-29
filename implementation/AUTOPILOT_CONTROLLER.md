@@ -8095,3 +8095,44 @@ repeat or rewrite it merely to restore context. See
   current/reconciliation, exact-154/new-only/ordered-membership/dormancy,
   diff, exact-five/union-78 and unauthorized-six rejection pass. Product and
   frontend diffs remain zero.
+
+### P8-07 checkpoint-4 Project-contained membership harness repair
+
+- Membership diagnostic SHA `6525b1a3bba696645d87398f9c5670b6c655b7f2`
+  passes ordinary CI `33232889207`: secret scan `99048676971`, repository
+  `99048677082`, visual `99048677126` and frontend `99048677129` all pass.
+  Its sole Level 2 controlled run `33233419060` passes preflight
+  `99050088916`; runtime `99050119128` passes fixed Bench/Site initialization,
+  fails in the cumulative verifier and completes cleanup.
+- The verifier's same-run exact-trace reader and strict exact-154 parser
+  accept only `P807_FRESH_COLLECTION_INBOUND_KIND / RuntimeError /
+  trace-8326b7285d2c53e0a6699ecd71717d70`. No returned kind set, count,
+  response status/body, identity, child output, business value, message or
+  stack was read.
+- Static identity/containment proof corrects the prior assumption: the P8-07
+  live collection is scoped to the retained P5-01 Project, while the P8-02
+  Inbox receipt is necessarily bound to its independently created
+  `QTN-P802-*` Project. The repository correctly filters every operation by
+  exact tenant and Project identity, so the inbound row must not appear in the
+  P5-01 collection. This is a verifier expectation defect, not a product,
+  ownership or permission defect.
+- Apply only the harness repair: require inbound absence for this disposable
+  Project and retain positive Item, MBOM and Tool Asset create membership.
+  Keep four value-free ordered diagnostic predicates for local mechanism
+  tests, but disable every P8-07 diagnostic activation in release code. Do not
+  move, copy or fabricate retained P8-02 truth or weaken Project containment.
+- Freeze the membership cycle at diagnostic `1/1`, harness repair `1/1`,
+  final `0/1`. The repair remains exact-five: runtime verifier/test plus this
+  controller, P8-07 plan and checkpoint. Product/API/repository/contracts/
+  schema/permissions/ownership/frontend/workflow stay unchanged. One exact-
+  SHA ordinary PASS must precede the sole all-diagnostics-off Level 3.
+  P8-07F, `JCE-Core`, production ERPNext and P8-08 remain closed.
+- Repair Level 1 passes focused verifier `32/32`, complete P8-07 `70/70`,
+  affected integration/security/API `90/90`, clean-overlay governance/
+  reconciliation `59/59` and clean-overlay full Python `2636/2636`.
+  Frontend generate/type/lint/i18n passes with `8585` literal sources and
+  `100%` zh/zh-TW coverage, unit/coverage passes `1086/1086`, and focused
+  functional plus three-locale visual E2E passes `6/6`. Compile, shell syntax,
+  current/reconciliation, all-diagnostics-off, diff, exact-five/union-78 and
+  unauthorized-six rejection pass. Pre-existing user-authorized unrelated
+  documentation changes remain excluded and preserved.

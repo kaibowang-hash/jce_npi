@@ -43,7 +43,7 @@ COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED = False
 POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED = False
 COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
 POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
-POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED = True
+POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED = False
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -178,16 +178,21 @@ COLLECTION_RESPONSE_DIAGNOSTIC_CODES = (
     "P807_COLLECTION_STATUS_OUT_OF_RANGE",
 )
 COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES = (
-    "P807_FRESH_COLLECTION_INBOUND_KIND",
+    "P807_FRESH_COLLECTION_INBOUND_ABSENT",
     "P807_FRESH_COLLECTION_ITEM_KIND",
     "P807_FRESH_COLLECTION_MBOM_KIND",
     "P807_FRESH_COLLECTION_TOOL_CREATE_KIND",
 )
 _REQUIRED_COLLECTION_KINDS = (
-    "receive_project_submission",
     "publish_item",
     "publish_mbom",
     "create_tool_asset",
+)
+_EXPECTED_COLLECTION_MEMBERSHIP = (
+    (COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES[0], "receive_project_submission", False),
+    (COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES[1], "publish_item", True),
+    (COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES[2], "publish_mbom", True),
+    (COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES[3], "create_tool_asset", True),
 )
 COLLECTION_SERVER_DIAGNOSTIC_CODES = (
     "P807_COLLECTION_API_DOMAIN_CALL",
@@ -757,20 +762,17 @@ def _exact_item(
 def _require_collection_kinds(items: list[dict[str, Any]]) -> None:
     kinds = {str(item.get("operationKind")) for item in items}
     if POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED:
-        for code, required_kind in zip(
-            COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES,
-            _REQUIRED_COLLECTION_KINDS,
-            strict=True,
-        ):
+        for code, operation_kind, expected_present in _EXPECTED_COLLECTION_MEMBERSHIP:
             with fresh_runtime_diagnostic_step(code):
                 require(
-                    required_kind in kinds,
+                    (operation_kind in kinds) is expected_present,
                     "P8-07 retained operation inventory drifted",
                 )
         return
     with fresh_runtime_diagnostic_step("P807_FRESH_COLLECTION_KINDS"):
         require(
-            set(_REQUIRED_COLLECTION_KINDS).issubset(kinds),
+            "receive_project_submission" not in kinds
+            and set(_REQUIRED_COLLECTION_KINDS).issubset(kinds),
             "P8-07 retained operation inventory drifted",
         )
 

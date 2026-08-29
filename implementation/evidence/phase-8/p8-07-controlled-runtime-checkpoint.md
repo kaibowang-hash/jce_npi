@@ -512,3 +512,38 @@ frontend/workflow diff remains zero.
   compile/shell/current/reconciliation, exact-154/new-only/dormancy, diff,
   exact-five/union-78 and unauthorized-six rejection pass. Product and
   frontend diffs remain zero.
+
+## Membership result and Project-contained harness checkpoint
+
+- Exact-five SHA `6525b1a3bba696645d87398f9c5670b6c655b7f2`
+  passes ordinary `33232889207` in all four lanes. The sole controlled
+  diagnostic `33233419060` passes preflight `99050088916`; runtime
+  `99050119128` passes fixed Bench/Site initialization, fails in the cumulative
+  verifier and completes cleanup.
+- The verifier internally validates its diagnostic record against the exact
+  same-run trace. Strict exact-154 parsing accepts only
+  `P807_FRESH_COLLECTION_INBOUND_KIND / RuntimeError /
+  trace-8326b7285d2c53e0a6699ecd71717d70`. No kind set, count, status/body,
+  identity, child output, business value, message or stack was read.
+- Static cross-proof supersedes the earlier single-Project assumption. P8-07
+  queries the retained P5-01 Project; P8-02's Inbox receipt is bound to its
+  separate `QTN-P802-*` Project. Repository tenant/Project containment is
+  therefore correctly responsible for the inbound kind being absent from the
+  P5-01 collection. Product behavior must not be loosened.
+- The exact-five harness repair requires inbound absence and positive Item,
+  MBOM and Tool Asset create membership for this disposable Project. It keeps
+  four ordered, value-free diagnostic mechanism codes for local tests and
+  switches every activation off by default. No P8-02 row is moved, copied or
+  fabricated; product/API/repository/contracts/schema/permissions/ownership/
+  frontend/workflow remain unchanged.
+- Freeze this cycle at diagnostic `1/1`, harness repair `1/1`, final `0/1`.
+  Exact-SHA ordinary PASS is required before the sole diagnostics-off Level 3.
+  P8-07F, `JCE-Core`, production ERPNext and P8-08 remain closed.
+- Repair Level 1 passes focused verifier `32/32`, complete P8-07 `70/70`,
+  affected integration/security/API `90/90`, clean-overlay governance/
+  reconciliation `59/59`, clean-overlay full Python `2636/2636`, frontend
+  unit/coverage `1086/1086` and focused functional plus three-locale visual
+  E2E `6/6`. Generate/type/lint/i18n, compile, shell syntax, current/
+  reconciliation, all-diagnostics-off, diff, exact-five/union-78 and
+  unauthorized-six rejection pass. User-authorized unrelated documentation
+  changes remain excluded and preserved.

@@ -479,7 +479,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
         )
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
@@ -579,24 +579,34 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             1,
         )
 
-    def test_collection_membership_records_the_first_missing_required_kind(self) -> None:
+    def test_collection_membership_records_the_first_project_containment_mismatch(self) -> None:
         required = tuple(self.verifier._REQUIRED_COLLECTION_KINDS)
         codes = tuple(self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES)
-        self.assertEqual(len(required), 4)
+        expected = tuple(self.verifier._EXPECTED_COLLECTION_MEMBERSHIP)
+        self.assertEqual(
+            required,
+            ("publish_item", "publish_mbom", "create_tool_asset"),
+        )
         self.assertEqual(len(codes), 4)
-        for missing, expected in zip(required, codes, strict=True):
+        self.assertEqual(tuple(code for code, _, _ in expected), codes)
+        cases = (
+            (
+                "P807_FRESH_COLLECTION_INBOUND_ABSENT",
+                ["receive_project_submission", *required],
+            ),
+            *(
+                (code, [kind for kind in required if kind != missing])
+                for code, missing in zip(codes[1:], required, strict=True)
+            ),
+        )
+        for expected_code, operation_kinds in cases:
             with (
-                self.subTest(expected=expected),
+                self.subTest(expected=expected_code),
                 self.collection_server_diagnostics(),
                 tempfile.TemporaryDirectory() as directory,
             ):
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
                 trace_id = self.verifier.fresh_runtime_diagnostic_trace()
-                items = [
-                    {"operationKind": kind}
-                    for kind in required
-                    if kind != missing
-                ]
                 with patch.dict(
                     os.environ,
                     {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
@@ -604,13 +614,15 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), self.assertRaises(
                     RuntimeError
                 ):
-                    self.verifier._require_collection_kinds(items)
+                    self.verifier._require_collection_kinds(
+                        [{"operationKind": kind} for kind in operation_kinds]
+                    )
                 self.assertEqual(
                     self.verifier.read_fresh_runtime_diagnostic(
                         path,
                         expected_trace=trace_id,
                     ),
-                    ("RuntimeError", expected, trace_id),
+                    ("RuntimeError", expected_code, trace_id),
                 )
 
         with (
@@ -628,6 +640,22 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     [{"operationKind": kind} for kind in required]
                 )
             self.assertFalse(path.exists())
+
+        with patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED",
+            False,
+        ):
+            self.verifier._require_collection_kinds(
+                [{"operationKind": kind} for kind in required]
+            )
+            with self.assertRaises(RuntimeError):
+                self.verifier._require_collection_kinds(
+                    [
+                        {"operationKind": "receive_project_submission"},
+                        *({"operationKind": kind} for kind in required),
+                    ]
+                )
 
     def test_fresh_diagnostic_activations_are_mutually_exclusive(self) -> None:
         with patch.object(
