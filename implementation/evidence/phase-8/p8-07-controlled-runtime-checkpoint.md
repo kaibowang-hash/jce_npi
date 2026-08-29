@@ -764,3 +764,34 @@ frontend/workflow diff remains zero.
   current/reconciliation, exact-199/new-only/ordered-entry/cross-file equality/
   precedence/dormancy, diff, exact-seven/union-78 and unauthorized-eight
   rejection pass. Repository/contracts/frontend/workflow diff remains zero.
+
+## API-entry framework transport repair checkpoint
+
+- Exact-seven SHA `8636f95b7ae75dd54fc505249954f39b5f5e1275` passes ordinary
+  `33259382884` in all four lanes. Sole controlled `33260083296` passes
+  preflight `99120399393`; runtime `99120437212` fails after fixed Bench/Site
+  initialization and cleanup.
+- Strict exact-199 reading returns only
+  `P807_ACTION_ENTRY_REQUEST_FIELDS / RuntimeError /
+  trace-58ab3e0ec456503da007d3bd8410cdd4`. No actual field name/value, raw log,
+  child output, status/body, business value, identity, message or stack was
+  read.
+- Static pinned-Frappe proof is unique: `handler.execute_cmd` passes the full
+  `form_dict`; `frappe.call/get_newargs` retains all keys for a `**kwargs`
+  wrapper; shared request security explicitly treats `cmd` as the sole
+  transport field. Thus the product request is allowed and the diagnostic
+  empty-key predicate is wrong.
+- The blind-spot run does not consume the product diagnostic. The exact-five
+  repair is API/test plus AUTOPILOT, plan and this checkpoint. It accepts only
+  the exact `{"cmd"}` key set and leaves the fixed command check to the next
+  ordered form predicate. It does not strip or transform input and changes no
+  product response, validation, permission, repository, transaction or write
+  order. Exact-199/new-only activation remains. Ordinary PASS must precede
+  one valid Level 2 diagnostic; P8-07F, production ERP and P8-08 stay closed.
+- Repair Level 1 passes focused verifier/API/repository `60/60`, affected
+  integration/security/API `98/98`, clean-overlay full Python `2644/2644`
+  and governance/reconciliation `59/59`; current/reconciliation scripts,
+  compile, shell, exact-199/ordered transport predicate, diff, exact-five/
+  union-78 and unauthorized-six rejection also pass. Repository/contracts/
+  frontend/workflow diff remains zero, and unrelated user changes are
+  preserved.

@@ -502,7 +502,7 @@ def _integration_operations_action_diagnostic_active(
             (
                 INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[2],
                 lambda: isinstance(request_fields, dict)
-                and list(request_fields.keys()) == [],
+                and set(request_fields) == {"cmd"},
             ),
             (
                 INTEGRATION_OPERATIONS_ACTION_ENTRY_DIAGNOSTIC_CODES[3],

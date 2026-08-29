@@ -8410,3 +8410,36 @@ repeat or rewrite it merely to restore context. See
   equality/inner-precedence/dormancy, diff, exact-seven/union-78 and
   unauthorized-eight rejection pass. Repository/contracts/frontend/workflow
   diff remains zero; unrelated user changes remain excluded and preserved.
+
+#### API-entry framework transport repair
+
+- Exact-seven SHA `8636f95b7ae75dd54fc505249954f39b5f5e1275`
+  passes ordinary `33259382884`: secret scan `99118584623`, repository
+  `99118584679`, visual `99118584708` and frontend `99118584732` all pass.
+  Its sole controlled `33260083296` passes preflight `99120399393`; runtime
+  `99120437212` fails after fixed Bench/Site initialization and cleanup.
+- Strict exact-199 reading returns only
+  `P807_ACTION_ENTRY_REQUEST_FIELDS / RuntimeError /
+  trace-58ab3e0ec456503da007d3bd8410cdd4`. Ordered entry predicates prove exact
+  trace/header, operation and action before the request-field shape mismatch.
+  Pinned Frappe v15 `handler.execute_cmd` calls the whitelisted function with
+  the complete `form_dict`; `frappe.call/get_newargs` preserves all keys when
+  the function has `**kwargs`. The fixed wrapper therefore receives `cmd` in
+  `request_fields`, while shared request security explicitly classifies only
+  `cmd` as an allowed transport field. The product request remains valid; the
+  diagnostic's empty-dictionary predicate is the unique harness mismatch.
+- This blind-spot run does not consume the cycle's product diagnostic. Apply
+  one exact-five harness repair: API entry accepts only the exact `{"cmd"}`
+  key set, while the existing form predicate still requires the fixed command
+  literal. No field is removed or rewritten; product validation, permissions,
+  response, transaction and write order are unchanged. API/test plus this
+  controller, plan and checkpoint are the complete repair. The activation and
+  exact-199 reader remain otherwise unchanged. One exact-SHA ordinary PASS
+  must precede the cycle's sole valid controlled product diagnostic.
+- Repair Level 1 passes focused verifier/API/repository `60/60`, affected
+  integration/security/API `98/98`, clean-overlay full Python `2644/2644`
+  and governance/reconciliation `59/59`. Current/reconciliation scripts,
+  compile, shell, exact-199/ordered transport predicate, diff, exact-five/
+  union-78 and unauthorized-six rejection pass. Repository/contracts/
+  frontend/workflow diff remains zero; predecessor ordinary already proves
+  all unchanged frontend lanes. Unrelated user changes remain preserved.

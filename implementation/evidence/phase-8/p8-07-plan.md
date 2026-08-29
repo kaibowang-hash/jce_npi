@@ -1196,3 +1196,39 @@ current/reconciliation, exact-199/new-only/ordered-entry/cross-file equality/
 inner-precedence/dormancy, diff, exact-seven/union-78 and unauthorized-eight
 rejection pass. Repository/contracts/schema/frontend/workflow diffs remain
 zero; unrelated user changes remain excluded and preserved.
+
+### API-entry framework transport repair
+
+Exact-seven SHA `8636f95b7ae75dd54fc505249954f39b5f5e1275` passes
+ordinary `33259382884` in secret scan `99118584623`, repository
+`99118584679`, visual `99118584708` and frontend `99118584732`. Sole
+controlled `33260083296` passes preflight `99120399393`; runtime
+`99120437212` fails after the fixed Bench/Site setup and cleanup. Strict
+exact-199 parsing returns only
+`P807_ACTION_ENTRY_REQUEST_FIELDS / RuntimeError /
+trace-58ab3e0ec456503da007d3bd8410cdd4`.
+
+The ordered tuple proves exact diagnostic authorization, operation kind and
+action kind. Pinned Frappe v15 passes the complete `form_dict` through
+`frappe.call/get_newargs` whenever the whitelisted wrapper accepts `**kwargs`;
+the fixed wrapper therefore receives the framework transport key `cmd`.
+Shared request security already excludes only `cmd` from unexpected product
+fields. The unique mismatch is the diagnostic predicate's empty-dictionary
+assumption, not the product request or contract.
+
+Do not count the blind-spot run as the cycle's product diagnostic. The
+same-cycle exact-five repair changes only API/test plus AUTOPILOT, this plan
+and the controlled checkpoint: require the exact `{"cmd"}` request-field key
+set, while the later form predicate continues to verify the fixed command
+literal. No field normalization, stripping, response, permission,
+transaction, write-order or repository change occurs. Exact-199/new-only
+activation remains; exact-SHA ordinary PASS must precede the sole valid Level
+2 diagnostic. P8-07F, production SSH/ERP and P8-08 remain closed.
+
+Repair Level 1 passes focused verifier/API/repository `60/60`, affected
+integration/security/API `98/98`, clean-overlay full Python `2644/2644` and
+governance/reconciliation `59/59`. Current/reconciliation scripts, compile,
+shell, exact-199/ordered transport predicate, diff, exact-five/union-78 and
+unauthorized-six rejection pass. Repository/contracts/frontend/workflow diff
+is zero; the exact predecessor ordinary supplies the unchanged frontend
+evidence. Unrelated user changes remain excluded and preserved.
