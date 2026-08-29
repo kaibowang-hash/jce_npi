@@ -87,14 +87,21 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED",
             False,
         )
+        self.post_action_replay_client_error_activation = patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_REPLAY_CLIENT_ERROR_DIAGNOSTICS_ENABLED",
+            False,
+        )
         self.previous_response_activation.start()
         self.current_action_activation.start()
         self.current_action_entry_activation.start()
         self.post_action_actor_activation.start()
         self.post_action_replay_shape_activation.start()
         self.post_action_replay_status_activation.start()
+        self.post_action_replay_client_error_activation.start()
 
     def tearDown(self) -> None:
+        self.post_action_replay_client_error_activation.stop()
         self.post_action_replay_status_activation.stop()
         self.post_action_replay_shape_activation.stop()
         self.post_action_actor_activation.stop()
@@ -190,6 +197,39 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            yield
+
+    @contextmanager
+    def post_action_replay_client_error_diagnostics(self):
+        with patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_REPLAY_CLIENT_ERROR_DIAGNOSTICS_ENABLED",
             True,
         ):
             yield
@@ -394,7 +434,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             readiness_source,
         )
 
-    def test_post_action_replay_status_diagnostic_is_the_only_default_activation(self) -> None:
+    def test_post_action_replay_client_error_diagnostic_is_the_only_default_activation(self) -> None:
         assignments = {
             node.targets[0].id: node.value.value
             for node in ast.parse(SCRIPT.read_text(encoding="utf-8")).body
@@ -405,10 +445,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.value, ast.Constant)
             and isinstance(node.value.value, bool)
         }
-        self.assertEqual(len(assignments), 16)
+        self.assertEqual(len(assignments), 17)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED"},
+            {"POST_ACTION_ACTOR_REPLAY_CLIENT_ERROR_DIAGNOSTICS_ENABLED"},
         )
 
     def test_safe_response_scanner_rejects_restricted_keys_recursively(self) -> None:
@@ -1085,6 +1125,186 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             source = SCRIPT.read_text(encoding="utf-8")
             for code in self.verifier.FRESH_REPLAY_STATUS_DIAGNOSTIC_CODES:
                 self.assertEqual(source.count(f'"{code}"'), 1)
+
+    def test_post_action_replay_client_error_diagnostic_reuses_exact_211_boundary(self) -> None:
+        with self.post_action_replay_client_error_diagnostics():
+            codes = self.verifier._active_fresh_runtime_diagnostic_codes()
+            self.assertEqual(len(codes), 211)
+            self.assertEqual(
+                codes,
+                frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+                    self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES,
+                    self.verifier.FRESH_REPLAY_SHAPE_DIAGNOSTIC_CODES,
+                    self.verifier.FRESH_REPLAY_STATUS_DIAGNOSTIC_CODES,
+                ),
+            )
+            self.assertTrue(self.verifier._collection_server_diagnostics_enabled())
+            self.assertTrue(self.verifier._action_server_diagnostics_enabled())
+            with patch.object(
+                self.verifier,
+                "POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier._active_fresh_runtime_diagnostic_codes(),
+                    frozenset(),
+                )
+
+    def test_retryable_replay_client_error_binds_only_its_exact_scope_and_trace(self) -> None:
+        response = SimpleNamespace(
+            status=409,
+            headers={
+                "X-Request-ID": "p807-retryable-replay",
+                "Cache-Control": "private, no-store",
+            },
+            body={},
+        )
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        with self.post_action_replay_client_error_diagnostics(), patch.object(
+            self.verifier.document_runtime,
+            "command_headers",
+            return_value={"X-Request-ID": "p807-retryable-replay"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=response,
+        ) as request, self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+            self.verifier._request(
+                object(),
+                "http://127.0.0.1",
+                "/safe",
+                label="retryable-replay",
+                method="POST",
+                payload={"action": "replay"},
+                csrf_token="csrf",
+                idempotency_key="fixed-key",
+            )
+        headers = request.call_args.kwargs["request_headers"]
+        self.assertEqual(headers["X-Trace-ID"], trace_id)
+        self.assertEqual(
+            headers[self.verifier._ACTION_SERVER_DIAGNOSTIC_HEADER],
+            self.verifier._ACTION_SERVER_DIAGNOSTIC_SCOPE,
+        )
+        self.assertNotIn(self.verifier._COLLECTION_SERVER_DIAGNOSTIC_HEADER, headers)
+
+        with self.post_action_replay_status_diagnostics(), patch.object(
+            self.verifier.document_runtime,
+            "command_headers",
+            return_value={"X-Request-ID": "p807-retryable-replay"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=response,
+        ) as dormant, self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+            self.verifier._request(
+                object(),
+                "http://127.0.0.1",
+                "/safe",
+                label="retryable-replay",
+                method="POST",
+                payload={"action": "replay"},
+                csrf_token="csrf",
+                idempotency_key="fixed-key",
+            )
+        dormant_headers = dormant.call_args.kwargs["request_headers"]
+        self.assertNotIn("X-Trace-ID", dormant_headers)
+        self.assertNotIn(
+            self.verifier._ACTION_SERVER_DIAGNOSTIC_HEADER,
+            dormant_headers,
+        )
+
+    def test_retryable_replay_server_tuple_wins_and_client_error_is_fallback(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        result = SimpleNamespace(status=409, headers={}, body={})
+        cursors = {
+            "logs/npi_core.log": 0,
+            "sites/npi.localhost/logs/npi_core.log": 0,
+        }
+        with self.post_action_replay_client_error_diagnostics(), tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=(
+                    "IntegrationOperationsConflict",
+                    "P807_ACTION_API_REPOSITORY",
+                    trace_id,
+                ),
+            ) as reader, self.assertRaises(RuntimeError):
+                self.verifier._validate_retryable_replay_shape(
+                    result,
+                    diagnostic_cursors=cursors,
+                )
+            self.assertEqual(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                (
+                    "IntegrationOperationsConflict",
+                    "P807_ACTION_API_REPOSITORY",
+                    trace_id,
+                ),
+            )
+            self.assertEqual(reader.call_args.args, (trace_id, cursors))
+            self.assertEqual(
+                reader.call_args.kwargs,
+                {
+                    "code_prefix": "P807_ACTION_",
+                    "allowed_codes": frozenset(
+                        self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES
+                    ).union(
+                        self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES
+                    ),
+                },
+            )
+
+        with self.post_action_replay_client_error_diagnostics(), tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=None,
+            ), self.assertRaises(RuntimeError):
+                self.verifier._validate_retryable_replay_shape(
+                    result,
+                    diagnostic_cursors=cursors,
+                )
+            self.assertEqual(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                (
+                    "RuntimeError",
+                    "P807_RETRYABLE_REPLAY_STATUS_CLIENT_ERROR",
+                    trace_id,
+                ),
+            )
+
+        source = SCRIPT.read_text(encoding="utf-8")
+        cursor_index = source.index("retryable_replay_diagnostic_cursors =")
+        request_index = source.index('label="retryable-replay"', cursor_index)
+        validate_index = source.index(
+            "diagnostic_cursors=retryable_replay_diagnostic_cursors",
+            request_index,
+        )
+        self.assertLess(cursor_index, request_index)
+        self.assertLess(request_index, validate_index)
 
     def test_retryable_replay_status_records_only_the_fixed_status_class(self) -> None:
         cases = (

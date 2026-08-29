@@ -8498,6 +8498,17 @@ repeat or rewrite it merely to restore context. See
   PASS is required before one sole Level 2 controlled diagnostic. P8-07F,
   `JCE-Core`, production ERPNext and P8-08 remain closed. Preserve all
   user-approved pilot-deferral and permission-ownership documentation.
+- Level 1 passes focused verifier `46/46`, complete P8-07 `88/88`, adjacent
+  Phase 8 runtime/security `182/182`, retained P7 readiness runtime `29/29`
+  and clean exact-overlay full Python `2654/2654`. Clean-overlay governance
+  and reconciliation pass `38/38`; current/reconciliation scripts, compile,
+  shell, exact-211/new-only/retryable-only trace and scope/server precedence/
+  fallback/dormancy/no-leak, diff, exact-five/union-78 and unauthorized-six
+  rejection pass. Frontend focused unit `13/13`, full unit `1086/1086`,
+  nonvisual/three-locale visual E2E `3/3 + 3/3`, generate/type/full lint/i18n
+  (`8585`, `100%` zh/zh-TW) pass. Product/workflow diff is zero. The dirty
+  tree's sole governance mismatch remains the preserved user-authorized M9
+  marker-count change and is absent from the exact overlay.
 - Level 1 passes focused verifier `39/39`, complete P8-07 `81/81`, affected
   integration/security/API `101/101`, clean-overlay full Python `2647/2647`,
   frontend affected/full unit `69/69` and `1086/1086`, and focused
@@ -8583,3 +8594,36 @@ repeat or rewrite it merely to restore context. See
   zh/zh-TW). Compile, shell, exact-211/new-only/status classes/no-leak/
   success-zero, diff, exact-five/union-78 and unauthorized-six rejection pass;
   product/workflow diff remains zero.
+
+### P8-07 checkpoint-4 retryable-replay-client-error diagnostic cycle
+
+- Retryable-status SHA `2904a8cb779a29146639e0a31aaec5103134b2ea`
+  passes ordinary `33267512507`: frontend `99140106497`, visual
+  `99140106535`, repository `99140106617` and secret scan `99140106627`.
+  Its sole controlled `33268109620` passes preflight `99141679467`; runtime
+  `99141711885` fails in cumulative verification and cleanup passes.
+- Strict exact-211 reading yields only
+  `P807_RETRYABLE_REPLAY_STATUS_CLIENT_ERROR / RuntimeError /
+  trace-6849c53a6a1c59398695e624b37967c2`. The actual status, body, headers,
+  child output, business values, identifiers, message and stack remain
+  unread. The fixed 4xx class is still nonunique across exact action-entry,
+  API authorization, lookup, replay expectation and repository stages, so no
+  product repair is authorized.
+- Freeze `p8-07-checkpoint-4-retryable-replay-status` at `1/1,0/1,0/1`.
+  Start independent product-zero
+  `p8-07-checkpoint-4-retryable-replay-client-error` at `0/1,0/1,0/1`.
+  Only `POST_ACTION_ACTOR_REPLAY_CLIENT_ERROR_DIAGNOSTICS_ENABLED=True`;
+  all sixteen historical flags are false.
+- Reuse exact-211. For the exact `retryable-replay` POST only, bind the
+  existing action diagnostic header and trace, capture fresh log cursors
+  immediately before the request, and let one trusted existing 22-stage
+  API/repository tuple win over the fixed client-error parent. Missing,
+  malformed or absent inner evidence falls back to the value-free 4xx code.
+  Exact-three-key `0600` `O_EXCL`, strict mirror, same exception/finally,
+  failed-child unread, success-zero and dormant default behavior remain.
+- This is the same exact-five task: runtime verifier/test plus this
+  controller, P8-07 plan and controlled checkpoint. Product/API/repository/
+  contracts/schema/permissions/ownership/frontend/workflow are unchanged.
+  Exact-SHA ordinary PASS must precede one sole Level 2 diagnostic. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed. Preserve all
+  user-approved pilot-deferral and permission-ownership documentation.

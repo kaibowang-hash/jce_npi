@@ -1389,3 +1389,41 @@ exact-five/union-78 and unauthorized-six rejection pass. The unchanged
 frontend evidence remains unit `1086/1086`, E2E/visual `6/6` and full
 generate/type/lint/i18n (`8585`, `100%` zh/zh-TW). Product and workflow diff
 is zero; unrelated user documentation remains untouched.
+
+## Retryable replay client-error diagnostic
+
+Retryable-status SHA `2904a8cb779a29146639e0a31aaec5103134b2ea`
+passes ordinary `33267512507` in all four lanes. Sole controlled
+`33268109620` passes preflight `99141679467`; runtime `99141711885` fails in
+cumulative verification and cleans up. Strict exact-211 parsing yields only
+`P807_RETRYABLE_REPLAY_STATUS_CLIENT_ERROR / RuntimeError /
+trace-6849c53a6a1c59398695e624b37967c2`. Actual status, response content,
+child output, business values, identifiers, message and stack remain unread.
+
+The fixed client-error class does not distinguish exact entry, authorization,
+lookup, replay expectation or repository failure. Freeze retryable-replay-
+status at diagnostic `1/1`, repair `0/1`, final `0/1`; no repair is
+authorized. Open independent exact-five, product-zero
+`p8-07-checkpoint-4-retryable-replay-client-error` at `0/1,0/1,0/1`.
+
+Only the new client-error flag is true and all sixteen history flags are
+false. Exact-211 is unchanged. The exact `retryable-replay` POST receives the
+existing action diagnostic trace and scope, with fresh server-log cursors
+taken immediately before the request. A trusted existing 22-stage action
+API/repository tuple wins; otherwise the value-free 4xx parent remains the
+fallback. Exact-three-key `0600` `O_EXCL`, strict mirror, same exception,
+finally restoration, failed-child unread, success-zero and dormant behavior
+remain. Product/API/repository/contracts/schema/permissions/ownership/
+frontend/workflow remain unchanged. P8-07F, production ERPNext and P8-08 stay
+closed until P8-07 checkpoint 4 passes its diagnostics-off Level 3.
+
+Level 1 passes focused verifier `46/46`, complete P8-07 `88/88`, adjacent
+Phase 8 runtime/security `182/182`, retained P7 readiness runtime `29/29` and
+clean exact-overlay full Python `2654/2654`. Clean governance/reconciliation
+passes `38/38`; current/reconciliation scripts, compile, shell, exact-211/
+new-only/retryable-only trace and scope/server precedence/fallback/dormancy/
+no-leak, diff, exact-five/union-78 and unauthorized-six rejection pass.
+Frontend focused unit `13/13`, full unit `1086/1086`, nonvisual plus
+three-locale visual E2E `3/3 + 3/3`, generate/type/full lint/i18n (`8585`,
+`100%` zh/zh-TW) pass. Product/workflow diff is zero. The dirty-only M9 marker
+count remains excluded and untouched.
