@@ -910,3 +910,27 @@ frontend/workflow diff remains zero.
   ordered predicates/no-leak/success-zero, diff, exact-five/union-78 and
   unauthorized-six rejection pass. Product and workflow diff is zero; the
   dirty-only M9 marker mismatch remains excluded and untouched.
+
+## Replay-shape controlled result and status-class boundary
+
+- Exact-five SHA `fa774de27d42cf6a23131866250c79c166e2ef5d`
+  passes ordinary `33266437409` in all four lanes. Sole controlled
+  `33266893465` passes preflight `99138423886`; runtime `99138450537` fails in
+  cumulative verification and completes cleanup.
+- Strict exact-203 reading accepts only `P807_RETRYABLE_REPLAY_STATUS /
+  RuntimeError / trace-c3175d0852265346b7af4f2e35a2a3d3`. The replay HTTP
+  helper returned, but status was not `201`. Actual status, response content,
+  child output, values, identifiers, messages and stack were not read.
+- Freeze retryable-replay-shape at `1/1,0/1,0/1`. Independent
+  retryable-replay-status begins `0/1,0/1,0/1`, exact five and product zero.
+  Its single activation reuses exact-203 and adds eight fixed value-free
+  status classes for exact-211; all fifteen history flags remain false.
+- Exact-SHA ordinary PASS must precede one sole Level 2 diagnostic. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed; unrelated user
+  documentation remains preserved.
+- Level 1 passes verifier `43/43`, P8-07 `85/85`, affected peers `230/230`,
+  clean exact-overlay full Python `2651/2651`, current/reconciliation,
+  compile, shell, exact-211/new-only/status classes/no-leak/success-zero,
+  diff, exact-five/union-78 and unauthorized-six rejection. Unchanged
+  frontend unit `1086/1086`, E2E/visual `6/6` and full lint/i18n remain green;
+  product/workflow diff is zero.

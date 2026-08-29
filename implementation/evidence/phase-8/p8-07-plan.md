@@ -1358,3 +1358,34 @@ exact-203/new-only/ordered predicates/no-leak/success-zero, diff,
 exact-five/union-78 and unauthorized-six rejection pass. The dirty-tree-only
 M9 marker count remains the preserved user-authorized documentation change;
 product/API/repository/contracts/schema/frontend/workflow diff is zero.
+
+## Retryable replay status diagnostic
+
+Replay-shape SHA `fa774de27d42cf6a23131866250c79c166e2ef5d`
+passes ordinary `33266437409`; sole controlled `33266893465` passes preflight
+`99138423886`, while runtime `99138450537` fails in cumulative verification
+and cleans up. Strict exact-203 reading yields only
+`P807_RETRYABLE_REPLAY_STATUS / RuntimeError /
+trace-c3175d0852265346b7af4f2e35a2a3d3`.
+
+The safe tuple proves the call returned with status other than `201`; it does
+not reveal whether the API treated it as exact idempotent replay or produced
+another success/problem class. Freeze replay-shape at diagnostic `1/1`,
+repair `0/1`, final `0/1`; no product repair is authorized.
+
+Open independent exact-five, product-zero
+`p8-07-checkpoint-4-retryable-replay-status` at `0/1,0/1,0/1`. Only the new
+status flag is true; fifteen history flags are false. Exact-211 combines the
+existing 203 safe boundaries with eight fixed, value-free status classes.
+Trace/scope/cursors, strict exact-three-key mirror, `0600` `O_EXCL`, inner
+precedence, failed-child unread and success-zero remain. Exact-SHA ordinary
+PASS must precede one Level 2 diagnostic; P8-07F, production ERP and P8-08
+remain inactive.
+
+Level 1 passes verifier `43/43`, P8-07 `85/85`, affected peers `230/230` and
+clean exact-overlay full Python `2651/2651`. Current/reconciliation, compile,
+shell, exact-211/new-only/status classes/no-leak/success-zero, diff,
+exact-five/union-78 and unauthorized-six rejection pass. The unchanged
+frontend evidence remains unit `1086/1086`, E2E/visual `6/6` and full
+generate/type/lint/i18n (`8585`, `100%` zh/zh-TW). Product and workflow diff
+is zero; unrelated user documentation remains untouched.

@@ -82,13 +82,20 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED",
             False,
         )
+        self.post_action_replay_status_activation = patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED",
+            False,
+        )
         self.previous_response_activation.start()
         self.current_action_activation.start()
         self.current_action_entry_activation.start()
         self.post_action_actor_activation.start()
         self.post_action_replay_shape_activation.start()
+        self.post_action_replay_status_activation.start()
 
     def tearDown(self) -> None:
+        self.post_action_replay_status_activation.stop()
         self.post_action_replay_shape_activation.stop()
         self.post_action_actor_activation.stop()
         self.current_action_entry_activation.stop()
@@ -154,6 +161,35 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            yield
+
+    @contextmanager
+    def post_action_replay_status_diagnostics(self):
+        with patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED",
             True,
         ):
             yield
@@ -358,7 +394,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             readiness_source,
         )
 
-    def test_post_action_replay_shape_diagnostic_is_the_only_default_activation(self) -> None:
+    def test_post_action_replay_status_diagnostic_is_the_only_default_activation(self) -> None:
         assignments = {
             node.targets[0].id: node.value.value
             for node in ast.parse(SCRIPT.read_text(encoding="utf-8")).body
@@ -369,10 +405,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.value, ast.Constant)
             and isinstance(node.value.value, bool)
         }
-        self.assertEqual(len(assignments), 15)
+        self.assertEqual(len(assignments), 16)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"POST_ACTION_ACTOR_REPLAY_SHAPE_DIAGNOSTICS_ENABLED"},
+            {"POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED"},
         )
 
     def test_safe_response_scanner_rejects_restricted_keys_recursively(self) -> None:
@@ -1027,6 +1063,71 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             source = SCRIPT.read_text(encoding="utf-8")
             for code in self.verifier.FRESH_REPLAY_SHAPE_DIAGNOSTIC_CODES:
                 self.assertEqual(source.count(f'"{code}"'), 1)
+
+    def test_post_action_replay_status_diagnostic_uses_exact_211_boundary(self) -> None:
+        with self.post_action_replay_status_diagnostics():
+            codes = self.verifier._active_fresh_runtime_diagnostic_codes()
+            self.assertEqual(len(codes), 211)
+            self.assertEqual(
+                codes,
+                frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+                    self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES,
+                    self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_ACTION_SERVER_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTIC_CODES,
+                    self.verifier.FRESH_REPLAY_SHAPE_DIAGNOSTIC_CODES,
+                    self.verifier.FRESH_REPLAY_STATUS_DIAGNOSTIC_CODES,
+                ),
+            )
+            source = SCRIPT.read_text(encoding="utf-8")
+            for code in self.verifier.FRESH_REPLAY_STATUS_DIAGNOSTIC_CODES:
+                self.assertEqual(source.count(f'"{code}"'), 1)
+
+    def test_retryable_replay_status_records_only_the_fixed_status_class(self) -> None:
+        cases = (
+            ("P807_RETRYABLE_REPLAY_STATUS_INVALID", None),
+            ("P807_RETRYABLE_REPLAY_STATUS_INFORMATIONAL", 101),
+            ("P807_RETRYABLE_REPLAY_STATUS_REPLAYED_SUCCESS", 200),
+            ("P807_RETRYABLE_REPLAY_STATUS_OTHER_SUCCESS", 202),
+            ("P807_RETRYABLE_REPLAY_STATUS_REDIRECTION", 302),
+            ("P807_RETRYABLE_REPLAY_STATUS_CLIENT_ERROR", 409),
+            ("P807_RETRYABLE_REPLAY_STATUS_SERVER_ERROR", 503),
+            ("P807_RETRYABLE_REPLAY_STATUS_OUT_OF_RANGE", 601),
+        )
+        for expected, status in cases:
+            result = SimpleNamespace(
+                status=status,
+                headers={"Idempotency-Replayed": "false"},
+                body={
+                    "outcomeState": "replay_requested",
+                    "outcomeReferenceGlobalId": str(
+                        self.verifier._fixture_uuid("retryable-outbox")
+                    ),
+                },
+            )
+            trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+            with self.subTest(expected=expected), self.post_action_replay_status_diagnostics(), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+                with patch.dict(
+                    os.environ,
+                    {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                    clear=False,
+                ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), self.assertRaises(
+                    RuntimeError
+                ):
+                    self.verifier._validate_retryable_replay_shape(result)
+                diagnostic = self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                )
+                self.assertIsNotNone(diagnostic)
+                self.assertEqual(diagnostic[1], expected)
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(set(payload), {"code", "exceptionType", "traceId"})
+                self.assertNotIn(str(status), payload.values())
 
     def test_retryable_replay_shape_records_first_ordered_predicate_without_values(self) -> None:
         expected_reference = str(self.verifier._fixture_uuid("retryable-outbox"))

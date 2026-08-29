@@ -8547,3 +8547,39 @@ repeat or rewrite it merely to restore context. See
   unauthorized-six rejection pass. Dirty full Python has only the preserved
   M9 marker-count mismatch (`2654/2655`); apps/contracts/frontend/workflow
   tracked product diff remains zero.
+
+### P8-07 checkpoint-4 retryable-replay-status diagnostic cycle
+
+- Retryable-shape SHA `fa774de27d42cf6a23131866250c79c166e2ef5d`
+  passes ordinary `33266437409`: secret `99137217784`, repository
+  `99137217869`, frontend `99137217876` and visual `99137217885`. Sole
+  controlled `33266893465` passes preflight `99138423886`; runtime
+  `99138450537` fails in cumulative verification and cleanup passes.
+- Strict exact-203 filtering yields only `P807_RETRYABLE_REPLAY_STATUS /
+  RuntimeError / trace-c3175d0852265346b7af4f2e35a2a3d3`. This proves the
+  replay HTTP helper returned and status was not the required first-command
+  `201`; idempotency header, outcome and reference predicates were not
+  evaluated. Actual status and all restricted content remain unread.
+- Static API control flow still permits independently different safe classes:
+  exact replay `200`, another success status, redirect, client problem or
+  server problem. Freeze the replay-shape cycle at `1/1,0/1,0/1`; no repair
+  is authorized.
+- Start independent product-zero
+  `p8-07-checkpoint-4-retryable-replay-status` at `0/1,0/1,0/1`. Only
+  `POST_ACTION_ACTOR_REPLAY_STATUS_DIAGNOSTICS_ENABLED=True`; all fifteen
+  historical flags are false. Reuse exact-203 and add eight fixed status
+  classes (invalid, informational, exact replayed success, other success,
+  redirection, client error, server error, out of range), exact `211` total.
+  No actual status, body, header value, identity, message or stack is emitted.
+- The exact-five task remains verifier/test plus this controller, plan and
+  checkpoint. Exact-SHA ordinary PASS must precede one sole Level 2
+  controlled diagnostic. Product/API/repository/contracts/schema/
+  permissions/ownership/frontend/workflow are unchanged. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed.
+- Level 1 passes focused verifier `43/43`, complete P8-07 `85/85`, affected
+  peers `230/230`, clean exact-overlay full Python `2651/2651`, current task
+  and reconciliation. The unchanged frontend proof remains unit `1086/1086`,
+  focused E2E/visual `6/6`, generate/type/full lint/i18n (`8585`, `100%`
+  zh/zh-TW). Compile, shell, exact-211/new-only/status classes/no-leak/
+  success-zero, diff, exact-five/union-78 and unauthorized-six rejection pass;
+  product/workflow diff remains zero.
