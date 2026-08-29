@@ -1115,3 +1115,23 @@ frontend/workflow diff remains zero.
   `1086/1086`, generate/type/full lint/i18n, compile/shell/current/
   reconciliation/diff and exact-five/unauthorized-six manifest checks. The
   preserved M9 dirty-tree marker mismatch remains unrelated and untouched.
+
+## Final diagnostics-off Level 3 result
+
+- Repair SHA `edf89e79cd815cbde60e2940ae9d580479336d75`
+  passes ordinary `33277289693`: repository `99166132533`, frontend
+  `99166132617`, secret `99166132618` and visual `99166132648`.
+- Sole diagnostics-off Level 3 `33277905251` passes frontend `99167797638`,
+  visual `99167797764`, secret `99167797789`, repository `99167797904`,
+  preflight `99168971817` and cumulative runtime `99168998544`. Result record,
+  artifact upload and cleanup pass; no diagnostic activation remains.
+- Runtime artifact `9722300941` has digest
+  `sha256:a7835b5e2125780d451335ced76da2521a6527a9d01803492ce268aa37cd0ead`;
+  visual `9722125497` has
+  `sha256:ecf51b866b37e5f3d92a174b511124242780ecd60464400841788f54e1e7a5d0`;
+  Gitleaks `9722075158` has
+  `sha256:1bbea6a7c9da231b3fa951084e62221755336f7388db7b4362a30fea89cc0b34`.
+- P8-07 closes at bounded technical `PASS_LEVEL_3`. Production ERP facts,
+  Sandbox/business acceptance and P8-08 remain held. The independent P8-07F
+  governance transition must pass its own exact-SHA ordinary and Level 3
+  before any separate read-only fact task can connect.

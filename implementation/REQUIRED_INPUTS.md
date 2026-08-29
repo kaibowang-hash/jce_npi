@@ -1,18 +1,28 @@
 # Required External Inputs
 
-Status: **OPEN — partial external dependency, not a global blocker**
-Updated: 2026-07-25
+Status: **OPEN — P8-07F governed read-only intake pending; not a global blocker**
+Updated: 2026-08-30
 
 This is the single complete request for external facts that are not present in
 the repository. Supply one dated, owner-identified, sanitized, read-only bundle
-rather than sending credentials or incremental production extracts. Production
-ERPNext access is prohibited; any future sandbox access requires separate
-approval and must reject production endpoints.
+rather than sending credentials or incremental production extracts. The
+P8-07F facts task may instead collect only the same necessary facts through its
+conditional fixed `JCE-Core` read-only boundary after the governance transition
+passes exact-SHA ordinary CI and Level 3. Never provide or record credentials,
+endpoint/host/user/key values, secrets or unrelated business records.
 
 The acceptance/status matrix for these inputs is
 `docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md`. That matrix is not a second
 request and contains no production values. This file remains the sole source
 for requesting, receiving and recording external fact provenance.
+
+Before asking again or connecting, check
+`docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md` when it exists. Reuse fresh accepted
+facts; if version/mtime/hash/checksum has changed or the task needs an uncovered
+fact, perform only a task-scoped delta under the P8-07F allowlist. Record task
+ID, purpose, timestamp/timezone, operation ID, redacted source, version/
+checksum, finding, unknown and contract/ownership impact. Stop on permission,
+version, output-shape, sensitive-content, allowlist or write-boundary drift.
 
 ## 1. Current ERPNext reconciliation package
 

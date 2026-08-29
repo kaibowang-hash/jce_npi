@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-06 LEVEL 3 PASS; P8-07 CHECKPOINT 1 PASS / CHECKPOINT 2 PENDING CI**
+Status: **IN PROGRESS — P8-07 LEVEL 3 PASS; P8-07F GOVERNANCE BEFORE P8-08**
 
 Anchor date: 2026-08-16
 
@@ -561,3 +561,18 @@ preserves the original source and target idempotency, and queues the owning
 worker only after atomic receipt/audit commit. Reconciliation cannot assert
 target success. Routes remain default-disabled; checkpoint-3 UI, adapters,
 target calls, production contact, P8-08 and P8-09 remain closed.
+
+P8-07 closes at exact product SHA
+`edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary CI `33277289693`
+and final Level 3 `33277905251`. `FR-RP-009` and `NFR-INT-001` now have only
+their bounded Project-scoped operations/DLQ/replay/reconciliation and
+integration-reliability technical foundations verified. `UX-016` retains its
+technical-foundation status with the shared operation-center evidence added.
+Production/Sandbox target facts, business acceptance, deployment and whole
+production readiness remain held.
+
+`P8-07F-GOVERNANCE` is a requirement-free delivery-infrastructure task. It
+records a conditional standing read-only authorization and must pass exact-SHA
+ordinary CI and Level 3 before separate `P8-07F-FACTS` activation. That facts
+task is compatibility reconciliation/minimal adjustment only and is mandatory
+before P8-08. No SSH or production contact occurs in the governance task.

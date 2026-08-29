@@ -8821,3 +8821,34 @@ repeat or rewrite it merely to restore context. See
   full lint and i18n (`8585`, `100%` zh/zh-TW). The dirty governance run's
   sole failure remains the preserved user M9 marker-count mismatch (`4 != 2`);
   the clean-overlay full suite includes and passes that test.
+
+## 2026-08-30 P8-07 Level 3 PASS; P8-07F governance transition
+
+- Exact product SHA `edf89e79cd815cbde60e2940ae9d580479336d75`
+  passes ordinary CI `33277289693` and diagnostics-off Level 3
+  `33277905251`. Repository, frontend, secret, governed visual, controlled
+  preflight and cumulative P5-through-P8-07 runtime all pass; artifact IDs and
+  digests are frozen in `p8-07-validation.md`.
+- P8-07 closes only the bounded technical portions of `FR-RP-009`, `UX-016`
+  and `NFR-INT-001`. Production/Sandbox methods, fields, roles, service scopes,
+  operating policy, deployment and business acceptance remain scoped holds.
+  Controlled UAT is not a real pilot or real-user adoption claim.
+- The current marker is exactly `P8-07F governance transition awaits exact-SHA ordinary CI and Level 3`.
+  This delivery-infrastructure task changes only governance, trace and evidence.
+  It performs zero SSH, connector, Site, endpoint or production contact.
+- User authority dated 2026-08-29 is recorded as conditional standing
+  read-only authority. It becomes effective only after this transition passes
+  its exact-SHA ordinary CI and Level 3 and the controller separately activates
+  `P8-07F-FACTS`. The facts task must use SSH alias `JCE-Core` only through the
+  fixed transport and remote-operation allowlist in
+  `p8-07f-production-fact-reconciliation-plan.md`.
+- The facts task is compatibility reconciliation, not redesign. The current
+  LaunchFlow architecture, ownership and contracts are the default-correct
+  baseline. No proven difference means `DIRECT_MATCH` and `NO_CHANGE`; only a
+  single evidence-backed local difference may produce a minimal reversible
+  proposal, implemented later under a separate atomic task.
+- `P8-07F` is mandatory before P8-08. Later ERP-dependent tasks may reuse the
+  standing boundary only after checking inventory freshness and recording
+  task-scoped delta provenance. Final implementation/release closeout requires
+  one complete production ERPNext↔LaunchFlow read-only reconciliation; any
+  unresolved required drift blocks completion and production-ready.

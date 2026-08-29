@@ -1,10 +1,17 @@
 # Blockers
 
-Updated: `2026-08-29T00:30:00Z`
+Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-None. P8-06 passes at exact final product SHA
+None. P8-07 passes at exact final product SHA
+`edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary CI `33277289693`
+and Level 3 `33277905251`; every base lane, controlled preflight and cumulative
+runtime passes. P8-07F governance is active only to record the conditional
+production read-only compatibility-fact boundary. It performs no SSH or ERP
+contact and is not blocked on an external action.
+
+Historical P8-06 passes at exact final product SHA
 `547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806`
 passes all required lanes. Final Level 3 `33132296565` passes frontend
 `98724376602`, secret `98724376742`, visual `98724376760`, repository
@@ -25,11 +32,11 @@ requires no external login or production action.
 
 The exact-20 ERPNext customization requirements baseline passes at
 `6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825` and is
-documentation only. The user's production read-only fact-check request is queued but not effective
-under the current higher-priority `AGENTS.md` and controller prohibition. This
-is a scoped governance dependency, not an active Hard Blocker. A future
-document records unknowns and acceptance requirements but cannot connect to
-production or prove that any production customization exists.
+documentation only. The user's 2026-08-29 standing authorization remains
+conditional and not effective during this transition. It becomes usable only
+after this exact-SHA ordinary and Level 3 PASS and separate activation of
+`P8-07F-FACTS`. This is a scoped Gate, not a Hard Blocker and not evidence that
+any production customization exists.
 
 ## Active recovery
 

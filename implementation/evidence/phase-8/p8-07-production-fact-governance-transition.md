@@ -100,3 +100,20 @@ Level 1 candidate verification on `2026-08-28` passes:
 
 The documentation candidate still requires its own exact-SHA ordinary CI.
 That CI does not authorize production fact collection or P8-07 product code.
+
+## 2026-08-29 user authorization supersession
+
+The earlier `QUEUED_NOT_EFFECTIVE` state is superseded only through the new
+two-Gate sequence documented in `p8-07f-production-fact-reconciliation-plan.md`.
+P8-07 has now passed Level 3, but the current `P8-07F-GOVERNANCE` transition
+still performs zero production contact. Standing read-only authority becomes
+effective only after this transition's exact-SHA ordinary CI and Level 3 PASS
+and a separate controller activation of `P8-07F-FACTS`.
+
+The purpose is compatibility reconciliation and minimal adjustment. Existing
+LaunchFlow architecture, ownership, contracts and P8-01 through P8-09 design
+are the default-correct baseline; no redesign/refactor/rebuild is authorized.
+The SSH transport/operation allowlist, redaction/provenance/checksum, stop
+conditions, persistent delta-first usage and final full reconciliation Gate
+are frozen in the P8-07F plan. P8-08 remains closed until the facts task and
+its Gate pass.

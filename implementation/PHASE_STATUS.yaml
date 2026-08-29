@@ -1,23 +1,29 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-29T00:30:00Z'
+updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P8-07
-current_task_status: IN_PROGRESS_CHECKPOINT_4_AWAITING_PRODUCT_CI
-current_task_completed_stage: P8_07_CHECKPOINT_3_EXACT_SHA_ORDINARY_PASS
-current_task_next_stage: P8_07_CHECKPOINT_4_DISPOSABLE_RUNTIME_AND_LEVEL_3
-current_task_next_stage_status: CHECKPOINT_4_PRODUCT_PENDING_EXACT_SHA_ORDINARY
-resumed_product_task: P8-07
-resumed_product_task_status: CHECKPOINT_3_CI_PASS_CHECKPOINT_4_PENDING_PRODUCT_CI
+current_task: P8-07F-GOVERNANCE
+current_task_status: IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3
+current_task_completed_stage: P8_07_LEVEL_3_PASS
+current_task_next_stage: P8_07F_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3
+current_task_next_stage_status: TRANSITION_UNCOMMITTED_NO_PRODUCTION_CONTACT
+resumed_product_task: P8-07F-FACTS
+resumed_product_task_status: BLOCKED_UNTIL_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
 scope_decisions:
   production_read_only_fact_check:
-    decision_marker: USER_AUTHORIZATION_QUEUED_NOT_EFFECTIVE
+    decision_marker: USER_STANDING_AUTHORIZATION_2026_08_29_CONDITIONAL
     connection_authorized: false
+    current_task_may_connect: false
     documentation_authorized_after_transition_ordinary: true
-    current_rule: PRODUCTION_ERP_NEXT_CONTACT_PROHIBITED_BY_AGENTS_AND_AUTOPILOT
-    future_activation_trigger: SEPARATE_HIGHER_PRIORITY_RULE_CHANGE_EXACT_READ_ONLY_ALLOWLIST_LEAST_PRIVILEGE_REDACTION_TIMEOUTS_AND_RELEASE_GATE
+    current_rule: GOVERNANCE_TRANSITION_ZERO_CONTACT
+    future_activation_trigger: P8_07F_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS_PLUS_SEPARATE_P8_07F_FACTS_ACTIVATION
+    persistent_read_only_after_activation: true
+    fresh_inventory_or_delta_first: true
+    final_full_reconciliation_required: true
+    compatibility_baseline: CURRENT_LAUNCHFLOW_ARCHITECTURE_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_DEFAULT_CORRECT
+    adjustment_policy: NO_CHANGE_THEN_CONFIG_MAPPING_THEN_MINOR_LAUNCHFLOW_THEN_MINOR_ERPNEXT_CUSTOM_APP_THEN_BUSINESS_DECISION
     product_code_authorized: false
     trace_status_changed: false
   fr_co_003_004_external_portals:
@@ -2568,7 +2574,7 @@ p8_06:
 p8_07:
   task: P8-07
   controller_task: P8-07_OPERATIONS_DLQ_REPLAY_RECONCILIATION
-  status: IN_PROGRESS_CHECKPOINT_2_AWAITING_PRODUCT_CI
+  status: PASS_LEVEL_3_BOUNDED_TECHNICAL_PORTIONS
   phase: 8
   milestone: M7-07
   requirements:
@@ -2583,13 +2589,23 @@ p8_07:
   audit_plan_ordinary_ci: 33139628396
   checkpoint_1_product_checkpoint: d45d1d560fedfed9d9791a5c08ccf9c1402f7ef8
   checkpoint_1_ordinary_ci: 33142594763
+  checkpoint_2_product_checkpoint: f7cf7c7ea490c10acfc044aaef236945e5118f01
+  checkpoint_2_ordinary_ci: 33187660221
+  checkpoint_3_product_checkpoint: 758bb222a1477474af50fc6b84d5d2c56e379adc
+  checkpoint_3_ordinary_ci: 33204451677
+  final_product_checkpoint: edf89e79cd815cbde60e2940ae9d580479336d75
+  final_ordinary_ci: 33277289693
+  final_level_3: 33277905251
+  final_runtime_job: 99168998544
+  final_runtime_artifact: 9722300941
+  final_runtime_digest: sha256:a7835b5e2125780d451335ced76da2521a6527a9d01803492ce268aa37cd0ead
   product_code_authorized: true
   product_code_changed: true
-  current_stage: CHECKPOINT_2_PROJECT_FIRST_READ_AND_OPERATION_SPECIFIC_COMMANDS
+  current_stage: PASS_LEVEL_3_BOUNDED_TECHNICAL_PORTIONS
   erp_customization_requirements_status: GOVERNED_REQUIREMENTS_BASELINE_PRODUCTION_FACTS_NOT_COLLECTED
-  production_fact_check_status: QUEUED_NOT_EFFECTIVE
-  production_connection_status: PROHIBITED_PENDING_RULE_CHANGE_AND_GATE
-  next_stage_after_pass: CHECKPOINT_3_TRILINGUAL_INDUSTRIAL_JOB_CENTER
+  production_fact_check_status: TRANSITION_PENDING_EXACT_SHA_ORDINARY_AND_LEVEL_3
+  production_connection_status: PROHIBITED_DURING_P8_07F_GOVERNANCE
+  next_stage_after_pass: P8_07F_GOVERNANCE_THEN_P8_07F_FACTS
   operation_inventory: [receive_project_submission, publish_item, publish_mbom, create_tool_asset, update_tool_asset]
   logical_dlq_rule: DERIVED_FROM_OWNING_TERMINAL_TRUTH_NOT_A_SECOND_MUTABLE_COPY
   operation_rule: OPERATION_SPECIFIC_AUTHORITY_IDEMPOTENCY_REQUEST_ATTEMPT_RESULT_REPLAY_AND_RECONCILIATION_REMAIN_DISTINCT
@@ -2614,6 +2630,30 @@ p8_07:
     - implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md
     - implementation/evidence/phase-8/p8-07-plan.md
     - implementation/evidence/phase-8/p8-07-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-8/p8-07-controlled-runtime-checkpoint.md
+    - implementation/evidence/phase-8/p8-07-validation.md
+p8_07f:
+  task: P8-07F-GOVERNANCE
+  next_task: P8-07F-FACTS
+  status: IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3
+  phase: 8
+  milestone: M7-07F
+  task_kind: DELIVERY_INFRASTRUCTURE
+  requirements: []
+  predecessor_product_checkpoint: edf89e79cd815cbde60e2940ae9d580479336d75
+  production_connection_authorized_now: false
+  transition_may_contact_production: false
+  facts_activation_requires_transition_ordinary: true
+  facts_activation_requires_transition_level_3: true
+  facts_task_may_modify_product: false
+  p8_08_blocked_until_facts_gate: true
+  standing_read_only_authority_after_activation: true
+  final_full_reconciliation_release_gate: REQUIRED
+  compatibility_mode: CURRENT_DESIGN_DEFAULT_CORRECT_MINIMAL_ADJUSTMENT_ONLY
+  evidence:
+    - implementation/evidence/phase-8/p8-07-validation.md
+    - implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md
+    - implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -2640,5 +2680,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06], current_task: P8-07}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07], current_task: P8-07F-GOVERNANCE}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

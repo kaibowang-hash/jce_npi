@@ -8,6 +8,40 @@
 
 只允许因总控指令定义的 Hard Blocker 暂停整体执行。缺少生产 ERPNext 凭据不阻断 Mock、合同、Sandbox-ready Adapter、测试和接入文档；禁止连接生产 ERPNext。
 
+### 0.1 P8-07F 生产只读兼容性核对的条件授权
+
+2026-08-29 用户对 `P8-07F` 生产 ERPNext 事实核对给出持续授权，但该授权仅在
+`P8-07` Level 3 已 PASS、独立 `P8-07F-GOVERNANCE` transition 的 exact-SHA
+ordinary CI 与 Level 3 均 PASS、且后续 `P8-07F-FACTS` 原子任务已由 controller
+精确激活后生效。在这些条件全部满足前，本文件其余生产连接禁令继续生效；治理
+transition 本身不得建立 SSH、ERP connector、Site 或其他生产连接。
+
+生效后的例外仅允许通过 SSH alias `JCE-Core` 做当前任务所需的严格只读事实采集，
+并必须遵守 transition 冻结的 transport/remote-operation allowlist、最小权限、
+`BatchMode`、严格 host-key、无 TTY/端口转发/agent 转发、短连接与命令超时、
+有限输出、确定性分页、脱敏、provenance 和 checksum。优先复用已验证 inventory，
+只在缺失、过期或 checksum/mtime/version 变化时做定向 delta 核对。任一权限不足、
+版本不符、输出 shape 未知、敏感值风险、allowlist 漂移或写操作需要都必须立即
+停止受影响部分，不得扩权。
+
+该例外不是生产修改授权。始终禁止 `sudo`、生产文件/数据库写入、core/config/
+permission/service/queue 变更、migrate/update/restart/reload/clear-cache/scheduler/
+console、DocType mutation、webhook/job/adapter/target command、replay/reconciliation
+action，以及凭据、cookie、token、private key、site-config secret、endpoint/host/
+user/key 或无关业务记录的收集或提交。事实任务只可提交脱敏元数据、源代码事实、
+必要汇总、版本、来源和 checksum；实际 ERPNext 定制或 LaunchFlow 产品调整必须
+另立获批原子任务。
+
+所有对账以当前已批准的 LaunchFlow architecture、data ownership、OpenAPI/event
+contracts 和 P8-01～P8-09 设计/代码为默认正确基线。结论只能使用
+`DIRECT_MATCH`、`CONFIG_OR_MAPPING_ONLY`、`MINOR_LAUNCHFLOW_ADJUSTMENT`、
+`MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT`、`BUSINESS_DECISION_REQUIRED` 或
+`NOT_APPLICABLE`；无具体差异证据时必须是 `DIRECT_MATCH`/`NO_CHANGE`。禁止借
+事实采集重构、重设计、重命名、合并/拆分领域对象、重做工作流、替换技术栈、
+重写权限模型或顺手通用化。最终 implementation/release closeout 前必须在同一
+只读边界下完成全量 ERPNext↔LaunchFlow compatibility reconciliation；任何未解决
+漂移都阻断 `IMPLEMENTATION_COMPLETE` 与 production-ready。
+
 ## 1. 产品使命
 
 建设一套面向注塑企业的新项目开发、Tooling、试模和 NPI 协同平台（产品名暂定 **NPI One**）。系统要像成熟的西门子工业工程软件，而不是 Frappe DocType/单据页面的集合，也不是消费级 SaaS 卡片看板。
@@ -129,6 +163,10 @@
 - 文档、契约、迁移和回滚说明与代码一致；
 - UI 变更提供 英文、简体中文、繁体中文截图或可复现的 story/fixture；
 - 在适用的 Task、Phase、PR 或发布边界，按三级验证策略完成对应 Gate；Level 3 边界必须通过 `release-gate` skill。
+- 任何 ERPNext 相关实现/发布收尾必须通过 P8-07F 最终全量生产只读 compatibility
+  reconciliation：所有 required 依赖与 contracts、ownership、mappings、adapters、
+  permissions、tests、deployment/rollback 文档一致；未解决漂移或未验证依赖不得
+  标记 `IMPLEMENTATION_COMPLETE` 或 production-ready。该 Gate 不授权任何生产修改。
 
 ## 9. 目录约定
 

@@ -42,4 +42,24 @@ production read-only collection is a separate Gate that first changes the
 higher-priority prohibition and freezes an exact least-privilege allowlist;
 this documentation task grants no connection authority.
 
+P8-07F is the mandatory compatibility Gate between P8-07 and P8-08. Its
+governance transition must pass exact-SHA ordinary CI and Level 3 before the
+separate facts task may use `JCE-Core`. The facts Gate requires fixed transport
+and remote-operation allowlists, minimum privilege, bounded deterministic
+output, redaction before persistence, provenance/checksum, fail-closed stops,
+zero remote mutation and zero product diff. Each comparison starts from the
+approved LaunchFlow architecture/contracts and records `DIRECT_MATCH`/
+`NO_CHANGE` unless a concrete incompatibility proves a smaller classification.
+Facts collection cannot itself pass an adjustment or production-change Gate.
+
+Before final implementation/release closeout, rerun a complete production
+ERPNext↔LaunchFlow read-only compatibility reconciliation over versions, apps,
+tracked customizations and every accepted ERP-dependent object/field/state/
+method/permission/lifecycle. Each row must be `STILL_MATCHES`,
+`PRODUCTION_DRIFT`, `LAUNCHFLOW_DRIFT`, `BOTH_DRIFTED` or `UNVERIFIED` with
+evidence/checksum, owner, impact and remediation. Any unresolved required drift
+or unverified dependency blocks `IMPLEMENTATION_COMPLETE` and production-ready.
+This remains a read-only Gate; actual ERP or LaunchFlow changes require separate
+atomic tasks and their own rollback/forward-fix evidence.
+
 Environment remediation cannot pass on configuration inspection alone. After a Codespaces rebuild, `make verify-dev-environment` must succeed and record actual Node, package-manager, Python, Docker/Compose, Bench, Vite and Frappe pin evidence. Phase 1.1 satisfied this rule on 2026-07-21; future toolchain changes require equivalent fresh-target evidence.

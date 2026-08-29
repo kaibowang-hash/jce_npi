@@ -330,6 +330,7 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected_evidence |= self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE
             if requirement_id in self.verifier.EXPECTED_P8_07_PLAN_REQUIREMENTS:
                 expected_evidence |= self.verifier.EXPECTED_P8_07_PLAN_EVIDENCE
+                expected_evidence |= self.verifier.EXPECTED_P8_07_COMPLETED_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -452,19 +453,22 @@ class V12ReconciliationTests(unittest.TestCase):
             anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
             for requirement_id in requirement_ids:
                 row = by_id[requirement_id]
-                completed_status = self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION.get(
+                completed_status = self.verifier.EXPECTED_P8_07_COMPLETED_ALLOCATION.get(
                     requirement_id,
-                    self.verifier.EXPECTED_P8_01_COMPLETED_ALLOCATION.get(
+                    self.verifier.EXPECTED_P8_06_COMPLETED_ALLOCATION.get(
                         requirement_id,
-                        self.verifier.EXPECTED_P8_02_COMPLETED_ALLOCATION.get(
+                        self.verifier.EXPECTED_P8_01_COMPLETED_ALLOCATION.get(
                             requirement_id,
-                            self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION.get(
+                            self.verifier.EXPECTED_P8_02_COMPLETED_ALLOCATION.get(
                                 requirement_id,
-                                self.verifier.EXPECTED_P8_04_COMPLETED_ALLOCATION.get(
+                                self.verifier.EXPECTED_P8_03_COMPLETED_ALLOCATION.get(
                                     requirement_id,
-                                    self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION.get(
+                                    self.verifier.EXPECTED_P8_04_COMPLETED_ALLOCATION.get(
                                         requirement_id,
-                                        anchored_status,
+                                        self.verifier.EXPECTED_P8_05_COMPLETED_ALLOCATION.get(
+                                            requirement_id,
+                                            anchored_status,
+                                        ),
                                     ),
                                 ),
                             ),
@@ -673,12 +677,12 @@ class V12ReconciliationTests(unittest.TestCase):
                 self.verifier.EXPECTED_P8_06_COMPLETED_EVIDENCE.issubset(evidence)
             )
 
-    def test_p8_07_plan_is_traceable_without_product_overclaim(self) -> None:
+    def test_p8_07_is_technically_verified_with_external_holds(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
         expected = {
-            "FR-RP-009": "ANCHORED_P8_07",
-            "NFR-INT-001": "ANCHORED_P8_07",
+            "FR-RP-009": "TECHNICAL_VERIFIED_OPERATION_CENTER_FOUNDATION_PRODUCTION_SANDBOX_FACTS_HELD",
+            "NFR-INT-001": "TECHNICAL_VERIFIED_INTEGRATION_RELIABILITY_FOUNDATION_PRODUCTION_SANDBOX_FACTS_HELD",
             "UX-016": "TECHNICAL_VERIFIED_FOUNDATION",
         }
         for requirement_id, status in expected.items():
@@ -693,15 +697,55 @@ class V12ReconciliationTests(unittest.TestCase):
             self.assertTrue(
                 self.verifier.EXPECTED_P8_07_PLAN_EVIDENCE.issubset(evidence)
             )
+            self.assertTrue(
+                self.verifier.EXPECTED_P8_07_COMPLETED_EVIDENCE.issubset(evidence)
+            )
 
         phase_status = (ROOT / "implementation/PHASE_STATUS.yaml").read_text(
             encoding="utf-8"
         )
-        self.assertIn("product_code_authorized: false", phase_status)
+        self.assertIn("status: PASS_LEVEL_3_BOUNDED_TECHNICAL_PORTIONS", phase_status)
         self.assertIn(
             "DERIVED_FROM_OWNING_TERMINAL_TRUTH_NOT_A_SECOND_MUTABLE_COPY",
             phase_status,
         )
+
+    def test_p8_07f_governance_is_conditional_read_only_and_minimal(self) -> None:
+        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        plan = (
+            ROOT
+            / "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md"
+        ).read_text(encoding="utf-8")
+        quality_gate = (ROOT / "implementation/QUALITY_GATE.md").read_text(
+            encoding="utf-8"
+        )
+        phase_status = (ROOT / "implementation/PHASE_STATUS.yaml").read_text(
+            encoding="utf-8"
+        )
+
+        for required in (
+            "P8-07F-GOVERNANCE",
+            "P8-07F-FACTS",
+            "BatchMode",
+            "StrictHostKeyChecking",
+            "ClearAllForwardings",
+            "DIRECT_MATCH",
+            "MINOR_LAUNCHFLOW_ADJUSTMENT",
+            "MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT",
+            "NO_CHANGE",
+        ):
+            self.assertIn(required, agents + plan)
+        for prohibited in (
+            "sudo",
+            "console",
+            "DocType mutation",
+            "replay or reconciliation action",
+        ):
+            self.assertIn(prohibited, agents + plan)
+        self.assertIn("production_connection_authorized_now: false", phase_status)
+        self.assertIn("p8_08_blocked_until_facts_gate: true", phase_status)
+        self.assertIn("FINAL_FULL_PRODUCTION", (ROOT / "implementation/CURRENT_TASK.json").read_text(encoding="utf-8"))
+        self.assertIn("blocks `IMPLEMENTATION_COMPLETE`", quality_gate)
 
     def test_r1_04_trace_is_verified_with_runtime_evidence(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)

@@ -1603,3 +1603,22 @@ Compile, shell, current/reconciliation, all-seven-off/cardinality-four, diff,
 exact-five and unauthorized-six rejection pass. The only dirty governance
 failure is the preserved user M9 marker assertion (`4 != 2`); it passes in the
 clean overlay and is not changed by this task.
+
+## Final Level 3 closeout and P8-07F handoff
+
+Cardinality repair SHA `edf89e79cd815cbde60e2940ae9d580479336d75`
+passes ordinary `33277289693` and final Level 3 `33277905251`. All four base
+lanes, controlled preflight `99168971817` and cumulative runtime `99168998544`
+pass. The runtime completes result recording, artifact upload and cleanup with
+all diagnostics off. P8-07 is therefore `PASS_LEVEL_3` for bounded technical
+portions only; exact artifacts and requirement holds are in
+`p8-07-validation.md`.
+
+The next atomic task is delivery-infrastructure-only
+`P8-07F-GOVERNANCE`. It records the user's conditional standing read-only
+authority and performs zero SSH/ERP contact. Only after that transition's
+exact-SHA ordinary and Level 3 PASS may the separate `P8-07F-FACTS` task use
+the fixed `JCE-Core` read-only allowlist. P8-08 remains inactive until the
+compatibility-fact task and its applicable Gate pass. Existing LaunchFlow
+architecture/contracts remain the default-correct baseline; no concrete
+incompatibility means `NO_CHANGE`.

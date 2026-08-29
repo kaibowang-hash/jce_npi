@@ -34,103 +34,52 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P8-07")
-        self.assertEqual(value["task_kind"], "product")
+        self.assertEqual(value["task_id"], "P8-07F-GOVERNANCE")
+        self.assertEqual(value["task_kind"], "delivery_infrastructure")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P8-08")
+        self.assertEqual(value["authorized_next_task"], "P8-07F-FACTS")
         self.assertIn(
-            "P8_07_AUDIT_PLAN_EXACT_SHA_2E573FA1757F7D9306F17BB47CB62C59E8493B7F_ORDINARY_33139628396_PASSED",
+            "P8_07_LEVEL_3_EXACT_SHA_EDF89E79CD815CBDE60E2940AE9D580479336D75_ORDINARY_33277289693_FINAL_33277905251_PASSED",
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07_CHECKPOINT_1_EXACT_SHA_D45D1D560FEDFED9D9791A5C08CCF9C1402F7EF8_ORDINARY_33142594763_PASSED",
+            "P8_07F_GOVERNANCE_ZERO_SSH_ZERO_CONNECTOR_ZERO_SITE_ZERO_EXTERNAL_STATE",
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07_CHECKPOINT_2_EXACT_SHA_F7CF7C7EA490C10ACFC044AAEF236945E5118F01_ORDINARY_33187660221_PASSED",
+            "P8_07F_FACTS_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS",
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07_CHECKPOINT_3_EXACT_SHA_758BB222A1477474AF50FC6B84D5D2C56E379ADC_ORDINARY_33204451677_PASSED",
+            "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_BLOCKS_COMPLETION_ON_UNRESOLVED_DRIFT",
             value["frozen_invariants"],
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_4_AWAITING_PRODUCT_CI",
+            "IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3",
         )
+        self.assertEqual(value["requirement_ids"], [])
         self.assertIn(
-            "P8_06_LEVEL_3_EXACT_SHA_547421A059911DF6AEB90BBBF06E837F77A3E5E0_ORDINARY_33131533806_FINAL_33132296565_PASSED",
-            value["frozen_invariants"],
-        )
-        self.assertEqual(
-            value["requirement_ids"],
-            ["FR-RP-009", "UX-016", "NFR-INT-001"],
-        )
-        self.assertIn(
-            "apps/npi_integration/npi_integration/integration_operations/**",
+            "AGENTS.md",
             value["allowed_paths"],
         )
         self.assertIn(
-            "implementation/evidence/phase-8/p8-07-*.md",
+            "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md",
             value["allowed_paths"],
-        )
-        self.assertIn(
-            "PRODUCTION_READ_ONLY_FACT_CHECK_REMAINS_QUEUED_NOT_EFFECTIVE_AND_CONTACT_PROHIBITED",
-            value["frozen_invariants"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "6a82568329e2ec46eae02df76a9d697e26cdf61e",
+            "edf89e79cd815cbde60e2940ae9d580479336d75",
         )
-        self.assertIn(
-            "LOGICAL_DLQ_IS_A_DERIVED_CLASSIFICATION_NOT_A_SECOND_MUTABLE_COPY_OF_BUSINESS_TRUTH",
-            value["frozen_invariants"],
-        )
-        self.assertEqual(len(value["allowed_paths"]), 75)
-        self.assertIn(".gitleaksignore", value["allowed_paths"])
-        self.assertIn("scripts/verify_devcontainer.py", value["allowed_paths"])
-        self.assertIn(
-            "scripts/verify_item_publish_runtime.py",
-            value["allowed_paths"],
-        )
-        self.assertIn("tests/test_devcontainer_verifier.py", value["allowed_paths"])
-        self.assertIn(
-            "apps/npi_integration/npi_integration/integration_operations/**",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "frontend/src/pages/execution-page.tsx",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "frontend/src/pages/execution-prototype-page.tsx",
-            value["allowed_paths"],
-        )
-        self.assertIn("frontend/src/app/app-shell.tsx", value["allowed_paths"])
-        self.assertIn("frontend/src/app/router.ts", value["allowed_paths"])
-        self.assertIn(
-            "frontend/tests/unit/pages-and-shell.test.tsx",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "frontend/tests/unit/router.test.tsx",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "implementation/evidence/phase-8/p8-07-*.md",
-            value["allowed_paths"],
-        )
+        self.assertEqual(len(value["allowed_paths"]), 23)
         self.assertNotIn("implementation/backlog.yaml", value["allowed_paths"])
-        self.assertTrue(
-            any(path.startswith("apps/") for path in value["allowed_paths"])
+        self.assertFalse(any("*" in path for path in value["allowed_paths"]))
+        self.assertFalse(
+            any(
+                path.startswith(("apps/", "frontend/", "contracts/", ".github/"))
+                for path in value["allowed_paths"]
+            )
         )
-        self.assertTrue(
-            any(path.startswith("frontend/") for path in value["allowed_paths"])
-        )
-        self.assertTrue(
-            any(path.startswith("contracts/") for path in value["allowed_paths"])
-        )
-        self.assertFalse(any(path == "**" for path in value["allowed_paths"]))
         self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
         affected_modules = {
             module
@@ -142,19 +91,6 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             affected_modules,
             {
                 "tests.test_current_task_verifier",
-                "tests.test_devcontainer_verifier",
-                "tests.test_phase8_inbound_project_metadata",
-                "tests.test_phase8_integration_operations_api",
-                "tests.test_phase8_integration_operations_contract",
-                "tests.test_phase8_integration_operations_domain",
-                "tests.test_phase8_integration_operations_metadata",
-                "tests.test_phase8_integration_operations_repository",
-                "tests.test_phase8_integration_operations_runtime_verifier",
-                "tests.test_phase8_integration_operations_security",
-                "tests.test_phase8_item_publish_runtime_verifier",
-                "tests.test_phase8_item_publish_security",
-                "tests.test_phase8_mbom_publish_security",
-                "tests.test_phase8_tool_asset_security",
                 "tests.test_v1_2_reconciliation",
             },
         )

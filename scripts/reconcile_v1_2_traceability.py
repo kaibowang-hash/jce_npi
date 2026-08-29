@@ -463,6 +463,15 @@ P8_07_PLAN_EVIDENCE = (
     "implementation/evidence/phase-8/p8-07-plan.md",
 )
 P8_07_PLAN_REQUIREMENTS = {"FR-RP-009", "UX-016", "NFR-INT-001"}
+P8_07_COMPLETED_EVIDENCE = (
+    "implementation/evidence/phase-8/p8-07-controlled-runtime-checkpoint.md",
+    "implementation/evidence/phase-8/p8-07-validation.md",
+)
+P8_07_COMPLETED_ALLOCATION = {
+    "FR-RP-009": "TECHNICAL_VERIFIED_OPERATION_CENTER_FOUNDATION_PRODUCTION_SANDBOX_FACTS_HELD",
+    "NFR-INT-001": "TECHNICAL_VERIFIED_INTEGRATION_RELIABILITY_FOUNDATION_PRODUCTION_SANDBOX_FACTS_HELD",
+    "UX-016": "TECHNICAL_VERIFIED_FOUNDATION",
+}
 ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE = (
     "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
 )
@@ -1040,15 +1049,19 @@ def _expanded_rows(
             dict.fromkeys((*evidence, *P8_06_COMPLETED_EVIDENCE))
         )
 
-    for requirement_id in P8_07_PLAN_REQUIREMENTS:
+    for requirement_id, status in P8_07_COMPLETED_ALLOCATION.items():
         row = expanded_by_id[requirement_id]
+        row["phase"] = "8"
+        row["status"] = status
         evidence = [
             value.strip()
             for value in row["evidence"].split(";")
             if value.strip()
         ]
         row["evidence"] = "; ".join(
-            dict.fromkeys((*evidence, *P8_07_PLAN_EVIDENCE))
+            dict.fromkeys(
+                (*evidence, *P8_07_PLAN_EVIDENCE, *P8_07_COMPLETED_EVIDENCE)
+            )
         )
 
     for requirement_id in ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_IDS:

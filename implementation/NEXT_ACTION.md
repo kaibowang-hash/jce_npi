@@ -1,19 +1,23 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4_AWAITING_PRODUCT_CI — P8-07`
+`IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-GOVERNANCE`
 
-Recovery time: `2026-08-29T00:30:00Z`
+Recovery time: `2026-08-30T00:00:00+07:00`
 
-Current atomic action: seal checkpoint 4 cumulative disposable runtime and its
-exact-SHA ordinary CI, then run the sole final Level 3 Gate. Checkpoint 3 passes
-at `758bb222a1477474af50fc6b84d5d2c56e379adc` / ordinary CI
-`33204451677`. The runtime is fixed-Site, network-free and Project-scoped; it
-proves the logical DLQ, immutable history, exact retryable replay, uncertain
-no-redispatch, reconciliation intent/observation, cross-process idempotency,
-rollback, route disable/recovery, migration twice, redaction and exact cleanup.
-It adds no adapter or target call. Production contact remains prohibited and
-the queued fact-check request remains not effective during this checkpoint.
+Current atomic action: commit only the exact P8-07 closeout and P8-07F
+governance-transition paths, obtain exact-SHA ordinary CI, then run the sole
+Level 3 Gate. P8-07 passes at exact product SHA
+`edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary `33277289693` and
+Level 3 `33277905251`. This transition records but does not exercise the
+conditional `JCE-Core` read-only authorization. No SSH, connector, Site,
+production fact collection, product change or P8-08 activation is allowed.
+
+After this transition's ordinary and Level 3 PASS, activate only the separate
+`P8-07F-FACTS` compatibility-reconciliation task. That task must use the fixed
+allowlist and produce sanitized inventory, requirements classification,
+compatibility/minimal-adjustment blueprint and gap/decision register. Existing
+LaunchFlow architecture/contracts remain the default-correct baseline.
 
 Required branch:
 `codex/npi-v1.2-implementation`

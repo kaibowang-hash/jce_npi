@@ -138,6 +138,13 @@ Exit：AT-01/02 的 NPI 侧黄金路径通过。
 5. Tool Asset 移交；
 6. 质量请求/结果；
 7. DLQ、回放、对账和运维页面。
+7F. 在 P8-07 完整 Level 3 后、P8-08 前执行生产 ERPNext↔LaunchFlow
+   compatibility reconciliation：先通过独立治理 transition 的 exact-SHA
+   ordinary/Level 3，再由独立事实任务按固定 `JCE-Core` 只读 allowlist 采集
+   脱敏事实。以现有架构/主责/合同为默认正确基线，优先 `NO_CHANGE`，仅对
+   可证明差异提出配置/映射或最小局部可逆调整；事实任务不改产品或生产。最终
+   implementation/release closeout 还必须按同一边界做全量 compatibility
+   reconciliation，required drift/unknown 未闭合时禁止完成或标 production-ready。
 8. NPI 侧 Released Trial Summary 只读 projection contract 与 sandbox-ready
    adapter；正式目标显示身份等待批准资产，禁止生产连接。
 
