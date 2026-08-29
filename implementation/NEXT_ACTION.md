@@ -1,23 +1,22 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-GOVERNANCE`
+`IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION — P8-07F-FACTS`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
-Current atomic action: commit only the exact P8-07 closeout and P8-07F
-governance-transition paths, obtain exact-SHA ordinary CI, then run the sole
-Level 3 Gate. P8-07 passes at exact product SHA
-`edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary `33277289693` and
-Level 3 `33277905251`. This transition records but does not exercise the
-conditional `JCE-Core` read-only authorization. No SSH, connector, Site,
-production fact collection, product change or P8-08 activation is allowed.
+Current atomic action: commit the separate `P8-07F-FACTS` activation and
+repository-governed fail-closed collector, then obtain its exact-SHA ordinary
+CI before the first production read. The governance transition passes at
+`d919d695972260fa86d5df7fa60033e6adb62f49`, ordinary `33279778063` and
+Level 3 `33280319184`, with zero SSH/connector/Site contact.
 
-After this transition's ordinary and Level 3 PASS, activate only the separate
-`P8-07F-FACTS` compatibility-reconciliation task. That task must use the fixed
-allowlist and produce sanitized inventory, requirements classification,
-compatibility/minimal-adjustment blueprint and gap/decision register. Existing
-LaunchFlow architecture/contracts remain the default-correct baseline.
+After the activation ordinary PASS, use only the fixed `JCE-Core` transport and
+seven operation IDs to collect bounded redacted facts. Produce the sanitized
+inventory, requirements classification, compatibility/minimal-adjustment
+blueprint and gap/decision register. Existing LaunchFlow architecture/contracts
+remain the default-correct baseline; P8-08 remains blocked through the facts
+Level 3 Gate.
 
 Required branch:
 `codex/npi-v1.2-implementation`

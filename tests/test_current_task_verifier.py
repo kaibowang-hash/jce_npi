@@ -34,12 +34,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P8-07F-GOVERNANCE")
+        self.assertEqual(value["task_id"], "P8-07F-FACTS")
         self.assertEqual(value["task_kind"], "delivery_infrastructure")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P8-07F-FACTS")
+        self.assertEqual(value["authorized_next_task"], "P8-08")
         self.assertIn(
-            "P8_07_LEVEL_3_EXACT_SHA_EDF89E79CD815CBDE60E2940AE9D580479336D75_ORDINARY_33277289693_FINAL_33277905251_PASSED",
+            "P8_07F_GOVERNANCE_EXACT_SHA_D919D695972260FA86D5DF7FA60033E6ADB62F49_ORDINARY_33279778063_LEVEL_3_33280319184_PASSED",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -47,7 +47,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_FACTS_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS",
+            "P8_07F_FACTS_CONNECTION_REQUIRES_THIS_ACTIVATION_EXACT_SHA_ORDINARY_PASS",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "ONLY_ERP_VERSION_INSTALLED_APPS_APP_HEAD_APP_STATUS_APP_TRACKED_PATHS_APP_FILE_HASH_APP_FILE_READ",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -56,11 +60,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3",
+            "IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(
-            "AGENTS.md",
+            "scripts/collect_erpnext_production_facts.py",
             value["allowed_paths"],
         )
         self.assertIn(
@@ -69,9 +73,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "edf89e79cd815cbde60e2940ae9d580479336d75",
+            "d919d695972260fa86d5df7fa60033e6adb62f49",
         )
-        self.assertEqual(len(value["allowed_paths"]), 23)
+        self.assertEqual(len(value["allowed_paths"]), 27)
         self.assertNotIn("implementation/backlog.yaml", value["allowed_paths"])
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
@@ -90,6 +94,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(
             affected_modules,
             {
+                "tests.test_erpnext_production_fact_collector",
                 "tests.test_current_task_verifier",
                 "tests.test_v1_2_reconciliation",
             },

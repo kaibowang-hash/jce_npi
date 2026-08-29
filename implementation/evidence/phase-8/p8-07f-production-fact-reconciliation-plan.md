@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Controller tasks: `P8-07F-GOVERNANCE` then `P8-07F-FACTS`
 
-Status: **GOVERNANCE TRANSITION ACTIVE; PRODUCTION CONTACT NOT YET EFFECTIVE**
+Status: **GOVERNANCE GATE PASS; FACTS ACTIVATION AWAITS EXACT-SHA ORDINARY**
 
 ## Purpose and baseline
 
@@ -34,6 +34,15 @@ reversible atomic task.
    customization.
 4. P8-08 remains inactive until the facts task, documentation, trace review
    and its applicable exact-SHA Gate all PASS or explicitly hold every unknown.
+
+The governance checkpoint is
+`d919d695972260fa86d5df7fa60033e6adb62f49`. Its ordinary CI `33279778063`
+passes repository `99172860297`, frontend `99172860137`, secret
+`99172860343` and visual `99172860279`; Level 3 `33280319184` passes those
+four lanes plus preflight `99175743503` and cumulative runtime `99175763495`.
+The transition made zero production contact. The separate facts activation
+adds `scripts/collect_erpnext_production_facts.py`; no collector call is allowed
+until that activation's own exact-SHA ordinary CI passes.
 
 ## Fixed transport contract
 

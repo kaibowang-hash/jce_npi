@@ -8852,3 +8852,25 @@ repeat or rewrite it merely to restore context. See
   task-scoped delta provenance. Final implementation/release closeout requires
   one complete production ERPNext↔LaunchFlow read-only reconciliation; any
   unresolved required drift blocks completion and production-ready.
+
+## 2026-08-30 P8-07F governance Level 3 PASS; facts activation
+
+- Governance exact SHA `d919d695972260fa86d5df7fa60033e6adb62f49`
+  passes ordinary CI `33279778063` and Level 3 `33280319184`. The transition
+  performed zero SSH, connector, Site or production operation.
+- The current marker is exactly `P8-07F facts collection awaits exact-SHA activation ordinary CI`.
+  `P8-07F-FACTS` is now the only active delivery-infrastructure task; P8-08 is
+  blocked until its final Level 3.
+- The activation commit may add only the fail-closed collector and governance
+  state within the exact facts manifest. No production read is allowed before
+  that commit's exact-SHA ordinary CI passes.
+- After that ordinary PASS, every call must use the collector's fixed
+  `JCE-Core` transport and only `ERP_VERSION`, `INSTALLED_APPS`, `APP_HEAD`,
+  `APP_STATUS`, `APP_TRACKED_PATHS`, `APP_FILE_HASH` or `APP_FILE_READ`.
+  Raw custom-app identity/source remains private temporary state; committed
+  output is limited to sanitized structure, provenance and checksums.
+- The task is compatibility reconciliation, not redesign. Existing architecture,
+  ownership and contracts remain default correct; no evidence-backed difference
+  means `DIRECT_MATCH` and `NO_CHANGE`. Any adjustment is a later minimal atomic
+  task. M9-04/M9-05 real pilots remain post-V1.2 deferred and controlled
+  non-production UAT does not establish real usage.

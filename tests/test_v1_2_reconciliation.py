@@ -742,7 +742,11 @@ class V12ReconciliationTests(unittest.TestCase):
             "replay or reconciliation action",
         ):
             self.assertIn(prohibited, agents + plan)
-        self.assertIn("production_connection_authorized_now: false", phase_status)
+        self.assertIn("production_connection_authorized_now: true", phase_status)
+        self.assertIn(
+            "facts_connection_requires_activation_ordinary_pass: true",
+            phase_status,
+        )
         self.assertIn("p8_08_blocked_until_facts_gate: true", phase_status)
         self.assertIn("FINAL_FULL_PRODUCTION", (ROOT / "implementation/CURRENT_TASK.json").read_text(encoding="utf-8"))
         self.assertIn("blocks `IMPLEMENTATION_COMPLETE`", quality_gate)

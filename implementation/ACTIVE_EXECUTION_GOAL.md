@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-GOVERNANCE`
+- Mode: `IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION — P8-07F-FACTS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -15,12 +15,12 @@ Updated: `2026-08-30T00:00:00+07:00`
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `33277905251` (`PASS — LEVEL 3` at
-  `edf89e79cd815cbde60e2940ae9d580479336d75`; repository, frontend,
-  secret, governed visual, controlled preflight and cumulative P5→P8-07 Site)
+  `33280319184` (`PASS — LEVEL 3` at
+  `d919d695972260fa86d5df7fa60033e6adb62f49`; repository, frontend,
+  secret, governed visual, controlled preflight and cumulative runtime)
 - Latest checkpoint exact-SHA CI:
-  `33277289693` (`PASS` at
-  `edf89e79cd815cbde60e2940ae9d580479336d75`; P8-07 final)
+  `33279778063` (`PASS` at
+  `d919d695972260fa86d5df7fa60033e6adb62f49`; P8-07F governance)
 - Latest governance closeout checkpoint:
   `d39b24e4169d6116ab0721440b1f7dc01b599c96` (`PASS`; ordinary CI
   `33134622237`; P8-06 closeout and P8-07 audit activation)
@@ -41,14 +41,14 @@ Updated: `2026-08-30T00:00:00+07:00`
   ordinary CI `33204451677`; repository `98961818348`, frontend
   `98961818460`, secret `98961818358` and governed visual `98961818084` pass;
   controlled lanes correctly skipped)
-- Active atomic scope: `P8-07F-GOVERNANCE` closes P8-07 at its exact product
-  and Gate evidence and records the user's conditional standing authorization,
-  fixed read-only SSH operation boundary, redaction/provenance/checksum,
-  fail-closed stops, compatibility/minimal-adjustment semantics and final full
-  reconciliation Gate. This transition performs zero SSH/connector/Site/
-  production contact and changes no product, contract, schema or workflow.
-  Only after its own exact-SHA ordinary CI and Level 3 PASS may the controller
-  activate the separate `P8-07F-FACTS` task; P8-08 remains inactive.
+- Active atomic scope: `P8-07F-FACTS` accepts the governance checkpoint
+  `d919d695972260fa86d5df7fa60033e6adb62f49`, ordinary `33279778063` and
+  Level 3 `33280319184`, then freezes a repository-governed collector with only
+  seven read-only operation IDs. Production contact remains zero until this
+  activation commit passes exact-SHA ordinary CI. Afterwards the task may use
+  only the fixed `JCE-Core` boundary to create a sanitized compatibility and
+  minimal-adjustment reconciliation; it changes no product or production state.
+  P8-08 remains inactive until the facts task Level 3 PASS.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

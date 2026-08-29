@@ -4,21 +4,22 @@ current_phase: 8
 updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P8-07F-GOVERNANCE
-current_task_status: IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3
-current_task_completed_stage: P8_07_LEVEL_3_PASS
-current_task_next_stage: P8_07F_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3
-current_task_next_stage_status: TRANSITION_UNCOMMITTED_NO_PRODUCTION_CONTACT
-resumed_product_task: P8-07F-FACTS
-resumed_product_task_status: BLOCKED_UNTIL_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
+current_task: P8-07F-FACTS
+current_task_status: IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION
+current_task_completed_stage: P8_07F_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
+current_task_next_stage: P8_07F_FACTS_ACTIVATION_EXACT_SHA_ORDINARY
+current_task_next_stage_status: ACTIVATION_UNCOMMITTED_ZERO_PRODUCTION_CONTACT
+resumed_product_task: P8-08
+resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_LEVEL_3_PASS
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_STANDING_AUTHORIZATION_2026_08_29_CONDITIONAL
-    connection_authorized: false
-    current_task_may_connect: false
+    connection_authorized: true
+    current_task_may_connect: true
+    connection_effective_condition: P8_07F_FACTS_ACTIVATION_EXACT_SHA_ORDINARY_PASS
     documentation_authorized_after_transition_ordinary: true
-    current_rule: GOVERNANCE_TRANSITION_ZERO_CONTACT
-    future_activation_trigger: P8_07F_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS_PLUS_SEPARATE_P8_07F_FACTS_ACTIVATION
+    current_rule: FACTS_TASK_FIXED_ALLOWLIST_ONLY_AFTER_ACTIVATION_ORDINARY
+    future_activation_trigger: SATISFIED_BY_P8_07F_GOVERNANCE_D919D695_ORDINARY_33279778063_LEVEL_3_33280319184_AND_SEPARATE_FACTS_ACTIVATION
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
     final_full_reconciliation_required: true
@@ -2633,18 +2634,22 @@ p8_07:
     - implementation/evidence/phase-8/p8-07-controlled-runtime-checkpoint.md
     - implementation/evidence/phase-8/p8-07-validation.md
 p8_07f:
-  task: P8-07F-GOVERNANCE
-  next_task: P8-07F-FACTS
-  status: IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3
+  task: P8-07F-FACTS
+  next_task: P8-08
+  status: IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION
   phase: 8
   milestone: M7-07F
   task_kind: DELIVERY_INFRASTRUCTURE
   requirements: []
   predecessor_product_checkpoint: edf89e79cd815cbde60e2940ae9d580479336d75
-  production_connection_authorized_now: false
+  governance_checkpoint: d919d695972260fa86d5df7fa60033e6adb62f49
+  governance_ordinary: 33279778063
+  governance_level_3: 33280319184
+  production_connection_authorized_now: true
+  facts_connection_requires_activation_ordinary_pass: true
   transition_may_contact_production: false
-  facts_activation_requires_transition_ordinary: true
-  facts_activation_requires_transition_level_3: true
+  facts_activation_requires_transition_ordinary: SATISFIED
+  facts_activation_requires_transition_level_3: SATISFIED
   facts_task_may_modify_product: false
   p8_08_blocked_until_facts_gate: true
   standing_read_only_authority_after_activation: true
@@ -2680,5 +2685,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07], current_task: P8-07F-GOVERNANCE}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE], current_task: P8-07F-FACTS}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

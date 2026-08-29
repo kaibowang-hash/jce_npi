@@ -117,3 +117,19 @@ The SSH transport/operation allowlist, redaction/provenance/checksum, stop
 conditions, persistent delta-first usage and final full reconciliation Gate
 are frozen in the P8-07F plan. P8-08 remains closed until the facts task and
 its Gate pass.
+
+## 2026-08-30 transition exact-SHA Gate
+
+The superseding P8-07F governance transition is accepted at exact SHA
+`d919d695972260fa86d5df7fa60033e6adb62f49`. Ordinary CI `33279778063`
+passes repository `99172860297`, frontend `99172860137`, secret
+`99172860343` and governed visual `99172860279`. Level 3 `33280319184`
+passes repository `99174278508`, frontend `99174278534`, secret
+`99174278422`, visual `99174278532`, controlled preflight `99175743503` and
+cumulative runtime `99175763495`. No SSH, connector, Site or production fact
+operation occurred in the transition.
+
+The controller may now activate only `P8-07F-FACTS`. Its first commit freezes
+the exact task manifest and a repository-governed collector. The first
+production read still requires that activation commit's exact-SHA ordinary CI
+to pass. P8-08, product changes and production mutation remain inactive.
