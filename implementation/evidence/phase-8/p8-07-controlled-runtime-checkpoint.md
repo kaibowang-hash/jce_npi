@@ -336,3 +336,34 @@ frontend/workflow diff remains zero.
   exact-104 localized diagnostics, diff, exact-seven/union-78 manifests and
   unauthorized-eight rejection pass. Product API, contracts, schema,
   frontend and workflow remain unchanged beyond the exact derived-read filter.
+
+## Mock-only repair final and post-mock combined diagnostic candidate
+
+- Exact-seven repair SHA `5117bd67359517c21bf4a4824245103c83d675cd`
+  passes ordinary CI `33223526404` in all four lanes. Its only diagnostics-off
+  Level 3 `33224261629` passes secret scan `99024629237`, repository
+  `99024629338`, visual `99024629353`, frontend `99024629452` and preflight
+  `99026648007`; runtime `99026682189` fails in the cumulative verifier after
+  fixed Bench/Site initialization. Cleanup completes.
+- Fixed-label classification returns only
+  `Local Frappe integration operations runtime verification failed.` No
+  child/runtime output, response status/body, business values, identities,
+  message or stack was read. The label is internal to P8-07 but nonunique with
+  all diagnostics disabled, so repair is prohibited. Freeze the repair final
+  at `1/1`.
+- The next product-zero exact-five candidate enables only
+  `POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED`; all historical flags are false.
+  It reuses exact `104` safe codes and the established exact trace,
+  parent-owned child environment, exact-name `0600` `O_EXCL` exact-three-key
+  record, inner precedence, strict reader, failed-child unread and success-zero
+  contracts. Product/API/repository/contracts/schema/frontend/workflow remain
+  unchanged. Its exact-SHA ordinary PASS must precede one Level 2 controlled
+  diagnostic. P8-07F/SSH/ERP and P8-08 stay closed.
+- Diagnostic Level 1 passes focused verifier `29/29`, complete P8-07 `64/64`,
+  governance/reconciliation `59/59`, full Python `2636/2636`, frontend
+  unit/coverage `1086/1086` and focused nonvisual E2E `3/3`. Generate,
+  typecheck, full lint and `8585`-source `100%` `zh`/`zh-TW` i18n, compile,
+  shell syntax, current/reconciliation, JSON/YAML, exact-104 lexical/
+  precedence/reader checks, diff, exact-five/union-78 manifests and
+  unauthorized-six rejection pass. Product/API/repository/contracts/schema/
+  frontend/workflow diff remains zero.

@@ -59,6 +59,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED",
             True,
+        ), patch.object(
+            self.verifier,
+            "POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
         ):
             yield
 
@@ -367,29 +371,28 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 )
             record.assert_called_once_with(expected, label="disabled")
 
-    def test_collection_response_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
+    def test_post_mock_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
         self.assertFalse(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
+        self.assertTrue(self.verifier.POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
-        self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
         self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
         self.assertEqual(len(self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES), 7)
-        with self.collection_response_diagnostics():
-            codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 104)
-            self.assertEqual(
-                codes,
-                frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
-                    self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
-                    self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
-                ),
-            )
-            self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
-            source = SCRIPT.read_text(encoding="utf-8")
-            self.assertTrue(all(source.count(f'"{code}"') == 2 for code in codes))
+        codes = self.verifier._active_fresh_runtime_diagnostic_codes()
+        self.assertEqual(len(codes), 104)
+        self.assertEqual(
+            codes,
+            frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+                self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
+                self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
+            ),
+        )
+        self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertTrue(all(source.count(f'"{code}"') == 2 for code in codes))
         self.assertNotIn("str(error)", source)
         self.assertNotIn("repr(error)", source)
 
@@ -405,6 +408,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
@@ -447,6 +454,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             ), patch.object(
                 self.verifier,
                 "COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
+                self.verifier,
+                "POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED",
                 False,
             ), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME

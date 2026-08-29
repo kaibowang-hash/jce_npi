@@ -7898,3 +7898,40 @@ repeat or rewrite it merely to restore context. See
   diagnostics, diff hygiene, exact-seven/union-78 and unauthorized-eight
   rejection pass. Product API, contracts, schema, frontend and workflow diffs
   remain zero outside the exact derived-read repair.
+
+### P8-07 checkpoint-4 post-mock combined diagnostic cycle
+
+- Mock-only repair SHA `5117bd67359517c21bf4a4824245103c83d675cd`
+  passes ordinary CI `33223526404`: secret scan `99022447520`, frontend
+  `99022447612`, visual `99022447615` and repository `99022447632` all pass.
+  Its sole diagnostics-off Level 3 `33224261629` passes secret scan
+  `99024629237`, repository `99024629338`, visual `99024629353`, frontend
+  `99024629452` and preflight `99026648007`; runtime `99026682189` fails in
+  the cumulative verifier after the fixed Bench/Site. Cleanup completes.
+- Fixed source-label filtering yields exactly
+  `Local Frappe integration operations runtime verification failed.` Earlier
+  cumulative verifiers passed, but all diagnostics were disabled, so the
+  internal P8-07 first source remains nonunique. No child/runtime output,
+  response status/body, business values, identities, message or stack was
+  read. Freeze the mock-only repair final at `1/1`.
+- Open one independent product-zero post-mock combined cycle at diagnostic
+  `0/1`, repair `0/1`, final `0/1`. Only
+  `POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED=True`; all four historical flags are
+  false. It reuses the exact `104` safe codes (`45` outer, `52` fixture and
+  seven value-free collection-response classes), deterministic trace,
+  parent-owned child environment, exact-name `0600` `O_EXCL` exact-three-key
+  record, inner precedence, strict reader, failed-child unread and success-zero
+  contracts. Product/API/repository/contracts/schema/frontend/workflow behavior
+  is unchanged from the already accepted repair.
+- The diagnostic task is exact-five: verifier/test plus this controller, plan
+  and checkpoint evidence. Its own exact-SHA ordinary PASS is required before
+  one Level 2 controlled diagnostic. P8-07F, SSH/ERP contact and P8-08 remain
+  closed.
+- Diagnostic Level 1 passes focused verifier `29/29`, complete P8-07 `64/64`,
+  governance/reconciliation `59/59`, full Python `2636/2636`, frontend
+  unit/coverage `1086/1086` and focused nonvisual E2E `3/3`. Generate,
+  typecheck, full lint/format/style/boundary/UI, `8585`-source `100%` `zh`/
+  `zh-TW` i18n, compile, shell syntax, current/reconciliation, JSON/YAML,
+  exact-104 lexical/precedence/reader checks, diff, exact-five/union-78 and
+  unauthorized-six rejection pass. Product, API, repository, contracts,
+  schema, frontend and workflow diffs are zero.

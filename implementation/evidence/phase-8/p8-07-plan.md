@@ -621,3 +621,40 @@ direct-SQL/network/permission scans, exact-104 localized diagnostics, diff,
 exact-seven/union-78 manifests and unauthorized-eight rejection pass. Product
 API, contracts, schema, frontend and workflow diffs remain zero outside the
 minimal derived-read change.
+
+## 25. Mock-only repair final and post-mock combined diagnostic
+
+Repair SHA `5117bd67359517c21bf4a4824245103c83d675cd` passes ordinary
+CI `33223526404` in all four lanes. Its sole diagnostics-off Level 3
+`33224261629` passes secret scan `99024629237`, repository `99024629338`,
+visual `99024629353`, frontend `99024629452` and preflight `99026648007`.
+Runtime `99026682189` fails in the cumulative verifier after fixed Bench/Site
+initialization; cleanup completes.
+
+Only the fixed source label
+`Local Frappe integration operations runtime verification failed.` is present.
+This proves earlier cumulative verifiers passed and P8-07 returned nonzero,
+but does not identify one internal predicate while all diagnostics are off.
+Runtime/child output, response status/body, business values, identities,
+message and stack were not read. Freeze the repair final at `1/1`; no further
+product change is authorized from that label.
+
+The next independent exact-five cycle is product-zero and enables only
+`POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED`. Historical flags remain false. The
+new activation reuses exact `104`: `45` ordered outer stages, `52` fixture
+stages and seven value-free collection-response status classes. Exact trace,
+parent-owned child environment, exact-name `0600` `O_EXCL` exact-three-key
+record, nearest-inner precedence, strict reader, failed-child unread and
+success-zero behavior remain unchanged. Product/API/repository/contracts/
+schema/frontend/workflow behavior is unchanged. Exact-SHA ordinary PASS is
+required before one controlled Level 2 diagnostic. P8-07F, SSH/ERP contact
+and P8-08 remain closed.
+
+Diagnostic Level 1 passes focused verifier `29/29`, complete P8-07 `64/64`,
+governance/reconciliation `59/59`, full Python `2636/2636`, frontend
+unit/coverage `1086/1086` and focused nonvisual E2E `3/3`. Generate,
+typecheck, full lint/format/style/boundary/UI, `8585`-source `100%` `zh`/
+`zh-TW` i18n, compile, shell syntax, current/reconciliation, JSON/YAML,
+exact-104 lexical/precedence/reader checks, diff, exact-five/union-78 and
+unauthorized-six rejection pass. Product/API/repository/contracts/schema/
+frontend/workflow diff remains zero.
