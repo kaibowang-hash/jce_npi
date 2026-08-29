@@ -438,3 +438,39 @@ frontend/workflow diff remains zero.
   visual E2E passes `6/6`. Compile, shell syntax, current/reconciliation,
   all-diagnostics-off, diff, exact-eight/union-78 manifests and unauthorized-
   nine rejection pass.
+
+## UUID-repair Level 3 and post-UUID diagnostic checkpoint
+
+- UUID repair SHA `56a934806f4a96bc92a553c00c702405232f622f`
+  passes ordinary `33229220619`: visual `99038866816`, secret scan
+  `99038866907`, repository `99038866926` and frontend `99038866932` all pass.
+  The sole Level 3 `33229719467` passes those four lanes and preflight
+  `99041766715`; runtime `99041789934` passes Bench and disposable Site setup,
+  fails only in the cumulative verifier, skips result/artifact steps and
+  completes cleanup.
+- Fixed allowlist filtering yields exactly
+  `Local Frappe integration operations runtime verification failed.` P8-01
+  through P8-06 therefore completed, P8-07 fresh returned nonzero, and later
+  P8-07 replay/route recovery/cleanup were not reached. All diagnostic flags
+  were false, so no unique inner predicate follows. No raw/child output,
+  response body/status, business value, identity, message or stack was read.
+- Freeze the prior cycle at diagnostic `1/1`, repair `1/1`, final `1/1`.
+  Independent `p8-07-checkpoint-4-post-uuid-collection-server` starts at
+  `0/1,0/1,0/1`. Only its new flag is true; all historical P8-07 flags are
+  false. Exact `150`, fixed request scope/trace, cursors, exact-three-key
+  `0600` `O_EXCL` record, server-inner precedence, fallback, same exception,
+  finally restoration, failed-child unread and success-zero remain locked.
+- The exact-five candidate changes verifier/test and the three governance
+  files only. Product/API/repository/contracts/schema/permissions/ownership/
+  frontend/workflow remain unchanged. This is compatibility diagnosis, not a
+  redesign. One exact-SHA ordinary PASS is required before its sole Level 2
+  controlled diagnostic. P8-07F, SSH/ERP contact and P8-08 stay closed.
+- Level 1 passes focused verifier `31/31`, complete P8-07 `69/69`, affected
+  integration/security/API `89/89`, governance/reconciliation `59/59`, full
+  Python `2641/2641`, frontend unit/coverage `1086/1086` and P8-07 functional
+  plus three-locale visual E2E `6/6`. Generate/type/lint/i18n/build,
+  compile/shell/current/reconciliation, exact-150/new-only/dormancy, diff,
+  exact-five/union-78 and unauthorized-six rejection pass. A preserved
+  unrelated untracked public image is the sole final-brand-guard rejection in
+  the optional local frontend wrapper; the task has no frontend diff and clean
+  exact-SHA ordinary CI remains required.

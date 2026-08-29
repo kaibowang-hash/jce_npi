@@ -8005,3 +8005,45 @@ repeat or rewrite it merely to restore context. See
   three-locale visual E2E passes `6/6`. Compile, shell syntax, current/
   reconciliation, all-diagnostics-off, diff, exact-eight/union-78 manifests
   and unauthorized-nine rejection pass.
+
+### P8-07 checkpoint-4 post-UUID collection-server diagnostic cycle
+
+- UUID repair SHA `56a934806f4a96bc92a553c00c702405232f622f`
+  passes ordinary `33229220619` in all four lanes. Its sole Level 3
+  `33229719467` passes visual `99040258445`, repository `99040258506`, secret
+  scan `99040258521`, frontend `99040258578` and preflight `99041766715`.
+  Runtime `99041789934` passes fixed Bench/Site initialization, fails in the
+  cumulative verifier and completes cleanup.
+- Fixed-label classification returns only
+  `Local Frappe integration operations runtime verification failed.` P8-01
+  through P8-06 passed; P8-07 fresh returned nonzero before the later replay,
+  route-disable, recovery and cleanup sequence. With all P8-07 diagnostics
+  disabled, the internal predicate is nonunique. Restricted runtime/child
+  output, status/body, business values, identities, message and stack remain
+  unread. The closed UUID root is not evidence that every later stage passed.
+- Freeze the collection-server compatibility cycle at diagnostic `1/1`,
+  repair `1/1`, final `1/1`. Open one independent product-zero
+  `p8-07-checkpoint-4-post-uuid-collection-server` cycle at diagnostic `0/1`,
+  repair `0/1`, final `0/1`; no product repair is authorized.
+- Only `POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED=True`; all six
+  historical P8-07 diagnostic flags are false. The activation reuses exact
+  `150` safe codes (`45` outer, `52` fixture, seven response classes and `46`
+  API/repository collection stages), exact trace/request scope, cursors,
+  mirrored strict reader, exact-three-key `0600` `O_EXCL` record,
+  server-inner precedence, fallback, same exception, finally restoration,
+  failed-child unread and success-zero behavior.
+- The task is exact-five: runtime verifier/test, this controller, P8-07 plan
+  and controlled-runtime checkpoint. Product, API, repository, contracts,
+  schema, permissions, ownership, frontend and workflow diffs stay zero. This
+  is compatibility/minimal-difference diagnosis and not redesign/refactoring.
+  Exact-SHA ordinary PASS must precede one Level 2 controlled diagnostic.
+  P8-07F, `JCE-Core`, production ERPNext and P8-08 remain closed.
+- Level 1 passes focused verifier `31/31`, complete P8-07 `69/69`, affected
+  integration/security/API `89/89`, governance/reconciliation `59/59`, full
+  Python `2641/2641`, frontend unit/coverage `1086/1086` and P8-07 functional
+  plus three-locale visual E2E `6/6`. Generate/type/lint/i18n/build,
+  compile/shell/current/reconciliation, exact-150/new-only/dormancy, diff,
+  exact-five/union-78 and unauthorized-six rejection pass. The optional local
+  full-frontend wrapper reaches only the final brand guard before rejecting a
+  preserved unrelated untracked public image; the task has zero frontend diff
+  and exact-SHA ordinary CI remains the clean-tree authority.

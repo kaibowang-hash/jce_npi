@@ -42,6 +42,7 @@ COLLECTION_SHAPE_DIAGNOSTICS_ENABLED = False
 COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED = False
 POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED = False
 COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
+POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -301,6 +302,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED,
         POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED,
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
+        POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
     )
     if sum(map(int, activations)) != 1:
         return frozenset()
@@ -312,10 +314,10 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
     if (
         COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED
         or POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED
-        or COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+        or _collection_server_diagnostics_enabled()
     ):
         codes = codes.union(COLLECTION_RESPONSE_DIAGNOSTIC_CODES)
-    if COLLECTION_SERVER_DIAGNOSTICS_ENABLED:
+    if _collection_server_diagnostics_enabled():
         return codes.union(COLLECTION_SERVER_DIAGNOSTIC_CODES)
     if codes != frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
         FRESH_FIXTURE_DIAGNOSTIC_CODES
@@ -326,6 +328,21 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
 
 def _fresh_runtime_diagnostics_enabled() -> bool:
     return bool(_active_fresh_runtime_diagnostic_codes())
+
+
+def _collection_server_diagnostics_enabled() -> bool:
+    activations = (
+        FRESH_COMBINED_DIAGNOSTICS_ENABLED,
+        COLLECTION_SHAPE_DIAGNOSTICS_ENABLED,
+        COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED,
+        POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED,
+        COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
+        POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
+    )
+    return sum(map(int, activations)) == 1 and (
+        COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+        or POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+    )
 
 
 @contextmanager
@@ -475,7 +492,7 @@ def _request(
         if idempotency_key is not None
         else document_runtime.query_headers(f"p807-{label}")
     )
-    if COLLECTION_SERVER_DIAGNOSTICS_ENABLED and label == "fresh-list":
+    if _collection_server_diagnostics_enabled() and label == "fresh-list":
         state = _DIAGNOSTIC_STATE.get()
         trace_id = state.get("trace_id") if isinstance(state, dict) else None
         require(
@@ -590,7 +607,7 @@ def _record_collection_server_diagnostic(
     trace_id: object,
     cursors: dict[str, int] | None,
 ) -> bool:
-    if not COLLECTION_SERVER_DIAGNOSTICS_ENABLED:
+    if not _collection_server_diagnostics_enabled():
         return False
     diagnostic = item_runtime._sanitized_server_log_diagnostic(
         trace_id,
@@ -806,7 +823,7 @@ def run_fresh(
 
     collection_diagnostic_cursors = (
         item_runtime._replay_diagnostic_log_cursors()
-        if COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+        if _collection_server_diagnostics_enabled()
         else None
     )
     with fresh_runtime_diagnostic_step("P807_FRESH_COLLECTION_HTTP"):

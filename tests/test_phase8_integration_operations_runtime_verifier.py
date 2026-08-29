@@ -67,6 +67,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
         ):
             yield
 
@@ -75,6 +79,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             self.verifier,
             "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
             True,
         ):
             yield
@@ -179,6 +187,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             body={"items": []},
         )
         with patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.verifier.document_runtime,
             "query_headers",
             return_value={"X-Request-ID": "p807-list"},
@@ -240,6 +252,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         )
 
         with patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.verifier.document_runtime,
             "query_headers",
             return_value={"X-Request-ID": "p807-list"},
@@ -444,15 +460,15 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.COLLECTION_SERVER_DIAGNOSTICS_ENABLED)
+        self.assertTrue(
+            self.verifier.POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+        )
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
         self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
         self.assertEqual(len(self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES), 7)
         self.assertEqual(len(self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES), 46)
-        self.assertEqual(
-            self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset()
-        )
         with self.collection_server_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
             self.assertEqual(len(codes), 150)
@@ -464,6 +480,25 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
                 ),
             )
+        with patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier.item_runtime,
+            "_sanitized_server_log_diagnostic",
+        ) as reader:
+            self.assertEqual(
+                self.verifier._active_fresh_runtime_diagnostic_codes(),
+                frozenset(),
+            )
+            self.assertFalse(
+                self.verifier._record_collection_server_diagnostic(
+                    self.verifier.fresh_runtime_diagnostic_trace(),
+                    {"logs/npi_core.log": 0},
+                )
+            )
+        reader.assert_not_called()
         self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
         source = SCRIPT.read_text(encoding="utf-8")
         self.assertTrue(
@@ -531,9 +566,23 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
             self.assertFalse(self.verifier._fresh_runtime_diagnostics_enabled())
+        with self.collection_server_diagnostics(), patch.object(
+            self.verifier,
+            "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertEqual(
+                self.verifier._active_fresh_runtime_diagnostic_codes(),
+                frozenset(),
+            )
+            self.assertFalse(self.verifier._collection_server_diagnostics_enabled())
 
     def test_collection_shape_subpredicates_record_the_first_exact_boundary(self) -> None:
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()
@@ -580,6 +629,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             ), patch.object(
                 self.verifier,
                 "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
+                self.verifier,
+                "POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
                 False,
             ), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME

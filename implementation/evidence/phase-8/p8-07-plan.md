@@ -750,3 +750,57 @@ Frontend unit/coverage passes `1086/1086` and the focused P8-07 functional plus
 three-locale visual set passes `6/6`; the task has no frontend diff. Compile,
 shell syntax, current/reconciliation, all-diagnostics-off, diff hygiene,
 exact-eight/union-78 manifests and unauthorized-nine rejection pass.
+
+## 28. UUID-repair final and post-UUID collection-server diagnostic
+
+UUID compatibility repair SHA `56a934806f4a96bc92a553c00c702405232f622f`
+passes ordinary CI `33229220619`: visual `99038866816`, secret scan
+`99038866907`, repository `99038866926` and frontend `99038866932` all pass.
+Its sole Level 3 `33229719467` passes those four lanes and controlled preflight
+`99041766715`; runtime `99041789934` initializes the pinned Bench and fixed
+disposable Site, then fails in the cumulative verifier. Result recording and
+artifact upload are skipped and cleanup passes.
+
+Fixed source-label filtering returns only
+`Local Frappe integration operations runtime verification failed.` This
+proves P8-01 through P8-06 completed and the P8-07 fresh verifier returned
+nonzero before replay, route-disable, recovery or cleanup. All diagnostics were
+off, so the label does not select one of the retained outer, fixture,
+collection-response or collection-server predicates. Runtime/child output,
+response status/body, business values, identities, message and stack were not
+read. The UUIDv5 incompatibility is closed by the accepted repair, but that
+does not prove every later predicate passed. Freeze the collection-server
+cycle at diagnostic `1/1`, repair `1/1`, final `1/1`; no further product change
+is authorized from this label.
+
+Open independent product-zero
+`p8-07-checkpoint-4-post-uuid-collection-server` at diagnostic `0/1`, repair
+`0/1`, final `0/1`. Only
+`POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED=True`; all six historical
+P8-07 diagnostic flags are false. It reuses exact `150`: `45` ordered fresh
+outer stages, `52` fixture stages, seven value-free response classes and `46`
+API/repository collection stages. The fixed first collection GET alone carries
+the diagnostic scope and deterministic trace. Existing cursors, strict
+mirrored-log reader, exact-three-key `0600` `O_EXCL` record, server-inner
+precedence, parent fallback, original exception, finally restoration,
+failed-child unread and success-zero contracts remain unchanged.
+
+The exact-five task is the runtime verifier/test plus AUTOPILOT, this plan and
+the controlled-runtime checkpoint. It changes no product, API, repository,
+contract, schema, permission, ownership, frontend or workflow behavior. This
+is bounded compatibility diagnosis only, not redesign or refactoring. Its own
+exact-SHA ordinary PASS must precede one Level 2 controlled diagnostic.
+P8-07F, `JCE-Core`, production ERPNext and P8-08 remain closed.
+
+Post-UUID diagnostic Level 1 passes focused verifier `31/31`, complete P8-07
+`69/69`, affected integration/security/API `89/89`, governance/reconciliation
+`59/59` and full repository Python `2641/2641`. Frontend unit/coverage passes
+`1086/1086`; focused functional and three-locale visual E2E passes `6/6`.
+Generate, typecheck, lint/format/style/boundary/UI, `8585`-source `100%`
+zh/zh-TW i18n, build, compile, shell syntax, current/reconciliation,
+exact-150/new-only/precedence/dormancy checks, diff, exact-five/union-78 and
+unauthorized-six rejection pass. The optional local full-frontend wrapper's
+final brand check alone rejects the preserved unrelated untracked
+`frontend/public/images/npi-one-project-management-sketch.png`; no task file
+or threshold was changed, and the diagnostic task has zero frontend/product/
+contract/workflow diff. Exact-SHA ordinary CI remains the clean-tree authority.
