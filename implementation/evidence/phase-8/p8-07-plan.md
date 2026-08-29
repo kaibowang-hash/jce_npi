@@ -1083,6 +1083,15 @@ ERPNext and P8-08 remain closed. This is compatibility/minimal-difference
 diagnosis only; unrelated user-approved pilot deferral and permission-owner
 documentation remains excluded and preserved.
 
+Repair Level 1 passes focused verifier/API/repository `61/61`, complete P8-07
+`80/80`, affected integration/security/API `100/100`, and clean-overlay full
+Python `2646/2646`. Current/reconciliation scripts, compile, shell syntax,
+all-13-diagnostics-off, actor/call-site security scans, diff, exact-five and
+unauthorized-six rejection pass. The local dirty-tree full run has only the
+known unrelated M9 pilot-deferral marker-count mismatch; the clean exact-five
+overlay passes it. Apps/contracts/frontend/workflow diff is zero, and the
+predecessor exact-SHA ordinary supplies unchanged frontend evidence.
+
 Diagnostic Level 1 passes focused verifier `34/34`, complete P8-07 `72/72`,
 clean-overlay full Python `2638/2638` and current/reconciliation units `38/38`.
 Frontend generate/type/full lint/i18n passes with `8585` literal sources and
@@ -1232,3 +1241,43 @@ shell, exact-199/ordered transport predicate, diff, exact-five/union-78 and
 unauthorized-six rejection pass. Repository/contracts/frontend/workflow diff
 is zero; the exact predecessor ordinary supplies the unchanged frontend
 evidence. Unrelated user changes remain excluded and preserved.
+
+## API-context retained action-actor repair checkpoint
+
+Framework-repair SHA `6c26262d7eae87eed7c74bdab10800f052652832`
+passes ordinary `33260796324`: visual `99122274669`, secret scan
+`99122274720`, repository `99122274729` and frontend `99122274754`. Its sole
+valid controlled product diagnostic `33261404458` passes preflight
+`99123881008`; runtime `99123922502` passes fixed Bench/Site initialization,
+fails in cumulative verification and completes cleanup. Strict exact-199
+reading returns only `P807_ACTION_API_CONTEXT /
+IntegrationOperationsUnavailable / trace-0e02845fc1df5d17b00af91c1b376e39`.
+No raw log, child output, actual route value, response, business value,
+identity, message or stack was read.
+
+Static authorization proof is unique. The canonical Project route is the same
+retained UUID already used by successful collection/detail requests. Action
+context alone calls `authorize_scope(..., administer=True)`; repository
+authority requires both `NPI API User` and internal `System Manager`. The
+verifier's ordinary reader is the retained P5 baseline user, explicitly
+provisioned with `NPI API User` and explicitly without `System Manager`, so
+action authorization deterministically returns false before request-field
+validation, route-disable checks or any action write. Product permission tests
+require this exact dual-role boundary and it must not be weakened.
+
+Close the cycle's diagnostic at `1/1` and apply one harness-only repair. Keep
+collection/detail traffic on the read-only baseline actor, but bind all six
+fresh/cross-process replay and reconciliation commands to the retained P7
+readiness manager, whose fixture is an enabled internal System User with exact
+`NPI API User + System Manager` roles. The identity is deterministic, distinct
+from requester and worker, and already provisioned earlier in the cumulative
+runtime. Disable the API-entry diagnostic; all activations are false. Product
+API/repository/permissions, contracts, schema, ownership, response,
+transaction/write order, frontend and workflow remain unchanged.
+
+The repair is exact five: runtime verifier/test plus AUTOPILOT, this plan and
+the controlled checkpoint. Focused tests lock retained identity, reader/action
+separation and all six action call sites. Exact-SHA ordinary PASS must precede
+one diagnostics-off Level 3 final. P8-07F, `JCE-Core`, production ERPNext and
+P8-08 remain closed; user-authorized pilot deferral and permission-ownership
+documentation remains excluded and preserved.

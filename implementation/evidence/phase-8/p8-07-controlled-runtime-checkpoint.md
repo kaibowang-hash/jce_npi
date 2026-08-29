@@ -795,3 +795,37 @@ frontend/workflow diff remains zero.
   union-78 and unauthorized-six rejection also pass. Repository/contracts/
   frontend/workflow diff remains zero, and unrelated user changes are
   preserved.
+
+## API-context retained action-actor repair checkpoint
+
+- Exact-five SHA `6c26262d7eae87eed7c74bdab10800f052652832`
+  passes ordinary `33260796324` in all four lanes. Its sole valid controlled
+  diagnostic `33261404458` passes preflight `99123881008`; runtime
+  `99123922502` fails after fixed Bench/Site initialization and cleanup.
+- Strict exact-199 reading accepts only
+  `P807_ACTION_API_CONTEXT / IntegrationOperationsUnavailable /
+  trace-0e02845fc1df5d17b00af91c1b376e39`. Entry predicates through exact
+  runtime shape passed. No raw/child output, actual status/body/route value,
+  business value, identity, message or stack was read.
+- The same canonical Project was already readable by the retained baseline
+  actor. Action context alone requires administer authority; repository code
+  requires exact `NPI API User + System Manager`, while the baseline actor's
+  fixture explicitly excludes `System Manager`. This makes the verifier's
+  actor selection the unique first source before action repository work.
+  Product permissions stay fail-closed and unchanged.
+- Repair only the disposable verifier: reads remain on the baseline reader;
+  fresh and replay-only actions use the already retained P7 readiness manager,
+  an enabled internal dual-role actor distinct from requester and worker.
+  Runtime tests lock all six action call sites and identity separation. Turn
+  the API-entry activation off so all diagnostics are dormant. Exact-five is
+  verifier/test plus AUTOPILOT, plan and checkpoint; product/API/repository/
+  contracts/schema/permissions/ownership/frontend/workflow diff is zero.
+  Freeze diagnostic `1/1`, harness repair `1/1`, final `0/1`; an exact-SHA
+  ordinary PASS is required before the sole diagnostics-off Level 3.
+- Repair Level 1 passes focused verifier/API/repository `61/61`, complete
+  P8-07 `80/80`, affected integration/security/API `100/100`, and clean exact
+  overlay full Python `2646/2646`. Current/reconciliation, compile, shell,
+  all-13-off, security/diff and exact-five/unauthorized-six checks pass.
+  The dirty-tree-only M9 marker-count mismatch belongs to preserved user
+  documentation; no such failure exists in the exact overlay. Frontend and
+  product diffs remain zero.

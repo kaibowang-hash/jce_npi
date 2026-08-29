@@ -8443,3 +8443,33 @@ repeat or rewrite it merely to restore context. See
   union-78 and unauthorized-six rejection pass. Repository/contracts/
   frontend/workflow diff remains zero; predecessor ordinary already proves
   all unchanged frontend lanes. Unrelated user changes remain preserved.
+
+#### API-context retained action-actor repair
+
+- Framework-repair SHA `6c26262d7eae87eed7c74bdab10800f052652832`
+  passes ordinary `33260796324` in all four lanes. Its sole valid controlled
+  `33261404458` passes preflight `99123881008`; runtime `99123922502` fails
+  after fixed Bench/Site initialization and cleanup. Strict exact-199 reading
+  returns only `P807_ACTION_API_CONTEXT / IntegrationOperationsUnavailable /
+  trace-0e02845fc1df5d17b00af91c1b376e39`; restricted output remains unread.
+- The Project route is the same canonical retained UUID already read by the
+  baseline actor. Action context uniquely adds `administer=True`; repository
+  authority requires `NPI API User + System Manager`, while the retained
+  baseline reader is explicitly not a System Manager. The failure is a
+  deterministic verifier actor mismatch before action repository work, not a
+  product permission defect. Do not weaken product authorization.
+- Apply exact-five harness repair: verifier/test plus AUTOPILOT, plan and
+  checkpoint. Keep reads on the baseline actor; use the already provisioned
+  P7 readiness manager for all fresh and replay-only action calls. Lock its
+  deterministic dual-role identity, distinction from requester/worker, all
+  six action sites and all diagnostics off. Product/API/repository/contracts/
+  schema/permissions/ownership/transaction/write order/frontend/workflow stay
+  unchanged. Freeze diagnostic `1/1`, harness repair `1/1`, final `0/1`.
+  Exact-SHA ordinary PASS must precede the sole diagnostics-off Level 3.
+  P8-07F, production ERP and P8-08 remain closed until that Level 3 passes.
+- Repair Level 1 passes focused `61/61`, complete P8-07 `80/80`, affected
+  `100/100` and clean-overlay full Python `2646/2646`; current/reconciliation,
+  compile, shell, all-13-off, security/diff, exact-five acceptance and
+  unauthorized-six rejection pass. The sole dirty-tree full-suite mismatch is
+  the preserved user-authorized M9 marker-count change and is absent from the
+  exact overlay. Apps/contracts/frontend/workflow diff remains zero.

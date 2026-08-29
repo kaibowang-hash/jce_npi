@@ -251,6 +251,15 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 self.verifier._require_active_environment(PROJECT_ID),
                 "worker@example.invalid",
             )
+        self.assertEqual(
+            self.verifier.ACTION_ACTOR_USER,
+            self.verifier.readiness_runtime.ACTOR_USER,
+        )
+        self.assertTrue(self.verifier.ACTION_ACTOR_USER.endswith("@example.invalid"))
+        self.assertNotEqual(
+            self.verifier.ACTION_ACTOR_USER,
+            self.verifier.ACTOR_USER,
+        )
         for key, value in (
             ("NPI_P8_07_RUNTIME_ENABLED", "0"),
             ("NPI_P8_07_RUNTIME_MARKER", "wrong"),
@@ -261,6 +270,47 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(key=key), patch.dict(os.environ, {**exact, key: value}, clear=True):
                 with self.assertRaises(RuntimeError):
                     self.verifier._require_active_environment(PROJECT_ID)
+
+    def test_actions_use_the_retained_dual_role_actor_and_reader_stays_read_only(self) -> None:
+        source = SCRIPT.read_text(encoding="utf-8")
+        readiness_source = (
+            ROOT / "scripts" / "verify_readiness_runtime.py"
+        ).read_text(encoding="utf-8")
+        fresh = source[source.index("def run_fresh(") : source.index("\ndef run_replay(")]
+        replay = source[source.index("def run_replay(") : source.index("\ndef run_recovered(")]
+        self.assertEqual(fresh.count("_action(\n            action_actor,"), 4)
+        self.assertEqual(fresh.count("csrf_token=action_csrf"), 4)
+        self.assertNotIn("_action(\n            actor,", fresh)
+        self.assertEqual(replay.count("_action(\n        action_actor,"), 2)
+        self.assertEqual(replay.count("csrf_token=action_csrf"), 2)
+        self.assertNotIn("_action(\n        actor,", replay)
+        self.assertIn("actor = login(base_url, ACTOR_USER, fixture_password)", fresh)
+        self.assertIn(
+            "action_actor = login(base_url, ACTION_ACTOR_USER, fixture_password)",
+            fresh,
+        )
+        self.assertIn(
+            "action_actor = login(base_url, ACTION_ACTOR_USER, fixture_password)",
+            replay,
+        )
+        self.assertIn(
+            'expected_roles = {"Desk User", "NPI API User", "System Manager"}',
+            readiness_source,
+        )
+
+    def test_all_runtime_diagnostics_are_default_off_after_actor_repair(self) -> None:
+        assignments = {
+            node.targets[0].id: node.value.value
+            for node in ast.parse(SCRIPT.read_text(encoding="utf-8")).body
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id.endswith("_DIAGNOSTICS_ENABLED")
+            and isinstance(node.value, ast.Constant)
+            and isinstance(node.value.value, bool)
+        }
+        self.assertEqual(len(assignments), 13)
+        self.assertTrue(all(value is False for value in assignments.values()))
 
     def test_safe_response_scanner_rejects_restricted_keys_recursively(self) -> None:
         self.verifier._assert_safe(

@@ -19,6 +19,7 @@ from uuid import UUID, uuid5
 import verify_document_runtime as document_runtime
 import verify_item_publish_runtime as item_runtime
 import verify_publish_request_runtime as publish_runtime
+import verify_readiness_runtime as readiness_runtime
 from verify_frappe_runtime import (
     login,
     require,
@@ -35,6 +36,7 @@ SITE_NAME = document_runtime.SITE_NAME
 FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
 TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = publish_runtime.ACTOR_USER
+ACTION_ACTOR_USER = readiness_runtime.ACTOR_USER
 RUNTIME_MARKER = "npi-one-integration-operations-disposable-v1"
 DEFAULT_DISABLED_DIAGNOSTICS_ENABLED = False
 FRESH_COMBINED_DIAGNOSTICS_ENABLED = False
@@ -48,7 +50,7 @@ POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED = False
 POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED = False
 UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED = False
 UNCERTAIN_REPLAY_ACTION_DIAGNOSTICS_ENABLED = False
-UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED = True
+UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED = False
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -1094,8 +1096,14 @@ def run_fresh(
         _require_active_environment(project_id)
     with fresh_runtime_diagnostic_step("P807_FRESH_LOGIN"):
         actor = login(base_url, ACTOR_USER, fixture_password)
+        action_actor = login(base_url, ACTION_ACTOR_USER, fixture_password)
     with fresh_runtime_diagnostic_step("P807_FRESH_CSRF"):
-        csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
+        bootstrap_csrf(actor, base_url, ACTOR_USER)
+        action_csrf = bootstrap_csrf(
+            action_actor,
+            base_url,
+            ACTION_ACTOR_USER,
+        )
     with fresh_runtime_diagnostic_step("P807_FRESH_SEED"):
         seeded = run_bench_fixture(
             "seed_retryable",
@@ -1249,12 +1257,12 @@ def run_fresh(
     )
     with fresh_runtime_diagnostic_step("P807_FRESH_UNCERTAIN_REPLAY_HTTP"):
         rejected = _action(
-            actor,
+            action_actor,
             base_url,
             project_id=project_id,
             operation=uncertain,
             action="replay",
-            csrf_token=csrf,
+            csrf_token=action_csrf,
             idempotency_key=f"p807-uncertain-replay-{FIXTURE_RUN_ID}",
             label="uncertain-replay",
         )
@@ -1281,12 +1289,12 @@ def run_fresh(
 
     with fresh_runtime_diagnostic_step("P807_FRESH_RECONCILIATION_HTTP"):
         reconciliation = _action(
-            actor,
+            action_actor,
             base_url,
             project_id=project_id,
             operation=uncertain,
             action="request-reconciliation",
-            csrf_token=csrf,
+            csrf_token=action_csrf,
             idempotency_key=f"p807-reconcile-{FIXTURE_RUN_ID}",
             label="reconciliation",
         )
@@ -1320,12 +1328,12 @@ def run_fresh(
 
     with fresh_runtime_diagnostic_step("P807_FRESH_REPLAY_HTTP"):
         replay = _action(
-            actor,
+            action_actor,
             base_url,
             project_id=project_id,
             operation=retryable,
             action="replay",
-            csrf_token=csrf,
+            csrf_token=action_csrf,
             idempotency_key=f"p807-replay-{FIXTURE_RUN_ID}",
             label="retryable-replay",
         )
@@ -1343,12 +1351,12 @@ def run_fresh(
     stale["operationVersion"] = int(uncertain["operationVersion"]) + 1
     with fresh_runtime_diagnostic_step("P807_FRESH_STALE_HTTP"):
         stale_result = _action(
-            actor,
+            action_actor,
             base_url,
             project_id=project_id,
             operation=stale,
             action="request-reconciliation",
-            csrf_token=csrf,
+            csrf_token=action_csrf,
             idempotency_key=f"p807-stale-{FIXTURE_RUN_ID}",
             label="stale-reconciliation",
         )
@@ -1388,7 +1396,12 @@ def run_replay(
 ) -> dict[str, object]:
     _require_active_environment(project_id)
     actor = login(base_url, ACTOR_USER, fixture_password)
-    csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
+    action_actor = login(base_url, ACTION_ACTOR_USER, fixture_password)
+    action_csrf = bootstrap_csrf(
+        action_actor,
+        base_url,
+        ACTION_ACTOR_USER,
+    )
     items = _items(
         _request(actor, base_url, _collection_path(project_id), label="replay-list"),
         project_id=project_id,
@@ -1401,22 +1414,22 @@ def run_replay(
         "P8-07 replay did not retain exact queued owning state",
     )
     replay = _action(
-        actor,
+        action_actor,
         base_url,
         project_id=project_id,
         operation={**queued, "rawState": "failed_retryable", "operationVersion": 3},
         action="replay",
-        csrf_token=csrf,
+        csrf_token=action_csrf,
         idempotency_key=f"p807-replay-{FIXTURE_RUN_ID}",
         label="replay-idempotency",
     )
     reconciliation = _action(
-        actor,
+        action_actor,
         base_url,
         project_id=project_id,
         operation=uncertain,
         action="request-reconciliation",
-        csrf_token=csrf,
+        csrf_token=action_csrf,
         idempotency_key=f"p807-reconcile-{FIXTURE_RUN_ID}",
         label="reconciliation-idempotency",
     )
@@ -1503,6 +1516,12 @@ def _require_active_environment(project_id: str) -> str:
         and bool(worker)
         and worker != ACTOR_USER,
         "P8-07 runtime environment is not exact",
+    )
+    require(
+        ACTION_ACTOR_USER == readiness_runtime.ACTOR_USER
+        and ACTION_ACTOR_USER.endswith("@example.invalid")
+        and ACTION_ACTOR_USER not in {ACTOR_USER, worker},
+        "P8-07 retained action actor is not exact",
     )
     return worker
 
