@@ -45,7 +45,8 @@ COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
 POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
 POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED = False
 POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED = False
-POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED = True
+POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED = False
+UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -178,6 +179,20 @@ COLLECTION_RESPONSE_DIAGNOSTIC_CODES = (
     "P807_COLLECTION_STATUS_CLIENT_ERROR",
     "P807_COLLECTION_STATUS_SERVER_ERROR",
     "P807_COLLECTION_STATUS_OUT_OF_RANGE",
+)
+UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES = (
+    "P807_UNCERTAIN_REPLAY_STATUS_INVALID",
+    "P807_UNCERTAIN_REPLAY_STATUS_INFORMATIONAL",
+    "P807_UNCERTAIN_REPLAY_STATUS_SUCCESS",
+    "P807_UNCERTAIN_REPLAY_STATUS_REDIRECTION",
+    "P807_UNCERTAIN_REPLAY_STATUS_OTHER_CLIENT_ERROR",
+    "P807_UNCERTAIN_REPLAY_STATUS_SERVER_ERROR",
+    "P807_UNCERTAIN_REPLAY_STATUS_OUT_OF_RANGE",
+    "P807_UNCERTAIN_REPLAY_BODY_STATUS",
+    "P807_UNCERTAIN_REPLAY_CODE",
+    "P807_UNCERTAIN_REPLAY_MEDIA_TYPE",
+    "P807_UNCERTAIN_REPLAY_TRACE",
+    "P807_UNCERTAIN_REPLAY_ENVELOPE",
 )
 COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES = (
     "P807_FRESH_COLLECTION_INBOUND_ABSENT",
@@ -326,6 +341,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED,
         POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED,
         POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED,
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED,
     )
     if sum(map(int, activations)) != 1:
         return frozenset()
@@ -346,8 +362,11 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
         or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
         or POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
+        or UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
     ):
-        return codes.union(COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES)
+        codes = codes.union(COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES)
+    if UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED:
+        return codes.union(UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES)
     if codes != frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
         FRESH_FIXTURE_DIAGNOSTIC_CODES
     ):
@@ -370,6 +389,7 @@ def _collection_server_diagnostics_enabled() -> bool:
         POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED,
         POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED,
         POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED,
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED,
     )
     return sum(map(int, activations)) == 1 and (
         COLLECTION_SERVER_DIAGNOSTICS_ENABLED
@@ -377,6 +397,7 @@ def _collection_server_diagnostics_enabled() -> bool:
         or POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
         or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
         or POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
+        or UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
     )
 
 
@@ -647,6 +668,72 @@ def _collection_status_diagnostic_code(status: object) -> str:
     return "P807_COLLECTION_STATUS_OUT_OF_RANGE"
 
 
+def _uncertain_replay_status_diagnostic_code(status: object) -> str:
+    if type(status) is not int:
+        return UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[0]
+    if 100 <= status < 200:
+        return UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[1]
+    if 200 <= status < 300:
+        return UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[2]
+    if 300 <= status < 400:
+        return UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[3]
+    if 400 <= status < 500:
+        return UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[4]
+    if 500 <= status < 600:
+        return UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[5]
+    return UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[6]
+
+
+def _validate_uncertain_replay_problem(result: Any) -> None:
+    if not UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED:
+        validate_problem(result, 409, "INTEGRATION_OPERATION_CONFLICT")
+        return
+    if result.status != 409:
+        with fresh_runtime_diagnostic_step(
+            _uncertain_replay_status_diagnostic_code(result.status)
+        ):
+            require(False, "P8-07 uncertain replay status drifted")
+    with fresh_runtime_diagnostic_step(
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[7]
+    ):
+        require(
+            result.body.get("status") == 409,
+            "P8-07 uncertain replay problem status drifted",
+        )
+    with fresh_runtime_diagnostic_step(
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[8]
+    ):
+        require(
+            result.body.get("code") == "INTEGRATION_OPERATION_CONFLICT",
+            "P8-07 uncertain replay problem code drifted",
+        )
+    with fresh_runtime_diagnostic_step(
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[9]
+    ):
+        require(
+            result.headers.get_content_type() == "application/problem+json",
+            "P8-07 uncertain replay problem media type drifted",
+        )
+    with fresh_runtime_diagnostic_step(
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[10]
+    ):
+        trace_id = result.body.get("traceId")
+        require(
+            isinstance(trace_id, str)
+            and trace_id == result.headers.get("X-Trace-ID"),
+            "P8-07 uncertain replay problem trace drifted",
+        )
+    with fresh_runtime_diagnostic_step(
+        UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES[11]
+    ):
+        require(
+            not {"exc", "exception", "exc_type", "message"}.intersection(
+                result.body
+            ),
+            "P8-07 uncertain replay problem envelope drifted",
+        )
+
+
 def _record_collection_server_diagnostic(
     trace_id: object,
     cursors: dict[str, int] | None,
@@ -786,6 +873,7 @@ def _require_collection_kinds(items: list[dict[str, Any]]) -> None:
         POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
         or POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
         or POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
+        or UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
     ):
         for code, operation_kind, expected_present in _EXPECTED_COLLECTION_MEMBERSHIP:
             with fresh_runtime_diagnostic_step(code):
@@ -1030,7 +1118,7 @@ def run_fresh(
             label="uncertain-replay",
         )
     with fresh_runtime_diagnostic_step("P807_FRESH_UNCERTAIN_REPLAY_CONTRACT"):
-        validate_problem(rejected, 409, "INTEGRATION_OPERATION_CONFLICT")
+        _validate_uncertain_replay_problem(rejected)
     with fresh_runtime_diagnostic_step("P807_FRESH_SNAPSHOT_AFTER"):
         after_uncertain = run_bench_fixture(
             "snapshot",

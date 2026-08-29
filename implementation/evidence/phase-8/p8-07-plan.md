@@ -1044,3 +1044,51 @@ three-locale visual E2E passes `6/6`. Compile, shell syntax, structured parse,
 current/reconciliation, exact-154/new-only/dormancy, diff, exact-five/union-78
 and unauthorized-six rejection pass. Product and frontend diffs remain zero;
 unrelated user changes remain outside the exact-five and are preserved.
+
+## 34. Post-operation-ID result and uncertain-replay response boundary
+
+Exact-five SHA `5adf6bb0cab8370a1cba2760888783c5a14cec0b` passes ordinary
+`33254237615`: repository `99105064696`, frontend `99105064791`, secret scan
+`99105064803` and visual `99105064814` all pass. Its sole Level 2 controlled
+run `33254881408` passes preflight `99106735269`; runtime `99106776211`
+passes fixed Bench/Site initialization, fails in the cumulative verifier and
+completes cleanup.
+
+Strict exact-154 reading yields only
+`P807_FRESH_UNCERTAIN_REPLAY_CONTRACT / RuntimeError /
+trace-038f885259e75094bc18bb96ab98ed25`. This proves the uncertain replay HTTP
+request returned and already passed request-ID, cache-control and safe-body
+checks. It does not select among the ordered expected-status, problem body
+status/code, media type, trace mirror and envelope checks. Actual status/body,
+child output, business values, identities, message and stack remain unread.
+The product repository has the explicit non-retryable replay conflict path,
+but this transport-level evidence does not uniquely prove or disprove it.
+
+Freeze the post-operation-ID cycle at `1/1,0/1,0/1`. Independent product-zero
+`p8-07-checkpoint-4-uncertain-replay-response-contract` starts at
+`0/1,0/1,0/1`. Its sole activation is
+`UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED=True`; all ten historical flags
+are false. It retains exact `154` and adds twelve ordered, value-free response
+codes: seven HTTP status classes plus body status, problem code, media type,
+trace mirror and forbidden-envelope checks, for exact `166`. Existing exact
+trace/scope/cursors, strict mirrored reader, exact-three-key `0600` `O_EXCL`,
+inner precedence, same exception, finally, failed-child unread, dormant
+delegation and success-zero contracts remain intact.
+
+The exact-five remains runtime verifier/test plus AUTOPILOT, this plan and the
+controlled-runtime checkpoint. Product/API/repository/contracts/schema/
+permissions/ownership/frontend/workflow remain unchanged. Exact-SHA ordinary
+PASS must precede one sole Level 2 diagnostic. P8-07F, `JCE-Core`, production
+ERPNext and P8-08 remain closed. This is compatibility/minimal-difference
+diagnosis only; unrelated user-approved pilot deferral and permission-owner
+documentation remains excluded and preserved.
+
+Diagnostic Level 1 passes focused verifier `34/34`, complete P8-07 `72/72`,
+clean-overlay full Python `2638/2638` and current/reconciliation units `38/38`.
+Frontend generate/type/full lint/i18n passes with `8585` literal sources and
+`100%` zh/zh-TW coverage; unit passes `1086/1086`; focused functional plus
+three-locale visual E2E passes `6/6`. Compile, shell syntax, current/
+reconciliation scripts, exact-166/new-only/ordered-response/dormancy, diff,
+exact-five and unauthorized-six rejection pass. Product/API/repository/
+contracts/schema/frontend/workflow diffs remain zero; unrelated user changes
+remain excluded and preserved.

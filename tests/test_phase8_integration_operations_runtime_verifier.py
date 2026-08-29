@@ -83,6 +83,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
         ):
             yield
 
@@ -107,6 +111,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
             True,
         ):
             yield
@@ -247,6 +255,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             "POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
             self.verifier.document_runtime,
             "query_headers",
             return_value={"X-Request-ID": "p807-list"},
@@ -322,6 +334,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.document_runtime,
@@ -537,8 +553,11 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED
         )
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
@@ -550,9 +569,13 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             4,
         )
         self.assertEqual(len(self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES), 46)
+        self.assertEqual(
+            len(self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES),
+            12,
+        )
         with self.collection_server_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 154)
+            self.assertEqual(len(codes), 166)
             self.assertEqual(
                 codes,
                 frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
@@ -560,6 +583,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
                     self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES,
                     self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
+                    self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES,
                 ),
             )
         with patch.object(
@@ -577,6 +601,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
             False,
         ), patch.object(
             self.verifier.item_runtime,
@@ -607,6 +635,12 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             all(
                 source.count(f'"{code}"') == 1
                 for code in self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES
+            )
+        )
+        self.assertTrue(
+            all(
+                source.count(f'"{code}"') == 1
+                for code in self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES
             )
         )
 
@@ -719,6 +753,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
         ):
             self.verifier._require_collection_kinds(
                 [{"operationKind": kind} for kind in required]
@@ -767,6 +805,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
@@ -844,6 +886,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 self.verifier,
                 "POST_OPERATION_ID_COMBINED_DIAGNOSTICS_ENABLED",
                 False,
+            ), patch.object(
+                self.verifier,
+                "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+                False,
             ), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
                 with patch.dict(
@@ -897,6 +943,111 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 )
                 self.assertIsNotNone(diagnostic)
                 self.assertEqual(diagnostic[1], expected)
+
+    def test_uncertain_replay_response_records_only_the_first_safe_predicate(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        valid_body = {
+            "status": 409,
+            "code": "INTEGRATION_OPERATION_CONFLICT",
+            "traceId": trace_id,
+        }
+
+        def result(
+            *,
+            status: object = 409,
+            body: dict[str, object] | None = None,
+            media_type: str = "application/problem+json",
+            header_trace: str = trace_id,
+        ) -> SimpleNamespace:
+            return SimpleNamespace(
+                status=status,
+                body=dict(valid_body if body is None else body),
+                headers=Headers({"X-Trace-ID": header_trace}, media_type),
+            )
+
+        cases = (
+            ("P807_UNCERTAIN_REPLAY_STATUS_INVALID", result(status=None)),
+            ("P807_UNCERTAIN_REPLAY_STATUS_INFORMATIONAL", result(status=101)),
+            ("P807_UNCERTAIN_REPLAY_STATUS_SUCCESS", result(status=201)),
+            ("P807_UNCERTAIN_REPLAY_STATUS_REDIRECTION", result(status=301)),
+            (
+                "P807_UNCERTAIN_REPLAY_STATUS_OTHER_CLIENT_ERROR",
+                result(status=401),
+            ),
+            ("P807_UNCERTAIN_REPLAY_STATUS_SERVER_ERROR", result(status=501)),
+            ("P807_UNCERTAIN_REPLAY_STATUS_OUT_OF_RANGE", result(status=601)),
+            (
+                "P807_UNCERTAIN_REPLAY_BODY_STATUS",
+                result(body={**valid_body, "status": 410}),
+            ),
+            (
+                "P807_UNCERTAIN_REPLAY_CODE",
+                result(body={**valid_body, "code": "WRONG"}),
+            ),
+            (
+                "P807_UNCERTAIN_REPLAY_MEDIA_TYPE",
+                result(media_type="application/json"),
+            ),
+            (
+                "P807_UNCERTAIN_REPLAY_TRACE",
+                result(header_trace="trace-00000000000000000000000000000000"),
+            ),
+            (
+                "P807_UNCERTAIN_REPLAY_ENVELOPE",
+                result(body={**valid_body, "message": "withheld"}),
+            ),
+        )
+        for expected, response in cases:
+            with (
+                self.subTest(expected=expected),
+                self.collection_server_diagnostics(),
+                tempfile.TemporaryDirectory() as directory,
+            ):
+                path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+                with (
+                    patch.dict(
+                        os.environ,
+                        {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                        clear=False,
+                    ),
+                    self.verifier.fresh_runtime_diagnostic_scope(trace_id),
+                    self.assertRaises(RuntimeError),
+                ):
+                    self.verifier._validate_uncertain_replay_problem(response)
+                self.assertEqual(
+                    self.verifier.read_fresh_runtime_diagnostic(
+                        path,
+                        expected_trace=trace_id,
+                    ),
+                    ("RuntimeError", expected, trace_id),
+                )
+                self.assertNotIn("withheld", path.read_text(encoding="utf-8"))
+
+        with (
+            self.collection_server_diagnostics(),
+            tempfile.TemporaryDirectory() as directory,
+        ):
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+                self.verifier._validate_uncertain_replay_problem(result())
+            self.assertFalse(path.exists())
+
+        with patch.object(
+            self.verifier,
+            "UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(self.verifier, "validate_problem") as validate:
+            response = result()
+            self.verifier._validate_uncertain_replay_problem(response)
+        validate.assert_called_once_with(
+            response,
+            409,
+            "INTEGRATION_OPERATION_CONFLICT",
+        )
 
     def test_collection_server_tuple_wins_and_parent_status_is_fallback(self) -> None:
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()

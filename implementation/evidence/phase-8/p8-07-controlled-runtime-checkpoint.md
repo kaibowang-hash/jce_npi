@@ -646,3 +646,38 @@ frontend/workflow diff remains zero.
   syntax, structured parse, current/reconciliation, exact-154/new-only/
   dormancy, diff, exact-five/union-78 and unauthorized-six rejection pass.
   Product/frontend diffs remain zero.
+
+## Post-operation-ID diagnostic result and response-contract checkpoint
+
+- Exact-five SHA `5adf6bb0cab8370a1cba2760888783c5a14cec0b` passes ordinary
+  `33254237615` in all four lanes. Sole controlled `33254881408` passes
+  preflight `99106735269`; runtime `99106776211` initializes the fixed
+  Bench/Site, fails in cumulative verification and completes cleanup.
+- Strict exact-154 parsing accepts only
+  `P807_FRESH_UNCERTAIN_REPLAY_CONTRACT / RuntimeError /
+  trace-038f885259e75094bc18bb96ab98ed25`. The HTTP helper returned and passed
+  request-ID, cache-control and restricted-key checks. The status/body/code/
+  media/trace/envelope subpredicate is nonunique. No actual response value,
+  child output, business value, identity, message or stack was read.
+- Freeze the prior cycle at diagnostic `1/1`, repair `0/1`, final `0/1`.
+  Independent `p8-07-checkpoint-4-uncertain-replay-response-contract` begins
+  `0/1,0/1,0/1`; no product repair is authorized.
+- Only `UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED=True`; all ten history
+  flags are false. Active exact `166` is retained exact `154` plus seven
+  status-class and five ordered problem-contract codes. It records no status,
+  body, code value, header value or message. Exact scope/trace/cursors,
+  `0600` `O_EXCL` exact-three-key record, strict mirror, inner precedence,
+  same exception, finally, failed-child unread, dormant delegation and
+  success-zero remain locked.
+- Runtime verifier/test plus AUTOPILOT, plan and this checkpoint are the exact
+  five. Product/API/repository/contracts/schema/permissions/ownership/
+  frontend/workflow diffs stay zero. Exact-SHA ordinary PASS must precede one
+  sole Level 2 diagnostic. P8-07F, production SSH/ERP and P8-08 stay closed;
+  unrelated user-authorized documentation is preserved.
+- Diagnostic Level 1 passes focused verifier `34/34`, complete P8-07 `72/72`,
+  clean-overlay full Python `2638/2638`, current/reconciliation units `38/38`,
+  frontend unit `1086/1086` and focused functional plus three-locale visual
+  E2E `6/6`. Generate/type/full lint/i18n (`8585`, `100%` zh/zh-TW), compile,
+  shell syntax, current/reconciliation scripts, exact-166/new-only/ordered-
+  response/dormancy, diff, exact-five and unauthorized-six rejection pass.
+  Product/frontend diffs remain zero; unrelated user changes stay excluded.

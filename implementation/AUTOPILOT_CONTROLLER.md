@@ -8170,6 +8170,7 @@ repeat or rewrite it merely to restore context. See
   permissions/ownership/frontend/workflow stay unchanged. Exact-SHA ordinary
   PASS must precede one sole Level 2 diagnostic. P8-07F, `JCE-Core`,
   production ERPNext and P8-08 remain closed.
+
 - Diagnostic Level 1 passes focused verifier `33/33`, complete P8-07 `71/71`,
   affected integration/security/API `91/91`, clean-overlay governance/
   reconciliation `59/59` and clean-overlay full Python `2637/2637`. Frontend
@@ -8264,3 +8265,50 @@ repeat or rewrite it merely to restore context. See
   permissions/ownership/frontend/workflow stay unchanged. Exact-SHA ordinary
   PASS must precede one sole Level 2 diagnostic. P8-07F, `JCE-Core`,
   production ERPNext and P8-08 remain closed.
+
+### P8-07 checkpoint-4 uncertain-replay response diagnostic cycle
+
+- Post-operation-ID diagnostic SHA
+  `5adf6bb0cab8370a1cba2760888783c5a14cec0b` passes ordinary CI
+  `33254237615`: repository `99105064696`, frontend `99105064791`, secret scan
+  `99105064803` and visual `99105064814` all pass. Its sole Level 2 controlled
+  run `33254881408` passes preflight `99106735269`; runtime `99106776211`
+  passes fixed Bench/Site initialization, fails in the cumulative verifier and
+  completes cleanup.
+- Strict exact-154 parsing accepts only
+  `P807_FRESH_UNCERTAIN_REPLAY_CONTRACT / RuntimeError /
+  trace-038f885259e75094bc18bb96ab98ed25`. The uncertain replay HTTP call,
+  request-ID mirror, cache control and restricted-key scan completed. The
+  failing predicate is one of the ordered status, body-status, code, media,
+  trace or envelope checks. No status/body value, child output, business value,
+  identity, message or stack was read.
+- Repository/domain code has an explicit fail-closed replay rejection for
+  non-`failed_retryable` truth and the API problem contract is fixed at 409,
+  but the safe tuple cannot prove which response predicate drifted. Freeze the
+  post-operation-ID cycle at diagnostic `1/1`, repair `0/1`, final `0/1`; no
+  product repair is authorized.
+- Open independent product-zero
+  `p8-07-checkpoint-4-uncertain-replay-response-contract` at
+  `0/1,0/1,0/1`. Only
+  `UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTICS_ENABLED=True`; all ten historical
+  activations are false. Exact `166` comprises the retained exact `154` plus
+  seven value-free status classes and five ordered body/media/trace/envelope
+  predicates. Exact scope/trace/cursors, mirrored reader, exact-three-key
+  `0600` `O_EXCL`, inner precedence, same exception, finally restoration,
+  failed-child unread, dormant delegation and success-zero remain locked.
+- The cycle remains exact-five: runtime verifier/test plus this controller,
+  P8-07 plan and controlled-runtime checkpoint. Product/API/repository/
+  contracts/schema/permissions/ownership/frontend/workflow stay unchanged.
+  Exact-SHA ordinary PASS must precede one sole Level 2 diagnostic. P8-07F,
+  `JCE-Core`, production ERPNext and P8-08 remain closed. User-authorized
+  pilot-deferment and permission-ownership documentation stays unrelated and
+  preserved.
+- Diagnostic Level 1 passes focused verifier `34/34`, complete P8-07 `72/72`,
+  clean-overlay full Python `2638/2638` and clean-overlay current/
+  reconciliation units `38/38`. Frontend generate/type/full lint/i18n passes
+  with `8585` literal sources and `100%` zh/zh-TW coverage; unit passes
+  `1086/1086`; focused functional plus three-locale visual E2E passes `6/6`.
+  Compile, shell syntax, current/reconciliation scripts, exact-166/new-only/
+  response-order/dormancy, diff, exact-five and unauthorized-six rejection
+  pass. Product/API/repository/contracts/schema/frontend/workflow diffs remain
+  zero; unrelated user changes remain excluded and preserved.
