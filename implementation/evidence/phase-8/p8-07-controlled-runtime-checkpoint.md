@@ -581,3 +581,33 @@ frontend/workflow diff remains zero.
   unauthorized-six rejection pass. Product/frontend diffs remain zero and
   user-authorized unrelated documentation changes remain excluded and
   preserved.
+
+## Post-membership diagnostic result and identity harness checkpoint
+
+- Exact-five SHA `7bce2d1cc0d07f4309d1b8012fbd0971442b79db`
+  passes ordinary `33236458797` in all four lanes. Its sole controlled run
+  `33237032670` passes preflight `99059686057`; runtime `99059715455` passes
+  fixed Bench/Site initialization, fails in the cumulative verifier and
+  completes cleanup.
+- Strict exact-154 reading returns only
+  `P807_SNAPSHOT_OPERATION_ID / RuntimeError /
+  trace-326a9ff7cb4b5a27b8d71bc54797acc8`. Raw/child output, response status/body,
+  operation value/identity, business values, message and stack remain unread.
+- Repository and domain contracts have already canonicalized this operation
+  identity as UUIDv4 or UUIDv5. The runtime harness alone reused the UUIDv5-only
+  Project validator for operation/action identities in snapshot, observation,
+  count and cleanup. Repairing every same-root call preserves the Project
+  validator and makes no product, API, repository, contract, schema,
+  permission, ownership, frontend or workflow change.
+- Freeze diagnostic `1/1`; harness repair is `1/1`, final `0/1`. All nine
+  diagnostic activations are off. The exact-five repair must pass exact-SHA
+  ordinary CI before one sole diagnostics-off Level 3. P8-07F, SSH/ERP and
+  P8-08 remain closed.
+- Repair Level 1 passes focused verifier `33/33`, complete P8-07 `71/71`,
+  affected integration/security/API `91/91`, clean-overlay governance/
+  reconciliation `59/59`, clean-overlay full Python `2637/2637`, frontend
+  unit/coverage `1086/1086` and focused functional plus three-locale visual
+  E2E `6/6`. Generate/type/lint/i18n, compile, shell syntax, current/
+  reconciliation, all-nine-diagnostics-off, diff, exact-five/union-78 and
+  unauthorized-six rejection pass. Product/frontend diffs remain zero;
+  unrelated user changes remain excluded and preserved.

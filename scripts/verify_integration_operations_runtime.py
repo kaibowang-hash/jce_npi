@@ -44,7 +44,7 @@ POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED = False
 COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
 POST_UUID_COLLECTION_SERVER_DIAGNOSTICS_ENABLED = False
 POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED = False
-POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED = True
+POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED = False
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -471,12 +471,21 @@ def read_fresh_runtime_diagnostic(
     return exception_type, code, expected_trace
 
 
-def _require_project_id(value: object) -> str:
+def _require_global_id(value: object) -> str:
     try:
         parsed = UUID(str(value))
     except (TypeError, ValueError) as error:
-        raise RuntimeError("P8-07 runtime Project identity is invalid") from error
-    require(parsed.version == 5 and str(parsed) == str(value), "P8-07 runtime Project identity drifted")
+        raise RuntimeError("P8-07 runtime identity is invalid") from error
+    require(
+        parsed.version in {4, 5} and str(parsed) == str(value),
+        "P8-07 runtime identity drifted",
+    )
+    return str(parsed)
+
+
+def _require_project_id(value: object) -> str:
+    parsed = UUID(_require_global_id(value))
+    require(parsed.version == 5, "P8-07 runtime Project identity drifted")
     return str(parsed)
 
 
@@ -1423,7 +1432,7 @@ def snapshot(
     with fresh_runtime_diagnostic_step("P807_SNAPSHOT_VALIDATE"):
         _validate_fixture(fixture_run_id, project_id)
     with fresh_runtime_diagnostic_step("P807_SNAPSHOT_OPERATION_ID"):
-        uncertain_operation_id = _require_project_id(uncertain_operation_id)
+        uncertain_operation_id = _require_global_id(uncertain_operation_id)
     with fresh_runtime_diagnostic_step("P807_SNAPSHOT_REQUEST"):
         row = frappe.get_doc("NPI Item Publish Request", uncertain_operation_id)
     with fresh_runtime_diagnostic_step("P807_SNAPSHOT_ATTEMPTS"):
@@ -1534,8 +1543,8 @@ def append_observation(
     with fresh_runtime_diagnostic_step("P807_OBSERVATION_VALIDATE"):
         worker = _validate_fixture(fixture_run_id, project_id)
     with fresh_runtime_diagnostic_step("P807_OBSERVATION_IDENTITIES"):
-        operation_id = _require_project_id(operation_id)
-        action_id = UUID(_require_project_id(action_receipt_id))
+        operation_id = _require_global_id(operation_id)
+        action_id = UUID(_require_global_id(action_receipt_id))
     with fresh_runtime_diagnostic_step("P807_OBSERVATION_REFERENCE"):
         value, row = _operation_reference(project_id, operation_id)
     with fresh_runtime_diagnostic_step("P807_OBSERVATION_ATTEMPT"):
@@ -1637,7 +1646,7 @@ def verify_counts(
     with fresh_runtime_diagnostic_step("P807_COUNTS_IDENTITIES"):
         operation_ids = [
             str(_fixture_uuid("retryable-request")),
-            _require_project_id(uncertain_operation_id),
+            _require_global_id(uncertain_operation_id),
         ]
     with fresh_runtime_diagnostic_step("P807_COUNTS_ACTIONS"):
         action_names = frappe.get_all(
@@ -1672,7 +1681,7 @@ def verify_and_cleanup(
 
     worker = _validate_fixture(fixture_run_id, project_id)
     retryable_id = str(_fixture_uuid("retryable-request"))
-    uncertain_operation_id = _require_project_id(uncertain_operation_id)
+    uncertain_operation_id = _require_global_id(uncertain_operation_id)
     operation_ids = [retryable_id, uncertain_operation_id]
     action_names = frappe.get_all(
         "NPI Integration Action Receipt",

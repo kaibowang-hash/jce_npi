@@ -157,6 +157,26 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(invalid=invalid), self.assertRaises(RuntimeError):
                 self.verifier._require_project_id(invalid)
 
+    def test_runtime_operation_and_action_identities_accept_canonical_uuid4_or_uuid5(self) -> None:
+        operation_id = str(self.verifier._fixture_uuid("operation"))
+        self.assertEqual(self.verifier._require_global_id(operation_id), operation_id)
+        self.assertEqual(self.verifier._require_global_id(PROJECT_ID), PROJECT_ID)
+        for invalid in (
+            operation_id.upper(),
+            "11111111-1111-1111-8111-111111111111",
+            "not-a-uuid",
+        ):
+            with self.subTest(invalid=invalid), self.assertRaises(RuntimeError):
+                self.verifier._require_global_id(invalid)
+
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertEqual(source.count("_require_project_id(uncertain_operation_id)"), 0)
+        self.assertEqual(source.count("_require_project_id(operation_id)"), 0)
+        self.assertEqual(source.count("_require_project_id(action_receipt_id)"), 0)
+        self.assertEqual(source.count("_require_global_id(uncertain_operation_id)"), 3)
+        self.assertEqual(source.count("_require_global_id(operation_id)"), 1)
+        self.assertEqual(source.count("_require_global_id(action_receipt_id)"), 1)
+
     def test_runtime_environment_is_exact_and_uses_a_distinct_worker(self) -> None:
         exact = {
             "NPI_P8_07_RUNTIME_ENABLED": "1",
@@ -498,7 +518,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.POST_UUID_COLLECTION_MEMBERSHIP_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.POST_MEMBERSHIP_COMBINED_DIAGNOSTICS_ENABLED
         )
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)

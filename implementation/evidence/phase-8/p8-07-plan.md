@@ -959,3 +959,45 @@ reconciliation, exact-154/new-only/dormancy, diff, exact-five/union-78 and
 unauthorized-six rejection pass. Product/API/repository/contracts/schema/
 frontend/workflow diffs remain zero. User-authorized unrelated documentation
 changes remain outside the exact-five and are preserved.
+
+## 32. Post-membership diagnostic result and identity harness repair
+
+Exact-five SHA `7bce2d1cc0d07f4309d1b8012fbd0971442b79db` passes ordinary
+`33236458797`: secret scan `99058182245`, repository `99058182383`, visual
+`99058182382` and frontend `99058182310` all pass. Its sole Level 2 controlled
+run `33237032670` passes preflight `99059686057`; runtime `99059715455`
+passes fixed Bench/Site initialization, fails in the cumulative verifier and
+completes cleanup.
+
+Strict exact-154 parsing yields only
+`P807_SNAPSHOT_OPERATION_ID / RuntimeError /
+trace-326a9ff7cb4b5a27b8d71bc54797acc8`. No raw/child output, response
+status/body, operation value or identity, business value, message or stack was
+read. The failure is the first snapshot predicate after collection selection.
+
+The repository first canonicalizes the selected persisted operation identity
+and the domain contract accepts canonical UUIDv4 or UUIDv5. Only the retained
+Project route identity is required to be deterministic UUIDv5. The verifier
+incorrectly reused `_require_project_id` for snapshot, observation, count and
+cleanup operation/action identities. The same mismatch would deterministically
+block each later use; it does not identify a product, ownership, permission or
+lifecycle defect.
+
+Freeze the diagnostic at `1/1`; harness repair is `1/1` and final remains
+`0/1`. The exact-five repair adds a canonical UUIDv4/UUIDv5 validator for
+operation/action identities, preserves UUIDv5-only validation for the Project,
+and switches all nine diagnostics off. Product/API/repository/contracts/
+schema/permissions/ownership/frontend/workflow remain unchanged. Exact-SHA
+ordinary PASS must precede the sole diagnostics-off Level 3. P8-07F, SSH/ERP
+contact and P8-08 remain closed.
+
+Repair Level 1 passes focused verifier `33/33`, complete P8-07 `71/71`,
+affected integration/security/API `91/91`, clean-overlay governance/
+reconciliation `59/59` and clean-overlay full Python `2637/2637`. Frontend
+generate/type/lint/i18n passes with `8585` literal sources and `100%`
+zh/zh-TW coverage; unit/coverage passes `1086/1086`; focused functional plus
+three-locale visual E2E passes `6/6`. Compile, shell syntax, current/
+reconciliation, all-nine-diagnostics-off, diff, exact-five/union-78 and
+unauthorized-six rejection pass. Product/API/repository/contracts/schema/
+frontend/workflow diffs remain zero; unrelated user changes remain excluded
+and preserved.
