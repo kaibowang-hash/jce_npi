@@ -63,6 +63,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             self.verifier,
             "POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED",
             False,
+        ), patch.object(
+            self.verifier,
+            "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
+            False,
         ):
             yield
 
@@ -193,6 +197,38 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(self.verifier.document_runtime, "request", return_value=unsafe):
             with self.assertRaises(RuntimeError):
                 self.verifier._request(object(), "http://127.0.0.1", "/safe", label="list")
+
+    def test_collection_server_request_binds_exact_scope_and_trace(self) -> None:
+        response = SimpleNamespace(
+            status=200,
+            headers={
+                "X-Request-ID": "p807-list",
+                "Cache-Control": "private, no-store",
+            },
+            body={"items": []},
+        )
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        with patch.object(
+            self.verifier.document_runtime,
+            "query_headers",
+            return_value={"X-Request-ID": "p807-list"},
+        ), patch.object(
+            self.verifier.document_runtime,
+            "request",
+            return_value=response,
+        ) as request, self.verifier.fresh_runtime_diagnostic_scope(trace_id):
+            self.verifier._request(
+                object(),
+                "http://127.0.0.1",
+                "/safe",
+                label="fresh-list",
+            )
+        headers = request.call_args.kwargs["request_headers"]
+        self.assertEqual(headers["X-Trace-ID"], trace_id)
+        self.assertEqual(
+            headers[self.verifier._COLLECTION_SERVER_DIAGNOSTIC_HEADER],
+            self.verifier._COLLECTION_SERVER_DIAGNOSTIC_SCOPE,
+        )
 
     def test_disabled_probe_requires_the_fixed_disabled_problem(self) -> None:
         response = SimpleNamespace(
@@ -371,30 +407,73 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 )
             record.assert_called_once_with(expected, label="disabled")
 
-    def test_post_mock_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
+    def test_collection_server_diagnostic_codes_are_exact_and_lexically_unique(self) -> None:
         self.assertFalse(self.verifier.FRESH_COMBINED_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.COLLECTION_SHAPE_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED)
-        self.assertTrue(self.verifier.POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED)
+        self.assertFalse(self.verifier.POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED)
+        self.assertTrue(self.verifier.COLLECTION_SERVER_DIAGNOSTICS_ENABLED)
         self.assertFalse(self.verifier.DEFAULT_DISABLED_DIAGNOSTICS_ENABLED)
         self.assertEqual(len(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES), 45)
         self.assertEqual(len(self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES), 52)
         self.assertEqual(len(self.verifier.COLLECTION_SHAPE_DIAGNOSTIC_CODES), 5)
         self.assertEqual(len(self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES), 7)
+        self.assertEqual(len(self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES), 46)
         codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-        self.assertEqual(len(codes), 104)
+        self.assertEqual(len(codes), 150)
         self.assertEqual(
             codes,
             frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
                 self.verifier.FRESH_FIXTURE_DIAGNOSTIC_CODES,
                 self.verifier.COLLECTION_RESPONSE_DIAGNOSTIC_CODES,
+                self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES,
             ),
         )
         self.assertTrue(all(re.fullmatch(r"P807_[A-Z_]+", code) for code in codes))
         source = SCRIPT.read_text(encoding="utf-8")
-        self.assertTrue(all(source.count(f'"{code}"') == 2 for code in codes))
+        self.assertTrue(
+            all(
+                source.count(f'"{code}"') == 1
+                for code in self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES
+            )
+        )
         self.assertNotIn("str(error)", source)
         self.assertNotIn("repr(error)", source)
+
+        repository_path = (
+            ROOT
+            / "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py"
+        )
+        repository_tree = ast.parse(repository_path.read_text(encoding="utf-8"))
+        assignment = next(
+            node
+            for node in repository_tree.body
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name)
+                and target.id
+                == "INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_CODES"
+                for target in node.targets
+            )
+        )
+        self.assertIsInstance(assignment.value, ast.Call)
+        repository_codes = ast.literal_eval(assignment.value.args[0])
+        self.assertEqual(
+            frozenset(self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES),
+            frozenset(repository_codes),
+        )
+        api_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/integration_operations/api.py"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(
+            api_source.count(self.verifier._COLLECTION_SERVER_DIAGNOSTIC_HEADER),
+            1,
+        )
+        self.assertEqual(
+            api_source.count(self.verifier._COLLECTION_SERVER_DIAGNOSTIC_SCOPE),
+            1,
+        )
 
     def test_fresh_diagnostic_activations_are_mutually_exclusive(self) -> None:
         with patch.object(
@@ -412,6 +491,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             self.verifier,
             "POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        ), patch.object(
+            self.verifier,
+            "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
             False,
         ):
             self.assertEqual(self.verifier._active_fresh_runtime_diagnostic_codes(), frozenset())
@@ -458,6 +541,10 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             ), patch.object(
                 self.verifier,
                 "POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
+                self.verifier,
+                "COLLECTION_SERVER_DIAGNOSTICS_ENABLED",
                 False,
             ), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
@@ -512,6 +599,72 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 )
                 self.assertIsNotNone(diagnostic)
                 self.assertEqual(diagnostic[1], expected)
+
+    def test_collection_server_tuple_wins_and_parent_status_is_fallback(self) -> None:
+        trace_id = self.verifier.fresh_runtime_diagnostic_trace()
+        result = SimpleNamespace(status=500, body={})
+        cursors = {"logs/npi_core.log": 0, "sites/npi.localhost/logs/npi_core.log": 0}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=(
+                    "ValidationError",
+                    "P807_COLLECTION_MBOM_VALUE",
+                    trace_id,
+                ),
+            ) as reader, self.assertRaises(RuntimeError):
+                self.verifier._items(
+                    result,
+                    project_id=PROJECT_ID,
+                    diagnostic_cursors=cursors,
+                )
+            self.assertEqual(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("ValidationError", "P807_COLLECTION_MBOM_VALUE", trace_id),
+            )
+            self.assertEqual(reader.call_args.args, (trace_id, cursors))
+            self.assertEqual(
+                reader.call_args.kwargs,
+                {
+                    "code_prefix": "P807_COLLECTION_",
+                    "allowed_codes": frozenset(
+                        self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES
+                    ),
+                },
+            )
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / self.verifier._DIAGNOSTIC_FILE_NAME
+            with patch.dict(
+                os.environ,
+                {self.verifier._DIAGNOSTIC_PATH_ENV: str(path)},
+                clear=False,
+            ), self.verifier.fresh_runtime_diagnostic_scope(trace_id), patch.object(
+                self.verifier.item_runtime,
+                "_sanitized_server_log_diagnostic",
+                return_value=None,
+            ), self.assertRaises(RuntimeError):
+                self.verifier._items(
+                    result,
+                    project_id=PROJECT_ID,
+                    diagnostic_cursors=cursors,
+                )
+            self.assertEqual(
+                self.verifier.read_fresh_runtime_diagnostic(
+                    path,
+                    expected_trace=trace_id,
+                ),
+                ("RuntimeError", "P807_COLLECTION_STATUS_SERVER_ERROR", trace_id),
+            )
 
     def test_fresh_diagnostic_is_exact_three_key_o_excl_and_inner_wins(self) -> None:
         trace_id = self.verifier.fresh_runtime_diagnostic_trace()

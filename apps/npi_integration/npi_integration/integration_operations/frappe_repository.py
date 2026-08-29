@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import base64
 import json
+import re
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Iterator
 from uuid import UUID, uuid4
 
 import frappe
@@ -62,6 +64,142 @@ _CURSOR_VERSION = 1
 _ACTION_RECEIPT_INSERT = frozenset(
     {("NPI Integration Action Receipt", "insert")}
 )
+INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P807_COLLECTION_API_DOMAIN_CALL",
+        "P807_COLLECTION_API_FIELDS",
+        "P807_COLLECTION_API_CONTEXT",
+        "P807_COLLECTION_API_ARGUMENTS",
+        "P807_COLLECTION_API_REPOSITORY",
+        "P807_COLLECTION_API_OUTCOME",
+        "P807_COLLECTION_API_RESPONSE",
+        "P807_COLLECTION_REPOSITORY_PROJECT",
+        "P807_COLLECTION_REPOSITORY_CURSOR",
+        "P807_COLLECTION_REPOSITORY_VALUES",
+        "P807_COLLECTION_REPOSITORY_FILTER",
+        "P807_COLLECTION_REPOSITORY_ITEM",
+        "P807_COLLECTION_REPOSITORY_SORT",
+        "P807_COLLECTION_REPOSITORY_PAGE",
+        "P807_COLLECTION_REPOSITORY_CURSOR_ENCODE",
+        "P807_COLLECTION_REPOSITORY_RESPONSE",
+        "P807_COLLECTION_INBOUND_QUERY",
+        "P807_COLLECTION_ITEM_QUERY",
+        "P807_COLLECTION_MBOM_QUERY",
+        "P807_COLLECTION_TOOL_CREATE_QUERY",
+        "P807_COLLECTION_TOOL_UPDATE_QUERY",
+        "P807_COLLECTION_INBOUND_ROW",
+        "P807_COLLECTION_ITEM_ROW",
+        "P807_COLLECTION_MBOM_ROW",
+        "P807_COLLECTION_TOOL_CREATE_ROW",
+        "P807_COLLECTION_TOOL_UPDATE_ROW",
+        "P807_COLLECTION_INBOUND_VALUE",
+        "P807_COLLECTION_ITEM_VALUE",
+        "P807_COLLECTION_MBOM_VALUE",
+        "P807_COLLECTION_TOOL_CREATE_VALUE",
+        "P807_COLLECTION_TOOL_UPDATE_VALUE",
+        "P807_COLLECTION_INBOUND_TIME",
+        "P807_COLLECTION_ITEM_TIME",
+        "P807_COLLECTION_MBOM_TIME",
+        "P807_COLLECTION_TOOL_CREATE_TIME",
+        "P807_COLLECTION_TOOL_UPDATE_TIME",
+        "P807_COLLECTION_INBOUND_BOUNDARIES",
+        "P807_COLLECTION_ITEM_BOUNDARIES",
+        "P807_COLLECTION_MBOM_BOUNDARIES",
+        "P807_COLLECTION_TOOL_CREATE_BOUNDARIES",
+        "P807_COLLECTION_TOOL_UPDATE_BOUNDARIES",
+        "P807_COLLECTION_INBOUND_SHAPE",
+        "P807_COLLECTION_ITEM_SHAPE",
+        "P807_COLLECTION_MBOM_SHAPE",
+        "P807_COLLECTION_TOOL_CREATE_SHAPE",
+        "P807_COLLECTION_TOOL_UPDATE_SHAPE",
+    }
+)
+_COLLECTION_DIAGNOSTIC_FLAG = "npi_p807_collection_diagnostic"
+_COLLECTION_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_COLLECTION_DIAGNOSTIC_TYPE_PATTERN = re.compile(
+    r"^[A-Za-z][A-Za-z0-9_.]{0,127}$"
+)
+
+
+@contextmanager
+def integration_operations_collection_diagnostics(
+    trace_id: str | None,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    """Enable one exact collection diagnostic scope without changing behavior."""
+
+    try:
+        state = None
+        if (
+            active
+            and isinstance(trace_id, str)
+            and _COLLECTION_DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+        ):
+            state = {"trace_id": trace_id, "recorded": False}
+        flags = frappe.flags
+        missing = object()
+        previous = getattr(flags, _COLLECTION_DIAGNOSTIC_FLAG, missing)
+        setattr(flags, _COLLECTION_DIAGNOSTIC_FLAG, state)
+    except Exception:
+        yield
+        return
+    try:
+        yield
+    finally:
+        try:
+            if previous is missing:
+                delattr(flags, _COLLECTION_DIAGNOSTIC_FLAG)
+            else:
+                setattr(flags, _COLLECTION_DIAGNOSTIC_FLAG, previous)
+        except Exception:
+            pass
+
+
+@contextmanager
+def integration_operations_collection_step(code: str) -> Iterator[None]:
+    """Record one innermost allowlisted collection stage and re-raise unchanged."""
+
+    try:
+        yield
+    except Exception as error:
+        _record_integration_operations_collection_failure(code, error)
+        raise
+
+
+def _record_integration_operations_collection_failure(
+    code: str,
+    error: Exception,
+) -> None:
+    try:
+        state = getattr(frappe.flags, _COLLECTION_DIAGNOSTIC_FLAG, None)
+        exception_type = type(error).__name__
+        if (
+            not isinstance(state, dict)
+            or set(state) != {"trace_id", "recorded"}
+            or state.get("recorded") is True
+            or type(state.get("recorded")) is not bool
+            or code not in INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_CODES
+            or not isinstance(state.get("trace_id"), str)
+            or _COLLECTION_DIAGNOSTIC_TRACE_PATTERN.fullmatch(
+                str(state["trace_id"])
+            )
+            is None
+            or _COLLECTION_DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["recorded"] = True
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=code,
+            title="NPI integration operations collection stage failed",
+            exception_type=exception_type,
+            trace_id=str(state["trace_id"]),
+        )
+    except Exception:
+        # Diagnostics must never alter the original response or transaction.
+        pass
 
 
 @dataclass(frozen=True, slots=True)
@@ -140,6 +278,48 @@ _SPECS = {
         "outbox_event_id",
     ),
 }
+_COLLECTION_QUERY_CODES = {
+    IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_QUERY",
+    IntegrationOperationKind.PUBLISH_ITEM: "P807_COLLECTION_ITEM_QUERY",
+    IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_QUERY",
+    IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_QUERY",
+    IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_QUERY",
+}
+_COLLECTION_ROW_CODES = {
+    IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_ROW",
+    IntegrationOperationKind.PUBLISH_ITEM: "P807_COLLECTION_ITEM_ROW",
+    IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_ROW",
+    IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_ROW",
+    IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_ROW",
+}
+_COLLECTION_VALUE_CODES = {
+    IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_VALUE",
+    IntegrationOperationKind.PUBLISH_ITEM: "P807_COLLECTION_ITEM_VALUE",
+    IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_VALUE",
+    IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_VALUE",
+    IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_VALUE",
+}
+_COLLECTION_TIME_CODES = {
+    IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_TIME",
+    IntegrationOperationKind.PUBLISH_ITEM: "P807_COLLECTION_ITEM_TIME",
+    IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_TIME",
+    IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_TIME",
+    IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_TIME",
+}
+_COLLECTION_BOUNDARY_CODES = {
+    IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_BOUNDARIES",
+    IntegrationOperationKind.PUBLISH_ITEM: "P807_COLLECTION_ITEM_BOUNDARIES",
+    IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_BOUNDARIES",
+    IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_BOUNDARIES",
+    IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_BOUNDARIES",
+}
+_COLLECTION_SHAPE_CODES = {
+    IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_SHAPE",
+    IntegrationOperationKind.PUBLISH_ITEM: "P807_COLLECTION_ITEM_SHAPE",
+    IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_SHAPE",
+    IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_SHAPE",
+    IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_SHAPE",
+}
 
 
 class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
@@ -170,46 +350,79 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         limit: int,
         logical_dlq: bool = False,
     ) -> dict[str, Any] | None:
-        project = self._authorized_project(project_id)
+        with integration_operations_collection_step(
+            "P807_COLLECTION_REPOSITORY_PROJECT"
+        ):
+            project = self._authorized_project(project_id)
         if project is None:
             return None
-        marker = _decode_cursor(cursor, project_id) if cursor else None
-        values = self._project_operations(project, operation_kind=operation_kind)
+        with integration_operations_collection_step(
+            "P807_COLLECTION_REPOSITORY_CURSOR"
+        ):
+            marker = _decode_cursor(cursor, project_id) if cursor else None
+        with integration_operations_collection_step(
+            "P807_COLLECTION_REPOSITORY_VALUES"
+        ):
+            values = self._project_operations(project, operation_kind=operation_kind)
         items = []
         for value, row, updated_at in values:
-            classification = value.classification
-            if shared_state is not None and classification.shared_state is not shared_state:
-                continue
-            if logical_dlq and not classification.logical_dlq:
-                continue
-            sort_key = (updated_at, str(value.operation_global_id))
-            if marker is not None and sort_key >= marker:
-                continue
-            items.append(self._operation_item(value, row, updated_at))
-        items.sort(
-            key=lambda item: (str(item["updatedAt"]), str(item["operationGlobalId"])),
-            reverse=True,
-        )
-        page = items[: limit + 1]
-        has_more = len(page) > limit
-        page = page[:limit]
-        next_cursor = None
-        if has_more and page:
-            last = page[-1]
-            next_cursor = _encode_cursor(
-                project_id,
-                str(last["updatedAt"]),
-                str(last["operationGlobalId"]),
+            with integration_operations_collection_step(
+                "P807_COLLECTION_REPOSITORY_FILTER"
+            ):
+                classification = value.classification
+                if (
+                    shared_state is not None
+                    and classification.shared_state is not shared_state
+                ):
+                    continue
+                if logical_dlq and not classification.logical_dlq:
+                    continue
+                sort_key = (updated_at, str(value.operation_global_id))
+                if marker is not None and sort_key >= marker:
+                    continue
+            with integration_operations_collection_step(
+                "P807_COLLECTION_REPOSITORY_ITEM"
+            ):
+                items.append(self._operation_item(value, row, updated_at))
+        with integration_operations_collection_step(
+            "P807_COLLECTION_REPOSITORY_SORT"
+        ):
+            items.sort(
+                key=lambda item: (
+                    str(item["updatedAt"]),
+                    str(item["operationGlobalId"]),
+                ),
+                reverse=True,
             )
-        return {
-            "projectGlobalId": str(project.global_id),
-            "permissions": {
-                "view": True,
-                "act": self._can_act_on_project(project, project_id),
-            },
-            "items": page,
-            "nextCursor": next_cursor,
-        }
+        with integration_operations_collection_step(
+            "P807_COLLECTION_REPOSITORY_PAGE"
+        ):
+            page = items[: limit + 1]
+            has_more = len(page) > limit
+            page = page[:limit]
+        next_cursor = None
+        with integration_operations_collection_step(
+            "P807_COLLECTION_REPOSITORY_CURSOR_ENCODE"
+        ):
+            if has_more and page:
+                last = page[-1]
+                next_cursor = _encode_cursor(
+                    project_id,
+                    str(last["updatedAt"]),
+                    str(last["operationGlobalId"]),
+                )
+        with integration_operations_collection_step(
+            "P807_COLLECTION_REPOSITORY_RESPONSE"
+        ):
+            return {
+                "projectGlobalId": str(project.global_id),
+                "permissions": {
+                    "view": True,
+                    "act": self._can_act_on_project(project, project_id),
+                },
+                "items": page,
+                "nextCursor": next_cursor,
+            }
 
     def operation_detail(
         self,
@@ -362,20 +575,35 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
             }:
                 filters["operation"] = kind.value
                 filters["schema_version"] = 2
-            names = frappe.get_all(
-                spec.doctype,
-                filters=filters,
-                pluck="name",
-                order_by=f"{spec.updated_field} desc, name desc",
-                limit_page_length=_MAX_OPERATIONS + 1,
-            )
-            if len(names) > _MAX_OPERATIONS:
-                raise RuntimeError("Persisted integration operation collection exceeds its safe bound.")
+            with integration_operations_collection_step(
+                _COLLECTION_QUERY_CODES[kind]
+            ):
+                names = frappe.get_all(
+                    spec.doctype,
+                    filters=filters,
+                    pluck="name",
+                    order_by=f"{spec.updated_field} desc, name desc",
+                    limit_page_length=_MAX_OPERATIONS + 1,
+                )
+                if len(names) > _MAX_OPERATIONS:
+                    raise RuntimeError(
+                        "Persisted integration operation collection exceeds its safe bound."
+                    )
             for name in names:
-                row = frappe.get_doc(spec.doctype, str(name))
-                value = self._operation_value(project, spec, row)
+                with integration_operations_collection_step(
+                    _COLLECTION_ROW_CODES[kind]
+                ):
+                    row = frappe.get_doc(spec.doctype, str(name))
+                with integration_operations_collection_step(
+                    _COLLECTION_VALUE_CODES[kind]
+                ):
+                    value = self._operation_value(project, spec, row)
                 if value is not None:
-                    values.append((value, row, _utc_text(_row_datetime(row, spec))))
+                    with integration_operations_collection_step(
+                        _COLLECTION_TIME_CODES[kind]
+                    ):
+                        updated_at = _utc_text(_row_datetime(row, spec))
+                    values.append((value, row, updated_at))
         return values
 
     def _operation_for_project(
@@ -448,24 +676,30 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         updated_at: str,
     ) -> dict[str, Any]:
         classification = operation.classification
-        uncertain_boundary, reconciliation_required, partial_result = (
-            self._replay_boundaries(operation, row)
-        )
-        eligibility = evaluate_replay_eligibility(
-            classification,
-            uncertain_boundary=uncertain_boundary,
-            reconciliation_required=reconciliation_required,
-            partial_result=partial_result,
-        )
-        return {
-            **operation.payload(),
-            "logicalDlq": classification.logical_dlq,
-            "faultClass": classification.fault_class.value,
-            "replayEligible": eligibility.eligible,
-            "replayEligibilityReason": eligibility.reason.value,
-            "reconciliationRequired": reconciliation_required,
-            "updatedAt": updated_at,
-        }
+        with integration_operations_collection_step(
+            _COLLECTION_BOUNDARY_CODES[operation.operation_kind]
+        ):
+            uncertain_boundary, reconciliation_required, partial_result = (
+                self._replay_boundaries(operation, row)
+            )
+        with integration_operations_collection_step(
+            _COLLECTION_SHAPE_CODES[operation.operation_kind]
+        ):
+            eligibility = evaluate_replay_eligibility(
+                classification,
+                uncertain_boundary=uncertain_boundary,
+                reconciliation_required=reconciliation_required,
+                partial_result=partial_result,
+            )
+            return {
+                **operation.payload(),
+                "logicalDlq": classification.logical_dlq,
+                "faultClass": classification.fault_class.value,
+                "replayEligible": eligibility.eligible,
+                "replayEligibilityReason": eligibility.reason.value,
+                "reconciliationRequired": reconciliation_required,
+                "updatedAt": updated_at,
+            }
 
     def _replay_boundaries(
         self,

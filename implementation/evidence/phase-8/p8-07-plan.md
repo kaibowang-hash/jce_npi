@@ -658,3 +658,50 @@ typecheck, full lint/format/style/boundary/UI, `8585`-source `100%` `zh`/
 exact-104 lexical/precedence/reader checks, diff, exact-five/union-78 and
 unauthorized-six rejection pass. Product/API/repository/contracts/schema/
 frontend/workflow diff remains zero.
+
+## 26. Post-mock result and collection-server diagnostic
+
+Post-mock SHA `3f368e8e81a9e65b7cfae4170b2e49edc240a0ed` passes
+ordinary CI `33225677222` in all four lanes. The sole controlled run
+`33226329198` passes preflight `99030708674`; runtime `99030741831` fails
+after fixed Bench/Site initialization. Strict exact-104 filtering yields only
+`P807_COLLECTION_STATUS_SERVER_ERROR / RuntimeError /
+trace-071c347ba3605530b0cc92efb4f6ccd9`. No actual status/body, child output,
+business value, identity, message or stack was read.
+
+The prior mock-only Item row is now excluded by its exact non-operation
+predicate. Static retained-fixture review does not identify a second unique
+incompatibility: inbound history is project-contained, and the MBOM/Tool Asset
+fixtures are synthetic dispatched operations with target keys. The 5xx still
+spans API context/argument/response and multiple repository query, row,
+reference, timestamp and replay-boundary stages. Freeze post-mock at
+diagnostic `1/1`, repair `0/1`, final `0/1`; do not guess a product change.
+
+The next independent exact-nine cycle enables only
+`COLLECTION_SERVER_DIAGNOSTICS_ENABLED`. It retains `104` outer/fixture/
+response fallbacks and adds `46` fixed API/repository server stages for exact
+`150`. Only the first fresh collection GET can activate: fixed header/scope,
+exact GET route, empty query/form command and deterministic trace are all
+required. Log cursors are captured before the request. A strict mirrored
+exact-three-key server record is copied to the existing `0600` `O_EXCL`
+diagnostic file and wins over parent fallback; missing, malformed, duplicate,
+wrong-trace/type/code or mirror-mismatched records fail closed to the parent
+status class. Default requests are dormant. Response, permission, query,
+ordering, data ownership and API contracts remain unchanged.
+
+The exact paths are integration-operations API/repository and their focused
+tests, runtime verifier/test, AUTOPILOT, this plan and the controlled-runtime
+checkpoint. Exact-SHA ordinary PASS is required before one controlled Level 2
+diagnostic. This is bounded compatibility diagnosis only; it does not alter
+P8-07F scheduling, authorize `JCE-Core`, contact production ERPNext or activate
+P8-08.
+
+Collection-server Level 1 passes focused API/repository/verifier `51/51`,
+complete P8-07 `69/69`, affected integration/security/API `89/89`, governed
+current-task/devcontainer/reconciliation `59/59` and full local Python
+`2641/2641`. Frontend unit/coverage passes `1086/1086`; generate, typecheck,
+full lint and `8585`-source `100%` `zh`/`zh-TW` i18n pass. Compilation,
+current/reconciliation, JSON/YAML, exact-150 cross-file equality, no-leak,
+diff hygiene, exact-nine/union-78 manifests and unauthorized-ten rejection
+pass. Diagnostic recording is reachable only for the exact request and remains
+response-neutral; contracts, schema, frontend and workflow diffs remain zero.

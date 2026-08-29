@@ -7935,3 +7935,41 @@ repeat or rewrite it merely to restore context. See
   exact-104 lexical/precedence/reader checks, diff, exact-five/union-78 and
   unauthorized-six rejection pass. Product, API, repository, contracts,
   schema, frontend and workflow diffs are zero.
+
+### P8-07 checkpoint-4 collection-server diagnostic cycle
+
+- Post-mock candidate SHA `3f368e8e81a9e65b7cfae4170b2e49edc240a0ed`
+  passes ordinary CI `33225677222`: frontend `99028849710`, visual
+  `99028849863`, repository `99028849868` and secret scan `99028849873`
+  all pass. Its sole Level 2 controlled run `33226329198` passes preflight
+  `99030708674`; runtime `99030741831` fails in the cumulative verifier.
+- Strict exact-104 filtering returns one safe tuple:
+  `P807_COLLECTION_STATUS_SERVER_ERROR / RuntimeError /
+  trace-071c347ba3605530b0cc92efb4f6ccd9`. The actual status/body, child
+  output, business values, identities, message and stack remain unread. The
+  prior mock-only Item compatibility root is closed, while retained inbound,
+  MBOM and Tool Asset fixtures do not identify a second unique root. Freeze
+  post-mock at diagnostic `1/1`, repair `0/1`, final `0/1`.
+- Open one independent collection-server cycle at `0/1,0/1,0/1`. Only
+  `COLLECTION_SERVER_DIAGNOSTICS_ENABLED=True`; all historical P8-07 flags
+  are false. The exact active set is `150`: the retained `45` outer, `52`
+  fixture and seven response-class fallbacks plus `46` API/repository
+  collection stages. One exact first collection GET carries a fixed scope and
+  deterministic trace. A trusted exact-three-key server record wins; absent
+  or malformed server evidence falls back to the value-free response class.
+  No response, permission, query, ordering or ownership semantics change.
+- The task is exact-nine: collection API/repository and their focused tests,
+  runtime verifier/test, this controller, plan and controlled-runtime
+  checkpoint. Exact scope/method/route/query/form/trace checks, same-exception
+  and finally restoration, exact code equality, strict mirrored-log reader,
+  `O_EXCL` precedence, no-leak, failed-child unread and success-zero must pass.
+  Its exact-SHA ordinary PASS must precede one Level 2 controlled diagnostic.
+  P8-07F, `JCE-Core`, production ERPNext and P8-08 remain closed.
+- Collection-server Level 1 passes focused API/repository/verifier `51/51`,
+  complete P8-07 `69/69`, affected integration/security/API `89/89`,
+  governance/reconciliation `59/59` and full local Python `2641/2641`.
+  Frontend unit/coverage passes `1086/1086`; generate, typecheck, full lint and
+  `8585`-source `100%` `zh`/`zh-TW` i18n pass. Compile, shell syntax,
+  current/reconciliation, JSON/YAML, exact-150 cross-file equality, no-leak,
+  diff, exact-nine/union-78 and unauthorized-ten rejection pass. No contract,
+  schema, frontend or workflow diff is introduced.

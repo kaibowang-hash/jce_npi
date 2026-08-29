@@ -17,6 +17,7 @@ from typing import Any, Iterator
 from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
+import verify_item_publish_runtime as item_runtime
 import verify_publish_request_runtime as publish_runtime
 from verify_frappe_runtime import (
     login,
@@ -39,7 +40,8 @@ DEFAULT_DISABLED_DIAGNOSTICS_ENABLED = False
 FRESH_COMBINED_DIAGNOSTICS_ENABLED = False
 COLLECTION_SHAPE_DIAGNOSTICS_ENABLED = False
 COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED = False
-POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED = True
+POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED = False
+COLLECTION_SERVER_DIAGNOSTICS_ENABLED = True
 _DEFAULT_DISABLED_DIAGNOSTIC_CODES = frozenset(
     {
         "P807_DEFAULT_DISABLED_LOGIN",
@@ -173,6 +175,58 @@ COLLECTION_RESPONSE_DIAGNOSTIC_CODES = (
     "P807_COLLECTION_STATUS_SERVER_ERROR",
     "P807_COLLECTION_STATUS_OUT_OF_RANGE",
 )
+COLLECTION_SERVER_DIAGNOSTIC_CODES = (
+    "P807_COLLECTION_API_DOMAIN_CALL",
+    "P807_COLLECTION_API_FIELDS",
+    "P807_COLLECTION_API_CONTEXT",
+    "P807_COLLECTION_API_ARGUMENTS",
+    "P807_COLLECTION_API_REPOSITORY",
+    "P807_COLLECTION_API_OUTCOME",
+    "P807_COLLECTION_API_RESPONSE",
+    "P807_COLLECTION_REPOSITORY_PROJECT",
+    "P807_COLLECTION_REPOSITORY_CURSOR",
+    "P807_COLLECTION_REPOSITORY_VALUES",
+    "P807_COLLECTION_REPOSITORY_FILTER",
+    "P807_COLLECTION_REPOSITORY_ITEM",
+    "P807_COLLECTION_REPOSITORY_SORT",
+    "P807_COLLECTION_REPOSITORY_PAGE",
+    "P807_COLLECTION_REPOSITORY_CURSOR_ENCODE",
+    "P807_COLLECTION_REPOSITORY_RESPONSE",
+    "P807_COLLECTION_INBOUND_QUERY",
+    "P807_COLLECTION_ITEM_QUERY",
+    "P807_COLLECTION_MBOM_QUERY",
+    "P807_COLLECTION_TOOL_CREATE_QUERY",
+    "P807_COLLECTION_TOOL_UPDATE_QUERY",
+    "P807_COLLECTION_INBOUND_ROW",
+    "P807_COLLECTION_ITEM_ROW",
+    "P807_COLLECTION_MBOM_ROW",
+    "P807_COLLECTION_TOOL_CREATE_ROW",
+    "P807_COLLECTION_TOOL_UPDATE_ROW",
+    "P807_COLLECTION_INBOUND_VALUE",
+    "P807_COLLECTION_ITEM_VALUE",
+    "P807_COLLECTION_MBOM_VALUE",
+    "P807_COLLECTION_TOOL_CREATE_VALUE",
+    "P807_COLLECTION_TOOL_UPDATE_VALUE",
+    "P807_COLLECTION_INBOUND_TIME",
+    "P807_COLLECTION_ITEM_TIME",
+    "P807_COLLECTION_MBOM_TIME",
+    "P807_COLLECTION_TOOL_CREATE_TIME",
+    "P807_COLLECTION_TOOL_UPDATE_TIME",
+    "P807_COLLECTION_INBOUND_BOUNDARIES",
+    "P807_COLLECTION_ITEM_BOUNDARIES",
+    "P807_COLLECTION_MBOM_BOUNDARIES",
+    "P807_COLLECTION_TOOL_CREATE_BOUNDARIES",
+    "P807_COLLECTION_TOOL_UPDATE_BOUNDARIES",
+    "P807_COLLECTION_INBOUND_SHAPE",
+    "P807_COLLECTION_ITEM_SHAPE",
+    "P807_COLLECTION_MBOM_SHAPE",
+    "P807_COLLECTION_TOOL_CREATE_SHAPE",
+    "P807_COLLECTION_TOOL_UPDATE_SHAPE",
+)
+_COLLECTION_SERVER_DIAGNOSTIC_HEADER = "X-NPI-P807-Collection-Diagnostic"
+_COLLECTION_SERVER_DIAGNOSTIC_SCOPE = (
+    "p8-07-integration-operations-collection-v1"
+)
 _FRESH_FIXTURE_CALL_CODES = {
     "append_observation": "P807_FIXTURE_OBSERVATION_CALL",
     "seed_retryable": "P807_FIXTURE_SEED_CALL",
@@ -246,6 +300,7 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
         COLLECTION_SHAPE_DIAGNOSTICS_ENABLED,
         COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED,
         POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED,
+        COLLECTION_SERVER_DIAGNOSTICS_ENABLED,
     )
     if sum(map(int, activations)) != 1:
         return frozenset()
@@ -257,8 +312,15 @@ def _active_fresh_runtime_diagnostic_codes() -> frozenset[str]:
     if (
         COLLECTION_RESPONSE_DIAGNOSTICS_ENABLED
         or POST_MOCK_COMBINED_DIAGNOSTICS_ENABLED
+        or COLLECTION_SERVER_DIAGNOSTICS_ENABLED
     ):
-        return codes.union(COLLECTION_RESPONSE_DIAGNOSTIC_CODES)
+        codes = codes.union(COLLECTION_RESPONSE_DIAGNOSTIC_CODES)
+    if COLLECTION_SERVER_DIAGNOSTICS_ENABLED:
+        return codes.union(COLLECTION_SERVER_DIAGNOSTIC_CODES)
+    if codes != frozenset(FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
+        FRESH_FIXTURE_DIAGNOSTIC_CODES
+    ):
+        return codes
     return codes
 
 
@@ -413,6 +475,18 @@ def _request(
         if idempotency_key is not None
         else document_runtime.query_headers(f"p807-{label}")
     )
+    if COLLECTION_SERVER_DIAGNOSTICS_ENABLED and label == "fresh-list":
+        state = _DIAGNOSTIC_STATE.get()
+        trace_id = state.get("trace_id") if isinstance(state, dict) else None
+        require(
+            isinstance(trace_id, str)
+            and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None,
+            "P8-07 collection server diagnostic trace is invalid",
+        )
+        headers["X-Trace-ID"] = trace_id
+        headers[_COLLECTION_SERVER_DIAGNOSTIC_HEADER] = (
+            _COLLECTION_SERVER_DIAGNOSTIC_SCOPE
+        )
     try:
         result = document_runtime.request(
             opener,
@@ -512,8 +586,52 @@ def _collection_status_diagnostic_code(status: object) -> str:
     return "P807_COLLECTION_STATUS_OUT_OF_RANGE"
 
 
-def _items(result: Any, *, project_id: str) -> list[dict[str, Any]]:
+def _record_collection_server_diagnostic(
+    trace_id: object,
+    cursors: dict[str, int] | None,
+) -> bool:
+    if not COLLECTION_SERVER_DIAGNOSTICS_ENABLED:
+        return False
+    diagnostic = item_runtime._sanitized_server_log_diagnostic(
+        trace_id,
+        cursors,
+        code_prefix="P807_COLLECTION_",
+        allowed_codes=frozenset(COLLECTION_SERVER_DIAGNOSTIC_CODES),
+    )
+    if diagnostic is None:
+        return False
+    exception_type, code, validated_trace = diagnostic
+    state = _DIAGNOSTIC_STATE.get()
+    if (
+        not isinstance(state, dict)
+        or state.get("recorded") is True
+        or state.get("trace_id") != validated_trace
+    ):
+        return False
+    try:
+        _write_fresh_runtime_diagnostic(
+            {
+                "code": code,
+                "exceptionType": exception_type,
+                "traceId": validated_trace,
+            }
+        )
+    except Exception:
+        return False
+    state["recorded"] = True
+    return True
+
+
+def _items(
+    result: Any,
+    *,
+    project_id: str,
+    diagnostic_cursors: dict[str, int] | None = None,
+) -> list[dict[str, Any]]:
     if result.status != 200:
+        state = _DIAGNOSTIC_STATE.get()
+        trace_id = state.get("trace_id") if isinstance(state, dict) else None
+        _record_collection_server_diagnostic(trace_id, diagnostic_cursors)
         with fresh_runtime_diagnostic_step(
             _collection_status_diagnostic_code(result.status)
         ):
@@ -686,6 +804,11 @@ def run_fresh(
             "P8-07 retryable fixture drifted",
         )
 
+    collection_diagnostic_cursors = (
+        item_runtime._replay_diagnostic_log_cursors()
+        if COLLECTION_SERVER_DIAGNOSTICS_ENABLED
+        else None
+    )
     with fresh_runtime_diagnostic_step("P807_FRESH_COLLECTION_HTTP"):
         collection = _request(
             actor,
@@ -694,7 +817,11 @@ def run_fresh(
             label="fresh-list",
         )
     with fresh_runtime_diagnostic_step("P807_FRESH_COLLECTION_SHAPE"):
-        items = _items(collection, project_id=project_id)
+        items = _items(
+            collection,
+            project_id=project_id,
+            diagnostic_cursors=collection_diagnostic_cursors,
+        )
     with fresh_runtime_diagnostic_step("P807_FRESH_COLLECTION_KINDS"):
         kinds = {str(item.get("operationKind")) for item in items}
         require(

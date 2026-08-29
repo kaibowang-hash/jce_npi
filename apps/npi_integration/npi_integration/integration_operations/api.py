@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Protocol
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any, Iterator, Protocol
 from uuid import UUID
 
 import frappe
@@ -37,6 +39,16 @@ _LIST_FIELDS = frozenset({"operationKind", "sharedState", "cursor", "limit"})
 _ACTION_FIELDS = frozenset({"expectedRawState", "expectedVersion"})
 _DEFAULT_LIMIT = 50
 _MAX_LIMIT = 200
+INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_HEADER = (
+    "X-NPI-P807-Collection-Diagnostic"
+)
+INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_SCOPE = (
+    "p8-07-integration-operations-collection-v1"
+)
+_COLLECTION_DIAGNOSTIC_ACTIVE: ContextVar[bool] = ContextVar(
+    "p807_integration_operations_collection_api_diagnostic",
+    default=False,
+)
 _FORBIDDEN_RESPONSE_KEYS = frozenset(
     {
         "authorization",
@@ -72,6 +84,42 @@ class _Repository(Protocol):
     def request_action(self, project_id: UUID, **values: Any) -> Any | None: ...
 
 
+@contextmanager
+def integration_operations_collection_diagnostics(
+    trace_id: str | None,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    """Bind one exact, response-neutral collection diagnostic request."""
+
+    token = _COLLECTION_DIAGNOSTIC_ACTIVE.set(active)
+    try:
+        if active:
+            from .frappe_repository import (
+                integration_operations_collection_diagnostics as server_scope,
+            )
+
+            with server_scope(trace_id, active=True):
+                yield
+        else:
+            yield
+    finally:
+        _COLLECTION_DIAGNOSTIC_ACTIVE.reset(token)
+
+
+@contextmanager
+def integration_operations_collection_step(code: str) -> Iterator[None]:
+    if _COLLECTION_DIAGNOSTIC_ACTIVE.get():
+        from .frappe_repository import (
+            integration_operations_collection_step as server_step,
+        )
+
+        with server_step(code):
+            yield
+        return
+    yield
+
+
 def _repository_factory(
     *,
     principal: Principal,
@@ -105,14 +153,22 @@ def get_integration_operations(
     limit: Any = None,
     **request_fields: Any,
 ) -> dict[str, Any] | None:
-    return _list(
-        operation_kind=operationKind,
-        shared_state=sharedState,
-        cursor=cursor,
-        limit=limit,
-        logical_dlq=False,
-        request_fields=request_fields,
-    )
+    trace_id = frappe.get_request_header("X-Trace-ID")
+    with integration_operations_collection_diagnostics(
+        trace_id,
+        active=_integration_operations_collection_diagnostic_active(trace_id),
+    ):
+        with integration_operations_collection_step(
+            "P807_COLLECTION_API_DOMAIN_CALL"
+        ):
+            return _list(
+                operation_kind=operationKind,
+                shared_state=sharedState,
+                cursor=cursor,
+                limit=limit,
+                logical_dlq=False,
+                request_fields=request_fields,
+            )
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
@@ -246,37 +302,71 @@ def _list(
     headers = {"X-Request-ID": response_request_id()}
 
     def handle() -> dict[str, Any]:
-        supplied = {
-            **request_fields,
-            "operationKind": operation_kind,
-            "sharedState": shared_state,
-            "cursor": cursor,
-            "limit": limit,
-        }
-        reject_unexpected_request_fields(_LIST_FIELDS, supplied)
-        request_id, repository, project_id, _actor = _context(
-            request_fields,
-            allowed_fields=_LIST_FIELDS,
-            administer=False,
-        )
-        response = repository.list_operations(
-            project_id,
-            operation_kind=_optional_operation_kind(operation_kind),
-            shared_state=_optional_shared_state(shared_state),
-            cursor=_optional_cursor(cursor),
-            limit=_limit(limit),
-            logical_dlq=logical_dlq,
-        )
-        if response is None:
-            raise IntegrationOperationsUnavailable()
-        headers["X-Request-ID"] = request_id
-        return _response(response, project_id=project_id)
+        with integration_operations_collection_step("P807_COLLECTION_API_FIELDS"):
+            supplied = {
+                **request_fields,
+                "operationKind": operation_kind,
+                "sharedState": shared_state,
+                "cursor": cursor,
+                "limit": limit,
+            }
+            reject_unexpected_request_fields(_LIST_FIELDS, supplied)
+        with integration_operations_collection_step("P807_COLLECTION_API_CONTEXT"):
+            request_id, repository, project_id, _actor = _context(
+                request_fields,
+                allowed_fields=_LIST_FIELDS,
+                administer=False,
+            )
+        with integration_operations_collection_step("P807_COLLECTION_API_ARGUMENTS"):
+            values = {
+                "operation_kind": _optional_operation_kind(operation_kind),
+                "shared_state": _optional_shared_state(shared_state),
+                "cursor": _optional_cursor(cursor),
+                "limit": _limit(limit),
+                "logical_dlq": logical_dlq,
+            }
+        with integration_operations_collection_step("P807_COLLECTION_API_REPOSITORY"):
+            response = repository.list_operations(project_id, **values)
+        with integration_operations_collection_step("P807_COLLECTION_API_OUTCOME"):
+            if response is None:
+                raise IntegrationOperationsUnavailable()
+        with integration_operations_collection_step("P807_COLLECTION_API_RESPONSE"):
+            headers["X-Request-ID"] = request_id
+            return _response(response, project_id=project_id)
 
     return frappe_domain_call(
         handle,
         cache_control="private, no-store",
         response_headers=headers,
     )
+
+
+def _integration_operations_collection_diagnostic_active(trace_id: object) -> bool:
+    try:
+        request = getattr(getattr(frappe, "local", None), "request", None)
+        arguments = getattr(request, "args", None)
+        route = getattr(frappe.flags, "npi_route_params", None)
+        form = getattr(getattr(frappe, "local", None), "form_dict", None)
+        return (
+            frappe.get_request_header(
+                INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_HEADER
+            )
+            == INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_SCOPE
+            and frappe.get_request_header("X-Trace-ID") == trace_id
+            and isinstance(trace_id, str)
+            and re.fullmatch(r"trace-[a-f0-9]{32}", trace_id) is not None
+            and getattr(request, "method", None) == "GET"
+            and arguments is not None
+            and list(arguments.keys()) == []
+            and isinstance(route, dict)
+            and set(route) == {"project_id"}
+            and isinstance(form, dict)
+            and set(form) == {"cmd"}
+            and form.get("cmd")
+            == "npi_integration.integration_operations.api.get_integration_operations"
+        )
+    except Exception:
+        return False
 
 
 def _context(

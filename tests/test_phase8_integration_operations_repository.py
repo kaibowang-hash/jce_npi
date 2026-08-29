@@ -34,6 +34,7 @@ class AttrDict(dict):
 class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
     MODULES = (
         "frappe",
+        "npi_core.api",
         "npi_core.documents.frappe_repository",
         "npi_core.foundation.audit",
         "npi_core.foundation.security",
@@ -52,6 +53,7 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
         for name in self.MODULES:
             sys.modules.pop(name, None)
         self.events: list[object] = []
+        self.diagnostics: list[dict[str, object]] = []
         self.saved_rows: list[tuple[str, dict[str, object]]] = []
         self.enqueued: list[dict[str, object]] = []
 
@@ -72,6 +74,10 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
         frappe.enqueue = enqueue
         self.frappe = frappe
         sys.modules["frappe"] = frappe
+
+        api = types.ModuleType("npi_core.api")
+        api.record_safe_diagnostic = lambda **values: self.diagnostics.append(values)
+        sys.modules[api.__name__] = api
 
         base = types.ModuleType("npi_core.documents.frappe_repository")
 
@@ -263,6 +269,72 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
         self.assertEqual(item["sourceSnapshotHash"], "a" * 64)
         self.assertEqual(item["targetIdempotencyKeyHash"], "b" * 64)
         self.assertNotIn("payload", repr(item).casefold())
+
+    def test_collection_diagnostics_are_exact_innermost_and_response_neutral(self) -> None:
+        trace_id = "trace-" + "b" * 32
+        error = RuntimeError("withheld business detail")
+        with self.assertRaises(RuntimeError) as raised:
+            with self.module.integration_operations_collection_diagnostics(
+                trace_id,
+                active=True,
+            ):
+                with self.module.integration_operations_collection_step(
+                    "P807_COLLECTION_API_REPOSITORY"
+                ):
+                    with self.module.integration_operations_collection_step(
+                        "P807_COLLECTION_ITEM_VALUE"
+                    ):
+                        raise error
+        self.assertIs(raised.exception, error)
+        self.assertEqual(
+            self.diagnostics,
+            [
+                {
+                    "code": "P807_COLLECTION_ITEM_VALUE",
+                    "title": "NPI integration operations collection stage failed",
+                    "exception_type": "RuntimeError",
+                    "trace_id": trace_id,
+                }
+            ],
+        )
+        self.assertFalse(
+            hasattr(self.frappe.flags, self.module._COLLECTION_DIAGNOSTIC_FLAG)
+        )
+        self.assertNotIn("withheld business detail", repr(self.diagnostics))
+
+        self.diagnostics.clear()
+        with self.assertRaises(RuntimeError):
+            with self.module.integration_operations_collection_diagnostics(
+                "wrong-trace",
+                active=True,
+            ):
+                with self.module.integration_operations_collection_step(
+                    "P807_COLLECTION_ITEM_VALUE"
+                ):
+                    raise RuntimeError("withheld")
+        self.assertEqual(self.diagnostics, [])
+
+    def test_collection_diagnostic_code_contract_matches_api_and_repository(self) -> None:
+        api_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/integration_operations/api.py"
+        ).read_text(encoding="utf-8")
+        repository_source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        codes = self.module.INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_CODES
+        self.assertEqual(len(codes), 46)
+        self.assertTrue(
+            all(
+                api_source.count(f'"{code}"')
+                + repository_source.count(f'"{code}"')
+                == 2
+                for code in codes
+            )
+        )
+        self.assertNotIn("str(error)", repository_source)
+        self.assertNotIn("repr(error)", repository_source)
 
     def test_mock_only_item_validation_is_not_an_erp_operation(self) -> None:
         spec = self.module._SPECS[self.module.IntegrationOperationKind.PUBLISH_ITEM]

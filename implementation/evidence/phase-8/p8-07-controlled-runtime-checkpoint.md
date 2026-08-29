@@ -367,3 +367,35 @@ frontend/workflow diff remains zero.
   precedence/reader checks, diff, exact-five/union-78 manifests and
   unauthorized-six rejection pass. Product/API/repository/contracts/schema/
   frontend/workflow diff remains zero.
+
+## Post-mock result and collection-server candidate
+
+- SHA `3f368e8e81a9e65b7cfae4170b2e49edc240a0ed` passes ordinary CI
+  `33225677222` in all four lanes. Its only Level 2 controlled run
+  `33226329198` passes preflight `99030708674`; runtime `99030741831` fails
+  in the cumulative verifier after fixed Bench/Site initialization.
+- The strict exact-104 reader accepts only
+  `P807_COLLECTION_STATUS_SERVER_ERROR / RuntimeError /
+  trace-071c347ba3605530b0cc92efb4f6ccd9`. Actual response status/body,
+  child output, business values, identities, message and stack were not read.
+  This proves a collection 5xx but not one product first source. Post-mock is
+  frozen at diagnostic `1/1`, repair `0/1`, final `0/1`.
+- The next exact-nine candidate enables only
+  `COLLECTION_SERVER_DIAGNOSTICS_ENABLED`. Exact `150` equals retained `104`
+  plus `46` value-free API/repository stages. Activation requires one exact
+  first collection GET, fixed scope/header, deterministic trace, exact route,
+  empty query and fixed command. Strict log cursors precede the request;
+  trusted mirrored server evidence wins over the response-class fallback.
+  Diagnostics rethrow the same exception, restore scope in `finally`, never
+  record values, and remain dormant for every ordinary request.
+- Product response, permissions, queries, sorting, ownership, contracts,
+  schema, frontend and workflow semantics are unchanged. P8-07F, `JCE-Core`,
+  production ERPNext and P8-08 remain inactive. Exact-SHA ordinary PASS must
+  precede one controlled Level 2 run.
+- Level 1 passes focused API/repository/verifier `51/51`, complete P8-07
+  `69/69`, affected integration/security/API `89/89`, governance/
+  reconciliation `59/59` and full Python `2641/2641`. Frontend unit/coverage
+  passes `1086/1086`; generate/typecheck/full lint and `8585`-source `100%`
+  `zh`/`zh-TW` i18n pass. Compile, current/reconciliation, exact-150
+  cross-file equality, no-leak, diff, exact-nine/union-78 and unauthorized-ten
+  rejection pass.

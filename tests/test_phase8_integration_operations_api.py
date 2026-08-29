@@ -5,6 +5,7 @@ import importlib
 import sys
 import types
 import unittest
+from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
 from unittest.mock import patch
@@ -105,6 +106,7 @@ class Phase8IntegrationOperationsApiTest(unittest.TestCase):
         frappe.local = types.SimpleNamespace(
             response=types.SimpleNamespace(http_status_code=200),
             form_dict={},
+            request=types.SimpleNamespace(method="GET", args={}),
         )
         frappe.get_request_header = lambda name: self.headers.get(name)
         frappe.db = types.SimpleNamespace(
@@ -259,6 +261,86 @@ class Phase8IntegrationOperationsApiTest(unittest.TestCase):
             [event for event in self.events if event == "authorize"],
             ["authorize", "authorize", "authorize"],
         )
+
+    def test_collection_diagnostic_requires_one_exact_get_and_preserves_response(self) -> None:
+        trace_id = "trace-" + "a" * 32
+        self.headers.update(
+            {
+                "X-Trace-ID": trace_id,
+                self.module.INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_HEADER:
+                    self.module.INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_SCOPE,
+            }
+        )
+        self.frappe.flags.npi_route_params = {"project_id": PROJECT}
+        self.frappe.local.form_dict = {
+            "cmd": "npi_integration.integration_operations.api.get_integration_operations"
+        }
+        scopes: list[tuple[str | None, bool]] = []
+        steps: list[str] = []
+
+        @contextmanager
+        def scope(value, *, active):
+            scopes.append((value, active))
+            yield
+
+        @contextmanager
+        def step(code):
+            steps.append(code)
+            yield
+
+        with patch.object(
+            self.module,
+            "integration_operations_collection_diagnostics",
+            side_effect=scope,
+        ), patch.object(
+            self.module,
+            "integration_operations_collection_step",
+            side_effect=step,
+        ):
+            result = self.module.get_integration_operations()
+
+        self.assertEqual(result, self.collection)
+        self.assertEqual(scopes, [(trace_id, True)])
+        self.assertEqual(
+            steps,
+            [
+                "P807_COLLECTION_API_DOMAIN_CALL",
+                "P807_COLLECTION_API_FIELDS",
+                "P807_COLLECTION_API_CONTEXT",
+                "P807_COLLECTION_API_ARGUMENTS",
+                "P807_COLLECTION_API_REPOSITORY",
+                "P807_COLLECTION_API_OUTCOME",
+                "P807_COLLECTION_API_RESPONSE",
+            ],
+        )
+
+        for mutation in (
+            lambda: self.headers.pop(
+                self.module.INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_HEADER
+            ),
+            lambda: setattr(self.frappe.local.request, "method", "POST"),
+            lambda: self.frappe.local.request.args.update({"limit": "1"}),
+            lambda: self.frappe.flags.npi_route_params.update(
+                {"operation_kind": "publish_item"}
+            ),
+            lambda: self.frappe.local.form_dict.update({"limit": "1"}),
+        ):
+            with self.subTest(mutation=mutation):
+                self.headers[
+                    self.module.INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_HEADER
+                ] = self.module.INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_SCOPE
+                self.frappe.local.request.method = "GET"
+                self.frappe.local.request.args = {}
+                self.frappe.flags.npi_route_params = {"project_id": PROJECT}
+                self.frappe.local.form_dict = {
+                    "cmd": "npi_integration.integration_operations.api.get_integration_operations"
+                }
+                mutation()
+                self.assertFalse(
+                    self.module._integration_operations_collection_diagnostic_active(
+                        trace_id
+                    )
+                )
 
     def test_fixed_replay_is_csrf_actor_idempotent_and_commits_before_response(self) -> None:
         result = self.call_action()
