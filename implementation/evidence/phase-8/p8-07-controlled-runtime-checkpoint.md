@@ -1002,3 +1002,31 @@ frontend/workflow diff remains zero.
   exact-seven/union-78 and unauthorized-eight rejection pass. The sole dirty
   failure is the preserved M9 marker assertion (`4 != 2`); no task path is
   involved.
+
+## Guard final Gate and migrated-legacy diagnostic handoff
+
+- Exact-seven SHA `cb849785a6b45690964d06ca458ea74f80f88643`
+  passes ordinary `33270853888` in all four lanes.
+- Sole Level 3 `33271435460` passes repository `99150492379`, frontend
+  `99150492395`, visual `99150492416`, secret `99150492428` and preflight
+  `99151820683`. Runtime `99151853398` initializes the fixed Site and passes
+  the complete P8-07 route/action/replay/recovery sequence before failing in
+  the following P8-03 migrated-legacy verifier; cleanup passes.
+- Fixed-label filtering yields only
+  `Local Frappe Item publish migrated-legacy runtime verification failed.`
+  Raw/child output and all values, identities, messages and stack remain
+  unread. Freeze the guard cycle at `1/1,1/1,1/1`.
+- Independent product-zero post-guard legacy cycle begins `0/1,0/1,0/1`.
+  Exact seven adds the Item verifier/test, exact CURRENT_TASK verifier path
+  plus current-task fact test, and three governance files. One new activation
+  covers the already-governed exact fifteen (three collection parents plus
+  twelve server stages); four historical Item flags stay false. Strict
+  trace/scope/cursor/mirror, server-first precedence, fallback and no-leak
+  contracts remain.
+- One exact ordinary PASS precedes the only Level 2 diagnostic. P8-07F,
+  production ERPNext, P8-08 and unrelated user documents remain untouched.
+- Level 1 passes focused Item/current `32/32`, Item `146/146`, P8-07 `89/89`,
+  adjacent runtime/security `182/182`, clean full Python `2655/2655` and clean
+  governance `38/38`. Static exact-fifteen/new-only, compile/shell,
+  current/reconciliation, diff, exact-seven/union-78 and unauthorized-eight
+  rejection pass. Frontend is unchanged with retained local/CI evidence.

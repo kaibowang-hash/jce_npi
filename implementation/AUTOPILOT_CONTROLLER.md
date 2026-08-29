@@ -8540,6 +8540,45 @@ repeat or rewrite it merely to restore context. See
   unit `1086/1086`, focused functional/three-locale visual E2E `3/3 + 3/3`,
   generate/type/full lint/i18n (`8585`, `100%` zh/zh-TW) pass. The main dirty
   full run has only the preserved M9 marker-count mismatch (`2660/2661`).
+
+### P8-07 checkpoint-4 migrated-legacy cumulative-boundary diagnostic
+
+- Retryable guard repair SHA `cb849785a6b45690964d06ca458ea74f80f88643`
+  passes ordinary `33270853888`: frontend `99148945365`, secret
+  `99148945481`, repository `99148945510` and visual `99148945529`.
+- Its sole diagnostics-off Level 3 `33271435460` passes repository
+  `99150492379`, frontend `99150492395`, visual `99150492416`, secret
+  `99150492428` and controlled preflight `99151820683`. Runtime
+  `99151853398` initializes the fixed Bench/Site, passes P8-07 disabled,
+  fresh, replay-only, route-disable and recovery checks, then fails at the
+  subsequent P8-03 migrated-legacy verification; cleanup passes.
+- Fixed source-label allowlisting yields only
+  `Local Frappe Item publish migrated-legacy runtime verification failed.`
+  No raw/child output, status/body, business value, identity, message or stack
+  is read. The P8-07 guard root is closed, but the migrated-legacy compound
+  status/shape/cardinality and server-query boundaries remain nonunique.
+- Freeze retryable-replay-client-error at `1/1,1/1,1/1`. Start independent
+  product-zero `p8-07-checkpoint-4-post-guard-legacy-combined` at
+  `0/1,0/1,0/1`. Its exact-seven paths are Item runtime verifier/test,
+  CURRENT_TASK/current-task test, and this controller/plan/checkpoint. The
+  manifest adds only the exact verifier path (`74` to `75`) and its focused
+  Level 1/runtime-preflight command. Only the new combined flag is true; the
+  four historical Item diagnostic flags remain false.
+- Reuse the existing exact fifteen value-free boundaries: twelve server-query
+  codes win over the three collection parents, otherwise the parent safely
+  falls back. Exact trace/scope/cursors, strict mirror, no-leak and response
+  neutrality remain. Product/API/repository/schema/migration/permissions/
+  ownership/frontend/workflow are unchanged. One exact-SHA ordinary PASS must
+  precede the sole Level 2 controlled diagnostic. P8-07F, `JCE-Core`,
+  production ERPNext and P8-08 remain closed; unrelated documentation stays
+  preserved.
+- Level 1 passes focused Item/current `32/32`, complete Item `146/146`, P8-07
+  `89/89`, adjacent runtime/security `182/182`, clean full Python `2655/2655`
+  and clean governance/reconciliation `38/38`. Exact-fifteen/new-only/
+  server-first/fallback/no-leak, current/reconciliation, compile, shell, diff,
+  exact-seven/union-78 and unauthorized-eight rejection pass. Frontend is
+  unchanged; retained local unit `1086/1086`, focused E2E/visual `3/3 + 3/3`
+  and the exact preceding Gate's four frontend/visual lanes remain green.
 - Level 1 passes focused verifier `46/46`, complete P8-07 `88/88`, adjacent
   Phase 8 runtime/security `182/182`, retained P7 readiness runtime `29/29`
   and clean exact-overlay full Python `2654/2654`. Clean-overlay governance

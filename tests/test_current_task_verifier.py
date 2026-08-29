@@ -86,9 +86,13 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "LOGICAL_DLQ_IS_A_DERIVED_CLASSIFICATION_NOT_A_SECOND_MUTABLE_COPY_OF_BUSINESS_TRUTH",
             value["frozen_invariants"],
         )
-        self.assertEqual(len(value["allowed_paths"]), 74)
+        self.assertEqual(len(value["allowed_paths"]), 75)
         self.assertIn(".gitleaksignore", value["allowed_paths"])
         self.assertIn("scripts/verify_devcontainer.py", value["allowed_paths"])
+        self.assertIn(
+            "scripts/verify_item_publish_runtime.py",
+            value["allowed_paths"],
+        )
         self.assertIn("tests/test_devcontainer_verifier.py", value["allowed_paths"])
         self.assertIn(
             "apps/npi_integration/npi_integration/integration_operations/**",
@@ -147,6 +151,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests.test_phase8_integration_operations_repository",
                 "tests.test_phase8_integration_operations_runtime_verifier",
                 "tests.test_phase8_integration_operations_security",
+                "tests.test_phase8_item_publish_runtime_verifier",
                 "tests.test_phase8_item_publish_security",
                 "tests.test_phase8_mbom_publish_security",
                 "tests.test_phase8_tool_asset_security",

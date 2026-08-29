@@ -1465,3 +1465,38 @@ unauthorized-eight rejection pass. Frontend unit `1086/1086`, focused
 functional/visual E2E `3/3 + 3/3` and full generate/type/lint/i18n (`8585`,
 `100%` zh/zh-TW) pass. The dirty full run has only the user-approved M9 marker
 count mismatch (`2660/2661`); it remains excluded and unchanged.
+
+## Migrated-legacy cumulative-boundary diagnostic
+
+Guard repair SHA `cb849785a6b45690964d06ca458ea74f80f88643`
+passes ordinary `33270853888`. Its sole diagnostics-off Level 3
+`33271435460` passes all four base lanes and preflight `99151820683`; runtime
+`99151853398` fails only after completing the P8-07 disabled/fresh/replay/
+route-disable/recovery sequence. Fixed allowlisting returns exactly
+`Local Frappe Item publish migrated-legacy runtime verification failed.` No
+restricted runtime content was read.
+
+The repair cycle is therefore frozen at diagnostic `1/1`, repair `1/1`, final
+`1/1`: its P8-07 root is closed, while the full Gate exposes a later P8-03
+cumulative regression. The outer migrated-legacy label cannot distinguish
+collection status, response shape/cardinality or the existing server-query
+stages, so no new product repair is authorized.
+
+Open independent product-zero
+`p8-07-checkpoint-4-post-guard-legacy-combined` at `0/1,0/1,0/1`. Exact seven
+is Item runtime verifier/test, CURRENT_TASK/current-task test, AUTOPILOT, this
+plan and the controlled checkpoint. The manifest adds only the exact verifier
+path (`74` to `75`) and focused/preflight checks. One new activation reuses
+the existing twelve server-query and three collection codes (exact fifteen);
+all four historical Item flags remain false. Server evidence wins over parent
+fallback with exact trace/scope/cursors, strict mirror and no-leak. Exact
+ordinary PASS must precede one Level 2 diagnostic. P8-07F/production ERP/
+P8-08 remain inactive; no product, migration, contract, ownership or
+user-document change is mixed.
+
+Level 1 passes focused Item/current `32/32`, complete Item `146/146`, P8-07
+`89/89`, adjacent runtime/security `182/182`, clean full Python `2655/2655`
+and clean governance/reconciliation `38/38`. Exact-fifteen/new-only/
+precedence/fallback/no-leak, current/reconciliation, compile, shell, diff,
+exact-seven/union-78 and unauthorized-eight rejection pass. Frontend remains
+zero-diff with retained unit `1086/1086` and focused E2E/visual `3/3 + 3/3`.

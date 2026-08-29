@@ -227,6 +227,17 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.module = load_verifier()
 
+    def setUp(self) -> None:
+        self.post_p807_activation = patch.object(
+            self.module,
+            "LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED",
+            False,
+        )
+        self.post_p807_activation.start()
+
+    def tearDown(self) -> None:
+        self.post_p807_activation.stop()
+
     def test_legacy_collection_diagnostic_is_exact_and_response_neutral(self) -> None:
         module = self.module
         result = SimpleNamespace(
@@ -308,9 +319,31 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(module.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
         source = SCRIPT.read_text(encoding="utf-8")
+        assignments = {
+            node.targets[0].id: node.value.value
+            for node in ast.parse(source).body
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id.endswith("_DIAGNOSTICS_ENABLED")
+            and isinstance(node.value, ast.Constant)
+            and isinstance(node.value.value, bool)
+        }
+        self.assertEqual(len(assignments), 5)
+        self.assertEqual(
+            {name for name, value in assignments.items() if value is True},
+            {"LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED"},
+        )
+        with patch.object(
+            module,
+            "LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED",
+            True,
+        ):
+            self.assertTrue(module._legacy_collection_diagnostics_enabled())
+            self.assertTrue(module._legacy_query_server_diagnostics_enabled())
         run_legacy = source.split("def run_legacy(", 1)[1].split("\ndef ", 1)[0]
         self.assertIn(
-            "legacy_query_diagnostic=LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED",
+            "legacy_query_diagnostic=legacy_query_diagnostics",
             run_legacy,
         )
         self.assertIn("diagnostic_cursors", run_legacy)

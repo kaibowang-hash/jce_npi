@@ -41,6 +41,7 @@ ITEM_CREATE_DIAGNOSTICS_ENABLED = False
 REPLAY_TERMINAL_DIAGNOSTICS_ENABLED = False
 LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = False
 LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED = False
+LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED = True
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _LEGACY_QUERY_DIAGNOSTIC_SCOPE = "p803-legacy-query-v1"
@@ -259,6 +260,20 @@ def _valid_replay_diagnostic_trace(value: object) -> bool:
     return isinstance(value, str) and _TRACE_PATTERN.fullmatch(value) is not None
 
 
+def _legacy_collection_diagnostics_enabled() -> bool:
+    return bool(
+        LEGACY_COLLECTION_DIAGNOSTICS_ENABLED
+        or LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED
+    )
+
+
+def _legacy_query_server_diagnostics_enabled() -> bool:
+    return bool(
+        LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED
+        or LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED
+    )
+
+
 def legacy_collection_failure_message(
     result: Any,
     cursors: dict[str, int] | None = None,
@@ -270,7 +285,7 @@ def legacy_collection_failure_message(
     if result.status == 200 and isinstance(items, list) and len(items) == 3:
         return None
     trace_id = result.trace_id
-    if LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED:
+    if _legacy_query_server_diagnostics_enabled():
         diagnostic = _sanitized_legacy_query_diagnostic(trace_id, cursors)
         if diagnostic is None:
             return _LEGACY_COLLECTION_FAILURE
@@ -280,7 +295,7 @@ def legacy_collection_failure_message(
             f" [diagnostic_code={code}; exception_type={exception_type}; "
             f"trace_id={validated_trace}]"
         )
-    if not LEGACY_COLLECTION_DIAGNOSTICS_ENABLED or not (
+    if not _legacy_collection_diagnostics_enabled() or not (
         _valid_replay_diagnostic_trace(trace_id)
     ):
         return _LEGACY_COLLECTION_FAILURE
@@ -728,17 +743,16 @@ def run_legacy(
     project_id = str(context["projectGlobalId"])
     _require_enabled_runtime_marker(project_id)
     path = item_publish_path(project_id)
+    legacy_query_diagnostics = _legacy_query_server_diagnostics_enabled()
     diagnostic_cursors = (
-        _replay_diagnostic_log_cursors()
-        if LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED
-        else None
+        _replay_diagnostic_log_cursors() if legacy_query_diagnostics else None
     )
     listed = item_publish_request(
         actor,
         base_url,
         path,
         query_key="legacy-list",
-        legacy_query_diagnostic=LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED,
+        legacy_query_diagnostic=legacy_query_diagnostics,
     )
     collection_failure = legacy_collection_failure_message(
         listed,
