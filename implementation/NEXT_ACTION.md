@@ -1,22 +1,23 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION — P8-07F-FACTS`
+`IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED — P8-07F-FACTS`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
-Current atomic action: commit the separate `P8-07F-FACTS` activation and
-repository-governed fail-closed collector, then obtain its exact-SHA ordinary
-CI before the first production read. The governance transition passes at
-`d919d695972260fa86d5df7fa60033e6adb62f49`, ordinary `33279778063` and
-Level 3 `33280319184`, with zero SSH/connector/Site contact.
+The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,
+ordinary `33279778063` and Level 3 `33280319184`. The separate collector
+activation passes at `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` / ordinary
+`33281944546`.
 
-After the activation ordinary PASS, use only the fixed `JCE-Core` transport and
-seven operation IDs to collect bounded redacted facts. Produce the sanitized
-inventory, requirements classification, compatibility/minimal-adjustment
-blueprint and gap/decision register. Existing LaunchFlow architecture/contracts
-remain the default-correct baseline; P8-08 remains blocked through the facts
-Level 3 Gate.
+The sole `ERP_VERSION` operation at `2026-08-30T00:04:24Z` returned no
+accepted output. Collection stopped with no retry, later operation or private
+state file. Current action is to retain the sanitized inventory, compatibility
+baseline and gap/decision evidence while holding P8-08. Resume only after the
+external read condition is corrected without transport/operation allowlist
+drift; start again from `ERP_VERSION` and prefer fresh version/hash deltas.
+Existing LaunchFlow architecture/contracts remain default correct and no
+adjustment task is authorized.
 
 Required branch:
 `codex/npi-v1.2-implementation`

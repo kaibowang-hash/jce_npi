@@ -65,6 +65,7 @@ class V12ReconciliationTests(unittest.TestCase):
 
     def test_erp_customization_requirements_and_exact_hold_evidence(self) -> None:
         self.verifier.verify_erp_customization_requirements_document()
+        self.verifier.verify_p8_07f_fact_documents()
         with self.verifier.TRACE.open(newline="", encoding="utf-8") as handle:
             rows = {
                 row["requirement_id"]: row
@@ -74,12 +75,11 @@ class V12ReconciliationTests(unittest.TestCase):
         actual = {
             requirement_id
             for requirement_id, row in rows.items()
-            if self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE
-            in {
+            if self.verifier.EXPECTED_P8_07F_FACT_EVIDENCE.issubset({
                 value.strip()
                 for value in row["evidence"].split(";")
                 if value.strip()
-            }
+            })
         }
         self.assertEqual(actual, set(expected))
         self.assertEqual(
@@ -294,9 +294,7 @@ class V12ReconciliationTests(unittest.TestCase):
                 requirement_id
                 in self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES
             ):
-                expected_evidence.add(
-                    self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE
-                )
+                expected_evidence |= self.verifier.EXPECTED_P8_07F_FACT_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -421,9 +419,7 @@ class V12ReconciliationTests(unittest.TestCase):
                         requirement_id
                         in self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES
                     ):
-                        expected_evidence.add(
-                            self.verifier.EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE
-                        )
+                        expected_evidence |= self.verifier.EXPECTED_P8_07F_FACT_EVIDENCE
                     self.assertEqual(evidence, expected_evidence)
                 for evidence_path in evidence:
                     self.assertTrue(

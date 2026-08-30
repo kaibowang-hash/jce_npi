@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION — P8-07F-FACTS`
+- Mode: `IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED — P8-07F-FACTS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -21,6 +21,12 @@ Updated: `2026-08-30T00:00:00+07:00`
 - Latest checkpoint exact-SHA CI:
   `33279778063` (`PASS` at
   `d919d695972260fa86d5df7fa60033e6adb62f49`; P8-07F governance)
+- P8-07F facts activation checkpoint:
+  `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` (`PASS`; ordinary CI
+  `33281944546`). One subsequent allowlisted `ERP_VERSION` read at
+  `2026-08-30T00:04:24Z` returned no accepted output; collection stopped with
+  no retry, later operation or private state file. Production facts remain
+  `UNVERIFIED`, no adjustment is authorized and P8-08 is held.
 - Latest governance closeout checkpoint:
   `d39b24e4169d6116ab0721440b1f7dc01b599c96` (`PASS`; ordinary CI
   `33134622237`; P8-06 closeout and P8-07 audit activation)
@@ -41,14 +47,14 @@ Updated: `2026-08-30T00:00:00+07:00`
   ordinary CI `33204451677`; repository `98961818348`, frontend
   `98961818460`, secret `98961818358` and governed visual `98961818084` pass;
   controlled lanes correctly skipped)
-- Active atomic scope: `P8-07F-FACTS` accepts the governance checkpoint
-  `d919d695972260fa86d5df7fa60033e6adb62f49`, ordinary `33279778063` and
-  Level 3 `33280319184`, then freezes a repository-governed collector with only
-  seven read-only operation IDs. Production contact remains zero until this
-  activation commit passes exact-SHA ordinary CI. Afterwards the task may use
-  only the fixed `JCE-Core` boundary to create a sanitized compatibility and
-  minimal-adjustment reconciliation; it changes no product or production state.
-  P8-08 remains inactive until the facts task Level 3 PASS.
+- Active atomic scope: `P8-07F-FACTS` has passed governance and activation,
+  then stopped fail closed on its first `ERP_VERSION` operation without
+  accepted output. The repository records only sanitized provenance, the
+  existing P8-01 through P8-09 baseline and explicit unknowns. It changes no
+  product or production state. A future task-scoped retry may reuse the
+  standing boundary only after the external read condition is corrected
+  without allowlist drift. P8-08 remains inactive until accepted facts and the
+  facts task Level 3 PASS.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

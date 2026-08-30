@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Controller tasks: `P8-07F-GOVERNANCE` then `P8-07F-FACTS`
 
-Status: **GOVERNANCE GATE PASS; FACTS ACTIVATION AWAITS EXACT-SHA ORDINARY**
+Status: **FACTS ACTIVATION PASS; COLLECTION STOPPED FAIL CLOSED; P8-08 HELD**
 
 ## Purpose and baseline
 
@@ -43,6 +43,16 @@ four lanes plus preflight `99175743503` and cumulative runtime `99175763495`.
 The transition made zero production contact. The separate facts activation
 adds `scripts/collect_erpnext_production_facts.py`; no collector call is allowed
 until that activation's own exact-SHA ordinary CI passes.
+
+The activation exact SHA
+`c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` passes ordinary CI
+`33281944546` (secret `99178460514`, repository `99178460580`, visual
+`99178460608`, frontend `99178460653`). One subsequent `ERP_VERSION`
+operation was attempted at `2026-08-30T00:04:24Z` through the frozen transport.
+It produced no accepted output, so the collector stopped without retry or a
+second operation. No private state file was created. Production versions,
+apps, metadata, code and configuration therefore remain `UNVERIFIED`; P8-08 is
+held and no product adjustment is authorized.
 
 ## Fixed transport contract
 

@@ -133,3 +133,15 @@ The controller may now activate only `P8-07F-FACTS`. Its first commit freezes
 the exact task manifest and a repository-governed collector. The first
 production read still requires that activation commit's exact-SHA ordinary CI
 to pass. P8-08, product changes and production mutation remain inactive.
+
+## 2026-08-30 facts activation and fail-closed stop
+
+Facts activation exact SHA
+`c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` passes ordinary CI
+`33281944546`. The first allowlisted `ERP_VERSION` operation then returned no
+accepted output and stopped the task. No retry, later operation, state file or
+remote mutation occurred.
+
+This proves the stop control but proves no production version, customization or
+incompatibility. Standing authority remains read only; P8-08 is held and no
+product adjustment is authorized.

@@ -8874,3 +8874,30 @@ repeat or rewrite it merely to restore context. See
   means `DIRECT_MATCH` and `NO_CHANGE`. Any adjustment is a later minimal atomic
   task. M9-04/M9-05 real pilots remain post-V1.2 deferred and controlled
   non-production UAT does not establish real usage.
+
+## 2026-08-30 P8-07F activation PASS; first read stopped fail closed
+
+- Facts activation exact SHA
+  `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` passes ordinary CI
+  `33281944546`: secret `99178460514`, repository `99178460580`, visual
+  `99178460608` and frontend `99178460653` all pass.
+- The current marker is exactly `P8-07F facts collection stopped fail closed; production facts unverified; P8-08 held`.
+- At `2026-08-30T00:04:24Z`, the collector attempted only allowlisted
+  `ERP_VERSION`. It returned no accepted output. No private state file was
+  created; no retry, alias probe, command/allowlist change, REST fallback,
+  `INSTALLED_APPS`, APP operation, Site/console/SQL action, write, replay or
+  reconciliation action followed.
+- Record only neutral source label, time, operation and no-accepted-output
+  status. Do not record or inspect endpoint, host, user, key, secret, Site,
+  stdout/stderr, raw response or business value. All production facts remain
+  `UNVERIFIED` and no incompatibility or adjustment is proved.
+- P8-07F remains `IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED`; P8-08 is
+  inactive and no facts-task Level 3 is dispatched. A future narrowly scoped
+  attempt may reuse the standing authorization only after the external access
+  condition is corrected without allowlist drift, starting from
+  `ERP_VERSION`. The same stop conditions remain mandatory.
+- Existing LaunchFlow architecture, ownership and contracts remain the
+  default-correct baseline. No redesign/refactor/rebuild, product change or ERP
+  customization is authorized. M9-04/M9-05 real pilots and their adoption
+  claims remain post-V1.2 deferred; approved identity/permission ownership is
+  unchanged.

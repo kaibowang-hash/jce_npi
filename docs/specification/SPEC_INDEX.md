@@ -17,7 +17,12 @@
 - Domain: `docs/DOMAIN_MODEL.md`, `docs/TOOLING_AND_TRIAL.md`
 - Architecture/integration: `docs/ARCHITECTURE.md`, `docs/ERPNEXT_INTEGRATION.md`,
   `docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md` (governed fact-status and
-  activation requirements; not evidence that production customization exists)
+  activation requirements; not evidence that production customization exists),
+  `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md` (sanitized accepted/unknown fact
+  ledger), `docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md` (current-design
+  compatibility baseline), and
+  `docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md` (minimal-difference
+  hold/decision register)
 - UX/i18n: `docs/UX_INTERACTION_SPEC.md`, `docs/LOCALIZATION_SPEC.md`, `design/*`
 - Acceptance: `docs/ACCEPTANCE_TESTS.md`
 - Contracts: `contracts/data-ownership.yaml`, `contracts/npi-api.openapi.yaml`, `contracts/integration-event.schema.json`, `contracts/terminology-allowlist.yaml`

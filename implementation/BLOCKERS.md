@@ -4,12 +4,15 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-None. P8-07 passes at exact final product SHA
+`P8_07F_PRODUCTION_FACTS_UNVERIFIED` is the active scoped execution hold.
+P8-07 passes at exact final product SHA
 `edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary CI `33277289693`
 and Level 3 `33277905251`; every base lane, controlled preflight and cumulative
-runtime passes. P8-07F governance is active only to record the conditional
-production read-only compatibility-fact boundary. It performs no SSH or ERP
-contact and is not blocked on an external action.
+runtime passes. P8-07F governance and activation also pass, but the first
+allowlisted `ERP_VERSION` read at `2026-08-30T00:04:24Z` produced no accepted
+output. Collection stopped without retry or later operation. This is an
+external fact/access hold, not a product defect or evidence of incompatibility.
+It blocks P8-08 and the P8-07F Level 3, not already completed technical slices.
 
 Historical P8-06 passes at exact final product SHA
 `547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806`
@@ -32,11 +35,12 @@ requires no external login or production action.
 
 The exact-20 ERPNext customization requirements baseline passes at
 `6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825` and is
-documentation only. The user's 2026-08-29 standing authorization remains
-conditional and not effective during this transition. It becomes usable only
-after this exact-SHA ordinary and Level 3 PASS and separate activation of
-`P8-07F-FACTS`. This is a scoped Gate, not a Hard Blocker and not evidence that
-any production customization exists.
+documentation only. The user's 2026-08-29 standing authorization became
+effective only after governance and separate activation. Activation
+`c8d3b3c0` / ordinary `33281944546` passes. The first bounded read then stopped
+without accepted output, leaving every production customization fact
+unverified. Standing authority remains fail closed and read only; no production
+customization is inferred.
 
 ## Active recovery
 
@@ -95,10 +99,10 @@ read-only projection obligations remain V1.2.
   entry with approved external identity/authorization, evidence/approval,
   privacy/security, rollback and release-gate facts; it is not a global
   blocker and does not defer internal collaboration truth.
-- The ERP customization requirements baseline is complete without production
-  contact. The separate production fact-collection request remains
-  `QUEUED_NOT_EFFECTIVE`; it changes neither the production-contact prohibition
-  nor checkpoint-2-only P8-07 product authorization.
+- The ERP customization requirements baseline and P8-07F activation are
+  complete. The first governed read stopped without accepted output; production
+  facts remain `UNVERIFIED` and P8-08 remains held. No P8-07 product authority,
+  contract or ownership changed.
 
 ## Historical recovery
 

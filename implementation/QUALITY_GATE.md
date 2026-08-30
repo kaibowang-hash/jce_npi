@@ -52,6 +52,14 @@ approved LaunchFlow architecture/contracts and records `DIRECT_MATCH`/
 `NO_CHANGE` unless a concrete incompatibility proves a smaller classification.
 Facts collection cannot itself pass an adjustment or production-change Gate.
 
+For the current P8-07F run, governance `d919d695` passes ordinary
+`33279778063` and Level 3 `33280319184`; facts activation `c8d3b3c0` passes
+ordinary `33281944546`. The first `ERP_VERSION` operation produced no accepted
+output and stopped the collection. Therefore the facts Gate is `BLOCKED`, no
+facts-task Level 3 is dispatched, every production dependency remains
+`UNVERIFIED`, and P8-08 cannot activate. A CI PASS never substitutes for the
+missing production evidence.
+
 Before final implementation/release closeout, rerun a complete production
 ERPNext↔LaunchFlow read-only compatibility reconciliation over versions, apps,
 tracked customizations and every accepted ERP-dependent object/field/state/

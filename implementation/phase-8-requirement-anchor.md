@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-07 LEVEL 3 PASS; P8-07F GOVERNANCE BEFORE P8-08**
+Status: **IN PROGRESS — P8-07 PASS; P8-07F FACTS UNVERIFIED; P8-08 HELD**
 
 Anchor date: 2026-08-16
 
@@ -34,9 +34,11 @@ presentation facts only and are activated solely by P8-09.
 
 Phase 8 delivers Mock-default and sandbox-ready contracts, adapters,
 projections, operation lifecycle, replay/reconciliation and operational truth.
-Production ERPNext endpoints, credentials, data and network contact remain
-prohibited. Missing production facts do not block Mock, contract, local
-disposable-Site or safe sandbox-adapter work.
+Production ERPNext mutation, credentials, sensitive data and unrestricted
+network contact remain prohibited. P8-07F permits only its fixed read-only
+boundary. The first `ERP_VERSION` attempt returned no accepted output and
+stopped; missing production facts do not invalidate completed Mock, contract,
+local disposable-Site or safe sandbox-adapter work, but they do block P8-08.
 
 ## 2. Requirement allocation and atomic order
 
@@ -576,3 +578,9 @@ records a conditional standing read-only authorization and must pass exact-SHA
 ordinary CI and Level 3 before separate `P8-07F-FACTS` activation. That facts
 task is compatibility reconciliation/minimal adjustment only and is mandatory
 before P8-08. No SSH or production contact occurs in the governance task.
+
+The facts activation at `c8d3b3c0` passes ordinary CI `33281944546`. The sole
+subsequent `ERP_VERSION` attempt at `2026-08-30T00:04:24Z` produced no accepted
+output, so the task stopped with all production facts `UNVERIFIED`. This is an
+external fact/access hold, not evidence of product incompatibility. P8-08 stays
+inactive; no requirement status, ownership, contract or product scope changes.

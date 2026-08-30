@@ -1,28 +1,32 @@
 # ERPNext Customization Requirements and Fact Status
 
-Status: **GOVERNED REQUIREMENTS BASELINE — PRODUCTION FACTS NOT COLLECTED**
+Status: **GOVERNED REQUIREMENTS BASELINE — PRODUCTION FACTS UNVERIFIED AFTER FAIL-CLOSED READ**
 
-Date: `2026-08-28`
+Date: `2026-08-30`
 
 ## Purpose and authority
 
 This document states what must be known, decided, tested and evidenced before
 NPI One can rely on an ERPNext customization. It does not claim that ERPNext
-must be modified. It does not describe the current production site because no
-production fact collection has occurred.
+must be modified. It does not describe the current production site because the
+first allowlisted read produced no accepted output.
 
 `implementation/REQUIRED_INPUTS.md` remains the sole request for external
 facts. Repository contracts describe the NPI One boundary, not the actual
 production ERPNext implementation. Screenshots, sample values, local fixtures,
 Mock and Synthetic results are never production facts.
 
-Production read-only fact checking is
-`QUEUED_NOT_EFFECTIVE`. Connection status is
-`PROHIBITED_PENDING_RULE_CHANGE_AND_GATE`. Current `AGENTS.md` and the
-autopilot controller prohibit production contact.
+The P8-07F governance and facts-activation Gates have passed. One bounded
+`ERP_VERSION` operation was attempted through the governed `JCE-Core` boundary
+at `2026-08-30T00:04:24Z`; it stopped as
+`UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT`. No retry,
+allowlist expansion, Site command or later operation occurred. The sanitized
+ledger is `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`.
 
-No SSH action (including configuration-only inspection), ERP connector or
-Site command is authorized by this baseline. It records requirements only.
+Standing read-only authority remains conditional on the same fail-closed
+transport/operation contract. It is not production mutation authority. P8-08
+and every production-bound mapping remain held until accepted facts and the
+applicable Gate exist.
 
 ## Classification and evidence axes
 
@@ -116,12 +120,12 @@ is intentionally absent rather than guessed.
 | Deployment, monitoring and support | Required | `OWNER_APPROVAL_REQUIRED` | NFR-INT-001, FR-RP-009 | Explicit profiles, health, trace-safe errors and visible operation truth | ERP platform/support owners | Blocked Pending Fact — deployment unit, health source, alerts, support ownership and SLO are unknown | Deployment and runtime identities separated | Rollout order, compatibility window, alert routing and support handoff required | Preflight, canary where approved, health/metrics/log redaction, queue/DLQ alerts; disable profile and forward-fix | No restart, reload or scheduler action is authorized here |
 | Optional future ERP extensions | Optional | `OWNER_APPROVAL_REQUIRED` | INT-008, INT-009, INT-011..014 | Later change/file/summary/mobile extensions remain scoped holds | Relevant ERP business owners | Blocked Pending Fact | No authority until separate requirement/controller | Separate ADR, contract, migration and release plan | Independent tests/Gate; removal without rewriting V1.2 history | Must not be bundled into V1.2 activation |
 
-## Read-only fact-collection activation Gate
+## Read-only fact-collection Gate and current result
 
-The current request is queued only. Before any connection, a separate approved
-higher-priority change must amend both `AGENTS.md` and the controller and pass
-its own Gate. Its frozen plan must define all of the following without placing
-secret values in the repository:
+The governance transition at `d919d695` passed ordinary CI `33279778063` and
+Level 3 `33280319184`. The separate collector activation at `c8d3b3c0` passed
+ordinary CI `33281944546`. Their frozen plan defines the following without
+placing secret values in the repository:
 
 1. An exact read-only allowlist reviewed against the target version.
 2. A least-privilege principal with no Administrator equivalence.
@@ -141,7 +145,13 @@ secret values in the repository:
    output shape, secret exposure or allowlist drift. Missing facts stay
    blocked; privileges are never broadened during collection.
 
-This document contains no runnable connection command or production endpoint.
+The first `ERP_VERSION` operation then failed without an accepted response and
+the collector stopped. Therefore every production-dependent row remains
+`Blocked Pending Fact`, `EXTERNAL_EVIDENCE_REQUIRED`,
+`OWNER_APPROVAL_REQUIRED` or the approved identity-decision equivalent. No row
+moved to `Already Present` from production evidence and no adjustment is
+authorized. This document contains no runnable connection command or
+production endpoint.
 
 ## Validation and acceptance checklist
 
@@ -172,7 +182,7 @@ This document contains no runnable connection command or production endpoint.
 ## Explicit no-change list
 
 This baseline authorizes no ERPNext or Frappe core change; no production or
-Sandbox connection; no endpoint/profile/credential; no Custom Field, Property
+Sandbox mutation; no endpoint/profile/credential; no Custom Field, Property
 Setter, DocType, Workflow, Role, permission, service user, Naming Series,
 index, patch, fixture, migration, backfill, webhook, job, scheduler, report,
 print format, client/server script, adapter, queue or configuration change; no
@@ -180,6 +190,6 @@ API, event, ownership, product, UI or runtime change; no target write, replay,
 reconciliation action or historical rewrite; and no requirement status or
 business approval change.
 
-Rollback of this documentation task is a documentation-only revert to the
-accepted P8-07 governance transition while retaining all immutable product,
-trace and evidence history.
+The one failed read-only attempt created no remote state and requires no remote
+rollback. Rollback of this documentation task is a documentation-only revert
+while retaining immutable product, trace and sanitized provenance history.

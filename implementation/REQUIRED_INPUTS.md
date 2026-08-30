@@ -1,14 +1,15 @@
 # Required External Inputs
 
-Status: **OPEN — P8-07F governed read-only intake pending; not a global blocker**
+Status: **OPEN — P8-07F FIRST READ FAILED CLOSED; PRODUCTION FACTS UNVERIFIED**
 Updated: 2026-08-30
 
 This is the single complete request for external facts that are not present in
 the repository. Supply one dated, owner-identified, sanitized, read-only bundle
 rather than sending credentials or incremental production extracts. The
-P8-07F facts task may instead collect only the same necessary facts through its
-conditional fixed `JCE-Core` read-only boundary after the governance transition
-passes exact-SHA ordinary CI and Level 3. Never provide or record credentials,
+P8-07F may instead collect only the same necessary facts through its fixed
+`JCE-Core` read-only boundary. Governance and activation Gates passed, but the
+first `ERP_VERSION` attempt at `2026-08-30T00:04:24Z` produced no accepted
+output and stopped the run. Never provide or record credentials,
 endpoint/host/user/key values, secrets or unrelated business records.
 
 The acceptance/status matrix for these inputs is
@@ -17,12 +18,19 @@ request and contains no production values. This file remains the sole source
 for requesting, receiving and recording external fact provenance.
 
 Before asking again or connecting, check
-`docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md` when it exists. Reuse fresh accepted
-facts; if version/mtime/hash/checksum has changed or the task needs an uncovered
-fact, perform only a task-scoped delta under the P8-07F allowlist. Record task
+`docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`. It currently contains no accepted
+production fact. After the external read condition is corrected without
+allowlist drift, resume from `ERP_VERSION`; later reuse fresh accepted facts and
+perform only a task-scoped delta. Record task
 ID, purpose, timestamp/timezone, operation ID, redacted source, version/
 checksum, finding, unknown and contract/ownership impact. Stop on permission,
 version, output-shape, sensitive-content, allowlist or write-boundary drift.
+
+Current provenance: task `P8-07F-FACTS`; source
+`JCE_CORE_PRODUCTION_REDACTED`; activation SHA `c8d3b3c0`; ordinary
+`33281944546`; operation `ERP_VERSION`; result
+`UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT`; checksum
+`NOT_AVAILABLE_NO_ACCEPTED_OUTPUT`. No subsequent operation ran.
 
 ## 1. Current ERPNext reconciliation package
 

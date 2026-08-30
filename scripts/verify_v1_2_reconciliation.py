@@ -403,9 +403,18 @@ EXPECTED_P8_07_COMPLETED_ALLOCATION = {
     "UX-016": "TECHNICAL_VERIFIED_FOUNDATION",
 }
 ERP_CUSTOMIZATION_REQUIREMENTS = ROOT / "docs" / "ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md"
+ERP_PRODUCTION_FACT_INVENTORY = ROOT / "docs" / "ERPNEXT_PRODUCTION_FACT_INVENTORY.md"
+ERP_INTEGRATION_BLUEPRINT = ROOT / "docs" / "LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md"
+ERP_COMPATIBILITY_GAPS = ROOT / "docs" / "LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md"
 EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE = (
     "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md"
 )
+EXPECTED_P8_07F_FACT_EVIDENCE = {
+    "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
+    "docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md",
+    "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
+    "docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md",
+}
 EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES = {
     "INT-001": "TECHNICAL_VERIFIED_READ_ONLY_PROJECTION_FOUNDATION_INBOUND_RECONCILIATION_HELD",
     "INT-002": "TECHNICAL_VERIFIED_SIGNED_INBOX_PROJECT_DRAFT_FOUNDATION_PRODUCTION_INBOUND_RECONCILIATION_HELD",
@@ -1563,8 +1572,8 @@ def verify_erp_customization_requirements_document() -> None:
         "EXTERNAL_EVIDENCE_REQUIRED",
         "OWNER_APPROVAL_REQUIRED",
         "PROHIBITED_PENDING_RULE_CHANGE_AND_GATE",
-        "QUEUED_NOT_EFFECTIVE",
-        "## Read-only fact-collection activation Gate",
+        "UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT",
+        "## Read-only fact-collection Gate and current result",
         "## Validation and acceptance checklist",
         "## Explicit no-change list",
         "BatchMode",
@@ -1616,6 +1625,48 @@ def verify_erp_customization_requirements_document() -> None:
         if len(columns) != 11 or columns[1] not in classifications:
             raise ReconciliationVerificationError(
                 "ERP customization requirements register row shape/classification drifted"
+            )
+
+
+def verify_p8_07f_fact_documents() -> None:
+    inventory = ERP_PRODUCTION_FACT_INVENTORY.read_text(encoding="utf-8")
+    blueprint = ERP_INTEGRATION_BLUEPRINT.read_text(encoding="utf-8")
+    gaps = ERP_COMPATIBILITY_GAPS.read_text(encoding="utf-8")
+    inventory_tokens = {
+        "UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT",
+        "NOT_AVAILABLE_NO_ACCEPTED_OUTPUT",
+        "ERP_VERSION",
+        "NOT_INVOKED_AFTER_STOP",
+        "no checksum",
+        "No production ERPNext or Frappe state was changed",
+    }
+    missing = sorted(token for token in inventory_tokens if token not in inventory)
+    if missing:
+        raise ReconciliationVerificationError(
+            f"P8-07F production inventory lacks tokens: {missing}"
+        )
+    for task_id in ("P8-01", "P8-02", "P8-03", "P8-04", "P8-05", "P8-06", "P8-07", "P8-08", "P8-09"):
+        if task_id not in blueprint:
+            raise ReconciliationVerificationError(
+                f"P8-07F compatibility blueprint lacks {task_id}"
+            )
+    for token in (
+        "BUSINESS_DECISION_REQUIRED — FACT/ACCESS ONLY",
+        "NO_CHANGE",
+        "No adjustment task may be",
+        "P8-08 remains blocked",
+        "M9-04/M9-05 real pilots are not V1.2 evidence",
+        "Do not modify ERPNext or Frappe core",
+        "Do not add a generic DocType writer",
+    ):
+        if token not in blueprint + gaps:
+            raise ReconciliationVerificationError(
+                f"P8-07F compatibility evidence lacks token: {token}"
+            )
+    for text, label in ((inventory, "inventory"), (blueprint, "blueprint"), (gaps, "gap register")):
+        if "http://" in text or "https://" in text or "BEGIN OPENSSH PRIVATE KEY" in text:
+            raise ReconciliationVerificationError(
+                f"P8-07F {label} contains prohibited connection or key material"
             )
 
 
@@ -1672,9 +1723,9 @@ def verify_trace_sets() -> None:
             raise ReconciliationVerificationError(
                 f"{requirement_id} integration-hold status drifted"
             )
-        if EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE not in evidence:
+        if not EXPECTED_P8_07F_FACT_EVIDENCE.issubset(evidence):
             raise ReconciliationVerificationError(
-                f"{requirement_id} lacks ERP customization requirements evidence"
+                f"{requirement_id} lacks P8-07F production-fact evidence"
             )
     for requirement_id, row in by_id.items():
         evidence = {
@@ -1683,7 +1734,7 @@ def verify_trace_sets() -> None:
             if value.strip()
         }
         if (
-            EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE in evidence
+            evidence.intersection(EXPECTED_P8_07F_FACT_EVIDENCE)
             and requirement_id
             not in EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES
         ):
@@ -1698,8 +1749,7 @@ def verify_trace_sets() -> None:
             value.strip()
             for value in row["evidence"].split(";")
             if value.strip()
-            and value.strip()
-            != EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE
+            and value.strip() not in EXPECTED_P8_07F_FACT_EVIDENCE
         )
     for requirement_id in EXPECTED_POST_V1_2_DEFERRED_PORTALS:
         row = by_id[requirement_id]
@@ -3185,6 +3235,7 @@ def verify_generated_artifacts() -> None:
 def main() -> int:
     verify_generated_artifacts()
     verify_erp_customization_requirements_document()
+    verify_p8_07f_fact_documents()
     verify_trace_sets()
     verify_brand_package()
     print("V1.2 reconciliation verification passed")

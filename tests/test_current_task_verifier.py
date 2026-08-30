@@ -51,6 +51,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "P8_07F_FACTS_ACTIVATION_C8D3B3C0E9FD3F8D92A1679713EF8AFC0157FF20_ORDINARY_33281944546_PASSED",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_ERP_VERSION_ATTEMPT_STOPPED_WITHOUT_ACCEPTED_OUTPUT_NO_RETRY_NO_LATER_OPERATION_NO_STATE_FILE",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "ONLY_ERP_VERSION_INSTALLED_APPS_APP_HEAD_APP_STATUS_APP_TRACKED_PATHS_APP_FILE_HASH_APP_FILE_READ",
             value["frozen_invariants"],
         )
@@ -60,7 +68,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION",
+            "IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

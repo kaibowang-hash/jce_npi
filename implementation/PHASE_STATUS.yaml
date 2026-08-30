@@ -3,12 +3,12 @@ overall_status: IN_PROGRESS
 current_phase: 8
 updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
-execution_hold: NONE
+execution_hold: P8_07F_PRODUCTION_FACTS_UNVERIFIED
 current_task: P8-07F-FACTS
-current_task_status: IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION
-current_task_completed_stage: P8_07F_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
-current_task_next_stage: P8_07F_FACTS_ACTIVATION_EXACT_SHA_ORDINARY
-current_task_next_stage_status: ACTIVATION_UNCOMMITTED_ZERO_PRODUCTION_CONTACT
+current_task_status: IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED
+current_task_completed_stage: P8_07F_FACTS_ACTIVATION_C8D3B3C0_ORDINARY_33281944546_PASS_AND_ONE_FAIL_CLOSED_ERP_VERSION_ATTEMPT
+current_task_next_stage: CORRECT_EXTERNAL_READ_CONDITION_THEN_RESUME_SAME_ALLOWLIST_FROM_ERP_VERSION
+current_task_next_stage_status: BLOCKED_NO_ACCEPTED_PRODUCTION_OUTPUT_NO_RETRY
 resumed_product_task: P8-08
 resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_LEVEL_3_PASS
 scope_decisions:
@@ -16,9 +16,9 @@ scope_decisions:
     decision_marker: USER_STANDING_AUTHORIZATION_2026_08_29_CONDITIONAL
     connection_authorized: true
     current_task_may_connect: true
-    connection_effective_condition: P8_07F_FACTS_ACTIVATION_EXACT_SHA_ORDINARY_PASS
+    connection_effective_condition: SATISFIED_BY_C8D3B3C0_ORDINARY_33281944546
     documentation_authorized_after_transition_ordinary: true
-    current_rule: FACTS_TASK_FIXED_ALLOWLIST_ONLY_AFTER_ACTIVATION_ORDINARY
+    current_rule: FACTS_TASK_FIXED_ALLOWLIST_FAIL_CLOSED_ONE_ERP_VERSION_ATTEMPT_STOPPED_NO_ACCEPTED_OUTPUT
     future_activation_trigger: SATISFIED_BY_P8_07F_GOVERNANCE_D919D695_ORDINARY_33279778063_LEVEL_3_33280319184_AND_SEPARATE_FACTS_ACTIVATION
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
@@ -2636,7 +2636,7 @@ p8_07:
 p8_07f:
   task: P8-07F-FACTS
   next_task: P8-08
-  status: IN_PROGRESS_AWAITING_ACTIVATION_ORDINARY_THEN_FACT_COLLECTION
+  status: IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED
   phase: 8
   milestone: M7-07F
   task_kind: DELIVERY_INFRASTRUCTURE
@@ -2645,6 +2645,14 @@ p8_07f:
   governance_checkpoint: d919d695972260fa86d5df7fa60033e6adb62f49
   governance_ordinary: 33279778063
   governance_level_3: 33280319184
+  facts_activation_checkpoint: c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20
+  facts_activation_ordinary: 33281944546
+  collection_attempt_utc: '2026-08-30T00:04:24Z'
+  collection_attempt_operation: ERP_VERSION
+  collection_attempt_result: UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT
+  accepted_production_facts: 0
+  later_operations_invoked: 0
+  private_state_file_created: false
   production_connection_authorized_now: true
   facts_connection_requires_activation_ordinary_pass: true
   transition_may_contact_production: false
@@ -2659,6 +2667,10 @@ p8_07f:
     - implementation/evidence/phase-8/p8-07-validation.md
     - implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md
     - implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md
+    - implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md
+    - docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md
+    - docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md
+    - docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
