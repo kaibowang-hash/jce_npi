@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-09`
+`IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
@@ -14,13 +14,14 @@ pass. P8-08 is technically complete only for the internal read-only Released
 Trial Summary projection seam; the external event/consumer/receipt contract
 and production activation remain held by `DR-REC-009`.
 
-The sole next action is P8-09 audit and plan freezing. Verify the approved
-`JCE Core` display text and exact `docs/Brand Asset/Core.png`, enumerate only
-ERP/JCE presentation contexts and preserve `ERPNEXT` as the stable technical
-identity in contracts, events, schemas, persistence, permissions and routing.
-No product path is authorized until the plan's exact-SHA ordinary CI and a
-separate activation transition pass. Do not contact production ERPNext/JCE or
-modify any user-owned dirty documentation during this audit.
+P8-08 governance closeout `45f6a4d5` passes ordinary `33332397724`. The sole
+next action is this P8-09 audit plan's exact-SHA ordinary CI. The plan freezes
+the existing display-brand plus `SourceSystemIdentity` seams, approved
+`JCE Core` accessible/text identity and exact `Core.png` SHA-256 while keeping
+`ERPNEXT` stable in every technical boundary. After that PASS, create one
+separate exact-path activation transition; no product path is authorized
+before it also passes ordinary CI. Do not contact production ERPNext/JCE or
+modify any user-owned dirty documentation.
 
 Retained P8-07F diagnostics-off exact SHA
 `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c` passes ordinary CI

@@ -9487,3 +9487,32 @@ repeat or rewrite it merely to restore context. See
 - Preserve every user-owned dirty/untracked file, M9-04/M9-05 post-V1.2
   deferral and the final full production compatibility reconciliation Gate.
 - Controller marker: `P8-08 PASS; P8-09 audit active`.
+
+## 2026-08-31 P8-09 audit plan awaits exact-SHA ordinary CI
+
+- P8-08 governance closeout exact SHA
+  `45f6a4d5654608fa22c968d9b22e233b8af80852` passes ordinary CI
+  `33332397724`; repository `99313244091`, frontend `99313244272`, governed
+  visual `99313244117` and secret `99313244044` all pass.
+- The P8-09 audit confirms the smallest approved seam: reuse
+  `frontend/src/ui-adapters/display-brand.tsx` and `SourceSystemIdentity` for
+  standalone ERP/JCE presentation. The approved display name is exactly
+  `JCE Core`; `docs/Brand Asset/Core.png` is the sole asset with SHA-256
+  `0c7182882022cf190925c90f0004c77aaca4dd513b86ccd0f23efb30171e0e42`.
+- Preserve `ERPNEXT` in every API, event, schema, persistence, permission,
+  ownership, selector and routing boundary. Explanatory ERPNext semantics and
+  acknowledgement contracts are not bulk-renamed. No domain, integration,
+  Shell or permission redesign is authorized.
+- Product code remains unauthorized. Require this exact audit-plan commit to
+  pass ordinary CI, then commit a separate exact-path activation transition
+  and require its own ordinary PASS before any adapter, localization, verifier,
+  test or visual-baseline edit.
+- The later product checkpoint must prove exact original bytes emitted once,
+  no inline/substitute/duplicate asset, `JCE Core` accessible/text fallback,
+  keyboard tooltip, scale/overflow, light plus controlled-dark contrast and
+  direct English/zh/zh-TW evidence. It must keep the five LaunchFlow contexts
+  unchanged.
+- Production ERPNext/JCE contact, technical identifier changes, P8-07F read
+  operations, `DR-REC-009`, Sandbox/UAT, M9-04/M9-05 real pilots and user-owned
+  dirty/untracked files remain outside this task.
+- Controller marker: `P8-09 audit plan awaits exact-SHA ordinary CI`.
