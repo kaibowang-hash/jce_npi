@@ -8,10 +8,15 @@ Updated: `2026-08-30T00:00:00+07:00`
 P8-07 passes at exact final product SHA
 `edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary CI `33277289693`
 and Level 3 `33277905251`; every base lane, controlled preflight and cumulative
-runtime passes. P8-07F governance and activation also pass, but the first
-allowlisted `ERP_VERSION` read at `2026-08-30T00:04:24Z` produced no accepted
-output. Collection stopped without retry or later operation. This is an
-external fact/access hold, not a product defect or evidence of incompatibility.
+runtime passes. P8-07F governance and activation also pass, but the allowlisted
+`ERP_VERSION` reads at `2026-08-30T00:04:24Z` and user-requested
+`2026-08-30T05:35:04Z` produced no accepted output. Each collection stopped
+without a later operation. This is an
+external fact/access hold plus a proven collector working-directory omission,
+not a product defect or evidence of incompatibility. The user confirmed the
+default relative Bench root; the task-scoped Site remains private. No remote
+retry is allowed until the fixed-root harness repair passes exact-SHA ordinary
+CI.
 It blocks P8-08 and the P8-07F Level 3, not already completed technical slices.
 
 Historical P8-06 passes at exact final product SHA
@@ -100,7 +105,7 @@ read-only projection obligations remain V1.2.
   privacy/security, rollback and release-gate facts; it is not a global
   blocker and does not defer internal collaboration truth.
 - The ERP customization requirements baseline and P8-07F activation are
-  complete. The first governed read stopped without accepted output; production
+  complete. Both governed reads stopped without accepted output; production
   facts remain `UNVERIFIED` and P8-08 remains held. No P8-07 product authority,
   contract or ownership changed.
 

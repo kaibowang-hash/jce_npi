@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED — P8-07F-FACTS`
+- Mode: `IN_PROGRESS_P8_07F_BENCH_ROOT_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -23,9 +23,10 @@ Updated: `2026-08-30T00:00:00+07:00`
   `d919d695972260fa86d5df7fa60033e6adb62f49`; P8-07F governance)
 - P8-07F facts activation checkpoint:
   `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` (`PASS`; ordinary CI
-  `33281944546`). One subsequent allowlisted `ERP_VERSION` read at
-  `2026-08-30T00:04:24Z` returned no accepted output; collection stopped with
-  no retry, later operation or private state file. Production facts remain
+  `33281944546`). Allowlisted `ERP_VERSION` reads at
+  `2026-08-30T00:04:24Z` and user-requested `2026-08-30T05:35:04Z` returned no
+  accepted output; each collection stopped with no later operation or private
+  state file. Production facts remain
   `UNVERIFIED`, no adjustment is authorized and P8-08 is held.
 - Latest governance closeout checkpoint:
   `d39b24e4169d6116ab0721440b1f7dc01b599c96` (`PASS`; ordinary CI
@@ -48,13 +49,14 @@ Updated: `2026-08-30T00:00:00+07:00`
   `98961818460`, secret `98961818358` and governed visual `98961818084` pass;
   controlled lanes correctly skipped)
 - Active atomic scope: `P8-07F-FACTS` has passed governance and activation,
-  then stopped fail closed on its first `ERP_VERSION` operation without
+  then stopped fail closed on both governed `ERP_VERSION` operations without
   accepted output. The repository records only sanitized provenance, the
   existing P8-01 through P8-09 baseline and explicit unknowns. It changes no
   product or production state. A future task-scoped retry may reuse the
-  standing boundary only after the external read condition is corrected
-  without allowlist drift. P8-08 remains inactive until accepted facts and the
-  facts task Level 3 PASS.
+  standing boundary only after the user-confirmed fixed `frappe-bench` root is
+  bound by the governed collector and that harness repair passes exact-SHA
+  ordinary CI. The runtime Site stays private. P8-08 remains inactive until
+  accepted facts and the facts task Level 3 PASS.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

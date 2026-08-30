@@ -47,10 +47,11 @@ until that activation's own exact-SHA ordinary CI passes.
 The activation exact SHA
 `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` passes ordinary CI
 `33281944546` (secret `99178460514`, repository `99178460580`, visual
-`99178460608`, frontend `99178460653`). One subsequent `ERP_VERSION`
-operation was attempted at `2026-08-30T00:04:24Z` through the frozen transport.
-It produced no accepted output, so the collector stopped without retry or a
-second operation. No private state file was created. Production versions,
+`99178460608`, frontend `99178460653`). `ERP_VERSION` operations were attempted
+at `2026-08-30T00:04:24Z` and, after a user-requested connection check, at
+`2026-08-30T05:35:04Z` through the frozen transport. Both produced no accepted
+output, so each collector invocation stopped without a later operation. No
+private state file was created. Production versions,
 apps, metadata, code and configuration therefore remain `UNVERIFIED`; P8-08 is
 held and no product adjustment is authorized.
 
@@ -62,16 +63,20 @@ equivalent with SSH alias `JCE-Core`, `BatchMode=yes`, `RequestTTY=no`,
 `ConnectionAttempts=1`, a short connect timeout and a bounded whole-command
 timeout. No TTY, agent/port/X11 forwarding, interactive prompt, multiplexed
 control master, fallback host, endpoint discovery or host-key acceptance is
-allowed. Alias resolution and endpoint/user/key values remain outside Git and
-must never appear in evidence.
+allowed. All seven operations execute through the single fixed literal wrapper
+`cd frappe-bench && exec <allowlisted-command>`. `frappe-bench` is the
+user-confirmed relative root; it is not configurable at runtime. Alias
+resolution and endpoint/user/key values remain outside Git and must never
+appear in evidence.
 
 ## Remote operation allowlist
 
 The facts manifest may activate only the following operation IDs and exact
 argument shapes. All runtime path/site/app parameters are locally validated,
 kept outside Git and represented in committed evidence only by a neutral label
-and checksum. Shell metacharacters, command substitution, pipelines, redirects
-and arbitrary inline source are prohibited.
+and checksum. Apart from the fixed source wrapper documented above, dynamic
+shell metacharacters, command substitution, pipelines, redirects and arbitrary
+inline source are prohibited.
 
 | Operation ID | Exact read-only purpose | Bounded output |
 |---|---|---|
@@ -83,6 +88,11 @@ and arbitrary inline source are prohibited.
 | `APP_FILE_HASH` | `git -C <validated-custom-app-root> hash-object -- <allowlisted-tracked-path>` | one object hash |
 | `APP_FILE_READ` | `git -C <validated-custom-app-root> show HEAD:<allowlisted-tracked-path>` | one bounded tracked source/metadata file after local sensitive-content preflight |
 
+The wrapper's `cd`, `&&` and `exec` tokens are fixed source literals. Dynamic
+shell metacharacters, command substitution, pipelines, redirects, arbitrary
+inline source and runtime Bench-root overrides remain prohibited. Every
+dynamic operation token is independently allowlisted before SSH.
+
 `APP_FILE_READ` is limited to tracked custom-app source and declarative
 metadata needed for hooks, overrides, patches, fixtures, modules, DocTypes,
 whitelisted methods, jobs, APIs, reports, prints, notifications, webhooks and
@@ -93,6 +103,13 @@ roles/permissions, service scopes or Naming Series are not represented by
 allowlisted tracked metadata or an already-installed side-effect-free
 operation-specific read API, they remain `UNVERIFIED`; the task must not use
 console, direct SQL, export-fixtures or an improvised method to obtain them.
+
+The fixed-root harness repair is exact fourteen: inventory, active goal,
+controller, blockers, current task, next action, phase status, required inputs,
+risk register, this plan, validation evidence, collector, collector test and
+current-task test. It changes no product, contract, schema, ownership,
+frontend or workflow path. Exact-SHA ordinary CI is mandatory before the next
+`ERP_VERSION` operation.
 
 ## Fail-closed and redaction contract
 

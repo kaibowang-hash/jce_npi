@@ -23,7 +23,11 @@ class ProductionFactCollectorTest(unittest.TestCase):
     def test_transport_is_fixed_and_noninteractive(self) -> None:
         argv = collector._ssh_argv(("bench", "version"))
         self.assertEqual(argv[0], "ssh")
-        self.assertEqual(argv[-2:], ("JCE-Core", "bench version"))
+        self.assertEqual(
+            argv[-2:],
+            ("JCE-Core", "cd frappe-bench && exec bench version"),
+        )
+        self.assertEqual(collector.REMOTE_BENCH_ROOT, "frappe-bench")
         for expected in (
             "BatchMode=yes",
             "RequestTTY=no",
@@ -38,6 +42,8 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertNotIn("-A", argv)
         self.assertNotIn("-L", argv)
         self.assertNotIn("-R", argv)
+        with self.assertRaisesRegex(collector.FactCollectionError, "unsafe"):
+            collector._ssh_argv(("bench", "version;whoami"))
 
     def test_remote_operation_allowlist_is_exact(self) -> None:
         self.assertEqual(collector._remote_command("ERP_VERSION"), ("bench", "version"))
@@ -79,7 +85,11 @@ class ProductionFactCollectorTest(unittest.TestCase):
 
         def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
             calls.append((operation, command, limit))
-            return b"erpnext 15.70.0 version-15\nfrappe 15.74.2 version-15\nsecret_custom 1.2.3 main\n"
+            return (
+                b"erpnext 15.70.0 version-15 (1234abc)\n"
+                b"frappe 15.74.2 version-15 (5678def)\n"
+                b"secret_custom 1.2.3 main (90abcde)\n"
+            )
 
         with patch.object(collector, "_preflight"), patch.dict(os.environ, {}, clear=True), patch.object(
             collector, "_emit"
@@ -90,10 +100,31 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
         private = json.loads(path.read_text(encoding="utf-8"))
         self.assertIn("secret_custom", {row["name"] for row in private["apps"]})
+        self.assertIn("1234abc", {row.get("commit") for row in private["apps"]})
         public = emit.call_args.args[0]
         self.assertNotIn("secret_custom", json.dumps(public))
         self.assertIn("CUSTOM_APP_01", json.dumps(public))
         self.assertEqual(public["site_inventory_status"], "UNVERIFIED_RUNTIME_SITE_PARAMETER_ABSENT")
+
+    def test_version_rows_reject_unparenthesized_or_non_hex_commit(self) -> None:
+        self.assertEqual(
+            collector._parse_app_rows(b"erpnext 15.70.0 version-15 (1234abc)\n", "ERP_VERSION"),
+            [
+                {
+                    "name": "erpnext",
+                    "version": "15.70.0",
+                    "branch": "version-15",
+                    "commit": "1234abc",
+                }
+            ],
+        )
+        for invalid in (
+            b"erpnext 15.70.0 version-15 1234abc\n",
+            b"erpnext 15.70.0 version-15 (nothex)\n",
+            b"erpnext 15.70.0 version-15 (1234abc) extra\n",
+        ):
+            with self.assertRaises(collector.FactCollectionError):
+                collector._parse_app_rows(invalid, "ERP_VERSION")
 
     def test_discover_uses_exact_optional_site_operation(self) -> None:
         path = self.state_path()
@@ -227,6 +258,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
             self.assertEqual(collector.main(["self-check"]), 0)
         run.assert_not_called()
         self.assertFalse(emit.call_args.args[0]["remote_contact"])
+        self.assertEqual(emit.call_args.args[0]["bench_root"], "frappe-bench")
         self.assertEqual(len(emit.call_args.args[0]["allowlisted_operations"]), 7)
 
 

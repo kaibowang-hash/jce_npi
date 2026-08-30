@@ -1,6 +1,6 @@
 # Required External Inputs
 
-Status: **OPEN — P8-07F FIRST READ FAILED CLOSED; PRODUCTION FACTS UNVERIFIED**
+Status: **OPEN — P8-07F READS FAILED CLOSED; PRODUCTION FACTS UNVERIFIED**
 Updated: 2026-08-30
 
 This is the single complete request for external facts that are not present in
@@ -8,8 +8,9 @@ the repository. Supply one dated, owner-identified, sanitized, read-only bundle
 rather than sending credentials or incremental production extracts. The
 P8-07F may instead collect only the same necessary facts through its fixed
 `JCE-Core` read-only boundary. Governance and activation Gates passed, but the
-first `ERP_VERSION` attempt at `2026-08-30T00:04:24Z` produced no accepted
-output and stopped the run. Never provide or record credentials,
+`ERP_VERSION` attempts at `2026-08-30T00:04:24Z` and user-requested
+`2026-08-30T05:35:04Z` produced no accepted output and stopped their runs.
+Never provide or record credentials,
 endpoint/host/user/key values, secrets or unrelated business records.
 
 The acceptance/status matrix for these inputs is
@@ -28,9 +29,16 @@ version, output-shape, sensitive-content, allowlist or write-boundary drift.
 
 Current provenance: task `P8-07F-FACTS`; source
 `JCE_CORE_PRODUCTION_REDACTED`; activation SHA `c8d3b3c0`; ordinary
-`33281944546`; operation `ERP_VERSION`; result
+`33281944546`; operation `ERP_VERSION`; latest attempt `2026-08-30T05:35:04Z`;
+result
 `UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT`; checksum
 `NOT_AVAILABLE_NO_ACCEPTED_OUTPUT`. No subsequent operation ran.
+
+The user has since confirmed the default relative Bench root `frappe-bench`
+and supplied the task-scoped runtime Site privately. The Site value is not
+repeated or persisted here. The collector must first bind its seven existing
+operations to that fixed root and pass exact-SHA ordinary CI; no production
+retry may precede that Gate.
 
 ## 1. Current ERPNext reconciliation package
 

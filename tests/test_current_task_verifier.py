@@ -55,7 +55,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_ERP_VERSION_ATTEMPT_STOPPED_WITHOUT_ACCEPTED_OUTPUT_NO_RETRY_NO_LATER_OPERATION_NO_STATE_FILE",
+            "P8_07F_TWO_ERP_VERSION_ATTEMPTS_STOPPED_WITHOUT_ACCEPTED_OUTPUT_NO_LATER_OPERATION_NO_STATE_FILE",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_ALL_REMOTE_OPERATIONS_BIND_FIXED_USER_CONFIRMED_FRAPPE_BENCH_ROOT_WITH_NO_RUNTIME_ROOT_OVERRIDE",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -68,7 +72,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED",
+            "IN_PROGRESS_P8_07F_BENCH_ROOT_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

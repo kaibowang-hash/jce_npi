@@ -1,10 +1,11 @@
 # ERPNext Production Fact Inventory
 
-Status: **INCOMPLETE — FIRST ALLOWLISTED READ STOPPED WITHOUT ACCEPTED OUTPUT**
+Status: **INCOMPLETE — ALLOWLISTED READS STOPPED WITHOUT ACCEPTED OUTPUT**
 
 Inventory task: `P8-07F-FACTS`
 
-Inventory time: `2026-08-30T00:04:24Z` / `2026-08-30T07:04:24+07:00`
+Inventory attempts: `2026-08-30T00:04:24Z` / `2026-08-30T07:04:24+07:00`
+and `2026-08-30T05:35:04Z` / `2026-08-30T12:35:04+07:00`
 
 Source label: `JCE_CORE_PRODUCTION_REDACTED`
 
@@ -24,6 +25,23 @@ business value or raw stderr/stdout is recorded here. The private state file
 was not created. No retry, alias probe, command substitution, allowlist
 expansion, REST fallback, Site command or later operation occurred.
 
+After the user requested a connection check, the same governed `ERP_VERSION`
+operation was attempted once more at `2026-08-30T05:35:04Z` from exact SHA
+`5b72a85503ba77f6d55b94255f1d805bbcf5475d` after ordinary CI `33283299773`
+passed. It again stopped with
+`UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT`. The collector did not
+accept or expose SSH stderr, so the failure cannot be safely classified as
+transport, authentication, authorization, remote PATH or Bench availability.
+No private state file was created and no later operation ran.
+
+The user then confirmed that the deployment uses the default relative Bench
+root `frappe-bench` and supplied the runtime Site privately. The Site value is
+not repeated in this inventory. Repository inspection proved the collector had
+executed its seven commands from the SSH login directory rather than binding
+the Bench root. Therefore the two failed operations do not prove that SSH is
+unreachable. A fixed-root collector repair and its exact-SHA ordinary CI must
+pass before another production operation.
+
 An earlier local invocation rejected an invalid private-state path before any
 SSH process was started. It is a local preflight fact, not a production
 operation.
@@ -32,6 +50,7 @@ operation.
 |---|---|---:|---|---|---|
 | Local preflight | state-path validation | No | Rejected before SSH | Not applicable | Corrected to the operating-system temporary root |
 | 1 | `ERP_VERSION` | Yes, one bounded attempt | `UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT` | `NOT_AVAILABLE_NO_ACCEPTED_OUTPUT` | Stopped fail closed; no retry |
+| 2 | `ERP_VERSION` | Yes, one user-requested bounded attempt | `UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT` | `NOT_AVAILABLE_NO_ACCEPTED_OUTPUT` | Stopped fail closed; no probe, fallback or later operation |
 | — | `INSTALLED_APPS` | No | `NOT_INVOKED_AFTER_STOP` | Not available | Runtime Site parameter was also absent; no value was inferred |
 | — | `APP_HEAD`, `APP_STATUS`, `APP_TRACKED_PATHS`, `APP_FILE_HASH`, `APP_FILE_READ` | No | `NOT_INVOKED_AFTER_STOP` | Not available | Custom-app discovery never began |
 

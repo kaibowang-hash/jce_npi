@@ -8883,8 +8883,10 @@ repeat or rewrite it merely to restore context. See
   `99178460608` and frontend `99178460653` all pass.
 - The current marker is exactly `P8-07F facts collection stopped fail closed; production facts unverified; P8-08 held`.
 - At `2026-08-30T00:04:24Z`, the collector attempted only allowlisted
-  `ERP_VERSION`. It returned no accepted output. No private state file was
-  created; no retry, alias probe, command/allowlist change, REST fallback,
+  `ERP_VERSION`. At `2026-08-30T05:35:04Z`, a user-requested connection check
+  repeated that same governed operation from exact SHA `5b72a855` after
+  ordinary `33283299773`. Both returned no accepted output. No private state
+  file was created; no alias probe, command/allowlist change, REST fallback,
   `INSTALLED_APPS`, APP operation, Site/console/SQL action, write, replay or
   reconciliation action followed.
 - Record only neutral source label, time, operation and no-accepted-output
@@ -8901,3 +8903,21 @@ repeat or rewrite it merely to restore context. See
   customization is authorized. M9-04/M9-05 real pilots and their adoption
   claims remain post-V1.2 deferred; approved identity/permission ownership is
   unchanged.
+
+### P8-07F fixed Bench-root harness repair awaits exact-SHA ordinary
+
+- The user confirmed the default relative Bench root `frappe-bench` and
+  supplied the task-scoped runtime Site privately. The Site value must not be
+  repeated in Git, logs or evidence.
+- Static cross-proof identified a collector omission: every allowlisted command
+  was sent from the SSH login directory even though `bench version` and the
+  relative `apps/<app>` Git roots require the Bench directory. The two failed
+  attempts therefore do not prove that SSH is unreachable.
+- The product-zero repair wraps all seven existing commands in exactly
+  `cd frappe-bench && exec <allowlisted-command>`. The root and wrapper tokens
+  are fixed source literals; dynamic shell tokens and arbitrary roots remain
+  rejected. The official parenthesized commit column is accepted only as
+  lowercase hex. No operation, output allowance, permission or mutation
+  authority is added.
+- No production retry is allowed until this exact candidate passes ordinary
+  CI. P8-08 stays blocked and all production facts remain `UNVERIFIED`.

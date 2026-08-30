@@ -5,10 +5,10 @@ updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: P8_07F_PRODUCTION_FACTS_UNVERIFIED
 current_task: P8-07F-FACTS
-current_task_status: IN_PROGRESS_BLOCKED_PRODUCTION_FACTS_UNVERIFIED
+current_task_status: IN_PROGRESS_P8_07F_BENCH_ROOT_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY
 current_task_completed_stage: P8_07F_FACTS_ACTIVATION_C8D3B3C0_ORDINARY_33281944546_PASS_AND_ONE_FAIL_CLOSED_ERP_VERSION_ATTEMPT
-current_task_next_stage: CORRECT_EXTERNAL_READ_CONDITION_THEN_RESUME_SAME_ALLOWLIST_FROM_ERP_VERSION
-current_task_next_stage_status: BLOCKED_NO_ACCEPTED_PRODUCTION_OUTPUT_NO_RETRY
+current_task_next_stage: P8_07F_BENCH_ROOT_HARNESS_REPAIR_EXACT_SHA_ORDINARY_THEN_RESUME_ERP_VERSION
+current_task_next_stage_status: IN_PROGRESS_NO_REMOTE_RETRY_BEFORE_PASS
 resumed_product_task: P8-08
 resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_LEVEL_3_PASS
 scope_decisions:
@@ -2650,6 +2650,14 @@ p8_07f:
   collection_attempt_utc: '2026-08-30T00:04:24Z'
   collection_attempt_operation: ERP_VERSION
   collection_attempt_result: UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT
+  collection_attempt_count: 2
+  collection_latest_attempt_utc: '2026-08-30T05:35:04Z'
+  collection_latest_attempt_operation: ERP_VERSION
+  collection_latest_attempt_trigger: USER_REQUESTED_CONNECTION_CHECK
+  collection_latest_attempt_result: UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT
+  bench_root_confirmation: USER_CONFIRMED_DEFAULT_RELATIVE_FRAPPE_BENCH
+  runtime_site_confirmation: USER_CONFIRMED_PRIVATE_NOT_RECORDED
+  bench_root_harness_repair_status: AWAITS_EXACT_SHA_ORDINARY
   accepted_production_facts: 0
   later_operations_invoked: 0
   private_state_file_created: false

@@ -31,10 +31,12 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "implementation" / "CURRENT_TASK.json"
 TASK_ID = "P8-07F-FACTS"
 SSH_ALIAS = "JCE-Core"
+REMOTE_BENCH_ROOT = "frappe-bench"
 LOCAL_TIMEZONE = ZoneInfo("Asia/Bangkok")
 HEX_SHA = re.compile(r"^[0-9a-f]{40}$")
 APP_TOKEN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 VERSION_TOKEN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.+/-]{0,127}$")
+COMMIT_TOKEN = re.compile(r"^\([0-9a-f]{7,40}\)$")
 REMOTE_TOKEN = re.compile(r"^[A-Za-z0-9_./:@+-]+$")
 RELATIVE_PATH = re.compile(r"^[A-Za-z0-9_./+@-]+$")
 SAFE_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,127}$")
@@ -222,7 +224,10 @@ def _remote_command(operation: str, *, site: str | None = None, root: str | None
                 command = ("git", "-C", root, "show", f"HEAD:{path}")
         else:
             raise FactCollectionError("remote operation is not allowlisted")
-    require(all(REMOTE_TOKEN.fullmatch(token) is not None for token in command), "remote command token is unsafe")
+    require(
+        all(REMOTE_TOKEN.fullmatch(token) is not None for token in command),
+        "remote command token is unsafe",
+    )
     return command
 
 
@@ -241,7 +246,9 @@ def _safe_relative_path(value: str) -> bool:
 
 
 def _ssh_argv(command: Sequence[str]) -> tuple[str, ...]:
-    remote = " ".join(command)
+    require(bool(command), "remote command is empty")
+    require(all(REMOTE_TOKEN.fullmatch(token) is not None for token in command), "remote command token is unsafe")
+    remote = f"cd {REMOTE_BENCH_ROOT} && exec " + " ".join(command)
     return ("ssh", *SSH_OPTIONS, "--", SSH_ALIAS, remote)
 
 
@@ -279,14 +286,21 @@ def _parse_app_rows(raw: bytes, label: str) -> list[dict[str, str]]:
         if not stripped:
             continue
         tokens = stripped.split()
-        require(1 <= len(tokens) <= 3, f"{label} row shape drifted")
+        require(1 <= len(tokens) <= 4, f"{label} row shape drifted")
         require(APP_TOKEN.fullmatch(tokens[0]) is not None, f"{label} app token is invalid")
-        require(all(VERSION_TOKEN.fullmatch(token) is not None for token in tokens[1:]), f"{label} version token is invalid")
+        require(
+            all(VERSION_TOKEN.fullmatch(token) is not None for token in tokens[1:3]),
+            f"{label} version token is invalid",
+        )
+        if len(tokens) == 4:
+            require(COMMIT_TOKEN.fullmatch(tokens[3]) is not None, f"{label} commit token is invalid")
         row = {"name": tokens[0]}
         if len(tokens) >= 2:
             row["version"] = tokens[1]
-        if len(tokens) == 3:
+        if len(tokens) >= 3:
             row["branch"] = tokens[2]
+        if len(tokens) == 4:
+            row["commit"] = tokens[3][1:-1]
         rows.append(row)
     require(rows, f"{label} returned no app rows")
     require(len({row["name"] for row in rows}) == len(rows), f"{label} contains duplicate apps")
@@ -704,6 +718,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 {
                     "task_id": TASK_ID,
                     "alias": SSH_ALIAS,
+                    "bench_root": REMOTE_BENCH_ROOT,
                     "allowlisted_operations": [
                         "ERP_VERSION",
                         "INSTALLED_APPS",

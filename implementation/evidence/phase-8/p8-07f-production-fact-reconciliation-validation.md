@@ -31,6 +31,41 @@ operations were not invoked. There was no retry, SSH alias probe, command or
 allowlist change, REST fallback, privilege expansion, Site/console/SQL action,
 production write, replay or reconciliation action.
 
+At `2026-08-30T05:35:04Z` / `2026-08-30T12:35:04+07:00`, the user requested a
+connection check. Exact SHA
+`5b72a85503ba77f6d55b94255f1d805bbcf5475d` had passed ordinary CI
+`33283299773`, so the collector attempted the same single allowlisted
+`ERP_VERSION` operation. It again returned
+`UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT`. No stdout/stderr,
+endpoint, host, user, key, secret, Site identifier, version row, business value
+or response shape was accepted or displayed. The private state file was not
+created, no later operation ran and the failure category remains unknown by
+design.
+
+## Bench-root harness correction
+
+Official Bench behavior and repository inspection show that `bench version`
+reports apps for the current Bench directory, while the collector previously
+ran every operation from the SSH login directory. The user confirmed the
+default relative root `frappe-bench` and supplied the runtime Site privately;
+the Site value is intentionally absent from Git and evidence.
+
+The candidate binds all seven existing commands to the exact literal wrapper
+`cd frappe-bench && exec <allowlisted-command>`. No dynamic root, arbitrary
+shell token or new operation is accepted. It also accepts the official
+four-token app/version/branch/parenthesized-commit row while rejecting malformed
+or non-hex commit shapes. Product, contract, schema, ownership, frontend and
+workflow behavior remain unchanged. Production retry is prohibited until this
+candidate passes exact-SHA ordinary CI.
+
+Harness-repair Level 1 passes in a clean linked worktree: collector-focused
+`10/10`, collector/current/reconciliation `49/49`, complete repository Python
+`2670/2670`, collector self-check, current-task verification, V1.2
+reconciliation, Python compilation, complete repository verification and
+`git diff --check`. The exact fourteen paths are accepted and an unauthorized
+fifteenth is rejected. Static diff inspection confirms the private runtime Site
+value is absent. No SSH or other production operation ran during validation.
+
 An earlier local state-path preflight rejected a path outside the operating
 system temporary root before SSH started. It is not a production operation.
 
