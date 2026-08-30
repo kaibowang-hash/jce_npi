@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+`IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
@@ -37,7 +37,13 @@ lanes. Its sole Level 3 `33339292498` passes repository `99331880024`, frontend
 migrated-legacy outer label. The sole next action is a governance-only exact
 manifest expansion for the existing Item runtime verifier and its focused
 test. Only after that expansion's exact-SHA ordinary PASS may one product-zero
-exact-67 controlled diagnostic run. Failed child output stays unread.
+exact-67 controlled diagnostic run. Manifest expansion `527b9b20` passes
+ordinary `33340474669` in all four lanes. A new-only P8-09 final-Gate flag now
+activates the existing exact-67 safe codes while all eight historical flags
+remain false; focused verifier tests pass `30/30` and the complete Item publish
+suite passes `151/151`. The sole next action is this
+diagnostic checkpoint's exact-SHA ordinary CI, followed by exactly one Level 2
+controlled run reusing it. Failed child output stays unread.
 `ERPNEXT` remains stable in every technical boundary. Do not contact production
 ERPNext/JCE or modify user-owned dirty documentation.
 

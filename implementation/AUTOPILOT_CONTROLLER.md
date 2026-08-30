@@ -9651,3 +9651,25 @@ repeat or rewrite it merely to restore context. See
 - Production ERPNext/JCE contact, workflow changes, P8-09 presentation changes
   and user-owned dirty/untracked files remain prohibited.
 - Controller marker: `P8-09 final Gate predecessor Item legacy diagnostic manifest expansion awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 final Gate predecessor Item legacy diagnostic Level 1 PASS
+
+- Diagnostic-manifest expansion exact SHA
+  `527b9b20cb0ce7b099fc83a963328d8ef9b736d0` passes ordinary CI
+  `33340474669`: secret `99335078813`, repository `99335078919`, frontend
+  `99335078936` and governed visual `99335078945` all pass.
+- Activate only new flag
+  `LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED=True`; the eight historical
+  Item diagnostic flags remain false. The new flag reuses the existing exact-67
+  migrated-legacy safe-code allowlist, O_EXCL exact-three-key record, strict
+  code/type/trace reader, inner-first precedence, failed-child unread contract
+  and success-zero behavior. Focused verifier tests pass `30/30`; the complete
+  Item publish suite passes `151/151`.
+- Commit only the Item runtime verifier, its focused test and seven current
+  governance paths. After this exact-SHA ordinary passes, dispatch exactly one
+  Level 2 controlled diagnostic reusing that ordinary. Read only a unique
+  exact-67 safe tuple; if no tuple is present, stop at that safe boundary. Do
+  not read failed child output or guess a product repair.
+- Production ERPNext/JCE contact, P8-09 presentation changes, workflow changes
+  and user-owned dirty/untracked files remain prohibited.
+- Controller marker: `P8-09 final Gate predecessor Item legacy diagnostic Level 1 PASS; awaits exact-SHA ordinary CI`.

@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **FINAL GATE PREDECESSOR ITEM LEGACY DIAGNOSTIC MANIFEST EXPANSION AWAITS EXACT-SHA ORDINARY CI**
+Status: **FINAL GATE PREDECESSOR ITEM LEGACY DIAGNOSTIC LEVEL 1 PASS; AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-31
 
@@ -85,6 +85,19 @@ verifier and focused test to the exact manifest. After that transition's
 exact-SHA ordinary PASS, one product-zero controlled diagnostic may enable the
 existing exact-67 code/type/trace mechanism. No P8-09 product, ERPNext/Frappe
 core, contract, workflow or production state is in scope.
+
+Diagnostic-manifest expansion
+`527b9b20cb0ce7b099fc83a963328d8ef9b736d0` passes ordinary CI
+`33340474669`: secret `99335078813`, repository `99335078919`, frontend
+`99335078936` and governed visual `99335078945` all pass. The product-zero
+diagnostic checkpoint adds only
+`LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED=True`; all eight historical
+Item diagnostic flags remain false. It reuses the existing exact `67` safe
+code allowlist, code/type/trace record, first-wins precedence, strict reader,
+failed-child unread contract and success-zero behavior. Focused verifier tests
+pass `30/30`; the complete Item publish suite passes `151/151`. No Item
+product, API, repository, contract, migration, schema,
+permission or P8-09 presentation behavior changes.
 
 ## 1. Audit conclusion
 

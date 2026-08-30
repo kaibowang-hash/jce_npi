@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+- Mode: `IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -66,6 +66,14 @@ Updated: `2026-08-31T00:00:00+07:00`
   output remains unread. The next action is a governance-only exact manifest
   expansion for the existing Item runtime verifier and its focused test,
   followed by one product-zero exact-67 controlled diagnostic.
+  Manifest expansion `527b9b20` passes ordinary `33340474669` in all four
+  lanes. A new-only `LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED` flag now
+  reuses the existing exact-67 migrated-legacy safe codes; all eight historical
+  Item diagnostic flags remain false. Focused verifier tests pass `30/30` and
+  the complete Item publish suite passes `151/151`,
+  failed-child output remains unread and success emits no diagnostic tuple.
+  The diagnostic checkpoint awaits its own exact-SHA ordinary before one
+  Level 2 controlled run may reuse it.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

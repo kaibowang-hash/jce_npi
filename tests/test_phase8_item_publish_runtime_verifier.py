@@ -251,6 +251,11 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
                 "LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED",
                 False,
             ),
+            patch.object(
+                self.module,
+                "LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED",
+                False,
+            ),
         )
         for activation in self.post_p807_activations:
             activation.start()
@@ -361,14 +366,14 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.value, ast.Constant)
             and isinstance(node.value.value, bool)
         }
-        self.assertEqual(len(assignments), 8)
+        self.assertEqual(len(assignments), 9)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            set(),
+            {"LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED"},
         )
         with patch.object(
             module,
-            "LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED",
+            "LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED",
             True,
         ):
             self.assertTrue(module._legacy_full_boundary_diagnostics_enabled())
