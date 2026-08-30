@@ -59,6 +59,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "P8_07F_FINAL_LEVEL_3_33315047916_FAILED_ONLY_AT_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY_DIAGNOSTIC_REQUIRED",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "CURRENT_FILE_OPERATION_REQUIRES_CACHED_EXACT_TRACKED_PATH_SAFE_MODE_HEAD_AND_CURRENT_GIT_OBJECT_SINGLE_FILE_DIFF_AND_PRIVATE_RECONSTRUCTION",
             value["frozen_invariants"],
         )
@@ -116,7 +120,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3",
+            "IN_PROGRESS_P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(
@@ -131,7 +135,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["base_checkpoint"],
             "fccf62feaba2d3ed092efcd06174f16f66193540",
         )
-        self.assertEqual(len(value["allowed_paths"]), 28)
+        self.assertEqual(len(value["allowed_paths"]), 30)
         self.assertEqual(
             set(value["allowed_paths"]),
             {
@@ -158,10 +162,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md",
                 "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md",
                 "scripts/collect_erpnext_production_facts.py",
+                "scripts/verify_item_publish_runtime.py",
                 "scripts/reconcile_v1_2_traceability.py",
                 "scripts/verify_v1_2_reconciliation.py",
                 "tests/test_erpnext_production_fact_collector.py",
                 "tests/test_current_task_verifier.py",
+                "tests/test_phase8_item_publish_runtime_verifier.py",
                 "tests/test_v1_2_reconciliation.py",
             },
         )
@@ -185,6 +191,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             {
                 "tests.test_erpnext_production_fact_collector",
                 "tests.test_current_task_verifier",
+                "tests.test_phase8_item_publish_runtime_verifier",
                 "tests.test_v1_2_reconciliation",
             },
         )

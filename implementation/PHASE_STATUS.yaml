@@ -3,12 +3,12 @@ overall_status: IN_PROGRESS
 current_phase: 8
 updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
-execution_hold: P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING
+execution_hold: P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
 current_task: P8-07F-FACTS
-current_task_status: IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3
+current_task_status: IN_PROGRESS_P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
 current_task_completed_stage: P8_07F_ALL_BOUNDED_FACTS_ACCEPTED_AND_COMPATIBILITY_RECONCILED
-current_task_next_stage: P8_07F_FINAL_LEVEL_3
-current_task_next_stage_status: AWAITING_FINAL_CHECKPOINT_EXACT_SHA_ORDINARY_THEN_SINGLE_LEVEL_3
+current_task_next_stage: P8_07F_MIGRATED_LEGACY_DIAGNOSTIC
+current_task_next_stage_status: AWAITING_EXACT_SHA_ORDINARY_THEN_SINGLE_LEVEL_2_CONTROLLED
 resumed_product_task: P8-08
 resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_RECONCILIATION_LEVEL_3_PASS
 scope_decisions:
@@ -2691,7 +2691,7 @@ p8_07:
 p8_07f:
   task: P8-07F-FACTS
   next_task: P8-08
-  status: IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3
+  status: IN_PROGRESS_P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
   phase: 8
   milestone: M7-07F
   task_kind: DELIVERY_INFRASTRUCTURE
@@ -2783,6 +2783,12 @@ p8_07f:
   locale_collection_result: ACCEPTED_COUNTRY_LANGUAGE_TIME_ZONE_CHECKSUM_CC94B21F
   locale_collection_envelope_checksum: sha256:c554853696236992c4209f30796a39a41e434d4b066f92d52bc24d9532737945
   locale_collection_private_state_removed: true
+  final_checkpoint: fa27a8bf9bc8b14a04c47e914494fa647d121385
+  final_checkpoint_ordinary: 33314378471
+  final_checkpoint_level_3: 33315047916
+  final_checkpoint_level_3_runtime: 99268539395
+  final_checkpoint_level_3_result: FAILED_ITEM_PUBLISH_MIGRATED_LEGACY_OUTER_BOUNDARY
+  migrated_legacy_final_diagnostic_status: PENDING_ZERO_OF_1_REPAIR_ZERO_OF_1_FINAL_ZERO_OF_1
   remaining_collection_status: COMPLETE
   remaining_collection_families: []
   facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING

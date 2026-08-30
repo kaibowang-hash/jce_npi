@@ -256,3 +256,20 @@ authorized atomic task only if that Level 3 passes.
   user's preserved uncommitted M9-04/M9-05 deferral entries. The task does not
   stage, rewrite or weaken that assertion; exact-SHA ordinary CI validates the
   committed tree independently.
+
+## Final Level 3 failure and bounded diagnostic
+
+Consolidated checkpoint `fa27a8bf9bc8b14a04c47e914494fa647d121385`
+passes ordinary `33314378471` in all four lanes. Level 3 `33315047916` passes
+repository `99266800693`, secret `99266800783`, frontend `99266800799`, visual
+`99266800901` and preflight `99268509347`. Runtime `99268539395` passes pinned
+Bench and disposable Site initialization, then fails in cumulative
+verification; cleanup passes.
+
+Fixed-label filtering returns exactly
+`Local Frappe Item publish migrated-legacy runtime verification failed.` No
+raw or child output, response content, business value, identity, message or
+stack was read. Product, contract, schema, workflow and production-state diff
+remain zero. Open one product-zero diagnostic at `0/1,0/1,0/1`, using only the
+existing collection-fallback exact-39 code/type/trace mechanism. Exact-SHA
+ordinary PASS must precede one Level 2 controlled run. P8-08 remains held.

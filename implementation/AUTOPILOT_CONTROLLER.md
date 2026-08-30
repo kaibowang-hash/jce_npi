@@ -9203,3 +9203,21 @@ repeat or rewrite it merely to restore context. See
   locale read. Do not repeat accepted families. SQL, console, generic execute,
   sensitive values, product changes and every production write remain
   prohibited; P8-08 remains held.
+
+## 2026-08-30 P8-07F final Level 3 migrated-legacy diagnostic pending
+
+- Consolidated fact checkpoint `fa27a8bf9bc8b14a04c47e914494fa647d121385`
+  passes ordinary `33314378471` in all four lanes. Its sole Level 3
+  `33315047916` passes repository `99266800693`, secret `99266800783`, frontend
+  `99266800799`, visual `99266800901` and preflight `99268509347`.
+- Runtime `99268539395` passes pinned Bench and disposable Site initialization,
+  then fails in cumulative verification. Fixed-label filtering returns exactly
+  `Local Frappe Item publish migrated-legacy runtime verification failed.` Raw
+  and child output, response content, business values, identities, messages and
+  stack remain unread; cleanup passes.
+- The product checkpoint is unchanged and the facts checkpoint has zero product
+  diff. Re-enable only the existing product-zero collection-fallback exact-39
+  diagnostic, require exact-SHA ordinary PASS, then dispatch one Level 2
+  controlled run. A failure may expose only one strict code/type/trace tuple;
+  success emits zero tuple. No production read, product repair, rerun or P8-08
+  activation is allowed before that proof.

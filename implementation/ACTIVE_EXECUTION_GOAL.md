@@ -4,12 +4,14 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3 — P8-07F-FACTS`
+- Mode: `IN_PROGRESS_P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING — P8-07F-FACTS`
 - Authoritative P8-07F checkpoint: exact SHA `77b4258f` passes ordinary
   `33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds, all accepted
   fact families are reconciled, private state is removed and no further
-  production read is required. This product-zero checkpoint now needs one
-  exact-SHA ordinary CI and one final Level 3; PASS authorizes P8-08.
+  production read is required. Exact checkpoint `fa27a8bf` passes ordinary
+  `33314378471`, but Level 3 `33315047916` fails only at the fixed Item publish
+  migrated-legacy outer boundary. The next action is one product-zero exact-39
+  diagnostic; P8-08 remains held.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

@@ -3,7 +3,7 @@
   "task_id": "P8-07F-FACTS",
   "task_kind": "delivery_infrastructure",
   "phase": 8,
-  "status": "IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3",
+  "status": "IN_PROGRESS_P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-08",
   "base_checkpoint": "fccf62feaba2d3ed092efcd06174f16f66193540",
@@ -21,6 +21,7 @@
     "Keep the existing per-call runtime byte ceiling and reduce only the fixed Client Script page size from 200 to 20 with a 25-page ceiling after exact-SHA 573fdd4b ordinary 33309768019 safely stopped on an oversized first page.",
     "Bind DocField and DocPerm parent reads to the exact fixed DocType names returned by the accepted DOCTYPES inventory, reject any non-allowlisted cached name, and preserve an allowlisted-but-absent DocType as an explicit missing parent instead of querying it.",
     "Accept the filterless Single DocType System Settings reader at exact SHA 77b4258f3b086420e0ae7769bd95830bf9dabfaa after ordinary CI 33312664804 and the sole remaining SYSTEM_LOCALE read; retain only language, time_zone, country and sanitized checksums, with private state removed.",
+    "Classify failed final Level 3 run 33315047916 only through the existing exact-39 migrated-legacy safe diagnostic tuple: the fixed outer boundary is Item publish migrated-legacy, raw and child output remain unread, and no production read or product repair is authorized before one exact-SHA ordinary and one Level 2 controlled diagnostic.",
     "Expand the fixed required DocType set only to the exact P8-relevant quality, DMR and mold-management objects already evidenced by the current worktree and runtime workflow metadata.",
     "Cover Custom Fields, Property Setters, Workflows and transitions, roles and DocPerm structure, Client and Server Script structure/checksum, required DocType and DocField structure, Webhooks, Scheduled Jobs, Reports, Print Formats, Notifications and Document Naming Rule structure.",
     "Treat current LaunchFlow architecture, data ownership, OpenAPI and event contracts and P8-01 through P8-09 implementation/design as the default-correct baseline and produce compatibility/minimal-adjustment evidence only.",
@@ -41,6 +42,7 @@
     "P8_07F_FACTS_EXPANDED_ACTIVATION_C879FBCE_ORDINARY_33306873040_AND_PARENT_REPAIR_085E9124_ORDINARY_33307715636_PASSED",
     "P8_07F_FINAL_LOCALE_READER_77B4258F_ORDINARY_33312664804_AND_SINGLE_SYSTEM_LOCALE_READ_ACCEPTED",
     "P8_07F_FACTS_RECONCILED_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_FINAL_LEVEL_3_PENDING",
+    "P8_07F_FINAL_LEVEL_3_33315047916_FAILED_ONLY_AT_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY_DIAGNOSTIC_REQUIRED",
     "P8_07F_IS_MANDATORY_BEFORE_P8_08",
     "JCE_CORE_READ_ONLY_STANDING_AUTHORIZATION_IS_CONDITIONAL_FAIL_CLOSED_AND_NOT_WRITE_AUTHORITY",
     "FIXED_REMOTE_SOURCE_OPERATIONS_ERP_VERSION_INSTALLED_APPS_APP_HEAD_APP_STATUS_APP_TRACKED_PATHS_APP_FILE_HASH_APP_FILE_READ_APP_FILE_MODE_APP_HEAD_FILE_HASH_APP_WORKTREE_DIFF",
@@ -92,15 +94,17 @@
     "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md",
     "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md",
     "scripts/collect_erpnext_production_facts.py",
+    "scripts/verify_item_publish_runtime.py",
     "scripts/reconcile_v1_2_traceability.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_erpnext_production_fact_collector.py",
     "tests/test_current_task_verifier.py",
+    "tests/test_phase8_item_publish_runtime_verifier.py",
     "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {
     "level_1": [
-      ["python", "-m", "unittest", "tests.test_erpnext_production_fact_collector", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"],
+      ["python", "-m", "unittest", "tests.test_erpnext_production_fact_collector", "tests.test_current_task_verifier", "tests.test_phase8_item_publish_runtime_verifier", "tests.test_v1_2_reconciliation", "-v"],
       ["python", "scripts/collect_erpnext_production_facts.py", "self-check"],
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/reconcile_v1_2_traceability.py"],
@@ -108,7 +112,7 @@
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["python", "-m", "unittest", "tests.test_erpnext_production_fact_collector", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"],
+      ["python", "-m", "unittest", "tests.test_erpnext_production_fact_collector", "tests.test_current_task_verifier", "tests.test_phase8_item_publish_runtime_verifier", "tests.test_v1_2_reconciliation", "-v"],
       ["python", "scripts/collect_erpnext_production_facts.py", "self-check"],
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
@@ -118,7 +122,7 @@
       ["python", "scripts/collect_erpnext_production_facts.py", "self-check"],
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
-      ["python", "-m", "unittest", "tests.test_erpnext_production_fact_collector", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"]
+      ["python", "-m", "unittest", "tests.test_erpnext_production_fact_collector", "tests.test_current_task_verifier", "tests.test_phase8_item_publish_runtime_verifier", "tests.test_v1_2_reconciliation", "-v"]
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
@@ -127,11 +131,11 @@
   },
   "expected_state": {
     "phase_status_current_task": "P8-07F-FACTS",
-    "phase_status_execution_hold": "P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING",
+    "phase_status_execution_hold": "P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
     "phase_status_resumed_product_task": "P8-08",
     "active_goal_marker": "P8-07F-FACTS",
     "next_action_marker": "P8-07F-FACTS",
-    "controller_marker": "P8-07F consolidated compatibility checkpoint awaits final Level 3"
+    "controller_marker": "P8-07F final Level 3 migrated-legacy diagnostic pending"
   },
   "rollback": {
     "before_product_resume": "Before final Level 3 PASS, revert only this consolidated documentation and governance checkpoint while retaining all accepted sanitized production facts and immutable read provenance. Keep P8-08 inactive.",

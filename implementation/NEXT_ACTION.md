@@ -1,17 +1,20 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3 — P8-07F-FACTS`
+`IN_PROGRESS_P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING — P8-07F-FACTS`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
 Exact SHA `77b4258f3b086420e0ae7769bd95830bf9dabfaa` passes ordinary CI
 `33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds and removes
 private state. All bounded facts are now reconciled in one product-zero
-checkpoint. Do not reconnect or create another metadata-family commit. The
-sole next action is this checkpoint's exact-SHA ordinary CI followed by one
-P8-07F Level 3. On PASS, P8-08 becomes the next authorized atomic task;
-production activation and final full-release reconciliation remain held.
+checkpoint. Do not reconnect or create another metadata-family commit.
+Checkpoint `fa27a8bf` passes ordinary `33314378471`, but Level 3
+`33315047916` fails only at the fixed Item publish migrated-legacy outer
+boundary. The sole next action is one exact-SHA ordinary followed by one Level
+2 controlled run with the existing exact-39 safe diagnostic activation. Raw
+and child output remain unread; no production read or product repair is
+authorized until that proof. P8-08 remains held.
 
 The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,
 ordinary `33279778063` and Level 3 `33280319184`. The separate collector
