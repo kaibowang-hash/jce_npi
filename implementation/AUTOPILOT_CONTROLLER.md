@@ -9067,6 +9067,18 @@ repeat or rewrite it merely to restore context. See
 - Tracked-path output exposes only a private-cache index, category and path
   checksum. Both immutable-HEAD and current-worktree file operations select by
   that index; a raw path is never a CLI argument or emitted result.
+- Activation SHA `c879fbce7a19edf4006d781a24cf710662edf37b` passes ordinary
+  `33306873040`. The first expanded window verifies the accepted version/app,
+  HEAD/status and path inventories and then closes its private state. It proves
+  that MariaDB/Frappe collation order cannot be validated with Python's raw
+  lexical order, and that DocField/DocPerm/workflow child tables require a
+  fixed parent-document read rather than direct child `get_list`.
+- Before the next connection, the collector must keep the fixed family set but
+  accept database-provided `name asc` order with exact duplicate/page checks,
+  use fixed `frappe.client.get` parent reads only for the frozen DocTypes and
+  cached Workflow/Naming Rule parents, and structurally summarize authorized
+  DocType JSON without persisting raw content. No caller-selected method,
+  parent, path or field is added.
 - P8-08 and product authority remain inactive. Current LaunchFlow architecture,
   ownership and contracts remain default correct; no proven incompatibility
   means `DIRECT_MATCH` and `NO_CHANGE`.

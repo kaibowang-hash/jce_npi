@@ -137,10 +137,17 @@ class ProductionFactCollectorTest(unittest.TestCase):
             )
         with self.assertRaises(collector.FactCollectionError):
             collector._runtime_command("CALLER_SELECTED", "site-one", 0)
+        parent = collector._parent_document_command("site-one", "DocType", "Item")
+        self.assertEqual(parent[:5], ("bench", "--site", "site-one", "execute", "frappe.client.get"))
+        self.assertEqual(json.loads(parent[6]), {"doctype": "DocType", "name": "Item"})
+        with self.assertRaises(collector.FactCollectionError):
+            collector._parent_document_command("site-one", "User", "Administrator")
 
     def test_every_runtime_family_uses_one_fixed_application_layer_read_shape(self) -> None:
         for family, spec in collector.RUNTIME_METADATA_SPECS.items():
             with self.subTest(family=family):
+                if family in collector.PARENT_METADATA_FAMILIES:
+                    continue
                 command = collector._runtime_command(family, "site-one", 0)
                 self.assertEqual(command[:5], ("bench", "--site", "site-one", "execute", "frappe.client.get_list"))
                 self.assertEqual(command[5], "--kwargs")
@@ -486,7 +493,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertNotIn("site-one", rendered)
         self.assertEqual(calls[0][0], "RUNTIME_SERVER_SCRIPTS")
 
-    def test_runtime_metadata_rejects_shape_order_and_sensitive_scalar_drift(self) -> None:
+    def test_runtime_metadata_rejects_shape_and_sensitive_scalar_drift(self) -> None:
         fields = collector.RUNTIME_METADATA_SPECS["ROLES"]["fields"]
         valid = {field: None for field in fields}
         valid.update({"name": "Role A", "desk_access": 1, "is_custom": 1, "disabled": 0, "modified": "2026-08-30"})
@@ -500,8 +507,11 @@ class ProductionFactCollectorTest(unittest.TestCase):
             with self.assertRaises(collector.FactCollectionError):
                 collector._parse_runtime_page(json.dumps([invalid]).encode(), "ROLES")
         descending = [{**valid, "name": "Role B"}, {**valid, "name": "Role A"}]
-        with self.assertRaises(collector.FactCollectionError):
-            collector._parse_runtime_page(json.dumps(descending).encode(), "ROLES")
+        descending_rows, descending_names = collector._parse_runtime_page(
+            json.dumps(descending).encode(), "ROLES"
+        )
+        self.assertEqual(descending_names, ["Role B", "Role A"])
+        self.assertEqual([row["name"] for row in descending_rows], descending_names)
         with self.assertRaises(collector.FactCollectionError):
             collector._parse_runtime_page(b"{}", "ROLES")
 
@@ -559,6 +569,74 @@ class ProductionFactCollectorTest(unittest.TestCase):
         ), self.assertRaisesRegex(collector.FactCollectionError, "pagination limit"):
             collector._runtime_operation(args, runner)
 
+    def test_parent_metadata_reads_only_fixed_documents_and_projects_child_shape(self) -> None:
+        path = self.state_path()
+        self.write_state(path)
+        args = argparse.Namespace(
+            expected_sha="d" * 40,
+            ordinary_run_id="101",
+            state=str(path),
+            family="DOCFIELDS",
+        )
+        calls: list[tuple[str, tuple[str, ...]]] = []
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            calls.append((operation, command))
+            kwargs = json.loads(command[-1])
+            parent = kwargs["name"]
+            return json.dumps(
+                {
+                    "doctype": "DocType",
+                    "name": parent,
+                    "modified_by": "private@example.com",
+                    "fields": [
+                        {
+                            "name": f"{parent}-status",
+                            "parent": parent,
+                            "fieldname": "status",
+                            "fieldtype": "Data",
+                            "options": None,
+                            "reqd": 0,
+                            "read_only": 0,
+                            "unique": 0,
+                            "hidden": 0,
+                            "permlevel": 0,
+                            "idx": 1,
+                            "modified": None,
+                            "default": "do-not-record",
+                        }
+                    ],
+                }
+            ).encode()
+
+        with patch.object(collector, "_preflight"), patch.dict(
+            os.environ, {"NPI_P8_07F_SITE": "site-one"}, clear=True
+        ), patch.object(collector, "_emit") as emit:
+            collector._parent_metadata_operation(args, runner)
+
+        output = emit.call_args.args[0]
+        rendered = json.dumps(output)
+        self.assertEqual(len(calls), len(collector.REQUIRED_ERPNEXT_DOCTYPES))
+        self.assertEqual(output["parent_count"], len(collector.REQUIRED_ERPNEXT_DOCTYPES))
+        self.assertEqual(output["row_count"], len(collector.REQUIRED_ERPNEXT_DOCTYPES))
+        self.assertNotIn("private@example.com", rendered)
+        self.assertNotIn("do-not-record", rendered)
+        self.assertTrue(all(call[0] == "RUNTIME_DOCFIELDS_PARENT" for call in calls))
+
+    def test_dynamic_parent_metadata_requires_prior_fixed_parent_family(self) -> None:
+        path = self.state_path()
+        self.write_state(path)
+        args = argparse.Namespace(
+            expected_sha="d" * 40,
+            ordinary_run_id="101",
+            state=str(path),
+            family="WORKFLOW_STATES",
+        )
+        with patch.object(collector, "_preflight"), patch.dict(
+            os.environ, {"NPI_P8_07F_SITE": "site-one"}, clear=True
+        ), self.assertRaisesRegex(collector.FactCollectionError, "parent family first"):
+            collector._parent_metadata_operation(args, lambda *unused: b"")
+
     def test_sensitive_path_or_content_fails_closed(self) -> None:
         self.assertTrue(collector._path_is_sensitive("sites/site_config.json"))
         self.assertTrue(collector._path_is_sensitive("private/files/a.txt"))
@@ -567,6 +645,12 @@ class ProductionFactCollectorTest(unittest.TestCase):
                 "custom_one/hooks.py",
                 b'api_secret = "do-not-record"\n',
             )
+        doctype_summary = collector._source_summary(
+            "custom_one/doctype/example/example.json",
+            b'{"doctype":"DocType","name":"Example","password":"do-not-record","fields":[]}',
+        )
+        self.assertEqual(doctype_summary["name"], "Example")
+        self.assertNotIn("do-not-record", json.dumps(doctype_summary))
 
     def test_status_rejects_untracked_and_paths_reject_nondeterminism(self) -> None:
         with self.assertRaises(collector.FactCollectionError):

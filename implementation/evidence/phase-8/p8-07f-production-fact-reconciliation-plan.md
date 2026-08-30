@@ -275,3 +275,26 @@ inside the mode-0600 state. `APP_TRACKED_PATHS` may emit only private-cache
 index, structural category and path checksum. HEAD/current file reads select
 that cached index and emit only its checksum plus structural summary; the raw
 path is neither a CLI argument nor an accepted result.
+
+Activation SHA `c879fbce7a19edf4006d781a24cf710662edf37b` passes ordinary CI
+`33306873040` (frontend `99244887012`, repository `99244887120`, secret
+`99244887145`, visual `99244887178`). Its first expanded collection window
+accepts the unchanged Frappe `15.79.0` / ERPNext `15.77.0` and twenty-app
+inventory, the Site app-set checksum, all anonymous HEAD/status rows and all
+tracked-path inventories. Frappe is clean, ERPNext has one tracked change, and
+twelve of eighteen custom apps have tracked changes. The current-worktree
+authority remains active for those tracked paths.
+
+The same window rejects direct `DocField`, `DocPerm` and Workflow child-table
+reads at the application permission boundary and rejects several valid parent
+families because database collation order differs from Python raw lexical
+order. It records no rejected rows and deletes the private state. A bounded
+collector compatibility repair is required before reconnecting: preserve the
+fixed database `name asc` query and duplicate/page ceilings without imposing a
+second local collation; read children only through fixed `frappe.client.get`
+parent documents for the fifteen frozen ERP DocTypes and parent names obtained
+from the already-fixed Workflow/Naming Rule families; and allow the two
+user-authorized DocType JSON files to reach the structural JSON summarizer.
+Raw parent documents, source, paths, Script text and sensitive values remain
+memory-only and unaccepted; direct SQL, console, arbitrary execute and every
+write remain prohibited.

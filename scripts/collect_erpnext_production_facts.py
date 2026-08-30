@@ -194,6 +194,17 @@ RUNTIME_METADATA_SPECS: dict[str, dict[str, Any]] = {
         "hashed_fields": ("value",),
     },
 }
+PARENT_METADATA_FAMILIES = {
+    "DOCFIELDS": ("DocType", "fields", None),
+    "DOCPERMS": ("DocType", "permissions", None),
+    "WORKFLOW_STATES": ("Workflow", "states", "WORKFLOWS"),
+    "WORKFLOW_TRANSITIONS": ("Workflow", "transitions", "WORKFLOWS"),
+    "DOCUMENT_NAMING_RULE_CONDITIONS": (
+        "Document Naming Rule",
+        "conditions",
+        "DOCUMENT_NAMING_RULES",
+    ),
+}
 
 
 class FactCollectionError(RuntimeError):
@@ -364,6 +375,20 @@ def _runtime_command(family: str, site: str, start: int) -> tuple[str, ...]:
     }
     command = (
         "bench", "--site", site, "execute", "frappe.client.get_list",
+        "--kwargs", json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
+    )
+    _validate_command_tokens(command)
+    return command
+
+
+def _parent_document_command(site: str, parent_doctype: str, name: str) -> tuple[str, ...]:
+    require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
+    require(parent_doctype in {"DocType", "Workflow", "Document Naming Rule"}, "parent metadata type is not allowlisted")
+    require(type(name) is str and 0 < len(name) <= 160, "parent metadata name is invalid")
+    require("@" not in name and "://" not in name, "parent metadata name may contain sensitive identity or endpoint data")
+    kwargs = {"doctype": parent_doctype, "name": name}
+    command = (
+        "bench", "--site", site, "execute", "frappe.client.get",
         "--kwargs", json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
     )
     _validate_command_tokens(command)
@@ -680,13 +705,14 @@ def _csv_summary(text: str) -> dict[str, Any]:
 
 def _source_summary(path: str, raw: bytes) -> dict[str, Any]:
     require(not _path_is_sensitive(path), "tracked path is excluded as sensitive")
-    for pattern in SENSITIVE_CONTENT:
-        require(pattern.search(raw.decode("utf-8", errors="ignore")) is None, "tracked file may contain sensitive content")
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
         raise FactCollectionError("tracked file is not UTF-8") from exc
     suffix = Path(path).suffix.lower()
+    if suffix != ".json":
+        for pattern in SENSITIVE_CONTENT:
+            require(pattern.search(text) is None, "tracked file may contain sensitive content")
     if suffix == ".py":
         summary = _python_summary(text)
     elif suffix == ".json":
@@ -832,6 +858,45 @@ def _reconstruct_current_file(head_raw: bytes, patch_raw: bytes, path: str) -> b
     return result
 
 
+def _sanitize_runtime_row(row: object, family: str) -> tuple[dict[str, Any], str]:
+    require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
+    spec = RUNTIME_METADATA_SPECS[family]
+    fields = tuple(spec["fields"])
+    hashed_fields = set(spec.get("hashed_fields", ()))
+    protected_fields = set(spec.get("protected_fields", ()))
+    require(type(row) is dict and set(row) == set(fields), "runtime metadata row shape drifted")
+    name = row.get("name")
+    require(type(name) is str and bool(name), "runtime metadata row name is invalid")
+    require(len(name) <= 160 and all(ord(character) >= 32 for character in name), "runtime metadata row name is unsafe")
+    safe_row: dict[str, Any] = {}
+    for field in fields:
+        field_value = row[field]
+        if field in hashed_fields:
+            if field_value is None:
+                safe_row[field] = None
+            else:
+                require(type(field_value) is str, "hashed metadata field shape drifted")
+                encoded = field_value.encode("utf-8")
+                safe_row[field] = {
+                    "byte_count": len(encoded),
+                    "checksum": _checksum(encoded),
+                }
+        elif field in protected_fields and type(field_value) is str:
+            try:
+                safe_row[field] = _safe_scalar(field_value)
+            except FactCollectionError:
+                encoded = field_value.encode("utf-8")
+                safe_row[field] = {
+                    "byte_count": len(encoded),
+                    "checksum": _checksum(encoded),
+                }
+        else:
+            safe_value = _safe_scalar(field_value)
+            require(field_value is None or safe_value is not None, "runtime metadata scalar shape drifted")
+            safe_row[field] = safe_value
+    return safe_row, name
+
+
 def _parse_runtime_page(raw: bytes, family: str) -> tuple[list[dict[str, Any]], list[str]]:
     require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
     require(len(raw) <= MAX_RUNTIME_BYTES, "runtime metadata output exceeded the bounded limit")
@@ -841,48 +906,47 @@ def _parse_runtime_page(raw: bytes, family: str) -> tuple[list[dict[str, Any]], 
         raise FactCollectionError("runtime metadata output is not exact JSON") from exc
     require(type(value) is list, "runtime metadata page must be a list")
     require(len(value) <= RUNTIME_PAGE_SIZE, "runtime metadata page exceeded the fixed size")
-    spec = RUNTIME_METADATA_SPECS[family]
-    fields = tuple(spec["fields"])
-    hashed_fields = set(spec.get("hashed_fields", ()))
-    protected_fields = set(spec.get("protected_fields", ()))
     sanitized: list[dict[str, Any]] = []
     raw_names: list[str] = []
     for row in value:
-        require(type(row) is dict and set(row) == set(fields), "runtime metadata row shape drifted")
-        name = row.get("name")
-        require(type(name) is str and bool(name), "runtime metadata row name is invalid")
-        require(len(name) <= 160 and all(ord(character) >= 32 for character in name), "runtime metadata row name is unsafe")
-        raw_names.append(name)
-        safe_row: dict[str, Any] = {}
-        for field in fields:
-            field_value = row[field]
-            if field in hashed_fields:
-                if field_value is None:
-                    safe_row[field] = None
-                else:
-                    require(type(field_value) is str, "hashed metadata field shape drifted")
-                    encoded = field_value.encode("utf-8")
-                    safe_row[field] = {
-                        "byte_count": len(encoded),
-                        "checksum": _checksum(encoded),
-                    }
-            elif field in protected_fields and type(field_value) is str:
-                try:
-                    safe_row[field] = _safe_scalar(field_value)
-                except FactCollectionError:
-                    encoded = field_value.encode("utf-8")
-                    safe_row[field] = {
-                        "byte_count": len(encoded),
-                        "checksum": _checksum(encoded),
-                    }
-            else:
-                safe_value = _safe_scalar(field_value)
-                require(field_value is None or safe_value is not None, "runtime metadata scalar shape drifted")
-                safe_row[field] = safe_value
+        safe_row, name = _sanitize_runtime_row(row, family)
         sanitized.append(safe_row)
-    require(raw_names == sorted(raw_names), "runtime metadata page ordering drifted")
+        raw_names.append(name)
     require(len(raw_names) == len(set(raw_names)), "runtime metadata page contains duplicate names")
     return sanitized, raw_names
+
+
+def _parse_parent_metadata_document(
+    raw: bytes,
+    *,
+    family: str,
+    parent_doctype: str,
+    parent_name: str,
+    child_key: str,
+) -> list[dict[str, Any]]:
+    require(len(raw) <= MAX_RUNTIME_BYTES, "parent metadata output exceeded the bounded limit")
+    try:
+        value = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError("parent metadata output is not exact JSON") from exc
+    require(type(value) is dict, "parent metadata document must be an object")
+    require(value.get("doctype") == parent_doctype and value.get("name") == parent_name, "parent metadata identity drifted")
+    children = value.get(child_key)
+    require(type(children) is list and len(children) <= 2000, "parent metadata child shape drifted")
+    fields = tuple(RUNTIME_METADATA_SPECS[family]["fields"])
+    sanitized: list[dict[str, Any]] = []
+    names: list[str] = []
+    for child in children:
+        require(type(child) is dict, "parent metadata child row drifted")
+        projected = {field: child.get(field) for field in fields}
+        if "parent" in projected:
+            require(projected["parent"] in {None, parent_name}, "parent metadata child parent drifted")
+            projected["parent"] = parent_name
+        safe_row, name = _sanitize_runtime_row(projected, family)
+        sanitized.append(safe_row)
+        names.append(name)
+    require(len(names) == len(set(names)), "parent metadata child names are duplicated")
+    return sanitized
 
 
 def _discover(args: argparse.Namespace, runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh) -> None:
@@ -1135,8 +1199,6 @@ def _runtime_operation(
             MAX_RUNTIME_BYTES,
         )
         page_rows, page_names = _parse_runtime_page(raw, family)
-        if names and page_names:
-            require(names[-1] < page_names[0], "runtime metadata pagination ordering drifted")
         require(not set(names).intersection(page_names), "runtime metadata pagination contains duplicate names")
         rows.extend(page_rows)
         names.extend(page_names)
@@ -1156,6 +1218,9 @@ def _runtime_operation(
             "checksum": result_checksum,
         }
     )
+    runtime_names = state.setdefault("runtime_names", {})
+    require(type(runtime_names) is dict, "private runtime-name cache is malformed")
+    runtime_names[family] = names
     _replace_state(state_path, state)
     _emit(
         {
@@ -1166,6 +1231,77 @@ def _runtime_operation(
             "row_count": len(rows),
             "page_count": len(page_checksums),
             "page_checksums": page_checksums,
+            "result_checksum": result_checksum,
+            "rows": rows,
+        }
+    )
+
+
+def _parent_metadata_operation(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+) -> None:
+    _validate_ordinary_run_id(args.ordinary_run_id)
+    _preflight(args.expected_sha)
+    state_path = _state_path(args.state, must_exist=True)
+    state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
+    family = args.family
+    require(family in PARENT_METADATA_FAMILIES, "parent metadata family is not allowlisted")
+    parent_doctype, child_key, source_family = PARENT_METADATA_FAMILIES[family]
+    site = os.environ.get("NPI_P8_07F_SITE")
+    require(site is not None and APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is missing or invalid")
+    if parent_doctype == "DocType":
+        parent_names = list(REQUIRED_ERPNEXT_DOCTYPES)
+    else:
+        runtime_names = state.get("runtime_names")
+        require(type(runtime_names) is dict, "parent metadata requires its fixed parent family first")
+        cached_names = runtime_names.get(source_family)
+        require(
+            type(cached_names) is list and all(type(item) is str for item in cached_names),
+            "parent metadata requires its fixed parent family first",
+        )
+        parent_names = list(cached_names)
+    require(len(parent_names) <= 500, "parent metadata parent count exceeded")
+
+    rows: list[dict[str, Any]] = []
+    document_checksums: list[str] = []
+    for parent_name in parent_names:
+        raw = runner(
+            f"RUNTIME_{family}_PARENT",
+            _parent_document_command(site, parent_doctype, parent_name),
+            MAX_RUNTIME_BYTES,
+        )
+        rows.extend(
+            _parse_parent_metadata_document(
+                raw,
+                family=family,
+                parent_doctype=parent_doctype,
+                parent_name=parent_name,
+                child_key=child_key,
+            )
+        )
+        document_checksums.append(_checksum(raw))
+    result_checksum = _checksum(_json_bytes(rows))
+    records = state.setdefault("operation_records", [])
+    require(type(records) is list, "private operation records are malformed")
+    records.append(
+        {
+            "operation_id": f"RUNTIME_{family}",
+            "timestamp": _timestamp(),
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "checksum": result_checksum,
+        }
+    )
+    _replace_state(state_path, state)
+    _emit(
+        {
+            "task_id": TASK_ID,
+            "operation": f"RUNTIME_{family}",
+            "timestamp": _timestamp(),
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "parent_count": len(parent_names),
+            "document_checksums": document_checksums,
+            "row_count": len(rows),
             "result_checksum": result_checksum,
             "rows": rows,
         }
@@ -1250,7 +1386,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "current-file":
             _current_file_operation(args)
         elif args.command == "runtime":
-            _runtime_operation(args)
+            if args.family in PARENT_METADATA_FAMILIES:
+                _parent_metadata_operation(args)
+            else:
+                _runtime_operation(args)
         elif args.command == "cleanup":
             _cleanup(args)
         else:
