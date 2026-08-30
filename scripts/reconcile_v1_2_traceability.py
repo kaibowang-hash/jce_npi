@@ -48,8 +48,8 @@ ADDENDUM_REQUIREMENTS = (
     (
         "FR-INT-015",
         "P1",
-        "7",
-        "TECHNICAL_VERIFIED_NPI_SUMMARY_SOURCE_FOUNDATION_EXTERNAL_PROJECTION_HELD",
+        "8",
+        "TECHNICAL_VERIFIED_NPI_SUMMARY_AND_READ_ONLY_PROJECTION_SEAM_EXTERNAL_CONTRACT_HELD",
     ),
     ("FR-BR-001", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-BR-002", "P1", "8", "PLANNED_PHASE_8_APPROVED_JCE_CORE_ASSET"),
@@ -372,6 +372,8 @@ P7_ADDENDUM_ANCHOR_EVIDENCE = {
         "implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md",
         "implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md",
         "implementation/evidence/phase-7/p7-07-validation.md",
+        "implementation/evidence/phase-8/p8-08-plan.md",
+        "implementation/evidence/phase-8/p8-08-validation.md",
     ),
 }
 P8_ANCHOR_EVIDENCE = (
@@ -508,6 +510,7 @@ P8_ANCHOR_ALLOCATION = {
     "P8-05": {"INT-005"},
     "P8-06": {"INT-007", "FR-TR-006", "FR-NP-006"},
     "P8-07": {"FR-RP-009", "NFR-INT-001"},
+    "P8-08": {"FR-INT-015"},
     "P8-09": {"FR-BR-002"},
 }
 P8_CARRIED_FOUNDATIONS = {
@@ -528,8 +531,8 @@ P8_CARRIED_FOUNDATIONS = {
         "TECHNICAL_VERIFIED_CONTROLLED_REPORT_FOUNDATION_FORMAL_ERP_QUALITY_HELD",
     ),
     "FR-INT-015": (
-        "7",
-        "TECHNICAL_VERIFIED_NPI_SUMMARY_SOURCE_FOUNDATION_EXTERNAL_PROJECTION_HELD",
+        "8",
+        "TECHNICAL_VERIFIED_NPI_SUMMARY_AND_READ_ONLY_PROJECTION_SEAM_EXTERNAL_CONTRACT_HELD",
     ),
     "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
 }

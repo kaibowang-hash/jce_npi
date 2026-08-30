@@ -320,3 +320,20 @@ eight Item runtime diagnostic activations. After one new exact-SHA ordinary
 PASS, dispatch the sole diagnostics-off P8-08 Level 3. P8-09, production
 contact, external projection activation and `DR-REC-009` remain closed until
 that Gate passes.
+
+## 12. Final Level 3 PASS and closeout
+
+Diagnostics-off checkpoint
+`1e0f3facfa31f382b469df4b8084a3c64231674b` passes ordinary CI
+`33330200775`: secret `99307297751`, frontend `99307297815`, repository
+`99307297842` and governed visual `99307297884` all pass. Its sole final Level
+3 `33330886346` passes frontend `99309113249`, secret `99309113323`, governed
+visual `99309113340`, repository `99309113364`, controlled preflight
+`99310931131` and cumulative runtime `99310962656`.
+
+The cumulative runtime passes fixed Bench/Site setup, the complete verification
+chain, result recording, artifact upload and cleanup. P8-08 therefore closes as
+a bounded internal read-only projection seam. External event identity,
+payload, routing, consumer mapping, receipt and production activation remain
+held by `DR-REC-009`; no external success is claimed. P8-09 may now begin its
+audit-only plan, with product code still unauthorized.

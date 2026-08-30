@@ -1,11 +1,28 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_FINAL_LEVEL_3_PENDING — P8-08`
+`IN_PROGRESS_AUDIT — P8-09`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
-P8-07F diagnostics-off exact SHA
+P8-08 diagnostics-off exact SHA
+`1e0f3facfa31f382b469df4b8084a3c64231674b` passes ordinary CI
+`33330200775` and final Level 3 `33330886346`. Repository `99309113364`,
+frontend `99309113249`, secret `99309113323`, governed visual `99309113340`,
+controlled preflight `99310931131` and cumulative runtime `99310962656` all
+pass. P8-08 is technically complete only for the internal read-only Released
+Trial Summary projection seam; the external event/consumer/receipt contract
+and production activation remain held by `DR-REC-009`.
+
+The sole next action is P8-09 audit and plan freezing. Verify the approved
+`JCE Core` display text and exact `docs/Brand Asset/Core.png`, enumerate only
+ERP/JCE presentation contexts and preserve `ERPNEXT` as the stable technical
+identity in contracts, events, schemas, persistence, permissions and routing.
+No product path is authorized until the plan's exact-SHA ordinary CI and a
+separate activation transition pass. Do not contact production ERPNext/JCE or
+modify any user-owned dirty documentation during this audit.
+
+Retained P8-07F diagnostics-off exact SHA
 `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c` passes ordinary CI
 `33317964484` and final Level 3 `33318628754`. All four ordinary-equivalent
 lanes, controlled preflight and cumulative runtime pass. The bounded production

@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_FINAL_LEVEL_3_PENDING — P8-08`
+- Mode: `IN_PROGRESS_AUDIT — P8-09`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -32,25 +32,30 @@ Updated: `2026-08-31T00:00:00+07:00`
   response diagnostic `a8722427` passes ordinary `33328949033`; controlled run
   `33329717276` passes preflight and cumulative runtime with success-zero safe
   output. No product repair is evidenced. All eight Item diagnostics are now
-  disabled; the next action is one new exact-SHA ordinary PASS followed by the
-  sole P8-08 diagnostics-off Level 3.
+  disabled. Diagnostics-off checkpoint `1e0f3fac` passes ordinary
+  `33330200775`; final Level 3 `33330886346` passes repository, frontend,
+  secret, governed visual, controlled preflight and cumulative runtime. P8-08
+  is technically complete at its bounded internal read-only seam; external
+  projection activation and `DR-REC-009` remain held. P8-09 audit is active,
+  while product code remains unauthorized until a separate frozen plan and
+  activation transition pass exact-SHA ordinary CI.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `edf89e79cd815cbde60e2940ae9d580479336d75` (pushed; P8-07
-  `PASS_LEVEL_3`; P8-07F governance base)
+  `fc43c4aa5b876d98e9123977c6d5441ac088632a` (pushed; P8-08 bounded
+  internal read-only projection seam, final Level 3 PASS)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `33318628754` (`PASS — LEVEL 3` at
-  `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c`; repository, frontend,
+  `33330886346` (`PASS — LEVEL 3` at
+  `1e0f3facfa31f382b469df4b8084a3c64231674b`; repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime)
 - Latest checkpoint exact-SHA CI:
-  `33304191319` (`PASS` at
-  `fccf62feaba2d3ed092efcd06174f16f66193540`; P8-07F current-worktree and
-  runtime-metadata governance, zero production contact)
+  `33330200775` (`PASS` at
+  `1e0f3facfa31f382b469df4b8084a3c64231674b`; P8-08 diagnostics off,
+  repository, frontend, governed visual and secret lanes all pass)
 - P8-07F facts activation checkpoint:
   `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` (`PASS`; ordinary CI
   `33281944546`). Allowlisted `ERP_VERSION` reads at

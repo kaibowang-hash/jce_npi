@@ -34,38 +34,27 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P8-08")
+        self.assertEqual(value["task_id"], "P8-09")
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_FINAL_LEVEL_3_PENDING",
+            "IN_PROGRESS_AUDIT",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P8-09")
-        self.assertEqual(value["requirement_ids"], ["FR-INT-015"])
+        self.assertEqual(value["authorized_next_task"], "P9-00")
+        self.assertEqual(value["requirement_ids"], ["FR-BR-002"])
         self.assertEqual(
             value["base_checkpoint"],
-            "3a9ab61cd83bb13dae8b9ac40a687b2b83bb6f25",
+            "1e0f3facfa31f382b469df4b8084a3c64231674b",
         )
         for invariant in (
-            "P8_07F_FINAL_CHECKPOINT_D8ABA505_ORDINARY_33317964484_LEVEL_3_33318628754_ALL_SIX_JOBS_PASS",
-            "P8_07F_BOUNDED_COMPATIBILITY_RECONCILIATION_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_COMPLETE",
-            "P8_07F_GOVERNANCE_CLOSEOUT_216AC604_ORDINARY_33320025714_ALL_FOUR_JOBS_PASS",
-            "P8_08_AUDIT_PLAN_D560FDF2_ORDINARY_33320787112_ALL_FOUR_JOBS_PASS",
-            "P8_08_CHECKPOINT_1_ACTIVATION_C7571D1B_ORDINARY_33321510831_ALL_FOUR_JOBS_PASS",
-            "P8_08_CHECKPOINT_1_PRODUCT_495141F9_ORDINARY_33322318251_ALL_FOUR_JOBS_PASS",
-            "P8_08_CHECKPOINT_2_ACTIVATION_1D8B13C9_ORDINARY_33323078013_ALL_FOUR_JOBS_PASS",
-            "P8_08_CHECKPOINT_2_PRODUCT_3A9AB61C_ORDINARY_33323869238_ALL_FOUR_JOBS_PASS",
-            "P8_08_CHECKPOINT_3_ACTIVATION_5175EFC9_ORDINARY_33324672403_ALL_FOUR_JOBS_PASS",
-            "P8_08_CHECKPOINT_3_PRODUCT_FC43C4AA_ORDINARY_33325513567_ALL_FOUR_JOBS_PASS",
-            "P8_08_LEVEL_3_33326192285_FAILED_ONLY_AT_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY_DIAGNOSTIC_REQUIRED",
-            "P8_08_MIGRATED_LEGACY_DIAGNOSTIC_51E071F0_ORDINARY_33327421787_CONTROLLED_33328132993_RECONCILIATION_CONTRACT_TUPLE_ONLY",
-            "P8_08_RECONCILIATION_RESPONSE_DIAGNOSTIC_A8722427_ORDINARY_33328949033_CONTROLLED_33329717276_SUCCESS_ZERO_NO_PRODUCT_REPAIR",
-            "P8_08_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_AND_SEPARATE_CHECKPOINT_1_TRANSITION_PASS",
-            "P8_08_REUSES_P7_07_EXACT_IMMUTABLE_SOURCE_PRESENTATION_AND_REDACTION_WITHOUT_DOMAIN_DUPLICATION",
-            "P8_08_CHECKPOINT_1_EXACT_FIVE_PRODUCT_TEST_PATHS_AUTHORIZED_AFTER_ACTIVATION_SHA_ORDINARY_PASS",
-            "P8_08_CHECKPOINT_2_PROJECT_AND_TRIAL_ROUND_FIRST_EXISTING_P7_07_REPOSITORY_BOUNDARY",
-            "P8_08_CHECKPOINT_3_EXACT_TWO_RUNTIME_TEST_PATHS_CONDITIONAL_ON_ACTIVATION_ORDINARY_PASS",
+            "P8_08_FINAL_CHECKPOINT_1E0F3FAC_ORDINARY_33330200775_LEVEL_3_33330886346_ALL_SIX_JOBS_PASS",
+            "P8_08_INTERNAL_READ_ONLY_RELEASED_SUMMARY_PROJECTION_SEAM_TECHNICAL_PASS",
+            "P8_08_REUSES_P7_07_EXACT_IMMUTABLE_PROJECT_TRIAL_ROUND_SOURCE",
+            "P8_08_EXTERNAL_PROJECTION_REMAINS_EXPLICITLY_UNAVAILABLE_EXTERNAL_CONTRACT_HELD",
+            "P8_09_PRESENTATION_ONLY_APPROVED_JCE_CORE_TEXT_AND_EXACT_CORE_PNG",
+            "ERPNEXT_TECHNICAL_CODE_REMAINS_STABLE_IN_API_EVENT_SCHEMA_PERSISTENCE_AND_ROUTING",
+            "P8_09_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_AND_SEPARATE_ACTIVATION_PASS",
             "DR_REC_009_EXTERNAL_EVENT_PAYLOAD_REDACTION_CONSUMER_MAPPING_AND_RECEIPT_REMAIN_HELD",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
@@ -75,18 +64,22 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             {
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
+                "implementation/BLOCKERS.md",
                 "implementation/CURRENT_TASK.json",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
+                "implementation/REQUIREMENT_TRACEABILITY.csv",
+                "implementation/phase-8-requirement-anchor.md",
                 "implementation/evidence/phase-8/p8-08-plan.md",
-                "scripts/verify_released_trial_summary_runtime.py",
-                "scripts/verify_item_publish_runtime.py",
+                "implementation/evidence/phase-8/p8-08-validation.md",
+                "implementation/evidence/phase-8/p8-09-plan.md",
+                "scripts/reconcile_v1_2_traceability.py",
+                "scripts/verify_v1_2_reconciliation.py",
                 "tests/test_current_task_verifier.py",
-                "tests/test_phase8_item_publish_runtime_verifier.py",
-                "tests/test_phase8_released_trial_summary_projection_runtime.py",
+                "tests/test_v1_2_reconciliation.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 11)
+        self.assertEqual(len(value["allowed_paths"]), 15)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(("frontend/", "contracts/", ".github/")) for path in value["allowed_paths"])

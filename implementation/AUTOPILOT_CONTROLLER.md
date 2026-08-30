@@ -9463,3 +9463,27 @@ repeat or rewrite it merely to restore context. See
 - P8-09, production contact and `DR-REC-009` remain closed until that Level 3
   passes. Preserve all user-owned dirty and untracked files.
 - Controller marker: `P8-08 diagnostics off; final Level 3 pending`.
+
+## 2026-08-31 P8-08 PASS; P8-09 audit active
+
+- P8-08 diagnostics-off exact SHA
+  `1e0f3facfa31f382b469df4b8084a3c64231674b` passes ordinary CI
+  `33330200775` in all four lanes. Its sole final Level 3 `33330886346` passes
+  frontend `99309113249`, secret `99309113323`, governed visual
+  `99309113340`, repository `99309113364`, controlled preflight
+  `99310931131` and cumulative runtime `99310962656`.
+- The internal Released Trial Summary projection seam is technically complete:
+  it reuses the exact immutable P7-07 source, exposes explicit
+  `external_contract_held` unavailable truth and adds no persistence, route,
+  event, queue, network, target call or production contact.
+- `DR-REC-009` remains held for external event identity, payload version,
+  routing/redaction, consumer mapping, receipt and production activation. The
+  task does not claim Sandbox/UAT, production acceptance or external success.
+- Activate P8-09 audit only. Freeze the approved `JCE Core` display text and
+  exact `docs/Brand Asset/Core.png` as presentation-only facts while preserving
+  `ERPNEXT` as the technical code in API, events, schemas, persistence,
+  permissions and routing. Product paths remain unauthorized until a separate
+  plan and activation transition pass exact-SHA ordinary CI.
+- Preserve every user-owned dirty/untracked file, M9-04/M9-05 post-V1.2
+  deferral and the final full production compatibility reconciliation Gate.
+- Controller marker: `P8-08 PASS; P8-09 audit active`.

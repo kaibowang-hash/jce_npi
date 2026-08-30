@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-08 AUDIT PLAN AWAITS EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-08 PASS; P8-09 AUDIT ACTIVE**
 
 P8-07F accepted the bounded production compatibility facts without changing
 any requirement status, product code, contract or owner. Existing P8-01
@@ -8,11 +8,13 @@ through P8-09 design remains the default-correct baseline; no concrete
 incompatibility was proved. Diagnostics-off checkpoint `d8aba505` passes
 ordinary `33317964484` and final Level 3 `33318628754`, so P8-08 audit is now
 active. Governance closeout `216ac604` passes ordinary `33320025714`. The
-P8-08 plan reuses the exact P7-07 immutable source and freezes only an internal
-read-only seam whose external projection remains unavailable. Product code is
-still unauthorized until the plan ordinary PASS and a separate checkpoint-1
-transition. Production activation and the final full-release read-only drift
-reconciliation remain separate mandatory Gates.
+P8-08 reuses the exact P7-07 immutable source and implements only an internal
+read-only seam whose external projection remains unavailable. Diagnostics-off
+checkpoint `1e0f3fac` passes ordinary `33330200775` and final Level 3
+`33330886346`; all six required jobs pass. P8-09 audit is active, but its
+product code remains unauthorized until the plan ordinary PASS and a separate
+activation transition. Production activation and the final full-release
+read-only drift reconciliation remain separate mandatory Gates.
 
 Anchor date: 2026-08-16
 
@@ -63,7 +65,7 @@ local disposable-Site or safe sandbox-adapter work, but they do block P8-08.
 | P8-05 — Tool Asset execution | M7-05 | INT-005; FR-TL-011, FR-TL-012, FR-TL-013, FR-TL-014, FR-TL-015, FR-TL-016 | One physical Tooling Set per zero-or-one formal Asset mapping, operation-specific create/update request and read-only observed Asset/location/maintenance result; NPI acceptance evidence is not ERP approval |
 | P8-06 — quality linkage | M7-06 | INT-007; FR-TR-006, FR-NP-006 | Read-only formal Quality Inspection/NCR/CAPA references and explicit request/result linkage where an approved sandbox operation exists; ERP result remains authoritative and a failed/unavailable result cannot be presented as pass |
 | P8-07 — operations, DLQ, replay and reconciliation | M7-07 | FR-RP-009, UX-016, NFR-INT-001 | Project/operation-scoped job center over durable Outbox/Inbox/execution attempts, classified retry/final/uncertain states, DLQ, actor-authorized replay and reconciliation; operators need no database access and cannot mutate business truth through a generic API |
-| P8-08 — Released Trial Summary projection boundary | M7-08 | FR-INT-015 | Reuse the exact immutable NPI summary source and prepare a read-only adapter seam with explicit unavailable state. Exact event name, payload version, redaction, consumer mapping and external receipt remain held by DR-REC-009 and are not invented |
+| P8-08 — Released Trial Summary projection boundary | M7-08 | FR-INT-015 | Technical PASS for the internal read-only adapter seam over the exact immutable NPI summary source with explicit unavailable state. Exact event name, payload version, redaction, consumer mapping, external receipt and production activation remain held by DR-REC-009 |
 | P8-09 — approved JCE Core display adapter | M7-09 | FR-BR-002 | Present approved `JCE Core` text and exact `Core.png` only in ERP/JCE display contexts; keep `ERPNEXT` and all API/event/schema codes stable; no substitute or redrawn mark |
 
 `ANCHORED_P8_XX` means allocated, not implemented, target-confirmed or

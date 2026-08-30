@@ -769,8 +769,14 @@ class V12ReconciliationTests(unittest.TestCase):
             phase_status,
         )
         self.assertIn(
-            "current_task: P8-08", phase_status
+            "current_task: P8-09", phase_status
         )
+        self.assertIn("diagnostics_off_final_level_3: 33330886346", phase_status)
+        self.assertIn(
+            "technical_result: PASS_INTERNAL_READ_ONLY_PROJECTION_SEAM_EXTERNAL_CONTRACT_HELD",
+            phase_status,
+        )
+        self.assertIn("product_code_authorized: false", phase_status)
         self.assertIn(
             "diagnostics_off_final_level_3: 33318628754", phase_status
         )
