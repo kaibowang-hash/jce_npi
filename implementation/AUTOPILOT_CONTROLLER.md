@@ -9302,3 +9302,22 @@ repeat or rewrite it merely to restore context. See
 - `DR-REC-009`, production activation, P8-09 and all user-owned dirty/untracked
   files remain untouched.
 - Controller marker: `P8-08 checkpoint 1 activation awaits exact-SHA ordinary CI`.
+
+## 2026-08-30 P8-08 checkpoint 1 product awaits exact-SHA ordinary CI
+
+- Checkpoint-1 activation `c7571d1b5057cc353ade46aa83537fc853698fa7`
+  passes ordinary CI `33321510831`: secret `99284179932`, frontend
+  `99284180072`, visual `99284180080` and repository `99284180157` all pass;
+  controlled lanes are correctly skipped.
+- The product change is exactly four pure `released_summary_projection`
+  package files and one focused test. It reuses the three P7-07 schema
+  identities, validates exact immutable IDs/versions/hashes, separates source
+  current/unavailable/conflict from external projection unavailable and emits
+  only structure-safe status.
+- Configuration is permanently disabled while `DR-REC-009` is held. There is
+  no Frappe import, row, route, hook, event, Outbox/Inbox, queue, target
+  selector, URL, credential, network or external-success path.
+- Require the product commit's exact-SHA ordinary PASS before checkpoint 2.
+  P8-09, production activation and all user-owned dirty/untracked files remain
+  untouched.
+- Controller marker: `P8-08 checkpoint 1 product awaits exact-SHA ordinary CI`.

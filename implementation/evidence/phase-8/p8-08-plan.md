@@ -1,6 +1,6 @@
 # P8-08 Plan — Released Trial Summary Read-Only Projection Seam
 
-Status: **AUDIT PLAN PASS — CHECKPOINT 1 ACTIVATION AWAITS EXACT-SHA ORDINARY CI**
+Status: **AUDIT PLAN PASS — CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-30
 
@@ -23,6 +23,15 @@ Audit-plan ordinary CI: `33320787112` (**PASS**) — frontend
 
 Checkpoint-1 product paths remain conditional on the separate activation
 commit's exact-SHA ordinary PASS.
+
+Checkpoint-1 activation: `c7571d1b5057cc353ade46aa83537fc853698fa7`
+
+Checkpoint-1 activation ordinary CI: `33321510831` (**PASS**) — secret
+`99284179932`, frontend `99284180072`, visual `99284180080` and repository
+`99284180157`; controlled lanes correctly skipped.
+
+Checkpoint-1 product implementation is now authorized only on the exact five
+product/test paths frozen below and awaits its own exact-SHA ordinary CI.
 
 ## 1. Audit conclusion
 
