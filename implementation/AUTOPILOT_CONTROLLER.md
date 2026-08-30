@@ -9321,3 +9321,23 @@ repeat or rewrite it merely to restore context. See
   P8-09, production activation and all user-owned dirty/untracked files remain
   untouched.
 - Controller marker: `P8-08 checkpoint 1 product awaits exact-SHA ordinary CI`.
+
+## 2026-08-30 P8-08 checkpoint 1 PASS; checkpoint 2 activation awaits exact-SHA ordinary CI
+
+- Checkpoint-1 product exact SHA
+  `495141f9650d71b9ae2c8f7cf8a8904e0242c210` passes ordinary CI
+  `33322318251`: secret `99286336195`, frontend `99286336260`, repository
+  `99286336272` and governed visual `99286336293` all pass; controlled lanes
+  correctly skip.
+- The existing P7-07 source boundary is factually Project + Trial Round-first:
+  `summary_workspace(project_id, round_id)` authorizes Project before resolving
+  the retained summary stream. Checkpoint 2 may not replace Trial Round with a
+  secondary summary ID or bypass that boundary.
+- Freeze exactly three product/test paths: the existing reader Protocol, one
+  new source adapter and one focused test. The adapter may only resolve and
+  revalidate the exact current P7-07 immutable source. External projection
+  remains unavailable and no route, row, event, queue or network is opened.
+- Product edits remain prohibited until this governance activation's own
+  exact-SHA ordinary CI passes. `DR-REC-009`, P8-09, production activation and
+  all user-owned dirty/untracked files remain untouched.
+- Controller marker: `P8-08 checkpoint 1 PASS; checkpoint 2 activation awaits exact-SHA ordinary CI`.

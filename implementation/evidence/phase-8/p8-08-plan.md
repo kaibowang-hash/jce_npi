@@ -1,6 +1,6 @@
 # P8-08 Plan — Released Trial Summary Read-Only Projection Seam
 
-Status: **AUDIT PLAN PASS — CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT 1 PASS — CHECKPOINT 2 ACTIVATION AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-30
 
@@ -30,8 +30,14 @@ Checkpoint-1 activation ordinary CI: `33321510831` (**PASS**) — secret
 `99284179932`, frontend `99284180072`, visual `99284180080` and repository
 `99284180157`; controlled lanes correctly skipped.
 
-Checkpoint-1 product implementation is now authorized only on the exact five
-product/test paths frozen below and awaits its own exact-SHA ordinary CI.
+Checkpoint-1 product implementation was limited to the exact five product/test
+paths frozen below and has passed its own exact-SHA ordinary CI.
+
+Checkpoint-1 product: `495141f9650d71b9ae2c8f7cf8a8904e0242c210`
+
+Checkpoint-1 product ordinary CI: `33322318251` (**PASS**) — secret
+`99286336195`, frontend `99286336260`, repository `99286336272` and visual
+`99286336293`; controlled lanes correctly skipped.
 
 ## 1. Audit conclusion
 
@@ -151,10 +157,19 @@ Only after checkpoint 1 exact-SHA ordinary CI passes:
 No public route is required. Any later need for a new local API must be proved
 and frozen as a separate checkpoint; the audit does not authorize one.
 
-Eligible new paths are limited to
-`apps/npi_integration/npi_integration/released_summary_projection/source.py`
-and `tests/test_phase8_released_trial_summary_projection_source.py`, plus the
-exact governance/evidence paths.
+The existing P7-07 repository exposes only the exact Project-first
+`summary_workspace(project_id, round_id)` boundary. A secondary summary
+revision cannot safely replace Trial Round in that call. Checkpoint 2 therefore
+also makes the minimal factual update to the already-created reader Protocol so
+that its inputs are Project, Trial Round and summary revision, in that order.
+This is not a new domain or route.
+
+Eligible product/test paths are limited to:
+
+- `apps/npi_integration/npi_integration/released_summary_projection/readers.py`
+- `apps/npi_integration/npi_integration/released_summary_projection/source.py`
+- `tests/test_phase8_released_trial_summary_projection_source.py`
+- the exact governance/evidence paths.
 
 ### Checkpoint 3 — disposable runtime and final Gate
 

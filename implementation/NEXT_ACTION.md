@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_AWAITS_EXACT_SHA_ORDINARY — P8-08`
+`IN_PROGRESS_CHECKPOINT_2_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY — P8-08`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -14,10 +14,11 @@ no evidence-backed LaunchFlow adjustment. Governance closeout `216ac604` passes
 ordinary `33320025714`. The P8-08 plan now freezes exact P7-07 immutable source
 reuse, a pure internal read-only seam and explicit unavailable external truth.
 Plan checkpoint `d560fdf2` passes ordinary `33320787112`; activation
-`c7571d1b` passes ordinary `33321510831`. Implement only the four pure package
-files and one focused test frozen in the plan, then require that product
-commit's exact-SHA ordinary CI before any checkpoint-2 source adapter. The
-`DR-REC-009` event/consumer contract remains held.
+`c7571d1b` passes ordinary `33321510831`; checkpoint-1 product `495141f9`
+passes ordinary `33322318251`. The next action is one governance-only
+checkpoint-2 activation, followed by the exact Project + Trial Round-first
+P7-07 source adapter and focused test. The `DR-REC-009` event/consumer contract
+remains held.
 
 The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,
 ordinary `33279778063` and Level 3 `33280319184`. The separate collector
