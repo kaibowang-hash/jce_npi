@@ -3,14 +3,14 @@ overall_status: IN_PROGRESS
 current_phase: 8
 updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
-execution_hold: NONE
+execution_hold: P8_08_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
 current_task: P8-08
-current_task_status: IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY
+current_task_status: IN_PROGRESS_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
 current_task_completed_stage: P8_07F_PASS_LEVEL_3
-current_task_next_stage: P8_08_CHECKPOINT_3_PRODUCT_EXACT_SHA_ORDINARY
-current_task_next_stage_status: AWAITS_CI
+current_task_next_stage: P8_08_MIGRATED_LEGACY_EXACT39_DIAGNOSTIC
+current_task_next_stage_status: AWAITS_EXACT_SHA_ORDINARY
 resumed_product_task: P8-08
-resumed_product_task_status: IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY
+resumed_product_task_status: IN_PROGRESS_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -2819,7 +2819,7 @@ p8_07f:
 p8_08:
   task: P8-08
   next_task: P8-09
-  status: IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY
+  status: IN_PROGRESS_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
   phase: 8
   milestone: M7-08
   task_kind: PRODUCT
@@ -2856,7 +2856,15 @@ p8_08:
   checkpoint_3_activation_ordinary: 33324672403
   checkpoint_3_activation_ordinary_jobs: {repository: 99292592936, secret_scan: 99292593013, visual: 99292593027, frontend: 99292593047}
   checkpoint_3_activation_status: PASS
-  checkpoint_3_product_status: AWAITS_EXACT_SHA_ORDINARY
+  checkpoint_3_product_checkpoint: fc43c4aa5b876d98e9123977c6d5441ac088632a
+  checkpoint_3_product_ordinary: 33325513567
+  checkpoint_3_product_ordinary_jobs: {secret_scan: 99294821264, visual: 99294821377, frontend: 99294821405, repository: 99294821420}
+  checkpoint_3_product_status: PASS
+  level_3_run: 33326192285
+  level_3_jobs: {repository: 99296625210, frontend: 99296625273, visual: 99296625299, secret_scan: 99296625349, controlled_preflight: 99298323642, runtime: 99298356336}
+  level_3_status: FAILED_LATER_ITEM_MIGRATED_LEGACY_BOUNDARY
+  p8_08_runtime_boundary_status: PASS_BEFORE_LATER_FAILURE
+  migrated_legacy_diagnostic_cycle: {diagnostic: 0/1, repair: 0/1, final: 0/1}
   audit_plan: implementation/evidence/phase-8/p8-08-plan.md
   frozen_product_boundary: INTERNAL_READ_ONLY_EXACT_P7_07_SOURCE_SEAM_EXTERNAL_PROJECTION_UNAVAILABLE
   compatibility_mode: CURRENT_DESIGN_DEFAULT_CORRECT_NO_CHANGE_WITHOUT_PROVED_DIFFERENCE

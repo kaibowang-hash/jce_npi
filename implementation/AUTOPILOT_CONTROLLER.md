@@ -9399,3 +9399,24 @@ repeat or rewrite it merely to restore context. See
   P8-08 Level 3. `DR-REC-009`, P8-09, production activation and all user-owned
   dirty/untracked files remain untouched.
 - Controller marker: `P8-08 checkpoint 3 product awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-08 Level 3 migrated-legacy diagnostic pending
+
+- Checkpoint-3 product `fc43c4aa5b876d98e9123977c6d5441ac088632a`
+  passes ordinary `33325513567`: secret `99294821264`, governed visual
+  `99294821377`, frontend `99294821405` and repository `99294821420` all pass.
+- Its sole Level 3 `33326192285` passes repository `99296625210`, frontend
+  `99296625273`, governed visual `99296625299`, secret `99296625349` and
+  controlled preflight `99298323642`. Runtime `99298356336` passes Bench and
+  disposable Site initialization and the P8-08 Released Trial Summary outer
+  boundary, then fails only at the later fixed label
+  `Local Frappe Item publish migrated-legacy runtime verification failed.`
+- Raw and child output, response content, business values, identities, messages
+  and stack remain unread. The P8-08 product, contract, schema, workflow and
+  production-state diff remain unchanged; no production contact occurred.
+- Re-enable only the existing product-zero collection-fallback exact-39
+  diagnostic. Require exact-SHA ordinary PASS, then dispatch one Level 2
+  controlled run. A failure may expose only one strict code/type/trace tuple;
+  success emits zero tuple. Do not rerun Level 3 or infer a product repair
+  before that proof. P8-09 remains inactive.
+- Controller marker: `P8-08 Level 3 migrated-legacy diagnostic pending`.

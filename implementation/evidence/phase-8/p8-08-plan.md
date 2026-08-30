@@ -257,3 +257,21 @@ full ordinary CI and sole applicable Level 3.
 - claiming Sandbox/UAT, production acceptance, real pilot or external success;
 - P8-09 display identity; and
 - redesign, refactor, rename, generalized abstraction or nearby optimization.
+
+## 9. Checkpoint-3 Level 3 migrated-legacy diagnostic
+
+Checkpoint-3 product `fc43c4aa5b876d98e9123977c6d5441ac088632a`
+passes exact-SHA ordinary CI `33325513567` in all four lanes. Its sole Level 3
+`33326192285` passes repository `99296625210`, frontend `99296625273`, governed
+visual `99296625299`, secret `99296625349` and controlled preflight
+`99298323642`. Runtime `99298356336` passes the fixed Bench/Site setup and the
+P8-08 Released Trial Summary boundary, then fails only at the later fixed Item
+publish migrated-legacy outer label.
+
+No raw or child output, response content, business value, identity, message or
+stack was read. This does not evidence a P8-08 product failure or an Item
+publish repair. Open one product-zero diagnostic at `0/1,0/1,0/1` by enabling
+only the existing collection-fallback exact-39 code/type/trace mechanism. Its
+exact-SHA ordinary CI must pass before one Level 2 controlled run. Success
+emits zero tuple; a failure may emit only one strict safe tuple. P8-09 remains
+inactive and production ERPNext remains untouched.

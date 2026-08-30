@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY — P8-08`
+- Mode: `IN_PROGRESS_MIGRATED_LEGACY_DIAGNOSTIC_PENDING — P8-08`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -20,8 +20,11 @@ Updated: `2026-08-30T00:00:00+07:00`
   `33323869238` in all four lanes. Checkpoint-3 activation `5175efc9` passes
   ordinary `33324672403` in all four lanes. The existing fixed disposable
   P7-07 runtime now contains only the internal read-only projection proof and
-  one focused test; that exact product checkpoint awaits its own ordinary
-  before the sole P8-08 Level 3.
+  one focused test. Product `fc43c4aa` passes ordinary `33325513567`. Its sole
+  Level 3 `33326192285` proves the Released Trial Summary boundary passed, then
+  fails only at the later fixed Item publish migrated-legacy outer label. The
+  next action is one existing exact-39 product-zero diagnostic after its own
+  exact-SHA ordinary PASS; no product repair or Level 3 rerun is authorized.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

@@ -3,7 +3,7 @@
   "task_id": "P8-08",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY",
+  "status": "IN_PROGRESS_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-09",
   "base_checkpoint": "3a9ab61cd83bb13dae8b9ac40a687b2b83bb6f25",
@@ -18,10 +18,12 @@
     "Prove deterministic current source plus explicitly unavailable external projection in fresh and replay-only processes while preserving exact Project containment, source hashes and trace identity.",
     "Prove zero new persistent rows, writes, route, event, queue, target traffic, network or formal external success.",
     "Keep exact external event identity, payload version, redaction/routing, ERP/JCE consumer mapping, receipt and production activation held by DR-REC-009.",
-    "Require the checkpoint-3 product commit itself to pass exact-SHA ordinary CI before the sole P8-08 Level 3 is dispatched."
+    "Accept checkpoint-3 product fc43c4aa5b876d98e9123977c6d5441ac088632a only with ordinary CI 33325513567 passing repository, secret, governed visual and frontend lanes.",
+    "Classify failed P8-08 Level 3 run 33326192285 only through the existing exact-39 migrated-legacy safe diagnostic tuple: P8-08 Released Trial Summary completed and the sole fixed outer boundary is the later Item publish migrated-legacy check.",
+    "Enable only the existing product-zero collection-fallback diagnostic, require exact-SHA ordinary PASS, then dispatch one Level 2 controlled diagnostic. Success emits zero tuple; failure may expose only one strict code, exception type and trace tuple."
   ],
   "non_scope": [
-    "Any P8-08 final Level 3 dispatch or later product implementation before checkpoint 3 exact-SHA ordinary CI passes.",
+    "Any rerun of failed Level 3 33326192285, product repair, P8-08 closeout or P8-09 activation before the bounded migrated-legacy diagnostic completes.",
     "Any guessed external event name, payload version, target method, endpoint, DocType, field, service principal, permission, receipt, success state or production routing under DR-REC-009.",
     "Any production ERPNext/JCE write, target call, replay, reconciliation, cross-database access, generic DocType writer, browser-direct ERP access, dual-master field or Mock/HTTP fake success.",
     "Any redesign, refactor, rebuild, interface rename, domain merge or split, workflow rewrite, technology replacement, permission-model rewrite, generalized abstraction or nearby optimization.",
@@ -37,6 +39,8 @@
     "P8_08_CHECKPOINT_2_ACTIVATION_1D8B13C9_ORDINARY_33323078013_ALL_FOUR_JOBS_PASS",
     "P8_08_CHECKPOINT_2_PRODUCT_3A9AB61C_ORDINARY_33323869238_ALL_FOUR_JOBS_PASS",
     "P8_08_CHECKPOINT_3_ACTIVATION_5175EFC9_ORDINARY_33324672403_ALL_FOUR_JOBS_PASS",
+    "P8_08_CHECKPOINT_3_PRODUCT_FC43C4AA_ORDINARY_33325513567_ALL_FOUR_JOBS_PASS",
+    "P8_08_LEVEL_3_33326192285_FAILED_ONLY_AT_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY_DIAGNOSTIC_REQUIRED",
     "P8_07F_BOUNDED_COMPATIBILITY_RECONCILIATION_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_COMPLETE",
     "P8_07F_STANDING_READ_ONLY_AUTHORITY_REMAINS_TASK_SCOPED_FRESHNESS_FIRST_FAIL_CLOSED_AND_NOT_WRITE_AUTHORITY",
     "CURRENT_LAUNCHFLOW_ARCHITECTURE_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
@@ -67,18 +71,20 @@
     "implementation/PHASE_STATUS.yaml",
     "implementation/evidence/phase-8/p8-08-plan.md",
     "scripts/verify_released_trial_summary_runtime.py",
+    "scripts/verify_item_publish_runtime.py",
     "tests/test_current_task_verifier.py",
+    "tests/test_phase8_item_publish_runtime_verifier.py",
     "tests/test_phase8_released_trial_summary_projection_runtime.py"
   ],
   "affected_checks": {
     "level_1": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "-v"],
-      ["python", "-m", "unittest", "tests.test_phase7_released_trial_summary_runtime_verifier", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase7_released_trial_summary_runtime_verifier", "tests.test_phase8_item_publish_runtime_verifier", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["python", "-m", "unittest", "tests.test_phase8_released_trial_summary_projection_domain", "tests.test_phase8_released_trial_summary_projection_source", "tests.test_phase8_released_trial_summary_projection_runtime", "tests.test_phase7_released_trial_summary_runtime_verifier", "tests.test_phase7_released_trial_summary_domain", "tests.test_phase7_released_trial_summary_repository", "tests.test_phase7_released_trial_summary_api", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase8_released_trial_summary_projection_domain", "tests.test_phase8_released_trial_summary_projection_source", "tests.test_phase8_released_trial_summary_projection_runtime", "tests.test_phase7_released_trial_summary_runtime_verifier", "tests.test_phase7_released_trial_summary_domain", "tests.test_phase7_released_trial_summary_repository", "tests.test_phase7_released_trial_summary_api", "tests.test_phase8_item_publish_runtime_verifier", "-v"],
       ["bash", "scripts/verify.sh"]
     ],
     "runtime_preflight": [
@@ -93,11 +99,11 @@
   },
   "expected_state": {
     "phase_status_current_task": "P8-08",
-    "phase_status_execution_hold": "NONE",
+    "phase_status_execution_hold": "P8_08_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
     "phase_status_resumed_product_task": "P8-08",
     "active_goal_marker": "P8-08",
     "next_action_marker": "P8-08",
-    "controller_marker": "P8-08 checkpoint 3 product awaits exact-SHA ordinary CI"
+    "controller_marker": "P8-08 Level 3 migrated-legacy diagnostic pending"
   },
   "rollback": {
     "before_product_resume": "Restore the exact accepted checkpoint-2 product 3a9ab61cd83bb13dae8b9ac40a687b2b83bb6f25. It creates no persistent or external state.",

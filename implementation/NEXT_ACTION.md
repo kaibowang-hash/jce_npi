@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY — P8-08`
+`IN_PROGRESS_MIGRATED_LEGACY_DIAGNOSTIC_PENDING — P8-08`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -20,9 +20,13 @@ ordinary `33323078013`, and the exact Project + Trial Round-first source
 adapter `3a9ab61c` passes ordinary `33323869238`. Checkpoint-3 activation
 `5175efc9` passes ordinary `33324672403`. The existing fixed disposable P7-07
 runtime now includes only the internal read-only projection proof and one
-focused test. The sole next action is this exact product checkpoint's ordinary
-CI, followed by the one applicable P8-08 Level 3 only after PASS. The
-`DR-REC-009` event/consumer contract remains held.
+focused test. Product `fc43c4aa` passes ordinary `33325513567`. Level 3
+`33326192285` passes all ordinary-equivalent lanes and preflight, proves the
+P8-08 Released Trial Summary runtime completed, then fails only at the later
+fixed Item publish migrated-legacy outer label. The sole next action is one
+existing exact-39 product-zero diagnostic after exact-SHA ordinary PASS. Do not
+rerun Level 3 or infer a product repair. The `DR-REC-009` event/consumer
+contract remains held.
 
 The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,
 ordinary `33279778063` and Level 3 `33280319184`. The separate collector

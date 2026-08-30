@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-09")
@@ -57,6 +57,8 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_08_CHECKPOINT_2_ACTIVATION_1D8B13C9_ORDINARY_33323078013_ALL_FOUR_JOBS_PASS",
             "P8_08_CHECKPOINT_2_PRODUCT_3A9AB61C_ORDINARY_33323869238_ALL_FOUR_JOBS_PASS",
             "P8_08_CHECKPOINT_3_ACTIVATION_5175EFC9_ORDINARY_33324672403_ALL_FOUR_JOBS_PASS",
+            "P8_08_CHECKPOINT_3_PRODUCT_FC43C4AA_ORDINARY_33325513567_ALL_FOUR_JOBS_PASS",
+            "P8_08_LEVEL_3_33326192285_FAILED_ONLY_AT_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY_DIAGNOSTIC_REQUIRED",
             "P8_08_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_AND_SEPARATE_CHECKPOINT_1_TRANSITION_PASS",
             "P8_08_REUSES_P7_07_EXACT_IMMUTABLE_SOURCE_PRESENTATION_AND_REDACTION_WITHOUT_DOMAIN_DUPLICATION",
             "P8_08_CHECKPOINT_1_EXACT_FIVE_PRODUCT_TEST_PATHS_AUTHORIZED_AFTER_ACTIVATION_SHA_ORDINARY_PASS",
@@ -76,11 +78,13 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/PHASE_STATUS.yaml",
                 "implementation/evidence/phase-8/p8-08-plan.md",
                 "scripts/verify_released_trial_summary_runtime.py",
+                "scripts/verify_item_publish_runtime.py",
                 "tests/test_current_task_verifier.py",
+                "tests/test_phase8_item_publish_runtime_verifier.py",
                 "tests/test_phase8_released_trial_summary_projection_runtime.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 9)
+        self.assertEqual(len(value["allowed_paths"]), 11)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(("frontend/", "contracts/", ".github/")) for path in value["allowed_paths"])
@@ -91,7 +95,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             sum(path.startswith("scripts/") for path in value["allowed_paths"]),
-            1,
+            2,
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
