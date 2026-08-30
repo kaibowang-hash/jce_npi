@@ -5,6 +5,7 @@ import {
   applyDisplayBrandDocument,
   DisplayBrandBootstrap,
   DisplayBrandCompanyMark,
+  DisplayBrandErpIdentity,
   DisplayBrandPlatformIcon,
   displayBrandAssets,
   DisplayBrandWordmark,
@@ -23,6 +24,7 @@ describe("LaunchFlow display-brand adapter", () => {
     ).toEqual({
       "company-footer": "Company LOGO.svg",
       "entry-loading": "Loading.svg",
+      "erp-source": "Core.png",
       favicon: "LaunchFlow Icon.svg",
       "platform-source": "LaunchFlow Icon.svg",
       "wordmark-dark": "LaunchFlow-logo_White.svg",
@@ -33,7 +35,7 @@ describe("LaunchFlow display-brand adapter", () => {
     );
     expect(
       new Set(Object.values(displayBrandAssets).map((asset) => asset.url)).size,
-    ).toBe(5);
+    ).toBe(6);
     for (const asset of Object.values(displayBrandAssets)) {
       expect(asset.url).not.toMatch(/^data:/u);
     }
@@ -48,6 +50,7 @@ describe("LaunchFlow display-brand adapter", () => {
           surface="light"
         />
         <DisplayBrandPlatformIcon accessibleName="LaunchFlow platform" />
+        <DisplayBrandErpIdentity accessibleName="JCE Core" />
         <DisplayBrandCompanyMark accessibleName="Company ownership mark" />
       </>,
     );
@@ -65,15 +68,20 @@ describe("LaunchFlow display-brand adapter", () => {
     expect(
       screen.getByRole("img", { name: "LaunchFlow platform" }),
     ).toHaveAttribute("tabindex", "0");
+    const tooltips = screen.getAllByRole("tooltip");
     expect(
       screen.getByRole("img", { name: "LaunchFlow platform" }),
-    ).toHaveAttribute(
+    ).toHaveAttribute("aria-describedby", tooltips[0]?.getAttribute("id"));
+    expect(tooltips[0]).toHaveTextContent("LaunchFlow platform");
+    const erpIdentity = screen.getByRole("img", { name: "JCE Core" });
+    expect(erpIdentity).toHaveAttribute("data-brand-context", "erp-source");
+    expect(erpIdentity).toHaveAttribute("data-brand-asset", "Core.png");
+    expect(erpIdentity).toHaveAttribute("tabindex", "0");
+    expect(erpIdentity).toHaveAttribute(
       "aria-describedby",
-      screen.getByRole("tooltip").getAttribute("id"),
+      tooltips[1]?.getAttribute("id"),
     );
-    expect(screen.getByRole("tooltip")).toHaveTextContent(
-      "LaunchFlow platform",
-    );
+    expect(tooltips[1]).toHaveTextContent("JCE Core");
     expect(
       screen.getByRole("img", { name: "Company ownership mark" }),
     ).toHaveAttribute("data-brand-context", "company-footer");

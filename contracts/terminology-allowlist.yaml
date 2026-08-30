@@ -21,6 +21,10 @@ retain_terms:
     zh_cn: LaunchFlow
     zh_tw: LaunchFlow
     category: product
+  - source: JCE Core
+    zh_cn: JCE Core
+    zh_tw: JCE Core
+    category: product
   - source: ERPNext
     zh_cn: ERPNext
     zh_tw: ERPNext

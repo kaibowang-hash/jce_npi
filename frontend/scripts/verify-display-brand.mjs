@@ -84,7 +84,7 @@ if (
   assetNames.filter((assetName) => assetName === "Core.png").length !== 1
 ) {
   throw new Error(
-    "The current adapter must govern five LaunchFlow SVG assets while Core.png remains allocated to Phase 8.",
+    "The display-brand inventory must contain five LaunchFlow SVG assets and one JCE Core PNG asset.",
   );
 }
 
@@ -108,6 +108,14 @@ const adapterContent = await readFile(adapterFile, "utf8");
 const coreSourceHash = createHash("sha256")
   .update(await readFile(path.join(brandDirectory, "Core.png")))
   .digest("hex");
+const coreGovernedReference = "../../../docs/Brand Asset/Core.png?no-inline";
+const coreReferenceCount =
+  adapterContent.split(coreGovernedReference).length - 1;
+if (coreReferenceCount !== 1) {
+  throw new Error(
+    `Core.png must have one direct, non-inline adapter reference; found ${coreReferenceCount}.`,
+  );
+}
 const launchFlowSourceHashes = new Map();
 for (const assetName of launchFlowAssetNames) {
   launchFlowSourceHashes.set(
@@ -176,9 +184,9 @@ for (const file of applicationFiles) {
       `Display-brand image data must not be embedded in application source: ${path.relative(repositoryRoot, file)}`,
     );
   }
-  if (/core\.png/iu.test(content)) {
+  if (file !== adapterFile && /core\.png/iu.test(content)) {
     throw new Error(
-      `Core.png is approved input for Phase 8 and must not be activated in R1-02: ${path.relative(repositoryRoot, file)}`,
+      `Core.png must remain centralized in the display-brand adapter: ${path.relative(repositoryRoot, file)}`,
     );
   }
   if (file === adapterFile) continue;
@@ -209,15 +217,10 @@ await assertNoDeferredCoreAssets(publicFiles, {
 
 const emittedFiles = await collectFiles(distDirectory, [""]);
 await assertOnlyApprovedStaticAssets(emittedFiles, {
-  allowedHashes: [...launchFlowSourceHashes.values()],
+  allowedHashes: [...launchFlowSourceHashes.values(), coreSourceHash],
   allowedTextExtensions: [".css", ".html", ".js"],
-  label: "The R1-02 production output",
+  label: "The governed display-brand production output",
   relativeTo: distDirectory,
-});
-await assertNoDeferredCoreAssets(emittedFiles, {
-  expectedHash: coreSourceHash,
-  label: "The R1-02 production output",
-  relativeTo: repositoryRoot,
 });
 const emittedByHash = new Map();
 for (const file of emittedFiles) {
@@ -227,23 +230,6 @@ for (const file of emittedFiles) {
   const matches = emittedByHash.get(hash) ?? [];
   matches.push(file);
   emittedByHash.set(hash, matches);
-}
-
-const emittedTextFiles = await collectFiles(distDirectory, [
-  ".css",
-  ".html",
-  ".js",
-  ".json",
-  ".svg",
-  ".webmanifest",
-]);
-for (const file of emittedTextFiles) {
-  const content = await readFile(file, "utf8");
-  if (/core\.png/iu.test(content) || content.includes(coreSourceHash)) {
-    throw new Error(
-      `The R1-02 production output leaks the Phase 8 Core asset identity: ${path.relative(repositoryRoot, file)}`,
-    );
-  }
 }
 
 for (const assetName of launchFlowAssetNames) {
@@ -256,7 +242,13 @@ for (const assetName of launchFlowAssetNames) {
     );
   }
 }
+const emittedCoreMatches = emittedByHash.get(coreSourceHash) ?? [];
+if (emittedCoreMatches.length !== 1) {
+  throw new Error(
+    `Core.png must be emitted once with exact source bytes; found ${emittedCoreMatches.length}.`,
+  );
+}
 
 console.log(
-  `display-brand production asset audit passed (${launchFlowAssetNames.length} exact LaunchFlow SVG files; Core.png held for Phase 8)`,
+  `display-brand production asset audit passed (${launchFlowAssetNames.length} exact LaunchFlow SVG files and one exact JCE Core PNG file)`,
 );

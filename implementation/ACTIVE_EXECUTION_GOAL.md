@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_TEST_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -42,9 +42,12 @@ Updated: `2026-08-31T00:00:00+07:00`
   display-brand plus `SourceSystemIdentity` seams. Plan checkpoint `5c6793b3`
   passes ordinary `33333259174`. The exact twenty-four-path checkpoint-1
   activation `f92f2a02` passes ordinary `33334024759`; product authorization
-  is effective. The first complete frontend run exposed only two stale unit
-  assertions that still expect visible `ERPNext` text. They require a separate
-  exact manifest expansion before those existing test files may be edited.
+  is effective. Test-manifest expansion `66f5a3a9` passes ordinary
+  `33335381357` in all four lanes and authorizes the exact twenty-six paths.
+  Checkpoint-1 implementation Level 1 passes focused unit `80/80`, complete
+  unit/coverage `1086/1086`, nonvisual E2E `458/458`, four exact Linux visuals,
+  pinned isolated production build/brand audit, type, lint, i18n and security
+  checks. The product checkpoint now awaits its own exact-SHA ordinary CI.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

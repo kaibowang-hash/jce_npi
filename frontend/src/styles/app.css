@@ -130,6 +130,7 @@ code {
 
 .display-brand__wordmark,
 .display-brand__platform-icon,
+.display-brand__erp-identity,
 .display-brand__company-mark {
   display: block;
   flex: 0 0 auto;
@@ -140,12 +141,23 @@ code {
   height: 16px;
 }
 
+.display-brand__erp-identity {
+  width: 72px;
+  height: 16px;
+  object-fit: contain;
+}
+
 .display-brand__tooltip-anchor {
   position: relative;
   display: block;
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
+}
+
+.display-brand__tooltip-anchor--wide {
+  width: 72px;
+  background: var(--npi-color-surface-default);
 }
 
 .display-brand__tooltip {

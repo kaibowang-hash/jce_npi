@@ -9563,3 +9563,26 @@ repeat or rewrite it merely to restore context. See
   generalized abstraction and user-owned dirty/untracked files remain
   prohibited.
 - Controller marker: `P8-09 checkpoint 1 test manifest expansion awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 checkpoint 1 Level 1 PASS; product checkpoint awaits exact-SHA ordinary CI
+
+- Test-manifest expansion exact SHA
+  `66f5a3a95bb32e4cbdf0b9837c2dc5f5acb8aa24` passes ordinary CI
+  `33335381357`; frontend `99321233412`, secret `99321233499`, governed
+  visual `99321233501` and repository `99321233509` all pass. The exact task
+  manifest is now twenty-six paths with no wildcard, backend, workflow,
+  source-asset or existing-snapshot expansion.
+- The bounded presentation implementation uses the existing display-brand
+  adapter and `SourceSystemIdentity`. Stable input `ERPNEXT` renders the exact
+  `docs/Brand Asset/Core.png` bytes with accessible/tooltip identity
+  `JCE Core`; `NPI_ONE`, `COMPUTED`, contracts, persistence, ownership,
+  permissions and routing remain unchanged.
+- Level 1 passes focused unit `80/80`, complete unit/coverage `1086/1086`,
+  nonvisual E2E `458/458`, four exact new Linux visuals, generated-catalog,
+  type, lint, industrial UI, `8586`-source direct zh/zh-TW i18n, isolated
+  pinned Linux production build and exact-one Core asset verification.
+- Commit only the exact twenty-six task paths. After its exact-SHA ordinary CI
+  passes, execute exactly one P8-09/Phase-8 Level 3 under `release-gate`.
+  Production ERPNext/JCE contact, product redesign, technical identifier
+  changes and user-owned dirty/untracked files remain prohibited.
+- Controller marker: `P8-09 checkpoint 1 Level 1 PASS; product checkpoint awaits exact-SHA ordinary CI`.

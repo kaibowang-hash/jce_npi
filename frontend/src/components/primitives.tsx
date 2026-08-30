@@ -22,7 +22,10 @@ import {
   Icon,
   type NpiIconName,
 } from "../ui-adapters/npi-ui";
-import { DisplayBrandPlatformIcon } from "../ui-adapters/display-brand";
+import {
+  DisplayBrandErpIdentity,
+  DisplayBrandPlatformIcon,
+} from "../ui-adapters/display-brand";
 
 export function Panel({
   title,
@@ -126,6 +129,9 @@ export function SourceSystemIdentity({
     return (
       <DisplayBrandPlatformIcon accessibleName={t("LaunchFlow platform")} />
     );
+  }
+  if (sourceSystem === "ERPNEXT") {
+    return <DisplayBrandErpIdentity accessibleName={t("JCE Core")} />;
   }
   const label = sourceSystemLabel(t, sourceSystem);
   return emphasized ? <strong>{label}</strong> : <span>{label}</span>;

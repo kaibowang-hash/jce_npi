@@ -284,7 +284,7 @@ const fieldTruthCases = [
   {
     disabled: false,
     editableIn: "ERPNEXT",
-    editableInLabel: "ERPNext",
+    editableInLabel: "JCE Core",
     editability: {
       condition: "The planning window is open.",
       editable: true,
@@ -390,7 +390,10 @@ describe("FieldTruth", () => {
 
     expect(screen.getByText("Required")).toBeVisible();
     expect(screen.getByText("Read only")).toBeVisible();
-    expect(screen.getByText("ERPNext")).toBeVisible();
+    expect(screen.getByRole("img", { name: "JCE Core" })).toHaveAttribute(
+      "data-brand-context",
+      "erp-source",
+    );
     expect(screen.getByText("No editable system")).toBeVisible();
   });
 
@@ -441,9 +444,14 @@ describe("FieldTruth", () => {
       const field = screen.getByRole("region", { name: "Review note" });
       expect(within(field).getByText("Optional")).toBeVisible();
       expect(within(field).getByText(editabilityLabel)).toBeVisible();
-      expect(definitionValue(field, "Editable in")).toHaveTextContent(
-        editableInLabel,
-      );
+      const editableInValue = definitionValue(field, "Editable in");
+      if (editableIn === "ERPNEXT") {
+        expect(
+          within(editableInValue).getByRole("img", { name: editableInLabel }),
+        ).toHaveAttribute("data-brand-context", "erp-source");
+      } else {
+        expect(editableInValue).toHaveTextContent(editableInLabel);
+      }
       expect(definitionValue(field, "Unit")).toHaveTextContent(
         "Not applicable",
       );

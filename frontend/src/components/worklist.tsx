@@ -30,6 +30,7 @@ import {
   Panel,
   SemanticStatus,
   SourceBadge,
+  SourceSystemIdentity,
   SyncBadge,
 } from "./primitives";
 
@@ -784,11 +785,15 @@ export function Worklist({
               {
                 label: t("Editable in"),
                 value:
-                  selected.source.editableIn === "ERPNEXT"
-                    ? t("ERPNext")
-                    : selected.source.editableIn === "NPI_ONE"
-                      ? t("LaunchFlow")
-                      : t("No system is editable"),
+                  selected.source.editableIn === "NONE" ? (
+                    t("No system is editable")
+                  ) : selected.source.editableIn === "NPI_ONE" ? (
+                    t("LaunchFlow")
+                  ) : (
+                    <SourceSystemIdentity
+                      sourceSystem={selected.source.editableIn}
+                    />
+                  ),
               },
             ]}
           />

@@ -125,6 +125,7 @@ describe("controlled display copy", () => {
   });
 
   it("covers remaining source, sync, and status code branches", () => {
+    expect(sourceSystemLabel(identityTranslator, "ERPNEXT")).toBe("JCE Core");
     for (const source of ["NPI_ONE", "ERPNEXT", "COMPUTED"] as const) {
       expect(sourceSystemLabel(identityTranslator, source)).not.toHaveLength(0);
     }

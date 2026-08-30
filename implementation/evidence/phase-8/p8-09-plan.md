@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **AUDIT PLAN PASS — CHECKPOINT-1 TEST MANIFEST EXPANSION AWAITS EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT-1 LEVEL 1 PASS — PRODUCT CHECKPOINT AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-31
 
@@ -29,12 +29,22 @@ secret `99315542712`; controlled lanes correctly skipped.
 Checkpoint-1 activation ordinary jobs PASS: frontend `99317576712`, governed
 visual `99317576768`, secret `99317576808` and repository `99317576863`.
 
-The first complete frontend unit run reached `1082/1086`; its four failures
-reduce to an unrelated LaunchFlow editable-system presentation delta, now
-removed in the authorized worklist path, plus stale visible `ERPNext` text
-assertions in two existing unit-test files. Those two tests are added by one
-governance-only exact manifest expansion and remain unedited until that
-expansion's own exact-SHA ordinary CI passes.
+The exact test-manifest expansion
+`66f5a3a95bb32e4cbdf0b9837c2dc5f5acb8aa24` passes ordinary CI
+`33335381357`: frontend `99321233412`, secret `99321233499`, governed visual
+`99321233501` and repository `99321233509` all pass. The two now-authorized
+tests assert the same approved JCE Core identity seam, while LaunchFlow's own
+editable-system presentation remains unchanged.
+
+Checkpoint-1 Level 1 passes: focused unit `80/80`; complete unit/coverage
+`1086/1086`; nonvisual E2E `458/458`; generated catalogs, typecheck, ESLint,
+Prettier, Stylelint, dependency boundaries, industrial UI and i18n all pass,
+with `8586` literal English sources and `100%` direct zh/zh-TW coverage. The
+four new Linux visual cases pass against their exact baselines. An isolated
+pinned Linux production build emits the exact Core PNG once, preserves the
+five approved LaunchFlow SVGs, and passes all brand guard negatives. Technical
+scans preserve every `ERPNEXT` boundary and find no `JCE Core` value in backend
+or integration contracts.
 
 ## 1. Audit conclusion
 

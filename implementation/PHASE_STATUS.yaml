@@ -5,12 +5,12 @@ updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-09
-current_task_status: IN_PROGRESS_CHECKPOINT_1_TEST_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY
-current_task_completed_stage: P8_09_CHECKPOINT_1_ACTIVATION_ORDINARY_PASS
-current_task_next_stage: P8_09_CHECKPOINT_1_TEST_MANIFEST_EXPANSION_EXACT_SHA_ORDINARY
-current_task_next_stage_status: PENDING_TEST_PATH_AUTHORIZATION
+current_task_status: IN_PROGRESS_CHECKPOINT_1_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY
+current_task_completed_stage: P8_09_CHECKPOINT_1_LEVEL_1_PASS
+current_task_next_stage: P8_09_CHECKPOINT_1_PRODUCT_EXACT_SHA_ORDINARY
+current_task_next_stage_status: PENDING_PRODUCT_CHECKPOINT_ORDINARY
 resumed_product_task: P8-09
-resumed_product_task_status: IN_PROGRESS_CHECKPOINT_1_TEST_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY
+resumed_product_task_status: IN_PROGRESS_CHECKPOINT_1_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -2901,7 +2901,7 @@ p8_08:
 p8_09:
   task: P8-09
   next_task: P9-00
-  status: IN_PROGRESS_CHECKPOINT_1_TEST_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY
+  status: IN_PROGRESS_CHECKPOINT_1_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY
   phase: 8
   milestone: M7-09
   task_kind: PRODUCT
@@ -2920,7 +2920,14 @@ p8_09:
   checkpoint_1_activation_checkpoint: f92f2a028905367868b16bdd748d477ffbadeb94
   checkpoint_1_activation_ordinary: 33334024759
   checkpoint_1_activation_status: PASS
-  checkpoint_1_test_manifest_expansion_status: AWAITS_EXACT_SHA_ORDINARY
+  checkpoint_1_test_manifest_expansion_checkpoint: 66f5a3a95bb32e4cbdf0b9837c2dc5f5acb8aa24
+  checkpoint_1_test_manifest_expansion_ordinary: 33335381357
+  checkpoint_1_test_manifest_expansion_status: PASS
+  checkpoint_1_level_1_status: PASS
+  checkpoint_1_level_1_unit: 1086/1086
+  checkpoint_1_level_1_nonvisual_e2e: 458/458
+  checkpoint_1_level_1_linux_visual: 4/4
+  checkpoint_1_product_checkpoint_status: AWAITS_EXACT_SHA_ORDINARY
   display_text: JCE Core
   technical_code: ERPNEXT
   approved_asset: docs/Brand Asset/Core.png

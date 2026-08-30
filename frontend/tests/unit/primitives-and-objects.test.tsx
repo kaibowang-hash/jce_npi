@@ -186,7 +186,10 @@ describe("industrial reusable components", () => {
     expect(
       screen.getByRole("img", { name: "LaunchFlow platform" }),
     ).toHaveAttribute("data-brand-context", "platform-source");
-    expect(screen.getByText("ERPNext")).toBeVisible();
+    expect(screen.getByRole("img", { name: "JCE Core" })).toHaveAttribute(
+      "data-brand-context",
+      "erp-source",
+    );
     expect(screen.getByText("Computed")).toBeVisible();
     expect(screen.getByText("Processing")).toBeVisible();
     expect(screen.getByText("PJ-26018")).toHaveAttribute(

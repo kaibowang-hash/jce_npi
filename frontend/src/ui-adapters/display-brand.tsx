@@ -5,6 +5,7 @@ import { useI18n } from "../i18n/runtime";
 export type DisplayBrandAssetContext =
   | "company-footer"
   | "entry-loading"
+  | "erp-source"
   | "favicon"
   | "platform-source"
   | "wordmark-dark"
@@ -40,6 +41,13 @@ export const displayBrandAssets: Readonly<
       import.meta.url,
     ).href,
   }),
+  "erp-source": Object.freeze({
+    documentName: "Core.png",
+    url: new URL(
+      "../../../docs/Brand Asset/Core.png?no-inline",
+      import.meta.url,
+    ).href,
+  }),
   favicon: platformIcon,
   "platform-source": platformIcon,
   "wordmark-dark": Object.freeze({
@@ -64,12 +72,14 @@ function BrandImage({
   context,
   decorative = false,
   translatedTooltip = false,
+  wideTooltipAnchor = false,
 }: {
   accessibleName: string;
   className: string;
   context: Exclude<DisplayBrandAssetContext, "favicon">;
   decorative?: boolean;
   translatedTooltip?: boolean;
+  wideTooltipAnchor?: boolean;
 }): React.JSX.Element {
   const asset = displayBrandAssets[context];
   const tooltipId = useId();
@@ -88,7 +98,9 @@ function BrandImage({
   );
   if (!translatedTooltip) return image;
   return (
-    <span className="display-brand__tooltip-anchor">
+    <span
+      className={`display-brand__tooltip-anchor${wideTooltipAnchor ? " display-brand__tooltip-anchor--wide" : ""}`}
+    >
       {image}
       <span className="display-brand__tooltip" id={tooltipId} role="tooltip">
         {accessibleName}
@@ -130,6 +142,22 @@ export function DisplayBrandPlatformIcon({
       context="platform-source"
       decorative={decorative}
       translatedTooltip={!decorative}
+    />
+  );
+}
+
+export function DisplayBrandErpIdentity({
+  accessibleName,
+}: {
+  accessibleName: string;
+}): React.JSX.Element {
+  return (
+    <BrandImage
+      accessibleName={accessibleName}
+      className="display-brand__erp-identity"
+      context="erp-source"
+      translatedTooltip
+      wideTooltipAnchor
     />
   );
 }

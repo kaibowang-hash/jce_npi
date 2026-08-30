@@ -298,7 +298,7 @@ export function sourceSystemLabel(t: Translator, source: SourceSystem): string {
     case "NPI_ONE":
       return t("LaunchFlow");
     case "ERPNEXT":
-      return t("ERPNext");
+      return t("JCE Core");
     case "COMPUTED":
       return t("Computed");
   }

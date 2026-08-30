@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '209dba1961b7d481';
+export const catalogVersion = '9a4ad9297d7149f3';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -3072,6 +3072,7 @@ export const catalogs = {
     "Item state": "项状态",
     "Item Target Mode": "物料目标模式",
     "Item version": "项版本",
+    "JCE Core": "JCE Core",
     "Job identity": "任务标识",
     "Job Snapshot Hash": "任务快照哈希",
     "Job state": "任务状态",
@@ -11659,6 +11660,7 @@ export const catalogs = {
     "Item state": "項目狀態",
     "Item Target Mode": "物料目標模式",
     "Item version": "項目版本",
+    "JCE Core": "JCE Core",
     "Job identity": "工作識別碼",
     "Job Snapshot Hash": "工作快照雜湊",
     "Job state": "工作狀態",
