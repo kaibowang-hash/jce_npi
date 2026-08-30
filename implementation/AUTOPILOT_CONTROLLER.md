@@ -9137,3 +9137,27 @@ repeat or rewrite it merely to restore context. See
   byte count plus checksum. Require another exact-SHA ordinary PASS before any
   reconnect. Product, SQL/console, generic execute and production-write
   authority remain zero; P8-08 stays held.
+
+#### P8-07F inventory-bound parent reader awaits exact-SHA ordinary CI
+
+- The current marker is exactly `P8-07F inventory-bound parent reader awaits exact-SHA ordinary CI`.
+- Bounded Client Script paging SHA
+  `e6e28cfc0230e9f22f75f1e9ab02e821f860ced3` passes ordinary CI
+  `33310528823`: repository `99254638395`, visual `99254638427`, secret
+  `99254638459` and frontend `99254638482` all pass.
+- The accepted read at `2026-08-30T12:18:59.936275Z` verifies the unchanged
+  platform/app/Site inventory, accepts 98 Client Script rows over five bounded
+  pages with result checksum
+  `sha256:49a8951fc934b064368bc1dc22f0def7f766a04901170c79792629b31faf9dbb`,
+  and accepts 27 present required DocTypes with result checksum
+  `sha256:8506387ca0f59657110860127c360d45311038bf4b922ba6552774552e6b3db0`.
+  `Injection Molding Condition` is the sole frozen required name not present in
+  that production DocType inventory. Private state is removed after the read.
+- Before reconnecting, bind DocField and DocPerm parent reads to only those
+  fixed allowlisted names actually accepted in the DocType inventory. Reject a
+  cached name outside the frozen set and include every frozen-but-absent parent
+  in the result checksum and safe output instead of querying an assumed
+  document. This is a collector safety/compatibility correction only.
+- Require a new exact-SHA ordinary PASS before the remaining read. Direct SQL,
+  console, generic execute, raw Script/source persistence, product changes and
+  every production write remain prohibited; P8-08 remains held.

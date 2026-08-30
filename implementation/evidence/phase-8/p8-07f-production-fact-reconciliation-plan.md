@@ -334,3 +334,22 @@ the existing 25-page ceiling, retaining exact fields, filters, order,
 checksum-only Script representation and duplicate/page checks. Obtain a new
 exact-SHA ordinary before reconnecting; direct SQL, console and generic method
 surfaces remain unnecessary and prohibited.
+
+## Inventory-bound parent reader correction
+
+Bounded paging SHA `e6e28cfc0230e9f22f75f1e9ab02e821f860ced3`
+passes ordinary `33310528823`. The next authorized read accepts 98 Client
+Script summaries over five pages with checksum
+`sha256:49a8951fc934b064368bc1dc22f0def7f766a04901170c79792629b31faf9dbb`
+and 27 present required DocTypes with checksum
+`sha256:8506387ca0f59657110860127c360d45311038bf4b922ba6552774552e6b3db0`.
+`Injection Molding Condition` is not present in that production inventory.
+No parent metadata is accepted in this window and private state is removed.
+
+DocField and DocPerm reads must therefore derive parent names only from the
+accepted fixed DocType inventory, reject any cached name outside the frozen
+set, and checksum the frozen-but-absent parent list. This preserves absence as
+a production fact and prevents an allowlist from becoming an existence
+assumption. Obtain another exact-SHA ordinary before the remaining read. This
+change creates no product, contract, SQL/console, generic method or write
+authority, and P8-08 remains blocked.

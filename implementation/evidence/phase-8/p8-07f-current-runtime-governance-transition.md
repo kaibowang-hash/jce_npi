@@ -217,3 +217,27 @@ The fail-closed repair keeps the byte ceiling and every query field/filter/order
 unchanged, but fixes Client Script at 20 rows per page with the existing
 25-page maximum. All other families remain at 200. Script content remains
 checksum/byte-count only. A new exact-SHA ordinary is required before retry.
+
+## Accepted bounded Client Scripts and inventory-bound parent handoff
+
+Exact SHA `e6e28cfc0230e9f22f75f1e9ab02e821f860ced3` passes ordinary
+`33310528823` in repository `99254638395`, visual `99254638427`, secret
+`99254638459` and frontend `99254638482`. The subsequent read at
+`2026-08-30T12:18:59.936275Z` accepts 98 Client Script summaries over five
+20-row-bounded pages; Script bodies remain checksum/byte-count only and the
+result checksum is
+`sha256:49a8951fc934b064368bc1dc22f0def7f766a04901170c79792629b31faf9dbb`.
+
+The same window accepts 27 present frozen DocType summaries with checksum
+`sha256:8506387ca0f59657110860127c360d45311038bf4b922ba6552774552e6b3db0`.
+`Injection Molding Condition` is explicitly absent. The collector stops before
+the first parent read because a fixed allowlist is not evidence that every
+allowed document exists on this Site. No later operation runs and private state
+is deleted.
+
+The next fail-closed change makes the accepted DocType inventory the only
+source of DocField/DocPerm parent names. It rejects any cached nonallowlisted
+name and checksum-binds the explicit missing-parent list. It does not broaden
+the method, DocType or field surface. Another exact-SHA ordinary PASS is
+required before reconnecting; SQL, console, generic execute and all writes
+remain prohibited.

@@ -699,6 +699,10 @@ class ProductionFactCollectorTest(unittest.TestCase):
     def test_parent_metadata_reads_only_fixed_documents_and_projects_child_shape(self) -> None:
         path = self.state_path()
         self.write_state(path)
+        state = collector._load_state(path, "d" * 40, "101")
+        present_doctypes = list(collector.REQUIRED_ERPNEXT_DOCTYPES[:-1])
+        state["runtime_names"] = {"DOCTYPES": present_doctypes}
+        collector._replace_state(path, state)
         args = argparse.Namespace(
             expected_sha="d" * 40,
             ordinary_run_id="101",
@@ -743,9 +747,13 @@ class ProductionFactCollectorTest(unittest.TestCase):
 
         output = emit.call_args.args[0]
         rendered = json.dumps(output)
-        self.assertEqual(len(calls), len(collector.REQUIRED_ERPNEXT_DOCTYPES))
-        self.assertEqual(output["parent_count"], len(collector.REQUIRED_ERPNEXT_DOCTYPES))
-        self.assertEqual(output["row_count"], len(collector.REQUIRED_ERPNEXT_DOCTYPES))
+        self.assertEqual(len(calls), len(present_doctypes))
+        self.assertEqual(output["parent_count"], len(present_doctypes))
+        self.assertEqual(output["row_count"], len(present_doctypes))
+        self.assertEqual(
+            output["missing_parent_names"],
+            [collector.REQUIRED_ERPNEXT_DOCTYPES[-1]],
+        )
         self.assertNotIn("private@example.com", rendered)
         self.assertNotIn("do-not-record", rendered)
         self.assertTrue(all(call[0] == "RUNTIME_DOCFIELDS_PARENT" for call in calls))
@@ -762,6 +770,15 @@ class ProductionFactCollectorTest(unittest.TestCase):
         with patch.object(collector, "_preflight"), patch.dict(
             os.environ, {"NPI_P8_07F_SITE": "site-one"}, clear=True
         ), self.assertRaisesRegex(collector.FactCollectionError, "parent family first"):
+            collector._parent_metadata_operation(args, lambda *unused: b"")
+
+        state = collector._load_state(path, "d" * 40, "101")
+        state["runtime_names"] = {"DOCTYPES": ["User"]}
+        collector._replace_state(path, state)
+        args.family = "DOCFIELDS"
+        with patch.object(collector, "_preflight"), patch.dict(
+            os.environ, {"NPI_P8_07F_SITE": "site-one"}, clear=True
+        ), self.assertRaisesRegex(collector.FactCollectionError, "non-allowlisted DocType"):
             collector._parent_metadata_operation(args, lambda *unused: b"")
 
     def test_sensitive_path_or_content_fails_closed(self) -> None:

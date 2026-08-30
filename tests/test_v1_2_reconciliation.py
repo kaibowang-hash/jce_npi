@@ -756,7 +756,7 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("sensitive_preflight_stops: 2", phase_status)
         self.assertIn("private_state_removed: true", phase_status)
         self.assertIn(
-            "runtime_only_metadata_status: PARTIALLY_ACCEPTED_REMAINING_CLIENT_SCRIPT_LOCALE_FILE_SHAPE_AND_EXPANDED_PARENT_FACTS_PENDING_BOUNDED_CLIENT_PAGING_ORDINARY",
+            "runtime_only_metadata_status: PARTIALLY_ACCEPTED_REMAINING_PARENT_METADATA_LOCALE_FILE_SHAPE_AND_PROTECTED_JSON_PENDING_INVENTORY_BOUND_PARENT_READER_ORDINARY",
             phase_status,
         )
         self.assertIn(
@@ -776,6 +776,18 @@ class V12ReconciliationTests(unittest.TestCase):
         )
         self.assertIn(
             "client_script_paging_contract: PAGE_SIZE_20_MAX_25_PAGES_KEEP_512_KIB_PER_CALL_LIMIT",
+            phase_status,
+        )
+        self.assertIn("bounded_client_paging_ordinary: 33310528823", phase_status)
+        self.assertIn("accepted_client_script_rows: 98", phase_status)
+        self.assertIn("accepted_client_script_pages: 5", phase_status)
+        self.assertIn("accepted_required_doctype_rows: 27", phase_status)
+        self.assertIn(
+            "missing_required_doctypes: [Injection Molding Condition]",
+            phase_status,
+        )
+        self.assertIn(
+            "parent_reader_contract: ONLY_ACCEPTED_FIXED_DOCTYPE_INVENTORY_NAMES_NONALLOWLISTED_REJECTED_MISSING_CHECKSUMMED",
             phase_status,
         )
         self.assertIn(

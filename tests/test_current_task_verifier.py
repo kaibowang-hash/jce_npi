@@ -87,6 +87,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "DOCTYPE_PARENT_READS_USE_ONLY_ACCEPTED_FIXED_INVENTORY_NAMES_AND_CHECKSUM_EXPLICIT_MISSING_PARENTS",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "PROTECTED_MULTILINE_DOCTYPE_JSON_SCALARS_ARE_HASHED_NOT_EMITTED",
             value["frozen_invariants"],
         )
@@ -104,7 +108,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_BOUNDED_CLIENT_SCRIPT_PAGING_EXACT_SHA_ORDINARY_THEN_REMAINING_COLLECTION",
+            "IN_PROGRESS_AWAITING_INVENTORY_BOUND_PARENT_READER_EXACT_SHA_ORDINARY_THEN_REMAINING_COLLECTION",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

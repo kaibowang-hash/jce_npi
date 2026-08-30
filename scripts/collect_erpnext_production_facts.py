@@ -1321,10 +1321,21 @@ def _parent_metadata_operation(
     parent_doctype, child_key, source_family = PARENT_METADATA_FAMILIES[family]
     site = os.environ.get("NPI_P8_07F_SITE")
     require(site is not None and APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is missing or invalid")
+    runtime_names = state.get("runtime_names")
     if parent_doctype == "DocType":
-        parent_names = list(REQUIRED_ERPNEXT_DOCTYPES)
+        require(type(runtime_names) is dict, "parent metadata requires its fixed parent family first")
+        cached_names = runtime_names.get("DOCTYPES")
+        require(
+            type(cached_names) is list and all(type(item) is str for item in cached_names),
+            "parent metadata requires its fixed parent family first",
+        )
+        require(
+            set(cached_names) <= set(REQUIRED_ERPNEXT_DOCTYPES),
+            "parent metadata contains a non-allowlisted DocType",
+        )
+        parent_names = list(cached_names)
+        missing_parent_names = sorted(set(REQUIRED_ERPNEXT_DOCTYPES) - set(parent_names))
     else:
-        runtime_names = state.get("runtime_names")
         require(type(runtime_names) is dict, "parent metadata requires its fixed parent family first")
         cached_names = runtime_names.get(source_family)
         require(
@@ -1332,6 +1343,7 @@ def _parent_metadata_operation(
             "parent metadata requires its fixed parent family first",
         )
         parent_names = list(cached_names)
+        missing_parent_names = []
     require(len(parent_names) <= 500, "parent metadata parent count exceeded")
 
     rows: list[dict[str, Any]] = []
@@ -1352,7 +1364,9 @@ def _parent_metadata_operation(
             )
         )
         document_checksums.append(_checksum(raw))
-    result_checksum = _checksum(_json_bytes(rows))
+    result_checksum = _checksum(
+        _json_bytes({"missing_parent_names": missing_parent_names, "rows": rows})
+    )
     records = state.setdefault("operation_records", [])
     require(type(records) is list, "private operation records are malformed")
     records.append(
@@ -1371,6 +1385,7 @@ def _parent_metadata_operation(
             "timestamp": _timestamp(),
             "source": "JCE_CORE_PRODUCTION_REDACTED",
             "parent_count": len(parent_names),
+            "missing_parent_names": missing_parent_names,
             "document_checksums": document_checksums,
             "row_count": len(rows),
             "result_checksum": result_checksum,
