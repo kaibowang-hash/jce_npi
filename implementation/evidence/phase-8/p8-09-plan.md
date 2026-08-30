@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **FINAL GATE PREDECESSOR ITEM LEGACY DIAGNOSTIC LEVEL 1 PASS; AWAITS EXACT-SHA ORDINARY CI**
+Status: **FINAL GATE PREDECESSOR ITEM LEGACY DIAGNOSTICS OFF; AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-31
 
@@ -98,6 +98,14 @@ failed-child unread contract and success-zero behavior. Focused verifier tests
 pass `30/30`; the complete Item publish suite passes `151/151`. No Item
 product, API, repository, contract, migration, schema,
 permission or P8-09 presentation behavior changes.
+
+Diagnostic checkpoint `5505d215a42308b277a0e580832752420420aacc`
+passes ordinary CI `33341193951`. Its only Level 2 controlled run
+`33341711275` passes preflight `99338413373` and cumulative runtime
+`99338441701`; exact-67 success-zero yields no diagnostic tuple. Failed child
+output and restricted values remain unread. No Item product repair is
+evidenced. All nine Item diagnostic flags are now false before one new
+exact-SHA ordinary and one final P8-09/Phase-8 Level 3.
 
 ## 1. Audit conclusion
 

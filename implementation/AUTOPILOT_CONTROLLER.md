@@ -9673,3 +9673,20 @@ repeat or rewrite it merely to restore context. See
 - Production ERPNext/JCE contact, P8-09 presentation changes, workflow changes
   and user-owned dirty/untracked files remain prohibited.
 - Controller marker: `P8-09 final Gate predecessor Item legacy diagnostic Level 1 PASS; awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 final Gate predecessor Item legacy diagnostic success-zero; diagnostics off
+
+- Diagnostic checkpoint `5505d215a42308b277a0e580832752420420aacc`
+  passes ordinary CI `33341193951`. Its sole Level 2 controlled run
+  `33341711275` passes preflight `99338413373` and cumulative runtime
+  `99338441701` with exact-67 success-zero output. Failed-child output and
+  restricted values remain unread.
+- No Item product repair is evidenced. Set
+  `LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED=False`; all nine Item
+  diagnostic flags are now false. Focused and full Item Level 1 contracts stay
+  unchanged.
+- Commit only the diagnostic verifier/test and seven current governance paths.
+  After their exact-SHA ordinary passes, execute one final P8-09/Phase-8 Level
+  3 under `release-gate`. Production ERPNext/JCE contact and user-owned
+  dirty/untracked files remain prohibited.
+- Controller marker: `P8-09 final Gate predecessor Item legacy diagnostics off; awaits exact-SHA ordinary CI`.

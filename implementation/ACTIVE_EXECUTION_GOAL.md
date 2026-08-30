@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+- Mode: `IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTICS_OFF_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -74,6 +74,12 @@ Updated: `2026-08-31T00:00:00+07:00`
   failed-child output remains unread and success emits no diagnostic tuple.
   The diagnostic checkpoint awaits its own exact-SHA ordinary before one
   Level 2 controlled run may reuse it.
+  Diagnostic checkpoint `5505d215` passes ordinary `33341193951`; its sole
+  Level 2 controlled run `33341711275` passes preflight `99338413373` and
+  cumulative runtime `99338441701` with success-zero output. No Item product
+  repair is evidenced. All nine Item diagnostic flags are now false. The next
+  action is one diagnostics-off exact-SHA ordinary followed by one final
+  P8-09/Phase-8 Level 3.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

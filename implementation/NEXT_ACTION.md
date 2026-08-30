@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+`IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTICS_OFF_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
@@ -44,6 +44,11 @@ remain false; focused verifier tests pass `30/30` and the complete Item publish
 suite passes `151/151`. The sole next action is this
 diagnostic checkpoint's exact-SHA ordinary CI, followed by exactly one Level 2
 controlled run reusing it. Failed child output stays unread.
+Diagnostic checkpoint `5505d215` passes ordinary `33341193951`; controlled run
+`33341711275` passes preflight `99338413373` and runtime `99338441701` with
+success-zero output. No Item product repair is evidenced. All nine Item
+diagnostic flags are now false. The sole next action is one diagnostics-off
+exact-SHA ordinary, followed by one final P8-09/Phase-8 Level 3.
 `ERPNEXT` remains stable in every technical boundary. Do not contact production
 ERPNext/JCE or modify user-owned dirty documentation.
 

@@ -369,7 +369,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(len(assignments), 9)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED"},
+            set(),
         )
         with patch.object(
             module,
