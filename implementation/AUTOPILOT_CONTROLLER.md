@@ -9064,6 +9064,9 @@ repeat or rewrite it merely to restore context. See
   inventory first, then query only stale or missing source/metadata. Direct
   SQL, console, caller-selected method/DocType/query, raw source/Script/path
   persistence and every production write remain prohibited.
+- Tracked-path output exposes only a private-cache index, category and path
+  checksum. Both immutable-HEAD and current-worktree file operations select by
+  that index; a raw path is never a CLI argument or emitted result.
 - P8-08 and product authority remain inactive. Current LaunchFlow architecture,
   ownership and contracts remain default correct; no proven incompatibility
   means `DIRECT_MATCH` and `NO_CHANGE`.

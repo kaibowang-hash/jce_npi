@@ -269,3 +269,9 @@ Print Formats, Notifications and Document Naming Rules. No caller can select a
 method, DocType, field, filter, order or page. Direct SQL, console, arbitrary
 execute, business rows, raw source/Script/path persistence and all writes remain
 prohibited.
+
+Before using this activation for production, retain path identities entirely
+inside the mode-0600 state. `APP_TRACKED_PATHS` may emit only private-cache
+index, structural category and path checksum. HEAD/current file reads select
+that cached index and emit only its checksum plus structural summary; the raw
+path is neither a CLI argument nor an accepted result.

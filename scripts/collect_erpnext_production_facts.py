@@ -530,6 +530,34 @@ def _parse_paths(raw: bytes) -> list[str]:
     return paths
 
 
+def _path_category(path: str) -> str:
+    lowered = path.lower()
+    name = Path(lowered).name
+    if "/doctype/" in lowered and lowered.endswith(".json"):
+        return "DOCTYPE_JSON"
+    if name == "hooks.py":
+        return "HOOKS"
+    if name in {"modules.txt", "patches.txt"}:
+        return name.removesuffix(".txt").upper()
+    if "/fixtures/" in lowered or "fixture" in name:
+        return "FIXTURE"
+    if name == "api.py" or "/api/" in lowered or "integration" in name:
+        return "API_OR_INTEGRATION_SOURCE"
+    if "job" in name or "scheduler" in name:
+        return "JOB_OR_SCHEDULER_SOURCE"
+    suffix = Path(name).suffix.lower().lstrip(".")
+    return f"TRACKED_{suffix.upper()}" if suffix else "TRACKED_NO_SUFFIX"
+
+
+def _cached_path(state: dict[str, Any], label: str, path_index: int) -> str:
+    cached = state["tracked_paths"].get(label)
+    require(type(cached) is list and all(type(item) is str for item in cached), "cached tracked paths are malformed")
+    require(0 <= path_index < len(cached), "tracked path index is outside the cached inventory")
+    path = cached[path_index]
+    require(_safe_inventory_path(path), "cached tracked path is unsafe")
+    return path
+
+
 def _path_is_sensitive(path: str) -> bool:
     lowered = path.lower().split("/")
     return any(part in SENSITIVE_PATH_PARTS for part in lowered) or any(
@@ -955,7 +983,14 @@ def _app_operation(args: argparse.Namespace, runner: Callable[[str, Sequence[str
             "page": page,
             "page_size": page_size,
             "total": len(paths),
-            "paths": selected,
+            "path_entries": [
+                {
+                    "index": start + index,
+                    "path_checksum": _checksum(item.encode("utf-8")),
+                    "category": _path_category(item),
+                }
+                for index, item in enumerate(selected)
+            ],
             "remote_called": remote_called,
         }
     _emit(
@@ -976,28 +1011,29 @@ def _file_operation(args: argparse.Namespace, runner: Callable[[str, Sequence[st
     state_path = _state_path(args.state, must_exist=True)
     state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
     app = _app_for_label(state, args.label)
-    cached = state["tracked_paths"].get(args.label)
-    require(type(cached) is list and args.path in cached, "file read requires a cached exact tracked path")
-    require(not _path_is_sensitive(args.path), "tracked path is excluded as sensitive")
+    tracked_path = _cached_path(state, args.label, args.path_index)
+    require(not _path_is_sensitive(tracked_path), "tracked path is excluded as sensitive")
     hash_raw = runner(
-        "APP_FILE_HASH",
-        _remote_command("APP_FILE_HASH", root=app["root"], path=args.path),
+        "APP_HEAD_FILE_HASH",
+        _remote_command("APP_HEAD_FILE_HASH", root=app["root"], path=tracked_path),
         MAX_VERSION_BYTES,
     )
     git_hash = _parse_head(hash_raw)
     content_raw = runner(
         "APP_FILE_READ",
-        _remote_command("APP_FILE_READ", root=app["root"], path=args.path),
+        _remote_command("APP_FILE_READ", root=app["root"], path=tracked_path),
         MAX_FILE_BYTES,
     )
-    summary = _source_summary(args.path, content_raw)
+    require(_git_blob_sha1(content_raw) == git_hash, "HEAD tracked content does not match its Git object")
+    summary = _source_summary(tracked_path, content_raw)
     _emit(
         {
             "task_id": TASK_ID,
             "operation": "APP_FILE_READ",
             "timestamp": _timestamp(),
             "source": args.label,
-            "path": args.path,
+            "path_index": args.path_index,
+            "path_checksum": _checksum(tracked_path.encode("utf-8")),
             "git_object": git_hash,
             "summary": summary,
         }
@@ -1013,32 +1049,31 @@ def _current_file_operation(
     state_path = _state_path(args.state, must_exist=True)
     state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
     app = _app_for_label(state, args.label)
-    cached = state["tracked_paths"].get(args.label)
-    require(type(cached) is list and args.path in cached, "current file read requires a cached exact tracked path")
-    require(_safe_relative_path(args.path), "current file path is outside the strict command grammar")
-    require(not _path_is_sensitive(args.path), "tracked path is excluded as sensitive")
+    tracked_path = _cached_path(state, args.label, args.path_index)
+    require(_safe_relative_path(tracked_path), "current file path is outside the strict command grammar")
+    require(not _path_is_sensitive(tracked_path), "tracked path is excluded as sensitive")
 
     mode_raw = runner(
         "APP_FILE_MODE",
-        _remote_command("APP_FILE_MODE", root=app["root"], path=args.path),
+        _remote_command("APP_FILE_MODE", root=app["root"], path=tracked_path),
         MAX_VERSION_BYTES,
     )
-    mode = _parse_file_mode(mode_raw, args.path)
+    mode = _parse_file_mode(mode_raw, tracked_path)
     head_hash_raw = runner(
         "APP_HEAD_FILE_HASH",
-        _remote_command("APP_HEAD_FILE_HASH", root=app["root"], path=args.path),
+        _remote_command("APP_HEAD_FILE_HASH", root=app["root"], path=tracked_path),
         MAX_VERSION_BYTES,
     )
     head_object = _parse_head(head_hash_raw)
     head_raw = runner(
         "APP_FILE_READ",
-        _remote_command("APP_FILE_READ", root=app["root"], path=args.path),
+        _remote_command("APP_FILE_READ", root=app["root"], path=tracked_path),
         MAX_FILE_BYTES,
     )
     require(_git_blob_sha1(head_raw) == head_object, "HEAD tracked content does not match its Git object")
     current_hash_raw = runner(
         "APP_FILE_HASH",
-        _remote_command("APP_FILE_HASH", root=app["root"], path=args.path),
+        _remote_command("APP_FILE_HASH", root=app["root"], path=tracked_path),
         MAX_VERSION_BYTES,
     )
     current_object = _parse_head(current_hash_raw)
@@ -1049,21 +1084,22 @@ def _current_file_operation(
     else:
         patch_raw = runner(
             "APP_WORKTREE_DIFF",
-            _remote_command("APP_WORKTREE_DIFF", root=app["root"], path=args.path),
+            _remote_command("APP_WORKTREE_DIFF", root=app["root"], path=tracked_path),
             MAX_DIFF_BYTES,
         )
-        current_raw = _reconstruct_current_file(head_raw, patch_raw, args.path)
+        current_raw = _reconstruct_current_file(head_raw, patch_raw, tracked_path)
         require(_git_blob_sha1(current_raw) == current_object, "reconstructed current content does not match its Git object")
         worktree_state = "DIRTY_TRACKED"
         diff_checksum = _checksum(patch_raw)
-    summary = _source_summary(args.path, current_raw)
+    summary = _source_summary(tracked_path, current_raw)
     _emit(
         {
             "task_id": TASK_ID,
             "operation": "APP_CURRENT_FILE_READ",
             "timestamp": _timestamp(),
             "source": args.label,
-            "path_checksum": _checksum(args.path.encode("utf-8")),
+            "path_index": args.path_index,
+            "path_checksum": _checksum(tracked_path.encode("utf-8")),
             "mode": mode,
             "head_git_object": head_object,
             "current_git_object": current_object,
@@ -1169,10 +1205,10 @@ def _parser() -> argparse.ArgumentParser:
     app.add_argument("--page-size", type=int, default=DEFAULT_PAGE_SIZE)
     file_parser = governed("file")
     file_parser.add_argument("--label", required=True)
-    file_parser.add_argument("--path", required=True)
+    file_parser.add_argument("--path-index", required=True, type=int)
     current_file_parser = governed("current-file")
     current_file_parser.add_argument("--label", required=True)
-    current_file_parser.add_argument("--path", required=True)
+    current_file_parser.add_argument("--path-index", required=True, type=int)
     runtime_parser = governed("runtime")
     runtime_parser.add_argument("--family", required=True, choices=tuple(RUNTIME_METADATA_SPECS))
     governed("cleanup")

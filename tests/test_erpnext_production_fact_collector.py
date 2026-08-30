@@ -275,7 +275,11 @@ class ProductionFactCollectorTest(unittest.TestCase):
             collector._app_operation(args, runner)
 
         self.assertEqual(calls, ["APP_TRACKED_PATHS"])
-        self.assertEqual(emit.call_args.args[0]["result"]["paths"], ["custom_one/hooks.py"])
+        result = emit.call_args.args[0]["result"]
+        self.assertEqual(result["path_entries"][0]["index"], 0)
+        self.assertEqual(result["path_entries"][0]["category"], "HOOKS")
+        self.assertNotIn("paths", result)
+        self.assertNotIn("custom_one/hooks.py", json.dumps(result))
         self.assertFalse(emit.call_args.args[0]["result"]["remote_called"])
 
     def test_file_summary_requires_cached_path_and_never_returns_source_text(self) -> None:
@@ -286,19 +290,25 @@ class ProductionFactCollectorTest(unittest.TestCase):
             ordinary_run_id="101",
             state=str(path),
             label="CUSTOM_APP_01",
-            path="custom_one/hooks.py",
+            path_index=0,
         )
 
         def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
-            if operation == "APP_FILE_HASH":
-                return ("e" * 40 + "\n").encode()
-            return b"import frappe\n\n@frappe.whitelist()\ndef submit_item():\n    return True\n"
+            content = b"import frappe\n\n@frappe.whitelist()\ndef submit_item():\n    return True\n"
+            if operation == "APP_HEAD_FILE_HASH":
+                return (collector._git_blob_sha1(content) + "\n").encode()
+            return content
 
         with patch.object(collector, "_preflight"), patch.object(collector, "_emit") as emit:
             collector._file_operation(args, runner)
 
         output = emit.call_args.args[0]
-        self.assertEqual(output["git_object"], "e" * 40)
+        self.assertEqual(
+            output["git_object"],
+            collector._git_blob_sha1(
+                b"import frappe\n\n@frappe.whitelist()\ndef submit_item():\n    return True\n"
+            ),
+        )
         self.assertEqual(output["summary"]["format"], "python_ast")
         self.assertIn("submit_item", json.dumps(output))
         self.assertNotIn("return True", json.dumps(output))
@@ -311,7 +321,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
             ordinary_run_id="101",
             state=str(path),
             label="CUSTOM_APP_01",
-            path="custom_one/hooks.py",
+            path_index=0,
         )
         head = b"import frappe\n\ndef old_name():\n    return 1\n"
         current = b"import frappe\n\ndef new_name():\n    return 1\n"
@@ -359,7 +369,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
             ordinary_run_id="101",
             state=str(path),
             label="CUSTOM_APP_01",
-            path="custom_one/hooks.py",
+            path_index=0,
         )
         head = b"def stable():\n    return True\n"
         object_id = collector._git_blob_sha1(head)
