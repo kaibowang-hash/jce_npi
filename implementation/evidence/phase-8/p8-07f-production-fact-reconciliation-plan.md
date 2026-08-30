@@ -320,3 +320,17 @@ shapes through hard-coded `frappe.client.get_value`/`get_count` operations.
 No direct SQL, console or generic method is needed or allowed. After that Gate,
 collect only the missing families, delete private state and proceed to the
 compatibility/minimal-adjustment reconciliation; P8-08 remains held.
+
+## Bounded Client Script paging correction
+
+SHA `573fdd4b61fae2d968933272bd9f9f3e87b2b8c0` passes ordinary CI
+`33309768019`, then verifies the unchanged accepted inventory. Its first
+remaining Client Script query fails closed because a 200-row page containing
+Script bodies exceeds the fixed per-call byte budget. No row is accepted, no
+later family is queried and the local private state is deleted.
+
+Do not increase that budget. Fix only Client Script to 20 rows per page under
+the existing 25-page ceiling, retaining exact fields, filters, order,
+checksum-only Script representation and duplicate/page checks. Obtain a new
+exact-SHA ordinary before reconnecting; direct SQL, console and generic method
+surfaces remain unnecessary and prohibited.

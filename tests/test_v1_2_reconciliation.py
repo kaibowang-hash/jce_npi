@@ -756,7 +756,7 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("sensitive_preflight_stops: 2", phase_status)
         self.assertIn("private_state_removed: true", phase_status)
         self.assertIn(
-            "runtime_only_metadata_status: PARTIALLY_ACCEPTED_REMAINING_CLIENT_SCRIPT_LOCALE_FILE_SHAPE_AND_EXPANDED_PARENT_FACTS_PENDING_FIXED_COLLECTOR_ORDINARY",
+            "runtime_only_metadata_status: PARTIALLY_ACCEPTED_REMAINING_CLIENT_SCRIPT_LOCALE_FILE_SHAPE_AND_EXPANDED_PARENT_FACTS_PENDING_BOUNDED_CLIENT_PAGING_ORDINARY",
             phase_status,
         )
         self.assertIn(
@@ -768,6 +768,14 @@ class V12ReconciliationTests(unittest.TestCase):
         )
         self.assertIn(
             "fixed_parent_collector_ordinary: 33307715636",
+            phase_status,
+        )
+        self.assertIn(
+            "fixed_site_fact_collector_ordinary: 33309768019",
+            phase_status,
+        )
+        self.assertIn(
+            "client_script_paging_contract: PAGE_SIZE_20_MAX_25_PAGES_KEEP_512_KIB_PER_CALL_LIMIT",
             phase_status,
         )
         self.assertIn(

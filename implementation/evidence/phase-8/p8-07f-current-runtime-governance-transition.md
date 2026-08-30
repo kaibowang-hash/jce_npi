@@ -203,3 +203,17 @@ and `frappe.client.get_count` calls in addition to the accepted fixed reads.
 The user's broader read-only authorization does not require direct SQL,
 console or a generic execute surface; those remain prohibited. A new
 exact-SHA ordinary PASS is mandatory before the remaining production contact.
+
+## Client Script bounded-page stop
+
+Fixed site-fact collector SHA `573fdd4b61fae2d968933272bd9f9f3e87b2b8c0`
+passes ordinary CI `33309768019`. Its discovery confirms the unchanged
+accepted platform/app/Site inventory. The first `CLIENT_SCRIPTS` page then
+exceeds the existing bounded-output ceiling because the fixed 200-row request
+contains Script content. The collector accepts no result, runs no later remote
+operation and removes private state.
+
+The fail-closed repair keeps the byte ceiling and every query field/filter/order
+unchanged, but fixes Client Script at 20 rows per page with the existing
+25-page maximum. All other families remain at 200. Script content remains
+checksum/byte-count only. A new exact-SHA ordinary is required before retry.

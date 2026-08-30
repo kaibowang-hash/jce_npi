@@ -190,7 +190,12 @@ class ProductionFactCollectorTest(unittest.TestCase):
                 self.assertEqual(kwargs["filters"], expected_filters)
                 self.assertEqual(kwargs["order_by"], "name asc")
                 self.assertEqual(kwargs["limit_start"], 0)
-                self.assertEqual(kwargs["limit_page_length"], collector.RUNTIME_PAGE_SIZE)
+                self.assertEqual(
+                    kwargs["limit_page_length"],
+                    collector.RUNTIME_PAGE_SIZE_OVERRIDES.get(
+                        family, collector.RUNTIME_PAGE_SIZE
+                    ),
+                )
                 self.assertNotIn("sql", " ".join(command).lower())
                 self.assertNotIn("console", " ".join(command).lower())
 
@@ -571,6 +576,12 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(names, ["Item validation"])
         self.assertEqual(rows[0]["script"]["byte_count"], len(row["script"].encode()))
         self.assertNotIn(row["script"], json.dumps(rows))
+        command = collector._runtime_command("CLIENT_SCRIPTS", "site-one", 20)
+        kwargs = json.loads(command[-1])
+        self.assertEqual(kwargs["limit_start"], 20)
+        self.assertEqual(kwargs["limit_page_length"], 20)
+        with self.assertRaises(collector.FactCollectionError):
+            collector._runtime_command("CLIENT_SCRIPTS", "site-one", 21)
 
     def test_site_fact_parsers_are_exact_bounded_and_non_sensitive(self) -> None:
         locale = collector._parse_site_fact_output(

@@ -9118,3 +9118,22 @@ repeat or rewrite it merely to restore context. See
   delete private state, reconcile against the current LaunchFlow baseline and
   produce compatibility/minimal-adjustment documents. P8-08 remains inactive;
   no production or LaunchFlow write/change authority is created.
+
+#### P8-07F bounded Client Script paging awaits exact-SHA ordinary CI
+
+- The current marker is exactly `P8-07F bounded Client Script paging awaits exact-SHA ordinary CI`.
+- Fixed site-fact collector SHA `573fdd4b61fae2d968933272bd9f9f3e87b2b8c0`
+  passes ordinary CI `33309768019`: secret `99252601251`, frontend
+  `99252601340`, repository `99252601348` and visual `99252601349` all pass.
+  Its discovery verifies the unchanged accepted version/app/Site inventory.
+- The first remaining operation, `CLIENT_SCRIPTS`, stops before accepting a
+  row because a fixed 200-row page containing Script text exceeds the existing
+  per-call byte ceiling. No output limit is raised, no raw Script is read from
+  the rejected result, no later production operation runs and private state is
+  removed.
+- Repair only the fixed paging contract: Client Script uses page size 20 with
+  the existing 25-page maximum and unchanged per-call byte ceiling; all other
+  runtime families retain page size 200. Script text is still accepted only as
+  byte count plus checksum. Require another exact-SHA ordinary PASS before any
+  reconnect. Product, SQL/console, generic execute and production-write
+  authority remain zero; P8-08 stays held.

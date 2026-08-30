@@ -83,6 +83,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "CLIENT_SCRIPT_FIXED_PAGE_SIZE_20_MAX_25_PAGES_PRESERVES_RUNTIME_BYTE_CEILING",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "PROTECTED_MULTILINE_DOCTYPE_JSON_SCALARS_ARE_HASHED_NOT_EMITTED",
             value["frozen_invariants"],
         )
@@ -100,7 +104,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_FIXED_SITE_FACT_COLLECTOR_EXACT_SHA_ORDINARY_THEN_REMAINING_COLLECTION",
+            "IN_PROGRESS_AWAITING_BOUNDED_CLIENT_SCRIPT_PAGING_EXACT_SHA_ORDINARY_THEN_REMAINING_COLLECTION",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

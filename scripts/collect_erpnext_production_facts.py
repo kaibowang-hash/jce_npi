@@ -52,6 +52,7 @@ DEFAULT_PAGE_SIZE = 200
 MAX_PAGE_SIZE = 500
 RUNTIME_PAGE_SIZE = 200
 RUNTIME_MAX_PAGES = 25
+RUNTIME_PAGE_SIZE_OVERRIDES = {"CLIENT_SCRIPTS": 20}
 SSH_OPTIONS = (
     "-T",
     "-o", "BatchMode=yes",
@@ -383,7 +384,8 @@ def _remote_command(operation: str, *, site: str | None = None, root: str | None
 def _runtime_command(family: str, site: str, start: int) -> tuple[str, ...]:
     require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
     require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
-    require(start >= 0 and start % RUNTIME_PAGE_SIZE == 0, "runtime metadata page start is invalid")
+    page_size = RUNTIME_PAGE_SIZE_OVERRIDES.get(family, RUNTIME_PAGE_SIZE)
+    require(start >= 0 and start % page_size == 0, "runtime metadata page start is invalid")
     spec = RUNTIME_METADATA_SPECS[family]
     kwargs = {
         "doctype": spec["doctype"],
@@ -391,7 +393,7 @@ def _runtime_command(family: str, site: str, start: int) -> tuple[str, ...]:
         "filters": [list(row) for row in spec.get("filters", ())],
         "order_by": "name asc",
         "limit_start": start,
-        "limit_page_length": RUNTIME_PAGE_SIZE,
+        "limit_page_length": page_size,
     }
     command = (
         "bench", "--site", site, "execute", "frappe.client.get_list",
@@ -972,7 +974,8 @@ def _parse_runtime_page(raw: bytes, family: str) -> tuple[list[dict[str, Any]], 
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise FactCollectionError("runtime metadata output is not exact JSON") from exc
     require(type(value) is list, "runtime metadata page must be a list")
-    require(len(value) <= RUNTIME_PAGE_SIZE, "runtime metadata page exceeded the fixed size")
+    page_size = RUNTIME_PAGE_SIZE_OVERRIDES.get(family, RUNTIME_PAGE_SIZE)
+    require(len(value) <= page_size, "runtime metadata page exceeded the fixed size")
     sanitized: list[dict[str, Any]] = []
     raw_names: list[str] = []
     for row in value:
@@ -1258,8 +1261,9 @@ def _runtime_operation(
     names: list[str] = []
     page_checksums: list[str] = []
     exhausted = False
+    page_size = RUNTIME_PAGE_SIZE_OVERRIDES.get(family, RUNTIME_PAGE_SIZE)
     for page_index in range(RUNTIME_MAX_PAGES):
-        start = page_index * RUNTIME_PAGE_SIZE
+        start = page_index * page_size
         raw = runner(
             f"RUNTIME_{family}",
             _runtime_command(family, site, start),
@@ -1270,7 +1274,7 @@ def _runtime_operation(
         rows.extend(page_rows)
         names.extend(page_names)
         page_checksums.append(_checksum(raw))
-        if len(page_rows) < RUNTIME_PAGE_SIZE:
+        if len(page_rows) < page_size:
             exhausted = True
             break
     require(exhausted, "runtime metadata exceeded the fixed pagination limit")
