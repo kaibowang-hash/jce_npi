@@ -3,7 +3,7 @@
   "task_id": "P8-09",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_1_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY",
+  "status": "IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P9-00",
   "base_checkpoint": "5c6793b3406ded8257b927ad89fbd9dba67bab4c",
@@ -19,7 +19,8 @@
     "Prove exact-one non-inline production asset emission, no copy or substitute, translated accessible identity, keyboard tooltip, compact scale, light and controlled-dark contrast, no overflow and direct English, zh and zh-TW evidence.",
     "Accept activation exact SHA f92f2a028905367868b16bdd748d477ffbadeb94 only with ordinary CI 33334024759 passing repository, frontend, secret and governed visual lanes; product authorization is now effective.",
     "Expand the exact checkpoint manifest only by the two existing unit-test paths whose stale ERPNext text assertions were exposed by the first complete frontend run; accept expansion exact SHA 66f5a3a95bb32e4cbdf0b9837c2dc5f5acb8aa24 only with ordinary CI 33335381357 passing all four lanes.",
-    "Complete one exact twenty-six-path presentation checkpoint with Level 1 unit, coverage, nonvisual E2E, i18n, accessibility, build-asset, Linux visual, current-task and security evidence before exact-SHA ordinary CI and one final Level 3."
+    "Complete one bounded presentation checkpoint with Level 1 unit, coverage, nonvisual E2E, i18n, accessibility, build-asset, Linux visual, current-task and security evidence before exact-SHA ordinary CI and one final Level 3.",
+    "Accept that product checkpoint f7f8dffe782c8fa6e2c4aea9620c112f03cabcd5 exposed exactly three governed Tooling Linux baselines whose only reviewed delta is the approved ERP source identity; expand the manifest by those exact three paths before updating them."
   ],
   "non_scope": [
     "Any edit to frontend/tests/unit/field-attachment-primitives.test.tsx or frontend/tests/unit/primitives-and-objects.test.tsx before this exact manifest-expansion commit passes exact-SHA ordinary CI.",
@@ -45,10 +46,11 @@
     "ERPNEXT_TECHNICAL_CODE_REMAINS_STABLE_IN_API_EVENT_SCHEMA_PERSISTENCE_AND_ROUTING",
     "P8_09_CHECKPOINT_1_ACTIVATION_F92F2A02_ORDINARY_33334024759_ALL_FOUR_JOBS_PASS_PRODUCT_CODE_AUTHORIZED_TRUE",
     "P8_09_TEST_MANIFEST_EXPANSION_66F5A3A9_ORDINARY_33335381357_ALL_FOUR_JOBS_PASS",
+    "P8_09_PRODUCT_F7F8DFFE_ORDINARY_33336799864_REPOSITORY_FRONTEND_SECRET_PASS_VISUAL_EXACT_THREE_BASELINE_DELTA",
     "P8_09_REUSES_EXISTING_DISPLAY_BRAND_AND_SOURCE_SYSTEM_IDENTITY_SEAMS_WITHOUT_GENERALIZATION",
     "P8_09_EXACT_CORE_PNG_SHA256_0C7182882022CF190925C90F0004C77AACA4DD513B86CCD0F23EFB30171E0E42",
-    "P8_09_CHECKPOINT_1_EXACT_TWENTY_SIX_PRODUCT_TEST_VISUAL_AND_GOVERNANCE_PATHS",
-    "P8_09_EXACT_FOUR_NEW_LINUX_VISUAL_BASELINES_NO_EXISTING_BASELINE_REWRITE",
+    "P8_09_CHECKPOINT_1_EXACT_TWENTY_NINE_PRODUCT_TEST_VISUAL_AND_GOVERNANCE_PATHS",
+    "P8_09_EXACT_FOUR_NEW_LINUX_VISUAL_BASELINES_PLUS_THREE_EVIDENCED_TOOLING_BASELINE_UPDATES_ONLY",
     "P8_09_LEVEL_1_FRONTEND_1086_UNIT_458_NONVISUAL_E2E_FOUR_LINUX_VISUAL_AND_STATIC_GATES_PASS",
     "NO_ERPNEXT_FRAPPE_CORE_CHANGE_BROWSER_DIRECT_ERP_GENERIC_DOCTYPE_WRITER_DUAL_MASTER_OR_MOCK_HTTP_FAKE_SUCCESS",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
@@ -71,6 +73,9 @@
     "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-en-1366x768-100-linux.png",
     "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-zh-1440x900-125-linux.png",
     "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-zh-TW-1920x1080-150-linux.png",
+    "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-tooling-en-1440x900-100-linux.png",
+    "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-tooling-zh-1440x900-100-linux.png",
+    "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-tooling-zh-TW-1440x900-100-linux.png",
     "frontend/tests/unit/display-brand.test.tsx",
     "frontend/tests/unit/field-attachment-primitives.test.tsx",
     "frontend/tests/unit/formatters-and-copy.test.ts",
@@ -111,7 +116,7 @@
     "phase_status_resumed_product_task": "P8-09",
     "active_goal_marker": "P8-09",
     "next_action_marker": "P8-09",
-    "controller_marker": "P8-09 checkpoint 1 Level 1 PASS; product checkpoint awaits exact-SHA ordinary CI"
+    "controller_marker": "P8-09 checkpoint 1 visual baseline manifest expansion awaits exact-SHA ordinary CI"
   },
   "rollback": {
     "before_product_resume": "Restore the exact accepted P8-09 audit-plan checkpoint 5c6793b3406ded8257b927ad89fbd9dba67bab4c. It changes no product, persistent or external state.",

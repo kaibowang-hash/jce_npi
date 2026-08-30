@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+`IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
@@ -20,11 +20,16 @@ effective. Test-manifest expansion `66f5a3a9` passes ordinary `33335381357` in
 all four lanes. The exact twenty-six-path implementation now passes Level 1:
 focused unit `80/80`, complete unit/coverage `1086/1086`, nonvisual E2E
 `458/458`, four exact Linux visuals, isolated pinned production build/brand
-audit, type, lint, i18n and security checks. The sole next action is to commit
-only the exact twenty-six paths, obtain that commit's exact-SHA ordinary CI,
-then execute exactly one P8-09/Phase-8 final Level 3. `ERPNEXT` remains stable
-in every technical boundary. Do not contact production ERPNext/JCE or modify
-user-owned dirty documentation.
+audit, type, lint, i18n and security checks. Product checkpoint `f7f8dffe`
+passes frontend, repository and secret in ordinary `33336799864`; its sole
+failed lane is governed visual, which reports exactly three Tooling baselines
+changed by the approved ERP source identity. Artifact review finds no other
+visual failure. The sole
+next action is a governance-only exact manifest expansion for those three
+existing Linux snapshots; only after that expansion's ordinary PASS may all
+three be updated together. `ERPNEXT` remains stable in every technical
+boundary. Do not contact production ERPNext/JCE or modify user-owned dirty
+documentation.
 
 Retained P8-07F diagnostics-off exact SHA
 `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c` passes ordinary CI

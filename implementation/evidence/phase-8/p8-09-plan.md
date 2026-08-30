@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **CHECKPOINT-1 LEVEL 1 PASS — PRODUCT CHECKPOINT AWAITS EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT-1 VISUAL BASELINE MANIFEST EXPANSION AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-31
 
@@ -45,6 +45,17 @@ pinned Linux production build emits the exact Core PNG once, preserves the
 five approved LaunchFlow SVGs, and passes all brand guard negatives. Technical
 scans preserve every `ERPNEXT` boundary and find no `JCE Core` value in backend
 or integration contracts.
+
+Product checkpoint `f7f8dffe782c8fa6e2c4aea9620c112f03cabcd5`
+started ordinary CI `33336799864`. Repository `99325059388` and secret
+`99325059343` pass, as does frontend `99325059371`. The governed visual job
+`99325059251` is the sole failure and changes exactly the English, Simplified
+Chinese and Traditional Chinese Tooling 1440x900 baselines. Uploaded artifact
+review shows the delta is confined to the approved ERP source badge identity
+plus its immediately adjacent layout; no fourth visual case fails. These are
+pre-existing governed baselines, so their three exact paths require a separate
+governance-only manifest expansion and ordinary PASS before any baseline bytes
+may change.
 
 ## 1. Audit conclusion
 

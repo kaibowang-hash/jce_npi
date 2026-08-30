@@ -9586,3 +9586,24 @@ repeat or rewrite it merely to restore context. See
   Production ERPNext/JCE contact, product redesign, technical identifier
   changes and user-owned dirty/untracked files remain prohibited.
 - Controller marker: `P8-09 checkpoint 1 Level 1 PASS; product checkpoint awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 checkpoint 1 visual baseline manifest expansion awaits exact-SHA ordinary CI
+
+- Product checkpoint `f7f8dffe782c8fa6e2c4aea9620c112f03cabcd5`
+  completes ordinary CI `33336799864`. Repository `99325059388`, frontend
+  `99325059371` and secret `99325059343` pass; governed visual `99325059251`
+  is the sole failed lane and differs in exactly three pre-existing Tooling
+  1440x900 Linux baselines.
+- The uploaded visual artifact was reviewed before any baseline edit. English,
+  Simplified Chinese and Traditional Chinese each differ only at the approved
+  ERP source badge identity and its immediately adjacent layout. No fourth
+  visual case fails, and no product, contract, backend or technical `ERPNEXT`
+  adjustment is evidenced.
+- Expand the manifest from twenty-six to twenty-nine paths only by those three
+  exact existing Tooling Linux snapshots. Do not update their bytes until this
+  governance-only expansion passes its own exact-SHA ordinary CI. Then update
+  all three together and rerun the complete governed matrix before a new
+  product ordinary.
+- Production ERPNext/JCE contact, workflow edits, other baseline changes and
+  user-owned dirty/untracked files remain prohibited.
+- Controller marker: `P8-09 checkpoint 1 visual baseline manifest expansion awaits exact-SHA ordinary CI`.

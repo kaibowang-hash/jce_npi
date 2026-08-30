@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_LEVEL_1_PASS_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-00")
@@ -58,10 +58,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "ERPNEXT_TECHNICAL_CODE_REMAINS_STABLE_IN_API_EVENT_SCHEMA_PERSISTENCE_AND_ROUTING",
             "P8_09_CHECKPOINT_1_ACTIVATION_F92F2A02_ORDINARY_33334024759_ALL_FOUR_JOBS_PASS_PRODUCT_CODE_AUTHORIZED_TRUE",
             "P8_09_TEST_MANIFEST_EXPANSION_66F5A3A9_ORDINARY_33335381357_ALL_FOUR_JOBS_PASS",
+            "P8_09_PRODUCT_F7F8DFFE_ORDINARY_33336799864_REPOSITORY_FRONTEND_SECRET_PASS_VISUAL_EXACT_THREE_BASELINE_DELTA",
             "P8_09_REUSES_EXISTING_DISPLAY_BRAND_AND_SOURCE_SYSTEM_IDENTITY_SEAMS_WITHOUT_GENERALIZATION",
             "P8_09_EXACT_CORE_PNG_SHA256_0C7182882022CF190925C90F0004C77AACA4DD513B86CCD0F23EFB30171E0E42",
-            "P8_09_CHECKPOINT_1_EXACT_TWENTY_SIX_PRODUCT_TEST_VISUAL_AND_GOVERNANCE_PATHS",
-            "P8_09_EXACT_FOUR_NEW_LINUX_VISUAL_BASELINES_NO_EXISTING_BASELINE_REWRITE",
+            "P8_09_CHECKPOINT_1_EXACT_TWENTY_NINE_PRODUCT_TEST_VISUAL_AND_GOVERNANCE_PATHS",
+            "P8_09_EXACT_FOUR_NEW_LINUX_VISUAL_BASELINES_PLUS_THREE_EVIDENCED_TOOLING_BASELINE_UPDATES_ONLY",
             "P8_09_LEVEL_1_FRONTEND_1086_UNIT_458_NONVISUAL_E2E_FOUR_LINUX_VISUAL_AND_STATIC_GATES_PASS",
             "DR_REC_009_EXTERNAL_EVENT_PAYLOAD_REDACTION_CONSUMER_MAPPING_AND_RECEIPT_REMAIN_HELD",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
@@ -85,6 +86,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-en-1366x768-100-linux.png",
                 "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-zh-1440x900-125-linux.png",
                 "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-zh-TW-1920x1080-150-linux.png",
+                "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-tooling-en-1440x900-100-linux.png",
+                "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-tooling-zh-1440x900-100-linux.png",
+                "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-tooling-zh-TW-1440x900-100-linux.png",
                 "frontend/tests/unit/display-brand.test.tsx",
                 "frontend/tests/unit/field-attachment-primitives.test.tsx",
                 "frontend/tests/unit/formatters-and-copy.test.ts",
@@ -98,7 +102,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests/test_current_task_verifier.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 26)
+        self.assertEqual(len(value["allowed_paths"]), 29)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])
@@ -109,7 +113,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             sum(path.startswith("frontend/") for path in value["allowed_paths"]),
-            16,
+            19,
         )
         self.assertEqual(
             sum(path.startswith("contracts/") for path in value["allowed_paths"]),
