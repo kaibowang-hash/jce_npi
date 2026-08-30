@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-30T00:00:00+07:00`
+Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_MIGRATED_LEGACY_DIAGNOSTIC_PENDING — P8-08`
+- Mode: `IN_PROGRESS_RECONCILIATION_RESPONSE_DIAGNOSTIC_PENDING — P8-08`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -23,8 +23,14 @@ Updated: `2026-08-30T00:00:00+07:00`
   one focused test. Product `fc43c4aa` passes ordinary `33325513567`. Its sole
   Level 3 `33326192285` proves the Released Trial Summary boundary passed, then
   fails only at the later fixed Item publish migrated-legacy outer label. The
-  next action is one existing exact-39 product-zero diagnostic after its own
-  exact-SHA ordinary PASS; no product repair or Level 3 rerun is authorized.
+  exact-39 diagnostic `51e071f0` passes ordinary `33327421787`; controlled
+  run `33328132993` returns only
+  `P803_LEGACY_FULL_RECONCILIATION_CONTRACT / RuntimeError / trace-13dcf4b038055bed9842636978c24021`.
+  Collection, detail, redaction and binding checks passed, but this parent
+  tuple cannot choose among six response predicates and an inner create-server
+  exception. The next action is one independent product-zero exact-67
+  response diagnostic after its own exact-SHA ordinary PASS; no product repair
+  or Level 3 rerun is authorized.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

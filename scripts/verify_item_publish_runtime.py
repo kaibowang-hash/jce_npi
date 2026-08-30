@@ -45,7 +45,8 @@ LEGACY_COLLECTION_DIAGNOSTICS_ENABLED = False
 LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED = False
 LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED = False
 LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = False
-LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED = True
+LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED = False
+LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED = True
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _LEGACY_QUERY_DIAGNOSTIC_SCOPE = "p803-legacy-query-v1"
@@ -64,6 +65,16 @@ _LEGACY_COLLECTION_DIAGNOSTIC_CODES = frozenset(
         "P803_LEGACY_COLLECTION_STATUS",
         "P803_LEGACY_COLLECTION_SHAPE",
         "P803_LEGACY_COLLECTION_CARDINALITY",
+    }
+)
+_LEGACY_RECONCILIATION_RESPONSE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P803_LEGACY_RECONCILIATION_STATUS",
+        "P803_LEGACY_RECONCILIATION_BODY_STATUS",
+        "P803_LEGACY_RECONCILIATION_BODY_CODE",
+        "P803_LEGACY_RECONCILIATION_MEDIA_TYPE",
+        "P803_LEGACY_RECONCILIATION_TRACE",
+        "P803_LEGACY_RECONCILIATION_ENVELOPE",
     }
 )
 _CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
@@ -310,6 +321,7 @@ def _legacy_collection_diagnostics_enabled() -> bool:
         or LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
+        or LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED
     )
 
 
@@ -319,6 +331,7 @@ def _legacy_query_server_diagnostics_enabled() -> bool:
         or LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
         or LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
+        or LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED
     )
 
 
@@ -331,12 +344,14 @@ def _legacy_full_boundary_diagnostics_enabled() -> bool:
         LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED,
         LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED,
         LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED,
+        LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED,
     )
     return (
         sum(map(int, activations)) == 1
         and (
             LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
             or LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
+            or LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED
         )
     )
 
@@ -348,13 +363,26 @@ def _legacy_collection_parent_fallback_enabled() -> bool:
     )
 
 
+def _legacy_reconciliation_response_diagnostics_enabled() -> bool:
+    return bool(
+        LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED
+        and _legacy_full_boundary_diagnostics_enabled()
+    )
+
+
 def _active_legacy_full_diagnostic_codes() -> frozenset[str]:
     if not _legacy_full_boundary_diagnostics_enabled():
         return frozenset()
-    return frozenset(_LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES).union(
+    codes = frozenset(_LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES).union(
         _LEGACY_COLLECTION_DIAGNOSTIC_CODES,
         _LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES,
     )
+    if _legacy_reconciliation_response_diagnostics_enabled():
+        return codes.union(
+            _LEGACY_RECONCILIATION_RESPONSE_DIAGNOSTIC_CODES,
+            _CREATE_SERVER_DIAGNOSTIC_CODES,
+        )
+    return codes
 
 
 def legacy_full_boundary_diagnostic_trace() -> str:
@@ -444,7 +472,9 @@ def _record_embedded_legacy_diagnostic(message: str | None) -> None:
             or state.get("recorded") is True
             or code
             not in _LEGACY_COLLECTION_DIAGNOSTIC_CODES.union(
-                _LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES
+                _LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES,
+                _LEGACY_RECONCILIATION_RESPONSE_DIAGNOSTIC_CODES,
+                _CREATE_SERVER_DIAGNOSTIC_CODES,
             )
         ):
             return
@@ -552,6 +582,57 @@ def legacy_collection_failure_message(
     return (
         "P8-03 migrated legacy Item collection check failed"
         f" [diagnostic_code={code}; exception_type=RuntimeError; "
+        f"trace_id={trace_id}]"
+    )
+
+
+def legacy_reconciliation_failure_message(
+    result: Any,
+    cursors: dict[str, int] | None,
+) -> str | None:
+    """Classify only value-free reconciliation problem response predicates."""
+
+    if not _legacy_reconciliation_response_diagnostics_enabled():
+        return None
+    diagnostic = _sanitized_server_log_diagnostic(
+        result.trace_id,
+        cursors,
+        code_prefix="P803_CREATE_",
+        allowed_codes=_CREATE_SERVER_DIAGNOSTIC_CODES,
+    )
+    if diagnostic is not None:
+        exception_type, code, trace_id = diagnostic
+    else:
+        body = result.body
+        if result.status != 409:
+            code = "P803_LEGACY_RECONCILIATION_STATUS"
+        elif not isinstance(body, dict) or body.get("status") != 409:
+            code = "P803_LEGACY_RECONCILIATION_BODY_STATUS"
+        elif body.get("code") != "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED":
+            code = "P803_LEGACY_RECONCILIATION_BODY_CODE"
+        elif result.headers.get_content_type() != "application/problem+json":
+            code = "P803_LEGACY_RECONCILIATION_MEDIA_TYPE"
+        elif (
+            not isinstance(body.get("traceId"), str)
+            or body.get("traceId") != result.headers.get("X-Trace-ID")
+        ):
+            code = "P803_LEGACY_RECONCILIATION_TRACE"
+        elif {"exc", "exception", "exc_type", "message"}.intersection(body):
+            code = "P803_LEGACY_RECONCILIATION_ENVELOPE"
+        else:
+            return None
+        exception_type = "RuntimeError"
+        trace_id = result.trace_id
+    require(
+        code in _LEGACY_RECONCILIATION_RESPONSE_DIAGNOSTIC_CODES.union(
+            _CREATE_SERVER_DIAGNOSTIC_CODES
+        )
+        and _valid_replay_diagnostic_trace(trace_id),
+        "P8-03 migrated legacy reconciliation response check failed",
+    )
+    return (
+        "P8-03 migrated legacy reconciliation response check failed"
+        f" [diagnostic_code={code}; exception_type={exception_type}; "
         f"trace_id={trace_id}]"
     )
 
@@ -1087,6 +1168,14 @@ def run_legacy(
     with legacy_full_boundary_diagnostic_step(
         "P803_LEGACY_FULL_RECONCILIATION_HTTP"
     ):
+        reconciliation_diagnostics = (
+            _legacy_reconciliation_response_diagnostics_enabled()
+        )
+        reconciliation_cursors = (
+            _replay_diagnostic_log_cursors()
+            if reconciliation_diagnostics
+            else None
+        )
         rejected = item_publish_request(
             actor,
             base_url,
@@ -1095,10 +1184,21 @@ def run_legacy(
             payload=create_payload(context, legacy_node_id),
             csrf_token=actor_csrf,
             idempotency_key=f"p8-03-legacy-reconcile-{FIXTURE_RUN_ID}",
+            create_diagnostic=reconciliation_diagnostics,
         )
     with legacy_full_boundary_diagnostic_step(
         "P803_LEGACY_FULL_RECONCILIATION_CONTRACT"
     ):
+        reconciliation_failure = legacy_reconciliation_failure_message(
+            rejected,
+            reconciliation_cursors,
+        )
+        _record_embedded_legacy_diagnostic(reconciliation_failure)
+        require(
+            reconciliation_failure is None,
+            reconciliation_failure
+            or "P8-03 migrated legacy reconciliation response check failed",
+        )
         validate_problem(
             rejected,
             409,

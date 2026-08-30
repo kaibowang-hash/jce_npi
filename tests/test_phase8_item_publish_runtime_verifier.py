@@ -10,6 +10,7 @@ import sys
 import tempfile
 import types
 import unittest
+from email.message import Message
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -245,6 +246,11 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
                 "LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED",
                 False,
             ),
+            patch.object(
+                self.module,
+                "LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED",
+                False,
+            ),
         )
         for activation in self.post_p807_activations:
             activation.start()
@@ -355,14 +361,14 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.value, ast.Constant)
             and isinstance(node.value.value, bool)
         }
-        self.assertEqual(len(assignments), 7)
+        self.assertEqual(len(assignments), 8)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED"},
+            {"LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED"},
         )
         with patch.object(
             module,
-            "LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED",
+            "LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED",
             True,
         ):
             self.assertTrue(module._legacy_full_boundary_diagnostics_enabled())
@@ -373,11 +379,13 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
                 frozenset(module._LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES).union(
                     module._LEGACY_COLLECTION_DIAGNOSTIC_CODES,
                     module._LEGACY_QUERY_SERVER_DIAGNOSTIC_CODES,
+                    module._LEGACY_RECONCILIATION_RESPONSE_DIAGNOSTIC_CODES,
+                    module._CREATE_SERVER_DIAGNOSTIC_CODES,
                 ),
             )
             self.assertEqual(
                 len(module._active_legacy_full_diagnostic_codes()),
-                39,
+                67,
             )
         run_legacy = source.split("def run_legacy(", 1)[1].split("\ndef ", 1)[0]
         self.assertIn(
@@ -387,6 +395,11 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("diagnostic_cursors", run_legacy)
         self.assertNotIn("_sanitized_server_diagnostic", run_legacy)
         self.assertEqual(source.count("legacy_query_diagnostic=True"), 0)
+        self.assertEqual(source.count("create_diagnostic=True"), 0)
+        self.assertIn(
+            "create_diagnostic=reconciliation_diagnostics",
+            run_legacy,
+        )
         for code in module._LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES[2:]:
             self.assertEqual(run_legacy.count(f'"{code}"'), 1, code)
         requested = source.split(
@@ -452,6 +465,110 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             )
         self.assertIn("diagnostic_code=P803_LEGACY_QUERY_ROWS", rendered)
         self.assertNotIn("P803_LEGACY_COLLECTION_STATUS", rendered)
+
+    def test_legacy_reconciliation_response_diagnostic_is_ordered_and_value_free(
+        self,
+    ) -> None:
+        module = self.module
+
+        def result(*, status=409, body=None, content_type="application/problem+json"):
+            headers = Message()
+            headers["Content-Type"] = content_type
+            headers["X-Trace-ID"] = _TRACE_ID
+            return SimpleNamespace(
+                status=status,
+                body=(
+                    {
+                        "status": 409,
+                        "code": "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+                        "traceId": _TRACE_ID,
+                    }
+                    if body is None
+                    else body
+                ),
+                trace_id=_TRACE_ID,
+                headers=headers,
+            )
+
+        cases = (
+            (result(status=500), "P803_LEGACY_RECONCILIATION_STATUS"),
+            (
+                result(body={"status": 500}),
+                "P803_LEGACY_RECONCILIATION_BODY_STATUS",
+            ),
+            (
+                result(body={"status": 409, "code": "PRIVATE_CODE"}),
+                "P803_LEGACY_RECONCILIATION_BODY_CODE",
+            ),
+            (
+                result(content_type="application/json"),
+                "P803_LEGACY_RECONCILIATION_MEDIA_TYPE",
+            ),
+            (
+                result(
+                    body={
+                        "status": 409,
+                        "code": "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+                        "traceId": "trace-private-value",
+                    }
+                ),
+                "P803_LEGACY_RECONCILIATION_TRACE",
+            ),
+            (
+                result(
+                    body={
+                        "status": 409,
+                        "code": "ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED",
+                        "traceId": _TRACE_ID,
+                        "message": "private payload",
+                    }
+                ),
+                "P803_LEGACY_RECONCILIATION_ENVELOPE",
+            ),
+        )
+        with patch.object(
+            module,
+            "LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            module,
+            "_sanitized_server_log_diagnostic",
+            return_value=None,
+        ):
+            self.assertIsNone(
+                module.legacy_reconciliation_failure_message(
+                    result(),
+                    {"logs/npi_core.log": 0},
+                )
+            )
+            for response, code in cases:
+                with self.subTest(code=code):
+                    rendered = module.legacy_reconciliation_failure_message(
+                        response,
+                        {"logs/npi_core.log": 0},
+                    )
+                    self.assertIn(f"diagnostic_code={code}", rendered)
+                    self.assertNotIn("private", rendered.casefold())
+
+        with patch.object(
+            module,
+            "LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.object(
+            module,
+            "_sanitized_server_log_diagnostic",
+            return_value=(
+                "PermissionError",
+                "P803_CREATE_AUDIT_APPEND",
+                _TRACE_ID,
+            ),
+        ):
+            rendered = module.legacy_reconciliation_failure_message(
+                cases[0][0],
+                {"logs/npi_core.log": 0},
+            )
+        self.assertIn("diagnostic_code=P803_CREATE_AUDIT_APPEND", rendered)
+        self.assertNotIn("P803_LEGACY_RECONCILIATION_STATUS", rendered)
 
     def test_legacy_full_boundary_diagnostic_is_exact_three_key_and_first_wins(
         self,

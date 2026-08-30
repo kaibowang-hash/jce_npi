@@ -9420,3 +9420,28 @@ repeat or rewrite it merely to restore context. See
   success emits zero tuple. Do not rerun Level 3 or infer a product repair
   before that proof. P8-09 remains inactive.
 - Controller marker: `P8-08 Level 3 migrated-legacy diagnostic pending`.
+
+## 2026-08-31 P8-08 reconciliation-response diagnostic pending
+
+- Product-zero migrated-legacy diagnostic SHA
+  `51e071f01b830f680f5aaeb97460fe32b2969bab` passes ordinary CI
+  `33327421787` in all four lanes. Its sole controlled diagnostic
+  `33328132993` passes preflight `99301811297`; runtime `99301844242` exposes
+  only `P803_LEGACY_FULL_RECONCILIATION_CONTRACT / RuntimeError /
+  trace-13dcf4b038055bed9842636978c24021`.
+- The tuple proves collection, detail, redaction and binding checks passed in
+  that run, but the existing parent cannot choose among six response-neutral
+  contract predicates and an inner create-server exception. No product repair
+  is authorized. Freeze that cycle at diagnostic `1/1`, repair `0/1`, final
+  `0/1`.
+- Open one independent product-zero exact-67 diagnostic using the same strict
+  three-key record and reader. It activates 24 outer, three collection, twelve
+  legacy-query server, six reconciliation-response and twenty-two create-
+  server codes. An inner create-server tuple wins; otherwise the ordered
+  response fallback identifies only status, body-status, body-code, media,
+  trace or forbidden-envelope stage. Actual response values, body, identities,
+  message and stack stay unread.
+- Require exact-SHA ordinary PASS before one Level 2 controlled diagnostic.
+  Success emits zero tuple. Do not rerun Level 3, infer a product repair,
+  contact production ERPNext or activate P8-09 before this bounded proof.
+- Controller marker: `P8-08 reconciliation-response diagnostic pending`.

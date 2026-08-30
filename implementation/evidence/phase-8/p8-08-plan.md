@@ -275,3 +275,31 @@ only the existing collection-fallback exact-39 code/type/trace mechanism. Its
 exact-SHA ordinary CI must pass before one Level 2 controlled run. Success
 emits zero tuple; a failure may emit only one strict safe tuple. P8-09 remains
 inactive and production ERPNext remains untouched.
+
+## 10. Reconciliation-response bounded diagnostic
+
+The product-zero exact-39 checkpoint
+`51e071f01b830f680f5aaeb97460fe32b2969bab` passes ordinary CI
+`33327421787`. Its sole controlled run `33328132993` passes preflight
+`99301811297` and returns only the strict safe tuple
+`P803_LEGACY_FULL_RECONCILIATION_CONTRACT / RuntimeError /
+trace-13dcf4b038055bed9842636978c24021` from runtime `99301844242`.
+No raw or child output, response content, business value, identity, message or
+stack was read.
+
+This proves the same run passed legacy collection, detail, public/redaction and
+binding checks. The parent tuple does not distinguish the six value-free
+problem-response predicates from an inner create-server exception, so no
+product repair is evidenced. Freeze that cycle at diagnostic `1/1`, repair
+`0/1`, final `0/1` and open one independent product-zero response diagnostic.
+
+The new activation reuses the existing exact-three safe record and strict
+reader. Its exact 67-code set is the 24 ordered outer stages, three collection
+fallbacks, twelve legacy-query server stages, six ordered reconciliation
+response predicates and twenty-two create-server stages. The create server
+tuple wins; otherwise the response classifier records only status, body-status,
+body-code, media-type, trace or forbidden-envelope stage. It never records the
+actual response status, code, body, trace contents, message or stack. Exact-SHA
+ordinary PASS is required before one Level 2 controlled run. P8-08 product,
+contracts and persistence remain unchanged; P8-09 and production contact stay
+closed.
