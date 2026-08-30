@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_CHECKPOINT_1_TEST_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-00")
@@ -56,7 +56,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_08_EXTERNAL_PROJECTION_REMAINS_EXPLICITLY_UNAVAILABLE_EXTERNAL_CONTRACT_HELD",
             "P8_09_PRESENTATION_ONLY_APPROVED_JCE_CORE_TEXT_AND_EXACT_CORE_PNG",
             "ERPNEXT_TECHNICAL_CODE_REMAINS_STABLE_IN_API_EVENT_SCHEMA_PERSISTENCE_AND_ROUTING",
-            "P8_09_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_CHECKPOINT_1_ACTIVATION_EXACT_SHA_ORDINARY_PASS",
+            "P8_09_CHECKPOINT_1_ACTIVATION_F92F2A02_ORDINARY_33334024759_ALL_FOUR_JOBS_PASS_PRODUCT_CODE_AUTHORIZED_TRUE",
             "P8_09_REUSES_EXISTING_DISPLAY_BRAND_AND_SOURCE_SYSTEM_IDENTITY_SEAMS_WITHOUT_GENERALIZATION",
             "P8_09_EXACT_CORE_PNG_SHA256_0C7182882022CF190925C90F0004C77AACA4DD513B86CCD0F23EFB30171E0E42",
             "P8_09_CHECKPOINT_1_EXACT_TWENTY_FOUR_PRODUCT_TEST_VISUAL_AND_GOVERNANCE_PATHS",
@@ -84,7 +84,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-zh-1440x900-125-linux.png",
                 "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-zh-TW-1920x1080-150-linux.png",
                 "frontend/tests/unit/display-brand.test.tsx",
+                "frontend/tests/unit/field-attachment-primitives.test.tsx",
                 "frontend/tests/unit/formatters-and-copy.test.ts",
+                "frontend/tests/unit/primitives-and-objects.test.tsx",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
                 "implementation/CURRENT_TASK.json",
@@ -94,7 +96,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests/test_current_task_verifier.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 24)
+        self.assertEqual(len(value["allowed_paths"]), 26)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])
@@ -105,7 +107,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             sum(path.startswith("frontend/") for path in value["allowed_paths"]),
-            14,
+            16,
         )
         self.assertEqual(
             sum(path.startswith("contracts/") for path in value["allowed_paths"]),

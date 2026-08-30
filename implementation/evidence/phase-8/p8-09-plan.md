@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **AUDIT PLAN PASS — CHECKPOINT-1 ACTIVATION AWAITS EXACT-SHA ORDINARY CI**
+Status: **AUDIT PLAN PASS — CHECKPOINT-1 TEST MANIFEST EXPANSION AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-31
 
@@ -17,9 +17,8 @@ final Level 3 `33330886346`, governance closeout
 `45f6a4d5654608fa22c968d9b22e233b8af80852` and ordinary CI
 `33332397724`.
 
-Product-code authorization: **false until this plan's exact-SHA ordinary CI
-passes and a separate activation transition is committed and passes its own
-exact-SHA ordinary CI**.
+Product-code authorization: **true** after activation exact SHA
+`f92f2a028905367868b16bdd748d477ffbadeb94` and ordinary CI `33334024759`.
 
 Audit-plan checkpoint: `5c6793b3406ded8257b927ad89fbd9dba67bab4c`
 
@@ -27,8 +26,15 @@ Audit-plan ordinary CI: `33333259174` (**PASS**) — repository
 `99315542644`, governed visual `99315542679`, frontend `99315542699` and
 secret `99315542712`; controlled lanes correctly skipped.
 
-Checkpoint-1 product paths remain conditional on this separate activation
-commit's exact-SHA ordinary PASS.
+Checkpoint-1 activation ordinary jobs PASS: frontend `99317576712`, governed
+visual `99317576768`, secret `99317576808` and repository `99317576863`.
+
+The first complete frontend unit run reached `1082/1086`; its four failures
+reduce to an unrelated LaunchFlow editable-system presentation delta, now
+removed in the authorized worklist path, plus stale visible `ERPNext` text
+assertions in two existing unit-test files. Those two tests are added by one
+governance-only exact manifest expansion and remain unedited until that
+expansion's own exact-SHA ordinary CI passes.
 
 ## 1. Audit conclusion
 

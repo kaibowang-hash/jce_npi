@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+`IN_PROGRESS_CHECKPOINT_1_TEST_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
@@ -14,13 +14,15 @@ pass. P8-08 is technically complete only for the internal read-only Released
 Trial Summary projection seam; the external event/consumer/receipt contract
 and production activation remain held by `DR-REC-009`.
 
-P8-09 audit plan `5c6793b3` passes ordinary `33333259174`. The sole next action
-is this separate exact twenty-four-path checkpoint-1 activation's ordinary CI.
-Only after that PASS may the existing display-brand and source-identity seams,
-retained terminology/translations, verifier, focused tests and four new Linux
-visual baselines be edited. `ERPNEXT` remains stable in every technical
-boundary. Do not contact production ERPNext/JCE or modify user-owned dirty
-documentation.
+P8-09 audit plan `5c6793b3` passes ordinary `33333259174`; activation
+`f92f2a02` passes ordinary `33334024759`, so product authorization is now
+effective. The bounded implementation and its four exact Linux baselines are
+in progress. The first complete frontend run reached `1082/1086` and exposed
+only stale visible-text assertions in two existing unit-test files. The sole
+next action is an exact manifest expansion adding only those two paths, then
+its own ordinary CI. Do not edit the two tests before that PASS. `ERPNEXT`
+remains stable in every technical boundary. Do not contact production
+ERPNext/JCE or modify user-owned dirty documentation.
 
 Retained P8-07F diagnostics-off exact SHA
 `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c` passes ordinary CI

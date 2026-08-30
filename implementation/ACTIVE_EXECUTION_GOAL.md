@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_TEST_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -41,8 +41,10 @@ Updated: `2026-08-31T00:00:00+07:00`
   `Core.png` hash, approved `JCE Core` accessible/text identity and the existing
   display-brand plus `SourceSystemIdentity` seams. Plan checkpoint `5c6793b3`
   passes ordinary `33333259174`. The exact twenty-four-path checkpoint-1
-  activation is now pending its own ordinary CI; product code remains
-  unauthorized before that PASS.
+  activation `f92f2a02` passes ordinary `33334024759`; product authorization
+  is effective. The first complete frontend run exposed only two stale unit
+  assertions that still expect visible `ERPNext` text. They require a separate
+  exact manifest expansion before those existing test files may be edited.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -57,9 +59,9 @@ Updated: `2026-08-31T00:00:00+07:00`
   `1e0f3facfa31f382b469df4b8084a3c64231674b`; repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime)
 - Latest checkpoint exact-SHA CI:
-  `33333259174` (`PASS` at
-  `5c6793b3406ded8257b927ad89fbd9dba67bab4c`; P8-09 audit plan,
-  repository, frontend, governed visual and secret lanes all pass)
+  `33334024759` (`PASS` at
+  `f92f2a028905367868b16bdd748d477ffbadeb94`; P8-09 checkpoint-1
+  activation, repository, frontend, governed visual and secret lanes all pass)
 - P8-07F facts activation checkpoint:
   `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` (`PASS`; ordinary CI
   `33281944546`). Allowlisted `ERP_VERSION` reads at

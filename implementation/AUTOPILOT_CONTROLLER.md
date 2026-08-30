@@ -9539,3 +9539,27 @@ repeat or rewrite it merely to restore context. See
   permissions, ownership, routing, redesign, generalized abstraction and
   user-owned dirty/untracked files remain prohibited.
 - Controller marker: `P8-09 checkpoint 1 activation awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 checkpoint 1 test manifest expansion awaits exact-SHA ordinary CI
+
+- Checkpoint-1 activation exact SHA
+  `f92f2a028905367868b16bdd748d477ffbadeb94` passes ordinary CI
+  `33334024759`; frontend `99317576712`, governed visual `99317576768`,
+  secret `99317576808` and repository `99317576863` all pass. Product
+  authorization is effective.
+- The bounded adapter, terminology, translation, source-identity, build-audit
+  and exact four-snapshot implementation remains within the frozen product
+  boundary. A complete frontend unit run reached `1082/1086`; the only product-
+  caused failures are stale visible-text assertions in
+  `frontend/tests/unit/field-attachment-primitives.test.tsx` and
+  `frontend/tests/unit/primitives-and-objects.test.tsx`. The unrelated
+  LaunchFlow editable-system presentation delta is removed in the authorized
+  worklist path.
+- Expand the exact manifest from twenty-four to twenty-six paths only by those
+  two existing unit tests. Do not edit either test until this governance-only
+  expansion passes its own exact-SHA ordinary CI. No backend, contract,
+  workflow, source asset or existing visual baseline path is added.
+- Production ERPNext/JCE contact, technical `ERPNEXT` changes, redesign,
+  generalized abstraction and user-owned dirty/untracked files remain
+  prohibited.
+- Controller marker: `P8-09 checkpoint 1 test manifest expansion awaits exact-SHA ordinary CI`.
