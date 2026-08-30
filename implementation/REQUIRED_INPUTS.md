@@ -1,7 +1,18 @@
 # Required External Inputs
 
-Status: **NO USER INPUT CURRENTLY REQUIRED — EXPANDED READ AUTHORIZED; GOVERNANCE GATES PENDING**
+Status: **NO USER INPUT REQUIRED FOR P8-07F OR P8-08 START — PRODUCTION ACTIVATION INPUTS RETAINED**
 Updated: 2026-08-30
+
+Authoritative current state: exact SHA `77b4258f` passes ordinary CI
+`33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds and removes
+private state. The bounded P8-07F production facts are reconciled, no concrete
+incompatibility is proved and no external bundle is requested for P8-07F or
+P8-08 start. Database topology, a named least-privilege service principal,
+owner-approved business-code mappings, Sandbox/UAT, deployment/support and
+production enablement evidence remain required only where a later production
+activation or production-ready claim depends on them. Future ERP-dependent
+tasks must reuse the inventory and perform only freshness/delta reads when
+needed; no credential or sensitive value belongs here.
 
 This remains the single place for any future external fact request. No bundle
 is requested while the newly authorized, separately gated read-only

@@ -756,7 +756,16 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("sensitive_preflight_stops: 2", phase_status)
         self.assertIn("private_state_removed: true", phase_status)
         self.assertIn(
-            "runtime_only_metadata_status: ACCEPTED_EXCEPT_SYSTEM_LOCALE_PENDING_SINGLE_DOCTYPE_FILTERLESS_READER_ORDINARY",
+            "runtime_only_metadata_status: ACCEPTED_ALL_FROZEN_FAMILIES_INCLUDING_SYSTEM_LOCALE",
+            phase_status,
+        )
+        self.assertIn("locale_reader_ordinary: 33312664804", phase_status)
+        self.assertIn(
+            "locale_collection_result: ACCEPTED_COUNTRY_LANGUAGE_TIME_ZONE_CHECKSUM_CC94B21F",
+            phase_status,
+        )
+        self.assertIn(
+            "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING",
             phase_status,
         )
         self.assertIn(

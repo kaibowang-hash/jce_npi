@@ -51,7 +51,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_REMAINING_CONNECTION_REQUIRES_FIXED_SITE_FACT_COLLECTOR_EXACT_SHA_ORDINARY_PASS",
+            "P8_07F_FINAL_LOCALE_READER_77B4258F_ORDINARY_33312664804_AND_SINGLE_SYSTEM_LOCALE_READ_ACCEPTED",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_FACTS_RECONCILED_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_FINAL_LEVEL_3_PENDING",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -112,7 +116,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY_THEN_FINAL_COLLECTION",
+            "IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

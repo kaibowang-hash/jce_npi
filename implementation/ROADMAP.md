@@ -145,10 +145,11 @@ Exit：AT-01/02 的 NPI 侧黄金路径通过。
    可证明差异提出配置/映射或最小局部可逆调整；事实任务不改产品或生产。最终
    implementation/release closeout 还必须按同一边界做全量 compatibility
    reconciliation，required drift/unknown 未闭合时禁止完成或标 production-ready。
-   当前治理与 activation Gate 已通过，但首个 allowlisted `ERP_VERSION` 读取未产生
-   可接受输出并已 fail closed；全部生产事实仍为 `UNVERIFIED`，P8-08 保持阻断，
-   不得据此创建调整或重构任务。外部只读条件在不漂移 allowlist 的前提下修复后，
-   才能从同一 operation 恢复定向核对。
+   当前固定只读事实采集和 compatibility reconciliation 已完成：版本、app、当前
+   tracked source、固定 runtime metadata、相关 DocType/DocField/DocPerm、File URL
+   shapes 与 Mold/Trial seam 均有脱敏 provenance/checksum，且未证明现有架构、主责
+   或合同不兼容。P8-08 仅等待 P8-07F 最终 Level 3；生产 activation、Sandbox/UAT、
+   owner-approved mapping 与最终全量 drift reconciliation 仍是独立强制门。
 8. NPI 侧 Released Trial Summary 只读 projection contract 与 sandbox-ready
    adapter；正式目标显示身份等待批准资产，禁止生产连接。
 

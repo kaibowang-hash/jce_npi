@@ -406,6 +406,13 @@ ERP_CUSTOMIZATION_REQUIREMENTS = ROOT / "docs" / "ERPNEXT_CUSTOMIZATION_REQUIREM
 ERP_PRODUCTION_FACT_INVENTORY = ROOT / "docs" / "ERPNEXT_PRODUCTION_FACT_INVENTORY.md"
 ERP_INTEGRATION_BLUEPRINT = ROOT / "docs" / "LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md"
 ERP_COMPATIBILITY_GAPS = ROOT / "docs" / "LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md"
+P8_07F_VALIDATION = (
+    ROOT
+    / "implementation"
+    / "evidence"
+    / "phase-8"
+    / "p8-07f-production-fact-reconciliation-validation.md"
+)
 EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE = (
     "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md"
 )
@@ -415,6 +422,7 @@ EXPECTED_P8_07F_FACT_EVIDENCE = {
     "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
     "docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md",
     "implementation/evidence/phase-8/p8-07f-current-runtime-governance-transition.md",
+    "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md",
 }
 EXPECTED_ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_STATUSES = {
     "INT-001": "TECHNICAL_VERIFIED_READ_ONLY_PROJECTION_FOUNDATION_INBOUND_RECONCILIATION_HELD",
@@ -1573,7 +1581,10 @@ def verify_erp_customization_requirements_document() -> None:
         "EXTERNAL_EVIDENCE_REQUIRED",
         "OWNER_APPROVAL_REQUIRED",
         "PROHIBITED_PENDING_RULE_CHANGE_AND_GATE",
-        "UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT",
+        "PRODUCTION_FACT_ACCEPTED",
+        "## Accepted P8-07F classification overlay",
+        "77b4258f3b086420e0ae7769bd95830bf9dabfaa",
+        "33312664804",
         "## Read-only fact-collection Gate and current result",
         "## Validation and acceptance checklist",
         "## Explicit no-change list",
@@ -1605,8 +1616,13 @@ def verify_erp_customization_requirements_document() -> None:
         raise ReconciliationVerificationError(
             "ERP customization requirements document must not contain endpoints"
         )
+    register_text = text.split("## Customization and fact register", 1)[1].split(
+        "## Read-only fact-collection Gate and current result", 1
+    )[0]
     register_rows = [
-        line for line in text.splitlines() if line.startswith("|") and "---" not in line
+        line
+        for line in register_text.splitlines()
+        if line.startswith("|") and "---" not in line
     ]
     if len(register_rows) < 16:
         raise ReconciliationVerificationError(
@@ -1633,6 +1649,7 @@ def verify_p8_07f_fact_documents() -> None:
     inventory = ERP_PRODUCTION_FACT_INVENTORY.read_text(encoding="utf-8")
     blueprint = ERP_INTEGRATION_BLUEPRINT.read_text(encoding="utf-8")
     gaps = ERP_COMPATIBILITY_GAPS.read_text(encoding="utf-8")
+    validation = P8_07F_VALIDATION.read_text(encoding="utf-8")
     inventory_tokens = {
         "UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT",
         "NOT_AVAILABLE_NO_ACCEPTED_OUTPUT",
@@ -1655,6 +1672,11 @@ def verify_p8_07f_fact_documents() -> None:
         "sha256:bc5f2b2653647c21c6cee66e357951831f4e1e512ca9bcb641f8b017fef9b815",
         "sha256:cec7d8128c63e6b79bc6fcf9da558378d2c134a9f96a9a5a8b36a585b319c0fd",
         "No production ERPNext or Frappe state was changed",
+        "COMPLETE FOR P8-07F",
+        "sha256:cc94b21fbc7a0556244ef71b117359ab7ee38022e8b32e5999d5b417fdcbe355",
+        "sha256:ae102d77b9116b1e81cc21da18f3d6ffd5bdcdbbf379e1fed811681e4979e449",
+        "sha256:61b485438675708641d5c03c448a9862f70b93f917f2ba4bfb1809c8f7f8a451",
+        "sha256:64812dc22706aa9b7886eb9b34e37b80eeeaf9d53da3e1a6c3f527c3fa08a785",
     }
     missing = sorted(token for token in inventory_tokens if token not in inventory)
     if missing:
@@ -1669,20 +1691,37 @@ def verify_p8_07f_fact_documents() -> None:
     for token in (
         "BUSINESS_DECISION_REQUIRED — FACT/ACCESS ONLY",
         "NO_CHANGE",
-        "No adjustment task may be",
+        "No concrete difference requires a LaunchFlow adjustment task now",
         "P8-08 remains blocked",
-        "dirty HEAD source",
+        "HEAD remains distinct",
         "sensitive-content preflight",
-        "runtime-only metadata",
+        "fixed runtime metadata",
         "M9-04/M9-05 real pilots are not V1.2 evidence",
         "Do not modify ERPNext or Frappe core",
         "Do not add a generic DocType writer",
+        "CLOSED_COMPATIBILITY_MATRIX_RECORDED",
+        "CONFIG_OR_MAPPING_ONLY",
+        "Mold Trial Report",
     ):
         if token not in blueprint + gaps:
             raise ReconciliationVerificationError(
                 f"P8-07F compatibility evidence lacks token: {token}"
             )
-    for text, label in ((inventory, "inventory"), (blueprint, "blueprint"), (gaps, "gap register")):
+    for token in (
+        "PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING",
+        "33312664804",
+        "P8-08 becomes the next",
+    ):
+        if token not in validation:
+            raise ReconciliationVerificationError(
+                f"P8-07F validation lacks token: {token}"
+            )
+    for text, label in (
+        (inventory, "inventory"),
+        (blueprint, "blueprint"),
+        (gaps, "gap register"),
+        (validation, "validation"),
+    ):
         if "http://" in text or "https://" in text or "BEGIN OPENSSH PRIVATE KEY" in text:
             raise ReconciliationVerificationError(
                 f"P8-07F {label} contains prohibited connection or key material"

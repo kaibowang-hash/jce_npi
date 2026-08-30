@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Controller tasks: `P8-07F-GOVERNANCE` then `P8-07F-FACTS`
 
-Status: **EXPANDED COLLECTOR ACTIVATION AWAITS EXACT-SHA ORDINARY; P8-08 HELD**
+Status: **FACT COLLECTION COMPLETE — FINAL CONSOLIDATED CHECKPOINT AND LEVEL 3 PENDING**
 
 ## Purpose and baseline
 
@@ -380,3 +380,20 @@ the exact method and three fields `language`, `time_zone`, `country`. Obtain a
 new exact-SHA ordinary PASS, run only the locale family, delete private state,
 then proceed to compatibility/minimal-adjustment reconciliation. No accepted
 production family is repeated and P8-08 remains blocked.
+
+## Final single-read and consolidated closeout
+
+The filterless Single DocType reader passes at exact SHA
+`77b4258f3b086420e0ae7769bd95830bf9dabfaa` / ordinary `33312664804`.
+The sole remaining `SYSTEM_LOCALE` operation succeeds at
+`2026-08-30T13:07:50.798302Z`, accepts only country, language and time-zone
+values plus bounded checksums, and removes the private state. It repeats no
+accepted family and performs no SQL, console, generic execute or write.
+
+All fact classification, P8-01 through P8-09 compatibility mapping, exact
+conditional ERP seams, current LaunchFlow integration behavior, remaining
+activation inputs and no-change decisions are consolidated in one final
+checkpoint. No metadata-family micro-commit follows. The checkpoint must pass
+one exact-SHA ordinary CI and then one P8-07F Level 3. Only that Level 3 PASS
+releases P8-08; any production activation or actual adjustment remains a
+separate atomic task and Gate.

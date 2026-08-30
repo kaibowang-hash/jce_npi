@@ -1,13 +1,14 @@
 # ERPNext Production Fact Inventory
 
-Status: **INCOMPLETE — READ-ONLY COLLECTION COMPLETE; SOURCE DRIFT AND RUNTIME METADATA BLOCKED**
+Status: **COMPLETE FOR P8-07F — BOUNDED PRODUCTION FACTS ACCEPTED; EXPLICIT NON-BLOCKING UNKNOWNS RETAINED**
 
 Inventory task: `P8-07F-FACTS`
 
 Inventory attempts: `2026-08-30T00:04:24Z`, `2026-08-30T05:35:04Z`, and
 accepted fixed-root discovery `2026-08-30T06:10:50Z` /
 `2026-08-30T13:10:50+07:00`, and checksum-confirming discovery
-`2026-08-30T06:35:13Z` / `2026-08-30T13:35:13+07:00`
+`2026-08-30T06:35:13Z` / `2026-08-30T13:35:13+07:00`, and final locale
+read `2026-08-30T13:07:50.798302Z` / `2026-08-30T20:07:50.798302+07:00`
 
 Source label: `JCE_CORE_PRODUCTION_REDACTED`
 
@@ -210,14 +211,47 @@ absent, incompatible or defective.
 | Released Trial Summary consumer seam | `UNVERIFIED` | None | No target consumer/method fact accepted | P8-08 cannot activate |
 | JCE Core display identity context | `UNVERIFIED` | None | Production display surface not inspected | P8-09 keeps technical code `ERPNEXT` unchanged |
 
+## Accepted current-worktree and runtime metadata overlay
+
+This section supersedes the provisional `UNVERIFIED` entries in the earlier
+chronological matrix while preserving that ledger as audit history. The user
+authorized dirty tracked worktrees as current source truth and authorized the
+two stopped DocType sources plus fixed application-layer metadata reads. No
+production file or database record was changed.
+
+| Fact area | Accepted P8-07F status | Sanitized production fact | Provenance / checksum | Compatibility consequence |
+|---|---|---|---|---|
+| Platform and Site | `VERIFIED` | Frappe `15.79.0`, ERPNext `15.77.0`, twenty Bench apps and the private Site subset | Bench `sha256:bc5f2b2653647c21c6cee66e357951831f4e1e512ca9bcb641f8b017fef9b815`; Site `sha256:cec7d8128c63e6b79bc6fcf9da558378d2c134a9f96a9a5a8b36a585b319c0fd` | Supported v15 application-layer contracts; no version-driven LaunchFlow change |
+| Current source truth | `VERIFIED_WITH_TRACKED_DRIFT` | Frappe clean; ERPNext has one tracked change; twelve of eighteen custom apps have tracked changes. Current tracked files, not HEAD alone, were used for authorized structural summaries | Anonymous HEAD/status/path inventory plus current Git-object reconstruction | Dirty state is accepted as current evidence, never promoted as a clean release or modified by P8-07F |
+| Runtime customization metadata | `VERIFIED_STRUCTURE_ONLY` | Fixed sanitized Custom Field, Property Setter, Workflow/state/transition, Role/custom permission, Client Script, Server Script, Webhook, scheduled-job, report, print-format, notification and naming-rule metadata completed | Client Scripts: 98 rows/five pages, `sha256:49a8951fc934b064368bc1dc22f0def7f766a04901170c79792629b31faf9dbb`; other families remain checksum-bound in the closed collector ledger | No evidence of a contract-breaking customization; exact business activation remains owner/Sandbox work |
+| Relevant DocTypes and fields | `VERIFIED_WITH_ONE_EXPLICIT_ABSENCE` | 27 of 28 frozen relevant DocTypes exist. `Injection Molding Condition` is absent. DocField projection completed for all 27 present parents | DocTypes `sha256:8506387ca0f59657110860127c360d45311038bf4b922ba6552774552e6b3db0`; DocFields `sha256:ae102d77b9116b1e81cc21da18f3d6ffd5bdcdbbf379e1fed811681e4979e449` | Existing Customer/Supplier/Project/Item/BOM/PO/Quality/DMR/Asset/Mold families support configuration/mapping; the absent optional condition DocType is not a P8 architecture conflict |
+| Permissions | `VERIFIED_STRUCTURE_ONLY` | 120 sanitized DocPerm rows across the 27 present relevant parents | `sha256:61b485438675708641d5c03c448a9862f70b93f917f2ba4bfb1809c8f7f8a451` | Production roles exist, but an operation-specific least-privilege NPI service scope still requires owner approval and Sandbox verification |
+| Mold domain current source | `VERIFIED_CURRENT_DIRTY_TRACKED_SOURCE` | Mold, Mold Management Settings, Mold Outsource, Mold Repair and Mold Trial Report structures were read from the actual tracked worktree. Mold exposes ownership/customer/Asset/status/version/location/shot/product/material/condition links; repair covers issue, external supplier/PO/finance, execution, acceptance and trial; trial report covers Mold/Item/trial result/machine/material/sample/issues/condition sheet/repair | Mold `sha256:8782b281648d9e45b87b7169272b1d51a03880a8c9f04f9216a5c1ff011f3845`; settings `sha256:45ef0124a421f7040ef21753f00456092780032d56dcc082c057068b5b4eecd4`; repair `sha256:462bdc6d4db7bdfa7b38c5b9054b4d606bf0f7664a463b11addf79146e9a5ee2`; trial report `sha256:453a96925430005a739f6a3f4317b58ff6bd5ed28523a573a6ae137db77308fd` | P8-05 and P8-08 have concrete production object seams; reuse plus configuration/mapping is preferred, with no domain redesign |
+| Locale | `VERIFIED` | Country `Thailand`, System language `en-GB`, timezone `Asia/Chongqing` | Result `sha256:cc94b21fbc7a0556244ef71b117359ab7ee38022e8b32e5999d5b417fdcbe355`; raw envelope `sha256:c554853696236992c4209f30796a39a41e434d4b066f92d52bc24d9532737945` | LaunchFlow keeps Frappe-compatible locale parsing; timezone/country are deployment configuration, not a product redesign |
+| File URL shapes | `VERIFIED_AGGREGATE_ONLY` | 47,376 File rows: 1,632 local public, 45,470 local private, 272 external HTTP | `sha256:64812dc22706aa9b7886eb9b34e37b80eeeaf9d53da3e1a6c3f527c3fa08a785` | References must preserve private/local/external distinctions; no file bytes or URLs were collected |
+
+Remaining unknowns are deliberate and do not block P8-08 design work: database
+engine/storage topology, representative business rows, exact production
+service-principal identity, business-owner approval of raw status/code mappings,
+and Sandbox/UAT/deployment facts. They remain release/activation inputs, not
+evidence of incompatibility. No endpoint, host, user, key, Site value, secret,
+raw Script, raw source, URL or business record is retained.
+
+The final bounded locale reader is exact SHA
+`77b4258f3b086420e0ae7769bd95830bf9dabfaa`, ordinary CI `33312664804`:
+secret `99260395010`, visual `99260395168`, repository `99260395171` and
+frontend `99260395257` all pass. The private mode-0600 state was removed after
+the read.
+
 ## Freshness and delta policy
 
 The accepted Bench/Site checksums, HEAD/status table and tracked-path checksums
 are the freshness baseline. This bounded collection is closed and its private
 state removed. A future task must compare version/HEAD/status/path checksums
 first and may read only changed necessary facts. Dirty applications remain
-held unless their actual tracked worktree state is restored to clean or supplied
-as a separately accepted sanitized evidence bundle. Do not repeat full
+distinct from clean HEAD/release truth; their accepted exact tracked state may
+be reused only while its version/mtime/hash remains fresh, otherwise the
+affected fact is held until another bounded delta summary is accepted. Do not repeat full
 discovery unless a version/checksum delta requires it. The standing
 authorization removes the need for another user prompt; it does not remove the
 fail-closed checks or grant write authority.
@@ -228,20 +262,18 @@ fail-closed checks or grant write authority.
 - No ERPNext/Frappe core change is proposed.
 - No browser-to-ERP connection, generic DocType writer, cross-database access,
   dual-master field or Mock/HTTP fake success is permitted.
-- No LaunchFlow contract, ownership, domain, adapter or UI adjustment is
-  justified by this incomplete inventory.
+- No LaunchFlow contract, ownership, domain or UI redesign is justified by
+  this inventory; only explicit configuration/mapping work may proceed inside
+  its existing atomic task.
 - M9-04 and M9-05 real-project pilots remain user-approved post-V1.2 deferrals;
   controlled non-production UAT is not a real-pilot or adoption claim.
 
 ## Open risks and stop condition
 
-Production compatibility remains unverified. P8-08 and every production-bound
-activation stay held. Required recovery evidence is either (a) clean tracked
-ERPNext and custom-app worktrees at declared commits plus a new checksum delta,
-or (b) an owner-supplied sanitized, checksummed drift/source bundle; and a
-separately gated side-effect-free source for runtime-only metadata. The two
-sensitive-preflight DocType candidates also require sanitized owner evidence,
-not a weaker scanner. Permission insufficiency, version/shape drift,
-sensitive-output risk, allowlist drift or a write need stops the affected part
-without privilege expansion. A concrete contract/ownership conflict must be
-recorded as an ADR or business decision before any implementation task.
+P8-07F compatibility evidence is complete for the bounded pre-P8-08 Gate.
+Production activation remains separately held on service-principal, owner,
+Sandbox/UAT, deployment and the explicit unknowns above. Permission
+insufficiency, version/shape drift, sensitive-output risk, allowlist drift or a
+write need still stops the affected part without privilege expansion. A
+concrete contract/ownership conflict must be recorded as an ADR or business
+decision before any implementation task.

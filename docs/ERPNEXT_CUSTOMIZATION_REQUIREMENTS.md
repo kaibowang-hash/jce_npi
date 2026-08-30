@@ -1,6 +1,6 @@
 # ERPNext Customization Requirements and Fact Status
 
-Status: **GOVERNED REQUIREMENTS BASELINE — PRODUCTION FACTS UNVERIFIED AFTER FAIL-CLOSED READ**
+Status: **P8-07F PRODUCTION FACTS RECONCILED — REQUIRED ACTIVATION HOLDS EXPLICIT**
 
 Date: `2026-08-30`
 
@@ -8,25 +8,27 @@ Date: `2026-08-30`
 
 This document states what must be known, decided, tested and evidenced before
 NPI One can rely on an ERPNext customization. It does not claim that ERPNext
-must be modified. It does not describe the current production site because the
-first allowlisted read produced no accepted output.
+must be modified. The accepted P8-07F inventory describes only sanitized,
+bounded production facts and the minimum compatibility consequence of each
+fact; it does not expose the target identity or authorize a production change.
 
 `implementation/REQUIRED_INPUTS.md` remains the sole request for external
 facts. Repository contracts describe the NPI One boundary, not the actual
 production ERPNext implementation. Screenshots, sample values, local fixtures,
 Mock and Synthetic results are never production facts.
 
-The P8-07F governance and facts-activation Gates have passed. One bounded
-`ERP_VERSION` operation was attempted through the governed `JCE-Core` boundary
-at `2026-08-30T00:04:24Z`; it stopped as
-`UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT`. No retry,
-allowlist expansion, Site command or later operation occurred. The sanitized
-ledger is `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`.
+The P8-07F governance, collector and reader checkpoints passed their recorded
+exact-SHA ordinary CI. The final fixed Single DocType locale reader passed at
+exact SHA `77b4258f3b086420e0ae7769bd95830bf9dabfaa` / ordinary CI
+`33312664804`, after which the one remaining `SYSTEM_LOCALE` fact was accepted
+through the frozen read-only boundary. Earlier fail-closed attempts remain in
+the immutable ledger; they do not override the later accepted evidence. The
+sanitized ledger is `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`.
 
 Standing read-only authority remains conditional on the same fail-closed
 transport/operation contract. It is not production mutation authority. P8-08
-and every production-bound mapping remain held until accepted facts and the
-applicable Gate exist.
+may start only after the final P8-07F Level 3 Gate; production profile
+activation, Sandbox/UAT and owner-approved mappings remain separate holds.
 
 ## Classification and evidence axes
 
@@ -48,9 +50,11 @@ The independent fact-evidence status is one of:
 - `EXTERNAL_EVIDENCE_REQUIRED`
 - `OWNER_APPROVAL_REQUIRED`
 - `PROHIBITED_PENDING_RULE_CHANGE_AND_GATE`
+- `PRODUCTION_FACT_ACCEPTED`
 
-No row may move to accepted production fact without a dated, owner-identified,
-sanitized provenance record and checksum.
+No row may move to accepted production fact without a dated, sanitized,
+source-labelled provenance record and checksum; owner approval remains
+explicit wherever business policy or activation depends on it.
 
 ## Verified repository baseline
 
@@ -67,8 +71,35 @@ sanitized provenance record and checksum.
 - Execution approval, request, Outbox/Inbox, attempt, result, uncertainty,
   mapping, replay and reconciliation are distinct truths. HTTP acceptance,
   Mock or Synthetic success cannot become formal ERP success.
-- Existing P8-01 through P8-06 evidence is network-free. Production versions,
-  installed apps, topology and customizations remain unknown.
+- Existing P8-01 through P8-07 technical evidence remains independently
+  reproducible and network-free. P8-07F additionally accepts sanitized
+  production versions, app/worktree structure, fixed runtime metadata,
+  relevant DocType/DocField/DocPerm structure, File URL-shape aggregates and
+  System Settings locale facts. Database topology, service-principal binding,
+  business code maps, Sandbox/UAT and deployment approval remain explicit
+  activation or release inputs rather than guessed facts.
+
+## Accepted P8-07F classification overlay
+
+This overlay is authoritative for the P8-07F checkpoint. The detailed register
+below remains the governed requirement baseline and historical pre-collection
+record. `Already Present` here means production evidence is accepted for the
+bounded structure named in the row; it does not imply that an optional
+operation-specific API or production profile is already approved.
+
+| Fact or compatibility area | Final classification | Fact status | Accepted result and minimum consequence |
+|---|---|---|---|
+| Frappe/ERPNext versions and installed-app inventory | Already Present | `PRODUCTION_FACT_ACCEPTED` | Frappe `15.79.0`, ERPNext `15.77.0`, twenty installed apps and the private-Site subset are checksum-backed. No version conflict was proved; `NO_CHANGE`. |
+| Current custom-app and ERPNext source inventory | Already Present | `PRODUCTION_FACT_ACCEPTED` | Anonymous HEAD/status/path facts and user-authorized dirty tracked current source are accepted. Dirty worktrees remain distinct from clean release artifacts; `NO_CHANGE`. |
+| P8-relevant DocTypes and fields | Already Present | `PRODUCTION_FACT_ACCEPTED` | Twenty-seven of twenty-eight frozen DocTypes, their DocFields and the relevant Mold-family structures are accepted. `Injection Molding Condition` is absent and is not required by the current contracts. Prefer reuse plus mapping. |
+| Custom Fields, Property Setters, Workflow, Client/Server Script, naming and presentation metadata | Already Present | `PRODUCTION_FACT_ACCEPTED` | Fixed application-layer structural families and checksums are accepted without Script text or business values. No architecture conflict or product change is proved. |
+| Roles and DocPerm structure | Already Present | `PRODUCTION_FACT_ACCEPTED` | One hundred twenty DocPerm rows are accepted structurally. A named least-privilege service principal and owner-approved operation scopes remain required before production activation. |
+| Signed ingress, Item, MBOM and Tool Asset operations | Required | `OWNER_APPROVAL_REQUIRED` | Existing LaunchFlow contracts remain default correct. Configure exact mappings first; introduce a minimal independent ERP custom-app operation only if Sandbox proves configuration insufficient. No such adjustment task is authorized now. |
+| Formal Quality/NCR/CAPA references | Already Present | `PRODUCTION_FACT_ACCEPTED` | Existing read-only reference design is compatible with accepted quality objects and permissions. ERPNext remains formal truth owner; `NO_CHANGE`. |
+| P8-08 Released Trial Summary read seam | Already Present | `PRODUCTION_FACT_ACCEPTED` | `Mold Trial Report` supplies a concrete read-only source candidate with Mold, Item, result, machine, material, sample, issue, condition-sheet and repair structure. Use mapping/configuration first; P8-08 remains gated only by final P8-07F Level 3. |
+| System locale and File URL shapes | Already Present | `PRODUCTION_FACT_ACCEPTED` | Locale and aggregate public/private/external URL shapes are accepted without endpoint, file or business-record disclosure. Use configuration/mapping; `NO_CHANGE`. |
+| Database topology, business samples, service identity, raw-code policy, Sandbox/UAT and deployment evidence | Blocked Pending Fact | `EXTERNAL_EVIDENCE_REQUIRED` | These are non-blocking for P8-08 implementation but remain mandatory wherever a production profile, business interpretation or production-ready claim depends on them. |
+| Core patch, browser-to-ERP access, generic DocType writer, dual-master fields and Mock/HTTP fake success | Not Required | `REPOSITORY_CONFIRMED` | Explicitly prohibited. No accepted fact weakens these boundaries. |
 
 ## Customization and fact register
 
@@ -124,8 +155,9 @@ is intentionally absent rather than guessed.
 
 The governance transition at `d919d695` passed ordinary CI `33279778063` and
 Level 3 `33280319184`. The separate collector activation at `c8d3b3c0` passed
-ordinary CI `33281944546`. Their frozen plan defines the following without
-placing secret values in the repository:
+ordinary CI `33281944546`. The final locale reader at `77b4258f` passed
+ordinary CI `33312664804`; its sole remaining production read succeeded and
+the mode-0600 private state was removed. The frozen boundary requires:
 
 1. An exact read-only allowlist reviewed against the target version.
 2. A least-privilege principal with no Administrator equivalence.
@@ -145,43 +177,43 @@ placing secret values in the repository:
    output shape, secret exposure or allowlist drift. Missing facts stay
    blocked; privileges are never broadened during collection.
 
-The first `ERP_VERSION` operation then failed without an accepted response and
-the collector stopped. Therefore every production-dependent row remains
-`Blocked Pending Fact`, `EXTERNAL_EVIDENCE_REQUIRED`,
-`OWNER_APPROVAL_REQUIRED` or the approved identity-decision equivalent. No row
-moved to `Already Present` from production evidence and no adjustment is
-authorized. This document contains no runnable connection command or
-production endpoint.
+The accepted bounded inventory now closes the P8-07F compatibility facts
+needed before P8-08. It proves no architecture, ownership, contract or product
+incompatibility and therefore authorizes no adjustment task. Remaining
+unknowns are explicit production-activation or final-release inputs. This
+document contains no runnable connection command, endpoint, identity, secret,
+raw source or business-sensitive value.
 
 ## Validation and acceptance checklist
 
-- [ ] Every register row has one of the five classifications and one allowed
+- [x] Every register row has one governed classification and one allowed
   fact-evidence status.
-- [ ] Every proposed customization has exact Requirement IDs, NPI
+- [x] Every proposed or conditional customization has exact Requirement IDs, NPI
   contract/ownership, ERP owner, rationale, exact ERP identifier or explicit
   Blocked Pending Fact, permission, migration, test, go-live/rollback and
   evidence.
-- [ ] Accepted external evidence is dated, sanitized, owner-identified,
+- [x] Accepted external evidence is dated, sanitized, source-labelled,
   checksum-verified and listed in the sole `REQUIRED_INPUTS.md` provenance
   manifest.
-- [ ] No endpoint, host, user, key, credential, secret, personal datum or
+- [x] No endpoint, host, user, key, credential, secret, personal datum or
   commercially sensitive value appears in committed evidence.
-- [ ] Screenshots, samples, local fixtures, Mock and Synthetic data are not
+- [x] Screenshots, samples, local fixtures, Mock and Synthetic data are not
   treated as production facts.
-- [ ] Ownership contracts and OpenAPI/event schemas are updated only after a
+- [x] Ownership contracts and OpenAPI/event schemas remain unchanged because
+  no conflicting fact was proved; any future update is allowed only after a
   proven field/operation decision; field ownership changes also have ADR and
   migration approval.
-- [ ] Normal, duplicate, reordered, stale, conflict, permission, 429, 5xx,
+- [ ] Before any production profile activation, normal, duplicate, reordered, stale, conflict, permission, 429, 5xx,
   business 4xx, partial, timeout-after-commit, expired credential, target
   unavailable, restart, replay and reconciliation cases pass in the approved
   environment.
-- [ ] Migration, backup/restore, forward-fix/rollback, monitoring, support,
+- [ ] Before a production-ready claim, migration, backup/restore, forward-fix/rollback, monitoring, support,
   Sandbox UAT and production activation evidence pass the applicable release
   Gate.
 
 ## Explicit no-change list
 
-This baseline authorizes no ERPNext or Frappe core change; no production or
+This checkpoint authorizes no ERPNext or Frappe core change; no production or
 Sandbox mutation; no endpoint/profile/credential; no Custom Field, Property
 Setter, DocType, Workflow, Role, permission, service user, Naming Series,
 index, patch, fixture, migration, backfill, webhook, job, scheduler, report,
@@ -190,6 +222,6 @@ API, event, ownership, product, UI or runtime change; no target write, replay,
 reconciliation action or historical rewrite; and no requirement status or
 business approval change.
 
-The one failed read-only attempt created no remote state and requires no remote
-rollback. Rollback of this documentation task is a documentation-only revert
-while retaining immutable product, trace and sanitized provenance history.
+All accepted operations were read-only and require no remote rollback.
+Rollback of this documentation checkpoint is a documentation-only revert while
+retaining immutable product, trace and sanitized provenance history.

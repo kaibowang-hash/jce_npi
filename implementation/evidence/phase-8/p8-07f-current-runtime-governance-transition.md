@@ -269,3 +269,14 @@ repair removes only the filter and retains the fixed method and exact
 `language`, `time_zone`, `country` fields. It requires its own exact-SHA
 ordinary before the single final read; no accepted family is repeated. SQL,
 console, generic execute, sensitive values and all writes remain prohibited.
+
+## Final facts handoff
+
+Exact SHA `77b4258f3b086420e0ae7769bd95830bf9dabfaa` passes ordinary CI
+`33312664804`, after which the sole remaining filterless Single DocType locale
+read succeeds. The operation accepts only the frozen locale fields and
+checksums; private state is removed and no previously accepted family is
+re-read. This closes the expanded read authority for P8-07F. The resulting
+facts are handed to the consolidated product-zero compatibility checkpoint;
+no further production connection is required before its single ordinary and
+final Level 3.

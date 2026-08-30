@@ -1,6 +1,14 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-07 PASS; P8-07F FACTS UNVERIFIED; P8-08 HELD**
+Status: **IN PROGRESS — P8-07 PASS; P8-07F FACTS RECONCILED; FINAL LEVEL 3 PENDING**
+
+P8-07F accepted the bounded production compatibility facts without changing
+any requirement status, product code, contract or owner. Existing P8-01
+through P8-09 design remains the default-correct baseline; no concrete
+incompatibility was proved. P8-08 is next only after the consolidated P8-07F
+checkpoint passes exact-SHA ordinary CI and final Level 3. Production
+activation and the final full-release read-only drift reconciliation remain
+separate mandatory Gates.
 
 Anchor date: 2026-08-16
 

@@ -2,7 +2,7 @@
 
 Date: `2026-08-30`
 
-Status: **IN PROGRESS — HEAD/STATUS ACCEPTED; TRACKED-PATH HARNESS HELD**
+Status: **IN PROGRESS — FACTS RECONCILED; FINAL LEVEL 3 PENDING**
 
 ## Accepted Gates
 
@@ -193,3 +193,66 @@ nor an adjustment task is authorized. Recovery requires clean declared
 worktrees or an owner-sanitized checksummed source/drift bundle, sanitized
 evidence for the stopped candidates and a separately gated side-effect-free
 runtime-metadata source.
+
+## Authoritative final compatibility checkpoint
+
+The preceding sections preserve the fail-closed collection history. This
+section supersedes their former incomplete conclusion without deleting that
+audit trail.
+
+- The filterless Single DocType locale reader passed exact-SHA ordinary CI at
+  `77b4258f3b086420e0ae7769bd95830bf9dabfaa` / `33312664804`: secret
+  `99260395010`, visual `99260395168`, repository `99260395171` and frontend
+  `99260395257` all passed.
+- At `2026-08-30T13:07:50.798302Z`, the sole remaining `SYSTEM_LOCALE`
+  operation accepted country `Thailand`, language `en-GB` and time zone
+  `Asia/Chongqing`. The sanitized result checksum is
+  `sha256:cc94b21fbc7a0556244ef71b117359ab7ee38022e8b32e5999d5b417fdcbe355`;
+  the validated envelope checksum is
+  `sha256:c554853696236992c4209f30796a39a41e434d4b066f92d52bc24d9532737945`.
+- The operating-system temporary mode-0600 state was removed and verified
+  absent. No SQL, console, arbitrary method, write, replay, reconciliation,
+  Site mutation or repeated metadata-family collection occurred.
+- Reused accepted evidence includes Frappe `15.79.0`, ERPNext `15.77.0`,
+  twenty apps, accepted current tracked worktree source, 27 present of 28
+  frozen relevant DocTypes, their DocFields, 120 DocPerm rows, fixed runtime
+  metadata families, aggregate File URL shapes and Mold/Mold Repair/Mold Trial
+  Report current-source structure. Exact checksums remain in the inventory.
+- The accepted facts reconcile with the existing P8-01 through P8-09
+  architecture, data ownership, OpenAPI/event contracts and code. No concrete
+  architecture or ownership conflict exists; no product or ERP adjustment task
+  is authorized. The detailed blueprint records `DIRECT_MATCH` or
+  `CONFIG_OR_MAPPING_ONLY` outcomes and only conditional smallest fallbacks.
+- Database topology, a named least-privilege service principal, owner-approved
+  raw-code mappings, Sandbox/UAT, deployment/support evidence and any
+  production enablement remain explicit holds. They do not block P8-08 design
+  and implementation, but unresolved applicable facts block production-ready
+  and final implementation closeout.
+- M9-04 and M9-05 remain `USER_APPROVED_POST_V1_2_DEFERRED`; AT-01/AT-02 stay
+  controlled non-production UAT and are not real-pilot or adoption evidence.
+
+The P8-07F bounded fact/compatibility result is therefore
+`PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING`. This checkpoint
+is product-zero and production-write-zero. Its sole remaining action is one
+exact-SHA ordinary CI followed by one P8-07F Level 3. P8-08 becomes the next
+authorized atomic task only if that Level 3 passes.
+
+## Final checkpoint Level 1 and task review
+
+- Collector/current/reconciliation focused checks pass `33/33`; collector
+  self-check reports `remote_contact=false` and only the frozen operation and
+  metadata-family sets.
+- Current-task verification, reconciliation generation/verification, Python
+  compilation, JSON/YAML/CSV parsing, 282-row unchanged requirement-status
+  proof and `git diff --check` pass.
+- `apps/`, `contracts/`, `frontend/` and `.github/` have zero tracked task
+  diff. No production endpoint, Site value, identity, credential, raw source,
+  Script text, URL or business record is committed.
+- The cached task diff is exact 24 paths; the post-commit task union is 26
+  paths, both fit the frozen 28-path manifest, and an unauthorized 25th cached
+  path is rejected.
+- The complete local 62-test collector/current/reconciliation run has 61
+  passing checks and one known non-task working-tree assertion caused by the
+  user's preserved uncommitted M9-04/M9-05 deferral entries. The task does not
+  stage, rewrite or weaken that assertion; exact-SHA ordinary CI validates the
+  committed tree independently.

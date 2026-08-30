@@ -3,23 +3,23 @@ overall_status: IN_PROGRESS
 current_phase: 8
 updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
-execution_hold: P8_07F_SINGLE_DOCTYPE_LOCALE_READER_ORDINARY_PENDING
+execution_hold: P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING
 current_task: P8-07F-FACTS
-current_task_status: IN_PROGRESS_AWAITING_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY_THEN_FINAL_COLLECTION
-current_task_completed_stage: P8_07F_PARENT_AND_SOURCE_COLLECTION_515DE965_ORDINARY_33311432825_ACCEPTED_LOCALE_FILTER_STOP_PRIVATE_STATE_REMOVED
-current_task_next_stage: P8_07F_SINGLE_DOCTYPE_LOCALE_READER_ACTIVATION
-current_task_next_stage_status: AWAITING_EXACT_SHA_ORDINARY_THEN_SINGLE_FINAL_LOCALE_READ
+current_task_status: IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3
+current_task_completed_stage: P8_07F_ALL_BOUNDED_FACTS_ACCEPTED_AND_COMPATIBILITY_RECONCILED
+current_task_next_stage: P8_07F_FINAL_LEVEL_3
+current_task_next_stage_status: AWAITING_FINAL_CHECKPOINT_EXACT_SHA_ORDINARY_THEN_SINGLE_LEVEL_3
 resumed_product_task: P8-08
 resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_RECONCILIATION_LEVEL_3_PASS
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
-    connection_authorized: CONDITIONAL_AFTER_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY_PASS
-    current_task_may_connect: CONDITIONAL_AFTER_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY_PASS
-    connection_effective_condition: PENDING_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY
+    connection_authorized: CLOSED_AFTER_ACCEPTED_P8_07F_FACT_WINDOW
+    current_task_may_connect: false
+    connection_effective_condition: COMPLETE_FOR_CURRENT_TASK
     documentation_authorized_after_transition_ordinary: true
-    current_rule: SINGLE_DOCTYPE_LOCALE_READER_ZERO_CONTACT_UNTIL_THIS_SHA_ORDINARY_THEN_EXACT_LOCALE_READ_ONLY
-    future_activation_trigger: SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY
+    current_rule: NO_FURTHER_PRODUCTION_READ_BEFORE_FINAL_P8_07F_GATE
+    future_activation_trigger: TASK_SCOPED_FRESHNESS_OR_DELTA_NEED_UNDER_STANDING_BOUNDARY
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
     final_full_reconciliation_required: true
@@ -75,7 +75,8 @@ scope_decisions:
     accepted_mold_current_source_doctypes: [Mold, Mold Management Settings, Mold Outsource, Mold Repair, Mold Trial Report]
     single_doctype_locale_attempt: SAFE_STOP_EMPTY_OBJECT_FROM_NAME_FILTER_NO_RESULT_ACCEPTED
     inventory_bound_parent_reader_private_state_removed: true
-    runtime_only_metadata_status: ACCEPTED_EXCEPT_SYSTEM_LOCALE_PENDING_SINGLE_DOCTYPE_FILTERLESS_READER_ORDINARY
+    runtime_only_metadata_status: ACCEPTED_ALL_FROZEN_FAMILIES_INCLUDING_SYSTEM_LOCALE
+    bounded_compatibility_status: PASS_LEVEL_3_PENDING
     current_tracked_worktree_source_status: ACCEPTED_CURRENT_TRACKED_WORKTREE_STRUCTURAL_SUMMARIES_WITH_DIRTY_TREES_AS_CURRENT_SOURCE_TRUTH
     stopped_doctype_candidates_status: ACCEPTED_READ_ONLY_STRUCTURAL_SUMMARIES_UNRELATED_TO_EXACT_P8_TARGETS
     direct_sql_and_console_status: PROHIBITED
@@ -2690,7 +2691,7 @@ p8_07:
 p8_07f:
   task: P8-07F-FACTS
   next_task: P8-08
-  status: IN_PROGRESS_AWAITING_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY_THEN_FINAL_COLLECTION
+  status: IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3
   phase: 8
   milestone: M7-07F
   task_kind: DELIVERY_INFRASTRUCTURE
@@ -2713,7 +2714,7 @@ p8_07f:
   runtime_site_confirmation: USER_CONFIRMED_PRIVATE_NOT_RECORDED
   bench_root_harness_repair_status: PASS
   tracked_path_harness_repair_status: PASS
-  accepted_production_facts: SANITIZED_VERSION_APP_HEAD_STATUS_PATH_AND_CLEAN_SOURCE_SUBSET
+  accepted_production_facts: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING
   later_operations_invoked: FIXED_ALLOWLIST_BOUNDED_AND_CLOSED
   private_state_file_created: true
   private_state_file_removed: true
@@ -2775,8 +2776,16 @@ p8_07f:
   inventory_bound_parent_collection_current_source: ACCEPTED_FIVE_MOLD_DOCTYPE_STRUCTURES_FROM_DIRTY_TRACKED_WORKTREE
   inventory_bound_parent_collection_locale: SAFE_STOP_FILTERED_SINGLE_DOCTYPE_RETURNED_EMPTY_OBJECT
   inventory_bound_parent_collection_private_state_removed: true
-  remaining_collection_status: AWAITING_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY
-  remaining_collection_families: [SYSTEM_LOCALE]
+  locale_reader_checkpoint: 77b4258f3b086420e0ae7769bd95830bf9dabfaa
+  locale_reader_ordinary: 33312664804
+  locale_reader_ordinary_jobs: {secret_scan: 99260395010, visual: 99260395168, repository: 99260395171, frontend: 99260395257}
+  locale_collection_utc: '2026-08-30T13:07:50.798302Z'
+  locale_collection_result: ACCEPTED_COUNTRY_LANGUAGE_TIME_ZONE_CHECKSUM_CC94B21F
+  locale_collection_envelope_checksum: sha256:c554853696236992c4209f30796a39a41e434d4b066f92d52bc24d9532737945
+  locale_collection_private_state_removed: true
+  remaining_collection_status: COMPLETE
+  remaining_collection_families: []
+  facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING
   locale_reader_contract: SYSTEM_SETTINGS_SINGLE_DOCTYPE_FIXED_GET_VALUE_NO_FILTER_EXACT_LANGUAGE_TIME_ZONE_COUNTRY
   expanded_current_source_operation: CACHED_PATH_HEAD_CURRENT_GIT_OBJECT_SINGLE_FILE_DIFF_PRIVATE_RECONSTRUCTION
   expanded_runtime_metadata_operation: FIXED_FRAPPE_GET_LIST_FAMILIES_EXACT_JSON_PAGE_200_MAX_25

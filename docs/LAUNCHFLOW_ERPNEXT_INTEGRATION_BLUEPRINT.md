@@ -1,6 +1,6 @@
 # LaunchFlow–ERPNext Compatibility Blueprint
 
-Status: **BASELINE RECORDED — PRODUCTION PARTIALLY OBSERVED; TARGET BINDINGS UNVERIFIED**
+Status: **P8-07F COMPATIBILITY RECONCILED — CURRENT DESIGN PRESERVED; ONLY CONFIGURATION/MINIMAL ADDITIVE SEAMS IDENTIFIED**
 
 Date: `2026-08-30`
 
@@ -11,20 +11,22 @@ minimum facts needed to decide whether the production installation matches.
 It is not a redesign, implementation plan or production-change authorization.
 
 The bounded read-only collection accepted Frappe `15.79.0`, ERPNext `15.77.0`,
-twenty installed apps, all anonymous app HEAD/status rows and all tracked-path
-inventories. ERPNext and twelve of eighteen custom apps have tracked drift, so
-their committed HEAD cannot stand in for the runtime tree. Six clean custom
-apps yielded bounded hooks/API/fixture/module/patch summaries; none proved an
-exact P8-01 through P8-09 target binding. Two relevant DocType candidates
-stopped at sensitive-content preflight, and runtime-only metadata remains
-outside the frozen source-only allowlist. Therefore each exact target binding
-remains `UNVERIFIED`. The closed compatibility
-vocabulary has no evidence-free match state, so each row remains
-`BUSINESS_DECISION_REQUIRED — FACT/ACCESS ONLY` with `NO_CHANGE` pending
-evidence. This does not assert a business conflict. No adjustment task may be
-created until one concrete incompatibility is proven.
+twenty installed apps, the actual tracked state of ERPNext and eighteen custom
+apps, fixed runtime metadata, 27 relevant DocTypes and their fields, 120
+DocPerm rows, aggregate File URL shapes and the five relevant Mold-family
+current-source structures. ERPNext and twelve custom apps are dirty; current
+tracked source was therefore used where authorized and HEAD alone is not
+treated as runtime truth. The only absent frozen DocType is `Injection Molding
+Condition`. No accepted fact conflicts with the approved LaunchFlow
+architecture, ownership or contracts.
 
-The collection was closed after private mode-0600 state cleanup. No endpoint,
+The first matrix below is retained as the pre-collection baseline. The
+accepted reconciliation matrix that follows it is authoritative. It applies
+the required priority: direct reuse, then configuration/mapping, then one
+minimal local adapter adjustment, then one additive operation-specific ERP
+custom-app adjustment. P8-07F implements none of those changes.
+
+Every collection window was closed after private mode-0600 state cleanup. No endpoint,
 host, user, key, Site, custom-app identity, raw path, source value or business
 record is retained here. Proven versions and anonymous structural checksums are
 recorded in `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`.
@@ -42,6 +44,32 @@ recorded in `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`.
 | P8-07 operation center, logical DLQ, replay and reconciliation / `FR-RP-009`, `UX-016`, `NFR-INT-001` | `integration_operations` schema/API v1 derives logical DLQ from five owning operations: receive Project submission, publish Item, publish MBOM, create Tool Asset, update Tool Asset. Replay is only exact retryable/non-uncertain; reconciliation is intent/observation and never target-success assertion. | Each P8-02..05 service owns immutable execution truth; P8-07 owns Project-scoped reads/action receipts/audit. Direction follows owning operation; actor/trace/idempotency/source/hash retained. | `UNVERIFIED`: target retry/error/rate-limit semantics, service permissions, operational support and reconciliation readers unavailable. | `BUSINESS_DECISION_REQUIRED — FACT/ACCESS ONLY`; `NO_CHANGE`. | Cross-Project denial, exact action eligibility, uncertain no-redispatch, duplicate/restart/partial/stale/conflict, trusted observation, audit and permission tests. | Production execution stays disabled. Sandbox/UAT verifies target semantics; monitor queues/claims/attempts/logical DLQ; rollback disables action profile, history retained. P8-07 Level3 and GAP-004. |
 | P8-08 Released Trial Summary read-only seam / `FR-INT-015` | Reuse the immutable NPI Released Trial Summary (`npi.released_trial_summary.v1`, presentation/redaction companions) and prepare only a read-only adapter/projection seam with explicit unavailable state. Exact external event, payload/consumer mapping and receipt remain held. | NPI owns released summary and redaction; any ERP consumer owns its accepted target reference only. Proposed `NPI_TO_ERPNEXT_SUMMARY`, versioned and idempotent, with trace/hash and no browser direct access. | `UNVERIFIED`: production consumer, method, fields, permission, receipt and retention unavailable. | `BUSINESS_DECISION_REQUIRED — FACT/ACCESS ONLY`; `NO_CHANGE`; P8-08 remains blocked and inactive. | Required future tests: normal, unavailable, permission, duplicate, stale/conflict, redaction, timeout-after-commit, partial receipt, retry/replay/reconcile and rollback. | Do not activate before production facts and Sandbox/UAT. Rollback is profile disable with immutable source retained. Evidence: phase-8 anchor, existing released-summary code/contracts, GAP-001/004. |
 | P8-09 JCE Core display identity / `FR-BR-002` | Show approved `JCE Core` text and exact `docs/Brand Asset/Core.png` only in ERP/JCE display contexts; internal API/event/schema code remains `ERPNEXT`. | Display identity is presentation-only; technical source/target ownership and codes do not change. No data direction or business writer is introduced. | `UNVERIFIED`: production surfaces were not inspected; no production branding change is assumed. | `BUSINESS_DECISION_REQUIRED — FACT/ACCESS ONLY`; `NO_CHANGE`. | Exact asset/hash/usage, accessible name, scale/light/dark and EN/zh/zh-TW tests; scans reject technical-code renaming or substitute marks. | Rollback removes only the display adapter. No core/ERP data change. Evidence: FR-BR-002 anchor, ADR-012, GAP-004. |
+
+## Accepted P8-01 through P8-09 compatibility reconciliation
+
+`DIRECT_MATCH` means no implementation change. `CONFIG_OR_MAPPING_ONLY` means
+the approved adapter and contract remain unchanged and only a versioned
+profile/map is supplied. A conditional ERP method below is not authorized by
+this document: it is the smallest independent-custom-app seam to use only if
+Sandbox proves that configuration cannot expose the operation safely.
+
+| Capability / Requirement | Production objects and fields / owners | Accepted fact and compatibility | ERPNext side — current use or smallest conditional seam | LaunchFlow side — exact existing work | Direction / reliability / authority | Required tests | Rollout / rollback / evidence |
+|---|---|---|---|---|---|---|---|---|
+| P8-01 projections / `INT-001`, `INT-006`, `INT-010` | Customer, Supplier, Item, Purchase Order, Quality Inspection, DMR, Asset, Mold; ERP owns formal fields and raw codes; NPI owns immutable observation/head | Object families and DocFields exist; `CONFIG_OR_MAPPING_ONLY`, `NO_CHANGE` | Configure fixed read maps for stable ID, version/modified token, status/result, cost and Asset/Mold status/location/shot/maintenance fields. If permission-safe reads cannot be expressed, add only `get_npi_projection_v1` in an independent app | Keep `projections` domain/repository/BFF/UI truth unchanged | `ERPNEXT_TO_NPI`; scheduled/delta read; `npi.erp-projection.v1`; source version/time/hash; operation-specific non-Admin actor; trace; no Outbox write, immutable observation/head, reconcile on drift | normal/empty/no-permission, pagination/order, duplicate/reorder, stale/current/drifted/unavailable, timeout, hash conflict | Profile off → Sandbox map → AT-01/02 → monitored enable; rollback disables reader, never deletes history. DocType/DocField/DocPerm checksums in inventory |
+| P8-02 signed Project ingress / `INT-002`, `FR-PM-002` | Project plus ERP Quotation/Sales Order source truth; ERP owns submitted source; NPI owns Inbox and one draft Project | Runtime Webhook/Workflow metadata is structurally available but no exact P8 signed event is accepted; `CONFIG_OR_MAPPING_ONLY` for event/state mapping, with a conditional `MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT` only for signing | Prefer a configured Webhook over approved submitted states. If raw-body signature/version/idempotency cannot be configured, add one `emit_npi_project_source_v1` hook/API in an independent app; no core override | Keep fixed POST `/api/npi/v1/integration/erpnext/project-source-events`, signature verifier, Inbox and draft seeding unchanged | `ERPNEXT_TO_NPI`; submit trigger; schema v1; event/source/hash/idempotency; dedicated sender; trace; Inbox-first, retry/quarantine/replay original identity | signature old/future/invalid, duplicate/reordered/conflict, permission, restart, timeout, one-draft invariant | Owner approves source state + signing in Sandbox; rollback disables Webhook/hook and preserves Inbox. No adjustment task until config-only test fails |
+| P8-03 Item publish / `INT-003` | Item `name`, `item_name`, `stock_uom`, `item_group` and target version; ERP owns formal Item; NPI owns released engineering snapshot/request | Item/DocFields/permissions exist; no incompatible field found; `CONFIG_OR_MAPPING_ONLY`, `NO_CHANGE` | Configure naming/UOM/group map and a least-privilege operation. Only if generic public APIs cannot satisfy the fixed contract, add `publish_npi_item_v1` in an independent app | Keep `item_publish.publish_released_item`, request/Outbox/attempt/result/mapping and BFF unchanged | `NPI_TO_ERPNEXT`; release trigger; schema v1; source/hash/expected target version/idempotency/actor/trace; Outbox retry; uncertain timeout is not redispatched | normal, validation, missing map, duplicate, stale/CAS conflict, 4xx/429/5xx, partial, timeout-after-commit, replay/reconcile, denied actor | Sandbox mapping first; rollback disables adapter/profile and preserves request/result history |
+| P8-04 MBOM publish / `INT-004` | BOM `name`, `item`, quantity/items, routing/operations, docstatus and version; ERP owns submitted BOM; NPI owns released topology/request | BOM, Item, Work Order and Job Card families exist; `CONFIG_OR_MAPPING_ONLY`, `NO_CHANGE` | Configure node/item/UOM/routing maps. If the fixed atomic create/update/submit contract is unavailable, add only `publish_npi_mbom_v2` in an independent app | Keep `mbom_publish.publish_released_mbom`, immutable nodes, authenticated Item mapping, per-node results and submitted protection | `NPI_TO_ERPNEXT`; released-MBOM trigger; schema v2; topology hash/idempotency/actor/trace/expected target; Outbox; per-node retry/reconcile; submitted truth never overwritten | missing Item map, topology drift, duplicate/stale/conflict, partial nodes, submitted conflict, timeout-after-commit, replay/reconcile | P8-03 maps precede MBOM Sandbox/UAT; rollback disables profile, no submitted-BOM rewrite |
+| P8-05 Tool Asset / `INT-005`, `FR-TL-011..016` | Asset plus current Mold fields: ownership/customer, linked Asset, status/version/location/shot count, products/materials/condition; Mold Repair covers supplier/PO/finance/execution/acceptance/trial; ERP owns physical Asset/Mold lifecycle | Concrete production seam exists; `CONFIG_OR_MAPPING_ONLY`, `NO_CHANGE` | Reuse Asset/Mold structures. Configure zero-or-one Tooling Set mapping and create/update scopes. Conditional app seam is only `upsert_npi_tool_asset_v1` if Sandbox proves no safe operation-specific method | Keep `tool_asset_request.create_or_update_tool_asset`; P8-01 remains sole projection owner; no dual master | `NPI_TO_ERPNEXT` command + `ERPNEXT_TO_NPI` status; acceptance/change trigger; schema v1; physical-set ID/hash/version/idempotency/actor/trace; Outbox and reconciliation | create/update, duplicate, zero-or-one conflict, movement/repair/maintenance, stale projection, permission, partial/timeout, replay/reconcile | Separate create/update scopes; rollback disables both profiles, retains mapping/audit. Mold/current-source checksums in inventory |
+| P8-06 formal quality reference / `INT-007`, `FR-TR-006`, `FR-NP-006` | Quality Inspection and DMR exist; ERP owns identity, raw status/result, approval and lifecycle; NPI owns immutable link/current/drift display | Required formal-quality objects exist; NCR/CAPA terminology is not separately proved. `CONFIG_OR_MAPPING_ONLY`, `NO_CHANGE`; raw-code/business policy remains owner approval | No ERP write or customization required. Configure an allowlisted Quality Inspection/DMR reference type and stable ID; do not reinterpret raw codes or create NCR/CAPA objects | Keep `quality_link.link_observed_formal_quality_reference` and exact current P8-01 observation binding unchanged | `ERPNEXT_TO_NPI` reference only; exact observation/head/hash/actor/trace; no Outbox, replay is idempotent local link | current/drifted/unavailable, invalid type, raw code retention, duplicate/conflict/tamper, permission-safe not-found, rollback | Owner approves type/raw-code map; rollback removes profile, not link history. Quality/DMR metadata checksum evidence |
+| P8-07 operations / `FR-RP-009`, `UX-016`, `NFR-INT-001` | Target error/rate/retry semantics remain owned per ERP operation; NPI owns request/attempt/result/logical DLQ/replay/reconcile/audit | Runtime jobs/Webhooks/permissions are structurally known; no architecture conflict. `CONFIG_OR_MAPPING_ONLY`, `NO_CHANGE` | Configure status/error classification and operation scopes. If target observation cannot be read safely, add one read-only `get_npi_operation_status_v1`; never add generic replay/execute | Keep `integration_operations` Project-scoped reads, action receipts, exact retry eligibility and uncertain no-redispatch unchanged | Direction follows P8-02..05; original idempotency/actor/trace/hash retained; Inbox/Outbox and reconciliation remain owning-operation truth | exact eligibility, 4xx/429/5xx, timeout uncertainty, duplicate/restart/partial/stale/conflict, cross-Project denial, audit | Sandbox target semantics; rollback disables action profile, history retained. P8-07 Level 3 + runtime metadata evidence |
+| P8-08 Released Trial Summary seam / `FR-INT-015` | Mold Trial Report current source contains Mold, Item, trial result, machine, material, samples, issues, condition sheet and repair links; ERP owns these source facts; NPI owns immutable Released Trial Summary/redaction | Concrete read source exists; `CONFIG_OR_MAPPING_ONLY`, `NO_CHANGE`; P8-08 may implement its already-approved read-only adapter seam after P8-07F Level 3 | Reuse Mold Trial Report with a fixed permission-safe read map. Only if Sandbox proves direct read unsuitable, add read-only `get_mold_trial_report_summary_v1` in the independent app; no writer | Implement only the existing P8-08 adapter/projection seam around `npi.released_trial_summary.v1`, presentation/redaction and explicit unavailable state | `ERPNEXT_TO_NPI` read for source corroboration; versioned map, report modified/version token, trace/hash, service actor; no browser ERP call; retry/reconcile reads only | normal/empty/no-permission, redaction, stale/conflict, duplicate, timeout, source removal, partial links, locale/date normalization | Activate P8-08 only after this Gate; Sandbox/UAT before production profile. Rollback disables reader, immutable NPI summary stays. Trial-report checksum in inventory |
+| P8-09 JCE Core identity / `FR-BR-002` | Display-only `JCE Core`; technical source/target code remains `ERPNEXT`; no ERP business field owner | `DIRECT_MATCH`, `NO_CHANGE` | No ERP core, DocType, field, workflow or API change | Use approved local text/asset only in ERP display contexts; never rename contracts/events/schema codes | Presentation only; no trigger, idempotency, queue, actor or business write | exact asset/hash/accessible name, scale/theme, EN/zh/zh-TW; scans reject technical-code rename | Rollback removes display adapter only; ADR-012/brand evidence |
+
+No row proves a need to redesign LaunchFlow. Conditional operation methods are
+the smallest future fallback and may become atomic tasks only after a Sandbox
+test proves configuration/mapping insufficient. Database topology, production
+service identity, owner-approved raw-code maps and production deployment remain
+explicit activation holds, not P8-08 design blockers.
 
 ## Common interface and operating boundary
 
@@ -73,8 +101,8 @@ drift blocks `IMPLEMENTATION_COMPLETE` and production-ready. The same
 minimal-adjustment hierarchy applies; the review cannot authorize or perform a
 production change.
 
-The present P8-07F Gate cannot pass: dirty tracked production trees,
-runtime-only metadata and two sensitive-preflight DocType candidates leave
-required bindings unverified. P8-08 therefore remains blocked. This is a fact
-evidence hold, not a product defect and not authority to redesign or adjust
-either system.
+The P8-07F evidence set is complete for the bounded compatibility Gate. P8-08
+remains inactive only until this checkpoint's final Level 3 passes. Production
+profiles still require owner approval, version-equivalent Sandbox/UAT and the
+explicit activation facts above. This is not authority to redesign or modify
+either production system.

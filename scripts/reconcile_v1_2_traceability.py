@@ -478,6 +478,7 @@ ERP_CUSTOMIZATION_REQUIREMENTS_EVIDENCE = (
     "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
     "docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md",
     "implementation/evidence/phase-8/p8-07f-current-runtime-governance-transition.md",
+    "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md",
 )
 ERP_CUSTOMIZATION_REQUIREMENTS_HOLD_IDS = {
     "INT-001",

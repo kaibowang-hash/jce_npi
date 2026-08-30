@@ -52,17 +52,17 @@ approved LaunchFlow architecture/contracts and records `DIRECT_MATCH`/
 `NO_CHANGE` unless a concrete incompatibility proves a smaller classification.
 Facts collection cannot itself pass an adjustment or production-change Gate.
 
-For the current P8-07F run, accepted bounded facts are sealed at `cfd093055` /
-ordinary `33299326296`: versions, installed apps, anonymous HEAD/status and all
-tracked-path inventories are accepted, while current dirty source, two stopped
-DocType candidates and runtime metadata remain unverified. The user's
-2026-08-30 expanded authority does not bypass a Gate. The independent
-`P8-07F-CURRENT-RUNTIME-GOVERNANCE` transition must first pass exact-SHA
-ordinary CI and Level 3 with zero production contact; a separate collector
-expansion must then pass its own exact-SHA ordinary CI before any new read.
-Only after those reads are sanitized and reconciled may the facts Level 3 run
-and P8-08 activate. A CI PASS never substitutes for missing production
-evidence.
+For the current P8-07F run, the expanded governance, fixed readers and every
+bounded production fact family have passed their recorded exact-SHA ordinary
+CI. Final locale reader SHA `77b4258f` / ordinary `33312664804` precedes the
+single accepted `SYSTEM_LOCALE` read; private state is removed. The accepted
+inventory now includes current tracked source, fixed runtime metadata,
+DocType/DocField/DocPerm structure, File URL shapes and relevant Mold-family
+structure. The consolidated compatibility result proves no architecture or
+ownership conflict and changes no product. One final checkpoint exact-SHA
+ordinary CI and exactly one P8-07F Level 3 remain; PASS releases P8-08. A CI
+PASS still never substitutes for the separate production-activation and final
+release facts named below.
 
 Before final implementation/release closeout, rerun a complete production
 ERPNext↔LaunchFlow read-only compatibility reconciliation over versions, apps,

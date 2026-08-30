@@ -253,6 +253,23 @@ pending until that proof is produced in Codespaces.
 
 ## Current checkpoint
 
+### P8-07F consolidated compatibility checkpoint awaits final Level 3
+
+Exact SHA `77b4258f3b086420e0ae7769bd95830bf9dabfaa` passes ordinary CI
+`33312664804`. The sole remaining filterless Single DocType `SYSTEM_LOCALE`
+read succeeds, accepts only the frozen locale fields and checksums, and removes
+private state. Reuse all previously accepted version, app, current-worktree,
+runtime metadata, DocType/DocField/DocPerm, File URL-shape and Mold-family
+facts; do not reconnect or split another metadata-family checkpoint.
+
+The final consolidated checkpoint is product-zero and production-write-zero.
+It records P8-01 through P8-09 compatibility using the existing architecture,
+ownership and contracts as the default-correct baseline. No proven difference
+requires an adjustment task. Run one exact-SHA ordinary CI and then exactly one
+P8-07F Level 3. A PASS authorizes `P8-08`; a failure stops at the first safe
+boundary. Production activation, actual ERP customization, Sandbox/UAT and the
+mandatory final full-release read-only reconciliation remain separate Gates.
+
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
 - Branch: `codex/npi-v1.2-implementation`.
 - Phase 5 remains `IN_PROGRESS`; P5-00, P5-01, P5-02 and P5-03 are `PASS`.

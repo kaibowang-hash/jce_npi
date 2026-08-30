@@ -1,9 +1,17 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AWAITING_EXPANDED_COLLECTOR_EXACT_SHA_ORDINARY_THEN_FACT_COLLECTION — P8-07F-FACTS`
+`IN_PROGRESS_AWAITING_P8_07F_COMPATIBILITY_RECONCILIATION_LEVEL_3 — P8-07F-FACTS`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
+
+Exact SHA `77b4258f3b086420e0ae7769bd95830bf9dabfaa` passes ordinary CI
+`33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds and removes
+private state. All bounded facts are now reconciled in one product-zero
+checkpoint. Do not reconnect or create another metadata-family commit. The
+sole next action is this checkpoint's exact-SHA ordinary CI followed by one
+P8-07F Level 3. On PASS, P8-08 becomes the next authorized atomic task;
+production activation and final full-release reconciliation remain held.
 
 The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,
 ordinary `33279778063` and Level 3 `33280319184`. The separate collector
