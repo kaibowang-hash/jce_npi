@@ -34,14 +34,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(
-            value["task_id"], "P8-07F-CURRENT-RUNTIME-GOVERNANCE"
-        )
+        self.assertEqual(value["task_id"], "P8-07F-FACTS")
         self.assertEqual(value["task_kind"], "delivery_infrastructure")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P8-07F-FACTS")
+        self.assertEqual(value["authorized_next_task"], "P8-08")
         self.assertIn(
-            "P8_07F_ACCEPTED_FACTS_EXACT_SHA_CFD0930553FC40029D18518A8E3CD3481FA0A5D8_ORDINARY_33299326296_PASSED",
+            "P8_07F_CURRENT_RUNTIME_GOVERNANCE_FCCF62FE_ORDINARY_33304191319_LEVEL_3_33304710306_PASSED",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -49,39 +47,23 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_CURRENT_RUNTIME_GOVERNANCE_6AA9F9B6_ORDINARY_33301387305_PASSED_LEVEL_3_33302018921_FAILED_ONLY_MIGRATED_LEGACY",
+            "P8_07F_FACTS_CONNECTION_REQUIRES_THIS_EXPANDED_ACTIVATION_EXACT_SHA_ORDINARY_PASS",
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_REUSES_EXACT_THIRTY_NINE_SAFE_CODES_AND_REQUIRES_NEW_ORDINARY_BEFORE_ONE_CONTROLLED_RUN",
+            "CURRENT_FILE_OPERATION_REQUIRES_CACHED_EXACT_TRACKED_PATH_SAFE_MODE_HEAD_AND_CURRENT_GIT_OBJECT_SINGLE_FILE_DIFF_AND_PRIVATE_RECONSTRUCTION",
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_B366B2A7_ORDINARY_33303116320_CONTROLLED_33303731224_PASSED_SUCCESS_ZERO",
+            "CURRENT_SOURCE_OPERATION_REJECTS_SYMLINK_BINARY_RENAME_COPY_MODE_CHANGE_MULTI_PATH_DELETE_TRUNCATED_MALFORMED_OR_OVERSIZE_INPUT",
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_FACTS_EXPANSION_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS",
+            "FIXED_RUNTIME_METADATA_FAMILIES_ONLY_NO_CALLER_SELECTED_METHOD_DOCTYPE_FIELDS_FILTERS_ORDER_OR_PAGINATION",
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_CURRENT_TRACKED_WORKTREE_IS_AUTHORIZED_CANDIDATE_CURRENT_SOURCE_TRUTH_WITH_HEAD_AND_DIFF_PROVENANCE",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "P8_07F_TWO_STOPPED_RELEVANT_DOCTYPE_CANDIDATES_AUTHORIZED_FOR_READ_ONLY_STRUCTURAL_SUMMARY_NO_RAW_PERSISTENCE",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "P8_07F_RUNTIME_METADATA_AUTHORIZED_ONLY_THROUGH_FIXED_APPLICATION_LAYER_READ_OPERATIONS",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "NO_DIRECT_SQL_BENCH_CONSOLE_GENERIC_METHOD_CALLER_SELECTED_DOCTYPE_FIELDS_FILTERS_ORDER_OR_PAGINATION",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "CURRENT_SOURCE_OPERATION_REJECTS_SYMLINK_BINARY_MULTI_PATH_DELETE_TRUNCATED_MALFORMED_OR_OVERSIZE_INPUT",
+            "RUNTIME_METADATA_USES_FRAPPE_APPLICATION_LAYER_GET_LIST_EXACT_JSON_PAGE_200_MAX_25_AND_FAIL_CLOSED_SHAPE",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -89,7 +71,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
-            "JCE_CORE_FIXED_TRANSPORT_REDACTION_PROVENANCE_CHECKSUM_BOUNDED_OUTPUT_AND_FAIL_CLOSED_STOPS_RETAINED",
+            "ALL_PRODUCTION_READS_USE_FIXED_TRANSPORT_REMOTE_ALLOWLIST_REDACTION_PROVENANCE_CHECKSUM_BOUNDED_OUTPUT_AND_FAIL_CLOSED_STOPS",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -98,11 +80,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3",
+            "IN_PROGRESS_AWAITING_EXPANDED_COLLECTOR_EXACT_SHA_ORDINARY_THEN_FACT_COLLECTION",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(
-            "AGENTS.md",
+            "scripts/collect_erpnext_production_facts.py",
             value["allowed_paths"],
         )
         self.assertIn(
@@ -111,30 +93,39 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "cfd0930553fc40029d18518a8e3cd3481fa0a5d8",
+            "fccf62feaba2d3ed092efcd06174f16f66193540",
         )
-        self.assertEqual(len(value["allowed_paths"]), 19)
+        self.assertEqual(len(value["allowed_paths"]), 28)
         self.assertEqual(
             set(value["allowed_paths"]),
             {
-                "AGENTS.md",
+                "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
+                "docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md",
+                "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
+                "docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md",
+                "docs/specification/SPEC_INDEX.md",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
                 "implementation/BLOCKERS.md",
                 "implementation/CURRENT_TASK.json",
+                "implementation/DECISION_LOG.md",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
                 "implementation/QUALITY_GATE.md",
                 "implementation/REQUIRED_INPUTS.md",
                 "implementation/REQUIREMENT_TRACEABILITY.csv",
                 "implementation/RISK_REGISTER.md",
+                "implementation/ROADMAP.md",
+                "implementation/phase-8-requirement-anchor.md",
+                "implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md",
                 "implementation/evidence/phase-8/p8-07f-current-runtime-governance-transition.md",
                 "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md",
+                "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md",
+                "scripts/collect_erpnext_production_facts.py",
                 "scripts/reconcile_v1_2_traceability.py",
-                "scripts/verify_item_publish_runtime.py",
                 "scripts/verify_v1_2_reconciliation.py",
+                "tests/test_erpnext_production_fact_collector.py",
                 "tests/test_current_task_verifier.py",
-                "tests/test_phase8_item_publish_runtime_verifier.py",
                 "tests/test_v1_2_reconciliation.py",
             },
         )
@@ -156,7 +147,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(
             affected_modules,
             {
-                "tests.test_phase8_item_publish_runtime_verifier",
+                "tests.test_erpnext_production_fact_collector",
                 "tests.test_current_task_verifier",
                 "tests.test_v1_2_reconciliation",
             },

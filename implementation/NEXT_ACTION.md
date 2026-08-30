@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-CURRENT-RUNTIME-GOVERNANCE`
+`IN_PROGRESS_AWAITING_EXPANDED_COLLECTOR_EXACT_SHA_ORDINARY_THEN_FACT_COLLECTION — P8-07F-FACTS`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -18,22 +18,20 @@ plus twelve custom apps have tracked drift, and runtime-only metadata is not
 available through the frozen source-only allowlist. The private runtime state
 was deleted and the production-read window is closed.
 
-The user has now authorized the current tracked production worktrees, the two
+The user has authorized the current tracked production worktrees, the two
 stopped DocType candidates and fixed application-layer runtime metadata reads.
-The sole next action is this zero-contact governance transition: record the
-expanded operation, redaction, provenance and stop contracts; pass exact-SHA
-ordinary CI and Level 3; then activate a separate collector-expansion facts
-task with its own exact-SHA ordinary CI. Do not reconnect during this
-transition. Existing LaunchFlow architecture/contracts remain default correct;
-no adjustment task is authorized and P8-08 remains blocked.
+The zero-contact transition now passes at exact SHA `fccf62fe`, ordinary
+`33304191319` and Level 3 `33304710306`. The sole next action is to commit the
+expanded `P8-07F-FACTS` collector and exact governance manifest, obtain that
+commit's exact-SHA ordinary CI, and only then reconnect through the fixed
+read-only transport. Existing LaunchFlow architecture/contracts remain default
+correct; no adjustment task is authorized and P8-08 remains blocked.
 
-Governance exact SHA `6aa9f9b6` passes ordinary `33301387305`. Its Level 3
-`33302018921` passes repository/frontend/secret/visual/preflight and fails only
-at the fixed P8-03 migrated-legacy outer label. Product-zero diagnostic SHA
-`b366b2a7` then passes ordinary `33303116320` and controlled `33303731224`;
-exact-39 success emits no safe tuple. The sole next action is a diagnostics-off
-exact-SHA ordinary PASS followed by one Level 3. Do not open production access
-until that final Gate passes and the separate facts activation ordinary passes.
+The migrated-legacy diagnostic is closed and diagnostics are off. Final
+governance Level 3 `33304710306` passes all six required jobs at `fccf62fe`.
+Production access remains closed until the expanded facts activation ordinary
+passes; then only the fixed current-source and runtime-metadata operations are
+permitted.
 
 Required branch:
 `codex/npi-v1.2-implementation`

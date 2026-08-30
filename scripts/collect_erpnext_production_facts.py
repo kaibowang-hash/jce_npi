@@ -17,6 +17,7 @@ import io
 import json
 import os
 import re
+import shlex
 import stat
 import subprocess
 import sys
@@ -45,8 +46,12 @@ MAX_VERSION_BYTES = 64 * 1024
 MAX_STATUS_BYTES = 128 * 1024
 MAX_PATH_BYTES = 2 * 1024 * 1024
 MAX_FILE_BYTES = 256 * 1024
+MAX_DIFF_BYTES = 512 * 1024
+MAX_RUNTIME_BYTES = 512 * 1024
 DEFAULT_PAGE_SIZE = 200
 MAX_PAGE_SIZE = 500
+RUNTIME_PAGE_SIZE = 200
+RUNTIME_MAX_PAGES = 25
 SSH_OPTIONS = (
     "-T",
     "-o", "BatchMode=yes",
@@ -82,6 +87,113 @@ SENSITIVE_CONTENT = (
     ),
     re.compile(r"AKIA[0-9A-Z]{16}"),
 )
+REQUIRED_ERPNEXT_DOCTYPES = (
+    "Asset",
+    "Asset Maintenance",
+    "Asset Movement",
+    "BOM",
+    "Customer",
+    "Document Naming Rule",
+    "Document Naming Rule Condition",
+    "Item",
+    "Job Card",
+    "Project",
+    "Purchase Order",
+    "Quality Inspection",
+    "Supplier",
+    "System Settings",
+    "Work Order",
+)
+RUNTIME_METADATA_SPECS: dict[str, dict[str, Any]] = {
+    "CUSTOM_FIELDS": {
+        "doctype": "Custom Field",
+        "fields": ("name", "dt", "fieldname", "fieldtype", "options", "reqd", "read_only", "unique", "insert_after", "modified"),
+        "protected_fields": ("options",),
+    },
+    "PROPERTY_SETTERS": {
+        "doctype": "Property Setter",
+        "fields": ("name", "doc_type", "field_name", "property", "property_type", "value", "modified"),
+        "hashed_fields": ("value",),
+    },
+    "WORKFLOWS": {
+        "doctype": "Workflow",
+        "fields": ("name", "document_type", "is_active", "workflow_state_field", "modified"),
+    },
+    "WORKFLOW_STATES": {
+        "doctype": "Workflow Document State",
+        "fields": ("name", "parent", "state", "allow_edit", "doc_status", "is_optional_state", "modified"),
+    },
+    "WORKFLOW_TRANSITIONS": {
+        "doctype": "Workflow Transition",
+        "fields": ("name", "parent", "state", "action", "next_state", "allowed", "allow_self_approval", "condition", "modified"),
+        "hashed_fields": ("condition",),
+    },
+    "ROLES": {
+        "doctype": "Role",
+        "fields": ("name", "desk_access", "is_custom", "disabled", "modified"),
+    },
+    "CUSTOM_DOC_PERMS": {
+        "doctype": "Custom DocPerm",
+        "fields": ("name", "parent", "role", "permlevel", "read", "write", "create", "delete", "submit", "cancel", "amend", "report", "export", "share", "print", "email", "if_owner", "modified"),
+    },
+    "CLIENT_SCRIPTS": {
+        "doctype": "Client Script",
+        "fields": ("name", "dt", "view", "enabled", "script_type", "script", "modified"),
+        "hashed_fields": ("script",),
+    },
+    "SERVER_SCRIPTS": {
+        "doctype": "Server Script",
+        "fields": ("name", "script_type", "reference_doctype", "doctype_event", "event_frequency", "api_method", "disabled", "script", "modified"),
+        "hashed_fields": ("script",),
+    },
+    "DOCTYPES": {
+        "doctype": "DocType",
+        "fields": ("name", "module", "custom", "istable", "issingle", "autoname", "track_changes", "is_submittable", "modified"),
+        "filters": (("name", "in", REQUIRED_ERPNEXT_DOCTYPES),),
+    },
+    "DOCFIELDS": {
+        "doctype": "DocField",
+        "fields": ("name", "parent", "fieldname", "fieldtype", "options", "reqd", "read_only", "unique", "hidden", "permlevel", "idx", "modified"),
+        "filters": (("parent", "in", REQUIRED_ERPNEXT_DOCTYPES),),
+        "protected_fields": ("options",),
+    },
+    "DOCPERMS": {
+        "doctype": "DocPerm",
+        "fields": ("name", "parent", "role", "permlevel", "read", "write", "create", "delete", "submit", "cancel", "amend", "report", "export", "share", "print", "email", "if_owner", "modified"),
+        "filters": (("parent", "in", REQUIRED_ERPNEXT_DOCTYPES),),
+    },
+    "WEBHOOKS": {
+        "doctype": "Webhook",
+        "fields": ("name", "webhook_doctype", "webhook_docevent", "enabled", "request_method", "request_structure", "condition", "modified"),
+        "hashed_fields": ("request_structure", "condition"),
+    },
+    "SCHEDULED_JOBS": {
+        "doctype": "Scheduled Job Type",
+        "fields": ("name", "method", "frequency", "stopped", "modified"),
+    },
+    "REPORTS": {
+        "doctype": "Report",
+        "fields": ("name", "report_name", "ref_doctype", "report_type", "is_standard", "disabled", "module", "modified"),
+    },
+    "PRINT_FORMATS": {
+        "doctype": "Print Format",
+        "fields": ("name", "doc_type", "standard", "disabled", "print_format_type", "modified"),
+    },
+    "NOTIFICATIONS": {
+        "doctype": "Notification",
+        "fields": ("name", "document_type", "event", "enabled", "channel", "modified"),
+    },
+    "DOCUMENT_NAMING_RULES": {
+        "doctype": "Document Naming Rule",
+        "fields": ("name", "document_type", "disabled", "priority", "prefix", "counter", "prefix_digits", "modified"),
+        "hashed_fields": ("prefix",),
+    },
+    "DOCUMENT_NAMING_RULE_CONDITIONS": {
+        "doctype": "Document Naming Rule Condition",
+        "fields": ("name", "parent", "field", "condition", "value", "idx", "modified"),
+        "hashed_fields": ("value",),
+    },
+}
 
 
 class FactCollectionError(RuntimeError):
@@ -216,19 +328,57 @@ def _remote_command(operation: str, *, site: str | None = None, root: str | None
             command = ("git", "-C", root, "status", "--short", "-uno")
         elif operation == "APP_TRACKED_PATHS":
             command = ("git", "-C", root, "ls-files", "-z")
-        elif operation in {"APP_FILE_HASH", "APP_FILE_READ"}:
+        elif operation in {"APP_FILE_HASH", "APP_FILE_READ", "APP_FILE_MODE", "APP_HEAD_FILE_HASH", "APP_WORKTREE_DIFF"}:
             require(path is not None and _safe_relative_path(path), "tracked file path is invalid")
             if operation == "APP_FILE_HASH":
                 command = ("git", "-C", root, "hash-object", "--", path)
-            else:
+            elif operation == "APP_FILE_READ":
                 command = ("git", "-C", root, "show", f"HEAD:{path}")
+            elif operation == "APP_FILE_MODE":
+                command = ("git", "-C", root, "ls-files", "-s", "--", path)
+            elif operation == "APP_HEAD_FILE_HASH":
+                command = ("git", "-C", root, "rev-parse", f"HEAD:{path}")
+            else:
+                command = (
+                    "git", "-C", root, "diff", "--no-ext-diff", "--no-renames",
+                    "--no-color", "--unified=1000000", "HEAD", "--", path,
+                )
         else:
             raise FactCollectionError("remote operation is not allowlisted")
-    require(
-        all(REMOTE_TOKEN.fullmatch(token) is not None for token in command),
-        "remote command token is unsafe",
-    )
+    _validate_command_tokens(command)
     return command
+
+
+def _runtime_command(family: str, site: str, start: int) -> tuple[str, ...]:
+    require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
+    require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
+    require(start >= 0 and start % RUNTIME_PAGE_SIZE == 0, "runtime metadata page start is invalid")
+    spec = RUNTIME_METADATA_SPECS[family]
+    kwargs = {
+        "doctype": spec["doctype"],
+        "fields": list(spec["fields"]),
+        "filters": [list(row) for row in spec.get("filters", ())],
+        "order_by": "name asc",
+        "limit_start": start,
+        "limit_page_length": RUNTIME_PAGE_SIZE,
+    }
+    command = (
+        "bench", "--site", site, "execute", "frappe.client.get_list",
+        "--kwargs", json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
+    )
+    _validate_command_tokens(command)
+    return command
+
+
+def _validate_command_tokens(command: Sequence[str]) -> None:
+    require(bool(command), "remote command is empty")
+    require(command[0] in {"bench", "git"}, "remote executable is not allowlisted")
+    for token in command:
+        require(type(token) is str and 0 < len(token) <= 8192, "remote command token is invalid")
+        require(
+            not any(character in token for character in ("\x00", "\r", "\n", ";", "&", "|", "<", ">", "`", "$")),
+            "remote command token is unsafe",
+        )
 
 
 def _safe_root(value: str) -> bool:
@@ -254,9 +404,8 @@ def _safe_inventory_path(value: str) -> bool:
 
 
 def _ssh_argv(command: Sequence[str]) -> tuple[str, ...]:
-    require(bool(command), "remote command is empty")
-    require(all(REMOTE_TOKEN.fullmatch(token) is not None for token in command), "remote command token is unsafe")
-    remote = f"cd {REMOTE_BENCH_ROOT} && exec " + " ".join(command)
+    _validate_command_tokens(command)
+    remote = f"cd {REMOTE_BENCH_ROOT} && exec " + shlex.join(command)
     return ("ssh", *SSH_OPTIONS, "--", SSH_ALIAS, remote)
 
 
@@ -538,6 +687,176 @@ def _source_summary(path: str, raw: bytes) -> dict[str, Any]:
     }
 
 
+def _git_blob_sha1(raw: bytes) -> str:
+    header = f"blob {len(raw)}\0".encode("ascii")
+    return hashlib.sha1(header + raw, usedforsecurity=False).hexdigest()
+
+
+def _parse_file_mode(raw: bytes, path: str) -> str:
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise FactCollectionError("APP_FILE_MODE output is not UTF-8") from exc
+    lines = [line for line in text.splitlines() if line]
+    require(len(lines) == 1, "APP_FILE_MODE must return one tracked entry")
+    match = re.fullmatch(r"(100644|100755) ([0-9a-f]{40}) 0\t(.+)", lines[0])
+    require(match is not None, "APP_FILE_MODE row shape drifted or file mode is unsafe")
+    require(match.group(3) == path, "APP_FILE_MODE path drifted")
+    return match.group(1)
+
+
+def _trim_diff_newline(value: bytes) -> bytes:
+    if value.endswith(b"\r\n"):
+        return value[:-2]
+    if value.endswith(b"\n"):
+        return value[:-1]
+    raise FactCollectionError("no-newline marker has no preceding newline")
+
+
+def _reconstruct_current_file(head_raw: bytes, patch_raw: bytes, path: str) -> bytes:
+    require(_safe_relative_path(path), "tracked file path is invalid")
+    require(len(head_raw) <= MAX_FILE_BYTES, "HEAD file exceeded the bounded limit")
+    require(len(patch_raw) <= MAX_DIFF_BYTES, "worktree diff exceeded the bounded limit")
+    if not patch_raw:
+        return head_raw
+    require(b"\x00" not in patch_raw, "worktree diff is binary")
+    try:
+        patch_raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise FactCollectionError("worktree diff is not UTF-8") from exc
+    forbidden = (
+        b"GIT binary patch",
+        b"Binary files ",
+        b"rename from ",
+        b"rename to ",
+        b"copy from ",
+        b"copy to ",
+        b"new file mode ",
+        b"deleted file mode ",
+        b"old mode ",
+        b"new mode ",
+    )
+    require(not any(marker in patch_raw for marker in forbidden), "worktree diff changes an unsafe file property")
+    lines = patch_raw.splitlines(keepends=True)
+    require(len(lines) >= 5, "worktree diff is truncated")
+    expected_diff = f"diff --git a/{path} b/{path}".encode()
+    require(lines[0].rstrip(b"\r\n") == expected_diff, "worktree diff path drifted")
+    require(sum(line.startswith(b"diff --git ") for line in lines) == 1, "worktree diff contains multiple files")
+    index_match = re.fullmatch(
+        rb"index ([0-9a-f]{7,40})\.\.([0-9a-f]{7,40}) (100644|100755)\r?\n?",
+        lines[1],
+    )
+    require(index_match is not None, "worktree diff index shape drifted")
+    head_object = _git_blob_sha1(head_raw).encode()
+    require(head_object.startswith(index_match.group(1)), "worktree diff HEAD object drifted")
+    require(lines[2].rstrip(b"\r\n") == f"--- a/{path}".encode(), "worktree diff old path drifted")
+    require(lines[3].rstrip(b"\r\n") == f"+++ b/{path}".encode(), "worktree diff new path drifted")
+
+    head_lines = head_raw.splitlines(keepends=True)
+    output: list[bytes] = []
+    old_cursor = 0
+    line_index = 4
+    hunk_count = 0
+    while line_index < len(lines):
+        header = lines[line_index].decode("ascii", errors="strict").rstrip("\r\n")
+        match = re.fullmatch(
+            r"@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(?: .*)?",
+            header,
+        )
+        require(match is not None, "worktree diff hunk header drifted")
+        hunk_count += 1
+        old_start = int(match.group(1))
+        old_count = int(match.group(2) or "1")
+        new_start = int(match.group(3))
+        new_count = int(match.group(4) or "1")
+        expected_old_index = 0 if old_start == 0 else old_start - 1
+        require(expected_old_index >= old_cursor, "worktree diff hunks overlap or regress")
+        output.extend(head_lines[old_cursor:expected_old_index])
+        old_cursor = expected_old_index
+        require(len(output) == (0 if new_start == 0 else new_start - 1), "worktree diff new hunk position drifted")
+        line_index += 1
+        entries: list[tuple[int, bytes]] = []
+        while line_index < len(lines) and not lines[line_index].startswith(b"@@ "):
+            line = lines[line_index]
+            if line.startswith(b"\\ No newline at end of file"):
+                require(entries, "no-newline marker has no content row")
+                prefix, content = entries[-1]
+                entries[-1] = (prefix, _trim_diff_newline(content))
+            else:
+                require(line[:1] in {b" ", b"-", b"+"}, "worktree diff row shape drifted")
+                entries.append((line[0], line[1:]))
+            line_index += 1
+        observed_old = sum(prefix in {32, 45} for prefix, _ in entries)
+        observed_new = sum(prefix in {32, 43} for prefix, _ in entries)
+        require(observed_old == old_count and observed_new == new_count, "worktree diff hunk counts drifted")
+        for prefix, content in entries:
+            if prefix in {32, 45}:
+                require(old_cursor < len(head_lines), "worktree diff reads beyond HEAD")
+                require(head_lines[old_cursor] == content, "worktree diff context does not match HEAD")
+                old_cursor += 1
+            if prefix in {32, 43}:
+                output.append(content)
+    require(hunk_count >= 1, "worktree diff contains no hunks")
+    output.extend(head_lines[old_cursor:])
+    result = b"".join(output)
+    require(len(result) <= MAX_FILE_BYTES, "current tracked file exceeded the bounded limit")
+    require(_git_blob_sha1(result).encode().startswith(index_match.group(2)), "worktree diff result object drifted")
+    return result
+
+
+def _parse_runtime_page(raw: bytes, family: str) -> tuple[list[dict[str, Any]], list[str]]:
+    require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
+    require(len(raw) <= MAX_RUNTIME_BYTES, "runtime metadata output exceeded the bounded limit")
+    try:
+        value = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError("runtime metadata output is not exact JSON") from exc
+    require(type(value) is list, "runtime metadata page must be a list")
+    require(len(value) <= RUNTIME_PAGE_SIZE, "runtime metadata page exceeded the fixed size")
+    spec = RUNTIME_METADATA_SPECS[family]
+    fields = tuple(spec["fields"])
+    hashed_fields = set(spec.get("hashed_fields", ()))
+    protected_fields = set(spec.get("protected_fields", ()))
+    sanitized: list[dict[str, Any]] = []
+    raw_names: list[str] = []
+    for row in value:
+        require(type(row) is dict and set(row) == set(fields), "runtime metadata row shape drifted")
+        name = row.get("name")
+        require(type(name) is str and bool(name), "runtime metadata row name is invalid")
+        require(len(name) <= 160 and all(ord(character) >= 32 for character in name), "runtime metadata row name is unsafe")
+        raw_names.append(name)
+        safe_row: dict[str, Any] = {}
+        for field in fields:
+            field_value = row[field]
+            if field in hashed_fields:
+                if field_value is None:
+                    safe_row[field] = None
+                else:
+                    require(type(field_value) is str, "hashed metadata field shape drifted")
+                    encoded = field_value.encode("utf-8")
+                    safe_row[field] = {
+                        "byte_count": len(encoded),
+                        "checksum": _checksum(encoded),
+                    }
+            elif field in protected_fields and type(field_value) is str:
+                try:
+                    safe_row[field] = _safe_scalar(field_value)
+                except FactCollectionError:
+                    encoded = field_value.encode("utf-8")
+                    safe_row[field] = {
+                        "byte_count": len(encoded),
+                        "checksum": _checksum(encoded),
+                    }
+            else:
+                safe_value = _safe_scalar(field_value)
+                require(field_value is None or safe_value is not None, "runtime metadata scalar shape drifted")
+                safe_row[field] = safe_value
+        sanitized.append(safe_row)
+    require(raw_names == sorted(raw_names), "runtime metadata page ordering drifted")
+    require(len(raw_names) == len(set(raw_names)), "runtime metadata page contains duplicate names")
+    return sanitized, raw_names
+
+
 def _discover(args: argparse.Namespace, runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh) -> None:
     _validate_ordinary_run_id(args.ordinary_run_id)
     _preflight(args.expected_sha)
@@ -685,6 +1004,138 @@ def _file_operation(args: argparse.Namespace, runner: Callable[[str, Sequence[st
     )
 
 
+def _current_file_operation(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+) -> None:
+    _validate_ordinary_run_id(args.ordinary_run_id)
+    _preflight(args.expected_sha)
+    state_path = _state_path(args.state, must_exist=True)
+    state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
+    app = _app_for_label(state, args.label)
+    cached = state["tracked_paths"].get(args.label)
+    require(type(cached) is list and args.path in cached, "current file read requires a cached exact tracked path")
+    require(_safe_relative_path(args.path), "current file path is outside the strict command grammar")
+    require(not _path_is_sensitive(args.path), "tracked path is excluded as sensitive")
+
+    mode_raw = runner(
+        "APP_FILE_MODE",
+        _remote_command("APP_FILE_MODE", root=app["root"], path=args.path),
+        MAX_VERSION_BYTES,
+    )
+    mode = _parse_file_mode(mode_raw, args.path)
+    head_hash_raw = runner(
+        "APP_HEAD_FILE_HASH",
+        _remote_command("APP_HEAD_FILE_HASH", root=app["root"], path=args.path),
+        MAX_VERSION_BYTES,
+    )
+    head_object = _parse_head(head_hash_raw)
+    head_raw = runner(
+        "APP_FILE_READ",
+        _remote_command("APP_FILE_READ", root=app["root"], path=args.path),
+        MAX_FILE_BYTES,
+    )
+    require(_git_blob_sha1(head_raw) == head_object, "HEAD tracked content does not match its Git object")
+    current_hash_raw = runner(
+        "APP_FILE_HASH",
+        _remote_command("APP_FILE_HASH", root=app["root"], path=args.path),
+        MAX_VERSION_BYTES,
+    )
+    current_object = _parse_head(current_hash_raw)
+    if current_object == head_object:
+        current_raw = head_raw
+        worktree_state = "CLEAN"
+        diff_checksum = None
+    else:
+        patch_raw = runner(
+            "APP_WORKTREE_DIFF",
+            _remote_command("APP_WORKTREE_DIFF", root=app["root"], path=args.path),
+            MAX_DIFF_BYTES,
+        )
+        current_raw = _reconstruct_current_file(head_raw, patch_raw, args.path)
+        require(_git_blob_sha1(current_raw) == current_object, "reconstructed current content does not match its Git object")
+        worktree_state = "DIRTY_TRACKED"
+        diff_checksum = _checksum(patch_raw)
+    summary = _source_summary(args.path, current_raw)
+    _emit(
+        {
+            "task_id": TASK_ID,
+            "operation": "APP_CURRENT_FILE_READ",
+            "timestamp": _timestamp(),
+            "source": args.label,
+            "path_checksum": _checksum(args.path.encode("utf-8")),
+            "mode": mode,
+            "head_git_object": head_object,
+            "current_git_object": current_object,
+            "worktree_state": worktree_state,
+            "diff_checksum": diff_checksum,
+            "summary": summary,
+        }
+    )
+
+
+def _runtime_operation(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+) -> None:
+    _validate_ordinary_run_id(args.ordinary_run_id)
+    _preflight(args.expected_sha)
+    state_path = _state_path(args.state, must_exist=True)
+    state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
+    family = args.family
+    require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
+    site = os.environ.get("NPI_P8_07F_SITE")
+    require(site is not None and APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is missing or invalid")
+
+    rows: list[dict[str, Any]] = []
+    names: list[str] = []
+    page_checksums: list[str] = []
+    exhausted = False
+    for page_index in range(RUNTIME_MAX_PAGES):
+        start = page_index * RUNTIME_PAGE_SIZE
+        raw = runner(
+            f"RUNTIME_{family}",
+            _runtime_command(family, site, start),
+            MAX_RUNTIME_BYTES,
+        )
+        page_rows, page_names = _parse_runtime_page(raw, family)
+        if names and page_names:
+            require(names[-1] < page_names[0], "runtime metadata pagination ordering drifted")
+        require(not set(names).intersection(page_names), "runtime metadata pagination contains duplicate names")
+        rows.extend(page_rows)
+        names.extend(page_names)
+        page_checksums.append(_checksum(raw))
+        if len(page_rows) < RUNTIME_PAGE_SIZE:
+            exhausted = True
+            break
+    require(exhausted, "runtime metadata exceeded the fixed pagination limit")
+    result_checksum = _checksum(_json_bytes(rows))
+    records = state.setdefault("operation_records", [])
+    require(type(records) is list, "private operation records are malformed")
+    records.append(
+        {
+            "operation_id": f"RUNTIME_{family}",
+            "timestamp": _timestamp(),
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "checksum": result_checksum,
+        }
+    )
+    _replace_state(state_path, state)
+    _emit(
+        {
+            "task_id": TASK_ID,
+            "operation": f"RUNTIME_{family}",
+            "timestamp": _timestamp(),
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "row_count": len(rows),
+            "page_count": len(page_checksums),
+            "page_checksums": page_checksums,
+            "result_checksum": result_checksum,
+            "rows": rows,
+        }
+    )
+
+
 def _cleanup(args: argparse.Namespace) -> None:
     _validate_ordinary_run_id(args.ordinary_run_id)
     _preflight(args.expected_sha)
@@ -719,6 +1170,11 @@ def _parser() -> argparse.ArgumentParser:
     file_parser = governed("file")
     file_parser.add_argument("--label", required=True)
     file_parser.add_argument("--path", required=True)
+    current_file_parser = governed("current-file")
+    current_file_parser.add_argument("--label", required=True)
+    current_file_parser.add_argument("--path", required=True)
+    runtime_parser = governed("runtime")
+    runtime_parser.add_argument("--family", required=True, choices=tuple(RUNTIME_METADATA_SPECS))
     governed("cleanup")
     return parser
 
@@ -740,7 +1196,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "APP_TRACKED_PATHS",
                         "APP_FILE_HASH",
                         "APP_FILE_READ",
+                        "APP_FILE_MODE",
+                        "APP_HEAD_FILE_HASH",
+                        "APP_WORKTREE_DIFF",
+                        "APP_CURRENT_FILE_READ",
                     ],
+                    "runtime_metadata_families": list(RUNTIME_METADATA_SPECS),
                     "remote_contact": False,
                 }
             )
@@ -750,6 +1211,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             _app_operation(args)
         elif args.command == "file":
             _file_operation(args)
+        elif args.command == "current-file":
+            _current_file_operation(args)
+        elif args.command == "runtime":
+            _runtime_operation(args)
         elif args.command == "cleanup":
             _cleanup(args)
         else:

@@ -9043,3 +9043,27 @@ repeat or rewrite it merely to restore context. See
   authority remain closed. The transition and diagnostic change no ERPNext,
   LaunchFlow product, contract, schema, permission, workflow or production
   state.
+
+#### P8-07F expanded facts collector awaits exact-SHA activation ordinary CI
+
+- The current marker is exactly `P8-07F expanded facts collector awaits exact-SHA activation ordinary CI`.
+- Diagnostics-off exact SHA `fccf62feaba2d3ed092efcd06174f16f66193540`
+  passes ordinary `33304191319`. Its sole final Level 3 `33304710306` passes
+  repository `99239078784`, visual `99239078865`, secret `99239078878`,
+  frontend `99239078880`, controlled preflight `99240538309` and cumulative
+  runtime `99240558054`. The governance transition is closed with zero SSH,
+  connector, Site or production contact.
+- Activate independent `P8-07F-FACTS` at base checkpoint `fccf62fe`. The
+  collector may add only cached-path current-source reconstruction and fixed
+  `frappe.client.get_list` metadata families frozen in code/tests. It must
+  reject symlink, binary, rename/copy/mode/delete, multi-file, malformed,
+  truncated or oversized source deltas and any runtime permission, shape,
+  order, pagination, byte or sensitive-value drift.
+- The activation commit must obtain exact-SHA ordinary CI before any new
+  `JCE-Core` operation. After PASS, reuse version/installed-app/HEAD/status/path
+  inventory first, then query only stale or missing source/metadata. Direct
+  SQL, console, caller-selected method/DocType/query, raw source/Script/path
+  persistence and every production write remain prohibited.
+- P8-08 and product authority remain inactive. Current LaunchFlow architecture,
+  ownership and contracts remain default correct; no proven incompatibility
+  means `DIRECT_MATCH` and `NO_CHANGE`.

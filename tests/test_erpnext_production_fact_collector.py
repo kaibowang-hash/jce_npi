@@ -20,6 +20,26 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.addCleanup(path.with_name(path.name + ".next").unlink, missing_ok=True)
         return path
 
+    def write_state(self, path: Path, *, sha: str = "d" * 40, run_id: str = "101") -> None:
+        collector._write_new_state(
+            path,
+            {
+                "schema_version": 1,
+                "task_id": collector.TASK_ID,
+                "exact_sha": sha,
+                "ordinary_run_id": run_id,
+                "apps": [
+                    {
+                        "label": "CUSTOM_APP_01",
+                        "name": "custom_one",
+                        "root": "apps/custom_one",
+                    }
+                ],
+                "tracked_paths": {"CUSTOM_APP_01": ["custom_one/hooks.py"]},
+                "operation_records": [],
+            },
+        )
+
     def test_transport_is_fixed_and_noninteractive(self) -> None:
         argv = collector._ssh_argv(("bench", "version"))
         self.assertEqual(argv[0], "ssh")
@@ -71,6 +91,40 @@ class ProductionFactCollectorTest(unittest.TestCase):
             ),
             ("git", "-C", "apps/custom_one", "show", "HEAD:custom_one/hooks.py"),
         )
+        self.assertEqual(
+            collector._remote_command(
+                "APP_FILE_MODE",
+                root="apps/custom_one",
+                path="custom_one/hooks.py",
+            ),
+            ("git", "-C", "apps/custom_one", "ls-files", "-s", "--", "custom_one/hooks.py"),
+        )
+        self.assertEqual(
+            collector._remote_command(
+                "APP_WORKTREE_DIFF",
+                root="apps/custom_one",
+                path="custom_one/hooks.py",
+            ),
+            (
+                "git",
+                "-C",
+                "apps/custom_one",
+                "diff",
+                "--no-ext-diff",
+                "--no-renames",
+                "--no-color",
+                "--unified=1000000",
+                "HEAD",
+                "--",
+                "custom_one/hooks.py",
+            ),
+        )
+        runtime = collector._runtime_command("CUSTOM_FIELDS", "site-one", 0)
+        self.assertEqual(runtime[:6], ("bench", "--site", "site-one", "execute", "frappe.client.get_list", "--kwargs"))
+        kwargs = json.loads(runtime[6])
+        self.assertEqual(kwargs["doctype"], "Custom Field")
+        self.assertEqual(kwargs["limit_page_length"], 200)
+        self.assertEqual(kwargs["order_by"], "name asc")
         with self.assertRaises(collector.FactCollectionError):
             collector._remote_command("CONSOLE", root="apps/custom_one")
         with self.assertRaises(collector.FactCollectionError):
@@ -81,6 +135,27 @@ class ProductionFactCollectorTest(unittest.TestCase):
                 root="apps/custom_one",
                 path="../../site_config.json",
             )
+        with self.assertRaises(collector.FactCollectionError):
+            collector._runtime_command("CALLER_SELECTED", "site-one", 0)
+
+    def test_every_runtime_family_uses_one_fixed_application_layer_read_shape(self) -> None:
+        for family, spec in collector.RUNTIME_METADATA_SPECS.items():
+            with self.subTest(family=family):
+                command = collector._runtime_command(family, "site-one", 0)
+                self.assertEqual(command[:5], ("bench", "--site", "site-one", "execute", "frappe.client.get_list"))
+                self.assertEqual(command[5], "--kwargs")
+                kwargs = json.loads(command[6])
+                self.assertEqual(kwargs["doctype"], spec["doctype"])
+                self.assertEqual(kwargs["fields"], list(spec["fields"]))
+                expected_filters = json.loads(
+                    json.dumps([list(row) for row in spec.get("filters", ())])
+                )
+                self.assertEqual(kwargs["filters"], expected_filters)
+                self.assertEqual(kwargs["order_by"], "name asc")
+                self.assertEqual(kwargs["limit_start"], 0)
+                self.assertEqual(kwargs["limit_page_length"], collector.RUNTIME_PAGE_SIZE)
+                self.assertNotIn("sql", " ".join(command).lower())
+                self.assertNotIn("console", " ".join(command).lower())
 
     def test_discover_writes_private_state_and_redacts_custom_app_name(self) -> None:
         path = self.state_path()
@@ -205,23 +280,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
 
     def test_file_summary_requires_cached_path_and_never_returns_source_text(self) -> None:
         path = self.state_path()
-        collector._write_new_state(
-            path,
-            {
-                "schema_version": 1,
-                "task_id": collector.TASK_ID,
-                "exact_sha": "d" * 40,
-                "ordinary_run_id": "101",
-                "apps": [
-                    {
-                        "label": "CUSTOM_APP_01",
-                        "name": "custom_one",
-                        "root": "apps/custom_one",
-                    }
-                ],
-                "tracked_paths": {"CUSTOM_APP_01": ["custom_one/hooks.py"]},
-            },
-        )
+        self.write_state(path)
         args = argparse.Namespace(
             expected_sha="d" * 40,
             ordinary_run_id="101",
@@ -243,6 +302,252 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(output["summary"]["format"], "python_ast")
         self.assertIn("submit_item", json.dumps(output))
         self.assertNotIn("return True", json.dumps(output))
+
+    def test_current_file_reconstructs_dirty_tracked_source_without_emitting_raw_content_or_path(self) -> None:
+        path = self.state_path()
+        self.write_state(path)
+        args = argparse.Namespace(
+            expected_sha="d" * 40,
+            ordinary_run_id="101",
+            state=str(path),
+            label="CUSTOM_APP_01",
+            path="custom_one/hooks.py",
+        )
+        head = b"import frappe\n\ndef old_name():\n    return 1\n"
+        current = b"import frappe\n\ndef new_name():\n    return 1\n"
+        head_object = collector._git_blob_sha1(head)
+        current_object = collector._git_blob_sha1(current)
+        diff = (
+            f"diff --git a/custom_one/hooks.py b/custom_one/hooks.py\n"
+            f"index {head_object}..{current_object} 100644\n"
+            "--- a/custom_one/hooks.py\n"
+            "+++ b/custom_one/hooks.py\n"
+            "@@ -1,4 +1,4 @@\n"
+            " import frappe\n"
+            " \n"
+            "-def old_name():\n"
+            "+def new_name():\n"
+            "     return 1\n"
+        ).encode()
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            return {
+                "APP_FILE_MODE": f"100644 {head_object} 0\tcustom_one/hooks.py\n".encode(),
+                "APP_HEAD_FILE_HASH": f"{head_object}\n".encode(),
+                "APP_FILE_READ": head,
+                "APP_FILE_HASH": f"{current_object}\n".encode(),
+                "APP_WORKTREE_DIFF": diff,
+            }[operation]
+
+        with patch.object(collector, "_preflight"), patch.object(collector, "_emit") as emit:
+            collector._current_file_operation(args, runner)
+
+        output = emit.call_args.args[0]
+        rendered = json.dumps(output)
+        self.assertEqual(output["worktree_state"], "DIRTY_TRACKED")
+        self.assertEqual(output["summary"]["format"], "python_ast")
+        self.assertIn("new_name", rendered)
+        self.assertNotIn("old_name", rendered)
+        self.assertNotIn("custom_one/hooks.py", rendered)
+        self.assertNotIn("return 1", rendered)
+
+    def test_current_file_clean_path_skips_diff(self) -> None:
+        path = self.state_path()
+        self.write_state(path)
+        args = argparse.Namespace(
+            expected_sha="d" * 40,
+            ordinary_run_id="101",
+            state=str(path),
+            label="CUSTOM_APP_01",
+            path="custom_one/hooks.py",
+        )
+        head = b"def stable():\n    return True\n"
+        object_id = collector._git_blob_sha1(head)
+        calls: list[str] = []
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            calls.append(operation)
+            return {
+                "APP_FILE_MODE": f"100644 {object_id} 0\tcustom_one/hooks.py\n".encode(),
+                "APP_HEAD_FILE_HASH": f"{object_id}\n".encode(),
+                "APP_FILE_READ": head,
+                "APP_FILE_HASH": f"{object_id}\n".encode(),
+            }[operation]
+
+        with patch.object(collector, "_preflight"), patch.object(collector, "_emit") as emit:
+            collector._current_file_operation(args, runner)
+
+        self.assertNotIn("APP_WORKTREE_DIFF", calls)
+        self.assertEqual(emit.call_args.args[0]["worktree_state"], "CLEAN")
+
+    def test_current_file_reconstruction_rejects_unsafe_diff_shapes(self) -> None:
+        head = b"line\n"
+        head_object = collector._git_blob_sha1(head)
+        current_object = collector._git_blob_sha1(b"changed\n")
+        base = (
+            f"diff --git a/custom_one/hooks.py b/custom_one/hooks.py\n"
+            f"index {head_object}..{current_object} 100644\n"
+            "--- a/custom_one/hooks.py\n"
+            "+++ b/custom_one/hooks.py\n"
+            "@@ -1 +1 @@\n"
+            "-line\n"
+            "+changed\n"
+        ).encode()
+        self.assertEqual(
+            collector._reconstruct_current_file(head, base, "custom_one/hooks.py"),
+            b"changed\n",
+        )
+        unsafe = (
+            base.replace(b"diff --git", b"diff --git", 1) +
+            b"diff --git a/other.py b/other.py\n"
+        )
+        for candidate in (
+            b"Binary files a/custom_one/hooks.py and b/custom_one/hooks.py differ\n",
+            base.replace(b"--- a/custom_one/hooks.py", b"--- /dev/null"),
+            base.replace(b"-line", b"-wrong"),
+            unsafe,
+        ):
+            with self.assertRaises(collector.FactCollectionError):
+                collector._reconstruct_current_file(head, candidate, "custom_one/hooks.py")
+        with self.assertRaises(collector.FactCollectionError):
+            collector._parse_file_mode(
+                f"120000 {head_object} 0\tcustom_one/hooks.py\n".encode(),
+                "custom_one/hooks.py",
+            )
+
+    def test_current_file_reconstruction_preserves_no_final_newline(self) -> None:
+        head = b"before"
+        current = b"after"
+        head_object = collector._git_blob_sha1(head)
+        current_object = collector._git_blob_sha1(current)
+        diff = (
+            f"diff --git a/custom_one/hooks.py b/custom_one/hooks.py\n"
+            f"index {head_object}..{current_object} 100644\n"
+            "--- a/custom_one/hooks.py\n"
+            "+++ b/custom_one/hooks.py\n"
+            "@@ -1 +1 @@\n"
+            "-before\n"
+            "\\ No newline at end of file\n"
+            "+after\n"
+            "\\ No newline at end of file\n"
+        ).encode()
+        self.assertEqual(
+            collector._reconstruct_current_file(head, diff, "custom_one/hooks.py"),
+            current,
+        )
+
+    def test_runtime_metadata_is_fixed_paged_and_hashes_script_content(self) -> None:
+        path = self.state_path()
+        self.write_state(path)
+        args = argparse.Namespace(
+            expected_sha="d" * 40,
+            ordinary_run_id="101",
+            state=str(path),
+            family="SERVER_SCRIPTS",
+        )
+        row = {
+            "name": "Approved API bridge",
+            "script_type": "API",
+            "reference_doctype": "Item",
+            "doctype_event": None,
+            "event_frequency": None,
+            "api_method": "approved_bridge",
+            "disabled": 0,
+            "script": "frappe.get_doc('Item')",
+            "modified": "2026-08-30 10:00:00.000000",
+        }
+        calls: list[tuple[str, tuple[str, ...]]] = []
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            calls.append((operation, command))
+            return json.dumps([row]).encode()
+
+        with patch.object(collector, "_preflight"), patch.dict(
+            os.environ, {"NPI_P8_07F_SITE": "site-one"}, clear=True
+        ), patch.object(collector, "_emit") as emit:
+            collector._runtime_operation(args, runner)
+
+        output = emit.call_args.args[0]
+        rendered = json.dumps(output)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(output["row_count"], 1)
+        self.assertEqual(output["rows"][0]["script"]["byte_count"], len(row["script"].encode()))
+        self.assertNotIn(row["script"], rendered)
+        self.assertNotIn("site-one", rendered)
+        self.assertEqual(calls[0][0], "RUNTIME_SERVER_SCRIPTS")
+
+    def test_runtime_metadata_rejects_shape_order_and_sensitive_scalar_drift(self) -> None:
+        fields = collector.RUNTIME_METADATA_SPECS["ROLES"]["fields"]
+        valid = {field: None for field in fields}
+        valid.update({"name": "Role A", "desk_access": 1, "is_custom": 1, "disabled": 0, "modified": "2026-08-30"})
+        rows, names = collector._parse_runtime_page(json.dumps([valid]).encode(), "ROLES")
+        self.assertEqual(names, ["Role A"])
+        self.assertEqual(rows[0]["name"], "Role A")
+        for invalid in (
+            {**valid, "unexpected": 1},
+            {**valid, "name": "person@example.com"},
+        ):
+            with self.assertRaises(collector.FactCollectionError):
+                collector._parse_runtime_page(json.dumps([invalid]).encode(), "ROLES")
+        descending = [{**valid, "name": "Role B"}, {**valid, "name": "Role A"}]
+        with self.assertRaises(collector.FactCollectionError):
+            collector._parse_runtime_page(json.dumps(descending).encode(), "ROLES")
+        with self.assertRaises(collector.FactCollectionError):
+            collector._parse_runtime_page(b"{}", "ROLES")
+
+        custom_fields = collector.RUNTIME_METADATA_SPECS["CUSTOM_FIELDS"]["fields"]
+        custom = {field: None for field in custom_fields}
+        custom.update(
+            {
+                "name": "Project-custom_classification",
+                "dt": "Project",
+                "fieldname": "custom_classification",
+                "fieldtype": "Select",
+                "options": "One\nTwo\nThree",
+                "reqd": 0,
+                "read_only": 0,
+                "unique": 0,
+                "insert_after": "status",
+                "modified": "2026-08-30",
+            }
+        )
+        protected, _ = collector._parse_runtime_page(json.dumps([custom]).encode(), "CUSTOM_FIELDS")
+        self.assertEqual(protected[0]["options"]["byte_count"], len(custom["options"].encode()))
+        self.assertNotIn(custom["options"], json.dumps(protected))
+
+    def test_runtime_metadata_stops_at_fixed_page_ceiling(self) -> None:
+        path = self.state_path()
+        self.write_state(path)
+        args = argparse.Namespace(
+            expected_sha="d" * 40,
+            ordinary_run_id="101",
+            state=str(path),
+            family="ROLES",
+        )
+        fields = collector.RUNTIME_METADATA_SPECS["ROLES"]["fields"]
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            kwargs = json.loads(command[-1])
+            start = kwargs["limit_start"]
+            rows = []
+            for index in range(collector.RUNTIME_PAGE_SIZE):
+                row = {field: None for field in fields}
+                row.update(
+                    {
+                        "name": f"Role {start + index:06d}",
+                        "desk_access": 0,
+                        "is_custom": 1,
+                        "disabled": 0,
+                        "modified": "2026-08-30",
+                    }
+                )
+                rows.append(row)
+            return json.dumps(rows).encode()
+
+        with patch.object(collector, "_preflight"), patch.dict(
+            os.environ, {"NPI_P8_07F_SITE": "site-one"}, clear=True
+        ), self.assertRaisesRegex(collector.FactCollectionError, "pagination limit"):
+            collector._runtime_operation(args, runner)
 
     def test_sensitive_path_or_content_fails_closed(self) -> None:
         self.assertTrue(collector._path_is_sensitive("sites/site_config.json"))
@@ -278,7 +583,11 @@ class ProductionFactCollectorTest(unittest.TestCase):
         run.assert_not_called()
         self.assertFalse(emit.call_args.args[0]["remote_contact"])
         self.assertEqual(emit.call_args.args[0]["bench_root"], "frappe-bench")
-        self.assertEqual(len(emit.call_args.args[0]["allowlisted_operations"]), 7)
+        self.assertEqual(len(emit.call_args.args[0]["allowlisted_operations"]), 11)
+        self.assertEqual(
+            emit.call_args.args[0]["runtime_metadata_families"],
+            list(collector.RUNTIME_METADATA_SPECS),
+        )
 
 
 if __name__ == "__main__":

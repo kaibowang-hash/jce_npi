@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Controller tasks: `P8-07F-GOVERNANCE` then `P8-07F-FACTS`
 
-Status: **EXPANDED CURRENT/RUNTIME READ AUTHORIZED; NEW GOVERNANCE GATES PENDING; P8-08 HELD**
+Status: **EXPANDED COLLECTOR ACTIVATION AWAITS EXACT-SHA ORDINARY; P8-08 HELD**
 
 ## Purpose and baseline
 
@@ -243,3 +243,29 @@ HEAD from current worktree, preserve only redacted structure/checksums and
 retain direct SQL, console, generic method/query and all writes as prohibited.
 Until those Gates pass and the facts are accepted, no `DIRECT_MATCH`,
 adjustment task, facts-task Level 3 or P8-08 activation is allowed.
+
+## 2026-08-30 expanded collector activation
+
+The zero-contact current-worktree/runtime-metadata transition is now accepted
+at exact SHA `fccf62feaba2d3ed092efcd06174f16f66193540`, ordinary CI
+`33304191319` and Level 3 `33304710306`. All six Level 3 jobs pass. The separate
+`P8-07F-FACTS` activation must still obtain its own exact-SHA ordinary CI before
+reconnecting to production.
+
+The expanded source operations add safe tracked-file mode, immutable HEAD
+object, current worktree Git object and a bounded `--no-ext-diff --no-renames`
+single-file delta. Reconstruction occurs only in private local memory and must
+match both Git objects. Symlinks, binary or multi-file patches, path/mode/
+rename/copy/delete drift, malformed or truncated hunks and excessive bytes
+stop the affected read. Only structural summaries and checksums are accepted.
+
+Runtime collection uses one fixed Frappe application-layer method,
+`frappe.client.get_list`. Each operation family hardcodes its DocType, safe
+field list, filters, `name asc` ordering, 200-row page size and 25-page maximum.
+Families cover Custom Fields, Property Setters, Workflow structure, roles and
+DocPerm structure, Client/Server Script structure with script text hashed,
+required DocType/DocField/DocPerm structure, Webhooks, Scheduled Jobs, Reports,
+Print Formats, Notifications and Document Naming Rules. No caller can select a
+method, DocType, field, filter, order or page. Direct SQL, console, arbitrary
+execute, business rows, raw source/Script/path persistence and all writes remain
+prohibited.

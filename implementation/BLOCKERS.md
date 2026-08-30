@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-`P8_07F_CURRENT_RUNTIME_GOVERNANCE_GATE_PENDING` is the active scoped
+`P8_07F_FACTS_ACTIVATION_ORDINARY_PENDING` is the active scoped
 execution hold.
 P8-07 passes at exact final product SHA
 `edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary CI `33277289693`
@@ -26,22 +26,13 @@ runtime truth. Private mode-0600 state was deleted and the production-read
 window is closed.
 The user has now authorized current tracked worktree source, read-only
 structural summaries of the two stopped DocType candidates and fixed
-application-layer runtime-metadata reads. Those operations remain unavailable
-until the independent `P8-07F-CURRENT-RUNTIME-GOVERNANCE` exact-SHA ordinary
-CI and Level 3 pass and a separate facts collector expansion obtains its own
-exact-SHA ordinary CI. The transition itself is zero-contact. This scoped hold
-blocks P8-08, not already completed technical slices.
-
-Governance SHA `6aa9f9b6` passes ordinary `33301387305`. Level 3
-`33302018921` passes repository, frontend, secret, visual and preflight; the
-only failure is cumulative runtime `99233052613`, whose fixed-label allowlist
-returns exactly `Local Frappe Item publish migrated-legacy runtime verification failed.`
-This is outside the new production-read governance diff, but a failed Gate
-cannot be waived. Product-zero diagnostic SHA `b366b2a7` passes ordinary
-`33303116320` and controlled `33303731224`; its exact-39 contract emits no safe
-tuple on success. Diagnostics are off. One new exact-SHA ordinary and sole
-Level 3 are still required before the separate facts activation may reopen
-production read-only access. P8-08 remains closed.
+application-layer runtime-metadata reads. The zero-contact governance closes
+at exact SHA `fccf62feaba2d3ed092efcd06174f16f66193540`: ordinary
+`33304191319` and final Level 3 `33304710306` pass repository, frontend,
+secret, visual, controlled preflight and cumulative runtime. Diagnostics are
+off. Only the separate expanded `P8-07F-FACTS` activation ordinary CI remains
+before its fixed read-only collector may reconnect. This scoped hold blocks
+P8-08, not already completed technical slices.
 
 Historical P8-06 passes at exact final product SHA
 `547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806`

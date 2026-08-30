@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Task: `P8-07F-CURRENT-RUNTIME-GOVERNANCE`
 
-Status: **EXACT-39 DIAGNOSTIC PASS; DIAGNOSTICS-OFF ORDINARY AND FINAL LEVEL 3 PENDING; ZERO PRODUCTION CONTACT**
+Status: **PASS — EXACT-SHA ORDINARY AND FINAL LEVEL 3; ZERO PRODUCTION CONTACT**
 
 ## Authorization received
 
@@ -167,3 +167,18 @@ Freeze the diagnostic cycle at `1/1,0/1,0/1`. All diagnostic activations return
 to false. A new exact-SHA ordinary PASS and one diagnostics-off Level 3 remain
 mandatory before this governance transition can pass. Production access,
 collector expansion and P8-08 remain closed until their later gates.
+
+## Diagnostics-off final Gate
+
+Exact SHA `fccf62feaba2d3ed092efcd06174f16f66193540` passes ordinary CI
+`33304191319`: repository `99237696176`, visual `99237696204`, secret
+`99237696113` and frontend `99237696206` all pass. Its sole Level 3
+`33304710306` passes repository `99239078784`, visual `99239078865`, secret
+`99239078878`, frontend `99239078880`, controlled preflight `99240538309` and
+cumulative runtime `99240558054`.
+
+Freeze the migrated-legacy cycle at diagnostic `1/1`, repair `0/1`, final
+`1/1`. All diagnostic activations are false. The governance transition is now
+PASS and made zero SSH, connector, Site or production contact. A separate
+`P8-07F-FACTS` collector-expansion exact-SHA ordinary PASS remains mandatory
+before any new production read.

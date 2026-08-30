@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-CURRENT-RUNTIME-GOVERNANCE`
+- Mode: `IN_PROGRESS_AWAITING_EXPANDED_COLLECTOR_EXACT_SHA_ORDINARY_THEN_FACT_COLLECTION — P8-07F-FACTS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -15,12 +15,13 @@ Updated: `2026-08-30T00:00:00+07:00`
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `33280319184` (`PASS — LEVEL 3` at
-  `d919d695972260fa86d5df7fa60033e6adb62f49`; repository, frontend,
+  `33304710306` (`PASS — LEVEL 3` at
+  `fccf62feaba2d3ed092efcd06174f16f66193540`; repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime)
 - Latest checkpoint exact-SHA CI:
-  `33279778063` (`PASS` at
-  `d919d695972260fa86d5df7fa60033e6adb62f49`; P8-07F governance)
+  `33304191319` (`PASS` at
+  `fccf62feaba2d3ed092efcd06174f16f66193540`; P8-07F current-worktree and
+  runtime-metadata governance, zero production contact)
 - P8-07F facts activation checkpoint:
   `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` (`PASS`; ordinary CI
   `33281944546`). Allowlisted `ERP_VERSION` reads at
@@ -76,19 +77,14 @@ Updated: `2026-08-30T00:00:00+07:00`
   ordinary CI `33204451677`; repository `98961818348`, frontend
   `98961818460`, secret `98961818358` and governed visual `98961818084` pass;
   controlled lanes correctly skipped)
-- Active atomic scope: `P8-07F-CURRENT-RUNTIME-GOVERNANCE` freezes the user's
-  expanded read-only authority, exact operation boundaries and two-Gate
-  sequence. This transition performs zero SSH, Site, connector or production
-  read. P8-08 remains inactive; expanded collector implementation and all
-  production reads belong only to the next separately activated
-  `P8-07F-FACTS` task.
-- Governance ordinary `33301387305` passes exact SHA `6aa9f9b6`; Level 3
-  `33302018921` passes its four base lanes and preflight but fails only in the
-  existing P8-03 migrated-legacy cumulative boundary. Product-zero diagnostic
-  SHA `b366b2a7` passes ordinary `33303116320` and controlled
-  `33303731224` with success-zero exact-39 evidence. Diagnostics are now off;
-  a new ordinary PASS and sole Level 3 remain required. No production read is
-  opened before both pass.
+- Active atomic scope: `P8-07F-FACTS` implements only the separately governed
+  current-worktree structural summarizer and fixed Frappe application-layer
+  metadata families. Exact SHA `fccf62fe` passes ordinary `33304191319` and
+  final Level 3 `33304710306`; that transition made zero production contact.
+- The expanded collector activation must now obtain its own exact-SHA ordinary
+  CI before any new `JCE-Core` connection. After that Gate, collect only stale
+  or missing facts for the user-confirmed private Site, retain redacted
+  structure/checksums, and keep P8-08 and all product authority inactive.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

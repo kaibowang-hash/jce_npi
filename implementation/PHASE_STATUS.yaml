@@ -3,23 +3,23 @@ overall_status: IN_PROGRESS
 current_phase: 8
 updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
-execution_hold: P8_07F_CURRENT_RUNTIME_GOVERNANCE_GATE_PENDING
-current_task: P8-07F-CURRENT-RUNTIME-GOVERNANCE
-current_task_status: IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3
-current_task_completed_stage: P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_B366B2A7_ORDINARY_33303116320_CONTROLLED_33303731224_PASS
-current_task_next_stage: P8_07F_CURRENT_RUNTIME_GOVERNANCE_DIAGNOSTICS_OFF_FINAL
-current_task_next_stage_status: AWAITING_EXACT_SHA_ORDINARY_THEN_ONE_LEVEL_3
-resumed_product_task: P8-07F-FACTS
-resumed_product_task_status: BLOCKED_UNTIL_CURRENT_RUNTIME_GOVERNANCE_AND_SEPARATE_ACTIVATION_PASS
+execution_hold: P8_07F_FACTS_ACTIVATION_ORDINARY_PENDING
+current_task: P8-07F-FACTS
+current_task_status: IN_PROGRESS_AWAITING_EXPANDED_COLLECTOR_EXACT_SHA_ORDINARY_THEN_FACT_COLLECTION
+current_task_completed_stage: P8_07F_CURRENT_RUNTIME_GOVERNANCE_FCCF62FE_ORDINARY_33304191319_LEVEL_3_33304710306_PASS
+current_task_next_stage: P8_07F_EXPANDED_COLLECTOR_ACTIVATION
+current_task_next_stage_status: AWAITING_EXACT_SHA_ORDINARY_THEN_FIXED_READ_ONLY_FACT_COLLECTION
+resumed_product_task: P8-08
+resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_RECONCILIATION_LEVEL_3_PASS
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
-    connection_authorized: false
-    current_task_may_connect: false
-    connection_effective_condition: PENDING_CURRENT_RUNTIME_GOVERNANCE_ORDINARY_LEVEL_3_AND_SEPARATE_FACTS_ACTIVATION_ORDINARY
+    connection_authorized: CONDITIONAL_AFTER_EXPANDED_FACTS_ACTIVATION_ORDINARY_PASS
+    current_task_may_connect: CONDITIONAL_AFTER_EXPANDED_FACTS_ACTIVATION_ORDINARY_PASS
+    connection_effective_condition: PENDING_EXPANDED_FACTS_ACTIVATION_EXACT_SHA_ORDINARY
     documentation_authorized_after_transition_ordinary: true
-    current_rule: GOVERNANCE_TRANSITION_ZERO_CONTACT_CURRENT_WORKTREE_AND_RUNTIME_METADATA_OPERATIONS_NOT_YET_ACTIVE
-    future_activation_trigger: CURRENT_RUNTIME_GOVERNANCE_EXACT_SHA_ORDINARY_AND_LEVEL_3_THEN_SEPARATE_FACTS_EXPANSION_ORDINARY
+    current_rule: EXPANDED_COLLECTOR_ZERO_CONTACT_UNTIL_THIS_SHA_ORDINARY_THEN_FIXED_READ_ONLY_ONLY
+    future_activation_trigger: EXPANDED_FACTS_ACTIVATION_EXACT_SHA_ORDINARY
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
     final_full_reconciliation_required: true
@@ -47,9 +47,9 @@ scope_decisions:
     clean_custom_apps_source_summarized: 6
     sensitive_preflight_stops: 2
     dirty_runtime_source_apps_held: 13
-    runtime_only_metadata_status: USER_AUTHORIZED_PENDING_EXACT_APPLICATION_LAYER_READ_GOVERNANCE_AND_ACTIVATION
-    current_tracked_worktree_source_status: USER_AUTHORIZED_PENDING_EXACT_SOURCE_OPERATION_GOVERNANCE_AND_ACTIVATION
-    stopped_doctype_candidates_status: USER_AUTHORIZED_READ_ONLY_STRUCTURAL_SUMMARY_PENDING_GOVERNANCE_AND_ACTIVATION
+    runtime_only_metadata_status: EXPANDED_FIXED_COLLECTOR_IMPLEMENTED_PENDING_ACTIVATION_ORDINARY
+    current_tracked_worktree_source_status: EXPANDED_FIXED_COLLECTOR_IMPLEMENTED_PENDING_ACTIVATION_ORDINARY
+    stopped_doctype_candidates_status: EXPANDED_READ_ONLY_STRUCTURAL_SUMMARY_PENDING_ACTIVATION_ORDINARY
     direct_sql_and_console_status: PROHIBITED
     private_state_removed: true
     production_read_window_closed: true
@@ -2660,9 +2660,9 @@ p8_07:
     - implementation/evidence/phase-8/p8-07-controlled-runtime-checkpoint.md
     - implementation/evidence/phase-8/p8-07-validation.md
 p8_07f:
-  task: P8-07F-CURRENT-RUNTIME-GOVERNANCE
-  next_task: P8-07F-FACTS
-  status: IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3
+  task: P8-07F-FACTS
+  next_task: P8-08
+  status: IN_PROGRESS_AWAITING_EXPANDED_COLLECTOR_EXACT_SHA_ORDINARY_THEN_FACT_COLLECTION
   phase: 8
   milestone: M7-07F
   task_kind: DELIVERY_INFRASTRUCTURE
@@ -2690,10 +2690,11 @@ p8_07f:
   private_state_file_created: true
   private_state_file_removed: true
   production_connection_authorized_now: false
+  production_connection_authorized_after_activation_ordinary: true
   facts_connection_requires_activation_ordinary_pass: true
   transition_may_contact_production: false
-  facts_activation_requires_transition_ordinary: PENDING_CURRENT_RUNTIME_GOVERNANCE
-  facts_activation_requires_transition_level_3: PENDING_CURRENT_RUNTIME_GOVERNANCE
+  facts_activation_requires_transition_ordinary: PASS_33304191319
+  facts_activation_requires_transition_level_3: PASS_33304710306
   facts_task_may_modify_product: false
   p8_08_blocked_until_facts_gate: true
   standing_read_only_authority_after_activation: true
@@ -2708,6 +2709,13 @@ p8_07f:
   migrated_legacy_diagnostic_controlled: 33303731224
   migrated_legacy_diagnostic_result: PASS_SUCCESS_ZERO
   migrated_legacy_diagnostic_status: FROZEN_1_OF_1_REPAIR_ZERO_OF_1_FINAL_ZERO_OF_1
+  current_runtime_governance_final_checkpoint: fccf62feaba2d3ed092efcd06174f16f66193540
+  current_runtime_governance_final_ordinary: 33304191319
+  current_runtime_governance_final_level_3: 33304710306
+  current_runtime_governance_final_result: PASS_ALL_SIX_JOBS_ZERO_PRODUCTION_CONTACT
+  expanded_collector_activation_status: AWAITING_THIS_EXACT_SHA_ORDINARY
+  expanded_current_source_operation: CACHED_PATH_HEAD_CURRENT_GIT_OBJECT_SINGLE_FILE_DIFF_PRIVATE_RECONSTRUCTION
+  expanded_runtime_metadata_operation: FIXED_FRAPPE_GET_LIST_FAMILIES_EXACT_JSON_PAGE_200_MAX_25
   evidence:
     - implementation/evidence/phase-8/p8-07-validation.md
     - implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md
@@ -2743,5 +2751,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE], current_task: P8-07F-CURRENT-RUNTIME-GOVERNANCE}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE], current_task: P8-07F-FACTS}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

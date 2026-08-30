@@ -756,14 +756,14 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("sensitive_preflight_stops: 2", phase_status)
         self.assertIn("private_state_removed: true", phase_status)
         self.assertIn(
-            "runtime_only_metadata_status: USER_AUTHORIZED_PENDING_EXACT_APPLICATION_LAYER_READ_GOVERNANCE_AND_ACTIVATION",
+            "runtime_only_metadata_status: EXPANDED_FIXED_COLLECTOR_IMPLEMENTED_PENDING_ACTIVATION_ORDINARY",
             phase_status,
         )
         self.assertIn(
-            "current_task: P8-07F-CURRENT-RUNTIME-GOVERNANCE", phase_status
+            "current_task: P8-07F-FACTS", phase_status
         )
         self.assertIn(
-            "current_tracked_worktree_source_status: USER_AUTHORIZED_PENDING_EXACT_SOURCE_OPERATION_GOVERNANCE_AND_ACTIVATION",
+            "current_tracked_worktree_source_status: EXPANDED_FIXED_COLLECTOR_IMPLEMENTED_PENDING_ACTIVATION_ORDINARY",
             phase_status,
         )
         self.assertIn("direct_sql_and_console_status: PROHIBITED", phase_status)
