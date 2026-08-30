@@ -1,6 +1,6 @@
 # P8-08 Plan — Released Trial Summary Read-Only Projection Seam
 
-Status: **CHECKPOINT 1 PASS — CHECKPOINT 2 ACTIVATION AWAITS EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT 2 IMPLEMENTED — AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-30
 
@@ -38,6 +38,18 @@ Checkpoint-1 product: `495141f9650d71b9ae2c8f7cf8a8904e0242c210`
 Checkpoint-1 product ordinary CI: `33322318251` (**PASS**) — secret
 `99286336195`, frontend `99286336260`, repository `99286336272` and visual
 `99286336293`; controlled lanes correctly skipped.
+
+Checkpoint-2 activation: `1d8b13c99362c375e8ea1424840e91e8ab48a23d`
+
+Checkpoint-2 activation ordinary CI: `33323078013` (**PASS**) — secret
+`99288353208`, repository `99288353284`, frontend `99288353388` and visual
+`99288353423`; controlled lanes correctly skipped.
+
+Checkpoint-2 implementation resolves only an exact current P7-07 source
+through the Project + Trial Round-first repository boundary. It returns
+unavailable for a permission-safe missing workspace, fails closed on stale,
+foreign, duplicate, malformed or hash-drifted truth, and emits only the exact
+immutable descriptor. It adds no route, row, event, queue or network.
 
 ## 1. Audit conclusion
 

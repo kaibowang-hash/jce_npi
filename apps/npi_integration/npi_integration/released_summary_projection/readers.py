@@ -21,6 +21,7 @@ class ReleasedSummarySourceReader(Protocol):
         self,
         *,
         project_global_id: UUID,
+        trial_round_global_id: UUID,
         summary_revision_global_id: UUID,
     ) -> ReleasedSummarySourceDescriptor | None: ...
 

@@ -3,7 +3,7 @@
   "task_id": "P8-08",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_2_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY",
+  "status": "IN_PROGRESS_CHECKPOINT_2_AWAITS_EXACT_SHA_ORDINARY",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-09",
   "base_checkpoint": "495141f9650d71b9ae2c8f7cf8a8904e0242c210",
@@ -12,16 +12,16 @@
     "FR-INT-015"
   ],
   "scope": [
-    "Accept checkpoint-1 product exact SHA 495141f9650d71b9ae2c8f7cf8a8904e0242c210 only with ordinary CI 33322318251 passing secret, frontend, repository and governed visual lanes.",
-    "Activate checkpoint 2 only for the existing reader interface, one new Project-first P7-07 source adapter and one focused source test frozen in the amended plan.",
+    "Accept checkpoint-2 activation exact SHA 1d8b13c99362c375e8ea1424840e91e8ab48a23d only with ordinary CI 33323078013 passing secret, repository, frontend and governed visual lanes.",
+    "Implement checkpoint 2 only in the existing reader interface, one new Project-first P7-07 source adapter and one focused source test frozen in the amended plan.",
     "Require Project plus Trial Round before the secondary summary revision because the existing P7-07 repository authorizes and resolves summary_workspace(project_id, round_id) through that exact boundary.",
     "Resolve only the exact current immutable P7-07 summary and revalidate its existing summary, presentation and redaction schemas and hashes without copying the domain.",
     "Keep external projection unavailable with zero route, row, event, queue, target traffic or formal external success.",
     "Keep exact external event identity, payload version, redaction/routing, ERP/JCE consumer mapping, receipt and production activation held by DR-REC-009.",
-    "Do not edit checkpoint-2 product paths until this activation commit itself passes exact-SHA ordinary CI."
+    "Require the checkpoint-2 product commit itself to pass exact-SHA ordinary CI before any checkpoint-3 runtime path is authorized."
   ],
   "non_scope": [
-    "Any checkpoint-2 source adapter or later product implementation before this activation commit passes exact-SHA ordinary CI.",
+    "Any checkpoint-3 runtime path or later product implementation before checkpoint 2 exact-SHA ordinary CI passes.",
     "Any guessed external event name, payload version, target method, endpoint, DocType, field, service principal, permission, receipt, success state or production routing under DR-REC-009.",
     "Any production ERPNext/JCE write, target call, replay, reconciliation, cross-database access, generic DocType writer, browser-direct ERP access, dual-master field or Mock/HTTP fake success.",
     "Any redesign, refactor, rebuild, interface rename, domain merge or split, workflow rewrite, technology replacement, permission-model rewrite, generalized abstraction or nearby optimization.",
@@ -34,6 +34,7 @@
     "P8_08_AUDIT_PLAN_D560FDF2_ORDINARY_33320787112_ALL_FOUR_JOBS_PASS",
     "P8_08_CHECKPOINT_1_ACTIVATION_C7571D1B_ORDINARY_33321510831_ALL_FOUR_JOBS_PASS",
     "P8_08_CHECKPOINT_1_PRODUCT_495141F9_ORDINARY_33322318251_ALL_FOUR_JOBS_PASS",
+    "P8_08_CHECKPOINT_2_ACTIVATION_1D8B13C9_ORDINARY_33323078013_ALL_FOUR_JOBS_PASS",
     "P8_07F_BOUNDED_COMPATIBILITY_RECONCILIATION_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_COMPLETE",
     "P8_07F_STANDING_READ_ONLY_AUTHORITY_REMAINS_TASK_SCOPED_FRESHNESS_FIRST_FAIL_CLOSED_AND_NOT_WRITE_AUTHORITY",
     "CURRENT_LAUNCHFLOW_ARCHITECTURE_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
@@ -94,7 +95,7 @@
     "phase_status_resumed_product_task": "P8-08",
     "active_goal_marker": "P8-08",
     "next_action_marker": "P8-08",
-    "controller_marker": "P8-08 checkpoint 1 PASS; checkpoint 2 activation awaits exact-SHA ordinary CI"
+    "controller_marker": "P8-08 checkpoint 2 product awaits exact-SHA ordinary CI"
   },
   "rollback": {
     "before_product_resume": "Restore the exact accepted checkpoint-1 product 495141f9650d71b9ae2c8f7cf8a8904e0242c210. It creates no persistent or external state.",

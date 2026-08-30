@@ -9341,3 +9341,21 @@ repeat or rewrite it merely to restore context. See
   exact-SHA ordinary CI passes. `DR-REC-009`, P8-09, production activation and
   all user-owned dirty/untracked files remain untouched.
 - Controller marker: `P8-08 checkpoint 1 PASS; checkpoint 2 activation awaits exact-SHA ordinary CI`.
+
+## 2026-08-30 P8-08 checkpoint 2 product awaits exact-SHA ordinary CI
+
+- Checkpoint-2 activation exact SHA
+  `1d8b13c99362c375e8ea1424840e91e8ab48a23d` passes ordinary CI
+  `33323078013`: secret `99288353208`, repository `99288353284`, frontend
+  `99288353388` and governed visual `99288353423` all pass.
+- The exact three product/test paths implement the existing Project + Trial
+  Round-first reader Protocol, one immutable source adapter and one focused
+  test. Missing permission-safe workspaces remain unavailable; stale, foreign,
+  duplicate, malformed and hash-drifted truth fail closed as conflict.
+- The adapter reuses the P7-07 snapshot parser and successor validator and emits
+  only exact IDs, versions and hashes. It has no Frappe import, route, row,
+  event, queue, target selector, network or external-success path.
+- Require this product commit's own exact-SHA ordinary PASS before checkpoint 3
+  runtime activation. `DR-REC-009`, P8-09, production activation and all
+  user-owned dirty/untracked files remain untouched.
+- Controller marker: `P8-08 checkpoint 2 product awaits exact-SHA ordinary CI`.

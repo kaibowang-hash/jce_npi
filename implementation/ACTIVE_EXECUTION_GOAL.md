@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY — P8-08`
+- Mode: `IN_PROGRESS_CHECKPOINT_2_AWAITS_EXACT_SHA_ORDINARY — P8-08`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -16,7 +16,9 @@ Updated: `2026-08-30T00:00:00+07:00`
   Activation `c7571d1b` passes ordinary `33321510831`. Checkpoint-1 product
   `495141f9` passes ordinary `33322318251` in all four lanes. Checkpoint 2 now
   awaits a separate activation ordinary before adding only the Project + Trial
-  Round-first P7-07 source reader adapter and its focused test.
+  Round-first P7-07 source reader adapter and its focused test. Checkpoint-2
+  activation `1d8b13c9` passes ordinary `33323078013`; its exact product
+  implementation now awaits its own ordinary.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
