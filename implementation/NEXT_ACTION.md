@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+`IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
@@ -30,9 +30,16 @@ frontend and secret; visual repeats only the same three stale baselines and is
 not claimed as PASS. The three baselines have now been updated together and
 pass pinned Linux focused verification `3/3` plus the full governed matrix
 `135/135`. The sole next action is one exact-SHA ordinary CI for this repair;
-if it passes, run the one required P8-09/Phase-8 Level 3. `ERPNEXT` remains
-stable in every technical boundary. Do not contact production ERPNext/JCE or
-modify user-owned dirty documentation.
+visual-repair checkpoint `3bfeff8a` passes ordinary `33338620540` in all four
+lanes. Its sole Level 3 `33339292498` passes repository `99331880024`, frontend
+`99331880042`, secret `99331880003`, visual `99331880007` and preflight
+`99333605746`; runtime `99333634364` fails only at the fixed P8-03 Item
+migrated-legacy outer label. The sole next action is a governance-only exact
+manifest expansion for the existing Item runtime verifier and its focused
+test. Only after that expansion's exact-SHA ordinary PASS may one product-zero
+exact-67 controlled diagnostic run. Failed child output stays unread.
+`ERPNEXT` remains stable in every technical boundary. Do not contact production
+ERPNext/JCE or modify user-owned dirty documentation.
 
 Retained P8-07F diagnostics-off exact SHA
 `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c` passes ordinary CI

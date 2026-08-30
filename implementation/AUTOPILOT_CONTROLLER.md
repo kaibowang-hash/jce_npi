@@ -9627,3 +9627,27 @@ repeat or rewrite it merely to restore context. See
   P8-09/Phase-8 Level 3 under `release-gate`. Production ERPNext/JCE contact
   and user-owned dirty/untracked files remain prohibited.
 - Controller marker: `P8-09 checkpoint 1 visual baseline repair Level 1 PASS; awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 visual repair ordinary PASS; final Gate predecessor diagnostic manifest expansion
+
+- Visual-repair exact SHA
+  `3bfeff8aa7b98e085feeeb7c5370455abf000973` passes ordinary CI
+  `33338620540`: repository `99329973961`, frontend `99329974072`, secret
+  `99329974077` and governed visual `99329974117` all pass.
+- Sole Level 3 `33339292498` passes repository `99331880024`, frontend
+  `99331880042`, secret `99331880003`, governed visual `99331880007` and
+  controlled preflight `99333605746`. Runtime `99333634364` fails only at the
+  fixed P8-03 Item migrated-legacy outer label. P8-09 presentation and every
+  preceding cumulative boundary have passed. Failed child output, response
+  values, identifiers, messages and stack remain unread; no product repair may
+  be guessed.
+- Expand the P8-09 manifest from twenty-nine to thirty-one paths only by the
+  existing `scripts/verify_item_publish_runtime.py` and
+  `tests/test_phase8_item_publish_runtime_verifier.py`. Do not edit either path
+  until this governance-only transition passes exact-SHA ordinary CI. Then one
+  product-zero diagnostic checkpoint may add a new-only activation over the
+  existing exact-67 safe codes and dispatch one Level 2 controlled run reusing
+  its exact ordinary.
+- Production ERPNext/JCE contact, workflow changes, P8-09 presentation changes
+  and user-owned dirty/untracked files remain prohibited.
+- Controller marker: `P8-09 final Gate predecessor Item legacy diagnostic manifest expansion awaits exact-SHA ordinary CI`.

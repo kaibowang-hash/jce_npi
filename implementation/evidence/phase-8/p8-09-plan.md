@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **CHECKPOINT-1 VISUAL BASELINE REPAIR LEVEL 1 PASS; AWAITS EXACT-SHA ORDINARY CI**
+Status: **FINAL GATE PREDECESSOR ITEM LEGACY DIAGNOSTIC MANIFEST EXPANSION AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-31
 
@@ -67,6 +67,24 @@ Traditional Chinese snapshots were updated together in the pinned Linux
 environment. They pass `3/3` in verification mode and the complete CI-equivalent
 governed matrix passes `135/135`. No other snapshot, product, contract, backend
 or technical `ERPNEXT` path changed.
+
+Visual-repair checkpoint `3bfeff8aa7b98e085feeeb7c5370455abf000973`
+passes ordinary CI `33338620540`: repository `99329973961`, frontend
+`99329974072`, secret `99329974077` and governed visual `99329974117` all
+pass. Its sole Level 3 `33339292498` passes repository `99331880024`, frontend
+`99331880042`, secret `99331880003`, visual `99331880007` and controlled
+preflight `99333605746`. Cumulative runtime `99333634364` fails only at the
+fixed `Local Frappe Item publish migrated-legacy runtime verification failed.`
+outer label, after the P8-09 presentation and every earlier cumulative boundary
+have passed. Failed child output, response values, identifiers, messages and
+stack remain unread. The current evidence cannot select one Item legacy inner
+predicate, so no repair is authorized.
+
+The next bounded step is governance-only: add the existing Item runtime
+verifier and focused test to the exact manifest. After that transition's
+exact-SHA ordinary PASS, one product-zero controlled diagnostic may enable the
+existing exact-67 code/type/trace mechanism. No P8-09 product, ERPNext/Frappe
+core, contract, workflow or production state is in scope.
 
 ## 1. Audit conclusion
 

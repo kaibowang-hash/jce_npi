@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+- Mode: `IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -58,6 +58,14 @@ Updated: `2026-08-31T00:00:00+07:00`
   one batch and pass pinned Linux focused visual `3/3` plus the complete
   governed matrix `135/135`. The repair checkpoint awaits its own exact-SHA
   ordinary CI before the sole final Level 3.
+  Visual-repair checkpoint `3bfeff8a` then passes ordinary `33338620540` in
+  all four lanes. Its sole Level 3 `33339292498` passes repository, frontend,
+  secret, governed visual and controlled preflight; cumulative runtime fails
+  only at the fixed P8-03 Item migrated-legacy outer label after the P8-09
+  presentation and all earlier cumulative boundaries have passed. Failed-child
+  output remains unread. The next action is a governance-only exact manifest
+  expansion for the existing Item runtime verifier and its focused test,
+  followed by one product-zero exact-67 controlled diagnostic.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

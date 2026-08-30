@@ -3,7 +3,7 @@
   "task_id": "P8-09",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_REPAIR_AWAITS_EXACT_SHA_ORDINARY",
+  "status": "IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P9-00",
   "base_checkpoint": "5c6793b3406ded8257b927ad89fbd9dba67bab4c",
@@ -22,10 +22,13 @@
     "Complete one bounded presentation checkpoint with Level 1 unit, coverage, nonvisual E2E, i18n, accessibility, build-asset, Linux visual, current-task and security evidence before exact-SHA ordinary CI and one final Level 3.",
     "Accept that product checkpoint f7f8dffe782c8fa6e2c4aea9620c112f03cabcd5 exposed exactly three governed Tooling Linux baselines whose only reviewed delta is the approved ERP source identity; expand the manifest by those exact three paths before updating them.",
     "Record governance expansion e3fad5647f6f9eae52938441676bd0037e054ba3 and ordinary CI 33337516645 without misreporting its expected visual failure: repository, frontend and secret pass, while visual repeats only the same three authorized stale baselines.",
-    "Update the three authorized Tooling Linux baselines as one batch, prove them 3/3 without update mode and prove the complete pinned Linux governed visual matrix 135/135 before the next exact-SHA ordinary CI."
+    "Update the three authorized Tooling Linux baselines as one batch, prove them 3/3 without update mode and prove the complete pinned Linux governed visual matrix 135/135 before the next exact-SHA ordinary CI.",
+    "Accept visual-repair checkpoint 3bfeff8aa7b98e085feeeb7c5370455abf000973 only with ordinary CI 33338620540 passing repository, frontend, secret and governed visual lanes.",
+    "Freeze final Level 3 run 33339292498 after all four ordinary-equivalent lanes and controlled preflight pass but cumulative runtime fails only at the fixed P8-03 Item migrated-legacy outer label, after the P8-09 presentation and prior cumulative boundaries have passed.",
+    "Expand the exact manifest only by scripts/verify_item_publish_runtime.py and tests/test_phase8_item_publish_runtime_verifier.py so one later product-zero diagnostic checkpoint can activate the existing bounded exact-67 safe diagnostic mechanism without reading failed child output."
   ],
   "non_scope": [
-    "Any edit to frontend/tests/unit/field-attachment-primitives.test.tsx or frontend/tests/unit/primitives-and-objects.test.tsx before this exact manifest-expansion commit passes exact-SHA ordinary CI.",
+    "Any edit to scripts/verify_item_publish_runtime.py or tests/test_phase8_item_publish_runtime_verifier.py before this exact diagnostic-manifest expansion commit passes exact-SHA ordinary CI.",
     "Any change to ERPNEXT technical codes, OpenAPI or event values, data ownership, integration routing, service identity, permissions, persistence, schema, migration, ERPNext/Frappe core or production configuration.",
     "Any substitute, redrawn, recolored, cropped, optimized, inlined or synthesized JCE Core asset, alternate text identity, Siemens trademark or restricted brand asset, browser-direct ERP access, generic DocType writer, dual-master field or Mock/HTTP fake success.",
     "Any redesign, refactor, rebuild, interface rename, domain merge or split, workflow rewrite, technology replacement, permission-model rewrite, generalized abstraction or nearby optimization.",
@@ -56,6 +59,9 @@
     "P8_09_EXACT_FOUR_NEW_LINUX_VISUAL_BASELINES_PLUS_THREE_EVIDENCED_TOOLING_BASELINE_UPDATES_ONLY",
     "P8_09_LEVEL_1_FRONTEND_1086_UNIT_458_NONVISUAL_E2E_FOUR_LINUX_VISUAL_AND_STATIC_GATES_PASS",
     "P8_09_TOOLING_BASELINE_REPAIR_LOCAL_THREE_OF_THREE_AND_FULL_GOVERNED_VISUAL_135_OF_135_PASS",
+    "P8_09_VISUAL_REPAIR_3BFEFF8A_ORDINARY_33338620540_ALL_FOUR_JOBS_PASS",
+    "P8_09_FINAL_LEVEL_3_33339292498_FIVE_JOBS_PASS_RUNTIME_FAILS_ONLY_AT_P803_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY",
+    "P8_09_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_EXACT_SIXTY_SEVEN_SAFE_CODES_FAILED_CHILD_OUTPUT_UNREAD",
     "NO_ERPNEXT_FRAPPE_CORE_CHANGE_BROWSER_DIRECT_ERP_GENERIC_DOCTYPE_WRITER_DUAL_MASTER_OR_MOCK_HTTP_FAKE_SUCCESS",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
     "M9_04_M9_05_REAL_PILOTS_USER_APPROVED_POST_V1_2_DEFERRED_CONTROLLED_UAT_RETAINED_NO_REAL_USAGE_CLAIM",
@@ -90,12 +96,15 @@
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
     "implementation/evidence/phase-8/p8-09-plan.md",
+    "scripts/verify_item_publish_runtime.py",
+    "tests/test_phase8_item_publish_runtime_verifier.py",
     "tests/test_current_task_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase8_item_publish_runtime_verifier", "-v"],
       ["npm", "--prefix", "frontend", "run", "generate:check"],
       ["npm", "--prefix", "frontend", "run", "typecheck"],
       ["npm", "--prefix", "frontend", "run", "test:unit", "--", "tests/unit/display-brand.test.tsx", "tests/unit/field-attachment-primitives.test.tsx", "tests/unit/formatters-and-copy.test.ts", "tests/unit/primitives-and-objects.test.tsx", "tests/unit/worklist.test.tsx"],
@@ -120,7 +129,7 @@
     "phase_status_resumed_product_task": "P8-09",
     "active_goal_marker": "P8-09",
     "next_action_marker": "P8-09",
-    "controller_marker": "P8-09 checkpoint 1 visual baseline repair Level 1 PASS; awaits exact-SHA ordinary CI"
+    "controller_marker": "P8-09 final Gate predecessor Item legacy diagnostic manifest expansion awaits exact-SHA ordinary CI"
   },
   "rollback": {
     "before_product_resume": "Restore the exact accepted P8-09 audit-plan checkpoint 5c6793b3406ded8257b927ad89fbd9dba67bab4c. It changes no product, persistent or external state.",

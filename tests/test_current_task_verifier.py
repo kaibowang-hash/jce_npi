@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_REPAIR_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-00")
@@ -66,6 +66,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_09_EXACT_FOUR_NEW_LINUX_VISUAL_BASELINES_PLUS_THREE_EVIDENCED_TOOLING_BASELINE_UPDATES_ONLY",
             "P8_09_LEVEL_1_FRONTEND_1086_UNIT_458_NONVISUAL_E2E_FOUR_LINUX_VISUAL_AND_STATIC_GATES_PASS",
             "P8_09_TOOLING_BASELINE_REPAIR_LOCAL_THREE_OF_THREE_AND_FULL_GOVERNED_VISUAL_135_OF_135_PASS",
+            "P8_09_VISUAL_REPAIR_3BFEFF8A_ORDINARY_33338620540_ALL_FOUR_JOBS_PASS",
+            "P8_09_FINAL_LEVEL_3_33339292498_FIVE_JOBS_PASS_RUNTIME_FAILS_ONLY_AT_P803_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY",
+            "P8_09_PREDECESSOR_ITEM_LEGACY_DIAGNOSTIC_EXACT_SIXTY_SEVEN_SAFE_CODES_FAILED_CHILD_OUTPUT_UNREAD",
             "DR_REC_009_EXTERNAL_EVENT_PAYLOAD_REDACTION_CONSUMER_MAPPING_AND_RECEIPT_REMAIN_HELD",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
@@ -101,10 +104,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
                 "implementation/evidence/phase-8/p8-09-plan.md",
+                "scripts/verify_item_publish_runtime.py",
+                "tests/test_phase8_item_publish_runtime_verifier.py",
                 "tests/test_current_task_verifier.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 29)
+        self.assertEqual(len(value["allowed_paths"]), 31)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])
@@ -123,7 +128,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             sum(path.startswith("scripts/") for path in value["allowed_paths"]),
-            0,
+            1,
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
