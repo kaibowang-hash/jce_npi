@@ -353,3 +353,30 @@ a production fact and prevents an allowlist from becoming an existence
 assumption. Obtain another exact-SHA ordinary before the remaining read. This
 change creates no product, contract, SQL/console, generic method or write
 authority, and P8-08 remains blocked.
+
+## Accepted parent/source collection and final locale correction
+
+Inventory-bound parent SHA
+`515de965d3a4e2eb4a6a2dba0be7e05b4dcd9d62` passes ordinary CI
+`33311432825` with secret `99257083918`, visual `99257084023`, repository
+`99257084057` and frontend `99257084073`. The bounded production window accepts
+the remaining fixed parent, permission, File URL shape and five relevant Mold
+current-worktree structural summaries. Accepted facts include 27 DocField
+parents (checksum
+`sha256:ae102d77b9116b1e81cc21da18f3d6ffd5bdcdbbf379e1fed811681e4979e449`),
+120 DocPerm rows (checksum
+`sha256:61b485438675708641d5c03c448a9862f70b93f917f2ba4bfb1809c8f7f8a451`)
+and File URL shapes `47376/1632/45470/272` for total/public/private/external
+(checksum
+`sha256:64812dc22706aa9b7886eb9b34e37b80eeeaf9d53da3e1a6c3f527c3fa08a785`).
+`Injection Molding Condition` remains explicitly missing. Private state is
+removed.
+
+System Settings locale is the sole remaining family. Its filtered read safely
+returns an empty object because production Frappe v15 models System Settings as
+a Single DocType and its fixed `get_value` path reads the Singles mapping,
+which has no document-name predicate. Remove only that filter while retaining
+the exact method and three fields `language`, `time_zone`, `country`. Obtain a
+new exact-SHA ordinary PASS, run only the locale family, delete private state,
+then proceed to compatibility/minimal-adjustment reconciliation. No accepted
+production family is repeated and P8-08 remains blocked.

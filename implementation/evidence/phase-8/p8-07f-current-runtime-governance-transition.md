@@ -241,3 +241,31 @@ name and checksum-binds the explicit missing-parent list. It does not broaden
 the method, DocType or field surface. Another exact-SHA ordinary PASS is
 required before reconnecting; SQL, console, generic execute and all writes
 remain prohibited.
+
+## Accepted inventory-bound parents and final Single DocType handoff
+
+Inventory-bound parent SHA
+`515de965d3a4e2eb4a6a2dba0be7e05b4dcd9d62` passes ordinary CI
+`33311432825` in secret `99257083918`, visual `99257084023`, repository
+`99257084057` and frontend `99257084073`. The subsequent bounded read verifies
+the unchanged Frappe `15.79.0`, ERPNext `15.77.0`, twenty-app and Site
+inventories. It accepts 27 DocField parents with checksum
+`sha256:ae102d77b9116b1e81cc21da18f3d6ffd5bdcdbbf379e1fed811681e4979e449`,
+120 DocPerm rows with checksum
+`sha256:61b485438675708641d5c03c448a9862f70b93f917f2ba4bfb1809c8f7f8a451`,
+and File URL shape counts `47376` total, `1632` local public, `45470` local
+private and `272` external HTTP with checksum
+`sha256:64812dc22706aa9b7886eb9b34e37b80eeeaf9d53da3e1a6c3f527c3fa08a785`.
+It also accepts checksum-bound current dirty tracked structural summaries for
+Mold, Mold Management Settings, Mold Outsource, Mold Repair and Mold Trial
+Report. `Injection Molding Condition` remains the sole explicit missing frozen
+DocType. Private state is deleted after the window.
+
+The only unaccepted family is System Settings locale. That operation stops on
+an empty object. Exact production Frappe v15 source proves System Settings is a
+Single DocType and that `frappe.client.get_value` reads its Singles mapping;
+the supplied document-name filter cannot match that mapping. The bounded
+repair removes only the filter and retains the fixed method and exact
+`language`, `time_zone`, `country` fields. It requires its own exact-SHA
+ordinary before the single final read; no accepted family is repeated. SQL,
+console, generic execute, sensitive values and all writes remain prohibited.

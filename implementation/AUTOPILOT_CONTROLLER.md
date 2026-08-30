@@ -9138,9 +9138,9 @@ repeat or rewrite it merely to restore context. See
   reconnect. Product, SQL/console, generic execute and production-write
   authority remain zero; P8-08 stays held.
 
-#### P8-07F inventory-bound parent reader awaits exact-SHA ordinary CI
+#### P8-07F Single DocType locale reader awaits exact-SHA ordinary CI
 
-- The current marker is exactly `P8-07F inventory-bound parent reader awaits exact-SHA ordinary CI`.
+- The current marker is exactly `P8-07F Single DocType locale reader awaits exact-SHA ordinary CI`.
 - Bounded Client Script paging SHA
   `e6e28cfc0230e9f22f75f1e9ab02e821f860ced3` passes ordinary CI
   `33310528823`: repository `99254638395`, visual `99254638427`, secret
@@ -9161,3 +9161,28 @@ repeat or rewrite it merely to restore context. See
 - Require a new exact-SHA ordinary PASS before the remaining read. Direct SQL,
   console, generic execute, raw Script/source persistence, product changes and
   every production write remain prohibited; P8-08 remains held.
+- Inventory-bound parent reader SHA
+  `515de965d3a4e2eb4a6a2dba0be7e05b4dcd9d62` passes ordinary CI
+  `33311432825`: secret `99257083918`, visual `99257084023`, repository
+  `99257084057` and frontend `99257084073` all pass. The subsequent bounded
+  window verifies the unchanged Frappe `15.79.0` / ERPNext `15.77.0`,
+  twenty-app and Site inventories and accepts all remaining facts except the
+  System Settings locale tuple. It accepts 27 DocField parents with checksum
+  `sha256:ae102d77b9116b1e81cc21da18f3d6ffd5bdcdbbf379e1fed811681e4979e449`,
+  120 DocPerm rows with checksum
+  `sha256:61b485438675708641d5c03c448a9862f70b93f917f2ba4bfb1809c8f7f8a451`,
+  File URL shape counts `47376/1632/45470/272` for
+  total/public/private/external with checksum
+  `sha256:64812dc22706aa9b7886eb9b34e37b80eeeaf9d53da3e1a6c3f527c3fa08a785`,
+  and current dirty tracked structural summaries for Mold, Mold Management
+  Settings, Mold Outsource, Mold Repair and Mold Trial Report. Private state is
+  deleted at the end of the window.
+- The locale operation stops safely on an empty object. Static cross-proof
+  against the exact production Frappe source shows that System Settings is a
+  Single DocType and `frappe.client.get_value` delegates to the Singles store;
+  a document `name` filter cannot match that store. Remove only this filter,
+  retain the fixed method and exact `language`, `time_zone`, `country` fields,
+  and require another exact-SHA ordinary PASS before the single remaining
+  locale read. Do not repeat accepted families. SQL, console, generic execute,
+  sensitive values, product changes and every production write remain
+  prohibited; P8-08 remains held.

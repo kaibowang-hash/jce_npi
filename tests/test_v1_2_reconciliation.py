@@ -756,7 +756,7 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("sensitive_preflight_stops: 2", phase_status)
         self.assertIn("private_state_removed: true", phase_status)
         self.assertIn(
-            "runtime_only_metadata_status: PARTIALLY_ACCEPTED_REMAINING_PARENT_METADATA_LOCALE_FILE_SHAPE_AND_PROTECTED_JSON_PENDING_INVENTORY_BOUND_PARENT_READER_ORDINARY",
+            "runtime_only_metadata_status: ACCEPTED_EXCEPT_SYSTEM_LOCALE_PENDING_SINGLE_DOCTYPE_FILTERLESS_READER_ORDINARY",
             phase_status,
         )
         self.assertIn(
@@ -779,6 +779,7 @@ class V12ReconciliationTests(unittest.TestCase):
             phase_status,
         )
         self.assertIn("bounded_client_paging_ordinary: 33310528823", phase_status)
+        self.assertIn("inventory_bound_parent_reader_ordinary: 33311432825", phase_status)
         self.assertIn("accepted_client_script_rows: 98", phase_status)
         self.assertIn("accepted_client_script_pages: 5", phase_status)
         self.assertIn("accepted_required_doctype_rows: 27", phase_status)
@@ -788,6 +789,15 @@ class V12ReconciliationTests(unittest.TestCase):
         )
         self.assertIn(
             "parent_reader_contract: ONLY_ACCEPTED_FIXED_DOCTYPE_INVENTORY_NAMES_NONALLOWLISTED_REJECTED_MISSING_CHECKSUMMED",
+            phase_status,
+        )
+        self.assertIn("accepted_docperms_rows: 120", phase_status)
+        self.assertIn("total: 47376", phase_status)
+        self.assertIn("local_public: 1632", phase_status)
+        self.assertIn("local_private: 45470", phase_status)
+        self.assertIn("external_http: 272", phase_status)
+        self.assertIn(
+            "locale_reader_contract: SYSTEM_SETTINGS_SINGLE_DOCTYPE_FIXED_GET_VALUE_NO_FILTER_EXACT_LANGUAGE_TIME_ZONE_COUNTRY",
             phase_status,
         )
         self.assertIn(

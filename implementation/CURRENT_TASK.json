@@ -3,7 +3,7 @@
   "task_id": "P8-07F-FACTS",
   "task_kind": "delivery_infrastructure",
   "phase": 8,
-  "status": "IN_PROGRESS_AWAITING_INVENTORY_BOUND_PARENT_READER_EXACT_SHA_ORDINARY_THEN_REMAINING_COLLECTION",
+  "status": "IN_PROGRESS_AWAITING_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY_THEN_FINAL_COLLECTION",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-08",
   "base_checkpoint": "fccf62feaba2d3ed092efcd06174f16f66193540",
@@ -20,6 +20,7 @@
     "Use the production Frappe v15 Client Script field contract without the nonexistent script_type field, hash Script content, and hash any multiline or otherwise protected DocType JSON scalar instead of emitting it.",
     "Keep the existing per-call runtime byte ceiling and reduce only the fixed Client Script page size from 200 to 20 with a 25-page ceiling after exact-SHA 573fdd4b ordinary 33309768019 safely stopped on an oversized first page.",
     "Bind DocField and DocPerm parent reads to the exact fixed DocType names returned by the accepted DOCTYPES inventory, reject any non-allowlisted cached name, and preserve an allowlisted-but-absent DocType as an explicit missing parent instead of querying it.",
+    "Read the Single DocType System Settings without a name filter, matching the exact accepted Frappe v15 get_value contract after the filtered Single read safely returned an empty object; retain only language, time_zone and country.",
     "Expand the fixed required DocType set only to the exact P8-relevant quality, DMR and mold-management objects already evidenced by the current worktree and runtime workflow metadata.",
     "Cover Custom Fields, Property Setters, Workflows and transitions, roles and DocPerm structure, Client and Server Script structure/checksum, required DocType and DocField structure, Webhooks, Scheduled Jobs, Reports, Print Formats, Notifications and Document Naming Rule structure.",
     "Treat current LaunchFlow architecture, data ownership, OpenAPI and event contracts and P8-01 through P8-09 implementation/design as the default-correct baseline and produce compatibility/minimal-adjustment evidence only.",
@@ -51,6 +52,7 @@
     "CLIENT_SCRIPT_V15_FIELDS_EXCLUDE_NONEXISTENT_SCRIPT_TYPE_AND_HASH_SCRIPT_TEXT",
     "CLIENT_SCRIPT_FIXED_PAGE_SIZE_20_MAX_25_PAGES_PRESERVES_RUNTIME_BYTE_CEILING",
     "DOCTYPE_PARENT_READS_USE_ONLY_ACCEPTED_FIXED_INVENTORY_NAMES_AND_CHECKSUM_EXPLICIT_MISSING_PARENTS",
+    "SYSTEM_SETTINGS_SINGLE_DOCTYPE_GET_VALUE_HAS_NO_FILTER_AND_RETURNS_ONLY_EXACT_LOCALE_FIELDS",
     "PROTECTED_MULTILINE_DOCTYPE_JSON_SCALARS_ARE_HASHED_NOT_EMITTED",
     "USER_EXPANDED_RUNTIME_READ_AUTHORITY_DOES_NOT_REQUIRE_SQL_CONSOLE_OR_GENERIC_EXECUTE",
     "NO_DIRECT_SQL_BENCH_CONSOLE_EXPORT_FIXTURES_GENERIC_METHOD_OR_ARBITRARY_CODE",
@@ -124,11 +126,11 @@
   },
   "expected_state": {
     "phase_status_current_task": "P8-07F-FACTS",
-    "phase_status_execution_hold": "P8_07F_INVENTORY_BOUND_PARENT_READER_ORDINARY_PENDING",
+    "phase_status_execution_hold": "P8_07F_SINGLE_DOCTYPE_LOCALE_READER_ORDINARY_PENDING",
     "phase_status_resumed_product_task": "P8-08",
     "active_goal_marker": "P8-07F-FACTS",
     "next_action_marker": "P8-07F-FACTS",
-    "controller_marker": "P8-07F inventory-bound parent reader awaits exact-SHA ordinary CI"
+    "controller_marker": "P8-07F Single DocType locale reader awaits exact-SHA ordinary CI"
   },
   "rollback": {
     "before_product_resume": "Before the remaining production read, revert only this fixed site-fact collector commit while retaining accepted governance fccf62fe, expanded activation c879fbce and parent/current-source collection evidence 085e9124. Keep P8-08 inactive.",

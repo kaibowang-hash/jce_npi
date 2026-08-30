@@ -410,7 +410,6 @@ def _site_fact_commands(family: str, site: str) -> tuple[tuple[str, tuple[str, .
         kwargs = {
             "doctype": "System Settings",
             "fieldname": ["language", "time_zone", "country"],
-            "filters": {"name": "System Settings"},
         }
         commands = (
             (

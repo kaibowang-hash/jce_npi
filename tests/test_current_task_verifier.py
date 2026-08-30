@@ -91,6 +91,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "SYSTEM_SETTINGS_SINGLE_DOCTYPE_GET_VALUE_HAS_NO_FILTER_AND_RETURNS_ONLY_EXACT_LOCALE_FIELDS",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "PROTECTED_MULTILINE_DOCTYPE_JSON_SCALARS_ARE_HASHED_NOT_EMITTED",
             value["frozen_invariants"],
         )
@@ -108,7 +112,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_INVENTORY_BOUND_PARENT_READER_EXACT_SHA_ORDINARY_THEN_REMAINING_COLLECTION",
+            "IN_PROGRESS_AWAITING_SINGLE_DOCTYPE_LOCALE_READER_EXACT_SHA_ORDINARY_THEN_FINAL_COLLECTION",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

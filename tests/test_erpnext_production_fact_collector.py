@@ -152,6 +152,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
         locale_kwargs = json.loads(locale[0][1][6])
         self.assertEqual(locale_kwargs["doctype"], "System Settings")
         self.assertEqual(locale_kwargs["fieldname"], ["language", "time_zone", "country"])
+        self.assertNotIn("filters", locale_kwargs)
         file_shapes = collector._site_fact_commands("FILE_URL_SHAPES", "site-one")
         self.assertEqual(
             [operation for operation, _ in file_shapes],
