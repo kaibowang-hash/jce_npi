@@ -9379,3 +9379,23 @@ repeat or rewrite it merely to restore context. See
   own exact-SHA ordinary CI passes. `DR-REC-009`, P8-09, production activation
   and all user-owned dirty/untracked files remain untouched.
 - Controller marker: `P8-08 checkpoint 2 PASS; checkpoint 3 activation awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-08 checkpoint 3 product awaits exact-SHA ordinary CI
+
+- Checkpoint-3 activation exact SHA
+  `5175efc9a3968d7e39d8021c147cc25a6f8b5d5c` passes ordinary CI
+  `33324672403`: repository `99292592936`, secret `99292593013`, governed
+  visual `99292593027` and frontend `99292593047` all pass; controlled lanes
+  correctly skip.
+- The exact two runtime/test paths extend only the existing fixed disposable
+  P7-07 verifier. The proof reads the Project + Trial Round-first exact current
+  immutable source through the checkpoint-2 adapter, revalidates all identity
+  and hash fields and returns explicit `external_contract_held` unavailable
+  truth with one deterministic safe fingerprint and trace.
+- The proof brackets the read with the existing retained persistence digest and
+  runs in both fresh and replay-only processes. There is no route, row, event,
+  queue, target selector, network, external success or production contact.
+- Require this product commit's own exact-SHA ordinary PASS before the sole
+  P8-08 Level 3. `DR-REC-009`, P8-09, production activation and all user-owned
+  dirty/untracked files remain untouched.
+- Controller marker: `P8-08 checkpoint 3 product awaits exact-SHA ordinary CI`.

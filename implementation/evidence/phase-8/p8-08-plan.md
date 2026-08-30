@@ -1,6 +1,6 @@
 # P8-08 Plan — Released Trial Summary Read-Only Projection Seam
 
-Status: **CHECKPOINT 2 PASS — CHECKPOINT 3 ACTIVATION AWAITS EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT 3 IMPLEMENTED — AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-30
 
@@ -56,6 +56,18 @@ Checkpoint-2 product: `3a9ab61cd83bb13dae8b9ac40a687b2b83bb6f25`
 Checkpoint-2 product ordinary CI: `33323869238` (**PASS**) — frontend
 `99290465347`, governed visual `99290465499`, repository `99290465500` and
 secret `99290465597`; controlled lanes correctly skipped.
+
+Checkpoint-3 activation: `5175efc9a3968d7e39d8021c147cc25a6f8b5d5c`
+
+Checkpoint-3 activation ordinary CI: `33324672403` (**PASS**) — repository
+`99292592936`, secret `99292593013`, governed visual `99292593027` and
+frontend `99292593047`; controlled lanes correctly skipped.
+
+Checkpoint-3 implementation extends only the existing P7-07 fixed disposable
+runtime and one focused test. It resolves the exact current Project + Trial
+Round source, revalidates all immutable hashes, reports the held external
+projection as unavailable in fresh and replay-only processes, and brackets the
+read with the existing retained persistence digest to prove zero writes.
 
 ## 1. Audit conclusion
 

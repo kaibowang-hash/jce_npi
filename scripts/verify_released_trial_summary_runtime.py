@@ -118,6 +118,8 @@ def fixture_uuid4(scope: str) -> str:
 
 REGISTRY_ID = fixture_uuid4("registry")
 MAPPING_ID = fixture_uuid4("mapping-approved-en")
+P8_08_REQUEST_ID = fixture_uuid4("p8-08-projection-request")
+P8_08_TRACE_ID = f"p8-08-runtime-{FIXTURE_RUN_ID}"
 PRINT_FORMAT_NAME = f"P707 Runtime {FIXTURE_RUN_ID[:12]}"
 
 
@@ -823,6 +825,94 @@ def target_persistence_context(*, project_id: str) -> dict[str, object]:
     return result
 
 
+def released_summary_projection_truth(
+    *,
+    project_id: str,
+    current_summary: Mapping[str, object],
+) -> dict[str, str | None]:
+    from npi_core.foundation.security import Principal
+    from npi_core.trial.released_summary_repository import (
+        FrappeReleasedTrialSummaryRepository,
+    )
+    from npi_integration.released_summary_projection.readers import (
+        ContractHeldReleasedSummaryProjectionAdapter,
+    )
+    from npi_integration.released_summary_projection.source import (
+        ProjectFirstReleasedSummarySourceReader,
+    )
+
+    _require_disposable_site()
+    require(
+        isinstance(current_summary, dict)
+        and current_summary.get("projectGlobalId") == project_id
+        and current_summary.get("tenantId") == trial_runtime.TENANT_ID,
+        "P8-08 retained source scope drifted",
+    )
+    before = target_persistence_context(project_id=project_id)
+    repository = FrappeReleasedTrialSummaryRepository(
+        principal=Principal(
+            user_id=ACTOR_USER,
+            roles=frozenset({"System Manager"}),
+            tenant_id=trial_runtime.TENANT_ID,
+        ),
+        request_id=P8_08_REQUEST_ID,
+        trace_id=P8_08_TRACE_ID,
+    )
+    descriptor = ProjectFirstReleasedSummarySourceReader(
+        repository
+    ).read_current_source(
+        project_global_id=UUID(project_id),
+        trial_round_global_id=UUID(str(current_summary.get("trialRoundGlobalId"))),
+        summary_revision_global_id=UUID(str(current_summary.get("globalId"))),
+    )
+    require(descriptor is not None, "P8-08 exact retained source is unavailable")
+    require(
+        {
+            "projectGlobalId": str(descriptor.project_global_id),
+            "trialRoundGlobalId": str(descriptor.trial_round_global_id),
+            "summaryRevisionGlobalId": str(descriptor.summary_revision_global_id),
+            "summaryGlobalId": str(descriptor.summary_global_id),
+            "summaryVersion": descriptor.summary_version,
+            "snapshotHash": descriptor.snapshot_hash,
+            "sourceManifestHash": descriptor.source_manifest_hash,
+            "presentationProjectionHash": descriptor.presentation_projection_hash,
+            "redactionManifestHash": descriptor.redaction_manifest_hash,
+        }
+        == {
+            "projectGlobalId": current_summary.get("projectGlobalId"),
+            "trialRoundGlobalId": current_summary.get("trialRoundGlobalId"),
+            "summaryRevisionGlobalId": current_summary.get("globalId"),
+            "summaryGlobalId": current_summary.get("summaryGlobalId"),
+            "summaryVersion": current_summary.get("summaryVersion"),
+            "snapshotHash": current_summary.get("snapshotHash"),
+            "sourceManifestHash": current_summary.get("sourceManifestHash"),
+            "presentationProjectionHash": current_summary.get(
+                "presentationProjectionHash"
+            ),
+            "redactionManifestHash": current_summary.get("redactionManifestHash"),
+        },
+        "P8-08 exact retained source identity drifted",
+    )
+    status = ContractHeldReleasedSummaryProjectionAdapter().project(
+        descriptor,
+        trace_id=P8_08_TRACE_ID,
+    ).safe_status()
+    require(
+        status
+        == {
+            "sourceState": "current",
+            "sourceFingerprint": descriptor.fingerprint,
+            "externalProjection": "unavailable",
+            "unavailableReasonCode": "external_contract_held",
+            "traceId": P8_08_TRACE_ID,
+        },
+        "P8-08 unavailable projection truth drifted",
+    )
+    after = target_persistence_context(project_id=project_id)
+    require(after == before, "P8-08 read-only projection changed retained truth")
+    return status
+
+
 def retained_truth(*, project_id: str) -> dict[str, object]:
     import frappe
 
@@ -952,8 +1042,13 @@ def retained_truth(*, project_id: str) -> dict[str, object]:
         and len(content) == int(output.size_bytes),
         "P7-07 controlled PDF integrity drifted",
     )
+    projection_source = released_summary_projection_truth(
+        project_id=project_id,
+        current_summary=parsed_summaries[-1],
+    )
     return {
         "printResponse": _controlled_print_response(frappe, str(print_row.global_id)),
+        "projectionSource": projection_source,
         "retainedOutputHash": str(output.sha256),
         "retainedOutputSize": int(output.size_bytes),
         "summaryResponses": receipt_responses,
@@ -1572,6 +1667,7 @@ def run_fresh(
         "mapping": mapping,
         "outputHash": retained["retainedOutputHash"],
         "outputSize": retained["retainedOutputSize"],
+        "projectionSource": retained["projectionSource"],
         "projectGlobalId": project_id,
         "rejectedTechnicalSummaryRetained": True,
         "roundGlobalId": round_id,
@@ -1729,6 +1825,7 @@ def run_replay_only(
     return {
         "crossProcessReplay": True,
         "projectGlobalId": project_id,
+        "projectionSource": retained["projectionSource"],
         "retainedOutputHash": retained["retainedOutputHash"],
         "summaryCount": 2,
     }

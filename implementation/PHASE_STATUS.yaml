@@ -5,12 +5,12 @@ updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-08
-current_task_status: IN_PROGRESS_CHECKPOINT_3_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY
+current_task_status: IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY
 current_task_completed_stage: P8_07F_PASS_LEVEL_3
-current_task_next_stage: P8_08_CHECKPOINT_3_ACTIVATION_EXACT_SHA_ORDINARY
-current_task_next_stage_status: AWAITS_CI_PRODUCT_CODE_CONDITIONAL
+current_task_next_stage: P8_08_CHECKPOINT_3_PRODUCT_EXACT_SHA_ORDINARY
+current_task_next_stage_status: AWAITS_CI
 resumed_product_task: P8-08
-resumed_product_task_status: IN_PROGRESS_CHECKPOINT_3_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY
+resumed_product_task_status: IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -2819,7 +2819,7 @@ p8_07f:
 p8_08:
   task: P8-08
   next_task: P8-09
-  status: IN_PROGRESS_CHECKPOINT_3_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY
+  status: IN_PROGRESS_CHECKPOINT_3_AWAITS_EXACT_SHA_ORDINARY
   phase: 8
   milestone: M7-08
   task_kind: PRODUCT
@@ -2828,7 +2828,7 @@ p8_08:
   p8_07f_gate_checkpoint: d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c
   p8_07f_gate_ordinary: 33317964484
   p8_07f_gate_level_3: 33318628754
-  product_code_authorized: CHECKPOINT_3_EXACT_TWO_PATHS_CONDITIONAL_ON_ACTIVATION_ORDINARY
+  product_code_authorized: CHECKPOINT_3_EXACT_TWO_PATHS_ONLY
   audit_base_checkpoint: 216ac60480d4af2456b1649626ca23131f886048
   audit_base_ordinary: 33320025714
   audit_base_ordinary_jobs: {frontend: 99280249277, visual: 99280249395, repository: 99280249407, secret_scan: 99280249497}
@@ -2852,7 +2852,11 @@ p8_08:
   checkpoint_2_product_ordinary: 33323869238
   checkpoint_2_product_ordinary_jobs: {frontend: 99290465347, visual: 99290465499, repository: 99290465500, secret_scan: 99290465597}
   checkpoint_2_product_status: PASS
-  checkpoint_3_activation_status: AWAITS_EXACT_SHA_ORDINARY
+  checkpoint_3_activation_checkpoint: 5175efc9a3968d7e39d8021c147cc25a6f8b5d5c
+  checkpoint_3_activation_ordinary: 33324672403
+  checkpoint_3_activation_ordinary_jobs: {repository: 99292592936, secret_scan: 99292593013, visual: 99292593027, frontend: 99292593047}
+  checkpoint_3_activation_status: PASS
+  checkpoint_3_product_status: AWAITS_EXACT_SHA_ORDINARY
   audit_plan: implementation/evidence/phase-8/p8-08-plan.md
   frozen_product_boundary: INTERNAL_READ_ONLY_EXACT_P7_07_SOURCE_SEAM_EXTERNAL_PROJECTION_UNAVAILABLE
   compatibility_mode: CURRENT_DESIGN_DEFAULT_CORRECT_NO_CHANGE_WITHOUT_PROVED_DIFFERENCE
