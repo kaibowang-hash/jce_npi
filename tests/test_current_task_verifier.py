@@ -59,7 +59,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_FINAL_LEVEL_3_33315047916_FAILED_ONLY_AT_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY_DIAGNOSTIC_REQUIRED",
+            "P8_07F_FINAL_LEVEL_3_33315047916_FAILED_ONLY_AT_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY_DIAGNOSTIC_68AE96BA_ORDINARY_33316649569_CONTROLLED_33317301069_PASS_SUCCESS_ZERO",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -120,7 +120,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
+            "IN_PROGRESS_P8_07F_FINAL_LEVEL_3_PENDING",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

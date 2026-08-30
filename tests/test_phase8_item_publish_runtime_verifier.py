@@ -341,6 +341,9 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(module.LEGACY_QUERY_SERVER_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.ITEM_CREATE_DIAGNOSTICS_ENABLED)
         self.assertFalse(module.REPLAY_TERMINAL_DIAGNOSTICS_ENABLED)
+        self.assertFalse(
+            module.LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
+        )
         source = SCRIPT.read_text(encoding="utf-8")
         assignments = {
             node.targets[0].id: node.value.value
@@ -355,7 +358,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(len(assignments), 7)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED"},
+            set(),
         )
         with patch.object(
             module,

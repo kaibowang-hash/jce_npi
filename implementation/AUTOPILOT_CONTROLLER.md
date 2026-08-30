@@ -9221,3 +9221,22 @@ repeat or rewrite it merely to restore context. See
   controlled run. A failure may expose only one strict code/type/trace tuple;
   success emits zero tuple. No production read, product repair, rerun or P8-08
   activation is allowed before that proof.
+
+## 2026-08-30 P8-07F migrated-legacy diagnostic passed; diagnostics-off final Level 3 pending
+
+- Product-zero diagnostic checkpoint
+  `68ae96ba7f688197f9d7254852605fc12c20b52b` passes exact-SHA ordinary
+  `33316649569`: visual `99271218200`, frontend `99271218361`, secret
+  `99271218387` and repository `99271218408` all pass.
+- Its sole Level 2 controlled run `33317301069` passes preflight `99272978193`
+  and cumulative runtime `99273014159`; exact-39 success emits zero safe
+  tuples. Raw or child output, response content, business values, identities,
+  messages and stack remain unread. No production contact or product change
+  occurred.
+- Freeze diagnostic `1/1`, repair `0/1`, final `0/1`. Disable all Item publish
+  diagnostics, require one new exact-SHA ordinary PASS, then dispatch exactly
+  one Level 3 reuse. A prior outer-label failure is not evidence for a product
+  repair when the bounded same-SHA diagnostic succeeds.
+- P8-08 remains held until the final Level 3 passes. Production reads remain
+  closed for this completed fact window; no ERPNext or LaunchFlow write
+  authority is created.

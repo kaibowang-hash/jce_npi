@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-`P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_PENDING` is the active scoped
+`P8_07F_FINAL_LEVEL_3_PENDING` is the active scoped
 execution hold.
 
 The former collection blockers are closed. Exact SHA `77b4258f` passes
@@ -13,8 +13,11 @@ private state is removed and the accepted facts reconcile with P8-01 through
 P8-09 without a concrete incompatibility. Final checkpoint `fa27a8bf` passes
 ordinary `33314378471`, but Level 3 `33315047916` stops only at the fixed Item
 publish migrated-legacy outer boundary after Bench/Site initialization. Raw
-and child output remain unread. The current hold is one product-zero exact-39
-diagnostic before any repair or final rerun. Database topology, service
+and child output remain unread. Product-zero diagnostic checkpoint `68ae96b`
+passes ordinary `33316649569` and controlled `33317301069`; exact-39 emits
+zero safe tuples and no product repair is evidenced. Diagnostics are off. The
+current hold is one exact-SHA ordinary followed by one final Level 3. Database
+topology, service
 identity, business mappings, Sandbox/UAT and deployment remain production-
 activation or release holds, not P8-08 implementation blockers after PASS.
 P8-07 passes at exact final product SHA

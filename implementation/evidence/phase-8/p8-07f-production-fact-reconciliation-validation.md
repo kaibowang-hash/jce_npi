@@ -273,3 +273,26 @@ stack was read. Product, contract, schema, workflow and production-state diff
 remain zero. Open one product-zero diagnostic at `0/1,0/1,0/1`, using only the
 existing collection-fallback exact-39 code/type/trace mechanism. Exact-SHA
 ordinary PASS must precede one Level 2 controlled run. P8-08 remains held.
+
+## Migrated-legacy bounded diagnostic result
+
+Product-zero checkpoint `68ae96ba7f688197f9d7254852605fc12c20b52b`
+passes ordinary `33316649569`: visual `99271218200`, frontend `99271218361`,
+secret `99271218387` and repository `99271218408` all pass. Its sole Level 2
+controlled run `33317301069` passes preflight `99272978193` and cumulative
+runtime `99273014159` in 8m57s. Exact-39 success emits zero safe tuples.
+
+No raw or child output, response content, business value, identity, message or
+stack was read. No production connection or product change occurred. The
+diagnostic cycle is frozen at `1/1,0/1,0/1`; no product repair is evidenced.
+All Item publish diagnostics are disabled. The only remaining action is one
+new exact-SHA ordinary PASS followed by exactly one final Level 3. P8-08 stays
+held until that Gate passes.
+
+Diagnostics-off Level 1 passes 59 focused verifier/current/collector tests and
+150 complete Item publish tests. Collector self-check confirms
+`remote_contact=false`; current-task verification, V1.2 reconciliation,
+Python compilation, shell syntax, JSON/YAML parsing and `git diff --check` all
+pass. The task diff remains exact 10 governance/verifier paths, while product,
+contract, schema, workflow and production-state diff remain zero. Existing
+user working-tree changes remain unmodified and unstaged.
