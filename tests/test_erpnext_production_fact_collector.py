@@ -143,6 +143,36 @@ class ProductionFactCollectorTest(unittest.TestCase):
         with self.assertRaises(collector.FactCollectionError):
             collector._parent_document_command("site-one", "User", "Administrator")
 
+        locale = collector._site_fact_commands("SYSTEM_LOCALE", "site-one")
+        self.assertEqual(len(locale), 1)
+        self.assertEqual(
+            locale[0][1][:6],
+            ("bench", "--site", "site-one", "execute", "frappe.client.get_value", "--kwargs"),
+        )
+        locale_kwargs = json.loads(locale[0][1][6])
+        self.assertEqual(locale_kwargs["doctype"], "System Settings")
+        self.assertEqual(locale_kwargs["fieldname"], ["language", "time_zone", "country"])
+        file_shapes = collector._site_fact_commands("FILE_URL_SHAPES", "site-one")
+        self.assertEqual(
+            [operation for operation, _ in file_shapes],
+            [
+                "FILE_URL_SHAPES_TOTAL",
+                "FILE_URL_SHAPES_LOCAL_PUBLIC",
+                "FILE_URL_SHAPES_LOCAL_PRIVATE",
+                "FILE_URL_SHAPES_EXTERNAL_HTTP",
+            ],
+        )
+        for _, command in file_shapes:
+            self.assertEqual(
+                command[:6],
+                ("bench", "--site", "site-one", "execute", "frappe.client.get_count", "--kwargs"),
+            )
+            self.assertEqual(json.loads(command[6])["doctype"], "File")
+            self.assertNotIn("sql", " ".join(command).lower())
+            self.assertNotIn("console", " ".join(command).lower())
+        with self.assertRaises(collector.FactCollectionError):
+            collector._site_fact_commands("CALLER_SELECTED", "site-one")
+
     def test_every_runtime_family_uses_one_fixed_application_layer_read_shape(self) -> None:
         for family, spec in collector.RUNTIME_METADATA_SPECS.items():
             with self.subTest(family=family):
@@ -163,6 +193,14 @@ class ProductionFactCollectorTest(unittest.TestCase):
                 self.assertEqual(kwargs["limit_page_length"], collector.RUNTIME_PAGE_SIZE)
                 self.assertNotIn("sql", " ".join(command).lower())
                 self.assertNotIn("console", " ".join(command).lower())
+
+        self.assertNotIn(
+            "script_type",
+            collector.RUNTIME_METADATA_SPECS["CLIENT_SCRIPTS"]["fields"],
+        )
+        self.assertIn("DMR", collector.REQUIRED_ERPNEXT_DOCTYPES)
+        self.assertIn("Mold", collector.REQUIRED_ERPNEXT_DOCTYPES)
+        self.assertIn("Mold Repair", collector.REQUIRED_ERPNEXT_DOCTYPES)
 
     def test_discover_writes_private_state_and_redacts_custom_app_name(self) -> None:
         path = self.state_path()
@@ -432,6 +470,29 @@ class ProductionFactCollectorTest(unittest.TestCase):
                 "custom_one/hooks.py",
             )
 
+    def test_doctype_json_summary_hashes_multiline_or_sensitive_scalars(self) -> None:
+        source = json.dumps(
+            {
+                "doctype": "DocType",
+                "name": "Mold Repair",
+                "module": "Mold Management",
+                "fields": [
+                    {
+                        "fieldname": "status",
+                        "fieldtype": "Select",
+                        "options": "Draft\nIn Progress\nClosed",
+                        "reqd": 1,
+                    }
+                ],
+                "permissions": [{"role": "Mold Manager", "read": 1}],
+            }
+        )
+        summary = collector._json_summary(source)
+        rendered = json.dumps(summary)
+        self.assertEqual(summary["name"], "Mold Repair")
+        self.assertEqual(summary["fields"][0]["options"]["byte_count"], 24)
+        self.assertNotIn("In Progress", rendered)
+
     def test_current_file_reconstruction_preserves_no_final_newline(self) -> None:
         head = b"before"
         current = b"after"
@@ -492,6 +553,61 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertNotIn(row["script"], rendered)
         self.assertNotIn("site-one", rendered)
         self.assertEqual(calls[0][0], "RUNTIME_SERVER_SCRIPTS")
+
+    def test_client_script_v15_shape_hashes_script_without_nonexistent_type_field(self) -> None:
+        fields = collector.RUNTIME_METADATA_SPECS["CLIENT_SCRIPTS"]["fields"]
+        row = {field: None for field in fields}
+        row.update(
+            {
+                "name": "Item validation",
+                "dt": "Item",
+                "view": "Form",
+                "enabled": 1,
+                "script": "frappe.ui.form.on('Item', {})",
+                "modified": "2026-08-30 10:00:00.000000",
+            }
+        )
+        rows, names = collector._parse_runtime_page(json.dumps([row]).encode(), "CLIENT_SCRIPTS")
+        self.assertEqual(names, ["Item validation"])
+        self.assertEqual(rows[0]["script"]["byte_count"], len(row["script"].encode()))
+        self.assertNotIn(row["script"], json.dumps(rows))
+
+    def test_site_fact_parsers_are_exact_bounded_and_non_sensitive(self) -> None:
+        locale = collector._parse_site_fact_output(
+            "SYSTEM_LOCALE",
+            {
+                "SYSTEM_LOCALE": json.dumps(
+                    {"language": "en", "time_zone": "Asia/Bangkok", "country": "Thailand"}
+                ).encode()
+            },
+        )
+        self.assertEqual(locale["language"], "en")
+        counts = collector._parse_site_fact_output(
+            "FILE_URL_SHAPES",
+            {
+                "FILE_URL_SHAPES_TOTAL": b"10",
+                "FILE_URL_SHAPES_LOCAL_PUBLIC": b"4",
+                "FILE_URL_SHAPES_LOCAL_PRIVATE": b"5",
+                "FILE_URL_SHAPES_EXTERNAL_HTTP": b"1",
+            },
+        )
+        self.assertEqual(counts["total"], 10)
+        self.assertEqual(counts["external_http"], 1)
+        with self.assertRaises(collector.FactCollectionError):
+            collector._parse_site_fact_output(
+                "SYSTEM_LOCALE",
+                {"SYSTEM_LOCALE": b'{"language":"person@example.com"}'},
+            )
+        with self.assertRaises(collector.FactCollectionError):
+            collector._parse_site_fact_output(
+                "FILE_URL_SHAPES",
+                {
+                    "FILE_URL_SHAPES_TOTAL": b"1",
+                    "FILE_URL_SHAPES_LOCAL_PUBLIC": b"1",
+                    "FILE_URL_SHAPES_LOCAL_PRIVATE": b"1",
+                    "FILE_URL_SHAPES_EXTERNAL_HTTP": b"0",
+                },
+            )
 
     def test_runtime_metadata_rejects_shape_and_sensitive_scalar_drift(self) -> None:
         fields = collector.RUNTIME_METADATA_SPECS["ROLES"]["fields"]

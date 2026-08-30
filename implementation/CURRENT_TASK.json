@@ -3,7 +3,7 @@
   "task_id": "P8-07F-FACTS",
   "task_kind": "delivery_infrastructure",
   "phase": 8,
-  "status": "IN_PROGRESS_AWAITING_EXPANDED_COLLECTOR_EXACT_SHA_ORDINARY_THEN_FACT_COLLECTION",
+  "status": "IN_PROGRESS_AWAITING_FIXED_SITE_FACT_COLLECTOR_EXACT_SHA_ORDINARY_THEN_REMAINING_COLLECTION",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-08",
   "base_checkpoint": "fccf62feaba2d3ed092efcd06174f16f66193540",
@@ -11,11 +11,14 @@
   "requirement_ids": [],
   "scope": [
     "Accept the P8-07F current-worktree and runtime-metadata governance transition at exact SHA fccf62feaba2d3ed092efcd06174f16f66193540 with ordinary CI 33304191319 and Level 3 33304710306, while preserving zero production contact in that transition.",
-    "Activate the separate P8-07F-FACTS expanded collector only after this activation commit passes exact-SHA ordinary CI; P8-08 remains blocked until sanitized facts, compatibility evidence and this task Level 3 pass.",
+    "Accept P8-07F-FACTS expanded activation c879fbce7a19edf4006d781a24cf710662edf37b ordinary 33306873040 and parent/current-source repair 085e9124328afdb13668de452cd8cba21e282c28 ordinary 33307715636; require this fixed site-fact collector commit to pass exact-SHA ordinary CI before remaining production reads. P8-08 remains blocked until sanitized facts, compatibility evidence and this task Level 3 pass.",
     "Reuse accepted version, installed-app, anonymous HEAD/status and tracked-path inventory first, then collect only current tracked source and fixed runtime metadata that remain missing, stale or changed.",
     "Treat the current tracked production worktree as candidate current source truth only by verifying one cached exact tracked path, immutable HEAD object, current Git object, safe file mode and bounded no-renames single-file diff before local private reconstruction and structural redaction.",
     "Read the two previously stopped relevant DocType candidates through the same current-source structural summarizer without production mutation, raw source persistence, raw path persistence or sensitive-value persistence.",
     "Collect runtime metadata only through fixed frappe.client.get_list operations whose family freezes DocType, safe fields, filters, name ordering, 200-row pages, 25-page maximum, exact JSON shape, redaction and checksums.",
+    "Apply the 2026-08-30 user-authorized runtime-read expansion through fixed frappe.client.get_value and frappe.client.get_count calls only: exact System Settings locale fields and aggregate File URL-shape counts, with no caller-selected method, DocType, field, filter or value.",
+    "Use the production Frappe v15 Client Script field contract without the nonexistent script_type field, hash Script content, and hash any multiline or otherwise protected DocType JSON scalar instead of emitting it.",
+    "Expand the fixed required DocType set only to the exact P8-relevant quality, DMR and mold-management objects already evidenced by the current worktree and runtime workflow metadata.",
     "Cover Custom Fields, Property Setters, Workflows and transitions, roles and DocPerm structure, Client and Server Script structure/checksum, required DocType and DocField structure, Webhooks, Scheduled Jobs, Reports, Print Formats, Notifications and Document Naming Rule structure.",
     "Treat current LaunchFlow architecture, data ownership, OpenAPI and event contracts and P8-01 through P8-09 implementation/design as the default-correct baseline and produce compatibility/minimal-adjustment evidence only.",
     "Produce or update only sanitized fact inventory, ERP customization classification, LaunchFlow-to-ERPNext compatibility blueprint and gap or decision evidence; no proven incompatibility means DIRECT_MATCH and NO_CHANGE.",
@@ -23,7 +26,7 @@
   ],
   "non_scope": [
     "Any SSH or production ERPNext contact before this P8-07F-FACTS activation commit obtains exact-SHA ordinary CI PASS.",
-    "Any production write, sudo, direct SQL, bench console, export-fixtures, arbitrary execute method, generic caller-selected DocType query, file mutation, core/config/permission/service/queue change, migrate/update/restart/reload/clear-cache/scheduler, DocType mutation, webhook/job/adapter/target command, replay or reconciliation action.",
+    "Any production write, sudo, direct SQL, bench console, export-fixtures, arbitrary execute method, generic caller-selected DocType query, file mutation, core/config/permission/service/queue change, migrate/update/restart/reload/clear-cache/scheduler, DocType mutation, webhook/job/adapter/target command, replay or reconciliation action. The user's broader read authority is intentionally implemented through narrower fixed Frappe application-layer reads because they are sufficient.",
     "Any collection or Git persistence of endpoint, host, user, key, secret, credential, cookie, token, private key, site-config secret, raw source, raw diff, raw Script text, raw path identity, business-sensitive value or unrelated business record.",
     "Any LaunchFlow or ERPNext product code, contract, schema, workflow, metadata, migration, configuration, permission, service, queue or data change in this fact task.",
     "Any redesign, refactor, rebuild, interface rename, domain-object merge or split, workflow rewrite, technology replacement, permission-model rewrite, generalized abstraction or nearby optimization.",
@@ -32,7 +35,8 @@
   "frozen_invariants": [
     "P8_07F_CURRENT_RUNTIME_GOVERNANCE_FCCF62FE_ORDINARY_33304191319_LEVEL_3_33304710306_PASSED",
     "P8_07F_CURRENT_RUNTIME_GOVERNANCE_ZERO_SSH_ZERO_CONNECTOR_ZERO_SITE_ZERO_EXTERNAL_STATE",
-    "P8_07F_FACTS_CONNECTION_REQUIRES_THIS_EXPANDED_ACTIVATION_EXACT_SHA_ORDINARY_PASS",
+    "P8_07F_FACTS_EXPANDED_ACTIVATION_C879FBCE_ORDINARY_33306873040_AND_PARENT_REPAIR_085E9124_ORDINARY_33307715636_PASSED",
+    "P8_07F_REMAINING_CONNECTION_REQUIRES_FIXED_SITE_FACT_COLLECTOR_EXACT_SHA_ORDINARY_PASS",
     "P8_07F_IS_MANDATORY_BEFORE_P8_08",
     "JCE_CORE_READ_ONLY_STANDING_AUTHORIZATION_IS_CONDITIONAL_FAIL_CLOSED_AND_NOT_WRITE_AUTHORITY",
     "FIXED_REMOTE_SOURCE_OPERATIONS_ERP_VERSION_INSTALLED_APPS_APP_HEAD_APP_STATUS_APP_TRACKED_PATHS_APP_FILE_HASH_APP_FILE_READ_APP_FILE_MODE_APP_HEAD_FILE_HASH_APP_WORKTREE_DIFF",
@@ -41,6 +45,10 @@
     "FIXED_RUNTIME_METADATA_FAMILIES_ONLY_NO_CALLER_SELECTED_METHOD_DOCTYPE_FIELDS_FILTERS_ORDER_OR_PAGINATION",
     "RUNTIME_METADATA_USES_FRAPPE_APPLICATION_LAYER_GET_LIST_EXACT_JSON_PAGE_200_MAX_25_AND_FAIL_CLOSED_SHAPE",
     "RUNTIME_METADATA_OUTPUT_EXCLUDES_SCRIPT_TEXT_ENDPOINT_HEADERS_PRINCIPALS_SECRETS_AND_BUSINESS_ROWS",
+    "FIXED_SITE_FACT_FAMILIES_SYSTEM_LOCALE_AND_FILE_URL_SHAPES_USE_ONLY_FRAPPE_GET_VALUE_AND_GET_COUNT",
+    "CLIENT_SCRIPT_V15_FIELDS_EXCLUDE_NONEXISTENT_SCRIPT_TYPE_AND_HASH_SCRIPT_TEXT",
+    "PROTECTED_MULTILINE_DOCTYPE_JSON_SCALARS_ARE_HASHED_NOT_EMITTED",
+    "USER_EXPANDED_RUNTIME_READ_AUTHORITY_DOES_NOT_REQUIRE_SQL_CONSOLE_OR_GENERIC_EXECUTE",
     "NO_DIRECT_SQL_BENCH_CONSOLE_EXPORT_FIXTURES_GENERIC_METHOD_OR_ARBITRARY_CODE",
     "CURRENT_LAUNCHFLOW_ARCHITECTURE_OWNERSHIP_CONTRACTS_AND_P8_01_THROUGH_P8_09_ARE_DEFAULT_CORRECT_BASELINE",
     "COMPATIBILITY_RESULTS_ONLY_DIRECT_MATCH_CONFIG_OR_MAPPING_ONLY_MINOR_LAUNCHFLOW_ADJUSTMENT_MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT_BUSINESS_DECISION_REQUIRED_NOT_APPLICABLE",
@@ -112,14 +120,14 @@
   },
   "expected_state": {
     "phase_status_current_task": "P8-07F-FACTS",
-    "phase_status_execution_hold": "P8_07F_FACTS_ACTIVATION_ORDINARY_PENDING",
+    "phase_status_execution_hold": "P8_07F_FIXED_SITE_FACT_COLLECTOR_ORDINARY_PENDING",
     "phase_status_resumed_product_task": "P8-08",
     "active_goal_marker": "P8-07F-FACTS",
     "next_action_marker": "P8-07F-FACTS",
-    "controller_marker": "P8-07F expanded facts collector awaits exact-SHA activation ordinary CI"
+    "controller_marker": "P8-07F fixed site-fact collector awaits exact-SHA ordinary CI"
   },
   "rollback": {
-    "before_product_resume": "Before any production read, revert only this P8-07F-FACTS expanded activation and collector commit while retaining the accepted governance Gate evidence at fccf62fe. Keep P8-08 inactive.",
+    "before_product_resume": "Before the remaining production read, revert only this fixed site-fact collector commit while retaining accepted governance fccf62fe, expanded activation c879fbce and parent/current-source collection evidence 085e9124. Keep P8-08 inactive.",
     "after_product_resume": "After a read-only operation, stop all further operations, securely delete private temporary state, retain only already-redacted accepted provenance and mark affected facts stale or unverified. No remote rollback command exists because no remote mutation is authorized; any product or ERP customization remains a separate reviewed task."
   }
 }

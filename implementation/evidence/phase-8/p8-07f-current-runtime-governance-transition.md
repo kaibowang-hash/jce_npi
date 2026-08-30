@@ -182,3 +182,24 @@ Freeze the migrated-legacy cycle at diagnostic `1/1`, repair `0/1`, final
 PASS and made zero SSH, connector, Site or production contact. A separate
 `P8-07F-FACTS` collector-expansion exact-SHA ordinary PASS remains mandatory
 before any new production read.
+
+## Accepted current-source read and fixed remainder
+
+Collector repair SHA `085e9124328afdb13668de452cd8cba21e282c28`
+passes exact-SHA ordinary CI `33307715636`. The following production read uses
+the authorized current tracked worktrees, including uncommitted tracked
+changes, as current source truth. It accepts sanitized structural/checksum
+evidence for the two formerly protected DocType candidates and for fixed
+runtime metadata families, then removes the private mode-0600 state. No raw
+source, diff, path, Script text, endpoint, principal, credential or business
+record is persisted.
+
+The remaining collector boundary is mechanical: the production Frappe v15
+Client Script schema has no `script_type`; protected multiline DocType JSON
+scalars require checksum-only representation; and exact locale plus aggregate
+File URL-shape facts require fixed application-layer operations. The next
+collector revision therefore uses only hard-coded `frappe.client.get_value`
+and `frappe.client.get_count` calls in addition to the accepted fixed reads.
+The user's broader read-only authorization does not require direct SQL,
+console or a generic execute surface; those remain prohibited. A new
+exact-SHA ordinary PASS is mandatory before the remaining production contact.

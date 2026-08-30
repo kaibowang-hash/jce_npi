@@ -47,7 +47,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
-            "P8_07F_FACTS_CONNECTION_REQUIRES_THIS_EXPANDED_ACTIVATION_EXACT_SHA_ORDINARY_PASS",
+            "P8_07F_FACTS_EXPANDED_ACTIVATION_C879FBCE_ORDINARY_33306873040_AND_PARENT_REPAIR_085E9124_ORDINARY_33307715636_PASSED",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_REMAINING_CONNECTION_REQUIRES_FIXED_SITE_FACT_COLLECTOR_EXACT_SHA_ORDINARY_PASS",
             value["frozen_invariants"],
         )
         self.assertIn(
@@ -71,6 +75,22 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "FIXED_SITE_FACT_FAMILIES_SYSTEM_LOCALE_AND_FILE_URL_SHAPES_USE_ONLY_FRAPPE_GET_VALUE_AND_GET_COUNT",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "CLIENT_SCRIPT_V15_FIELDS_EXCLUDE_NONEXISTENT_SCRIPT_TYPE_AND_HASH_SCRIPT_TEXT",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "PROTECTED_MULTILINE_DOCTYPE_JSON_SCALARS_ARE_HASHED_NOT_EMITTED",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "USER_EXPANDED_RUNTIME_READ_AUTHORITY_DOES_NOT_REQUIRE_SQL_CONSOLE_OR_GENERIC_EXECUTE",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "ALL_PRODUCTION_READS_USE_FIXED_TRANSPORT_REMOTE_ALLOWLIST_REDACTION_PROVENANCE_CHECKSUM_BOUNDED_OUTPUT_AND_FAIL_CLOSED_STOPS",
             value["frozen_invariants"],
         )
@@ -80,7 +100,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_EXPANDED_COLLECTOR_EXACT_SHA_ORDINARY_THEN_FACT_COLLECTION",
+            "IN_PROGRESS_AWAITING_FIXED_SITE_FACT_COLLECTOR_EXACT_SHA_ORDINARY_THEN_REMAINING_COLLECTION",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

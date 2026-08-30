@@ -88,18 +88,31 @@ SENSITIVE_CONTENT = (
     re.compile(r"AKIA[0-9A-Z]{16}"),
 )
 REQUIRED_ERPNEXT_DOCTYPES = (
+    "Approval Form",
     "Asset",
     "Asset Maintenance",
     "Asset Movement",
     "BOM",
     "Customer",
+    "DMR",
     "Document Naming Rule",
     "Document Naming Rule Condition",
+    "Engineering Change Request",
+    "Injection Molding Condition",
     "Item",
     "Job Card",
+    "Mold",
+    "Mold Alteration",
+    "Mold Management Settings",
+    "Mold Outsource",
+    "Mold Repair",
+    "Mold Spare Part",
+    "Mold Spare Part Usage",
+    "Mold Trial Report",
     "Project",
     "Purchase Order",
     "Quality Inspection",
+    "Quality Inspection Template",
     "Supplier",
     "System Settings",
     "Work Order",
@@ -138,7 +151,7 @@ RUNTIME_METADATA_SPECS: dict[str, dict[str, Any]] = {
     },
     "CLIENT_SCRIPTS": {
         "doctype": "Client Script",
-        "fields": ("name", "dt", "view", "enabled", "script_type", "script", "modified"),
+        "fields": ("name", "dt", "view", "enabled", "script", "modified"),
         "hashed_fields": ("script",),
     },
     "SERVER_SCRIPTS": {
@@ -193,6 +206,13 @@ RUNTIME_METADATA_SPECS: dict[str, dict[str, Any]] = {
         "fields": ("name", "parent", "field", "condition", "value", "idx", "modified"),
         "hashed_fields": ("value",),
     },
+}
+SITE_FACT_FAMILIES = ("SYSTEM_LOCALE", "FILE_URL_SHAPES")
+FILE_URL_SHAPE_FILTERS: dict[str, dict[str, Any]] = {
+    "TOTAL": {},
+    "LOCAL_PUBLIC": {"file_url": ["like", "/files/%"]},
+    "LOCAL_PRIVATE": {"file_url": ["like", "/private/files/%"]},
+    "EXTERNAL_HTTP": {"file_url": ["like", "http%"]},
 }
 PARENT_METADATA_FAMILIES = {
     "DOCFIELDS": ("DocType", "fields", None),
@@ -379,6 +399,45 @@ def _runtime_command(family: str, site: str, start: int) -> tuple[str, ...]:
     )
     _validate_command_tokens(command)
     return command
+
+
+def _site_fact_commands(family: str, site: str) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    require(family in SITE_FACT_FAMILIES, "site fact family is not allowlisted")
+    require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
+    if family == "SYSTEM_LOCALE":
+        kwargs = {
+            "doctype": "System Settings",
+            "fieldname": ["language", "time_zone", "country"],
+            "filters": {"name": "System Settings"},
+        }
+        commands = (
+            (
+                "SYSTEM_LOCALE",
+                (
+                    "bench", "--site", site, "execute", "frappe.client.get_value",
+                    "--kwargs", json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
+                ),
+            ),
+        )
+    else:
+        commands = tuple(
+            (
+                f"FILE_URL_SHAPES_{label}",
+                (
+                    "bench", "--site", site, "execute", "frappe.client.get_count",
+                    "--kwargs",
+                    json.dumps(
+                        {"doctype": "File", "filters": filters},
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ),
+                ),
+            )
+            for label, filters in FILE_URL_SHAPE_FILTERS.items()
+        )
+    for _, command in commands:
+        _validate_command_tokens(command)
+    return commands
 
 
 def _parent_document_command(site: str, parent_doctype: str, name: str) -> tuple[str, ...]:
@@ -664,9 +723,17 @@ def _json_summary(text: str) -> dict[str, Any]:
         "root": "object",
         "top_level_keys": sorted(str(key) for key in value),
     }
+    def protected_scalar(value: object) -> object:
+        try:
+            return _safe_scalar(value)
+        except FactCollectionError:
+            require(type(value) is str, "tracked JSON scalar shape drifted")
+            encoded = value.encode("utf-8")
+            return {"byte_count": len(encoded), "checksum": _checksum(encoded)}
+
     for key in ("doctype", "name", "module", "document_type"):
         if key in value:
-            result[key] = _safe_scalar(value[key])
+            result[key] = protected_scalar(value[key])
     fields = value.get("fields")
     if isinstance(fields, list):
         safe_fields: list[dict[str, Any]] = []
@@ -674,7 +741,7 @@ def _json_summary(text: str) -> dict[str, Any]:
             require(type(field) is dict, "DocType field row shape drifted")
             safe_fields.append(
                 {
-                    key: _safe_scalar(field.get(key))
+                    key: protected_scalar(field.get(key))
                     for key in ("fieldname", "fieldtype", "options", "reqd", "read_only", "unique")
                     if key in field
                 }
@@ -687,7 +754,7 @@ def _json_summary(text: str) -> dict[str, Any]:
             require(type(permission) is dict, "DocType permission row shape drifted")
             safe_permissions.append(
                 {
-                    key: _safe_scalar(permission.get(key))
+                    key: protected_scalar(permission.get(key))
                     for key in ("role", "permlevel", "read", "write", "create", "delete", "submit", "cancel", "amend", "report", "export", "share", "print", "email")
                     if key in permission
                 }
@@ -1308,6 +1375,85 @@ def _parent_metadata_operation(
     )
 
 
+def _parse_site_fact_output(family: str, raw_outputs: dict[str, bytes]) -> dict[str, Any]:
+    require(family in SITE_FACT_FAMILIES, "site fact family is not allowlisted")
+    if family == "SYSTEM_LOCALE":
+        require(set(raw_outputs) == {"SYSTEM_LOCALE"}, "system locale result shape drifted")
+        try:
+            value = json.loads(raw_outputs["SYSTEM_LOCALE"].decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise FactCollectionError("system locale result is not exact JSON") from exc
+        expected = {"language", "time_zone", "country"}
+        require(type(value) is dict and set(value) == expected, "system locale fields drifted")
+        result: dict[str, Any] = {}
+        for key in sorted(expected):
+            item = value[key]
+            require(type(item) is str and 0 < len(item) <= 128, "system locale value shape drifted")
+            result[key] = _safe_scalar(item)
+        return result
+
+    expected_operations = {f"FILE_URL_SHAPES_{label}" for label in FILE_URL_SHAPE_FILTERS}
+    require(set(raw_outputs) == expected_operations, "file URL shape result set drifted")
+    counts: dict[str, int] = {}
+    for label in FILE_URL_SHAPE_FILTERS:
+        operation = f"FILE_URL_SHAPES_{label}"
+        try:
+            value = json.loads(raw_outputs[operation].decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise FactCollectionError("file URL shape count is not exact JSON") from exc
+        require(type(value) is int and value >= 0, "file URL shape count drifted")
+        counts[label.lower()] = value
+    require(
+        counts["local_public"] + counts["local_private"] + counts["external_http"] <= counts["total"],
+        "file URL shape counts are inconsistent",
+    )
+    return counts
+
+
+def _site_fact_operation(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+) -> None:
+    _validate_ordinary_run_id(args.ordinary_run_id)
+    _preflight(args.expected_sha)
+    state_path = _state_path(args.state, must_exist=True)
+    state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
+    family = args.family
+    require(family in SITE_FACT_FAMILIES, "site fact family is not allowlisted")
+    site = os.environ.get("NPI_P8_07F_SITE")
+    require(site is not None and APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is missing or invalid")
+    raw_outputs: dict[str, bytes] = {}
+    raw_checksums: dict[str, str] = {}
+    for operation, command in _site_fact_commands(family, site):
+        raw = runner(operation, command, MAX_RUNTIME_BYTES)
+        raw_outputs[operation] = raw
+        raw_checksums[operation] = _checksum(raw)
+    result = _parse_site_fact_output(family, raw_outputs)
+    result_checksum = _checksum(_json_bytes(result))
+    records = state.setdefault("operation_records", [])
+    require(type(records) is list, "private operation records are malformed")
+    records.append(
+        {
+            "operation_id": f"SITE_FACT_{family}",
+            "timestamp": _timestamp(),
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "checksum": result_checksum,
+        }
+    )
+    _replace_state(state_path, state)
+    _emit(
+        {
+            "task_id": TASK_ID,
+            "operation": f"SITE_FACT_{family}",
+            "timestamp": _timestamp(),
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "raw_checksums": raw_checksums,
+            "result_checksum": result_checksum,
+            "result": result,
+        }
+    )
+
+
 def _cleanup(args: argparse.Namespace) -> None:
     _validate_ordinary_run_id(args.ordinary_run_id)
     _preflight(args.expected_sha)
@@ -1347,6 +1493,8 @@ def _parser() -> argparse.ArgumentParser:
     current_file_parser.add_argument("--path-index", required=True, type=int)
     runtime_parser = governed("runtime")
     runtime_parser.add_argument("--family", required=True, choices=tuple(RUNTIME_METADATA_SPECS))
+    site_facts_parser = governed("site-facts")
+    site_facts_parser.add_argument("--family", required=True, choices=SITE_FACT_FAMILIES)
     governed("cleanup")
     return parser
 
@@ -1374,6 +1522,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "APP_CURRENT_FILE_READ",
                     ],
                     "runtime_metadata_families": list(RUNTIME_METADATA_SPECS),
+                    "site_fact_families": list(SITE_FACT_FAMILIES),
                     "remote_contact": False,
                 }
             )
@@ -1390,6 +1539,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 _parent_metadata_operation(args)
             else:
                 _runtime_operation(args)
+        elif args.command == "site-facts":
+            _site_fact_operation(args)
         elif args.command == "cleanup":
             _cleanup(args)
         else:

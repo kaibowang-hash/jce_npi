@@ -9082,3 +9082,39 @@ repeat or rewrite it merely to restore context. See
 - P8-08 and product authority remain inactive. Current LaunchFlow architecture,
   ownership and contracts remain default correct; no proven incompatibility
   means `DIRECT_MATCH` and `NO_CHANGE`.
+
+#### P8-07F fixed site-fact collector awaits exact-SHA ordinary CI
+
+- The current marker is exactly `P8-07F fixed site-fact collector awaits exact-SHA ordinary CI`.
+- Parent-metadata/current-source repair exact SHA
+  `085e9124328afdb13668de452cd8cba21e282c28` passes ordinary CI
+  `33307715636` in repository, frontend, visual and secret lanes. The accepted
+  2026-08-30 read then verifies unchanged Frappe `15.79.0`, ERPNext `15.77.0`,
+  twenty installed apps and the prior bench/Site checksums. It treats tracked
+  current worktrees, including their user-authorized uncommitted tracked
+  changes, as the source fact rather than assuming HEAD is runtime truth.
+- The two previously stopped DocType candidates were read through the bounded
+  structural summarizer without modification or raw persistence. One is an HR
+  Appointment Letter definition and one is an MRP Buffer Profile definition;
+  neither is an exact P8 integration target. Runtime collection accepts the
+  fixed Custom Field, Property Setter, Workflow/state/transition, role,
+  permission, Server Script, Webhook, scheduled-job, report, print,
+  notification and naming-rule summaries. The private mode-0600 state was
+  deleted after the window.
+- The remaining safe boundaries are collector compatibility, not missing user
+  authority: production Frappe v15 Client Script lacks `script_type`; several
+  relevant mold DocType JSON files contain multiline protected Select values;
+  and exact system locale plus aggregate File URL-shape facts were not in the
+  prior family set. Do not reconnect until a new exact-SHA ordinary passes.
+- The repair removes the nonexistent Client Script field, hashes Script text
+  and protected multiline JSON scalars, expands only the fixed P8-relevant
+  quality/DMR/mold parent set and adds only fixed
+  `frappe.client.get_value`/`frappe.client.get_count` reads for System Settings
+  locale fields and aggregate File URL shapes. Although the user authorized a
+  broader read-only scope, direct SQL, console and generic execute remain
+  unnecessary and prohibited because these narrower application-layer reads
+  are sufficient.
+- After this exact-SHA ordinary passes, collect only those remaining families,
+  delete private state, reconcile against the current LaunchFlow baseline and
+  produce compatibility/minimal-adjustment documents. P8-08 remains inactive;
+  no production or LaunchFlow write/change authority is created.

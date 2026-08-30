@@ -298,3 +298,25 @@ user-authorized DocType JSON files to reach the structural JSON summarizer.
 Raw parent documents, source, paths, Script text and sensitive values remain
 memory-only and unaccepted; direct SQL, console, arbitrary execute and every
 write remain prohibited.
+
+## 2026-08-30 accepted initial collection and remaining fixed reads
+
+Parent/current-source collector repair SHA
+`085e9124328afdb13668de452cd8cba21e282c28` passes ordinary CI
+`33307715636`. The next bounded production window accepts the current tracked
+worktree as source truth, including authorized uncommitted tracked changes,
+and structurally summarizes the two formerly protected DocType candidates.
+It also accepts sanitized/checksummed Custom Field, Property Setter,
+Workflow/state/transition, role, permission, Server Script, Webhook,
+scheduled-job, report, print, notification and naming-rule evidence. The
+private state is removed at window close.
+
+Before the final remaining read, the collector must obtain another exact-SHA
+ordinary PASS with four fail-closed fixes: use the actual Frappe v15 Client
+Script field set and hash its Script; hash protected multiline DocType JSON
+scalars; freeze the expanded P8-relevant quality/DMR/mold DocType parent set;
+and query only exact System Settings locale fields plus aggregate File URL
+shapes through hard-coded `frappe.client.get_value`/`get_count` operations.
+No direct SQL, console or generic method is needed or allowed. After that Gate,
+collect only the missing families, delete private state and proceed to the
+compatibility/minimal-adjustment reconciliation; P8-08 remains held.
