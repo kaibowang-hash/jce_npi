@@ -60,6 +60,10 @@ class ProductionFactCollectorTest(unittest.TestCase):
             ("git", "-C", "apps/custom_one", "status", "--short", "-uno"),
         )
         self.assertEqual(
+            collector._remote_command("APP_TRACKED_PATHS", root="apps/custom_one"),
+            ("git", "-C", "apps/custom_one", "ls-files", "-z"),
+        )
+        self.assertEqual(
             collector._remote_command(
                 "APP_FILE_READ",
                 root="apps/custom_one",
@@ -189,7 +193,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
 
         def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
             calls.append(operation)
-            return b"custom_one/hooks.py\ncustom_one/modules.txt\n"
+            return b"custom_one/hooks.py\x00custom_one/modules.txt\x00"
 
         with patch.object(collector, "_preflight"), patch.object(collector, "_emit") as emit:
             collector._app_operation(args, runner)
@@ -253,7 +257,18 @@ class ProductionFactCollectorTest(unittest.TestCase):
         with self.assertRaises(collector.FactCollectionError):
             collector._parse_status(b"?? unknown.txt\n")
         with self.assertRaises(collector.FactCollectionError):
-            collector._parse_paths(b"z.py\na.py\n")
+            collector._parse_paths(b"z.py\x00a.py\x00")
+        self.assertEqual(
+            collector._parse_paths(b"app/a file.py\x00app/name (copy).json\x00"),
+            ["app/a file.py", "app/name (copy).json"],
+        )
+        for invalid in (
+            b"app/path.py\n",
+            b"app/../path.py\x00",
+            b"app/bad\npath.py\x00",
+        ):
+            with self.assertRaises(collector.FactCollectionError):
+                collector._parse_paths(invalid)
 
     def test_self_check_does_not_contact_ssh(self) -> None:
         with patch.object(collector.subprocess, "run") as run, patch.object(

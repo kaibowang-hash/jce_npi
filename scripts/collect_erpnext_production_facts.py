@@ -215,7 +215,7 @@ def _remote_command(operation: str, *, site: str | None = None, root: str | None
         elif operation == "APP_STATUS":
             command = ("git", "-C", root, "status", "--short", "-uno")
         elif operation == "APP_TRACKED_PATHS":
-            command = ("git", "-C", root, "ls-files")
+            command = ("git", "-C", root, "ls-files", "-z")
         elif operation in {"APP_FILE_HASH", "APP_FILE_READ"}:
             require(path is not None and _safe_relative_path(path), "tracked file path is invalid")
             if operation == "APP_FILE_HASH":
@@ -245,6 +245,14 @@ def _safe_relative_path(value: str) -> bool:
     return all(part not in {"", ".", ".."} for part in parts)
 
 
+def _safe_inventory_path(value: str) -> bool:
+    if not value or value.startswith("/") or len(value) > 1024:
+        return False
+    if any(ord(character) < 32 or ord(character) == 127 for character in value):
+        return False
+    return all(part not in {"", ".", ".."} for part in value.split("/"))
+
+
 def _ssh_argv(command: Sequence[str]) -> tuple[str, ...]:
     require(bool(command), "remote command is empty")
     require(all(REMOTE_TOKEN.fullmatch(token) is not None for token in command), "remote command token is unsafe")
@@ -271,7 +279,8 @@ def _run_ssh(operation: str, command: Sequence[str], max_bytes: int) -> bytes:
     require(result.returncode == 0, f"{operation} failed without accepted output")
     require(not result.stderr, f"{operation} produced unexpected stderr")
     require(len(result.stdout) <= max_bytes, f"{operation} exceeded the bounded output limit")
-    require(b"\x00" not in result.stdout, f"{operation} returned binary output")
+    if operation != "APP_TRACKED_PATHS":
+        require(b"\x00" not in result.stdout, f"{operation} returned binary output")
     return result.stdout
 
 
@@ -351,20 +360,24 @@ def _parse_status(raw: bytes) -> list[dict[str, str]]:
         status_code = line[:2]
         path = line[3:]
         require("?" not in status_code, "APP_STATUS unexpectedly returned untracked files")
-        require(_safe_relative_path(path), "APP_STATUS path shape drifted")
+        require(_safe_inventory_path(path), "APP_STATUS path shape drifted")
         result.append({"status": status_code, "path_checksum": _checksum(path.encode())})
     return result
 
 
 def _parse_paths(raw: bytes) -> list[str]:
+    if not raw:
+        return []
+    require(raw.endswith(b"\x00"), "APP_TRACKED_PATHS is not NUL terminated")
+    encoded_paths = raw[:-1].split(b"\x00")
+    require(encoded_paths == sorted(encoded_paths), "APP_TRACKED_PATHS is not deterministic")
+    require(len(set(encoded_paths)) == len(encoded_paths), "APP_TRACKED_PATHS contains duplicates")
     try:
-        paths = raw.decode("utf-8").splitlines()
+        paths = [value.decode("utf-8") for value in encoded_paths]
     except UnicodeDecodeError as exc:
         raise FactCollectionError("APP_TRACKED_PATHS output is not UTF-8") from exc
     require(len(paths) <= 20000, "APP_TRACKED_PATHS row count exceeded")
-    require(paths == sorted(paths), "APP_TRACKED_PATHS is not deterministic")
-    require(len(set(paths)) == len(paths), "APP_TRACKED_PATHS contains duplicates")
-    require(all(_safe_relative_path(path) for path in paths), "APP_TRACKED_PATHS contains an unsafe path")
+    require(all(_safe_inventory_path(path) for path in paths), "APP_TRACKED_PATHS contains an unsafe path")
     return paths
 
 

@@ -1,6 +1,6 @@
 # Required External Inputs
 
-Status: **OPEN — P8-07F DISCOVERY ACCEPTED; APPLICATION FACTS INCOMPLETE**
+Status: **OPEN — P8-07F HEAD/STATUS ACCEPTED; SOURCE FACTS INCOMPLETE**
 Updated: 2026-08-30
 
 This is the single complete request for external facts that are not present in
@@ -10,8 +10,12 @@ P8-07F may instead collect only the same necessary facts through its fixed
 `JCE-Core` read-only boundary. Governance and activation Gates passed. After
 two earlier no-output attempts, fixed-root SHA `9ab9bd5199e5521f3a72e701c3fa4338d6e866db`
 and ordinary `33295753975` enabled an accepted sanitized Bench/Site discovery.
-Application status/path/source facts remain incomplete because the local
-collector rejected the fixed equals-form status token before sending SSH.
+The status-token repair passes at `be03972a` / ordinary `33296694027` and
+complete anonymized HEAD/status facts are accepted. Path/source facts remain
+incomplete because the line parser stopped on a legitimate tracked path in
+`CUSTOM_APP_03`; no later path/file read ran. The NUL-framing repair must pass
+exact-SHA ordinary CI before those reads resume. ERPNext and twelve of eighteen
+custom apps have tracked drift, so their HEAD content is not runtime truth.
 Never provide or record credentials,
 endpoint/host/user/key values, secrets or unrelated business records.
 
@@ -22,17 +26,18 @@ for requesting, receiving and recording external fact provenance.
 
 Before asking again or connecting, check
 `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`. It now contains the accepted
-version and installed-app baseline. Reuse that fresh inventory and resume only
-the missing application metadata after the fixed-token harness repair passes a
-new exact-SHA ordinary CI. Record task
+version, installed-app and anonymized HEAD/status baseline. Reuse that fresh
+inventory and resume only the missing application metadata after the
+tracked-path NUL-framing repair passes a new exact-SHA ordinary CI. Record task
 ID, purpose, timestamp/timezone, operation ID, redacted source, version/
 checksum, finding, unknown and contract/ownership impact. Stop on permission,
 version, output-shape, sensitive-content, allowlist or write-boundary drift.
 
 Current provenance: task `P8-07F-FACTS`; source
-`JCE_CORE_PRODUCTION_REDACTED`; fixed-root SHA `9ab9bd51`; ordinary
-`33295753975`; accepted discovery time `2026-08-30T06:10:50Z`; operations
-`ERP_VERSION` and `INSTALLED_APPS`; Bench checksum
+`JCE_CORE_PRODUCTION_REDACTED`; fixed-root SHA `9ab9bd51`; status-token SHA
+`be03972a`; ordinary `33296694027`; accepted checksum-confirming discovery time
+`2026-08-30T06:35:13Z`; operations `ERP_VERSION`, `INSTALLED_APPS`, `APP_HEAD`,
+`APP_STATUS` and three bounded `APP_TRACKED_PATHS`; Bench checksum
 `sha256:bc5f2b2653647c21c6cee66e357951831f4e1e512ca9bcb641f8b017fef9b815`;
 Site-inventory checksum
 `sha256:cec7d8128c63e6b79bc6fcf9da558378d2c134a9f96a9a5a8b36a585b319c0fd`.
@@ -40,8 +45,8 @@ The Site value remains private and is not persisted here.
 
 The user has since confirmed the default relative Bench root `frappe-bench`
 and supplied the task-scoped runtime Site privately. The Site value is not
-repeated or persisted here. The fixed-root Gate and discovery now pass. The
-next read remains gated by the local `APP_STATUS` token repair and its exact-SHA
+repeated or persisted here. Fixed-root discovery and HEAD/status reads pass.
+The next path read remains gated by the NUL-framing repair and its exact-SHA
 ordinary; the repair adds no operation or authority.
 
 ## 1. Current ERPNext reconciliation package

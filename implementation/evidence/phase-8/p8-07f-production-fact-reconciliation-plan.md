@@ -84,7 +84,7 @@ inline source are prohibited.
 | `INSTALLED_APPS` | `bench --site <runtime-site> list-apps` | app/version rows only |
 | `APP_HEAD` | `git -C <validated-custom-app-root> rev-parse HEAD` | one 40-character SHA |
 | `APP_STATUS` | `git -C <validated-custom-app-root> status --short -uno` | bounded tracked-drift summary |
-| `APP_TRACKED_PATHS` | `git -C <validated-custom-app-root> ls-files` | deterministic paged path inventory |
+| `APP_TRACKED_PATHS` | `git -C <validated-custom-app-root> ls-files -z` | deterministic NUL-framed path inventory |
 | `APP_FILE_HASH` | `git -C <validated-custom-app-root> hash-object -- <allowlisted-tracked-path>` | one object hash |
 | `APP_FILE_READ` | `git -C <validated-custom-app-root> show HEAD:<allowlisted-tracked-path>` | one bounded tracked source/metadata file after local sensitive-content preflight |
 
@@ -114,6 +114,18 @@ accepted-inventory assertions. It changes only the fixed status token
 from the locally rejected equals-form to equivalent `-uno`; no product,
 contract, schema, ownership, frontend, workflow, operation or output authority
 changes. Exact-SHA ordinary CI is mandatory before application reads resume.
+
+The fixed-status-token repair passes at
+`be03972abd13b60284a8f950eae7cdf7776781d7` / ordinary `33296694027`.
+Complete anonymized HEAD/status inventory is accepted; Frappe is clean,
+ERPNext has one tracked drift and twelve of eighteen custom apps have tracked
+drift. The line-framed tracked-path parser then stopped on one legitimate
+`CUSTOM_APP_03` path after accepting bounded structures for the first two
+custom apps. The current exact-fourteen repair changes only that command to
+`git ls-files -z`, permits NUL bytes only for this operation and validates
+ordered unique UTF-8 printable non-traversing paths. File operations retain
+their stricter path gate and remain dormant. A new exact-SHA ordinary PASS is
+mandatory before path reads resume.
 
 ## Fail-closed and redaction contract
 

@@ -8938,3 +8938,20 @@ repeat or rewrite it merely to restore context. See
   tests and require a new exact-SHA ordinary PASS before application metadata
   collection resumes. The seven operation IDs, fixed `frappe-bench` wrapper,
   redaction/output limits, stop conditions and no-write authority are unchanged.
+
+### P8-07F HEAD and status accepted; tracked-path NUL harness repair awaits exact-SHA ordinary
+
+- The current marker is exactly `P8-07F HEAD and status accepted; tracked-path NUL harness repair awaits exact-SHA ordinary; P8-08 held`.
+- Fixed-status SHA `be03972abd13b60284a8f950eae7cdf7776781d7`
+  passes ordinary `33296694027`. Checksum-first discovery is unchanged and
+  bounded `APP_HEAD`/`APP_STATUS` reads complete for all twenty apps. Frappe is
+  clean; ERPNext has one tracked drift; twelve of eighteen anonymous custom
+  apps have tracked drift. Dirty-app HEAD content is not runtime truth.
+- `CUSTOM_APP_01/02` tracked-path structure was accepted. The next
+  `APP_TRACKED_PATHS` stopped locally on a legitimate line-parser path shape;
+  the raw path was not exposed and no later path/file operation ran.
+- Apply only exact `git ls-files -z` plus a closed NUL-aware ordered, unique,
+  UTF-8, printable, non-traversing parser. NUL remains forbidden for the other
+  six operations and file reads retain their stricter gate. Require a new
+  exact-SHA ordinary PASS before path inventory resumes. Product, contracts,
+  ownership, frontend, workflow and production write authority remain zero.

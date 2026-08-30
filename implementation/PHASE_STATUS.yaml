@@ -5,9 +5,9 @@ updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: P8_07F_PRODUCTION_FACTS_UNVERIFIED
 current_task: P8-07F-FACTS
-current_task_status: IN_PROGRESS_P8_07F_APP_STATUS_TOKEN_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY
-current_task_completed_stage: P8_07F_FIXED_BENCH_DISCOVERY_9AB9BD51_ORDINARY_33295753975_PASS_AND_SANITIZED_BENCH_SITE_INVENTORY_ACCEPTED
-current_task_next_stage: P8_07F_APP_STATUS_FIXED_TOKEN_HARNESS_REPAIR_EXACT_SHA_ORDINARY_THEN_RESUME_APP_METADATA
+current_task_status: IN_PROGRESS_P8_07F_TRACKED_PATH_NUL_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY
+current_task_completed_stage: P8_07F_APP_HEAD_STATUS_BE03972A_ORDINARY_33296694027_PASS_COMPLETE_ANONYMIZED_DRIFT_COUNTS_ACCEPTED
+current_task_next_stage: P8_07F_TRACKED_PATH_NUL_FRAMING_HARNESS_REPAIR_EXACT_SHA_ORDINARY_THEN_RESUME_PATH_METADATA
 current_task_next_stage_status: IN_PROGRESS_NO_REMOTE_RETRY_BEFORE_PASS
 resumed_product_task: P8-08
 resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_LEVEL_3_PASS
@@ -18,7 +18,7 @@ scope_decisions:
     current_task_may_connect: true
     connection_effective_condition: SATISFIED_BY_C8D3B3C0_ORDINARY_33281944546
     documentation_authorized_after_transition_ordinary: true
-    current_rule: FACTS_TASK_FIXED_ALLOWLIST_DISCOVERY_ACCEPTED_APP_STATUS_TOKEN_REJECTED_LOCALLY_BEFORE_SSH
+    current_rule: FACTS_TASK_FIXED_ALLOWLIST_HEAD_STATUS_ACCEPTED_TRACKED_PATH_LINE_SHAPE_STOPPED_NO_FILE_READ
     future_activation_trigger: SATISFIED_BY_P8_07F_GOVERNANCE_D919D695_ORDINARY_33279778063_LEVEL_3_33280319184_AND_SEPARATE_FACTS_ACTIVATION
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
@@ -32,7 +32,15 @@ scope_decisions:
     accepted_frappe_version: 15.79.0
     accepted_erpnext_version: 15.77.0
     accepted_installed_app_count: 20
-    app_status_remote_invoked: false
+    app_status_remote_invoked: true
+    app_status_harness_checkpoint: be03972abd13b60284a8f950eae7cdf7776781d7
+    app_status_harness_ordinary: 33296694027
+    frappe_tracked_drift_count: 0
+    erpnext_tracked_drift_count: 1
+    custom_apps_with_tracked_drift: 12
+    custom_app_count: 18
+    tracked_path_stop_label: CUSTOM_APP_03
+    tracked_file_reads_completed: 0
   fr_co_003_004_external_portals:
     decision_marker: USER_APPROVED_POST_V1_2_DEFERRED
     trace_status: REMAPPED_PHASE_9

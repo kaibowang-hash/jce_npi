@@ -71,6 +71,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "P8_07F_HEAD_STATUS_ACCEPTED_FRAPPE_CLEAN_ERPNEXT_DRIFT_ONE_CUSTOM_DRIFT_TWELVE_OF_EIGHTEEN",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_TRACKED_PATH_NUL_FRAMING_REPAIR_REQUIRES_NEW_ORDINARY",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "ONLY_ERP_VERSION_INSTALLED_APPS_APP_HEAD_APP_STATUS_APP_TRACKED_PATHS_APP_FILE_HASH_APP_FILE_READ",
             value["frozen_invariants"],
         )
@@ -80,7 +88,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P8_07F_APP_STATUS_TOKEN_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_P8_07F_TRACKED_PATH_NUL_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

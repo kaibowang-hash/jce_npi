@@ -1,12 +1,13 @@
 # ERPNext Production Fact Inventory
 
-Status: **INCOMPLETE — VERSION/SITE INVENTORY ACCEPTED; APP METADATA HELD**
+Status: **INCOMPLETE — HEAD/STATUS ACCEPTED; TRACKED-PATH INVENTORY HELD**
 
 Inventory task: `P8-07F-FACTS`
 
 Inventory attempts: `2026-08-30T00:04:24Z`, `2026-08-30T05:35:04Z`, and
 accepted fixed-root discovery `2026-08-30T06:10:50Z` /
-`2026-08-30T13:10:50+07:00`
+`2026-08-30T13:10:50+07:00`, and checksum-confirming discovery
+`2026-08-30T06:35:13Z` / `2026-08-30T13:35:13+07:00`
 
 Source label: `JCE_CORE_PRODUCTION_REDACTED`
 
@@ -48,12 +49,21 @@ sanitized inventory contains Frappe `15.79.0`, ERPNext `15.77.0`, twenty Bench
 apps and a verified Site-app subset. No Site value or custom app name is
 committed.
 
-Three subsequent `APP_HEAD` calls completed through the same fixed wrapper.
-Before the first `APP_STATUS` SSH process could start, the local collector
-rejected its fixed `--untracked-files=no` token because `=` is excluded by the
-remote-token grammar. No status, tracked-path or file operation followed. The
-equivalent fixed Git token `-uno` must pass a new exact-SHA ordinary CI before
-application metadata reads resume.
+The narrow `APP_STATUS` token repair passed at exact SHA
+`be03972abd13b60284a8f950eae7cdf7776781d7` / ordinary `33296694027`.
+Checksum-confirming discovery then matched the accepted Bench and Site
+inventories, and bounded `APP_HEAD` plus `APP_STATUS` completed for Frappe,
+ERPNext and all eighteen anonymous custom apps. Frappe is clean; ERPNext has
+one tracked drift; twelve custom apps have tracked drift. These facts prohibit
+treating `git show HEAD` as actual runtime source for a dirty app.
+
+`APP_TRACKED_PATHS` accepted bounded structure for `CUSTOM_APP_01` and
+`CUSTOM_APP_02`. The next path inventory stopped locally when the line parser
+could not safely represent one legitimate `CUSTOM_APP_03` tracked path. The
+raw path was neither displayed nor committed, and no later path or file
+operation ran. The closed repair changes only this operation to exact
+`git ls-files -z` plus NUL-aware parsing; it requires a new exact-SHA ordinary
+CI before path collection resumes.
 
 An earlier local invocation rejected an invalid private-state path before any
 SSH process was started. It is a local preflight fact, not a production
@@ -68,35 +78,38 @@ operation.
 | 3 | `INSTALLED_APPS` | Yes, private-Site bounded read | `ACCEPTED_SANITIZED` | `sha256:cec7d8128c63e6b79bc6fcf9da558378d2c134a9f96a9a5a8b36a585b319c0fd` | Site app subset verified; Site value not recorded |
 | 3 | `APP_HEAD` | Yes, three bounded reads | `ACCEPTED_TRANSIENT_NOT_PROMOTED` | Retained only in private execution context | Rerun only after the next harness Gate when producing the complete app inventory |
 | Local stop | `APP_STATUS` token construction | No | `REJECTED_BEFORE_SSH` | Not applicable | Replace only the fixed equals-form with `-uno`; require ordinary CI |
-| — | `APP_TRACKED_PATHS`, `APP_FILE_HASH`, `APP_FILE_READ` | No | `NOT_INVOKED_AFTER_LOCAL_STOP` | Not available | Await fixed-token ordinary PASS |
+| 4 | `ERP_VERSION`, `INSTALLED_APPS` | Yes, checksum-first bounded reads | `ACCEPTED_UNCHANGED` | Same two accepted checksums | No version or Site-inventory drift |
+| 4 | `APP_HEAD`, `APP_STATUS` | Yes, all twenty apps | `ACCEPTED_SANITIZED` | Anonymous commit/drift facts below | Frappe clean; ERPNext drift 1; custom drift 12/18 |
+| 4 | `APP_TRACKED_PATHS` | Yes, three bounded calls | `PARTIAL_STOPPED_FAIL_CLOSED` | First two structures accepted; third raw path rejected locally | Replace line framing with NUL framing; require ordinary CI |
+| — | `APP_FILE_HASH`, `APP_FILE_READ` | No | `NOT_INVOKED_AFTER_PATH_STOP` | Not available | Await NUL-framing ordinary PASS and safe path classification |
 
 ## Accepted application version inventory
 
 Custom application identity remains private. Labels are deterministic only
 within this inventory epoch and must not be interpreted as product names.
 
-| Label | Version |
-|---|---|
-| `FRAPPE` | `15.79.0` |
-| `ERPNEXT` | `15.77.0` |
-| `CUSTOM_APP_01` | `0.0.1` |
-| `CUSTOM_APP_02` | `15.0.41` |
-| `CUSTOM_APP_03` | `15.0.45` |
-| `CUSTOM_APP_04` | `0.0.1` |
-| `CUSTOM_APP_05` | `1.0.2` |
-| `CUSTOM_APP_06` | `0.0.1` |
-| `CUSTOM_APP_07` | `15.37.1` |
-| `CUSTOM_APP_08` | `0.0.2` |
-| `CUSTOM_APP_09` | `0.0.1` |
-| `CUSTOM_APP_10` | `0.0.1` |
-| `CUSTOM_APP_11` | `0.0.1` |
-| `CUSTOM_APP_12` | `0.1.12` |
-| `CUSTOM_APP_13` | `0.0.6` |
-| `CUSTOM_APP_14` | `1.6.5` |
-| `CUSTOM_APP_15` | `15.1.41` |
-| `CUSTOM_APP_16` | `0.0.3` |
-| `CUSTOM_APP_17` | `15.0.24` |
-| `CUSTOM_APP_18` | `1.0.2` |
+| Label | Version | Accepted HEAD | Tracked drift rows |
+|---|---|---|---:|
+| `FRAPPE` | `15.79.0` | `35b41c15636031dde4868315323594d0081de826` | 0 |
+| `ERPNEXT` | `15.77.0` | `c86e95e52422d395c8a4c76a83f5cbf3a2f86c11` | 1 |
+| `CUSTOM_APP_01` | `0.0.1` | `7d701e3cc4141f440e1be86590b604b5b6736952` | 1 |
+| `CUSTOM_APP_02` | `15.0.41` | `0e575da2240cfd1ae531d76f5af342a7bafa22b9` | 4 |
+| `CUSTOM_APP_03` | `15.0.45` | `463498faa3b948ac5fcd0d51386b4c0c1c5e0a06` | 3 |
+| `CUSTOM_APP_04` | `0.0.1` | `ec478c73245f11b59f40ac43bc7a1b61b957fb15` | 5 |
+| `CUSTOM_APP_05` | `1.0.2` | `b7283f611b34db06af81a1a20e710fd93d5fd7e4` | 4 |
+| `CUSTOM_APP_06` | `0.0.1` | `4b6f0136cf156c891b740e0a603e293bc03fcc00` | 0 |
+| `CUSTOM_APP_07` | `15.37.1` | `c4e536833d1723c8fa68181bdd6ec80be4bb2b4d` | 0 |
+| `CUSTOM_APP_08` | `0.0.2` | `0e77af58b0ccf60bf2dc2d5b418b11fdbba9777c` | 2 |
+| `CUSTOM_APP_09` | `0.0.1` | `a6d0845691f253bc3fb3798e816bd179f965d32d` | 0 |
+| `CUSTOM_APP_10` | `0.0.1` | `9572b2bc6cd85705191f6aea14dbb9683a8a7c45` | 4 |
+| `CUSTOM_APP_11` | `0.0.1` | `334e56c22671b08c4254c807bbef14e3fa388559` | 5 |
+| `CUSTOM_APP_12` | `0.1.12` | `f8c30f10aa422213fd54288fe0c09f8be0dbc8ed` | 0 |
+| `CUSTOM_APP_13` | `0.0.6` | `0c1678987ba17b3188e0f74ff47526c717d26401` | 39 |
+| `CUSTOM_APP_14` | `1.6.5` | `fa16fba88adc55d85f29fdd8b183c29670863949` | 0 |
+| `CUSTOM_APP_15` | `15.1.41` | `fc85ddeb8dc14b0873006ef69d7eec60d3a4bf78` | 2 |
+| `CUSTOM_APP_16` | `0.0.3` | `23e44ff00bf51562a3aafa10952bc0246e29e777` | 2 |
+| `CUSTOM_APP_17` | `15.0.24` | `ec33227d17fd4ceef913b5c355cf8647c91bf8c1` | 2 |
+| `CUSTOM_APP_18` | `1.0.2` | `a564e59d5f63efe8d82916da8e30e4d154e0425f` | 0 |
 
 ## Production fact matrix
 
@@ -105,11 +118,11 @@ absent, incompatible or defective.
 
 | Fact area | Status | Accepted production fact | Evidence/checksum | Impact |
 |---|---|---|---|---|
-| Frappe and ERPNext exact versions/builds | `PARTIALLY_VERIFIED` | Frappe `15.79.0`; ERPNext `15.77.0`; exact public HEAD promotion pending | Accepted Bench checksum above | Version-specific source compatibility remains held until app HEAD/source inventory |
-| Installed apps and app versions | `PARTIALLY_VERIFIED` | Twenty Bench apps; private Site subset verified; custom identities redacted | Accepted Bench and Site checksums above | Custom-app capability compatibility still held pending source facts |
+| Frappe and ERPNext exact versions/builds | `VERIFIED_WITH_DRIFT_HOLD` | Frappe `15.79.0` clean at accepted HEAD; ERPNext `15.77.0` at accepted HEAD with one tracked drift | Accepted Bench checksum and HEAD/status rows above | ERPNext HEAD source cannot represent the dirty runtime tree until the drift is separately reconciled |
+| Installed apps and app versions | `VERIFIED_IDENTITIES_REDACTED` | Twenty Bench apps; private Site subset verified; custom identities redacted | Accepted Bench and Site checksums above | Capability compatibility remains held pending bounded source facts |
 | Topology, database/storage type and locale | `UNVERIFIED` | None | No allowlisted accepted source | Deployment and locale compatibility held |
-| Custom app identities and commit state | `PARTIALLY_VERIFIED` | Eighteen anonymous custom-app version rows; complete HEAD/status evidence pending | Three HEAD reads transient; status not invoked | No capability may yet be classified Already Present or Missing |
-| Hooks, overrides, patches, fixtures and modules | `UNVERIFIED` | None | APP operations not invoked | No extension decision authorized |
+| Custom app identities and commit state | `VERIFIED_WITH_DRIFT_HOLDS` | Eighteen anonymous version/HEAD rows; twelve have tracked drift | Accepted HEAD/status table above | Dirty app HEAD source cannot be promoted as runtime truth; no capability decision yet |
+| Hooks, overrides, patches, fixtures and modules | `PARTIALLY_VERIFIED_STRUCTURE_ONLY` | `CUSTOM_APP_01`: 16 tracked paths with hooks/modules/patches; `CUSTOM_APP_02`: 42 tracked paths with hooks/modules/patches, 11 DocTypes, fixtures and overrides | Bounded path classifications before parser stop | Contents and all other apps remain unverified; no extension decision authorized |
 | Whitelisted methods, operation APIs and schemas | `UNVERIFIED` | None | APP operations not invoked | P8-02 through P8-07 target bindings remain unavailable |
 | Scheduler/jobs, webhooks and service integrations | `UNVERIFIED` | None | No accepted source | No job or delivery contract inferred |
 | Reports, print formats, notifications and workspaces | `UNVERIFIED` | None | No accepted source | No UI/report customization inferred |
@@ -132,10 +145,12 @@ absent, incompatible or defective.
 
 ## Freshness and delta policy
 
-The accepted Bench/Site checksums are the freshness baseline. Resume only after
-the fixed `APP_STATUS` token repair passes exact-SHA ordinary CI, then use
-HEAD/status/path/hash deltas before any bounded tracked-file read. Do not repeat
-full discovery unless a version/checksum delta requires it. The standing
+The accepted Bench/Site checksums plus the HEAD/status table are the freshness
+baseline. Resume only after the NUL-framing `APP_TRACKED_PATHS` repair passes
+exact-SHA ordinary CI, then use path/hash deltas before any bounded tracked-file
+read. Dirty applications remain held unless the actual tracked worktree state
+can be represented without reading unsafe values. Do not repeat full discovery
+unless a version/checksum delta requires it. The standing
 authorization removes the need for another user prompt; it does not remove the
 fail-closed checks or grant write authority.
 

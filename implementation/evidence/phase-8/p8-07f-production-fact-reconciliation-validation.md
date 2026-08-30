@@ -2,7 +2,7 @@
 
 Date: `2026-08-30`
 
-Status: **IN PROGRESS — DISCOVERY ACCEPTED; APP METADATA HARNESS HELD**
+Status: **IN PROGRESS — HEAD/STATUS ACCEPTED; TRACKED-PATH HARNESS HELD**
 
 ## Accepted Gates
 
@@ -20,6 +20,10 @@ Status: **IN PROGRESS — DISCOVERY ACCEPTED; APP METADATA HARNESS HELD**
   `9ab9bd5199e5521f3a72e701c3fa4338d6e866db`, ordinary `33295753975`:
   secret `99215002723`, repository `99215002838`, visual `99215002811`,
   frontend `99215002791`.
+- APP_STATUS token harness: exact SHA
+  `be03972abd13b60284a8f950eae7cdf7776781d7`, ordinary `33296694027`:
+  secret `99217479469`, repository `99217479519`, visual `99217479571`,
+  frontend `99217479523`.
 
 ## Read-only operation ledger
 
@@ -99,6 +103,32 @@ self-check, current-task verification, reconciliation, compilation and diff
 hygiene all pass. The private Site value is absent, product/contracts/frontend/
 workflow paths are unchanged, and no additional production operation ran.
 
+At `2026-08-30T06:35:13Z` / `2026-08-30T13:35:13+07:00`, checksum-first
+discovery matched the accepted Bench/Site inventories. `APP_HEAD` and
+`APP_STATUS` then completed for all twenty apps. Frappe is clean; ERPNext has
+one tracked drift; twelve of eighteen anonymous custom apps have tracked drift.
+`CUSTOM_APP_01` has 16 tracked paths including hooks/modules/patches;
+`CUSTOM_APP_02` has 42 including hooks/modules/patches, 11 DocTypes, fixtures
+and overrides. The next `APP_TRACKED_PATHS` result stopped locally because its
+line parser could not safely represent a legitimate path. The raw path was not
+read, displayed or committed. No later path/file operation ran.
+
+The current exact-fourteen candidate changes only `APP_TRACKED_PATHS` to exact
+`git ls-files -z` and a NUL-aware ordered, unique, UTF-8, printable,
+non-traversing parser. NUL is accepted for no other operation; file reads keep
+the stricter path gate. Production path/file operations remain prohibited
+until this candidate passes exact-SHA ordinary CI.
+
+Tracked-path repair Level 1 passes in a clean linked worktree: collector and
+current-task focused tests `17/17`; collector/current/reconciliation `49/49`;
+complete repository Python `2670/2670`; collector self-check; current-task and
+V1.2 reconciliation verifiers; complete repository verification; Python
+compilation; all shell syntax; JSON/YAML/CSV parsing; and diff/security hygiene.
+The exact fourteen paths are accepted and an unauthorized fifteenth is
+rejected. Product, contracts, frontend and workflow paths have zero diff; the
+private Site value is absent; no SSH, ERP connector or production operation ran
+during validation.
+
 ## Compatibility result
 
 The accepted discovery and later local stop prove no production
@@ -110,7 +140,8 @@ blueprint rows are `UNVERIFIED` and use
 evidence. No LaunchFlow or ERPNext adjustment task is authorized.
 
 P8-08 remains inactive because the required production consumer/method and
-mapping facts are unavailable. M9-04/M9-05 real pilots remain user-approved
+mapping facts are unavailable. The accepted drift facts also prohibit using
+dirty app HEAD source as production runtime truth. M9-04/M9-05 real pilots remain user-approved
 post-V1.2 deferrals; AT-01/AT-02 controlled non-production UAT remains and is
 not real-pilot or adoption evidence. Entra/Frappe/ERP permission ownership is
 unchanged.
@@ -129,8 +160,9 @@ unchanged.
 ## Gate conclusion
 
 P8-07F is not complete and no facts-task Level 3 is dispatched. Version/Site
-discovery is accepted, while all unobserved application and runtime metadata
-remains explicitly unverified. The task is held at the local status-token
-harness boundary, P8-08 remains blocked, and no application operation resumes
-until the exact repair passes ordinary CI. Complete fact collection and final
-reconciliation must then pass their own exact-SHA ordinary and applicable Gate.
+discovery and complete anonymized HEAD/status facts are accepted, while all
+unobserved application/runtime metadata remains explicitly unverified. The
+task is held at the local tracked-path NUL-framing boundary, P8-08 remains
+blocked, and no path/file operation resumes until the exact repair passes
+ordinary CI. Complete fact collection and final reconciliation must then pass
+their own exact-SHA ordinary and applicable Gate.

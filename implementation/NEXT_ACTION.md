@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P8_07F_APP_STATUS_TOKEN_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
+`IN_PROGRESS_P8_07F_TRACKED_PATH_NUL_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -10,17 +10,16 @@ ordinary `33279778063` and Level 3 `33280319184`. The separate collector
 activation passes at `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` / ordinary
 `33281944546`.
 
-Fixed-root SHA `9ab9bd5199e5521f3a72e701c3fa4338d6e866db` and ordinary
-`33295753975` pass. Its fixed `frappe-bench` discovery accepts sanitized
-Frappe/ERPNext versions and the twenty-app Bench/Site inventory. Three bounded
-`APP_HEAD` reads completed; the next `APP_STATUS` operation stopped locally
-because the frozen equals-form Git token failed the collector's token grammar,
-so no status command reached production. Current action is the product-zero
-replacement with exact fixed token `-uno`, focused/full validation and a new
-exact-SHA ordinary CI. Only after that PASS may the private state resume
-application status, tracked-path and bounded tracked-file reads. Existing
-LaunchFlow architecture/contracts remain default correct and no adjustment task
-is authorized.
+Fixed-status SHA `be03972abd13b60284a8f950eae7cdf7776781d7` and ordinary
+`33296694027` pass. Complete anonymized HEAD/status reads show clean Frappe,
+one ERPNext tracked drift and tracked drift in twelve of eighteen custom apps.
+`CUSTOM_APP_01/02` path structures were accepted, then the line parser rejected
+a legitimate `CUSTOM_APP_03` tracked path and stopped all later path/file reads.
+Current action is product-zero exact `git ls-files -z`, NUL-aware printable
+non-traversing parsing, focused/full validation and a new exact-SHA ordinary CI.
+Only after that PASS may path inventory resume. Existing LaunchFlow
+architecture/contracts remain default correct; production drift is held rather
+than silently treated as HEAD, and no adjustment task is authorized.
 
 Required branch:
 `codex/npi-v1.2-implementation`

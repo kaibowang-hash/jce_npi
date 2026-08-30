@@ -12,10 +12,14 @@ runtime passes. P8-07F governance and activation also pass. Fixed-root repair
 `9ab9bd5199e5521f3a72e701c3fa4338d6e866db` / ordinary `33295753975` then
 enabled accepted sanitized version/Site discovery: Frappe `15.79.0`, ERPNext
 `15.77.0` and twenty installed apps. The task-scoped Site remains private.
-Application metadata is held because the local collector rejected the fixed
-`APP_STATUS` equals-form token before SSH. This is a collector harness boundary,
-not a product defect or evidence of incompatibility. No app-metadata retry is
-allowed until the equivalent `-uno` token repair passes exact-SHA ordinary CI.
+The status-token repair passes at `be03972a` / ordinary `33296694027`; complete
+anonymized HEAD/status reads show clean Frappe, one ERPNext tracked drift and
+tracked drift in twelve of eighteen custom apps. Two bounded path inventories
+were accepted before `CUSTOM_APP_03` exposed a legitimate path that cannot be
+represented by the line parser. This is a collector framing boundary, not a
+product defect or evidence of incompatibility. No later path/file read is
+allowed until exact `git ls-files -z` and its NUL-aware parser pass exact-SHA
+ordinary CI. Dirty application HEAD content is not accepted as runtime truth.
 It blocks P8-08 and the P8-07F Level 3, not already completed technical slices.
 
 Historical P8-06 passes at exact final product SHA
@@ -42,8 +46,9 @@ The exact-20 ERPNext customization requirements baseline passes at
 documentation only. The user's 2026-08-29 standing authorization became
 effective only after governance and separate activation. Activation
 `c8d3b3c0` / ordinary `33281944546` passes. Fixed-root discovery now provides
-accepted versions and anonymous app inventory, while every unobserved
-customization/configuration fact remains unverified. Standing authority remains
+accepted versions, anonymous HEAD/status inventory and bounded structure for
+the first two custom apps, while every unobserved customization/configuration
+fact remains unverified. Standing authority remains
 fail closed and read only; no production customization is inferred.
 
 ## Active recovery
@@ -104,8 +109,9 @@ read-only projection obligations remain V1.2.
   privacy/security, rollback and release-gate facts; it is not a global
   blocker and does not defer internal collaboration truth.
 - The ERP customization requirements baseline and P8-07F activation are
-  complete. Fixed-root version/Site discovery is accepted; application facts
-  are held at a local token harness boundary and P8-08 remains held. No P8-07
+  complete. Fixed-root discovery plus complete HEAD/status reads are accepted;
+  remaining application facts are held at a local NUL-framing harness boundary
+  and P8-08 remains held. No P8-07
   product authority, contract or ownership changed.
 
 ## Historical recovery

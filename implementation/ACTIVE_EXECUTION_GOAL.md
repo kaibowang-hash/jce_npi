@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P8_07F_APP_STATUS_TOKEN_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
+- Mode: `IN_PROGRESS_P8_07F_TRACKED_PATH_NUL_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -35,6 +35,12 @@ Updated: `2026-08-30T00:00:00+07:00`
   twenty installed apps were accepted. Three bounded `APP_HEAD` reads then
   completed, but the local collector rejected the fixed `APP_STATUS` equals-
   form token before SSH. No status/path/file read or production write followed.
+- P8-07F HEAD/status checkpoint:
+  `be03972abd13b60284a8f950eae7cdf7776781d7` (`PASS`; ordinary CI
+  `33296694027`). Frappe is clean; ERPNext has one tracked drift; twelve of
+  eighteen anonymous custom apps have tracked drift. The first two custom apps
+  yielded bounded path structure, then `CUSTOM_APP_03` exposed a line-parser
+  path-shape boundary. No later path/file read ran.
 - Latest governance closeout checkpoint:
   `d39b24e4169d6116ab0721440b1f7dc01b599c96` (`PASS`; ordinary CI
   `33134622237`; P8-06 closeout and P8-07 audit activation)
@@ -55,13 +61,12 @@ Updated: `2026-08-30T00:00:00+07:00`
   ordinary CI `33204451677`; repository `98961818348`, frontend
   `98961818460`, secret `98961818358` and governed visual `98961818084` pass;
   controlled lanes correctly skipped)
-- Active atomic scope: `P8-07F-FACTS` has accepted its fixed `frappe-bench`
-  discovery facts and remains product-zero. The only active repair replaces
-  the locally rejected fixed `APP_STATUS` token with Git's equivalent `-uno`
-  form; the remote status command was never sent. A new exact-SHA ordinary PASS
-  is mandatory before application metadata reads resume. The runtime Site stays
-  private. P8-08 remains inactive until accepted facts and the facts task Level
-  3 PASS.
+- Active atomic scope: `P8-07F-FACTS` has accepted fixed-root discovery and
+  complete anonymized HEAD/status counts. The only active repair changes path
+  framing to exact `git ls-files -z` and a closed NUL-aware parser; file reads
+  remain dormant. A new exact-SHA ordinary PASS is mandatory before path reads
+  resume. The runtime Site stays private. P8-08 remains inactive until accepted
+  facts and the facts task Level 3 PASS.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
