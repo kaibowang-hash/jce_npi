@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -51,8 +51,13 @@ Updated: `2026-08-31T00:00:00+07:00`
   Tooling Linux baseline deltas in ordinary `33336799864`; artifact review
   proves they are limited to the approved ERP source identity and adjacent
   layout. Frontend, repository and secret pass; visual is the sole failed lane.
-  A governance-only manifest expansion must authorize those exact three
-  existing baseline paths before their single batched update.
+  Governance-only manifest expansion `e3fad564` records those exact three
+  existing baseline paths. Ordinary `33337516645` passes repository, frontend
+  and secret while visual repeats only the same three stale baselines; it is
+  not misreported as PASS. The three authorized snapshots are now updated as
+  one batch and pass pinned Linux focused visual `3/3` plus the complete
+  governed matrix `135/135`. The repair checkpoint awaits its own exact-SHA
+  ordinary CI before the sole final Level 3.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

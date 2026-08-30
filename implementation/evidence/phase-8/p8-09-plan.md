@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **CHECKPOINT-1 VISUAL BASELINE MANIFEST EXPANSION AWAITS EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT-1 VISUAL BASELINE REPAIR LEVEL 1 PASS; AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-31
 
@@ -56,6 +56,17 @@ plus its immediately adjacent layout; no fourth visual case fails. These are
 pre-existing governed baselines, so their three exact paths require a separate
 governance-only manifest expansion and ordinary PASS before any baseline bytes
 may change.
+
+Governance expansion `e3fad5647f6f9eae52938441676bd0037e054ba3`
+records those exact three paths. Its ordinary CI `33337516645` passes
+repository `99326986212`, frontend `99326986321` and secret `99326986336`;
+governed visual `99326986340` repeats only the same three stale baselines and
+therefore remains failed. This is recorded as the expected pre-repair boundary,
+not as a PASS. After exact-path validation, the English, Simplified Chinese and
+Traditional Chinese snapshots were updated together in the pinned Linux
+environment. They pass `3/3` in verification mode and the complete CI-equivalent
+governed matrix passes `135/135`. No other snapshot, product, contract, backend
+or technical `ERPNEXT` path changed.
 
 ## 1. Audit conclusion
 

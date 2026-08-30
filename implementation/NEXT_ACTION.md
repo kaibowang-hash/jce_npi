@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_MANIFEST_EXPANSION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+`IN_PROGRESS_CHECKPOINT_1_VISUAL_BASELINE_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
@@ -24,12 +24,15 @@ audit, type, lint, i18n and security checks. Product checkpoint `f7f8dffe`
 passes frontend, repository and secret in ordinary `33336799864`; its sole
 failed lane is governed visual, which reports exactly three Tooling baselines
 changed by the approved ERP source identity. Artifact review finds no other
-visual failure. The sole
-next action is a governance-only exact manifest expansion for those three
-existing Linux snapshots; only after that expansion's ordinary PASS may all
-three be updated together. `ERPNEXT` remains stable in every technical
-boundary. Do not contact production ERPNext/JCE or modify user-owned dirty
-documentation.
+visual failure. Governance expansion `e3fad564` then records exactly those
+three existing Linux snapshots. Its ordinary `33337516645` passes repository,
+frontend and secret; visual repeats only the same three stale baselines and is
+not claimed as PASS. The three baselines have now been updated together and
+pass pinned Linux focused verification `3/3` plus the full governed matrix
+`135/135`. The sole next action is one exact-SHA ordinary CI for this repair;
+if it passes, run the one required P8-09/Phase-8 Level 3. `ERPNEXT` remains
+stable in every technical boundary. Do not contact production ERPNext/JCE or
+modify user-owned dirty documentation.
 
 Retained P8-07F diagnostics-off exact SHA
 `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c` passes ordinary CI

@@ -9607,3 +9607,23 @@ repeat or rewrite it merely to restore context. See
 - Production ERPNext/JCE contact, workflow edits, other baseline changes and
   user-owned dirty/untracked files remain prohibited.
 - Controller marker: `P8-09 checkpoint 1 visual baseline manifest expansion awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 checkpoint 1 visual baseline repair Level 1 PASS; awaits exact-SHA ordinary CI
+
+- Governance expansion exact SHA
+  `e3fad5647f6f9eae52938441676bd0037e054ba3` completes ordinary CI
+  `33337516645`. Repository `99326986212`, frontend `99326986321` and secret
+  `99326986336` pass. Governed visual `99326986340` is not called PASS: it
+  repeats only the same three authorized stale Tooling baselines, with no new
+  failure.
+- The English, Simplified Chinese and Traditional Chinese Tooling 1440x900
+  Linux baselines are updated together in the pinned CI-equivalent Linux
+  environment. Focused verification passes `3/3`; the complete governed visual
+  matrix passes `135/135`. Review confirms only the approved `JCE Core` ERP
+  source identity and adjacent layout changed. No other snapshot or product,
+  backend, contract, workflow or technical `ERPNEXT` path changes.
+- Commit only the three authorized snapshots plus the seven current governance
+  paths. Its exact-SHA ordinary CI must pass all four lanes before the sole
+  P8-09/Phase-8 Level 3 under `release-gate`. Production ERPNext/JCE contact
+  and user-owned dirty/untracked files remain prohibited.
+- Controller marker: `P8-09 checkpoint 1 visual baseline repair Level 1 PASS; awaits exact-SHA ordinary CI`.
