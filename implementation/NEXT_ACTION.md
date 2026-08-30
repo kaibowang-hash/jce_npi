@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-CURRENT-RUNTIME-GOVERNANCE`
+`IN_PROGRESS_LEVEL_3_MIGRATED_LEGACY_DIAGNOSTIC_PENDING — P8-07F-CURRENT-RUNTIME-GOVERNANCE`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -26,6 +26,13 @@ ordinary CI and Level 3; then activate a separate collector-expansion facts
 task with its own exact-SHA ordinary CI. Do not reconnect during this
 transition. Existing LaunchFlow architecture/contracts remain default correct;
 no adjustment task is authorized and P8-08 remains blocked.
+
+Governance exact SHA `6aa9f9b6` passes ordinary `33301387305`. Its Level 3
+`33302018921` passes repository/frontend/secret/visual/preflight and fails only
+at the fixed P8-03 migrated-legacy outer label. The next action is an
+independent product-zero exact-39 diagnostic: pass a new exact-SHA ordinary,
+then dispatch one Level 2 controlled run. Read only the strict safe tuple; do
+not rerun the failed Level 3, guess a repair or open production access.
 
 Required branch:
 `codex/npi-v1.2-implementation`

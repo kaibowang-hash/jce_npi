@@ -9016,3 +9016,28 @@ repeat or rewrite it merely to restore context. See
 - P8-08 stays inactive. M9-04/M9-05 real pilots remain
   `USER_APPROVED_POST_V1_2_DEFERRED`; controlled non-production UAT is retained
   and no production-pilot or real-user adoption claim is created.
+
+#### P8-07F governance Level 3 migrated-legacy diagnostic awaits exact-SHA ordinary CI
+
+- The current marker is exactly `P8-07F governance Level 3 migrated-legacy diagnostic awaits exact-SHA ordinary CI`.
+- Governance exact SHA `6aa9f9b6db338d20713a2ccece84fb59a0284450`
+  passes ordinary `33301387305`: secret `99230129638`, repository
+  `99230129732`, visual `99230129742` and frontend `99230129745` all pass.
+- Its sole Level 3 `33302018921` passes visual `99231830409`, repository
+  `99231830472`, secret `99231830495`, frontend `99231830504` and preflight
+  `99233030654`. Cumulative runtime `99233052613` fails; fixed-label filtering
+  returns exactly `Local Frappe Item publish migrated-legacy runtime verification failed.`
+  Raw/child output, response content, business values, identities, messages and
+  stack remain unread. Cleanup passes.
+- The Gate is `BLOCKED`; do not rerun it or activate production reads. Open one
+  product-zero migrated-legacy diagnostic subcycle. Reuse the existing
+  collection-fallback activation and exact 39 outer/collection/server safe
+  codes; all response/business content remains suppressed.
+- Freeze diagnostic `0/1`, repair `0/1`, final `0/1`. A new exact-SHA ordinary
+  PASS must precede one `level_2_controlled` reuse. If the run fails, accept
+  only one strict exact-code/type/trace tuple; if it passes, success emits no
+  tuple. No repair is allowed without a unique first-source proof.
+- P8-07F current-worktree/runtime collection, `JCE-Core`, P8-08 and all product
+  authority remain closed. The transition and diagnostic change no ERPNext,
+  LaunchFlow product, contract, schema, permission, workflow or production
+  state.

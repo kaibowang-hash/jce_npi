@@ -32,6 +32,15 @@ CI and Level 3 pass and a separate facts collector expansion obtains its own
 exact-SHA ordinary CI. The transition itself is zero-contact. This scoped hold
 blocks P8-08, not already completed technical slices.
 
+Governance SHA `6aa9f9b6` passes ordinary `33301387305`. Level 3
+`33302018921` passes repository, frontend, secret, visual and preflight; the
+only failure is cumulative runtime `99233052613`, whose fixed-label allowlist
+returns exactly `Local Frappe Item publish migrated-legacy runtime verification failed.`
+This is outside the new production-read governance diff, but a failed Gate
+cannot be waived. The existing exact-39 response/server/outer diagnostic is
+enabled for one independent product-zero cycle after a new exact-SHA ordinary
+PASS. Production connection and P8-08 remain closed.
+
 Historical P8-06 passes at exact final product SHA
 `547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806`
 passes all required lanes. Final Level 3 `33132296565` passes frontend

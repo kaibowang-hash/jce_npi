@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Task: `P8-07F-CURRENT-RUNTIME-GOVERNANCE`
 
-Status: **AWAITING EXACT-SHA ORDINARY CI AND LEVEL 3; ZERO PRODUCTION CONTACT**
+Status: **LEVEL 3 BLOCKED AT MIGRATED-LEGACY; EXACT-39 DIAGNOSTIC PENDING; ZERO PRODUCTION CONTACT**
 
 ## Authorization received
 
@@ -129,3 +129,26 @@ read-only operation, rollback is to stop, delete private state, retain only
 already-redacted accepted provenance and mark affected facts stale or
 unverified. No remote rollback command exists because no remote mutation is
 authorized.
+
+## First Level 3 result and migrated-legacy diagnostic handoff
+
+Exact transition SHA `6aa9f9b6db338d20713a2ccece84fb59a0284450`
+passes ordinary `33301387305` in all four lanes. Level 3 `33302018921` passes
+visual `99231830409`, repository `99231830472`, secret `99231830495`, frontend
+`99231830504` and controlled preflight `99233030654`. Runtime
+`99233052613` initializes the fixed disposable Bench/Site and fails only in
+cumulative verification; cleanup passes.
+
+Fixed-label filtering yields exactly
+`Local Frappe Item publish migrated-legacy runtime verification failed.` No
+raw/child output, response content, business value, identity, message or stack
+was read. The transition product/contract/schema/workflow diff is zero, but a
+failed Level 3 cannot be waived.
+
+Open one product-zero diagnostic subcycle at `0/1,0/1,0/1`. It reuses the
+existing collection-fallback activation and exact 39 outer/collection/server
+safe codes. One new exact-SHA ordinary PASS must precede one Level 2 controlled
+run. A failed run may expose only one strict code/type/exact-trace tuple; a
+successful run emits zero diagnostic records. No repair, production read or
+P8-08 activation is authorized without the required proof and later final
+Level 3 PASS.

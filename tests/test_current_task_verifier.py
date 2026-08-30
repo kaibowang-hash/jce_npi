@@ -49,6 +49,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "P8_07F_CURRENT_RUNTIME_GOVERNANCE_6AA9F9B6_ORDINARY_33301387305_PASSED_LEVEL_3_33302018921_FAILED_ONLY_MIGRATED_LEGACY",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_REUSES_EXACT_THIRTY_NINE_SAFE_CODES_AND_REQUIRES_NEW_ORDINARY_BEFORE_ONE_CONTROLLED_RUN",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "P8_07F_FACTS_EXPANSION_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS",
             value["frozen_invariants"],
         )
@@ -86,7 +94,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3",
+            "IN_PROGRESS_LEVEL_3_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(
@@ -101,7 +109,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["base_checkpoint"],
             "cfd0930553fc40029d18518a8e3cd3481fa0a5d8",
         )
-        self.assertEqual(len(value["allowed_paths"]), 17)
+        self.assertEqual(len(value["allowed_paths"]), 19)
         self.assertEqual(
             set(value["allowed_paths"]),
             {
@@ -119,8 +127,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/evidence/phase-8/p8-07f-current-runtime-governance-transition.md",
                 "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md",
                 "scripts/reconcile_v1_2_traceability.py",
+                "scripts/verify_item_publish_runtime.py",
                 "scripts/verify_v1_2_reconciliation.py",
                 "tests/test_current_task_verifier.py",
+                "tests/test_phase8_item_publish_runtime_verifier.py",
                 "tests/test_v1_2_reconciliation.py",
             },
         )
@@ -142,6 +152,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(
             affected_modules,
             {
+                "tests.test_phase8_item_publish_runtime_verifier",
                 "tests.test_current_task_verifier",
                 "tests.test_v1_2_reconciliation",
             },
