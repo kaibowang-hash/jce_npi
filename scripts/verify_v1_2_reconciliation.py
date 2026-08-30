@@ -1636,8 +1636,15 @@ def verify_p8_07f_fact_documents() -> None:
         "UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT",
         "NOT_AVAILABLE_NO_ACCEPTED_OUTPUT",
         "ERP_VERSION",
-        "NOT_INVOKED_AFTER_STOP",
-        "no checksum",
+        "INSTALLED_APPS",
+        "ACCEPTED_SANITIZED",
+        "PARTIALLY_VERIFIED",
+        "15.79.0",
+        "15.77.0",
+        "REJECTED_BEFORE_SSH",
+        "APP_STATUS",
+        "sha256:bc5f2b2653647c21c6cee66e357951831f4e1e512ca9bcb641f8b017fef9b815",
+        "sha256:cec7d8128c63e6b79bc6fcf9da558378d2c134a9f96a9a5a8b36a585b319c0fd",
         "No production ERPNext or Frappe state was changed",
     }
     missing = sorted(token for token in inventory_tokens if token not in inventory)

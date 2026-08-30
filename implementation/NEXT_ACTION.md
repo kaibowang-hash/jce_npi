@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P8_07F_BENCH_ROOT_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
+`IN_PROGRESS_P8_07F_APP_STATUS_TOKEN_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -10,17 +10,17 @@ ordinary `33279778063` and Level 3 `33280319184`. The separate collector
 activation passes at `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` / ordinary
 `33281944546`.
 
-The `ERP_VERSION` operations at `2026-08-30T00:04:24Z` and the user-requested
-connection check at `2026-08-30T05:35:04Z` both returned no accepted output.
-Each collection stopped with no later operation or private state file. Current
-action is to retain the sanitized inventory, compatibility
-baseline and gap/decision evidence while holding P8-08. Resume only after the
-collector binds every operation to the user-confirmed fixed relative root
-`frappe-bench` and that exact harness repair passes ordinary CI. Then start
-again from `ERP_VERSION`, supply the task-scoped Site only through private
-runtime state and prefer fresh version/hash deltas.
-Existing LaunchFlow architecture/contracts remain default correct and no
-adjustment task is authorized.
+Fixed-root SHA `9ab9bd5199e5521f3a72e701c3fa4338d6e866db` and ordinary
+`33295753975` pass. Its fixed `frappe-bench` discovery accepts sanitized
+Frappe/ERPNext versions and the twenty-app Bench/Site inventory. Three bounded
+`APP_HEAD` reads completed; the next `APP_STATUS` operation stopped locally
+because the frozen equals-form Git token failed the collector's token grammar,
+so no status command reached production. Current action is the product-zero
+replacement with exact fixed token `-uno`, focused/full validation and a new
+exact-SHA ordinary CI. Only after that PASS may the private state resume
+application status, tracked-path and bounded tracked-file reads. Existing
+LaunchFlow architecture/contracts remain default correct and no adjustment task
+is authorized.
 
 Required branch:
 `codex/npi-v1.2-implementation`

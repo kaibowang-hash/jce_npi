@@ -213,7 +213,7 @@ def _remote_command(operation: str, *, site: str | None = None, root: str | None
         if operation == "APP_HEAD":
             command = ("git", "-C", root, "rev-parse", "HEAD")
         elif operation == "APP_STATUS":
-            command = ("git", "-C", root, "status", "--short", "--untracked-files=no")
+            command = ("git", "-C", root, "status", "--short", "-uno")
         elif operation == "APP_TRACKED_PATHS":
             command = ("git", "-C", root, "ls-files")
         elif operation in {"APP_FILE_HASH", "APP_FILE_READ"}:

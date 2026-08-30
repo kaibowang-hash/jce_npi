@@ -1,11 +1,12 @@
 # ERPNext Production Fact Inventory
 
-Status: **INCOMPLETE — ALLOWLISTED READS STOPPED WITHOUT ACCEPTED OUTPUT**
+Status: **INCOMPLETE — VERSION/SITE INVENTORY ACCEPTED; APP METADATA HELD**
 
 Inventory task: `P8-07F-FACTS`
 
-Inventory attempts: `2026-08-30T00:04:24Z` / `2026-08-30T07:04:24+07:00`
-and `2026-08-30T05:35:04Z` / `2026-08-30T12:35:04+07:00`
+Inventory attempts: `2026-08-30T00:04:24Z`, `2026-08-30T05:35:04Z`, and
+accepted fixed-root discovery `2026-08-30T06:10:50Z` /
+`2026-08-30T13:10:50+07:00`
 
 Source label: `JCE_CORE_PRODUCTION_REDACTED`
 
@@ -39,8 +40,20 @@ root `frappe-bench` and supplied the runtime Site privately. The Site value is
 not repeated in this inventory. Repository inspection proved the collector had
 executed its seven commands from the SSH login directory rather than binding
 the Bench root. Therefore the two failed operations do not prove that SSH is
-unreachable. A fixed-root collector repair and its exact-SHA ordinary CI must
-pass before another production operation.
+unreachable. Fixed-root repair SHA
+`9ab9bd5199e5521f3a72e701c3fa4338d6e866db` then passed ordinary CI
+`33295753975`. Its bounded `ERP_VERSION` and private-Site `INSTALLED_APPS`
+operations succeeded and created a mode-0600 temporary state. The accepted
+sanitized inventory contains Frappe `15.79.0`, ERPNext `15.77.0`, twenty Bench
+apps and a verified Site-app subset. No Site value or custom app name is
+committed.
+
+Three subsequent `APP_HEAD` calls completed through the same fixed wrapper.
+Before the first `APP_STATUS` SSH process could start, the local collector
+rejected its fixed `--untracked-files=no` token because `=` is excluded by the
+remote-token grammar. No status, tracked-path or file operation followed. The
+equivalent fixed Git token `-uno` must pass a new exact-SHA ordinary CI before
+application metadata reads resume.
 
 An earlier local invocation rejected an invalid private-state path before any
 SSH process was started. It is a local preflight fact, not a production
@@ -51,8 +64,39 @@ operation.
 | Local preflight | state-path validation | No | Rejected before SSH | Not applicable | Corrected to the operating-system temporary root |
 | 1 | `ERP_VERSION` | Yes, one bounded attempt | `UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT` | `NOT_AVAILABLE_NO_ACCEPTED_OUTPUT` | Stopped fail closed; no retry |
 | 2 | `ERP_VERSION` | Yes, one user-requested bounded attempt | `UNVERIFIED_OPERATION_FAILED_WITHOUT_ACCEPTED_OUTPUT` | `NOT_AVAILABLE_NO_ACCEPTED_OUTPUT` | Stopped fail closed; no probe, fallback or later operation |
-| — | `INSTALLED_APPS` | No | `NOT_INVOKED_AFTER_STOP` | Not available | Runtime Site parameter was also absent; no value was inferred |
-| — | `APP_HEAD`, `APP_STATUS`, `APP_TRACKED_PATHS`, `APP_FILE_HASH`, `APP_FILE_READ` | No | `NOT_INVOKED_AFTER_STOP` | Not available | Custom-app discovery never began |
+| 3 | `ERP_VERSION` | Yes, fixed-root bounded read | `ACCEPTED_SANITIZED` | `sha256:bc5f2b2653647c21c6cee66e357951831f4e1e512ca9bcb641f8b017fef9b815` | Frappe/ERPNext versions and twenty anonymous app rows accepted |
+| 3 | `INSTALLED_APPS` | Yes, private-Site bounded read | `ACCEPTED_SANITIZED` | `sha256:cec7d8128c63e6b79bc6fcf9da558378d2c134a9f96a9a5a8b36a585b319c0fd` | Site app subset verified; Site value not recorded |
+| 3 | `APP_HEAD` | Yes, three bounded reads | `ACCEPTED_TRANSIENT_NOT_PROMOTED` | Retained only in private execution context | Rerun only after the next harness Gate when producing the complete app inventory |
+| Local stop | `APP_STATUS` token construction | No | `REJECTED_BEFORE_SSH` | Not applicable | Replace only the fixed equals-form with `-uno`; require ordinary CI |
+| — | `APP_TRACKED_PATHS`, `APP_FILE_HASH`, `APP_FILE_READ` | No | `NOT_INVOKED_AFTER_LOCAL_STOP` | Not available | Await fixed-token ordinary PASS |
+
+## Accepted application version inventory
+
+Custom application identity remains private. Labels are deterministic only
+within this inventory epoch and must not be interpreted as product names.
+
+| Label | Version |
+|---|---|
+| `FRAPPE` | `15.79.0` |
+| `ERPNEXT` | `15.77.0` |
+| `CUSTOM_APP_01` | `0.0.1` |
+| `CUSTOM_APP_02` | `15.0.41` |
+| `CUSTOM_APP_03` | `15.0.45` |
+| `CUSTOM_APP_04` | `0.0.1` |
+| `CUSTOM_APP_05` | `1.0.2` |
+| `CUSTOM_APP_06` | `0.0.1` |
+| `CUSTOM_APP_07` | `15.37.1` |
+| `CUSTOM_APP_08` | `0.0.2` |
+| `CUSTOM_APP_09` | `0.0.1` |
+| `CUSTOM_APP_10` | `0.0.1` |
+| `CUSTOM_APP_11` | `0.0.1` |
+| `CUSTOM_APP_12` | `0.1.12` |
+| `CUSTOM_APP_13` | `0.0.6` |
+| `CUSTOM_APP_14` | `1.6.5` |
+| `CUSTOM_APP_15` | `15.1.41` |
+| `CUSTOM_APP_16` | `0.0.3` |
+| `CUSTOM_APP_17` | `15.0.24` |
+| `CUSTOM_APP_18` | `1.0.2` |
 
 ## Production fact matrix
 
@@ -61,10 +105,10 @@ absent, incompatible or defective.
 
 | Fact area | Status | Accepted production fact | Evidence/checksum | Impact |
 |---|---|---|---|---|
-| Frappe and ERPNext exact versions/builds | `UNVERIFIED` | None | ERP_VERSION failed without accepted output / no checksum | All version-specific compatibility conclusions held |
-| Installed apps and app versions | `UNVERIFIED` | None | Not invoked / no checksum | Custom-app and dependency compatibility held |
+| Frappe and ERPNext exact versions/builds | `PARTIALLY_VERIFIED` | Frappe `15.79.0`; ERPNext `15.77.0`; exact public HEAD promotion pending | Accepted Bench checksum above | Version-specific source compatibility remains held until app HEAD/source inventory |
+| Installed apps and app versions | `PARTIALLY_VERIFIED` | Twenty Bench apps; private Site subset verified; custom identities redacted | Accepted Bench and Site checksums above | Custom-app capability compatibility still held pending source facts |
 | Topology, database/storage type and locale | `UNVERIFIED` | None | No allowlisted accepted source | Deployment and locale compatibility held |
-| Custom app identities and commit state | `UNVERIFIED` | None | APP operations not invoked | No app may be classified Already Present or Missing |
+| Custom app identities and commit state | `PARTIALLY_VERIFIED` | Eighteen anonymous custom-app version rows; complete HEAD/status evidence pending | Three HEAD reads transient; status not invoked | No capability may yet be classified Already Present or Missing |
 | Hooks, overrides, patches, fixtures and modules | `UNVERIFIED` | None | APP operations not invoked | No extension decision authorized |
 | Whitelisted methods, operation APIs and schemas | `UNVERIFIED` | None | APP operations not invoked | P8-02 through P8-07 target bindings remain unavailable |
 | Scheduler/jobs, webhooks and service integrations | `UNVERIFIED` | None | No accepted source | No job or delivery contract inferred |
@@ -88,12 +132,12 @@ absent, incompatible or defective.
 
 ## Freshness and delta policy
 
-There is no accepted inventory baseline to refresh. A future invocation may
-resume only after the external access condition is corrected without changing
-the frozen operation/transport allowlist. It must begin with `ERP_VERSION` and
-then use version/commit/hash deltas before any bounded tracked-file read. The
-standing authorization removes the need for another user prompt; it does not
-remove the fail-closed checks or grant write authority.
+The accepted Bench/Site checksums are the freshness baseline. Resume only after
+the fixed `APP_STATUS` token repair passes exact-SHA ordinary CI, then use
+HEAD/status/path/hash deltas before any bounded tracked-file read. Do not repeat
+full discovery unless a version/checksum delta requires it. The standing
+authorization removes the need for another user prompt; it does not remove the
+fail-closed checks or grant write authority.
 
 ## No-change boundary
 

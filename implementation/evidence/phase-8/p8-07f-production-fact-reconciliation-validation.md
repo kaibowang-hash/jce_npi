@@ -2,7 +2,7 @@
 
 Date: `2026-08-30`
 
-Status: **BLOCKED — PRODUCTION FACTS UNVERIFIED AFTER FAIL-CLOSED READ**
+Status: **IN PROGRESS — DISCOVERY ACCEPTED; APP METADATA HARNESS HELD**
 
 ## Accepted Gates
 
@@ -16,6 +16,10 @@ Status: **BLOCKED — PRODUCTION FACTS UNVERIFIED AFTER FAIL-CLOSED READ**
   `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20`, ordinary `33281944546`:
   secret `99178460514`, repository `99178460580`, visual `99178460608`,
   frontend `99178460653`.
+- Fixed Bench-root harness: exact SHA
+  `9ab9bd5199e5521f3a72e701c3fa4338d6e866db`, ordinary `33295753975`:
+  secret `99215002723`, repository `99215002838`, visual `99215002811`,
+  frontend `99215002791`.
 
 ## Read-only operation ledger
 
@@ -69,9 +73,36 @@ value is absent. No SSH or other production operation ran during validation.
 An earlier local state-path preflight rejected a path outside the operating
 system temporary root before SSH started. It is not a production operation.
 
+## Accepted fixed-root discovery and next fail-closed boundary
+
+At `2026-08-30T06:10:50Z` / `2026-08-30T13:10:50+07:00`, the accepted
+fixed-root collector ran only `ERP_VERSION` followed by private-Site
+`INSTALLED_APPS`. It accepted Frappe `15.79.0`, ERPNext `15.77.0`, twenty Bench
+apps and a verified Site-app subset. Only anonymous custom-app labels, versions,
+timestamps and two checksums were emitted. The Site value and custom app names
+remain private temporary state.
+
+Three `APP_HEAD` reads then completed. The first `APP_STATUS` failed locally
+before SSH because its fixed `--untracked-files=no` token contains `=`, which
+the closed remote-token grammar rejects. No status/path/file command followed
+and no production state changed. The narrow repair substitutes Git's
+equivalent fixed `-uno` token, adds an exact command assertion and requires a
+new ordinary CI before any application metadata read resumes.
+
+The fixed-token repair changes exactly fifteen allowed paths: the prior
+fourteen governance/collector/test paths plus the reconciliation verifier whose
+inventory assertions must now accept real versions and checksums while keeping
+all missing facts held. In a clean linked worktree, collector/current tests pass
+`17/17`, collector/current/reconciliation pass `49/49`, complete repository
+Python passes `2670/2670`, and complete repository verification, collector
+self-check, current-task verification, reconciliation, compilation and diff
+hygiene all pass. The private Site value is absent, product/contracts/frontend/
+workflow paths are unchanged, and no additional production operation ran.
+
 ## Compatibility result
 
-The failed read proves no production incompatibility. The current LaunchFlow
+The accepted discovery and later local stop prove no production
+incompatibility. The current LaunchFlow
 architecture, ownership, OpenAPI/event contracts and P8-01 through P8-09
 implementation remain the default-correct baseline. All production-facing
 blueprint rows are `UNVERIFIED` and use
@@ -97,10 +128,9 @@ unchanged.
 
 ## Gate conclusion
 
-P8-07F is not complete and no facts-task Level 3 is dispatched. A technical CI
-PASS could not substitute for the missing accepted production evidence. The
-task is held at the external read boundary, P8-08 remains blocked, and the
-standing read-only authorization remains available for a future narrowly
-scoped retry only after the external access condition is corrected without
-allowlist drift. Any later successful fact collection and final reconciliation
-must pass their own exact-SHA ordinary and applicable Gate.
+P8-07F is not complete and no facts-task Level 3 is dispatched. Version/Site
+discovery is accepted, while all unobserved application and runtime metadata
+remains explicitly unverified. The task is held at the local status-token
+harness boundary, P8-08 remains blocked, and no application operation resumes
+until the exact repair passes ordinary CI. Complete fact collection and final
+reconciliation must then pass their own exact-SHA ordinary and applicable Gate.

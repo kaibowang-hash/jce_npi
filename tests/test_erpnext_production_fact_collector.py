@@ -56,6 +56,10 @@ class ProductionFactCollectorTest(unittest.TestCase):
             ("git", "-C", "apps/custom_one", "rev-parse", "HEAD"),
         )
         self.assertEqual(
+            collector._remote_command("APP_STATUS", root="apps/custom_one"),
+            ("git", "-C", "apps/custom_one", "status", "--short", "-uno"),
+        )
+        self.assertEqual(
             collector._remote_command(
                 "APP_FILE_READ",
                 root="apps/custom_one",

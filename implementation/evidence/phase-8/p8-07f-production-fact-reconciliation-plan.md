@@ -83,7 +83,7 @@ inline source are prohibited.
 | `ERP_VERSION` | `bench version` | version rows only |
 | `INSTALLED_APPS` | `bench --site <runtime-site> list-apps` | app/version rows only |
 | `APP_HEAD` | `git -C <validated-custom-app-root> rev-parse HEAD` | one 40-character SHA |
-| `APP_STATUS` | `git -C <validated-custom-app-root> status --short --untracked-files=no` | bounded tracked-drift summary |
+| `APP_STATUS` | `git -C <validated-custom-app-root> status --short -uno` | bounded tracked-drift summary |
 | `APP_TRACKED_PATHS` | `git -C <validated-custom-app-root> ls-files` | deterministic paged path inventory |
 | `APP_FILE_HASH` | `git -C <validated-custom-app-root> hash-object -- <allowlisted-tracked-path>` | one object hash |
 | `APP_FILE_READ` | `git -C <validated-custom-app-root> show HEAD:<allowlisted-tracked-path>` | one bounded tracked source/metadata file after local sensitive-content preflight |
@@ -104,12 +104,16 @@ allowlisted tracked metadata or an already-installed side-effect-free
 operation-specific read API, they remain `UNVERIFIED`; the task must not use
 console, direct SQL, export-fixtures or an improvised method to obtain them.
 
-The fixed-root harness repair is exact fourteen: inventory, active goal,
-controller, blockers, current task, next action, phase status, required inputs,
-risk register, this plan, validation evidence, collector, collector test and
-current-task test. It changes no product, contract, schema, ownership,
-frontend or workflow path. Exact-SHA ordinary CI is mandatory before the next
-`ERP_VERSION` operation.
+The fixed-root harness repair exact fourteen passes at
+`9ab9bd5199e5521f3a72e701c3fa4338d6e866db` / ordinary `33295753975`, and its
+bounded discovery is accepted. The next exact-fifteen repair reuses inventory,
+active goal, controller, blockers, current task, next action, phase status,
+required inputs, risk register, this plan, validation evidence, collector,
+collector test, current-task test and the reconciliation verifier's exact
+accepted-inventory assertions. It changes only the fixed status token
+from the locally rejected equals-form to equivalent `-uno`; no product,
+contract, schema, ownership, frontend, workflow, operation or output authority
+changes. Exact-SHA ordinary CI is mandatory before application reads resume.
 
 ## Fail-closed and redaction contract
 

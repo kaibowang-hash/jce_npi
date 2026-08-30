@@ -8921,3 +8921,20 @@ repeat or rewrite it merely to restore context. See
   authority is added.
 - No production retry is allowed until this exact candidate passes ordinary
   CI. P8-08 stays blocked and all production facts remain `UNVERIFIED`.
+
+### P8-07F discovery accepted; APP_STATUS token harness repair awaits exact-SHA ordinary
+
+- The current marker is exactly `P8-07F discovery accepted; APP_STATUS token harness repair awaits exact-SHA ordinary; P8-08 held`.
+- Fixed-root SHA `9ab9bd5199e5521f3a72e701c3fa4338d6e866db` passes ordinary
+  `33295753975`. The subsequent bounded discovery accepts Frappe `15.79.0`,
+  ERPNext `15.77.0`, twenty anonymous app rows and a verified private-Site app
+  subset with sanitized checksums. The private Site and custom app identities
+  are not committed.
+- Three `APP_HEAD` reads completed. `APP_STATUS` did not reach SSH because its
+  frozen `--untracked-files=no` token contains `=`, which the collector's
+  closed token grammar rejects. No status/path/file operation or production
+  mutation followed.
+- Apply only the product-zero fixed-token repair `-uno`, lock its exact argv in
+  tests and require a new exact-SHA ordinary PASS before application metadata
+  collection resumes. The seven operation IDs, fixed `frappe-bench` wrapper,
+  redaction/output limits, stop conditions and no-write authority are unchanged.

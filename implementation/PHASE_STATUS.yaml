@@ -5,9 +5,9 @@ updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: P8_07F_PRODUCTION_FACTS_UNVERIFIED
 current_task: P8-07F-FACTS
-current_task_status: IN_PROGRESS_P8_07F_BENCH_ROOT_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY
-current_task_completed_stage: P8_07F_FACTS_ACTIVATION_C8D3B3C0_ORDINARY_33281944546_PASS_AND_ONE_FAIL_CLOSED_ERP_VERSION_ATTEMPT
-current_task_next_stage: P8_07F_BENCH_ROOT_HARNESS_REPAIR_EXACT_SHA_ORDINARY_THEN_RESUME_ERP_VERSION
+current_task_status: IN_PROGRESS_P8_07F_APP_STATUS_TOKEN_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY
+current_task_completed_stage: P8_07F_FIXED_BENCH_DISCOVERY_9AB9BD51_ORDINARY_33295753975_PASS_AND_SANITIZED_BENCH_SITE_INVENTORY_ACCEPTED
+current_task_next_stage: P8_07F_APP_STATUS_FIXED_TOKEN_HARNESS_REPAIR_EXACT_SHA_ORDINARY_THEN_RESUME_APP_METADATA
 current_task_next_stage_status: IN_PROGRESS_NO_REMOTE_RETRY_BEFORE_PASS
 resumed_product_task: P8-08
 resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_LEVEL_3_PASS
@@ -18,7 +18,7 @@ scope_decisions:
     current_task_may_connect: true
     connection_effective_condition: SATISFIED_BY_C8D3B3C0_ORDINARY_33281944546
     documentation_authorized_after_transition_ordinary: true
-    current_rule: FACTS_TASK_FIXED_ALLOWLIST_FAIL_CLOSED_ONE_ERP_VERSION_ATTEMPT_STOPPED_NO_ACCEPTED_OUTPUT
+    current_rule: FACTS_TASK_FIXED_ALLOWLIST_DISCOVERY_ACCEPTED_APP_STATUS_TOKEN_REJECTED_LOCALLY_BEFORE_SSH
     future_activation_trigger: SATISFIED_BY_P8_07F_GOVERNANCE_D919D695_ORDINARY_33279778063_LEVEL_3_33280319184_AND_SEPARATE_FACTS_ACTIVATION
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
@@ -27,6 +27,12 @@ scope_decisions:
     adjustment_policy: NO_CHANGE_THEN_CONFIG_MAPPING_THEN_MINOR_LAUNCHFLOW_THEN_MINOR_ERPNEXT_CUSTOM_APP_THEN_BUSINESS_DECISION
     product_code_authorized: false
     trace_status_changed: false
+    fixed_bench_root_checkpoint: 9ab9bd5199e5521f3a72e701c3fa4338d6e866db
+    fixed_bench_root_ordinary: 33295753975
+    accepted_frappe_version: 15.79.0
+    accepted_erpnext_version: 15.77.0
+    accepted_installed_app_count: 20
+    app_status_remote_invoked: false
   fr_co_003_004_external_portals:
     decision_marker: USER_APPROVED_POST_V1_2_DEFERRED
     trace_status: REMAPPED_PHASE_9

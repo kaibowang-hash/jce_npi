@@ -8,15 +8,14 @@ Updated: `2026-08-30T00:00:00+07:00`
 P8-07 passes at exact final product SHA
 `edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary CI `33277289693`
 and Level 3 `33277905251`; every base lane, controlled preflight and cumulative
-runtime passes. P8-07F governance and activation also pass, but the allowlisted
-`ERP_VERSION` reads at `2026-08-30T00:04:24Z` and user-requested
-`2026-08-30T05:35:04Z` produced no accepted output. Each collection stopped
-without a later operation. This is an
-external fact/access hold plus a proven collector working-directory omission,
-not a product defect or evidence of incompatibility. The user confirmed the
-default relative Bench root; the task-scoped Site remains private. No remote
-retry is allowed until the fixed-root harness repair passes exact-SHA ordinary
-CI.
+runtime passes. P8-07F governance and activation also pass. Fixed-root repair
+`9ab9bd5199e5521f3a72e701c3fa4338d6e866db` / ordinary `33295753975` then
+enabled accepted sanitized version/Site discovery: Frappe `15.79.0`, ERPNext
+`15.77.0` and twenty installed apps. The task-scoped Site remains private.
+Application metadata is held because the local collector rejected the fixed
+`APP_STATUS` equals-form token before SSH. This is a collector harness boundary,
+not a product defect or evidence of incompatibility. No app-metadata retry is
+allowed until the equivalent `-uno` token repair passes exact-SHA ordinary CI.
 It blocks P8-08 and the P8-07F Level 3, not already completed technical slices.
 
 Historical P8-06 passes at exact final product SHA
@@ -42,10 +41,10 @@ The exact-20 ERPNext customization requirements baseline passes at
 `6a82568329e2ec46eae02df76a9d697e26cdf61e` / ordinary CI `33137548825` and is
 documentation only. The user's 2026-08-29 standing authorization became
 effective only after governance and separate activation. Activation
-`c8d3b3c0` / ordinary `33281944546` passes. The first bounded read then stopped
-without accepted output, leaving every production customization fact
-unverified. Standing authority remains fail closed and read only; no production
-customization is inferred.
+`c8d3b3c0` / ordinary `33281944546` passes. Fixed-root discovery now provides
+accepted versions and anonymous app inventory, while every unobserved
+customization/configuration fact remains unverified. Standing authority remains
+fail closed and read only; no production customization is inferred.
 
 ## Active recovery
 
@@ -105,9 +104,9 @@ read-only projection obligations remain V1.2.
   privacy/security, rollback and release-gate facts; it is not a global
   blocker and does not defer internal collaboration truth.
 - The ERP customization requirements baseline and P8-07F activation are
-  complete. Both governed reads stopped without accepted output; production
-  facts remain `UNVERIFIED` and P8-08 remains held. No P8-07 product authority,
-  contract or ownership changed.
+  complete. Fixed-root version/Site discovery is accepted; application facts
+  are held at a local token harness boundary and P8-08 remains held. No P8-07
+  product authority, contract or ownership changed.
 
 ## Historical recovery
 

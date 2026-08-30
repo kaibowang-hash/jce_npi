@@ -63,6 +63,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "P8_07F_FIXED_BENCH_ROOT_9AB9BD5199E5521F3A72E701C3FA4338D6E866DB_ORDINARY_33295753975_PASSED_DISCOVERY_ACCEPTED",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_APP_STATUS_EQUALS_TOKEN_REJECTED_LOCALLY_BEFORE_REMOTE_COMMAND_AND_REPAIR_REQUIRES_NEW_ORDINARY",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "ONLY_ERP_VERSION_INSTALLED_APPS_APP_HEAD_APP_STATUS_APP_TRACKED_PATHS_APP_FILE_HASH_APP_FILE_READ",
             value["frozen_invariants"],
         )
@@ -72,7 +80,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P8_07F_BENCH_ROOT_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_P8_07F_APP_STATUS_TOKEN_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(
