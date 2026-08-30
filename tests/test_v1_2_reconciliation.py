@@ -715,6 +715,10 @@ class V12ReconciliationTests(unittest.TestCase):
         quality_gate = (ROOT / "implementation/QUALITY_GATE.md").read_text(
             encoding="utf-8"
         )
+        current_runtime_transition = (
+            ROOT
+            / "implementation/evidence/phase-8/p8-07f-current-runtime-governance-transition.md"
+        ).read_text(encoding="utf-8")
         phase_status = (ROOT / "implementation/PHASE_STATUS.yaml").read_text(
             encoding="utf-8"
         )
@@ -729,16 +733,20 @@ class V12ReconciliationTests(unittest.TestCase):
             "MINOR_LAUNCHFLOW_ADJUSTMENT",
             "MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT",
             "NO_CHANGE",
+            "P8-07F-CURRENT-RUNTIME-GOVERNANCE",
+            "current tracked production worktree",
+            "fixed application-layer read",
         ):
-            self.assertIn(required, agents + plan)
+            self.assertIn(required, agents + plan + current_runtime_transition)
         for prohibited in (
             "sudo",
             "console",
             "DocType mutation",
             "replay or reconciliation action",
+            "Direct SQL",
         ):
-            self.assertIn(prohibited, agents + plan)
-        self.assertIn("production_connection_authorized_now: true", phase_status)
+            self.assertIn(prohibited, agents + plan + current_runtime_transition)
+        self.assertIn("production_connection_authorized_now: false", phase_status)
         self.assertIn(
             "facts_connection_requires_activation_ordinary_pass: true",
             phase_status,
@@ -748,9 +756,17 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("sensitive_preflight_stops: 2", phase_status)
         self.assertIn("private_state_removed: true", phase_status)
         self.assertIn(
-            "runtime_only_metadata_status: UNVERIFIED_REQUIRES_SEPARATE_GATE_OR_OWNER_SANITIZED_EVIDENCE",
+            "runtime_only_metadata_status: USER_AUTHORIZED_PENDING_EXACT_APPLICATION_LAYER_READ_GOVERNANCE_AND_ACTIVATION",
             phase_status,
         )
+        self.assertIn(
+            "current_task: P8-07F-CURRENT-RUNTIME-GOVERNANCE", phase_status
+        )
+        self.assertIn(
+            "current_tracked_worktree_source_status: USER_AUTHORIZED_PENDING_EXACT_SOURCE_OPERATION_GOVERNANCE_AND_ACTIVATION",
+            phase_status,
+        )
+        self.assertIn("direct_sql_and_console_status: PROHIBITED", phase_status)
         self.assertIn("FINAL_FULL_PRODUCTION", (ROOT / "implementation/CURRENT_TASK.json").read_text(encoding="utf-8"))
         self.assertIn("blocks `IMPLEMENTATION_COMPLETE`", quality_gate)
 

@@ -8980,3 +8980,39 @@ repeat or rewrite it merely to restore context. See
   LaunchFlow architecture/contracts remain default correct, every affected row
   remains `NO_CHANGE`, the P8-07F Level 3 is not dispatched and P8-08 stays
   blocked.
+
+### P8-07F current-worktree and runtime-metadata governance awaits exact-SHA Gates
+
+- The current marker is exactly `P8-07F current-worktree and runtime-metadata governance awaits exact-SHA ordinary CI and Level 3`.
+- Accepted facts remain sealed at exact SHA
+  `cfd0930553fc40029d18518a8e3cd3481fa0a5d8` / ordinary CI
+  `33299326296`. That epoch accepted versions, installed apps, anonymous
+  HEAD/status and all tracked-path inventories; it did not accept dirty current
+  source, the two stopped DocType candidates or runtime-only metadata.
+- The user's 2026-08-30 expanded authorization opens a new independent
+  `P8-07F-CURRENT-RUNTIME-GOVERNANCE` task. It authorizes a later facts task to
+  summarize current tracked worktree content, structurally read the two stopped
+  candidates without modification/raw persistence and query exact runtime
+  metadata through fixed Frappe application-layer reads.
+- This transition is governance-only and must make zero SSH, connector, Site or
+  production contact. Only stage its exact manifest, obtain exact-SHA ordinary
+  CI and then one Level 3. Do not implement or invoke the expanded collector in
+  the transition.
+- After Level 3 PASS, activate a separate `P8-07F-FACTS` collector-expansion
+  task. Freeze every operation ID, app/path/DocType/field/filter/order/page
+  shape, byte bound, structural redaction, provenance and checksum in code and
+  tests; obtain that commit's exact-SHA ordinary CI before reconnecting through
+  `JCE-Core`.
+- Current-source reads must be tied to an already inventoried exact tracked
+  path and distinguish HEAD from the bounded current worktree. Runtime metadata
+  calls must be fixed application-layer reads. Direct SQL, `bench console`,
+  generic methods, caller-selected query shapes, raw Script/source persistence,
+  business-record reads and all remote writes remain prohibited.
+- Fail closed on permission, version, path, shape, pagination, byte-bound or
+  sensitive-value drift. Delete private state after each future collection;
+  retain only redacted structure/checksums. Current LaunchFlow architecture,
+  ownership and contracts remain default correct; no evidence-backed
+  difference means `DIRECT_MATCH` and `NO_CHANGE`.
+- P8-08 stays inactive. M9-04/M9-05 real pilots remain
+  `USER_APPROVED_POST_V1_2_DEFERRED`; controlled non-production UAT is retained
+  and no production-pilot or real-user adoption claim is created.

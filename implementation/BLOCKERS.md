@@ -4,7 +4,8 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-`P8_07F_PRODUCTION_FACTS_UNVERIFIED` is the active scoped execution hold.
+`P8_07F_CURRENT_RUNTIME_GOVERNANCE_GATE_PENDING` is the active scoped
+execution hold.
 P8-07 passes at exact final product SHA
 `edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary CI `33277289693`
 and Level 3 `33277905251`; every base lane, controlled preflight and cumulative
@@ -23,7 +24,13 @@ or value was emitted. Runtime-only metadata remains outside the frozen
 source-only allowlist, and dirty application HEAD content is not accepted as
 runtime truth. Private mode-0600 state was deleted and the production-read
 window is closed.
-It blocks P8-08 and the P8-07F Level 3, not already completed technical slices.
+The user has now authorized current tracked worktree source, read-only
+structural summaries of the two stopped DocType candidates and fixed
+application-layer runtime-metadata reads. Those operations remain unavailable
+until the independent `P8-07F-CURRENT-RUNTIME-GOVERNANCE` exact-SHA ordinary
+CI and Level 3 pass and a separate facts collector expansion obtains its own
+exact-SHA ordinary CI. The transition itself is zero-contact. This scoped hold
+blocks P8-08, not already completed technical slices.
 
 Historical P8-06 passes at exact final product SHA
 `547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806`

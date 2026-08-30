@@ -1,12 +1,13 @@
 # Required External Inputs
 
-Status: **OPEN — P8-07F BOUNDED READ CLOSED; SANITIZED SOURCE/RUNTIME FACTS REQUIRED**
+Status: **NO USER INPUT CURRENTLY REQUIRED — EXPANDED READ AUTHORIZED; GOVERNANCE GATES PENDING**
 Updated: 2026-08-30
 
-This is the single complete request for external facts that are not present in
-the repository. Supply one dated, owner-identified, sanitized, read-only bundle
-rather than sending credentials or incremental production extracts. The
-P8-07F collected only the safely observable subset through its fixed
+This remains the single place for any future external fact request. No bundle
+is requested while the newly authorized, separately gated read-only
+self-collection can supply the missing facts; never send credentials or
+incremental production extracts. The P8-07F collected only the safely
+observable subset through its fixed
 `JCE-Core` read-only boundary. Governance and activation Gates passed. After
 two earlier no-output attempts, fixed-root SHA `9ab9bd5199e5521f3a72e701c3fa4338d6e866db`
 and ordinary `33295753975` enabled an accepted sanitized Bench/Site discovery.
@@ -18,6 +19,15 @@ custom apps have tracked drift, so their HEAD content is not runtime truth.
 Two relevant DocType candidates stopped at sensitive-content preflight, and
 runtime-only metadata remains outside the frozen source-only allowlist. The
 private state is deleted and this production-read window is closed.
+On 2026-08-30 the user explicitly authorized governed self-collection of the
+current tracked worktree, structural summaries for the two stopped DocType
+candidates and fixed application-layer runtime metadata. No external source
+bundle is currently requested. Do not reconnect yet: the zero-contact
+`P8-07F-CURRENT-RUNTIME-GOVERNANCE` transition must pass exact-SHA ordinary CI
+and Level 3, and the separate collector expansion must pass its own exact-SHA
+ordinary CI first. A later fail-closed stop may create one new, exact external
+input; it does not reopen this whole package.
+
 Never provide or record credentials,
 endpoint/host/user/key values, secrets or unrelated business records.
 
@@ -26,13 +36,11 @@ The acceptance/status matrix for these inputs is
 request and contains no production values. This file remains the sole source
 for requesting, receiving and recording external fact provenance.
 
-Before supplying anything, check
+Before supplying anything after a future fail-closed stop, check
 `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`. It now contains the accepted
 version, installed-app, anonymized HEAD/status and tracked-path baseline. Do not
-repeat or expand SSH collection. The missing evidence is: clean declared
-worktrees or an owner-sanitized checksummed drift/source bundle; sanitized
-owner evidence for the two stopped DocType candidates; and a separately gated,
-side-effect-free sanitized source for required runtime-only metadata. Record
+repeat already accepted inventory. The previously missing evidence is now
+authorized for separately gated, bounded and sanitized self-collection. Record
 task ID, purpose, timestamp/timezone, redacted source, version/checksum,
 finding, unknown and contract/ownership impact. Never provide credentials or
 raw private production values.
@@ -52,10 +60,11 @@ The Site value remains private and is not persisted here.
 The user has since confirmed the default relative Bench root `frappe-bench`
 and supplied the task-scoped runtime Site privately. The Site value is not
 repeated or persisted here. Fixed-root discovery and HEAD/status reads pass.
-The path repair and bounded read are complete. The standing authorization does
-not permit weakening the sensitive scanner, reading dirty worktrees as HEAD,
-or inventing a new runtime query. A separately governed evidence source is now
-required.
+The path repair and bounded read are complete. The expanded authorization does
+not permit treating dirty worktrees as `HEAD`, weakening redaction, direct SQL,
+console, generic methods or caller-selected runtime queries. The new
+governance and activation Gates must freeze the exact current-source and
+application-layer metadata operations before they can run.
 
 ## 1. Current ERPNext reconciliation package
 

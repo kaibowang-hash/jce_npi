@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_BLOCKED_P8_07F_SOURCE_DRIFT_AND_RUNTIME_METADATA_UNVERIFIED — P8-07F-FACTS`
+`IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-CURRENT-RUNTIME-GOVERNANCE`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -18,12 +18,13 @@ plus twelve custom apps have tracked drift, and runtime-only metadata is not
 available through the frozen source-only allowlist. The private runtime state
 was deleted and the production-read window is closed.
 
-The sole next action is external: provide clean declared ERPNext/custom-app
-worktrees or an owner-sanitized checksummed drift/source bundle, plus a
-separately gated side-effect-free sanitized source for required runtime-only
-metadata and the two stopped DocType candidates. Do not weaken the scanner,
-expand the command allowlist, reconnect, or infer compatibility from dirty
-HEAD source. Existing LaunchFlow architecture/contracts remain default correct;
+The user has now authorized the current tracked production worktrees, the two
+stopped DocType candidates and fixed application-layer runtime metadata reads.
+The sole next action is this zero-contact governance transition: record the
+expanded operation, redaction, provenance and stop contracts; pass exact-SHA
+ordinary CI and Level 3; then activate a separate collector-expansion facts
+task with its own exact-SHA ordinary CI. Do not reconnect during this
+transition. Existing LaunchFlow architecture/contracts remain default correct;
 no adjustment task is authorized and P8-08 remains blocked.
 
 Required branch:

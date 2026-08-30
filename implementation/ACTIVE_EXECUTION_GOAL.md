@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_BLOCKED_P8_07F_SOURCE_DRIFT_AND_RUNTIME_METADATA_UNVERIFIED — P8-07F-FACTS`
+- Mode: `IN_PROGRESS_AWAITING_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-CURRENT-RUNTIME-GOVERNANCE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -48,6 +48,14 @@ Updated: `2026-08-30T00:00:00+07:00`
   apps remain dirty runtime trees; two relevant DocType candidates stopped at
   sensitive-content preflight; runtime-only metadata is outside the fixed
   source allowlist. Private mode-0600 state was deleted after collection.
+- P8-07F current-worktree/runtime-metadata authorization base:
+  `cfd0930553fc40029d18518a8e3cd3481fa0a5d8` (`PASS`; ordinary CI
+  `33299326296`). The user has now authorized current tracked worktree source,
+  read-only structural summaries of the two stopped DocType candidates and
+  fixed application-layer runtime-metadata reads. The current transition
+  records that authority only and makes zero production contact; it still
+  requires its own exact-SHA ordinary CI and Level 3 before a separate facts
+  activation may implement or invoke any expanded operation.
 - Latest governance closeout checkpoint:
   `d39b24e4169d6116ab0721440b1f7dc01b599c96` (`PASS`; ordinary CI
   `33134622237`; P8-06 closeout and P8-07 audit activation)
@@ -68,13 +76,12 @@ Updated: `2026-08-30T00:00:00+07:00`
   ordinary CI `33204451677`; repository `98961818348`, frontend
   `98961818460`, secret `98961818358` and governed visual `98961818084` pass;
   controlled lanes correctly skipped)
-- Active atomic scope: `P8-07F-FACTS` has closed its bounded production-read
-  window. Accepted facts are recorded without private identities or values.
-  Required exact target bindings remain unverified because dirty runtime source,
-  runtime-only metadata and two sensitive-preflight DocType candidates cannot
-  be promoted within the frozen boundary. No more SSH read, allowlist expansion
-  or product adjustment is authorized. P8-08 remains inactive pending external
-  sanitized evidence and a later P8-07F completion Gate.
+- Active atomic scope: `P8-07F-CURRENT-RUNTIME-GOVERNANCE` freezes the user's
+  expanded read-only authority, exact operation boundaries and two-Gate
+  sequence. This transition performs zero SSH, Site, connector or production
+  read. P8-08 remains inactive; expanded collector implementation and all
+  production reads belong only to the next separately activated
+  `P8-07F-FACTS` task.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

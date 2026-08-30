@@ -42,6 +42,28 @@ contracts 和 P8-01～P8-09 设计/代码为默认正确基线。结论只能使
 只读边界下完成全量 ERPNext↔LaunchFlow compatibility reconciliation；任何未解决
 漂移都阻断 `IMPLEMENTATION_COMPLETE` 与 production-ready。
 
+### 0.2 P8-07F 当前工作区与运行时元数据的扩展只读授权
+
+2026-08-30 用户进一步确认：产品 ERPNext/Frappe/custom-app 仓库的当前
+工作区（包括未提交的已跟踪变更）可作为当前运行候选源代码事实；上一轮
+因敏感内容预检停止的两个相关 DocType 可在不修改产品文件、不提交原文或
+敏感值的前提下读取并生成结构化脱敏摘要；Custom Field、Property Setter、
+Workflow、权限、Client/Server Script、Naming Series 等运行时事实可经固定、应用层、
+只读查询进行核对。
+
+本扩展授权只有在独立 `P8-07F-CURRENT-RUNTIME-GOVERNANCE` transition 的 exact-SHA
+ordinary CI 和 Level 3 均 PASS，且 controller 又以独立 exact-SHA ordinary PASS 激活
+后续 `P8-07F-FACTS` 采集任务后才生效。transition 本身必须零 SSH、零 Site、
+零 ERP connector 和零外部状态变化。新采集任务必须锁定当前工作区摘要和
+运行时元数据的精确 operation ID、参数、分页、输出 shape、最大字节数、脱敏、
+provenance 与 checksum；不得接受调用者自选命令、method、DocType、字段、过滤或路径。
+
+应用层只读核对不改变其他硬边界：仍禁止直接 SQL、`bench console`、通用
+DocType writer、权限绕过、生产文件修改、导出或批量读取业务记录。即使用户已
+授权读取受限 DocType，Git 也只可持久化 AST/schema 结构、数量、受控枚举和 checksum，
+不得持久化原始代码、Script 文本、endpoint、身份、密钥或业务值。发现任何形状、
+版本、权限、敏感值或非零写入风险时立即 fail closed，不得扩权。
+
 ## 1. 产品使命
 
 建设一套面向注塑企业的新项目开发、Tooling、试模和 NPI 协同平台（产品名暂定 **NPI One**）。系统要像成熟的西门子工业工程软件，而不是 Frappe DocType/单据页面的集合，也不是消费级 SaaS 卡片看板。

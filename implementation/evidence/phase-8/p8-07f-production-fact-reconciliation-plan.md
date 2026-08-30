@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Controller tasks: `P8-07F-GOVERNANCE` then `P8-07F-FACTS`
 
-Status: **BOUNDED COLLECTION CLOSED; EXTERNAL SOURCE/RUNTIME EVIDENCE BLOCKED; P8-08 HELD**
+Status: **EXPANDED CURRENT/RUNTIME READ AUTHORIZED; NEW GOVERNANCE GATES PENDING; P8-08 HELD**
 
 ## Purpose and baseline
 
@@ -229,11 +229,17 @@ reviewed rollback or forward-fix plan.
 
 ## Closed read and recovery evidence
 
-Do not resume SSH under this atomic task. The only acceptable recovery inputs
-are clean declared production worktrees or an owner-sanitized checksummed
-source/drift bundle, sanitized owner evidence for the two stopped DocType
-candidates, and a separately governed side-effect-free sanitized source for
-runtime-only metadata. Reconciliation must reuse version/HEAD/status/path
-checksums first. It must not weaken content scanning or treat committed HEAD as
-runtime truth for a dirty app. Until those inputs exist, no `DIRECT_MATCH`,
+The bounded read at `cfd093055` is closed and its accepted facts remain
+immutable. On 2026-08-30 the user authorized current tracked worktree source,
+read-only structural summaries for the two stopped DocType candidates and
+fixed application-layer runtime metadata collection. This supersedes the need
+for an immediate owner-supplied bundle, but not the Gate sequence.
+
+Do not resume SSH in the governance transition. First obtain its exact-SHA
+ordinary CI and Level 3; then implement the expanded source/runtime operations
+under a separate facts activation and obtain its exact-SHA ordinary CI.
+Reconciliation must reuse version/HEAD/status/path checksums first, distinguish
+HEAD from current worktree, preserve only redacted structure/checksums and
+retain direct SQL, console, generic method/query and all writes as prohibited.
+Until those Gates pass and the facts are accepted, no `DIRECT_MATCH`,
 adjustment task, facts-task Level 3 or P8-08 activation is allowed.
