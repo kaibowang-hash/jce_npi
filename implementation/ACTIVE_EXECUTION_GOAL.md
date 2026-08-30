@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_RECONCILIATION_RESPONSE_DIAGNOSTIC_PENDING — P8-08`
+- Mode: `IN_PROGRESS_FINAL_LEVEL_3_PENDING — P8-08`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -29,8 +29,11 @@ Updated: `2026-08-31T00:00:00+07:00`
   Collection, detail, redaction and binding checks passed, but this parent
   tuple cannot choose among six response predicates and an inner create-server
   exception. The next action is one independent product-zero exact-67
-  response diagnostic after its own exact-SHA ordinary PASS; no product repair
-  or Level 3 rerun is authorized.
+  response diagnostic `a8722427` passes ordinary `33328949033`; controlled run
+  `33329717276` passes preflight and cumulative runtime with success-zero safe
+  output. No product repair is evidenced. All eight Item diagnostics are now
+  disabled; the next action is one new exact-SHA ordinary PASS followed by the
+  sole P8-08 diagnostics-off Level 3.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`

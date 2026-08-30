@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_RECONCILIATION_RESPONSE_DIAGNOSTIC_PENDING — P8-08`
+`IN_PROGRESS_FINAL_LEVEL_3_PENDING — P8-08`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
@@ -26,12 +26,12 @@ P8-08 Released Trial Summary runtime completed, then fails only at the later
 fixed Item publish migrated-legacy outer label. Product-zero diagnostic
 `51e071f0` passes ordinary `33327421787`; controlled run `33328132993` returns
 only `P803_LEGACY_FULL_RECONCILIATION_CONTRACT / RuntimeError /
-trace-13dcf4b038055bed9842636978c24021`. That proves collection, detail,
-redaction and bindings passed but cannot distinguish the six value-free
-problem-response predicates from an inner create-server exception. The sole
-next action is one independent exact-67 response diagnostic after exact-SHA
-ordinary PASS. Server stage wins over ordered status/body/media/trace/envelope
-fallback. Do not rerun Level 3 or infer a product repair. The `DR-REC-009`
+trace-13dcf4b038055bed9842636978c24021`. Response diagnostic `a8722427` passes
+ordinary `33328949033`; controlled run `33329717276` passes preflight
+`99306001234` and cumulative runtime `99306034455` with success-zero output.
+No product repair is evidenced. All eight Item diagnostics are disabled. The
+sole next action is a new exact-SHA ordinary PASS followed by one P8-08 Level 3
+final; P8-09 remains inactive until that Gate passes. The `DR-REC-009`
 event/consumer contract remains held.
 
 The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,

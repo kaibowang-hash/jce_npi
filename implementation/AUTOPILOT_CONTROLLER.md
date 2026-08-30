@@ -9445,3 +9445,21 @@ repeat or rewrite it merely to restore context. See
   Success emits zero tuple. Do not rerun Level 3, infer a product repair,
   contact production ERPNext or activate P8-09 before this bounded proof.
 - Controller marker: `P8-08 reconciliation-response diagnostic pending`.
+
+## 2026-08-31 P8-08 diagnostics-off final Level 3 pending
+
+- Reconciliation-response diagnostic SHA
+  `a8722427da1e3dc3934f499d20230e8a4a6ca250` passes ordinary CI
+  `33328949033`: frontend `99303938769`, secret `99303938802`, governed visual
+  `99303938830` and repository `99303938872` all pass.
+- Its sole controlled diagnostic `33329717276` passes preflight
+  `99306001234` and cumulative runtime `99306034455`. Success-zero emits no
+  safe tuple and evidences no product repair. Freeze the cycle at diagnostic
+  `1/1`, repair `0/1`, final `0/1`.
+- Disable all eight Item runtime diagnostic activations while retaining their
+  localized tests and strict readers. Require this diagnostics-off exact SHA's
+  own ordinary CI before dispatching exactly one Level 3 final. No product,
+  contract, schema, workflow, production or external behavior changes.
+- P8-09, production contact and `DR-REC-009` remain closed until that Level 3
+  passes. Preserve all user-owned dirty and untracked files.
+- Controller marker: `P8-08 diagnostics off; final Level 3 pending`.

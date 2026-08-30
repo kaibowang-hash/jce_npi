@@ -303,3 +303,20 @@ actual response status, code, body, trace contents, message or stack. Exact-SHA
 ordinary PASS is required before one Level 2 controlled run. P8-08 product,
 contracts and persistence remain unchanged; P8-09 and production contact stay
 closed.
+
+## 11. Diagnostics-off final Gate
+
+Reconciliation-response diagnostic checkpoint
+`a8722427da1e3dc3934f499d20230e8a4a6ca250` passes exact-SHA ordinary CI
+`33328949033`: frontend `99303938769`, secret `99303938802`, governed visual
+`99303938830` and repository `99303938872` all pass. Its sole Level 2
+controlled run `33329717276` passes preflight `99306001234` and cumulative
+runtime `99306034455` with success-zero safe output.
+
+Freeze this cycle at diagnostic `1/1`, repair `0/1`, final `0/1`. The prior
+parent-only run is not a product repair signal, and the exact-67 same-SHA run
+proves the complete cumulative path without any safe failure tuple. Disable all
+eight Item runtime diagnostic activations. After one new exact-SHA ordinary
+PASS, dispatch the sole diagnostics-off P8-08 Level 3. P8-09, production
+contact, external projection activation and `DR-REC-009` remain closed until
+that Gate passes.

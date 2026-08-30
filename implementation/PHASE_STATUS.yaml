@@ -3,14 +3,14 @@ overall_status: IN_PROGRESS
 current_phase: 8
 updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
-execution_hold: P8_08_RECONCILIATION_RESPONSE_DIAGNOSTIC_PENDING
+execution_hold: P8_08_FINAL_LEVEL_3_PENDING
 current_task: P8-08
-current_task_status: IN_PROGRESS_RECONCILIATION_RESPONSE_DIAGNOSTIC_PENDING
+current_task_status: IN_PROGRESS_FINAL_LEVEL_3_PENDING
 current_task_completed_stage: P8_07F_PASS_LEVEL_3
-current_task_next_stage: P8_08_RECONCILIATION_RESPONSE_EXACT67_DIAGNOSTIC
+current_task_next_stage: P8_08_DIAGNOSTICS_OFF_FINAL_LEVEL_3
 current_task_next_stage_status: AWAITS_EXACT_SHA_ORDINARY
 resumed_product_task: P8-08
-resumed_product_task_status: IN_PROGRESS_RECONCILIATION_RESPONSE_DIAGNOSTIC_PENDING
+resumed_product_task_status: IN_PROGRESS_FINAL_LEVEL_3_PENDING
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -2819,7 +2819,7 @@ p8_07f:
 p8_08:
   task: P8-08
   next_task: P8-09
-  status: IN_PROGRESS_RECONCILIATION_RESPONSE_DIAGNOSTIC_PENDING
+  status: IN_PROGRESS_FINAL_LEVEL_3_PENDING
   phase: 8
   milestone: M7-08
   task_kind: PRODUCT
@@ -2869,8 +2869,14 @@ p8_08:
   migrated_legacy_diagnostic_ordinary: 33327421787
   migrated_legacy_diagnostic_controlled: 33328132993
   migrated_legacy_diagnostic_tuple: P803_LEGACY_FULL_RECONCILIATION_CONTRACT_RUNTIME_ERROR_SAFE_TRACE_ONLY
-  reconciliation_response_diagnostic_cycle: {diagnostic: 0/1, repair: 0/1, final: 0/1}
+  reconciliation_response_diagnostic_cycle: {diagnostic: 1/1, repair: 0/1, final: 0/1}
   reconciliation_response_diagnostic_exact_codes: 67
+  reconciliation_response_diagnostic_checkpoint: a8722427da1e3dc3934f499d20230e8a4a6ca250
+  reconciliation_response_diagnostic_ordinary: 33328949033
+  reconciliation_response_diagnostic_ordinary_jobs: {frontend: 99303938769, secret_scan: 99303938802, visual: 99303938830, repository: 99303938872}
+  reconciliation_response_diagnostic_controlled: 33329717276
+  reconciliation_response_diagnostic_controlled_jobs: {controlled_preflight: 99306001234, runtime: 99306034455}
+  reconciliation_response_diagnostic_result: PASS_SUCCESS_ZERO_NO_PRODUCT_REPAIR
   audit_plan: implementation/evidence/phase-8/p8-08-plan.md
   frozen_product_boundary: INTERNAL_READ_ONLY_EXACT_P7_07_SOURCE_SEAM_EXTERNAL_PROJECTION_UNAVAILABLE
   compatibility_mode: CURRENT_DESIGN_DEFAULT_CORRECT_NO_CHANGE_WITHOUT_PROVED_DIFFERENCE
