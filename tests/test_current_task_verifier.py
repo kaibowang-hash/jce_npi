@@ -38,14 +38,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_CHECKPOINT_2_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_CHECKPOINT_3_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P8-09")
         self.assertEqual(value["requirement_ids"], ["FR-INT-015"])
         self.assertEqual(
             value["base_checkpoint"],
-            "495141f9650d71b9ae2c8f7cf8a8904e0242c210",
+            "3a9ab61cd83bb13dae8b9ac40a687b2b83bb6f25",
         )
         for invariant in (
             "P8_07F_FINAL_CHECKPOINT_D8ABA505_ORDINARY_33317964484_LEVEL_3_33318628754_ALL_SIX_JOBS_PASS",
@@ -55,10 +55,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P8_08_CHECKPOINT_1_ACTIVATION_C7571D1B_ORDINARY_33321510831_ALL_FOUR_JOBS_PASS",
             "P8_08_CHECKPOINT_1_PRODUCT_495141F9_ORDINARY_33322318251_ALL_FOUR_JOBS_PASS",
             "P8_08_CHECKPOINT_2_ACTIVATION_1D8B13C9_ORDINARY_33323078013_ALL_FOUR_JOBS_PASS",
+            "P8_08_CHECKPOINT_2_PRODUCT_3A9AB61C_ORDINARY_33323869238_ALL_FOUR_JOBS_PASS",
             "P8_08_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_AND_SEPARATE_CHECKPOINT_1_TRANSITION_PASS",
             "P8_08_REUSES_P7_07_EXACT_IMMUTABLE_SOURCE_PRESENTATION_AND_REDACTION_WITHOUT_DOMAIN_DUPLICATION",
             "P8_08_CHECKPOINT_1_EXACT_FIVE_PRODUCT_TEST_PATHS_AUTHORIZED_AFTER_ACTIVATION_SHA_ORDINARY_PASS",
             "P8_08_CHECKPOINT_2_PROJECT_AND_TRIAL_ROUND_FIRST_EXISTING_P7_07_REPOSITORY_BOUNDARY",
+            "P8_08_CHECKPOINT_3_EXACT_TWO_RUNTIME_TEST_PATHS_CONDITIONAL_ON_ACTIVATION_ORDINARY_PASS",
             "DR_REC_009_EXTERNAL_EVENT_PAYLOAD_REDACTION_CONSUMER_MAPPING_AND_RECEIPT_REMAIN_HELD",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
@@ -66,26 +68,29 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(
             set(value["allowed_paths"]),
             {
-                "apps/npi_integration/npi_integration/released_summary_projection/readers.py",
-                "apps/npi_integration/npi_integration/released_summary_projection/source.py",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
                 "implementation/CURRENT_TASK.json",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
                 "implementation/evidence/phase-8/p8-08-plan.md",
+                "scripts/verify_released_trial_summary_runtime.py",
                 "tests/test_current_task_verifier.py",
-                "tests/test_phase8_released_trial_summary_projection_source.py",
+                "tests/test_phase8_released_trial_summary_projection_runtime.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 10)
+        self.assertEqual(len(value["allowed_paths"]), 9)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(("frontend/", "contracts/", ".github/")) for path in value["allowed_paths"])
         )
         self.assertEqual(
             sum(path.startswith("apps/") for path in value["allowed_paths"]),
-            2,
+            0,
+        )
+        self.assertEqual(
+            sum(path.startswith("scripts/") for path in value["allowed_paths"]),
+            1,
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:

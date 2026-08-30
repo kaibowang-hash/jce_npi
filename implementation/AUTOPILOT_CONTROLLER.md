@@ -9359,3 +9359,23 @@ repeat or rewrite it merely to restore context. See
   runtime activation. `DR-REC-009`, P8-09, production activation and all
   user-owned dirty/untracked files remain untouched.
 - Controller marker: `P8-08 checkpoint 2 product awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-08 checkpoint 2 PASS; checkpoint 3 activation awaits exact-SHA ordinary CI
+
+- Checkpoint-2 product exact SHA
+  `3a9ab61cd83bb13dae8b9ac40a687b2b83bb6f25` passes ordinary CI
+  `33323869238`: frontend `99290465347`, governed visual `99290465499`,
+  repository `99290465500` and secret `99290465597` all pass; controlled lanes
+  correctly skip.
+- Freeze exactly two runtime/test paths: the existing P7-07 released-summary
+  runtime verifier and one focused P8-08 runtime contract test. Reuse the fixed
+  disposable Bench/Site and existing cumulative runtime invocation; do not add
+  a route, workflow lane, external process or production contact.
+- The runtime proof must resolve the Project + Trial Round-first exact current
+  immutable source, preserve its exact hashes, return explicit external
+  projection unavailable truth, remain deterministic across fresh and replay-
+  only processes and prove zero added persistence or network.
+- Runtime product edits remain prohibited until this governance activation's
+  own exact-SHA ordinary CI passes. `DR-REC-009`, P8-09, production activation
+  and all user-owned dirty/untracked files remain untouched.
+- Controller marker: `P8-08 checkpoint 2 PASS; checkpoint 3 activation awaits exact-SHA ordinary CI`.

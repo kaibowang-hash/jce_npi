@@ -1,6 +1,6 @@
 # P8-08 Plan — Released Trial Summary Read-Only Projection Seam
 
-Status: **CHECKPOINT 2 IMPLEMENTED — AWAITS EXACT-SHA ORDINARY CI**
+Status: **CHECKPOINT 2 PASS — CHECKPOINT 3 ACTIVATION AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-30
 
@@ -50,6 +50,12 @@ through the Project + Trial Round-first repository boundary. It returns
 unavailable for a permission-safe missing workspace, fails closed on stale,
 foreign, duplicate, malformed or hash-drifted truth, and emits only the exact
 immutable descriptor. It adds no route, row, event, queue or network.
+
+Checkpoint-2 product: `3a9ab61cd83bb13dae8b9ac40a687b2b83bb6f25`
+
+Checkpoint-2 product ordinary CI: `33323869238` (**PASS**) — frontend
+`99290465347`, governed visual `99290465499`, repository `99290465500` and
+secret `99290465597`; controlled lanes correctly skipped.
 
 ## 1. Audit conclusion
 
@@ -190,6 +196,14 @@ disposable, network-free runtime to prove Project containment, exact current
 source, stale/conflict/unavailable behavior, cross-process deterministic
 hashes, zero rows/writes/network, migration twice and cleanup. Then run the
 P8-08 final Level 3. Production ERPNext is not contacted by this Gate.
+
+Checkpoint 3 must reuse the existing P7-07 runtime already invoked by the
+cumulative Frappe verification. It does not add a route, workflow lane or
+external process. Eligible product/test paths are limited to:
+
+- `scripts/verify_released_trial_summary_runtime.py`
+- `tests/test_phase8_released_trial_summary_projection_runtime.py`
+- the exact governance/evidence paths.
 
 ## 6. Migration, rollback and activation
 

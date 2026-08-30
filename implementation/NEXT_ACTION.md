@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2_AWAITS_EXACT_SHA_ORDINARY — P8-08`
+`IN_PROGRESS_CHECKPOINT_3_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY — P8-08`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -15,11 +15,13 @@ ordinary `33320025714`. The P8-08 plan now freezes exact P7-07 immutable source
 reuse, a pure internal read-only seam and explicit unavailable external truth.
 Plan checkpoint `d560fdf2` passes ordinary `33320787112`; activation
 `c7571d1b` passes ordinary `33321510831`; checkpoint-1 product `495141f9`
-passes ordinary `33322318251`. The next action is one governance-only
-checkpoint-2 activation. Activation `1d8b13c9` passes ordinary `33323078013`;
-the exact Project + Trial Round-first P7-07 source adapter and focused test now
-await their own exact-SHA ordinary. The `DR-REC-009` event/consumer contract
-remains held.
+passes ordinary `33322318251`. Checkpoint-2 activation `1d8b13c9` passes
+ordinary `33323078013`, and the exact Project + Trial Round-first source
+adapter `3a9ab61c` passes ordinary `33323869238`. The sole next action is one
+governance-only checkpoint-3 activation. After its own ordinary PASS, extend
+only the existing fixed disposable P7-07 runtime with the internal read-only
+projection proof and one focused test. The `DR-REC-009` event/consumer
+contract remains held.
 
 The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,
 ordinary `33279778063` and Level 3 `33280319184`. The separate collector
