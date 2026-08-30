@@ -34,166 +34,47 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P8-07F-FACTS")
-        self.assertEqual(value["task_kind"], "delivery_infrastructure")
+        self.assertEqual(value["task_id"], "P8-08")
+        self.assertEqual(value["task_kind"], "product")
+        self.assertEqual(value["status"], "IN_PROGRESS_AUDIT")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P8-08")
-        self.assertIn(
-            "P8_07F_CURRENT_RUNTIME_GOVERNANCE_FCCF62FE_ORDINARY_33304191319_LEVEL_3_33304710306_PASSED",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "P8_07F_CURRENT_RUNTIME_GOVERNANCE_ZERO_SSH_ZERO_CONNECTOR_ZERO_SITE_ZERO_EXTERNAL_STATE",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "P8_07F_FACTS_EXPANDED_ACTIVATION_C879FBCE_ORDINARY_33306873040_AND_PARENT_REPAIR_085E9124_ORDINARY_33307715636_PASSED",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "P8_07F_FINAL_LOCALE_READER_77B4258F_ORDINARY_33312664804_AND_SINGLE_SYSTEM_LOCALE_READ_ACCEPTED",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "P8_07F_FACTS_RECONCILED_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_FINAL_LEVEL_3_PENDING",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "P8_07F_FINAL_LEVEL_3_33315047916_FAILED_ONLY_AT_ITEM_MIGRATED_LEGACY_OUTER_BOUNDARY_DIAGNOSTIC_68AE96BA_ORDINARY_33316649569_CONTROLLED_33317301069_PASS_SUCCESS_ZERO",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "CURRENT_FILE_OPERATION_REQUIRES_CACHED_EXACT_TRACKED_PATH_SAFE_MODE_HEAD_AND_CURRENT_GIT_OBJECT_SINGLE_FILE_DIFF_AND_PRIVATE_RECONSTRUCTION",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "CURRENT_SOURCE_OPERATION_REJECTS_SYMLINK_BINARY_RENAME_COPY_MODE_CHANGE_MULTI_PATH_DELETE_TRUNCATED_MALFORMED_OR_OVERSIZE_INPUT",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "FIXED_RUNTIME_METADATA_FAMILIES_ONLY_NO_CALLER_SELECTED_METHOD_DOCTYPE_FIELDS_FILTERS_ORDER_OR_PAGINATION",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "RUNTIME_METADATA_USES_FRAPPE_APPLICATION_LAYER_GET_LIST_EXACT_JSON_PAGE_200_MAX_25_AND_FAIL_CLOSED_SHAPE",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "RUNTIME_METADATA_OUTPUT_EXCLUDES_SCRIPT_TEXT_ENDPOINT_HEADERS_PRINCIPALS_SECRETS_AND_BUSINESS_ROWS",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "FIXED_SITE_FACT_FAMILIES_SYSTEM_LOCALE_AND_FILE_URL_SHAPES_USE_ONLY_FRAPPE_GET_VALUE_AND_GET_COUNT",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "CLIENT_SCRIPT_V15_FIELDS_EXCLUDE_NONEXISTENT_SCRIPT_TYPE_AND_HASH_SCRIPT_TEXT",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "CLIENT_SCRIPT_FIXED_PAGE_SIZE_20_MAX_25_PAGES_PRESERVES_RUNTIME_BYTE_CEILING",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "DOCTYPE_PARENT_READS_USE_ONLY_ACCEPTED_FIXED_INVENTORY_NAMES_AND_CHECKSUM_EXPLICIT_MISSING_PARENTS",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "SYSTEM_SETTINGS_SINGLE_DOCTYPE_GET_VALUE_HAS_NO_FILTER_AND_RETURNS_ONLY_EXACT_LOCALE_FIELDS",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "PROTECTED_MULTILINE_DOCTYPE_JSON_SCALARS_ARE_HASHED_NOT_EMITTED",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "USER_EXPANDED_RUNTIME_READ_AUTHORITY_DOES_NOT_REQUIRE_SQL_CONSOLE_OR_GENERIC_EXECUTE",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "ALL_PRODUCTION_READS_USE_FIXED_TRANSPORT_REMOTE_ALLOWLIST_REDACTION_PROVENANCE_CHECKSUM_BOUNDED_OUTPUT_AND_FAIL_CLOSED_STOPS",
-            value["frozen_invariants"],
-        )
-        self.assertIn(
-            "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_BLOCKS_COMPLETION_ON_UNRESOLVED_DRIFT",
-            value["frozen_invariants"],
-        )
-        self.assertEqual(
-            value["status"],
-            "IN_PROGRESS_P8_07F_FINAL_LEVEL_3_PENDING",
-        )
-        self.assertEqual(value["requirement_ids"], [])
-        self.assertIn(
-            "scripts/collect_erpnext_production_facts.py",
-            value["allowed_paths"],
-        )
-        self.assertIn(
-            "implementation/evidence/phase-8/p8-07f-current-runtime-governance-transition.md",
-            value["allowed_paths"],
-        )
+        self.assertEqual(value["authorized_next_task"], "P8-09")
+        self.assertEqual(value["requirement_ids"], ["FR-INT-015"])
         self.assertEqual(
             value["base_checkpoint"],
-            "fccf62feaba2d3ed092efcd06174f16f66193540",
+            "d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c",
         )
-        self.assertEqual(len(value["allowed_paths"]), 30)
+        for invariant in (
+            "P8_07F_FINAL_CHECKPOINT_D8ABA505_ORDINARY_33317964484_LEVEL_3_33318628754_ALL_SIX_JOBS_PASS",
+            "P8_07F_BOUNDED_COMPATIBILITY_RECONCILIATION_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_COMPLETE",
+            "P8_08_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_SEPARATE_AUDIT_PLAN_TRANSITION_ORDINARY_PASS",
+            "DR_REC_009_EXTERNAL_EVENT_PAYLOAD_REDACTION_CONSUMER_MAPPING_AND_RECEIPT_REMAIN_HELD",
+            "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
+        ):
+            self.assertIn(invariant, value["frozen_invariants"])
         self.assertEqual(
             set(value["allowed_paths"]),
             {
-                "docs/ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md",
-                "docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md",
-                "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
-                "docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md",
-                "docs/specification/SPEC_INDEX.md",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
                 "implementation/BLOCKERS.md",
                 "implementation/CURRENT_TASK.json",
-                "implementation/DECISION_LOG.md",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
-                "implementation/QUALITY_GATE.md",
-                "implementation/REQUIRED_INPUTS.md",
-                "implementation/REQUIREMENT_TRACEABILITY.csv",
-                "implementation/RISK_REGISTER.md",
-                "implementation/ROADMAP.md",
                 "implementation/phase-8-requirement-anchor.md",
-                "implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md",
-                "implementation/evidence/phase-8/p8-07f-current-runtime-governance-transition.md",
-                "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-plan.md",
                 "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md",
-                "scripts/collect_erpnext_production_facts.py",
-                "scripts/verify_item_publish_runtime.py",
-                "scripts/reconcile_v1_2_traceability.py",
-                "scripts/verify_v1_2_reconciliation.py",
-                "tests/test_erpnext_production_fact_collector.py",
+                "implementation/evidence/phase-8/p8-08-plan.md",
                 "tests/test_current_task_verifier.py",
-                "tests/test_phase8_item_publish_runtime_verifier.py",
                 "tests/test_v1_2_reconciliation.py",
             },
         )
-        self.assertNotIn("implementation/backlog.yaml", value["allowed_paths"])
+        self.assertEqual(len(value["allowed_paths"]), 11)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(
                 path.startswith(("apps/", "frontend/", "contracts/", ".github/"))
                 for path in value["allowed_paths"]
             )
-        )
-        self.assertNotIn("apps/erpnext/**", value["allowed_paths"])
-        affected_modules = {
-            module
-            for command in value["affected_checks"]["level_1"]
-            for module in command
-            if isinstance(module, str) and module.startswith("tests.")
-        }
-        self.assertEqual(
-            affected_modules,
-            {
-                "tests.test_erpnext_production_fact_collector",
-                "tests.test_current_task_verifier",
-                "tests.test_phase8_item_publish_runtime_verifier",
-                "tests.test_v1_2_reconciliation",
-            },
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
@@ -237,7 +118,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             validate_allowed_paths(["../*"], [])
         with self.assertRaisesRegex(CurrentTaskError, "outside"):
             validate_allowed_paths(
-                ["scripts/verify_current_task.py"],
+                ["implementation/evidence/phase-8/p8-08-plan.md"],
                 ["apps/npi_core/npi_core/trial/domain.py"],
             )
 

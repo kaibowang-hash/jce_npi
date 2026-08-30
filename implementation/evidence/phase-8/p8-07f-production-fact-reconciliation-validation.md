@@ -296,3 +296,22 @@ Python compilation, shell syntax, JSON/YAML parsing and `git diff --check` all
 pass. The task diff remains exact 10 governance/verifier paths, while product,
 contract, schema, workflow and production-state diff remain zero. Existing
 user working-tree changes remain unmodified and unstaged.
+
+## Final diagnostics-off release Gate
+
+Diagnostics-off exact checkpoint
+`d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c` passes ordinary
+`33317964484`: visual `99274761074`, secret `99274761113`, frontend
+`99274761122` and repository `99274761227` all pass.
+
+The sole final Level 3 `33318628754` passes secret `99276531908`, visual
+`99276531987`, repository `99276532009`, frontend `99276532019`, controlled
+preflight `99278115691` and cumulative runtime `99278148500`. The runtime
+result record, artifact upload and cleanup all pass. No production connection,
+restricted child output, business value, identity, message or stack was read.
+
+P8-07F is therefore `PASS_LEVEL_3`. Its bounded compatibility result remains
+product-zero and production-write-zero, and no evidence-backed LaunchFlow or
+ERPNext adjustment task exists. P8-08 audit may start. Production activation,
+Sandbox/UAT, unresolved business mappings and the final full release
+compatibility reconciliation remain separate Gates.

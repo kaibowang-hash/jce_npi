@@ -4,8 +4,9 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-`P8_07F_FINAL_LEVEL_3_PENDING` is the active scoped
-execution hold.
+There is no active global or P8-08 implementation blocker. P8-08 is active only
+for audit and plan freezing; product code remains unauthorized until the plan
+transition passes its own exact-SHA ordinary CI.
 
 The former collection blockers are closed. Exact SHA `77b4258f` passes
 ordinary `33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds,
@@ -16,10 +17,14 @@ publish migrated-legacy outer boundary after Bench/Site initialization. Raw
 and child output remain unread. Product-zero diagnostic checkpoint `68ae96b`
 passes ordinary `33316649569` and controlled `33317301069`; exact-39 emits
 zero safe tuples and no product repair is evidenced. Diagnostics are off. The
-current hold is one exact-SHA ordinary followed by one final Level 3. Database
+final diagnostics-off SHA `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c`
+passes ordinary `33317964484` and Level 3 `33318628754`; repository, frontend,
+secret, visual, controlled preflight and cumulative runtime all pass. P8-07F is
+complete. Database
 topology, service
 identity, business mappings, Sandbox/UAT and deployment remain production-
-activation or release holds, not P8-08 implementation blockers after PASS.
+activation or release holds, not P8-08 audit or bounded implementation
+blockers.
 P8-07 passes at exact final product SHA
 `edf89e79cd815cbde60e2940ae9d580479336d75`, ordinary CI `33277289693`
 and Level 3 `33277905251`; every base lane, controlled preflight and cumulative

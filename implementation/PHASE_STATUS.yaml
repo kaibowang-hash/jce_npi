@@ -3,14 +3,14 @@ overall_status: IN_PROGRESS
 current_phase: 8
 updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
-execution_hold: P8_07F_FINAL_LEVEL_3_PENDING
-current_task: P8-07F-FACTS
-current_task_status: IN_PROGRESS_P8_07F_FINAL_LEVEL_3_PENDING
-current_task_completed_stage: P8_07F_ALL_BOUNDED_FACTS_ACCEPTED_AND_COMPATIBILITY_RECONCILED
-current_task_next_stage: P8_07F_FINAL_LEVEL_3
-current_task_next_stage_status: AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_THEN_SINGLE_LEVEL_3
+execution_hold: NONE
+current_task: P8-08
+current_task_status: IN_PROGRESS_AUDIT
+current_task_completed_stage: P8_07F_PASS_LEVEL_3
+current_task_next_stage: P8_08_AUDIT_PLAN
+current_task_next_stage_status: ACTIVE_PRODUCT_CODE_UNAUTHORIZED
 resumed_product_task: P8-08
-resumed_product_task_status: BLOCKED_UNTIL_P8_07F_FACTS_RECONCILIATION_LEVEL_3_PASS
+resumed_product_task_status: IN_PROGRESS_AUDIT
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -76,7 +76,7 @@ scope_decisions:
     single_doctype_locale_attempt: SAFE_STOP_EMPTY_OBJECT_FROM_NAME_FILTER_NO_RESULT_ACCEPTED
     inventory_bound_parent_reader_private_state_removed: true
     runtime_only_metadata_status: ACCEPTED_ALL_FROZEN_FAMILIES_INCLUDING_SYSTEM_LOCALE
-    bounded_compatibility_status: PASS_LEVEL_3_PENDING
+    bounded_compatibility_status: PASS_LEVEL_3
     current_tracked_worktree_source_status: ACCEPTED_CURRENT_TRACKED_WORKTREE_STRUCTURAL_SUMMARIES_WITH_DIRTY_TREES_AS_CURRENT_SOURCE_TRUTH
     stopped_doctype_candidates_status: ACCEPTED_READ_ONLY_STRUCTURAL_SUMMARIES_UNRELATED_TO_EXACT_P8_TARGETS
     direct_sql_and_console_status: PROHIBITED
@@ -2691,7 +2691,7 @@ p8_07:
 p8_07f:
   task: P8-07F-FACTS
   next_task: P8-08
-  status: IN_PROGRESS_P8_07F_FINAL_LEVEL_3_PENDING
+  status: PASS_LEVEL_3
   phase: 8
   milestone: M7-07F
   task_kind: DELIVERY_INFRASTRUCTURE
@@ -2714,7 +2714,7 @@ p8_07f:
   runtime_site_confirmation: USER_CONFIRMED_PRIVATE_NOT_RECORDED
   bench_root_harness_repair_status: PASS
   tracked_path_harness_repair_status: PASS
-  accepted_production_facts: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING
+  accepted_production_facts: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION
   later_operations_invoked: FIXED_ALLOWLIST_BOUNDED_AND_CLOSED
   private_state_file_created: true
   private_state_file_removed: true
@@ -2725,7 +2725,7 @@ p8_07f:
   facts_activation_requires_transition_ordinary: PASS_33304191319
   facts_activation_requires_transition_level_3: PASS_33304710306
   facts_task_may_modify_product: false
-  p8_08_blocked_until_facts_gate: true
+  p8_08_blocked_until_facts_gate: false
   standing_read_only_authority_after_activation: true
   final_full_reconciliation_release_gate: REQUIRED
   compatibility_mode: CURRENT_DESIGN_DEFAULT_CORRECT_MINIMAL_ADJUSTMENT_ONLY
@@ -2795,7 +2795,15 @@ p8_07f:
   migrated_legacy_final_diagnostic_status: FROZEN_1_OF_1_REPAIR_ZERO_OF_1_FINAL_ZERO_OF_1
   remaining_collection_status: COMPLETE
   remaining_collection_families: []
-  facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING
+  facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3
+  diagnostics_off_final_checkpoint: d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c
+  diagnostics_off_final_ordinary: 33317964484
+  diagnostics_off_final_ordinary_jobs: {visual: 99274761074, secret_scan: 99274761113, frontend: 99274761122, repository: 99274761227}
+  diagnostics_off_final_level_3: 33318628754
+  diagnostics_off_final_level_3_jobs: {secret_scan: 99276531908, visual: 99276531987, repository: 99276532009, frontend: 99276532019, controlled_preflight: 99278115691, runtime: 99278148500}
+  diagnostics_off_final_result: PASS_ALL_SIX_JOBS
+  product_diff: ZERO
+  production_write_count: 0
   locale_reader_contract: SYSTEM_SETTINGS_SINGLE_DOCTYPE_FIXED_GET_VALUE_NO_FILTER_EXACT_LANGUAGE_TIME_ZONE_COUNTRY
   expanded_current_source_operation: CACHED_PATH_HEAD_CURRENT_GIT_OBJECT_SINGLE_FILE_DIFF_PRIVATE_RECONSTRUCTION
   expanded_runtime_metadata_operation: FIXED_FRAPPE_GET_LIST_FAMILIES_EXACT_JSON_PAGE_200_MAX_25
@@ -2808,6 +2816,27 @@ p8_07f:
     - docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md
     - docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md
     - docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md
+p8_08:
+  task: P8-08
+  next_task: P8-09
+  status: IN_PROGRESS_AUDIT
+  phase: 8
+  milestone: M7-08
+  task_kind: PRODUCT
+  requirements: [FR-INT-015]
+  predecessor_product_checkpoint: edf89e79cd815cbde60e2940ae9d580479336d75
+  p8_07f_gate_checkpoint: d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c
+  p8_07f_gate_ordinary: 33317964484
+  p8_07f_gate_level_3: 33318628754
+  product_code_authorized: false
+  audit_plan_status: ACTIVE
+  compatibility_mode: CURRENT_DESIGN_DEFAULT_CORRECT_NO_CHANGE_WITHOUT_PROVED_DIFFERENCE
+  exact_external_event_contract: HELD_DR_REC_009
+  production_contact_required_for_audit: false
+  evidence:
+    - implementation/phase-8-requirement-anchor.md
+    - implementation/evidence/phase-7/p7-07-validation.md
+    - implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -2834,5 +2863,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE], current_task: P8-07F-FACTS}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS], current_task: P8-08}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

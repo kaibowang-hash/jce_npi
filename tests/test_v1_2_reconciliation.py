@@ -751,7 +751,7 @@ class V12ReconciliationTests(unittest.TestCase):
             "facts_connection_requires_activation_ordinary_pass: true",
             phase_status,
         )
-        self.assertIn("p8_08_blocked_until_facts_gate: true", phase_status)
+        self.assertIn("p8_08_blocked_until_facts_gate: false", phase_status)
         self.assertIn("tracked_path_inventory_apps_accepted: 20", phase_status)
         self.assertIn("sensitive_preflight_stops: 2", phase_status)
         self.assertIn("private_state_removed: true", phase_status)
@@ -765,11 +765,14 @@ class V12ReconciliationTests(unittest.TestCase):
             phase_status,
         )
         self.assertIn(
-            "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3_PENDING",
+            "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3",
             phase_status,
         )
         self.assertIn(
-            "current_task: P8-07F-FACTS", phase_status
+            "current_task: P8-08", phase_status
+        )
+        self.assertIn(
+            "diagnostics_off_final_level_3: 33318628754", phase_status
         )
         self.assertIn(
             "current_tracked_worktree_source_status: ACCEPTED_CURRENT_TRACKED_WORKTREE_STRUCTURAL_SUMMARIES_WITH_DIRTY_TREES_AS_CURRENT_SOURCE_TRUTH",

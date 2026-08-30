@@ -1,22 +1,20 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P8_07F_FINAL_LEVEL_3_PENDING — P8-07F-FACTS`
+`IN_PROGRESS_AUDIT — P8-08`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
-Exact SHA `77b4258f3b086420e0ae7769bd95830bf9dabfaa` passes ordinary CI
-`33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds and removes
-private state. All bounded facts are now reconciled in one product-zero
-checkpoint. Do not reconnect or create another metadata-family commit.
-Checkpoint `fa27a8bf` passes ordinary `33314378471`, but Level 3
-`33315047916` fails only at the fixed Item publish migrated-legacy outer
-boundary. Product-zero diagnostic SHA `68ae96ba7f688197f9d7254852605fc12c20b52b`
-passes ordinary `33316649569` and Level 2 controlled `33317301069`; exact-39
-success emits zero safe tuples. Raw and child output remain unread, no product
-repair is evidenced and diagnostics are now off. The sole next action is one
-exact-SHA ordinary followed by one final Level 3. P8-08 remains held until it
-passes.
+P8-07F diagnostics-off exact SHA
+`d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c` passes ordinary CI
+`33317964484` and final Level 3 `33318628754`. All four ordinary-equivalent
+lanes, controlled preflight and cumulative runtime pass. The bounded production
+fact window is closed with private state removed, zero production mutation and
+no evidence-backed LaunchFlow adjustment. P8-08 is now the active audit-only
+task. Inspect the existing immutable Released Trial Summary source and freeze a
+separate read-only projection-seam plan; do not implement product code or invent
+the DR-REC-009 event/consumer contract before that plan's exact-SHA ordinary
+PASS.
 
 The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,
 ordinary `33279778063` and Level 3 `33280319184`. The separate collector

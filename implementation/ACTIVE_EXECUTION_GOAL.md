@@ -4,16 +4,14 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P8_07F_FINAL_LEVEL_3_PENDING — P8-07F-FACTS`
-- Authoritative P8-07F checkpoint: exact SHA `77b4258f` passes ordinary
-  `33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds, all accepted
-  fact families are reconciled, private state is removed and no further
-  production read is required. Exact checkpoint `fa27a8bf` passes ordinary
-  `33314378471`, but Level 3 `33315047916` fails only at the fixed Item publish
-  migrated-legacy outer boundary. Product-zero diagnostic checkpoint `68ae96b`
-  passes ordinary `33316649569` and controlled runtime `33317301069` with
-  exact-39 success-zero. Diagnostics are now off; the next action is one exact-
-  SHA ordinary followed by one final Level 3. P8-08 remains held until PASS.
+- Mode: `IN_PROGRESS_AUDIT — P8-08`
+- Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
+  ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
+  secret, governed visual, controlled preflight and cumulative runtime all
+  pass. The accepted production-fact window is closed, private state is absent,
+  product/contract diff is zero and production writes are zero. P8-08 audit is
+  active; product code remains unauthorized until its separate frozen plan
+  transition passes exact-SHA ordinary CI.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -24,8 +22,8 @@ Updated: `2026-08-30T00:00:00+07:00`
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `33304710306` (`PASS — LEVEL 3` at
-  `fccf62feaba2d3ed092efcd06174f16f66193540`; repository, frontend,
+  `33318628754` (`PASS — LEVEL 3` at
+  `d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c`; repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime)
 - Latest checkpoint exact-SHA CI:
   `33304191319` (`PASS` at

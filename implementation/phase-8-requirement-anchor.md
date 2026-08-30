@@ -1,12 +1,13 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-07 PASS; P8-07F FACTS RECONCILED; FINAL LEVEL 3 PENDING**
+Status: **IN PROGRESS — P8-07F PASS; P8-08 AUDIT ACTIVE**
 
 P8-07F accepted the bounded production compatibility facts without changing
 any requirement status, product code, contract or owner. Existing P8-01
 through P8-09 design remains the default-correct baseline; no concrete
-incompatibility was proved. P8-08 is next only after the consolidated P8-07F
-checkpoint passes exact-SHA ordinary CI and final Level 3. Production
+incompatibility was proved. Diagnostics-off checkpoint `d8aba505` passes
+ordinary `33317964484` and final Level 3 `33318628754`, so P8-08 audit is now
+active. Production
 activation and the final full-release read-only drift reconciliation remain
 separate mandatory Gates.
 
