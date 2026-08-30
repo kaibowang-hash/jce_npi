@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P8_07F_TRACKED_PATH_NUL_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
+`IN_PROGRESS_BLOCKED_P8_07F_SOURCE_DRIFT_AND_RUNTIME_METADATA_UNVERIFIED — P8-07F-FACTS`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -10,16 +10,21 @@ ordinary `33279778063` and Level 3 `33280319184`. The separate collector
 activation passes at `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` / ordinary
 `33281944546`.
 
-Fixed-status SHA `be03972abd13b60284a8f950eae7cdf7776781d7` and ordinary
-`33296694027` pass. Complete anonymized HEAD/status reads show clean Frappe,
-one ERPNext tracked drift and tracked drift in twelve of eighteen custom apps.
-`CUSTOM_APP_01/02` path structures were accepted, then the line parser rejected
-a legitimate `CUSTOM_APP_03` tracked path and stopped all later path/file reads.
-Current action is product-zero exact `git ls-files -z`, NUL-aware printable
-non-traversing parsing, focused/full validation and a new exact-SHA ordinary CI.
-Only after that PASS may path inventory resume. Existing LaunchFlow
-architecture/contracts remain default correct; production drift is held rather
-than silently treated as HEAD, and no adjustment task is authorized.
+NUL-framing SHA `acbd6882869a4a8c27eb653019080354055f74a8`
+and ordinary `33297909199` pass. All twenty anonymous path inventories are
+accepted. The bounded read then summarized only six clean custom apps and
+stopped two relevant DocType candidates at sensitive-content preflight. ERPNext
+plus twelve custom apps have tracked drift, and runtime-only metadata is not
+available through the frozen source-only allowlist. The private runtime state
+was deleted and the production-read window is closed.
+
+The sole next action is external: provide clean declared ERPNext/custom-app
+worktrees or an owner-sanitized checksummed drift/source bundle, plus a
+separately gated side-effect-free sanitized source for required runtime-only
+metadata and the two stopped DocType candidates. Do not weaken the scanner,
+expand the command allowlist, reconnect, or infer compatibility from dirty
+HEAD source. Existing LaunchFlow architecture/contracts remain default correct;
+no adjustment task is authorized and P8-08 remains blocked.
 
 Required branch:
 `codex/npi-v1.2-implementation`

@@ -744,6 +744,13 @@ class V12ReconciliationTests(unittest.TestCase):
             phase_status,
         )
         self.assertIn("p8_08_blocked_until_facts_gate: true", phase_status)
+        self.assertIn("tracked_path_inventory_apps_accepted: 20", phase_status)
+        self.assertIn("sensitive_preflight_stops: 2", phase_status)
+        self.assertIn("private_state_removed: true", phase_status)
+        self.assertIn(
+            "runtime_only_metadata_status: UNVERIFIED_REQUIRES_SEPARATE_GATE_OR_OWNER_SANITIZED_EVIDENCE",
+            phase_status,
+        )
         self.assertIn("FINAL_FULL_PRODUCTION", (ROOT / "implementation/CURRENT_TASK.json").read_text(encoding="utf-8"))
         self.assertIn("blocks `IMPLEMENTATION_COMPLETE`", quality_gate)
 

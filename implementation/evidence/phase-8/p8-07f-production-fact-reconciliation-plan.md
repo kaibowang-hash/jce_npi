@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Controller tasks: `P8-07F-GOVERNANCE` then `P8-07F-FACTS`
 
-Status: **FACTS ACTIVATION PASS; COLLECTION STOPPED FAIL CLOSED; P8-08 HELD**
+Status: **BOUNDED COLLECTION CLOSED; EXTERNAL SOURCE/RUNTIME EVIDENCE BLOCKED; P8-08 HELD**
 
 ## Purpose and baseline
 
@@ -54,6 +54,15 @@ output, so each collector invocation stopped without a later operation. No
 private state file was created. Production versions,
 apps, metadata, code and configuration therefore remain `UNVERIFIED`; P8-08 is
 held and no product adjustment is authorized.
+
+The subsequent fixed-root, status-token and NUL-framing repairs passed their
+own exact-SHA ordinary CIs. At the final bounded epoch, Frappe `15.79.0`,
+ERPNext `15.77.0`, twenty installed apps, all anonymous HEAD/status rows and all
+twenty tracked-path inventories were accepted. Six clean custom apps yielded
+bounded source summaries. ERPNext plus twelve custom apps have tracked drift;
+two relevant DocType candidates stopped at sensitive-content preflight; and
+runtime-only metadata remains outside this plan's source-only operations. The
+private state was deleted and the collection window is closed.
 
 ## Fixed transport contract
 
@@ -121,11 +130,11 @@ Complete anonymized HEAD/status inventory is accepted; Frappe is clean,
 ERPNext has one tracked drift and twelve of eighteen custom apps have tracked
 drift. The line-framed tracked-path parser then stopped on one legitimate
 `CUSTOM_APP_03` path after accepting bounded structures for the first two
-custom apps. The current exact-fourteen repair changes only that command to
+custom apps. The exact-fourteen repair changed only that command to
 `git ls-files -z`, permits NUL bytes only for this operation and validates
 ordered unique UTF-8 printable non-traversing paths. File operations retain
-their stricter path gate and remain dormant. A new exact-SHA ordinary PASS is
-mandatory before path reads resume.
+their stricter path gate. It passed at `acbd6882` / ordinary `33297909199`
+before the final bounded reads described above.
 
 ## Fail-closed and redaction contract
 
@@ -217,3 +226,14 @@ all further operations, retain only already-redacted provenance and mark
 affected facts stale/unverified. Because no remote mutation is authorized,
 there is no production rollback command. Any later implementation uses its own
 reviewed rollback or forward-fix plan.
+
+## Closed read and recovery evidence
+
+Do not resume SSH under this atomic task. The only acceptable recovery inputs
+are clean declared production worktrees or an owner-sanitized checksummed
+source/drift bundle, sanitized owner evidence for the two stopped DocType
+candidates, and a separately governed side-effect-free sanitized source for
+runtime-only metadata. Reconciliation must reuse version/HEAD/status/path
+checksums first. It must not weaken content scanning or treat committed HEAD as
+runtime truth for a dirty app. Until those inputs exist, no `DIRECT_MATCH`,
+adjustment task, facts-task Level 3 or P8-08 activation is allowed.

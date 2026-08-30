@@ -1,6 +1,6 @@
 # LaunchFlow–ERPNext Compatibility Blueprint
 
-Status: **BASELINE RECORDED — PRODUCTION SIDE UNVERIFIED**
+Status: **BASELINE RECORDED — PRODUCTION PARTIALLY OBSERVED; TARGET BINDINGS UNVERIFIED**
 
 Date: `2026-08-30`
 
@@ -10,12 +10,24 @@ This document records how LaunchFlow already integrates with ERPNext and the
 minimum facts needed to decide whether the production installation matches.
 It is not a redesign, implementation plan or production-change authorization.
 
-Because the first allowlisted production operation produced no accepted
-output, every ERP-actual column is `UNVERIFIED`. The closed compatibility
-vocabulary has no evidence-free match state, so each row is
+The bounded read-only collection accepted Frappe `15.79.0`, ERPNext `15.77.0`,
+twenty installed apps, all anonymous app HEAD/status rows and all tracked-path
+inventories. ERPNext and twelve of eighteen custom apps have tracked drift, so
+their committed HEAD cannot stand in for the runtime tree. Six clean custom
+apps yielded bounded hooks/API/fixture/module/patch summaries; none proved an
+exact P8-01 through P8-09 target binding. Two relevant DocType candidates
+stopped at sensitive-content preflight, and runtime-only metadata remains
+outside the frozen source-only allowlist. Therefore each exact target binding
+remains `UNVERIFIED`. The closed compatibility
+vocabulary has no evidence-free match state, so each row remains
 `BUSINESS_DECISION_REQUIRED — FACT/ACCESS ONLY` with `NO_CHANGE` pending
 evidence. This does not assert a business conflict. No adjustment task may be
 created until one concrete incompatibility is proven.
+
+The collection was closed after private mode-0600 state cleanup. No endpoint,
+host, user, key, Site, custom-app identity, raw path, source value or business
+record is retained here. Proven versions and anonymous structural checksums are
+recorded in `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`.
 
 ## P8-01 through P8-09 compatibility matrix
 
@@ -60,3 +72,9 @@ checksum, owner, impact and remediation. Required `UNVERIFIED` or unresolved
 drift blocks `IMPLEMENTATION_COMPLETE` and production-ready. The same
 minimal-adjustment hierarchy applies; the review cannot authorize or perform a
 production change.
+
+The present P8-07F Gate cannot pass: dirty tracked production trees,
+runtime-only metadata and two sensitive-preflight DocType candidates leave
+required bindings unverified. P8-08 therefore remains blocked. This is a fact
+evidence hold, not a product defect and not authority to redesign or adjust
+either system.

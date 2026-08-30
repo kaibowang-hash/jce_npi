@@ -1,21 +1,23 @@
 # Required External Inputs
 
-Status: **OPEN — P8-07F HEAD/STATUS ACCEPTED; SOURCE FACTS INCOMPLETE**
+Status: **OPEN — P8-07F BOUNDED READ CLOSED; SANITIZED SOURCE/RUNTIME FACTS REQUIRED**
 Updated: 2026-08-30
 
 This is the single complete request for external facts that are not present in
 the repository. Supply one dated, owner-identified, sanitized, read-only bundle
 rather than sending credentials or incremental production extracts. The
-P8-07F may instead collect only the same necessary facts through its fixed
+P8-07F collected only the safely observable subset through its fixed
 `JCE-Core` read-only boundary. Governance and activation Gates passed. After
 two earlier no-output attempts, fixed-root SHA `9ab9bd5199e5521f3a72e701c3fa4338d6e866db`
 and ordinary `33295753975` enabled an accepted sanitized Bench/Site discovery.
-The status-token repair passes at `be03972a` / ordinary `33296694027` and
-complete anonymized HEAD/status facts are accepted. Path/source facts remain
-incomplete because the line parser stopped on a legitimate tracked path in
-`CUSTOM_APP_03`; no later path/file read ran. The NUL-framing repair must pass
-exact-SHA ordinary CI before those reads resume. ERPNext and twelve of eighteen
+The status-token repair passes at `be03972a` / ordinary `33296694027`. The
+NUL-framing repair passes at `acbd6882` / ordinary `33297909199`; complete
+anonymized HEAD/status and all twenty path inventories are accepted. Six clean
+custom apps yielded bounded source summaries. ERPNext and twelve of eighteen
 custom apps have tracked drift, so their HEAD content is not runtime truth.
+Two relevant DocType candidates stopped at sensitive-content preflight, and
+runtime-only metadata remains outside the frozen source-only allowlist. The
+private state is deleted and this production-read window is closed.
 Never provide or record credentials,
 endpoint/host/user/key values, secrets or unrelated business records.
 
@@ -24,20 +26,24 @@ The acceptance/status matrix for these inputs is
 request and contains no production values. This file remains the sole source
 for requesting, receiving and recording external fact provenance.
 
-Before asking again or connecting, check
+Before supplying anything, check
 `docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md`. It now contains the accepted
-version, installed-app and anonymized HEAD/status baseline. Reuse that fresh
-inventory and resume only the missing application metadata after the
-tracked-path NUL-framing repair passes a new exact-SHA ordinary CI. Record task
-ID, purpose, timestamp/timezone, operation ID, redacted source, version/
-checksum, finding, unknown and contract/ownership impact. Stop on permission,
-version, output-shape, sensitive-content, allowlist or write-boundary drift.
+version, installed-app, anonymized HEAD/status and tracked-path baseline. Do not
+repeat or expand SSH collection. The missing evidence is: clean declared
+worktrees or an owner-sanitized checksummed drift/source bundle; sanitized
+owner evidence for the two stopped DocType candidates; and a separately gated,
+side-effect-free sanitized source for required runtime-only metadata. Record
+task ID, purpose, timestamp/timezone, redacted source, version/checksum,
+finding, unknown and contract/ownership impact. Never provide credentials or
+raw private production values.
 
 Current provenance: task `P8-07F-FACTS`; source
 `JCE_CORE_PRODUCTION_REDACTED`; fixed-root SHA `9ab9bd51`; status-token SHA
-`be03972a`; ordinary `33296694027`; accepted checksum-confirming discovery time
-`2026-08-30T06:35:13Z`; operations `ERP_VERSION`, `INSTALLED_APPS`, `APP_HEAD`,
-`APP_STATUS` and three bounded `APP_TRACKED_PATHS`; Bench checksum
+`be03972a`; NUL-framing SHA `acbd6882`; ordinary `33297909199`; final accepted
+checksum-confirming window `2026-08-30T07:07:57Z` through
+`2026-08-30T07:14:52Z`; operations `ERP_VERSION`, `INSTALLED_APPS`, `APP_HEAD`,
+`APP_STATUS`, all twenty `APP_TRACKED_PATHS` and a bounded clean-app subset of
+`APP_FILE_HASH`/`APP_FILE_READ`; Bench checksum
 `sha256:bc5f2b2653647c21c6cee66e357951831f4e1e512ca9bcb641f8b017fef9b815`;
 Site-inventory checksum
 `sha256:cec7d8128c63e6b79bc6fcf9da558378d2c134a9f96a9a5a8b36a585b319c0fd`.
@@ -46,8 +52,10 @@ The Site value remains private and is not persisted here.
 The user has since confirmed the default relative Bench root `frappe-bench`
 and supplied the task-scoped runtime Site privately. The Site value is not
 repeated or persisted here. Fixed-root discovery and HEAD/status reads pass.
-The next path read remains gated by the NUL-framing repair and its exact-SHA
-ordinary; the repair adds no operation or authority.
+The path repair and bounded read are complete. The standing authorization does
+not permit weakening the sensitive scanner, reading dirty worktrees as HEAD,
+or inventing a new runtime query. A separately governed evidence source is now
+required.
 
 ## 1. Current ERPNext reconciliation package
 

@@ -79,6 +79,18 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "P8_07F_TRACKED_PATH_NUL_REPAIR_ACBD6882869A4A8C27EB653019080354055F74A8_ORDINARY_33297909199_PASSED",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_CLEAN_APP_SOURCE_PARTIAL_TWO_SENSITIVE_PREFLIGHT_STOPS_NO_RAW_VALUE",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
+            "P8_07F_PRIVATE_RUNTIME_STATE_REMOVED_AFTER_BOUNDED_COLLECTION",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "ONLY_ERP_VERSION_INSTALLED_APPS_APP_HEAD_APP_STATUS_APP_TRACKED_PATHS_APP_FILE_HASH_APP_FILE_READ",
             value["frozen_invariants"],
         )
@@ -88,7 +100,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P8_07F_TRACKED_PATH_NUL_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_BLOCKED_P8_07F_SOURCE_DRIFT_AND_RUNTIME_METADATA_UNVERIFIED",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

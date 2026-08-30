@@ -113,11 +113,11 @@ and overrides. The next `APP_TRACKED_PATHS` result stopped locally because its
 line parser could not safely represent a legitimate path. The raw path was not
 read, displayed or committed. No later path/file operation ran.
 
-The current exact-fourteen candidate changes only `APP_TRACKED_PATHS` to exact
+The exact-fourteen candidate changed only `APP_TRACKED_PATHS` to exact
 `git ls-files -z` and a NUL-aware ordered, unique, UTF-8, printable,
 non-traversing parser. NUL is accepted for no other operation; file reads keep
-the stricter path gate. Production path/file operations remain prohibited
-until this candidate passes exact-SHA ordinary CI.
+the stricter path gate. Production path/file operations remained prohibited
+until its accepted exact-SHA ordinary CI `33297909199`.
 
 Tracked-path repair Level 1 passes in a clean linked worktree: collector and
 current-task focused tests `17/17`; collector/current/reconciliation `49/49`;
@@ -127,7 +127,8 @@ compilation; all shell syntax; JSON/YAML/CSV parsing; and diff/security hygiene.
 The exact fourteen paths are accepted and an unauthorized fifteenth is
 rejected. Product, contracts, frontend and workflow paths have zero diff; the
 private Site value is absent; no SSH, ERP connector or production operation ran
-during validation.
+during validation. Its later governed production evidence is recorded in the
+Gate conclusion below.
 
 ## Compatibility result
 
@@ -157,12 +158,38 @@ unchanged.
 - `docs/LAUNCHFLOW_ERPNEXT_COMPATIBILITY_GAP_DECISIONS.md` records the access/
   fact gaps, no-change decisions and escalation rule.
 
+## Bounded-read checkpoint Level 1
+
+The final exact sixteen documentation/governance/test paths pass in a clean
+linked worktree: collector/current/reconciliation focused tests `49/49`, full
+repository Python `2670/2670`, collector self-check, current-task verification,
+V1.2 reconciliation, repository verification, prototype-approval and governed
+visual-baseline checks, Python compilation, shell syntax, JSON/CSV parsing,
+security scans and diff hygiene. The exact sixteen paths are accepted and an
+unauthorized seventeenth is rejected. `apps/`, `contracts/`, `frontend/` and
+`.github/` have zero diff. The working-tree M9 deferral and identity/permission
+ownership documentation changes remain unstaged and are not part of this
+checkpoint.
+
 ## Gate conclusion
 
 P8-07F is not complete and no facts-task Level 3 is dispatched. Version/Site
-discovery and complete anonymized HEAD/status facts are accepted, while all
-unobserved application/runtime metadata remains explicitly unverified. The
-task is held at the local tracked-path NUL-framing boundary, P8-08 remains
-blocked, and no path/file operation resumes until the exact repair passes
-ordinary CI. Complete fact collection and final reconciliation must then pass
-their own exact-SHA ordinary and applicable Gate.
+discovery, complete anonymized HEAD/status facts and all twenty tracked-path
+inventories are accepted. The NUL-framing repair passes at
+`acbd6882869a4a8c27eb653019080354055f74a8` / ordinary `33297909199` with
+repository `99220637261`, visual `99220637358`, frontend `99220637376` and
+secret `99220637391` all passing.
+
+The final bounded read window ran from `2026-08-30T07:07:57Z` through
+`2026-08-30T07:14:52Z`. It summarized only six clean custom apps. ERPNext and
+twelve custom apps have tracked drift; two relevant DocType candidates stopped
+at sensitive-content preflight; runtime-only metadata remains unavailable
+through the frozen source operations. No raw path, source, field, value,
+private identity or Site was emitted, and private mode-0600 state was deleted.
+
+No P8 target binding or incompatibility is proved. P8-07F is held on external
+sanitized source/runtime evidence, P8-08 remains blocked, and neither a Level 3
+nor an adjustment task is authorized. Recovery requires clean declared
+worktrees or an owner-sanitized checksummed source/drift bundle, sanitized
+evidence for the stopped candidates and a separately gated side-effect-free
+runtime-metadata source.

@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P8_07F_TRACKED_PATH_NUL_HARNESS_REPAIR_AWAITS_EXACT_SHA_ORDINARY — P8-07F-FACTS`
+- Mode: `IN_PROGRESS_BLOCKED_P8_07F_SOURCE_DRIFT_AND_RUNTIME_METADATA_UNVERIFIED — P8-07F-FACTS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -41,6 +41,13 @@ Updated: `2026-08-30T00:00:00+07:00`
   eighteen anonymous custom apps have tracked drift. The first two custom apps
   yielded bounded path structure, then `CUSTOM_APP_03` exposed a line-parser
   path-shape boundary. No later path/file read ran.
+- P8-07F NUL-framing and bounded-read checkpoint:
+  `acbd6882869a4a8c27eb653019080354055f74a8` (`PASS`; ordinary CI
+  `33297909199`). All twenty anonymous tracked-path inventories are accepted.
+  Only six clean custom apps were source-summarized. ERPNext plus twelve custom
+  apps remain dirty runtime trees; two relevant DocType candidates stopped at
+  sensitive-content preflight; runtime-only metadata is outside the fixed
+  source allowlist. Private mode-0600 state was deleted after collection.
 - Latest governance closeout checkpoint:
   `d39b24e4169d6116ab0721440b1f7dc01b599c96` (`PASS`; ordinary CI
   `33134622237`; P8-06 closeout and P8-07 audit activation)
@@ -61,12 +68,13 @@ Updated: `2026-08-30T00:00:00+07:00`
   ordinary CI `33204451677`; repository `98961818348`, frontend
   `98961818460`, secret `98961818358` and governed visual `98961818084` pass;
   controlled lanes correctly skipped)
-- Active atomic scope: `P8-07F-FACTS` has accepted fixed-root discovery and
-  complete anonymized HEAD/status counts. The only active repair changes path
-  framing to exact `git ls-files -z` and a closed NUL-aware parser; file reads
-  remain dormant. A new exact-SHA ordinary PASS is mandatory before path reads
-  resume. The runtime Site stays private. P8-08 remains inactive until accepted
-  facts and the facts task Level 3 PASS.
+- Active atomic scope: `P8-07F-FACTS` has closed its bounded production-read
+  window. Accepted facts are recorded without private identities or values.
+  Required exact target bindings remain unverified because dirty runtime source,
+  runtime-only metadata and two sensitive-preflight DocType candidates cannot
+  be promoted within the frozen boundary. No more SSH read, allowlist expansion
+  or product adjustment is authorized. P8-08 remains inactive pending external
+  sanitized evidence and a later P8-07F completion Gate.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

@@ -8955,3 +8955,28 @@ repeat or rewrite it merely to restore context. See
   six operations and file reads retain their stricter gate. Require a new
   exact-SHA ordinary PASS before path inventory resumes. Product, contracts,
   ownership, frontend, workflow and production write authority remain zero.
+
+### P8-07F bounded production read closed; external evidence hold
+
+- The current marker is exactly `P8-07F bounded read closed; source drift and runtime metadata unverified; P8-08 held`.
+- NUL-framing repair exact SHA
+  `acbd6882869a4a8c27eb653019080354055f74a8` passes ordinary CI
+  `33297909199`: repository `99220637261`, visual `99220637358`, frontend
+  `99220637376` and secret `99220637391` all pass.
+- Checksum-first discovery remained unchanged. All twenty anonymous
+  `APP_TRACKED_PATHS` inventories completed. Bounded source summaries ran only
+  for six clean custom apps; no exact P8-01 through P8-09 target contract was
+  proved. ERPNext and twelve custom apps remain dirty runtime trees, so HEAD
+  source is not accepted as runtime truth.
+- Two relevant DocType candidates stopped at sensitive-content preflight. No
+  raw path, source, field, value, private identity or Site was emitted. All
+  later DocType reads stopped and the private mode-0600 state was deleted.
+- The production-read window is closed. Do not reconnect, widen the seven-op
+  allowlist, weaken the scanner or use console/SQL/config/runtime commands.
+  Recovery requires clean declared worktrees or an owner-sanitized checksummed
+  drift/source bundle, sanitized evidence for the stopped candidates, and a
+  separately gated side-effect-free source for required runtime-only metadata.
+- No compatibility difference or product adjustment is proved. Current
+  LaunchFlow architecture/contracts remain default correct, every affected row
+  remains `NO_CHANGE`, the P8-07F Level 3 is not dispatched and P8-08 stays
+  blocked.
