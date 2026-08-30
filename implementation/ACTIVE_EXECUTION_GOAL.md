@@ -4,7 +4,7 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY — P8-09`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -39,9 +39,10 @@ Updated: `2026-08-31T00:00:00+07:00`
   projection activation and `DR-REC-009` remain held. Governance closeout
   `45f6a4d5` passes ordinary `33332397724`. P8-09 audit freezes the exact
   `Core.png` hash, approved `JCE Core` accessible/text identity and the existing
-  display-brand plus `SourceSystemIdentity` seams. Product code remains
-  unauthorized until this plan and a separate activation transition pass
-  exact-SHA ordinary CI.
+  display-brand plus `SourceSystemIdentity` seams. Plan checkpoint `5c6793b3`
+  passes ordinary `33333259174`. The exact twenty-four-path checkpoint-1
+  activation is now pending its own ordinary CI; product code remains
+  unauthorized before that PASS.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -56,8 +57,8 @@ Updated: `2026-08-31T00:00:00+07:00`
   `1e0f3facfa31f382b469df4b8084a3c64231674b`; repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime)
 - Latest checkpoint exact-SHA CI:
-  `33332397724` (`PASS` at
-  `45f6a4d5654608fa22c968d9b22e233b8af80852`; P8-08 governance closeout,
+  `33333259174` (`PASS` at
+  `5c6793b3406ded8257b927ad89fbd9dba67bab4c`; P8-09 audit plan,
   repository, frontend, governed visual and secret lanes all pass)
 - P8-07F facts activation checkpoint:
   `c8d3b3c0e9fd3f8d92a1679713ef8afc0157ff20` (`PASS`; ordinary CI

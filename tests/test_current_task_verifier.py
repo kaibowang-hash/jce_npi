@@ -38,26 +38,29 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY",
+            "IN_PROGRESS_CHECKPOINT_1_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-00")
         self.assertEqual(value["requirement_ids"], ["FR-BR-002"])
         self.assertEqual(
             value["base_checkpoint"],
-            "45f6a4d5654608fa22c968d9b22e233b8af80852",
+            "5c6793b3406ded8257b927ad89fbd9dba67bab4c",
         )
         for invariant in (
             "P8_08_FINAL_CHECKPOINT_1E0F3FAC_ORDINARY_33330200775_LEVEL_3_33330886346_ALL_SIX_JOBS_PASS",
             "P8_08_GOVERNANCE_CLOSEOUT_45F6A4D5_ORDINARY_33332397724_ALL_FOUR_JOBS_PASS",
+            "P8_09_AUDIT_PLAN_5C6793B3_ORDINARY_33333259174_ALL_FOUR_JOBS_PASS",
             "P8_08_INTERNAL_READ_ONLY_RELEASED_SUMMARY_PROJECTION_SEAM_TECHNICAL_PASS",
             "P8_08_REUSES_P7_07_EXACT_IMMUTABLE_PROJECT_TRIAL_ROUND_SOURCE",
             "P8_08_EXTERNAL_PROJECTION_REMAINS_EXPLICITLY_UNAVAILABLE_EXTERNAL_CONTRACT_HELD",
             "P8_09_PRESENTATION_ONLY_APPROVED_JCE_CORE_TEXT_AND_EXACT_CORE_PNG",
             "ERPNEXT_TECHNICAL_CODE_REMAINS_STABLE_IN_API_EVENT_SCHEMA_PERSISTENCE_AND_ROUTING",
-            "P8_09_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_THIS_AUDIT_PLAN_EXACT_SHA_ORDINARY_AND_SEPARATE_ACTIVATION_PASS",
+            "P8_09_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_CHECKPOINT_1_ACTIVATION_EXACT_SHA_ORDINARY_PASS",
             "P8_09_REUSES_EXISTING_DISPLAY_BRAND_AND_SOURCE_SYSTEM_IDENTITY_SEAMS_WITHOUT_GENERALIZATION",
             "P8_09_EXACT_CORE_PNG_SHA256_0C7182882022CF190925C90F0004C77AACA4DD513B86CCD0F23EFB30171E0E42",
+            "P8_09_CHECKPOINT_1_EXACT_TWENTY_FOUR_PRODUCT_TEST_VISUAL_AND_GOVERNANCE_PATHS",
+            "P8_09_EXACT_FOUR_NEW_LINUX_VISUAL_BASELINES_NO_EXISTING_BASELINE_REWRITE",
             "DR_REC_009_EXTERNAL_EVENT_PAYLOAD_REDACTION_CONSUMER_MAPPING_AND_RECEIPT_REMAIN_HELD",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
@@ -65,25 +68,48 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(
             set(value["allowed_paths"]),
             {
+                "apps/npi_core/npi_core/translations/zh-TW.csv",
+                "apps/npi_core/npi_core/translations/zh.csv",
+                "contracts/terminology-allowlist.yaml",
+                "frontend/scripts/verify-display-brand.mjs",
+                "frontend/src/components/primitives.tsx",
+                "frontend/src/components/worklist.tsx",
+                "frontend/src/generated/catalogs.ts",
+                "frontend/src/i18n/copy.ts",
+                "frontend/src/styles/app.css",
+                "frontend/src/ui-adapters/display-brand.tsx",
+                "frontend/tests/e2e/display-brand.spec.ts",
+                "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-dark-en-1440x900-100-linux.png",
+                "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-en-1366x768-100-linux.png",
+                "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-zh-1440x900-125-linux.png",
+                "frontend/tests/e2e/display-brand.spec.ts-snapshots/p8-09-jce-core-identity-zh-TW-1920x1080-150-linux.png",
+                "frontend/tests/unit/display-brand.test.tsx",
+                "frontend/tests/unit/formatters-and-copy.test.ts",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
-                "implementation/BLOCKERS.md",
                 "implementation/CURRENT_TASK.json",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
-                "implementation/phase-8-requirement-anchor.md",
                 "implementation/evidence/phase-8/p8-09-plan.md",
                 "tests/test_current_task_verifier.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 9)
+        self.assertEqual(len(value["allowed_paths"]), 24)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
-            any(path.startswith(("frontend/", "contracts/", ".github/")) for path in value["allowed_paths"])
+            any(path.startswith(".github/") for path in value["allowed_paths"])
         )
         self.assertEqual(
             sum(path.startswith("apps/") for path in value["allowed_paths"]),
-            0,
+            2,
+        )
+        self.assertEqual(
+            sum(path.startswith("frontend/") for path in value["allowed_paths"]),
+            14,
+        )
+        self.assertEqual(
+            sum(path.startswith("contracts/") for path in value["allowed_paths"]),
+            1,
         )
         self.assertEqual(
             sum(path.startswith("scripts/") for path in value["allowed_paths"]),

@@ -9516,3 +9516,26 @@ repeat or rewrite it merely to restore context. See
   operations, `DR-REC-009`, Sandbox/UAT, M9-04/M9-05 real pilots and user-owned
   dirty/untracked files remain outside this task.
 - Controller marker: `P8-09 audit plan awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 checkpoint 1 activation awaits exact-SHA ordinary CI
+
+- P8-09 audit-plan exact SHA
+  `5c6793b3406ded8257b927ad89fbd9dba67bab4c` passes ordinary CI
+  `33333259174`; repository `99315542644`, governed visual `99315542679`,
+  frontend `99315542699` and secret `99315542712` all pass.
+- Activate exactly twenty-four paths: seven governance/controller paths,
+  thirteen adapter/localization/verifier/test paths and four new exact Linux
+  visual baselines. No existing visual baseline, backend integration path,
+  technical contract or source asset is authorized for change.
+- Product authorization is conditional and not yet effective. Require this
+  activation commit's own exact-SHA ordinary PASS before editing any product,
+  translation, verifier, test or snapshot path.
+- The bounded implementation must route stable `ERPNEXT` identity through the
+  existing `SourceSystemIdentity` and display-brand adapter, emit exact
+  `Core.png` bytes once and expose exact `JCE Core` accessible/text fallback.
+  It must preserve the five LaunchFlow assets and every technical `ERPNEXT`
+  value.
+- Production ERPNext/JCE contact, external behavior, schema, persistence,
+  permissions, ownership, routing, redesign, generalized abstraction and
+  user-owned dirty/untracked files remain prohibited.
+- Controller marker: `P8-09 checkpoint 1 activation awaits exact-SHA ordinary CI`.

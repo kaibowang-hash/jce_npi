@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **AUDIT PLAN AWAITS EXACT-SHA ORDINARY CI**
+Status: **AUDIT PLAN PASS — CHECKPOINT-1 ACTIVATION AWAITS EXACT-SHA ORDINARY CI**
 
 Audit date: 2026-08-31
 
@@ -20,6 +20,15 @@ final Level 3 `33330886346`, governance closeout
 Product-code authorization: **false until this plan's exact-SHA ordinary CI
 passes and a separate activation transition is committed and passes its own
 exact-SHA ordinary CI**.
+
+Audit-plan checkpoint: `5c6793b3406ded8257b927ad89fbd9dba67bab4c`
+
+Audit-plan ordinary CI: `33333259174` (**PASS**) — repository
+`99315542644`, governed visual `99315542679`, frontend `99315542699` and
+secret `99315542712`; controlled lanes correctly skipped.
+
+Checkpoint-1 product paths remain conditional on this separate activation
+commit's exact-SHA ordinary PASS.
 
 ## 1. Audit conclusion
 
