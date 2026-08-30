@@ -3,24 +3,24 @@
   "task_id": "P8-08",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY",
+  "status": "IN_PROGRESS_CHECKPOINT_1_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-09",
-  "base_checkpoint": "216ac60480d4af2456b1649626ca23131f886048",
+  "base_checkpoint": "d560fdf218f415a14b6cf5bef0baa436da4725cc",
   "predecessor_product_checkpoint": "edf89e79cd815cbde60e2940ae9d580479336d75",
   "requirement_ids": [
     "FR-INT-015"
   ],
   "scope": [
-    "Accept P8-07F governance closeout exact SHA 216ac60480d4af2456b1649626ca23131f886048 only with exact ordinary CI 33320025714 passing repository, frontend, secret and governed visual lanes.",
-    "Freeze the P8-08 plan around the existing immutable P7-07 Released Trial Summary schemas, source manifest, presentation projection and redaction manifest; do not duplicate or redesign that domain.",
-    "Treat the accepted P8-07F Mold Trial Report fact as a future CONFIG_OR_MAPPING_ONLY source candidate with NO_CHANGE; it is not an approved external contract or activation profile.",
-    "Authorize only a later internal read-only source descriptor and adapter seam that separates exact NPI source availability from external projection availability and defaults the latter to unavailable.",
+    "Accept the frozen P8-08 audit plan exact SHA d560fdf218f415a14b6cf5bef0baa436da4725cc only with ordinary CI 33320787112 passing frontend, visual, repository and secret lanes.",
+    "Activate checkpoint 1 only for the exact pure released_summary_projection package and focused domain test paths frozen in the plan.",
+    "Implement a closed exact P7-07 source descriptor, disabled configuration and unavailable external-projection adapter seam with no Frappe persistence, route, hook, event, queue or network.",
+    "Keep source current/unavailable/conflict truth separate from external projection unavailable truth; never fabricate formal external success.",
     "Keep exact external event identity, payload version, redaction/routing, ERP/JCE consumer mapping, receipt and production activation held by DR-REC-009.",
-    "Require this audit-plan commit to pass exact-SHA ordinary CI before a separate checkpoint-1 transition may authorize its frozen product paths."
+    "Do not edit product paths until this activation commit itself passes exact-SHA ordinary CI."
   ],
   "non_scope": [
-    "Any P8-08 product implementation before this audit plan passes exact-SHA ordinary CI and a separate checkpoint-1 controller transition authorizes exact paths; product_code_authorized remains false.",
+    "Any P8-08 product implementation before this activation commit passes exact-SHA ordinary CI; product_code_authorized remains conditional and not yet effective.",
     "Any guessed external event name, payload version, target method, endpoint, DocType, field, service principal, permission, receipt, success state or production routing under DR-REC-009.",
     "Any production ERPNext/JCE write, target call, replay, reconciliation, cross-database access, generic DocType writer, browser-direct ERP access, dual-master field or Mock/HTTP fake success.",
     "Any redesign, refactor, rebuild, interface rename, domain merge or split, workflow rewrite, technology replacement, permission-model rewrite, generalized abstraction or nearby optimization.",
@@ -30,6 +30,7 @@
   "frozen_invariants": [
     "P8_07F_FINAL_CHECKPOINT_D8ABA505_ORDINARY_33317964484_LEVEL_3_33318628754_ALL_SIX_JOBS_PASS",
     "P8_07F_GOVERNANCE_CLOSEOUT_216AC604_ORDINARY_33320025714_ALL_FOUR_JOBS_PASS",
+    "P8_08_AUDIT_PLAN_D560FDF2_ORDINARY_33320787112_ALL_FOUR_JOBS_PASS",
     "P8_07F_BOUNDED_COMPATIBILITY_RECONCILIATION_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_COMPLETE",
     "P8_07F_STANDING_READ_ONLY_AUTHORITY_REMAINS_TASK_SCOPED_FRESHNESS_FIRST_FAIL_CLOSED_AND_NOT_WRITE_AUTHORITY",
     "CURRENT_LAUNCHFLOW_ARCHITECTURE_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
@@ -41,6 +42,8 @@
     "P8_08_REUSES_P7_07_EXACT_IMMUTABLE_SOURCE_PRESENTATION_AND_REDACTION_WITHOUT_DOMAIN_DUPLICATION",
     "P8_08_INTERNAL_READ_ONLY_SEAM_SEPARATES_SOURCE_TRUTH_FROM_EXTERNAL_PROJECTION_UNAVAILABLE_TRUTH",
     "P8_07F_MOLD_TRIAL_REPORT_CANDIDATE_CONFIG_OR_MAPPING_ONLY_NO_CHANGE_NOT_AN_ACTIVATION_PROFILE",
+    "P8_08_CHECKPOINT_1_EXACT_FIVE_PRODUCT_TEST_PATHS_AUTHORIZED_ONLY_AFTER_ACTIVATION_SHA_ORDINARY_PASS",
+    "P8_08_CHECKPOINT_1_NO_FRAPPE_ROW_ROUTE_HOOK_EVENT_QUEUE_NETWORK_OR_EXTERNAL_SUCCESS",
     "NO_ERPNEXT_FRAPPE_CORE_CHANGE_BROWSER_DIRECT_ERP_GENERIC_DOCTYPE_WRITER_DUAL_MASTER_OR_MOCK_HTTP_FAKE_SUCCESS",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
     "M9_04_M9_05_REAL_PILOTS_USER_APPROVED_POST_V1_2_DEFERRED_CONTROLLED_UAT_RETAINED_NO_REAL_USAGE_CLAIM",
@@ -48,15 +51,18 @@
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    "apps/npi_integration/npi_integration/released_summary_projection/__init__.py",
+    "apps/npi_integration/npi_integration/released_summary_projection/config.py",
+    "apps/npi_integration/npi_integration/released_summary_projection/domain.py",
+    "apps/npi_integration/npi_integration/released_summary_projection/readers.py",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
-    "implementation/BLOCKERS.md",
     "implementation/CURRENT_TASK.json",
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
-    "implementation/phase-8-requirement-anchor.md",
     "implementation/evidence/phase-8/p8-08-plan.md",
-    "tests/test_current_task_verifier.py"
+    "tests/test_current_task_verifier.py",
+    "tests/test_phase8_released_trial_summary_projection_domain.py"
   ],
   "affected_checks": {
     "level_1": [
@@ -83,10 +89,10 @@
     "phase_status_resumed_product_task": "P8-08",
     "active_goal_marker": "P8-08",
     "next_action_marker": "P8-08",
-    "controller_marker": "P8-08 audit plan awaits exact-SHA ordinary CI"
+    "controller_marker": "P8-08 checkpoint 1 activation awaits exact-SHA ordinary CI"
   },
   "rollback": {
-    "before_product_resume": "Restore the exact P8-07F diagnostics-off checkpoint d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c while retaining its accepted sanitized facts and read provenance. The P8-08 audit changes no product or external state.",
-    "after_product_resume": "Not authorized until the P8-08 audit freezes exact source, ownership, unavailable-state, contract, security, migration, rollback, product-path and affected-test boundaries and a separate activation passes exact-SHA ordinary CI."
+    "before_product_resume": "Restore the exact accepted audit-plan checkpoint d560fdf218f415a14b6cf5bef0baa436da4725cc. It changes no product, persistent or external state.",
+    "after_product_resume": "Disable or remove only the internal pure seam. P7-07 immutable summaries, controlled outputs and all external systems remain untouched because checkpoint 1 creates no row, route, event, queue or network boundary."
   }
 }

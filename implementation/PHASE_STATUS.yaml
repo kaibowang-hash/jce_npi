@@ -5,12 +5,12 @@ updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-08
-current_task_status: IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY
+current_task_status: IN_PROGRESS_CHECKPOINT_1_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY
 current_task_completed_stage: P8_07F_PASS_LEVEL_3
-current_task_next_stage: P8_08_AUDIT_PLAN_EXACT_SHA_ORDINARY
-current_task_next_stage_status: AWAITS_CI_PRODUCT_CODE_UNAUTHORIZED
+current_task_next_stage: P8_08_CHECKPOINT_1_ACTIVATION_EXACT_SHA_ORDINARY
+current_task_next_stage_status: AWAITS_CI_PRODUCT_CODE_CONDITIONAL
 resumed_product_task: P8-08
-resumed_product_task_status: IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY
+resumed_product_task_status: IN_PROGRESS_CHECKPOINT_1_ACTIVATION_AWAITS_EXACT_SHA_ORDINARY
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -2832,7 +2832,11 @@ p8_08:
   audit_base_checkpoint: 216ac60480d4af2456b1649626ca23131f886048
   audit_base_ordinary: 33320025714
   audit_base_ordinary_jobs: {frontend: 99280249277, visual: 99280249395, repository: 99280249407, secret_scan: 99280249497}
-  audit_plan_status: AWAITS_EXACT_SHA_ORDINARY
+  audit_plan_checkpoint: d560fdf218f415a14b6cf5bef0baa436da4725cc
+  audit_plan_ordinary: 33320787112
+  audit_plan_ordinary_jobs: {frontend: 99282270348, visual: 99282270267, repository: 99282270365, secret_scan: 99282270388}
+  audit_plan_status: PASS
+  checkpoint_1_activation_status: AWAITS_EXACT_SHA_ORDINARY
   audit_plan: implementation/evidence/phase-8/p8-08-plan.md
   frozen_product_boundary: INTERNAL_READ_ONLY_EXACT_P7_07_SOURCE_SEAM_EXTERNAL_PROJECTION_UNAVAILABLE
   compatibility_mode: CURRENT_DESIGN_DEFAULT_CORRECT_NO_CHANGE_WITHOUT_PROVED_DIFFERENCE

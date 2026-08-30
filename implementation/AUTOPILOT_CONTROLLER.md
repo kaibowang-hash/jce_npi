@@ -9286,3 +9286,19 @@ repeat or rewrite it merely to restore context. See
   own exact-SHA ordinary CI and a later checkpoint-1 transition freezes and
   authorizes only the five pure product/test paths named in the plan.
 - Controller marker: `P8-08 audit plan awaits exact-SHA ordinary CI`.
+
+## 2026-08-30 P8-08 checkpoint 1 activation awaits exact-SHA ordinary CI
+
+- Audit-plan checkpoint `d560fdf218f415a14b6cf5bef0baa436da4725cc`
+  passes ordinary CI `33320787112`: frontend `99282270348`, visual
+  `99282270267`, repository `99282270365` and secret `99282270388` all pass;
+  controlled lanes are correctly skipped.
+- The activation manifest freezes exactly four pure package paths plus one
+  focused domain test. It permits no Frappe row, route, hook, event, queue,
+  target selector, network or external-success state.
+- Product changes remain prohibited until this activation commit's own exact-
+  SHA ordinary CI passes. After that PASS, implement only the frozen pure
+  source descriptor, disabled configuration and unavailable adapter seam.
+- `DR-REC-009`, production activation, P8-09 and all user-owned dirty/untracked
+  files remain untouched.
+- Controller marker: `P8-08 checkpoint 1 activation awaits exact-SHA ordinary CI`.
