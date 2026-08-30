@@ -9263,3 +9263,26 @@ repeat or rewrite it merely to restore context. See
 - Product code remains unauthorized until a separate exact P8-08 audit plan and
   controller transition pass exact-SHA ordinary CI. P8-09 remains inactive.
 - Controller marker: `P8-07F Level 3 PASS; P8-08 audit active`.
+
+## 2026-08-30 P8-08 audit plan awaits exact-SHA ordinary CI
+
+- P8-07F governance closeout exact SHA
+  `216ac60480d4af2456b1649626ca23131f886048` passes ordinary CI
+  `33320025714`: frontend `99280249277`, visual `99280249395`, repository
+  `99280249407` and secret `99280249497` all pass. Controlled lanes are
+  correctly skipped. Local and origin are exact and the user's unrelated dirty
+  and untracked files remain untouched.
+- The P8-08 audit finds no reason to redesign P7-07. Reuse the exact immutable
+  summary, presentation projection and redaction manifest schemas and retain
+  NPI ownership. Accepted `Mold Trial Report` evidence is only a future
+  `CONFIG_OR_MAPPING_ONLY` source candidate with `NO_CHANGE`.
+- Freeze only an internal `npi_integration` read-only seam that resolves one
+  exact current P7-07 source and separately reports external projection as
+  unavailable. It adds no public route, event, Outbox/Inbox, target call,
+  production read/write or formal external success.
+- Exact external event identity, version, payload, routing/redaction, consumer
+  mapping and receipt remain held by `DR-REC-009`. P8-09 remains inactive.
+- Product code remains unauthorized until this audit-plan commit passes its
+  own exact-SHA ordinary CI and a later checkpoint-1 transition freezes and
+  authorizes only the five pure product/test paths named in the plan.
+- Controller marker: `P8-08 audit plan awaits exact-SHA ordinary CI`.

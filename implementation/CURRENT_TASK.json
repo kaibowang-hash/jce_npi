@@ -3,24 +3,24 @@
   "task_id": "P8-08",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-09",
-  "base_checkpoint": "d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c",
+  "base_checkpoint": "216ac60480d4af2456b1649626ca23131f886048",
   "predecessor_product_checkpoint": "edf89e79cd815cbde60e2940ae9d580479336d75",
   "requirement_ids": [
     "FR-INT-015"
   ],
   "scope": [
-    "Close P8-07F only on its exact diagnostics-off checkpoint d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c, ordinary CI 33317964484 and final Level 3 33318628754, with all six required jobs passing and zero production mutation.",
-    "Audit the existing immutable NPI Released Trial Summary source, presentation/redaction companions, controlled-output reuse and current OpenAPI/data-ownership boundaries before authorizing any P8-08 product path.",
-    "Use the accepted P8-07F inventory and compatibility evidence first; because no concrete incompatibility was proved, retain the current LaunchFlow architecture, ownership and contracts as default correct and record NO_CHANGE unless exact evidence proves otherwise.",
-    "Freeze only a read-only Released Trial Summary adapter/projection seam with explicit unavailable truth. The NPI immutable summary remains the sole source and any external consumer may own only its accepted receipt/reference.",
-    "Keep the exact external event identity, payload version, redaction/routing, ERP/JCE consumer mapping, receipt and production activation held by DR-REC-009; the audit must not invent them.",
-    "Produce a separate P8-08 audit plan that enumerates exact source objects, ownership, unavailable/fault states, security, idempotency, trace/hash, migration, rollback, product paths and affected tests before a later controller transition can authorize implementation."
+    "Accept P8-07F governance closeout exact SHA 216ac60480d4af2456b1649626ca23131f886048 only with exact ordinary CI 33320025714 passing repository, frontend, secret and governed visual lanes.",
+    "Freeze the P8-08 plan around the existing immutable P7-07 Released Trial Summary schemas, source manifest, presentation projection and redaction manifest; do not duplicate or redesign that domain.",
+    "Treat the accepted P8-07F Mold Trial Report fact as a future CONFIG_OR_MAPPING_ONLY source candidate with NO_CHANGE; it is not an approved external contract or activation profile.",
+    "Authorize only a later internal read-only source descriptor and adapter seam that separates exact NPI source availability from external projection availability and defaults the latter to unavailable.",
+    "Keep exact external event identity, payload version, redaction/routing, ERP/JCE consumer mapping, receipt and production activation held by DR-REC-009.",
+    "Require this audit-plan commit to pass exact-SHA ordinary CI before a separate checkpoint-1 transition may authorize its frozen product paths."
   ],
   "non_scope": [
-    "Any P8-08 product implementation before the separate audit plan and controller transition pass exact-SHA ordinary CI; product_code_authorized remains false.",
+    "Any P8-08 product implementation before this audit plan passes exact-SHA ordinary CI and a separate checkpoint-1 controller transition authorizes exact paths; product_code_authorized remains false.",
     "Any guessed external event name, payload version, target method, endpoint, DocType, field, service principal, permission, receipt, success state or production routing under DR-REC-009.",
     "Any production ERPNext/JCE write, target call, replay, reconciliation, cross-database access, generic DocType writer, browser-direct ERP access, dual-master field or Mock/HTTP fake success.",
     "Any redesign, refactor, rebuild, interface rename, domain merge or split, workflow rewrite, technology replacement, permission-model rewrite, generalized abstraction or nearby optimization.",
@@ -29,6 +29,7 @@
   ],
   "frozen_invariants": [
     "P8_07F_FINAL_CHECKPOINT_D8ABA505_ORDINARY_33317964484_LEVEL_3_33318628754_ALL_SIX_JOBS_PASS",
+    "P8_07F_GOVERNANCE_CLOSEOUT_216AC604_ORDINARY_33320025714_ALL_FOUR_JOBS_PASS",
     "P8_07F_BOUNDED_COMPATIBILITY_RECONCILIATION_PRODUCT_ZERO_PRODUCTION_WRITE_ZERO_COMPLETE",
     "P8_07F_STANDING_READ_ONLY_AUTHORITY_REMAINS_TASK_SCOPED_FRESHNESS_FIRST_FAIL_CLOSED_AND_NOT_WRITE_AUTHORITY",
     "CURRENT_LAUNCHFLOW_ARCHITECTURE_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
@@ -36,7 +37,10 @@
     "NPI_OWNS_THE_EXACT_IMMUTABLE_RELEASED_TRIAL_SUMMARY_SOURCE",
     "P8_08_IS_READ_ONLY_ADAPTER_PROJECTION_SEAM_WITH_EXPLICIT_UNAVAILABLE_TRUTH",
     "DR_REC_009_EXTERNAL_EVENT_PAYLOAD_REDACTION_CONSUMER_MAPPING_AND_RECEIPT_REMAIN_HELD",
-    "P8_08_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_SEPARATE_AUDIT_PLAN_TRANSITION_ORDINARY_PASS",
+    "P8_08_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_AND_SEPARATE_CHECKPOINT_1_TRANSITION_PASS",
+    "P8_08_REUSES_P7_07_EXACT_IMMUTABLE_SOURCE_PRESENTATION_AND_REDACTION_WITHOUT_DOMAIN_DUPLICATION",
+    "P8_08_INTERNAL_READ_ONLY_SEAM_SEPARATES_SOURCE_TRUTH_FROM_EXTERNAL_PROJECTION_UNAVAILABLE_TRUTH",
+    "P8_07F_MOLD_TRIAL_REPORT_CANDIDATE_CONFIG_OR_MAPPING_ONLY_NO_CHANGE_NOT_AN_ACTIVATION_PROFILE",
     "NO_ERPNEXT_FRAPPE_CORE_CHANGE_BROWSER_DIRECT_ERP_GENERIC_DOCTYPE_WRITER_DUAL_MASTER_OR_MOCK_HTTP_FAKE_SUCCESS",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
     "M9_04_M9_05_REAL_PILOTS_USER_APPROVED_POST_V1_2_DEFERRED_CONTROLLED_UAT_RETAINED_NO_REAL_USAGE_CLAIM",
@@ -51,10 +55,8 @@
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
     "implementation/phase-8-requirement-anchor.md",
-    "implementation/evidence/phase-8/p8-07f-production-fact-reconciliation-validation.md",
     "implementation/evidence/phase-8/p8-08-plan.md",
-    "tests/test_current_task_verifier.py",
-    "tests/test_v1_2_reconciliation.py"
+    "tests/test_current_task_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
@@ -81,7 +83,7 @@
     "phase_status_resumed_product_task": "P8-08",
     "active_goal_marker": "P8-08",
     "next_action_marker": "P8-08",
-    "controller_marker": "P8-07F Level 3 PASS; P8-08 audit active"
+    "controller_marker": "P8-08 audit plan awaits exact-SHA ordinary CI"
   },
   "rollback": {
     "before_product_resume": "Restore the exact P8-07F diagnostics-off checkpoint d8aba50580ffd7a0ca3fca0493cf49f84a6a1e8c while retaining its accepted sanitized facts and read provenance. The P8-08 audit changes no product or external state.",

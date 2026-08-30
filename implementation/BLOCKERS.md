@@ -4,9 +4,10 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-There is no active global or P8-08 implementation blocker. P8-08 is active only
-for audit and plan freezing; product code remains unauthorized until the plan
-transition passes its own exact-SHA ordinary CI.
+There is no active global or P8-08 implementation blocker. P8-07F governance
+closeout `216ac604` passes ordinary `33320025714`. The P8-08 plan is frozen and
+awaits its own exact-SHA ordinary CI; product code remains unauthorized until
+that PASS and a separate checkpoint-1 activation transition.
 
 The former collection blockers are closed. Exact SHA `77b4258f` passes
 ordinary `33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds,

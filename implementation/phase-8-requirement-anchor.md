@@ -1,15 +1,18 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-07F PASS; P8-08 AUDIT ACTIVE**
+Status: **IN PROGRESS — P8-08 AUDIT PLAN AWAITS EXACT-SHA ORDINARY CI**
 
 P8-07F accepted the bounded production compatibility facts without changing
 any requirement status, product code, contract or owner. Existing P8-01
 through P8-09 design remains the default-correct baseline; no concrete
 incompatibility was proved. Diagnostics-off checkpoint `d8aba505` passes
 ordinary `33317964484` and final Level 3 `33318628754`, so P8-08 audit is now
-active. Production
-activation and the final full-release read-only drift reconciliation remain
-separate mandatory Gates.
+active. Governance closeout `216ac604` passes ordinary `33320025714`. The
+P8-08 plan reuses the exact P7-07 immutable source and freezes only an internal
+read-only seam whose external projection remains unavailable. Product code is
+still unauthorized until the plan ordinary PASS and a separate checkpoint-1
+transition. Production activation and the final full-release read-only drift
+reconciliation remain separate mandatory Gates.
 
 Anchor date: 2026-08-16
 

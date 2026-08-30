@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-08`
+`IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY — P8-08`
 
 Recovery time: `2026-08-30T00:00:00+07:00`
 
@@ -10,11 +10,12 @@ P8-07F diagnostics-off exact SHA
 `33317964484` and final Level 3 `33318628754`. All four ordinary-equivalent
 lanes, controlled preflight and cumulative runtime pass. The bounded production
 fact window is closed with private state removed, zero production mutation and
-no evidence-backed LaunchFlow adjustment. P8-08 is now the active audit-only
-task. Inspect the existing immutable Released Trial Summary source and freeze a
-separate read-only projection-seam plan; do not implement product code or invent
-the DR-REC-009 event/consumer contract before that plan's exact-SHA ordinary
-PASS.
+no evidence-backed LaunchFlow adjustment. Governance closeout `216ac604` passes
+ordinary `33320025714`. The P8-08 plan now freezes exact P7-07 immutable source
+reuse, a pure internal read-only seam and explicit unavailable external truth.
+The sole next action is this plan's exact-SHA ordinary CI. Only after it passes
+may a separate checkpoint-1 transition authorize the exact pure product paths;
+the `DR-REC-009` event/consumer contract remains held.
 
 The governance transition passes at `d919d695972260fa86d5df7fa60033e6adb62f49`,
 ordinary `33279778063` and Level 3 `33280319184`. The separate collector

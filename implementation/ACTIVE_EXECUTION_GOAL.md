@@ -4,14 +4,16 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P8-08`
+- Mode: `IN_PROGRESS_AUDIT_PLAN_AWAITS_EXACT_SHA_ORDINARY — P8-08`
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
   pass. The accepted production-fact window is closed, private state is absent,
-  product/contract diff is zero and production writes are zero. P8-08 audit is
-  active; product code remains unauthorized until its separate frozen plan
-  transition passes exact-SHA ordinary CI.
+  product/contract diff is zero and production writes are zero. Governance
+  closeout `216ac604` also passes ordinary `33320025714`. The P8-08 audit plan
+  is now frozen around exact P7-07 source reuse and explicit unavailable
+  external truth; product code remains unauthorized until this plan passes
+  exact-SHA ordinary CI and a separate checkpoint-1 transition passes.
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
