@@ -4,7 +4,7 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_LEVEL_3_MIGRATED_LEGACY_DIAGNOSTIC_PENDING — P8-07F-CURRENT-RUNTIME-GOVERNANCE`
+- Mode: `IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3 — P8-07F-CURRENT-RUNTIME-GOVERNANCE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -84,9 +84,11 @@ Updated: `2026-08-30T00:00:00+07:00`
   `P8-07F-FACTS` task.
 - Governance ordinary `33301387305` passes exact SHA `6aa9f9b6`; Level 3
   `33302018921` passes its four base lanes and preflight but fails only in the
-  existing P8-03 migrated-legacy cumulative boundary. The current product-zero
-  subcycle reuses the existing exact-39 safe diagnostic. A new ordinary PASS
-  must precede one controlled diagnostic; no production read is opened.
+  existing P8-03 migrated-legacy cumulative boundary. Product-zero diagnostic
+  SHA `b366b2a7` passes ordinary `33303116320` and controlled
+  `33303731224` with success-zero exact-39 evidence. Diagnostics are now off;
+  a new ordinary PASS and sole Level 3 remain required. No production read is
+  opened before both pass.
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)

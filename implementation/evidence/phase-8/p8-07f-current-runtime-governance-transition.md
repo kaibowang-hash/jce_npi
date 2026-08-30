@@ -4,7 +4,7 @@ Date: `2026-08-30`
 
 Task: `P8-07F-CURRENT-RUNTIME-GOVERNANCE`
 
-Status: **LEVEL 3 BLOCKED AT MIGRATED-LEGACY; EXACT-39 DIAGNOSTIC PENDING; ZERO PRODUCTION CONTACT**
+Status: **EXACT-39 DIAGNOSTIC PASS; DIAGNOSTICS-OFF ORDINARY AND FINAL LEVEL 3 PENDING; ZERO PRODUCTION CONTACT**
 
 ## Authorization received
 
@@ -152,3 +152,18 @@ run. A failed run may expose only one strict code/type/exact-trace tuple; a
 successful run emits zero diagnostic records. No repair, production read or
 P8-08 activation is authorized without the required proof and later final
 Level 3 PASS.
+
+## Migrated-legacy diagnostic result
+
+Product-zero exact SHA `b366b2a7f49d6443aa3f9ebaaec8cdac839a36b2`
+passes ordinary `33303116320`: repository `99234782632`, frontend
+`99234782634`, visual `99234782659` and secret `99234782690` all pass. Its sole
+Level 2 controlled `33303731224` passes preflight `99236455019` and runtime
+`99236480700`. The exact-39 success contract emits no safe tuple; no raw or
+child output, response content, business value, identity, message or stack was
+read.
+
+Freeze the diagnostic cycle at `1/1,0/1,0/1`. All diagnostic activations return
+to false. A new exact-SHA ordinary PASS and one diagnostics-off Level 3 remain
+mandatory before this governance transition can pass. Production access,
+collector expansion and P8-08 remain closed until their later gates.

@@ -5,10 +5,10 @@ updated_at: '2026-08-30T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: P8_07F_CURRENT_RUNTIME_GOVERNANCE_GATE_PENDING
 current_task: P8-07F-CURRENT-RUNTIME-GOVERNANCE
-current_task_status: IN_PROGRESS_LEVEL_3_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
-current_task_completed_stage: P8_07F_CURRENT_RUNTIME_GOVERNANCE_6AA9F9B6_ORDINARY_33301387305_PASS_LEVEL_3_33302018921_MIGRATED_LEGACY_FAIL
-current_task_next_stage: P8_07F_MIGRATED_LEGACY_EXACT39_CONTROLLED_DIAGNOSTIC
-current_task_next_stage_status: AWAITING_EXACT_SHA_ORDINARY_THEN_ONE_LEVEL_2_CONTROLLED
+current_task_status: IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3
+current_task_completed_stage: P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_B366B2A7_ORDINARY_33303116320_CONTROLLED_33303731224_PASS
+current_task_next_stage: P8_07F_CURRENT_RUNTIME_GOVERNANCE_DIAGNOSTICS_OFF_FINAL
+current_task_next_stage_status: AWAITING_EXACT_SHA_ORDINARY_THEN_ONE_LEVEL_3
 resumed_product_task: P8-07F-FACTS
 resumed_product_task_status: BLOCKED_UNTIL_CURRENT_RUNTIME_GOVERNANCE_AND_SEPARATE_ACTIVATION_PASS
 scope_decisions:
@@ -2662,7 +2662,7 @@ p8_07:
 p8_07f:
   task: P8-07F-CURRENT-RUNTIME-GOVERNANCE
   next_task: P8-07F-FACTS
-  status: IN_PROGRESS_LEVEL_3_MIGRATED_LEGACY_DIAGNOSTIC_PENDING
+  status: IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3
   phase: 8
   milestone: M7-07F
   task_kind: DELIVERY_INFRASTRUCTURE
@@ -2703,7 +2703,11 @@ p8_07f:
   current_runtime_governance_ordinary: 33301387305
   current_runtime_governance_level_3: 33302018921
   current_runtime_governance_level_3_result: FAILED_ONLY_P8_03_MIGRATED_LEGACY_OUTER_BOUNDARY
-  migrated_legacy_diagnostic_status: AWAITING_EXACT_SHA_ORDINARY_THEN_ONE_LEVEL_2_CONTROLLED
+  migrated_legacy_diagnostic_checkpoint: b366b2a7f49d6443aa3f9ebaaec8cdac839a36b2
+  migrated_legacy_diagnostic_ordinary: 33303116320
+  migrated_legacy_diagnostic_controlled: 33303731224
+  migrated_legacy_diagnostic_result: PASS_SUCCESS_ZERO
+  migrated_legacy_diagnostic_status: FROZEN_1_OF_1_REPAIR_ZERO_OF_1_FINAL_ZERO_OF_1
   evidence:
     - implementation/evidence/phase-8/p8-07-validation.md
     - implementation/evidence/phase-8/p8-07-production-fact-governance-transition.md

@@ -37,9 +37,11 @@ Governance SHA `6aa9f9b6` passes ordinary `33301387305`. Level 3
 only failure is cumulative runtime `99233052613`, whose fixed-label allowlist
 returns exactly `Local Frappe Item publish migrated-legacy runtime verification failed.`
 This is outside the new production-read governance diff, but a failed Gate
-cannot be waived. The existing exact-39 response/server/outer diagnostic is
-enabled for one independent product-zero cycle after a new exact-SHA ordinary
-PASS. Production connection and P8-08 remain closed.
+cannot be waived. Product-zero diagnostic SHA `b366b2a7` passes ordinary
+`33303116320` and controlled `33303731224`; its exact-39 contract emits no safe
+tuple on success. Diagnostics are off. One new exact-SHA ordinary and sole
+Level 3 are still required before the separate facts activation may reopen
+production read-only access. P8-08 remains closed.
 
 Historical P8-06 passes at exact final product SHA
 `547421a059911df6aeb90bbbf06e837f77a3e5e0`. Ordinary CI `33131533806`

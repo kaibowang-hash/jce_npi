@@ -3,7 +3,7 @@
   "task_id": "P8-07F-CURRENT-RUNTIME-GOVERNANCE",
   "task_kind": "delivery_infrastructure",
   "phase": 8,
-  "status": "IN_PROGRESS_LEVEL_3_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
+  "status": "IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-07F-FACTS",
   "base_checkpoint": "cfd0930553fc40029d18518a8e3cd3481fa0a5d8",
@@ -77,6 +77,7 @@
     "P8_07F_CURRENT_RUNTIME_GOVERNANCE_ZERO_SSH_ZERO_CONNECTOR_ZERO_SITE_ZERO_EXTERNAL_STATE",
     "P8_07F_CURRENT_RUNTIME_GOVERNANCE_6AA9F9B6_ORDINARY_33301387305_PASSED_LEVEL_3_33302018921_FAILED_ONLY_MIGRATED_LEGACY",
     "P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_REUSES_EXACT_THIRTY_NINE_SAFE_CODES_AND_REQUIRES_NEW_ORDINARY_BEFORE_ONE_CONTROLLED_RUN",
+    "P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_B366B2A7_ORDINARY_33303116320_CONTROLLED_33303731224_PASSED_SUCCESS_ZERO",
     "P8_07F_FACTS_EXPANSION_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS",
     "P8_07F_CURRENT_TRACKED_WORKTREE_IS_AUTHORIZED_CANDIDATE_CURRENT_SOURCE_TRUTH_WITH_HEAD_AND_DIFF_PROVENANCE",
     "P8_07F_TWO_STOPPED_RELEVANT_DOCTYPE_CANDIDATES_AUTHORIZED_FOR_READ_ONLY_STRUCTURAL_SUMMARY_NO_RAW_PERSISTENCE",
@@ -101,7 +102,7 @@
     "phase_status_resumed_product_task": "P8-07F-FACTS",
     "active_goal_marker": "P8-07F-CURRENT-RUNTIME-GOVERNANCE",
     "next_action_marker": "P8-07F-CURRENT-RUNTIME-GOVERNANCE",
-    "controller_marker": "P8-07F governance Level 3 migrated-legacy diagnostic awaits exact-SHA ordinary CI"
+    "controller_marker": "P8-07F governance migrated-legacy diagnostic passed; diagnostics-off final awaits exact-SHA ordinary CI and Level 3"
   },
   "rollback": {
     "before_product_resume": "Revert only this governance transition while retaining accepted P8-07F facts at cfd0930553fc40029d18518a8e3cd3481fa0a5d8. Keep production contact and P8-08 inactive.",

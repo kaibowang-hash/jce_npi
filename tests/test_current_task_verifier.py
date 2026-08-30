@@ -57,6 +57,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["frozen_invariants"],
         )
         self.assertIn(
+            "P8_07F_MIGRATED_LEGACY_DIAGNOSTIC_B366B2A7_ORDINARY_33303116320_CONTROLLED_33303731224_PASSED_SUCCESS_ZERO",
+            value["frozen_invariants"],
+        )
+        self.assertIn(
             "P8_07F_FACTS_EXPANSION_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS",
             value["frozen_invariants"],
         )
@@ -94,7 +98,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_LEVEL_3_MIGRATED_LEGACY_DIAGNOSTIC_PENDING",
+            "IN_PROGRESS_AWAITING_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY_AND_LEVEL_3",
         )
         self.assertEqual(value["requirement_ids"], [])
         self.assertIn(

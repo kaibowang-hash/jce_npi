@@ -9017,9 +9017,9 @@ repeat or rewrite it merely to restore context. See
   `USER_APPROVED_POST_V1_2_DEFERRED`; controlled non-production UAT is retained
   and no production-pilot or real-user adoption claim is created.
 
-#### P8-07F governance Level 3 migrated-legacy diagnostic awaits exact-SHA ordinary CI
+#### P8-07F governance migrated-legacy diagnostic passed; diagnostics-off final awaits exact-SHA ordinary CI and Level 3
 
-- The current marker is exactly `P8-07F governance Level 3 migrated-legacy diagnostic awaits exact-SHA ordinary CI`.
+- The current marker is exactly `P8-07F governance migrated-legacy diagnostic passed; diagnostics-off final awaits exact-SHA ordinary CI and Level 3`.
 - Governance exact SHA `6aa9f9b6db338d20713a2ccece84fb59a0284450`
   passes ordinary `33301387305`: secret `99230129638`, repository
   `99230129732`, visual `99230129742` and frontend `99230129745` all pass.
@@ -9029,14 +9029,16 @@ repeat or rewrite it merely to restore context. See
   returns exactly `Local Frappe Item publish migrated-legacy runtime verification failed.`
   Raw/child output, response content, business values, identities, messages and
   stack remain unread. Cleanup passes.
-- The Gate is `BLOCKED`; do not rerun it or activate production reads. Open one
-  product-zero migrated-legacy diagnostic subcycle. Reuse the existing
-  collection-fallback activation and exact 39 outer/collection/server safe
-  codes; all response/business content remains suppressed.
-- Freeze diagnostic `0/1`, repair `0/1`, final `0/1`. A new exact-SHA ordinary
-  PASS must precede one `level_2_controlled` reuse. If the run fails, accept
-  only one strict exact-code/type/trace tuple; if it passes, success emits no
-  tuple. No repair is allowed without a unique first-source proof.
+- Product-zero diagnostic SHA `b366b2a7f49d6443aa3f9ebaaec8cdac839a36b2`
+  passes ordinary `33303116320`: repository `99234782632`, frontend
+  `99234782634`, visual `99234782659` and secret `99234782690` all pass. Its
+  sole Level 2 controlled `33303731224` passes preflight `99236455019` and
+  runtime `99236480700`; exact-39 success emits zero safe tuples. No raw/child
+  or business output was read.
+- Freeze diagnostic `1/1`, repair `0/1`, final `0/1`. Disable the diagnostic,
+  require one new exact-SHA ordinary PASS, then dispatch one Level 3 reuse.
+  Production access remains closed unless that Gate passes and the separate
+  facts activation exact-SHA ordinary also passes.
 - P8-07F current-worktree/runtime collection, `JCE-Core`, P8-08 and all product
   authority remain closed. The transition and diagnostic change no ERPNext,
   LaunchFlow product, contract, schema, permission, workflow or production
