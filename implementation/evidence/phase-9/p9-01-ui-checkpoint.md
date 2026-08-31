@@ -233,3 +233,20 @@ contracts and ERP boundaries remain unchanged. Level 1 passes focused runtime
 current/reconciliation verification, compilation, shell syntax, all-off and
 removed-marker lexical checks, and diff validation. Exact-SHA ordinary CI and
 the sole diagnostics-off Level 3 remain pending.
+
+## Post-marker Level 3 boundary
+
+Canonical-marker repair SHA `e5d9baea` passed ordinary `33394441677`. Sole
+Level 3 `33395546618` passed repository, frontend, visual, secret scan and
+controlled preflight; runtime `99503287675` failed. The fixed source-label
+allowlist matched only the Engineering Change fresh-runtime label. No child
+output, response body, business value, identity, message or stack was read.
+
+The marker harness root is closed, but an all-off failure within the fresh
+verifier is not unique enough for product repair. Freeze that cycle at
+`1/1,1/1,1/1` and begin an independent product-zero post-marker cycle at
+`0/1,0/1,0/1`. Only its new activation is true; it reuses the exact 57 safe
+boundaries and strict diagnostic contract. Product, UI, schema, contract and
+workflow diffs remain zero. Level 1 passes focused runtime `15/15`, full
+repository Python `2804/2804` with `6167` subtests, current/reconciliation,
+compile, shell, exact-one activation and diff checks.

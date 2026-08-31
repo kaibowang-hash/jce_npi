@@ -164,6 +164,9 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED
+        )
         self.assertEqual(
             sum(
                 (
@@ -171,9 +174,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED,
                 )
             ),
-            0,
+            1,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 57)
         self.assertTrue(all(literals.count(code) == 2 for code in set(literals)))
@@ -188,7 +192,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 clear=False,
             ), patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
@@ -199,7 +203,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                             raise SystemExit(1)
             with patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -233,7 +237,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 side_effect=flaky_write,
             ), patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
@@ -246,7 +250,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             self.assertEqual(attempts, 2)
             with patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -266,7 +270,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 clear=False,
             ), patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
@@ -278,7 +282,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     )
             with patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -296,6 +300,26 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     path, expected_trace="trace-" + "f" * 32
                 )
             )
+
+    def test_all_off_diagnostics_are_dormant_and_do_not_read(self) -> None:
+        trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+            with patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
+                False,
+            ):
+                with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                    self.verifier._record_engineering_change_runtime_diagnostic(
+                        "P901_CHANGE_CREATE_HTTP", RuntimeError("restricted")
+                    )
+                self.assertFalse(path.exists())
+                self.assertIsNone(
+                    self.verifier.read_engineering_change_runtime_diagnostic(
+                        path, expected_trace=trace
+                    )
+                )
 
     def test_diagnostic_reader_fails_closed_for_unknown_or_malformed_records(
         self,

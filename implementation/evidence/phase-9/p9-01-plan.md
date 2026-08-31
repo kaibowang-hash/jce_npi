@@ -482,3 +482,21 @@ diagnostics are off, and product code remains unchanged. The cycle is
 passes the focused verifier `14/14`, full repository Python `2803/2803` with
 `6167` subtests, current/reconciliation verification, compilation, shell
 syntax, exact all-off/removed-marker checks and diff validation.
+
+## P9-01D post-marker diagnostic continuation
+
+Repair SHA `e5d9baea` passed ordinary `33394441677`. Its sole Level 3
+`33395546618` passed all ordinary-equivalent lanes and controlled preflight,
+but runtime `99503287675` failed; fixed-label classification matched only the
+Engineering Change fresh-runtime failure. The canonical marker mismatch is
+closed, while the all-off internal boundary remains nonunique, so product
+repair is prohibited.
+
+Freeze the prior cycle at `1/1,1/1,1/1`. One new product-zero post-marker
+activation reuses the exact 57 safe codes and strict trace/record/reader
+contract; all four historical flags remain false. Its cycle begins
+`0/1,0/1,0/1`. After exact-SHA ordinary PASS, run one Level 2 controlled
+diagnostic, with failed child output still unread. Level 1 passes focused
+runtime `15/15`, full repository Python `2804/2804` with `6167` subtests,
+current/reconciliation verification, compilation, shell syntax, exact-one
+activation, product-zero and diff checks.

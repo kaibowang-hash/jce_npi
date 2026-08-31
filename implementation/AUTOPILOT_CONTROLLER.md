@@ -10168,3 +10168,37 @@ repeat or rewrite it merely to restore context. See
   reconciliation verification, Python compilation, shell syntax, all-off and
   removed-marker lexical checks, and diff validation.
 - Controller marker: `P9-01D canonical disposable marker repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
+
+## 2026-08-31 P9-01D post-marker Engineering Change diagnostic cycle
+
+- Canonical-marker repair SHA `e5d9baeac572a562fad4d8c6942532025e1ea344`
+  passed ordinary `33394441677`: repository `99495479049`, frontend
+  `99495479057`, visual `99495478791` and secret scan `99495479281` all
+  succeeded. Its sole diagnostics-off Level 3 `33395546618` passed the same
+  four lanes and controlled preflight `99503221612`; cumulative runtime
+  `99503287675` failed. A fixed source-label allowlist matched exactly
+  `Local Frappe Engineering Change runtime verification failed.` and no other
+  runtime label. Restricted child output, response bodies, business values,
+  identities, messages and stacks remain unread.
+- The accepted marker mismatch is closed: the canonical marker now remains
+  stable through the cumulative Site and the shared live identity guard is
+  unchanged. The all-off failure is later inside the fresh Engineering Change
+  verifier but is nonunique across its input, HTTP, lifecycle, worker and
+  response boundaries, so no product repair is authorized.
+- Freeze the marker-repair cycle at diagnostic `1/1`, harness repair `1/1`,
+  final `1/1`. Open one independent product-zero post-marker diagnostic at
+  `0/1,0/1,0/1`: only
+  `ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED` is true, the
+  four historical activations remain false, and it reuses the exact 57
+  lexical codes, deterministic trace, O_EXCL exact-three record, strict
+  reader, inner precedence, unread failed-child output and success-zero
+  contract.
+- Exact paths are the verifier, focused test and these three existing P9
+  governance records. Product/API/repository/schema/shell/UI/contracts/workflow
+  remain unchanged. After Level 1 and exact-SHA ordinary PASS, dispatch one
+  Level 2 controlled diagnostic reusing that ordinary; do not rerun the failed
+  Level 3.
+- Level 1 passes focused runtime `15/15`, full repository Python `2804/2804`
+  with `6167` subtests, current/reconciliation verification, compilation,
+  shell syntax, exact-one activation, product-zero and diff checks.
+- Controller marker: `P9-01D post-marker Engineering Change diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
