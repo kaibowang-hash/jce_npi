@@ -4,7 +4,14 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_FACT_DELTA_GOVERNANCE — P9-01`
+- Mode: `IN_PROGRESS_FACT_DELTA_COLLECTOR — P9-01`
+- P9-01 fact-delta governance exact SHA
+  `0e56c83327b12fc5501a4d5d71c5abf5e30981f6` passes ordinary CI
+  `33347047323`: repository `99353044581`, secret `99353044662`, frontend
+  `99353044670` and visual `99353044785` all pass. The fixed three-name
+  declarative metadata collector is now implemented locally with no production
+  contact. Its own exact-SHA ordinary CI is the sole remaining precondition to
+  one bounded read.
 - P9-01 audit activation exact SHA
   `e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes ordinary CI
   `33345969806`: secret `99350038718`, visual `99350038806`, frontend

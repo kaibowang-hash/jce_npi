@@ -5,7 +5,7 @@ updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-01
-current_task_status: IN_PROGRESS_FACT_DELTA_GOVERNANCE
+current_task_status: IN_PROGRESS_FACT_DELTA_COLLECTOR
 current_task_completed_stage: P9_01_AUDIT_ACTIVATION_ORDINARY_PASS
 current_task_next_stage: P9_01_EXACT_CHANGE_METADATA_DELTA_GOVERNANCE
 current_task_next_stage_status: ACTIVE_ZERO_CONTACT_PRODUCT_CODE_UNAUTHORIZED
@@ -3016,7 +3016,7 @@ p9_00:
 p9_01:
   task: P9-01
   next_task: P9-02
-  status: IN_PROGRESS_FACT_DELTA_GOVERNANCE
+  status: IN_PROGRESS_FACT_DELTA_COLLECTOR
   phase: 9
   task_kind: PRODUCT
   product_code_authorized: false
@@ -3034,6 +3034,10 @@ p9_01:
   missing_fact: EXACT_ECR_ECO_ECN_DECLARATIVE_MAPPING_METADATA
   fact_delta_scope: DOCTYPE_DOCFIELD_DOCPERM_CUSTOM_FIELD_PROPERTY_SETTER_WORKFLOW_CLIENT_SERVER_SCRIPT_AND_NAMING_METADATA_ONLY
   fact_delta_production_contact: PROHIBITED_UNTIL_THIS_GOVERNANCE_EXACT_SHA_ORDINARY_PASS
+  fact_delta_governance_checkpoint: 0e56c83327b12fc5501a4d5d71c5abf5e30981f6
+  fact_delta_governance_ordinary: 33347047323
+  fact_delta_governance_jobs: {repository: 99353044581, secret_scan: 99353044662, frontend: 99353044670, visual: 99353044785}
+  fact_delta_collector: FIXED_THREE_NAME_DECLARATIVE_METADATA_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

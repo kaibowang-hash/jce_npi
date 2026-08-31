@@ -20,6 +20,19 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.addCleanup(path.with_name(path.name + ".next").unlink, missing_ok=True)
         return path
 
+    def write_manifest(self, value: object) -> Path:
+        temporary = tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            suffix=".json",
+            delete=False,
+        )
+        with temporary:
+            json.dump(value, temporary)
+        path = Path(temporary.name)
+        self.addCleanup(path.unlink, missing_ok=True)
+        return path
+
     def write_state(self, path: Path, *, sha: str = "d" * 40, run_id: str = "101") -> None:
         collector._write_new_state(
             path,
@@ -797,6 +810,286 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(doctype_summary["name"], "Example")
         self.assertNotIn("do-not-record", json.dumps(doctype_summary))
 
+    def test_p9_change_metadata_commands_are_fixed_scoped_and_read_only(self) -> None:
+        for family, spec in collector.P9_CHANGE_METADATA_SPECS.items():
+            with self.subTest(family=family):
+                command = collector._p9_change_metadata_command(
+                    family,
+                    "site-one",
+                    0,
+                )
+                self.assertEqual(
+                    command[:5],
+                    (
+                        "bench",
+                        "--site",
+                        "site-one",
+                        "execute",
+                        "frappe.client.get_list",
+                    ),
+                )
+                kwargs = json.loads(command[6])
+                self.assertEqual(kwargs["doctype"], spec["doctype"])
+                self.assertEqual(kwargs["fields"], list(spec["fields"]))
+                self.assertEqual(
+                    kwargs["filters"],
+                    json.loads(json.dumps([list(row) for row in spec["filters"]])),
+                )
+                self.assertEqual(kwargs["order_by"], "name asc")
+                self.assertEqual(kwargs["limit_start"], 0)
+                self.assertEqual(
+                    kwargs["limit_page_length"],
+                    collector.P9_CHANGE_PAGE_SIZE,
+                )
+                rendered = " ".join(command).lower()
+                self.assertNotIn("sql", rendered)
+                self.assertNotIn("console", rendered)
+                self.assertNotIn("*", rendered)
+        with self.assertRaises(collector.FactCollectionError):
+            collector._p9_change_metadata_command("CALLER_SELECTED", "site-one", 0)
+        with self.assertRaises(collector.FactCollectionError):
+            collector._p9_change_metadata_command(
+                "CHANGE_DOCTYPES",
+                "site-one",
+                1,
+            )
+
+    def test_p9_change_metadata_operation_hashes_sensitive_values_and_stays_scoped(self) -> None:
+        args = argparse.Namespace(expected_sha="d" * 40, ordinary_run_id="101")
+
+        def row(family: str, **updates: object) -> dict[str, object]:
+            value = {
+                field: None
+                for field in collector.P9_CHANGE_METADATA_SPECS[family]["fields"]
+            }
+            value.update(updates)
+            return value
+
+        raw_script = "frappe.get_doc('Engineering Change Request')"
+        raw_options = "Engineering Change Request\n" * 12
+        raw_condition = "doc.workflow_state == 'Open'"
+        rows = {
+            "CHANGE_DOCTYPES": [
+                row(
+                    "CHANGE_DOCTYPES",
+                    name="Engineering Change Request",
+                    module="Manufacturing",
+                    custom=0,
+                    istable=0,
+                    issingle=0,
+                    autoname="naming_series:",
+                    track_changes=1,
+                    is_submittable=1,
+                    modified="2026-08-30 10:00:00.000000",
+                )
+            ],
+            "CHANGE_DOCFIELDS": [
+                row(
+                    "CHANGE_DOCFIELDS",
+                    name="Engineering Change Request-reason",
+                    parent="Engineering Change Request",
+                    fieldname="reason",
+                    fieldtype="Link",
+                    options=raw_options,
+                    reqd=1,
+                    read_only=0,
+                    unique=0,
+                    hidden=0,
+                    permlevel=0,
+                    idx=1,
+                    modified="2026-08-30 10:00:00.000000",
+                )
+            ],
+            "CHANGE_DOCPERMS": [
+                row(
+                    "CHANGE_DOCPERMS",
+                    name="Engineering Change Request-Engineer-0",
+                    parent="Engineering Change Request",
+                    role="Engineer",
+                    permlevel=0,
+                    read=1,
+                    write=1,
+                    create=1,
+                    delete=0,
+                    submit=1,
+                    cancel=0,
+                    amend=0,
+                    report=1,
+                    export=0,
+                    share=0,
+                    print=1,
+                    email=0,
+                    if_owner=0,
+                    modified="2026-08-30 10:00:00.000000",
+                )
+            ],
+            "CHANGE_WORKFLOWS": [
+                row(
+                    "CHANGE_WORKFLOWS",
+                    name="Engineering Change Approval",
+                    document_type="Engineering Change Request",
+                    is_active=1,
+                    workflow_state_field="workflow_state",
+                    modified="2026-08-30 10:00:00.000000",
+                )
+            ],
+            "CHANGE_SERVER_SCRIPTS": [
+                row(
+                    "CHANGE_SERVER_SCRIPTS",
+                    name="Engineering Change Guard",
+                    script_type="DocType Event",
+                    reference_doctype="Engineering Change Request",
+                    doctype_event="Before Save",
+                    event_frequency=None,
+                    api_method=None,
+                    disabled=0,
+                    script=raw_script,
+                    modified="2026-08-30 10:00:00.000000",
+                )
+            ],
+        }
+        calls: list[tuple[str, tuple[str, ...]]] = []
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            calls.append((operation, command))
+            if operation == "CHANGE_WORKFLOW_DOCUMENT":
+                return json.dumps(
+                    {
+                        "doctype": "Workflow",
+                        "name": "Engineering Change Approval",
+                        "states": [
+                            {
+                                "name": "state-row-1",
+                                "parent": "Engineering Change Approval",
+                                "state": "Open",
+                                "allow_edit": "Engineer",
+                                "doc_status": "0",
+                                "is_optional_state": 0,
+                                "modified": "2026-08-30 10:00:00.000000",
+                                "modified_by": "private@example.com",
+                            }
+                        ],
+                        "transitions": [
+                            {
+                                "name": "transition-row-1",
+                                "parent": "Engineering Change Approval",
+                                "state": "Open",
+                                "action": "Approve",
+                                "next_state": "Approved",
+                                "allowed": "Engineer",
+                                "allow_self_approval": 0,
+                                "condition": raw_condition,
+                                "modified": "2026-08-30 10:00:00.000000",
+                                "modified_by": "private@example.com",
+                            }
+                        ],
+                    }
+                ).encode()
+            return json.dumps(rows.get(operation, [])).encode()
+
+        with patch.object(collector, "_p9_change_preflight"), patch.dict(
+            os.environ,
+            {"NPI_P8_07F_SITE": "site-one"},
+            clear=True,
+        ), patch.object(collector, "_emit") as emit:
+            collector._p9_change_metadata_operation(args, runner)
+
+        output = emit.call_args.args[0]
+        rendered = json.dumps(output)
+        self.assertEqual(output["task_id"], "P9-01")
+        self.assertEqual(output["operation"], "P9_CHANGE_DECLARATIVE_METADATA")
+        self.assertEqual(
+            output["result"]["present_doctype_names"],
+            ["Engineering Change Request"],
+        )
+        self.assertEqual(
+            output["result"]["missing_doctype_names"],
+            ["Engineering Change Notice", "Engineering Change Order"],
+        )
+        self.assertNotIn(raw_script, rendered)
+        self.assertNotIn(raw_options, rendered)
+        self.assertNotIn(raw_condition, rendered)
+        self.assertNotIn("private@example.com", rendered)
+        self.assertNotIn("site-one", rendered)
+        self.assertIn(collector._checksum(raw_script.encode()), rendered)
+        self.assertIn(collector._checksum(raw_condition.encode()), rendered)
+        self.assertEqual(
+            [operation for operation, _ in calls].count("CHANGE_WORKFLOW_DOCUMENT"),
+            1,
+        )
+        for _, command in calls:
+            self.assertEqual(command[0], "bench")
+            self.assertNotIn("sql", " ".join(command).lower())
+            self.assertNotIn("console", " ".join(command).lower())
+
+    def test_p9_change_metadata_rejects_any_row_outside_exact_scope(self) -> None:
+        args = argparse.Namespace(expected_sha="d" * 40, ordinary_run_id="101")
+        fields = collector.P9_CHANGE_METADATA_SPECS["CHANGE_CUSTOM_FIELDS"]["fields"]
+        escaped = {field: None for field in fields}
+        escaped.update(
+            {
+                "name": "Item-extra",
+                "dt": "Item",
+                "fieldname": "extra",
+                "fieldtype": "Data",
+            }
+        )
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            if operation == "CHANGE_CUSTOM_FIELDS":
+                return json.dumps([escaped]).encode()
+            return b"[]"
+
+        with patch.object(collector, "_p9_change_preflight"), patch.dict(
+            os.environ,
+            {"NPI_P8_07F_SITE": "site-one"},
+            clear=True,
+        ), self.assertRaisesRegex(
+            collector.FactCollectionError,
+            "escaped the fixed DocType scope",
+        ):
+            collector._p9_change_metadata_operation(args, runner)
+
+    def test_p9_change_preflight_requires_exact_activation_and_paths(self) -> None:
+        manifest = {
+            "task_id": "P9-01",
+            "status": "IN_PROGRESS_FACT_DELTA_COLLECTOR",
+            "allowed_paths": [
+                "scripts/collect_erpnext_production_facts.py",
+                "tests/test_erpnext_production_fact_collector.py",
+            ],
+        }
+        path = self.write_manifest(manifest)
+
+        def git(*args: str) -> str:
+            return "d" * 40 if args == ("rev-parse", "HEAD") else ""
+
+        with patch.object(collector, "MANIFEST", path), patch.object(
+            collector,
+            "_git",
+            side_effect=git,
+        ):
+            self.assertEqual(
+                collector._p9_change_preflight("d" * 40),
+                manifest,
+            )
+
+        for key, bad_value in (
+            ("task_id", "P8-07F-FACTS"),
+            ("status", "IN_PROGRESS_FACT_DELTA_GOVERNANCE"),
+            ("allowed_paths", ["scripts/collect_erpnext_production_facts.py"]),
+        ):
+            invalid = {**manifest, key: bad_value}
+            invalid_path = self.write_manifest(invalid)
+            with self.subTest(key=key), patch.object(
+                collector,
+                "MANIFEST",
+                invalid_path,
+            ), patch.object(collector, "_git", side_effect=git), self.assertRaises(
+                collector.FactCollectionError
+            ):
+                collector._p9_change_preflight("d" * 40)
+
     def test_status_rejects_untracked_and_paths_reject_nondeterminism(self) -> None:
         with self.assertRaises(collector.FactCollectionError):
             collector._parse_status(b"?? unknown.txt\n")
@@ -826,6 +1119,15 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(
             emit.call_args.args[0]["runtime_metadata_families"],
             list(collector.RUNTIME_METADATA_SPECS),
+        )
+        self.assertEqual(emit.call_args.args[0]["p9_change_task_id"], "P9-01")
+        self.assertEqual(
+            emit.call_args.args[0]["p9_change_doctypes"],
+            list(collector.P9_CHANGE_DOCTYPES),
+        )
+        self.assertEqual(
+            emit.call_args.args[0]["p9_change_metadata_families"],
+            list(collector.P9_CHANGE_METADATA_SPECS),
         )
 
 

@@ -9778,3 +9778,26 @@ repeat or rewrite it merely to restore context. See
   owner; LaunchFlow remains impact/revalidation owner. Product code, target
   methods, production writes and scope expansion remain prohibited.
 - Controller marker: `P9-01 audit PASS; exact change metadata delta governance awaits ordinary CI`.
+
+## 2026-08-31 P9-01 fact-delta governance PASS; collector activation
+
+- Governance exact SHA `0e56c83327b12fc5501a4d5d71c5abf5e30981f6`
+  passes ordinary CI `33347047323`: repository `99353044581`, secret
+  `99353044662`, frontend `99353044670` and visual `99353044785` all pass.
+- Implement one no-state `change-metadata` operation limited to the exact names
+  `Engineering Change Request`, `Engineering Change Order` and `Engineering
+  Change Notice`. It reads only twelve fixed declarative metadata families and
+  the direct children of fixed Workflow documents. It reads no business row.
+- Raw Script, condition, configured property value, long or sensitive Link
+  options and naming prefix are hashed locally. The emitted result contains
+  only safe scalars, counts, checksums and fixed names. Exact filters,
+  deterministic pagination, fixed Workflow parents, scope containment and
+  output shapes fail closed.
+- The collector path and focused tests must pass their own exact-SHA ordinary
+  CI before the single bounded production read. Product code, ERP target
+  methods and all writes remain unauthorized.
+- Local activation evidence passes collector-focused `27/27`, combined
+  governance/collector/reconciliation `67/67`, full repository Python
+  `2716/2716`, current/reconciliation scripts, compileall, shell syntax and
+  diff checks. No production connection was made.
+- Controller marker: `P9-01 change metadata collector implemented; exact-SHA ordinary CI pending`.

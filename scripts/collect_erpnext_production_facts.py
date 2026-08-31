@@ -31,6 +31,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "implementation" / "CURRENT_TASK.json"
 TASK_ID = "P8-07F-FACTS"
+P9_CHANGE_TASK_ID = "P9-01"
 SSH_ALIAS = "JCE-Core"
 REMOTE_BENCH_ROOT = "frappe-bench"
 LOCAL_TIMEZONE = ZoneInfo("Asia/Bangkok")
@@ -226,6 +227,96 @@ PARENT_METADATA_FAMILIES = {
         "DOCUMENT_NAMING_RULES",
     ),
 }
+P9_CHANGE_DOCTYPES = (
+    "Engineering Change Notice",
+    "Engineering Change Order",
+    "Engineering Change Request",
+)
+P9_CHANGE_PAGE_SIZE = 100
+P9_CHANGE_MAX_PAGES = 5
+P9_CHANGE_METADATA_SPECS: dict[str, dict[str, Any]] = {
+    "CHANGE_DOCTYPES": {
+        "doctype": "DocType",
+        "fields": ("name", "module", "custom", "istable", "issingle", "autoname", "track_changes", "is_submittable", "modified"),
+        "filters": (("name", "in", P9_CHANGE_DOCTYPES),),
+    },
+    "CHANGE_DOCFIELDS": {
+        "doctype": "DocField",
+        "fields": ("name", "parent", "fieldname", "fieldtype", "options", "reqd", "read_only", "unique", "hidden", "permlevel", "idx", "modified"),
+        "filters": (("parent", "in", P9_CHANGE_DOCTYPES),),
+        "protected_fields": ("options",),
+    },
+    "CHANGE_DOCPERMS": {
+        "doctype": "DocPerm",
+        "fields": ("name", "parent", "role", "permlevel", "read", "write", "create", "delete", "submit", "cancel", "amend", "report", "export", "share", "print", "email", "if_owner", "modified"),
+        "filters": (("parent", "in", P9_CHANGE_DOCTYPES),),
+    },
+    "CHANGE_CUSTOM_FIELDS": {
+        "doctype": "Custom Field",
+        "fields": ("name", "dt", "fieldname", "fieldtype", "options", "reqd", "read_only", "unique", "insert_after", "modified"),
+        "filters": (("dt", "in", P9_CHANGE_DOCTYPES),),
+        "protected_fields": ("options",),
+    },
+    "CHANGE_PROPERTY_SETTERS": {
+        "doctype": "Property Setter",
+        "fields": ("name", "doc_type", "field_name", "property", "property_type", "value", "modified"),
+        "filters": (("doc_type", "in", P9_CHANGE_DOCTYPES),),
+        "hashed_fields": ("value",),
+    },
+    "CHANGE_WORKFLOWS": {
+        "doctype": "Workflow",
+        "fields": ("name", "document_type", "is_active", "workflow_state_field", "modified"),
+        "filters": (("document_type", "in", P9_CHANGE_DOCTYPES),),
+    },
+    "CHANGE_CUSTOM_DOC_PERMS": {
+        "doctype": "Custom DocPerm",
+        "fields": ("name", "parent", "role", "permlevel", "read", "write", "create", "delete", "submit", "cancel", "amend", "report", "export", "share", "print", "email", "if_owner", "modified"),
+        "filters": (("parent", "in", P9_CHANGE_DOCTYPES),),
+    },
+    "CHANGE_CLIENT_SCRIPTS": {
+        "doctype": "Client Script",
+        "fields": ("name", "dt", "view", "enabled", "script", "modified"),
+        "filters": (("dt", "in", P9_CHANGE_DOCTYPES),),
+        "hashed_fields": ("script",),
+    },
+    "CHANGE_SERVER_SCRIPTS": {
+        "doctype": "Server Script",
+        "fields": ("name", "script_type", "reference_doctype", "doctype_event", "event_frequency", "api_method", "disabled", "script", "modified"),
+        "filters": (("reference_doctype", "in", P9_CHANGE_DOCTYPES),),
+        "hashed_fields": ("script",),
+    },
+    "CHANGE_WEBHOOKS": {
+        "doctype": "Webhook",
+        "fields": ("name", "webhook_doctype", "webhook_docevent", "enabled", "request_method", "request_structure", "condition", "modified"),
+        "filters": (("webhook_doctype", "in", P9_CHANGE_DOCTYPES),),
+        "hashed_fields": ("request_structure", "condition"),
+    },
+    "CHANGE_NOTIFICATIONS": {
+        "doctype": "Notification",
+        "fields": ("name", "document_type", "event", "enabled", "channel", "modified"),
+        "filters": (("document_type", "in", P9_CHANGE_DOCTYPES),),
+    },
+    "CHANGE_NAMING_RULES": {
+        "doctype": "Document Naming Rule",
+        "fields": ("name", "document_type", "disabled", "priority", "prefix", "counter", "prefix_digits", "modified"),
+        "filters": (("document_type", "in", P9_CHANGE_DOCTYPES),),
+        "hashed_fields": ("prefix",),
+    },
+}
+P9_CHANGE_SCOPE_FIELDS = {
+    "CHANGE_DOCTYPES": "name",
+    "CHANGE_DOCFIELDS": "parent",
+    "CHANGE_DOCPERMS": "parent",
+    "CHANGE_CUSTOM_FIELDS": "dt",
+    "CHANGE_PROPERTY_SETTERS": "doc_type",
+    "CHANGE_WORKFLOWS": "document_type",
+    "CHANGE_CUSTOM_DOC_PERMS": "parent",
+    "CHANGE_CLIENT_SCRIPTS": "dt",
+    "CHANGE_SERVER_SCRIPTS": "reference_doctype",
+    "CHANGE_WEBHOOKS": "webhook_doctype",
+    "CHANGE_NOTIFICATIONS": "document_type",
+    "CHANGE_NAMING_RULES": "document_type",
+}
 
 
 class FactCollectionError(RuntimeError):
@@ -290,6 +381,38 @@ def _preflight(expected_sha: str) -> dict[str, Any]:
     require(
         str(manifest.get("status", "")).startswith("IN_PROGRESS"),
         "P8-07F facts task is not in progress",
+    )
+    return manifest
+
+
+def _p9_change_preflight(expected_sha: str) -> dict[str, Any]:
+    require(HEX_SHA.fullmatch(expected_sha) is not None, "expected SHA is invalid")
+    require(_git("rev-parse", "HEAD") == expected_sha, "local HEAD differs from expected SHA")
+    for path in (
+        "implementation/CURRENT_TASK.json",
+        "scripts/collect_erpnext_production_facts.py",
+    ):
+        require(
+            not _git("status", "--short", "--untracked-files=no", "--", path),
+            f"governed collector path is dirty: {path}",
+        )
+    try:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError("cannot load the current task manifest") from exc
+    require(manifest.get("task_id") == P9_CHANGE_TASK_ID, "P9-01 task is not active")
+    require(
+        manifest.get("status") == "IN_PROGRESS_FACT_DELTA_COLLECTOR",
+        "P9-01 change metadata collector is not active",
+    )
+    required_paths = {
+        "scripts/collect_erpnext_production_facts.py",
+        "tests/test_erpnext_production_fact_collector.py",
+    }
+    allowed_paths = manifest.get("allowed_paths")
+    require(
+        type(allowed_paths) is list and required_paths.issubset(set(allowed_paths)),
+        "P9-01 change metadata collector paths are not authorized",
     )
     return manifest
 
@@ -398,6 +521,39 @@ def _runtime_command(family: str, site: str, start: int) -> tuple[str, ...]:
     command = (
         "bench", "--site", site, "execute", "frappe.client.get_list",
         "--kwargs", json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
+    )
+    _validate_command_tokens(command)
+    return command
+
+
+def _p9_change_metadata_command(
+    family: str,
+    site: str,
+    start: int,
+) -> tuple[str, ...]:
+    require(family in P9_CHANGE_METADATA_SPECS, "change metadata family is not allowlisted")
+    require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
+    require(
+        start >= 0 and start % P9_CHANGE_PAGE_SIZE == 0,
+        "change metadata page start is invalid",
+    )
+    spec = P9_CHANGE_METADATA_SPECS[family]
+    kwargs = {
+        "doctype": spec["doctype"],
+        "fields": list(spec["fields"]),
+        "filters": [list(row) for row in spec["filters"]],
+        "order_by": "name asc",
+        "limit_start": start,
+        "limit_page_length": P9_CHANGE_PAGE_SIZE,
+    }
+    command = (
+        "bench",
+        "--site",
+        site,
+        "execute",
+        "frappe.client.get_list",
+        "--kwargs",
+        json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
     )
     _validate_command_tokens(command)
     return command
@@ -926,9 +1082,13 @@ def _reconstruct_current_file(head_raw: bytes, patch_raw: bytes, path: str) -> b
     return result
 
 
-def _sanitize_runtime_row(row: object, family: str) -> tuple[dict[str, Any], str]:
-    require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
-    spec = RUNTIME_METADATA_SPECS[family]
+def _sanitize_metadata_row(
+    row: object,
+    family: str,
+    specs: dict[str, dict[str, Any]],
+) -> tuple[dict[str, Any], str]:
+    require(family in specs, "metadata family is not allowlisted")
+    spec = specs[family]
     fields = tuple(spec["fields"])
     hashed_fields = set(spec.get("hashed_fields", ()))
     protected_fields = set(spec.get("protected_fields", ()))
@@ -965,24 +1125,44 @@ def _sanitize_runtime_row(row: object, family: str) -> tuple[dict[str, Any], str
     return safe_row, name
 
 
-def _parse_runtime_page(raw: bytes, family: str) -> tuple[list[dict[str, Any]], list[str]]:
-    require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
+def _sanitize_runtime_row(row: object, family: str) -> tuple[dict[str, Any], str]:
+    return _sanitize_metadata_row(row, family, RUNTIME_METADATA_SPECS)
+
+
+def _parse_metadata_page(
+    raw: bytes,
+    family: str,
+    specs: dict[str, dict[str, Any]],
+    *,
+    page_size: int,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    require(family in specs, "metadata family is not allowlisted")
     require(len(raw) <= MAX_RUNTIME_BYTES, "runtime metadata output exceeded the bounded limit")
     try:
         value = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise FactCollectionError("runtime metadata output is not exact JSON") from exc
     require(type(value) is list, "runtime metadata page must be a list")
-    page_size = RUNTIME_PAGE_SIZE_OVERRIDES.get(family, RUNTIME_PAGE_SIZE)
     require(len(value) <= page_size, "runtime metadata page exceeded the fixed size")
     sanitized: list[dict[str, Any]] = []
     raw_names: list[str] = []
     for row in value:
-        safe_row, name = _sanitize_runtime_row(row, family)
+        safe_row, name = _sanitize_metadata_row(row, family, specs)
         sanitized.append(safe_row)
         raw_names.append(name)
     require(len(raw_names) == len(set(raw_names)), "runtime metadata page contains duplicate names")
     return sanitized, raw_names
+
+
+def _parse_runtime_page(raw: bytes, family: str) -> tuple[list[dict[str, Any]], list[str]]:
+    require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
+    page_size = RUNTIME_PAGE_SIZE_OVERRIDES.get(family, RUNTIME_PAGE_SIZE)
+    return _parse_metadata_page(
+        raw,
+        family,
+        RUNTIME_METADATA_SPECS,
+        page_size=page_size,
+    )
 
 
 def _parse_parent_metadata_document(
@@ -1472,6 +1652,122 @@ def _site_fact_operation(
     )
 
 
+def _p9_change_metadata_operation(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+) -> None:
+    _validate_ordinary_run_id(args.ordinary_run_id)
+    _p9_change_preflight(args.expected_sha)
+    site = os.environ.get("NPI_P8_07F_SITE")
+    require(
+        site is not None and APP_TOKEN.fullmatch(site) is not None,
+        "runtime site parameter is missing or invalid",
+    )
+
+    family_results: dict[str, dict[str, Any]] = {}
+    workflow_names: list[str] = []
+    for family in P9_CHANGE_METADATA_SPECS:
+        rows: list[dict[str, Any]] = []
+        names: list[str] = []
+        page_checksums: list[str] = []
+        exhausted = False
+        for page_index in range(P9_CHANGE_MAX_PAGES):
+            start = page_index * P9_CHANGE_PAGE_SIZE
+            raw = runner(
+                family,
+                _p9_change_metadata_command(family, site, start),
+                MAX_RUNTIME_BYTES,
+            )
+            page_rows, page_names = _parse_metadata_page(
+                raw,
+                family,
+                P9_CHANGE_METADATA_SPECS,
+                page_size=P9_CHANGE_PAGE_SIZE,
+            )
+            require(
+                not set(names).intersection(page_names),
+                "change metadata pagination contains duplicate names",
+            )
+            scope_field = P9_CHANGE_SCOPE_FIELDS[family]
+            require(
+                all(row.get(scope_field) in P9_CHANGE_DOCTYPES for row in page_rows),
+                "change metadata escaped the fixed DocType scope",
+            )
+            rows.extend(page_rows)
+            names.extend(page_names)
+            page_checksums.append(_checksum(raw))
+            if len(page_rows) < P9_CHANGE_PAGE_SIZE:
+                exhausted = True
+                break
+        require(exhausted, "change metadata exceeded the fixed pagination limit")
+        if family == "CHANGE_WORKFLOWS":
+            workflow_names = list(names)
+        family_results[family] = {
+            "row_count": len(rows),
+            "page_count": len(page_checksums),
+            "page_checksums": page_checksums,
+            "result_checksum": _checksum(_json_bytes(rows)),
+            "rows": rows,
+        }
+
+    workflow_documents: list[dict[str, Any]] = []
+    require(len(workflow_names) <= 30, "change workflow count exceeded")
+    for workflow_name in workflow_names:
+        raw = runner(
+            "CHANGE_WORKFLOW_DOCUMENT",
+            _parent_document_command(site, "Workflow", workflow_name),
+            MAX_RUNTIME_BYTES,
+        )
+        states = _parse_parent_metadata_document(
+            raw,
+            family="WORKFLOW_STATES",
+            parent_doctype="Workflow",
+            parent_name=workflow_name,
+            child_key="states",
+        )
+        transitions = _parse_parent_metadata_document(
+            raw,
+            family="WORKFLOW_TRANSITIONS",
+            parent_doctype="Workflow",
+            parent_name=workflow_name,
+            child_key="transitions",
+        )
+        workflow_documents.append(
+            {
+                "name": workflow_name,
+                "document_checksum": _checksum(raw),
+                "states": states,
+                "transitions": transitions,
+            }
+        )
+
+    present_doctypes = [
+        row["name"] for row in family_results["CHANGE_DOCTYPES"]["rows"]
+    ]
+    require(
+        present_doctypes == sorted(present_doctypes),
+        "change DocType order drifted",
+    )
+    missing_doctypes = sorted(set(P9_CHANGE_DOCTYPES) - set(present_doctypes))
+    result = {
+        "fixed_doctype_names": list(P9_CHANGE_DOCTYPES),
+        "present_doctype_names": present_doctypes,
+        "missing_doctype_names": missing_doctypes,
+        "families": family_results,
+        "workflow_documents": workflow_documents,
+    }
+    _emit(
+        {
+            "task_id": P9_CHANGE_TASK_ID,
+            "operation": "P9_CHANGE_DECLARATIVE_METADATA",
+            "timestamp": _timestamp(),
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "result_checksum": _checksum(_json_bytes(result)),
+            "result": result,
+        }
+    )
+
+
 def _cleanup(args: argparse.Namespace) -> None:
     _validate_ordinary_run_id(args.ordinary_run_id)
     _preflight(args.expected_sha)
@@ -1513,6 +1809,9 @@ def _parser() -> argparse.ArgumentParser:
     runtime_parser.add_argument("--family", required=True, choices=tuple(RUNTIME_METADATA_SPECS))
     site_facts_parser = governed("site-facts")
     site_facts_parser.add_argument("--family", required=True, choices=SITE_FACT_FAMILIES)
+    change_metadata_parser = subparsers.add_parser("change-metadata")
+    change_metadata_parser.add_argument("--expected-sha", required=True)
+    change_metadata_parser.add_argument("--ordinary-run-id", required=True)
     governed("cleanup")
     return parser
 
@@ -1541,6 +1840,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     ],
                     "runtime_metadata_families": list(RUNTIME_METADATA_SPECS),
                     "site_fact_families": list(SITE_FACT_FAMILIES),
+                    "p9_change_task_id": P9_CHANGE_TASK_ID,
+                    "p9_change_operation": "P9_CHANGE_DECLARATIVE_METADATA",
+                    "p9_change_doctypes": list(P9_CHANGE_DOCTYPES),
+                    "p9_change_metadata_families": list(P9_CHANGE_METADATA_SPECS),
                     "remote_contact": False,
                 }
             )
@@ -1559,6 +1862,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 _runtime_operation(args)
         elif args.command == "site-facts":
             _site_fact_operation(args)
+        elif args.command == "change-metadata":
+            _p9_change_metadata_operation(args)
         elif args.command == "cleanup":
             _cleanup(args)
         else:

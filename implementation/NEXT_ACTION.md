@@ -1,9 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_FACT_DELTA_GOVERNANCE — P9-01`
+`IN_PROGRESS_FACT_DELTA_COLLECTOR — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
+
+P9-01 fact-delta governance exact SHA
+`0e56c83327b12fc5501a4d5d71c5abf5e30981f6` passes ordinary CI
+`33347047323` in all four lanes. The fixed, no-state `change-metadata`
+collector now covers only the exact Engineering Change Request, Engineering
+Change Order and Engineering Change Notice names and their declarative metadata.
+The sole next action is its own exact-SHA ordinary Gate; after PASS, run it once
+against the private Site parameter and accept only sanitized, scoped output.
+Product code and production writes remain unauthorized.
 
 P9-01 audit activation exact SHA
 `e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes ordinary CI
