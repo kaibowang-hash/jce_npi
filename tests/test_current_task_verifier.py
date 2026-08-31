@@ -86,12 +86,16 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "apps/npi_core/npi_core/change_control/__init__.py",
                 "apps/npi_core/npi_core/change_control/domain.py",
                 "apps/npi_core/npi_core/change_control/frappe_validation.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/__init__.py",
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/npi_engineering_change.json",
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/npi_engineering_change.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_revision/__init__.py",
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_revision/npi_engineering_change_revision.json",
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_revision/npi_engineering_change_revision.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_event/__init__.py",
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_event/npi_engineering_change_event.json",
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_event/npi_engineering_change_event.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/__init__.py",
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/npi_engineering_change_idempotency.json",
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/npi_engineering_change_idempotency.py",
                 "apps/npi_core/npi_core/patches.txt",
@@ -102,7 +106,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests/test_v1_2_reconciliation.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 35)
+        self.assertEqual(len(value["allowed_paths"]), 39)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])

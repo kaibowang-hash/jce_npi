@@ -17,6 +17,36 @@ identity:
   mapping_store_owner: NPI_ONE
 
 objects:
+  EngineeringChange:
+    owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
+    erp_view: formal_change_observation_link
+    fields:
+      change_identity_project_and_current_revision: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NONE, conflict: LOCKED_PLUS_ONE_VERSION}
+      impact_assessment_affected_versions_tasks_and_revalidation: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: IMMUTABLE_REVISION}
+      effectivity_disposition_cost_and_closure_evidence: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: EVIDENCE_REQUIRED_FAIL_CLOSED}
+      formal_change_identifier_raw_status_source_version_and_effectivity_transaction_truth: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: EXACT_READ_ONLY_OBSERVATION}
+
+  EngineeringChangeRevision:
+    owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
+    erp_view: none
+    fields:
+      exact_predecessor_and_canonical_snapshot_hash: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      baseline_document_ebom_tooling_trial_gate_and_work_references: {owner: REFERENCED_NPI_SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      formal_ecr_observation_snapshot: {owner: ERPNEXT_VIA_NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: NEVER_CALLER_EDITABLE}
+
+  EngineeringChangeEvent:
+    owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
+    erp_view: none
+    fields:
+      exact_change_revision_actor_request_trace_and_hash: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  EngineeringChangeIdempotency:
+    owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
+    erp_view: none
+    fields:
+      actor_project_operation_and_payload_hash: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDEMPOTENCY_SCOPE}
+      exact_change_and_sealed_response: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NONE, conflict: ONE_WAY_SEAL_EXACT_REPLAY}
+
   Customer:
     owner_system: ERPNEXT
     npi_view: projection
