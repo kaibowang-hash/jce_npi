@@ -97,3 +97,27 @@ generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
 coverage), compilation, shell syntax, exact-16 and projected union-58
 manifests, unauthorized-17 rejection, security and diff hygiene. Exact-SHA
 ordinary PASS must precede the cycle's sole Level 2 diagnostic.
+
+## Inbound raw-body binding repair
+
+Inbound-full controlled run `33428760121` returned only
+`P901_CHANGE_INBOUND_API_FIELDS / RequestValidationFailed /
+trace-b2c50272c5e155e595791f7522df27f2`. The BFF's only synthetic form value is
+the already-excluded `cmd` transport field; the remaining unexpected keys can
+only arise because the raw signed JSON method admitted Frappe's parsed body as
+`**request_fields`. This occurs before signature/profile/repository work and
+is not an event-contract or ERP result failure.
+
+The minimal repair matches the accepted P8-02 signed raw-body boundary: the
+public handler accepts no keyword fields and authenticates the exact raw body.
+Signature, schema, Project containment, profile/principal, repository write
+order, commit/enqueue, replay and response semantics are unchanged. The
+inbound-full cycle is `1/1,1/1,0/1`; all diagnostic activations are disabled
+before exact-SHA ordinary CI and the sole Level 3.
+
+Level 1 passes focused repair/current/runtime `41/41`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-12 and projected union-58 manifests,
+unauthorized-13 rejection, all-diagnostics-off, security and diff hygiene.

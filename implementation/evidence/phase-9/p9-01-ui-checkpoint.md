@@ -388,3 +388,20 @@ generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
 coverage), compilation, shell syntax, exact-16 and projected union-58
 manifests, unauthorized-17 rejection, security and diff hygiene. Exact-SHA
 ordinary PASS must precede the cycle's sole Level 2 diagnostic.
+
+## Inbound raw-body binding repair
+
+Inbound-full controlled `33428760121` returned only the safe
+`P901_CHANGE_INBOUND_API_FIELDS / RequestValidationFailed` boundary. The
+signed raw JSON body was incorrectly rebound as keyword fields and rejected
+before the established signature/schema ingress. The handler now follows the
+existing no-argument raw-body pattern; no UI, user-visible response, route,
+contract or ownership behavior changes. The cycle is `1/1,1/1,0/1`, all
+diagnostics are off, and the sole exact-SHA Level 3 remains.
+
+Level 1 passes focused repair/current/runtime `41/41`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-12 and projected union-58 manifests,
+unauthorized-13 rejection, all-diagnostics-off, security and diff hygiene.

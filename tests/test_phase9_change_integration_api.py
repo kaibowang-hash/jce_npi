@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import inspect
 import os
 import sys
 import types
@@ -169,6 +170,10 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
                 ),
             },
             clear=False,
+        ), patch.object(
+            self.module,
+            "ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED",
+            True,
         ):
             self.assertTrue(
                 self.module._engineering_change_inbound_diagnostic_active(trace)
@@ -205,9 +210,38 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         )
         positions = [source.index(code) for code in codes]
         self.assertEqual(positions, sorted(positions))
-        self.assertTrue(
+        self.assertFalse(
             self.module.ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED
         )
+
+    def test_inbound_handler_keeps_raw_signed_json_out_of_keyword_fields(self) -> None:
+        command = (
+            "npi_integration.engineering_change_api."
+            "receive_engineering_change_event"
+        )
+        self.frappe.local.form_dict = {
+            "cmd": command,
+            "event_type": "npi.erp-engineering-change.v1",
+            "payload": {"change": "signed-raw-body"},
+        }
+        self.assertEqual(
+            tuple(
+                inspect.signature(
+                    self.module.receive_engineering_change_event
+                ).parameters
+            ),
+            (),
+        )
+        with patch.object(
+            self.module,
+            "_receive_engineering_change_event",
+            return_value={"state": "pending"},
+        ) as receive:
+            self.assertEqual(
+                self.module.receive_engineering_change_event(),
+                {"state": "pending"},
+            )
+        receive.assert_called_once_with()
 
     def test_summary_route_requires_csrf_exact_predecessor_and_actor_idempotency(self) -> None:
         self.frappe.local.form_dict = {

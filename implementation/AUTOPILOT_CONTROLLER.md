@@ -10401,3 +10401,34 @@ repeat or rewrite it merely to restore context. See
   coverage), compilation, shell syntax, exact-16 and projected union-58
   manifests, unauthorized-17 rejection, security and diff checks.
 - Controller marker: `P9-01D inbound-full combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D inbound raw-body binding repair
+
+- Inbound-full SHA `213781996ab732389a476b9e8ddad95eedb84866`
+  passed ordinary CI `33427214659`: visual `99603597043`, secret scan
+  `99603597044`, repository `99603597112` and frontend `99603597272` all
+  passed. Its sole Level 2 `33428760121` passed controlled preflight
+  `99608689968`; strict exact-134 reading from runtime `99608782467` returned
+  only `P901_CHANGE_INBOUND_API_FIELDS / RequestValidationFailed /
+  trace-b2c50272c5e155e595791f7522df27f2`. Restricted response, business and
+  child-process output remained unread.
+- The exact BFF route injects only the governed `cmd` transport field, which
+  `TRANSPORT_FIELDS` already excludes. The raw signed JSON method instead
+  admitted Frappe's parsed body again through `**request_fields`, so its empty
+  request-field whitelist rejected the signed event before raw-body signature
+  and schema validation. The established P8-02 signed raw-body handler proves
+  the closed binding: a no-argument whitelisted method reads the exact raw
+  request and leaves validation to the signed ingress contract.
+- Remove only the public and private inbound `**request_fields` binding. Keep
+  the raw body, signature, event schema, BFF route, profile, principal,
+  repository, transaction, enqueue, response and ownership contracts
+  unchanged. Disable all ten diagnostic activations. Freeze inbound-full at
+  diagnostic `1/1`, repair `1/1`, final `0/1`; after Level 1 and exact-SHA
+  ordinary PASS, dispatch the sole diagnostics-off Level 3.
+- Level 1 passes focused repair/current/runtime `41/41`, affected P8/P9
+  security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+  current/reconciliation, repository verification, frontend generation and
+  i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+  compilation, shell syntax, exact-12 and projected union-58 manifests,
+  unauthorized-13 rejection, all-diagnostics-off, security and diff checks.
+- Controller marker: `P9-01D inbound raw-body binding repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.

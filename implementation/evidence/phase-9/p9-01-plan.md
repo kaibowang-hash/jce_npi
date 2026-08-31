@@ -654,3 +654,28 @@ generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
 coverage), compilation, shell syntax, exact-16 and projected union-58
 manifests, unauthorized-17 rejection, security and diff hygiene. Exact-SHA
 ordinary PASS must precede the sole Level 2 diagnostic.
+
+## P9-01D inbound raw-body binding repair
+
+Inbound-full SHA `21378199` passed ordinary `33427214659`. Its sole Level 2
+`33428760121` passed preflight and returned only
+`P901_CHANGE_INBOUND_API_FIELDS / RequestValidationFailed /
+trace-b2c50272c5e155e595791f7522df27f2` from runtime `99608782467`.
+Restricted response, business and child content remained unread.
+
+The BFF contributes only the governed `cmd` transport field and the request
+security helper already excludes it. The raw signed JSON method's
+`**request_fields` binding therefore reintroduced Frappe-parsed body keys and
+rejected them before the existing signature and closed event-schema ingress.
+Use the established P8-02 raw-body pattern: the whitelisted method takes no
+keyword fields and reads the exact raw request. No API path, event, signature,
+profile, permission, transaction, enqueue, response, schema or ownership
+contract changes. The cycle is `1/1,1/1,0/1`; all diagnostics are off before
+the sole exact-SHA Level 3.
+
+Level 1 passes focused repair/current/runtime `41/41`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-12 and projected union-58 manifests,
+unauthorized-13 rejection, all-diagnostics-off, security and diff hygiene.

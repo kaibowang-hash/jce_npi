@@ -35,7 +35,7 @@ from .engineering_change.signature import WEBHOOK_PATH
 _PROFILE_HOOK = "npi_engineering_change_profile_resolver"
 _SECRET_HOOK = "npi_engineering_change_secret_resolver"
 _SUMMARY_FIELDS = frozenset({"expectedRevision", "expectedRevisionGlobalId", "expectedRevisionSnapshotHash"})
-ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Inbound-Diagnostic"
 )
@@ -87,7 +87,7 @@ def engineering_change_inbound_step(code: str) -> Iterator[None]:
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
-def receive_engineering_change_event(**request_fields: Any) -> dict[str, Any] | None:
+def receive_engineering_change_event() -> dict[str, Any] | None:
     request = getattr(frappe.local, "request", None)
     trace_id = (
         request.headers.get(ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER)
@@ -99,21 +99,18 @@ def receive_engineering_change_event(**request_fields: Any) -> dict[str, Any] | 
         active=_engineering_change_inbound_diagnostic_active(trace_id),
     ):
         with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_CALL"):
-            return _receive_engineering_change_event(request_fields)
+            return _receive_engineering_change_event()
 
 
-def _receive_engineering_change_event(
-    request_fields: dict[str, Any],
-) -> dict[str, Any] | None:
+def _receive_engineering_change_event() -> dict[str, Any] | None:
     headers = {"X-Request-ID": response_request_id(), "Idempotency-Replayed": "false"}
     replayed = False
 
     def handle() -> dict[str, Any]:
         nonlocal replayed
         with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_FIELDS"):
-            reject_unexpected_request_fields(frozenset(), request_fields)
-        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_REQUEST"):
             request = getattr(frappe.local, "request", None)
+        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_REQUEST"):
             if request is None:
                 raise EngineeringChangeIntegrationUnavailable()
         with engineering_change_inbound_step(
