@@ -4654,8 +4654,6 @@ if [[ "${verification_mode}" == "all" ||
   stop_runtime_server
   set_engineering_change_route_switch false false
   engineering_change_route_disable_config_changed=true
-  set_runtime_disposable_marker npi-one-engineering-change-disposable-v1
-  runtime_disposable_marker_changed=true
   export_engineering_change_runtime_environment
   engineering_change_runtime_environment_active=true
   start_runtime_server
@@ -4715,7 +4713,6 @@ if [[ "${verification_mode}" == "all" ||
   stop_runtime_server
   clear_engineering_change_runtime_environment
   engineering_change_runtime_environment_active=false
-  restore_runtime_disposable_marker
   restore_engineering_change_route_switch
   start_runtime_server
   if ! wait_for_runtime_server; then

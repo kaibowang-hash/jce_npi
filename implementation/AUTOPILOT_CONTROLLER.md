@@ -10138,3 +10138,33 @@ repeat or rewrite it merely to restore context. See
   subtests, both governance scripts, compile, shell syntax and diff checks.
   Product, contract, schema, UI and workflow diffs remain zero.
 - Controller marker: `P9-01D Engineering Change local-fixture diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01D canonical disposable marker harness repair
+
+- Local-fixture SHA `6c8d9e0cce35ea3b4b4309f0363deb2483af1901`
+  passed ordinary `33391332367`. Its sole Level 2 `33392612898` passed
+  preflight `99489571665` and fixed Bench/Site initialization; runtime
+  `99489686104` returned only `P901_CHANGE_INPUT_LOCAL_FIXTURE /
+  RuntimeError / trace-0a3f1d6e3e6c5db8b42a0d125a9cbfd1`.
+- The ten explicit local-fixture predicates all completed before the outer
+  tuple, so the remaining shared guard was its live identity subprocess.
+  Static source proves a deterministic harness conflict: immediately before
+  fresh verification the shell changed `npi_runtime_disposable_marker` to
+  `npi-one-engineering-change-disposable-v1`, while
+  `verify_local_frappe_site.py --mode live` requires exactly
+  `npi-one-local-runtime-disposable-v1`. The guard therefore must return
+  nonzero before any P9 product call.
+- Freeze the local-fixture diagnostic at `1/1`; authorize one harness repair
+  at `1/1`, final `0/1`. Keep the canonical disposable marker for the whole
+  cumulative runtime, make the P9 child verify that same marker and remove the
+  P9-only marker mutation/restoration. Do not weaken the shared guard. All P9
+  diagnostic activations return to false.
+- Exact repair paths are the verifier, shell, focused test and three existing
+  P9 governance records. Product/API/repository/schema/UI/contracts/workflow
+  remain unchanged. After exact-SHA ordinary PASS, run the sole diagnostics-off
+  Level 3 final; do not run another Level 2 diagnostic.
+- Level 1 passes the focused runtime verifier `14/14`, the full repository
+  Python suite `2803/2803` with `6167` subtests, current-task and V1.2
+  reconciliation verification, Python compilation, shell syntax, all-off and
+  removed-marker lexical checks, and diff validation.
+- Controller marker: `P9-01D canonical disposable marker repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.

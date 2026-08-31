@@ -462,3 +462,23 @@ remains unchanged.
 Level 1 passes Phase 9 plus current/reconciliation `126/126` with `60`
 subtests, both governance scripts, compilation, shell syntax and diff hygiene.
 The exact-five change remains product-zero.
+
+## P9-01D local-fixture result and canonical marker repair
+
+Local-fixture ordinary `33391332367` passed all lanes. Its sole Level 2
+`33392612898` passed preflight and fixed Bench/Site initialization; the strict
+reader returned only `P901_CHANGE_INPUT_LOCAL_FIXTURE / RuntimeError /
+trace-0a3f1d6e3e6c5db8b42a0d125a9cbfd1`.
+
+All ten explicit local-fixture predicates completed first. The remaining live
+identity guard is deterministic: the P9 shell changed the disposable marker
+to `npi-one-engineering-change-disposable-v1`, while the fixed guard accepts
+only `npi-one-local-runtime-disposable-v1`. This necessarily fails before any
+P9 product call. The minimal harness repair preserves the canonical marker for
+the entire cumulative run, makes the P9 child verify it and removes the P9-only
+marker mutation/restoration. Shared safety checks are not weakened, all
+diagnostics are off, and product code remains unchanged. The cycle is
+`1/1,1/1,0/1`; exact-SHA ordinary then one sole Level 3 is required. Level 1
+passes the focused verifier `14/14`, full repository Python `2803/2803` with
+`6167` subtests, current/reconciliation verification, compilation, shell
+syntax, exact all-off/removed-marker checks and diff validation.

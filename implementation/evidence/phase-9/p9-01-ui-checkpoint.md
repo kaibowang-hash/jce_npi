@@ -215,3 +215,21 @@ route, UI, visual and contracts remain unchanged.
 Level 1 passes Phase 9 plus current/reconciliation `126/126` with `60`
 subtests, the governance scripts, compile, shell and diff checks. The
 exact-five change remains product-zero.
+
+## Canonical disposable marker harness repair
+
+Local-fixture SHA `6c8d9e0c` passed ordinary `33391332367`. Controlled run
+`33392612898` returned only `P901_CHANGE_INPUT_LOCAL_FIXTURE / RuntimeError /
+trace-0a3f1d6e3e6c5db8b42a0d125a9cbfd1` after preflight and Site initialization.
+
+The ten local predicates passed before the outer record. Source cross-proof
+shows the remaining live identity guard must reject the P9-specific marker,
+because it only accepts the canonical local-runtime disposable marker. The
+repair keeps that canonical marker throughout and removes only the P9 harness
+mutation/restoration; the child checks the same canonical value. All
+diagnostics are off. Product, API, repository, schema, UI, visual, translation,
+contracts and ERP boundaries remain unchanged. Level 1 passes focused runtime
+`14/14`, full repository Python `2803/2803` with `6167` subtests,
+current/reconciliation verification, compilation, shell syntax, all-off and
+removed-marker lexical checks, and diff validation. Exact-SHA ordinary CI and
+the sole diagnostics-off Level 3 remain pending.

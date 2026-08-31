@@ -161,7 +161,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
@@ -173,7 +173,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED,
                 )
             ),
-            1,
+            0,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 57)
         self.assertTrue(all(literals.count(code) == 2 for code in set(literals)))
@@ -186,6 +186,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 os.environ,
                 {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
                 clear=False,
+            ), patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
                     with self.assertRaises(SystemExit):
@@ -193,12 +197,17 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                             "P901_CHANGE_FRESH_PARENT"
                         ):
                             raise SystemExit(1)
-            self.assertEqual(
-                self.verifier.read_engineering_change_runtime_diagnostic(
-                    path, expected_trace=trace
-                ),
-                ("SystemExit", "P901_CHANGE_FRESH_PARENT", trace),
-            )
+            with patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.read_engineering_change_runtime_diagnostic(
+                        path, expected_trace=trace
+                    ),
+                    ("SystemExit", "P901_CHANGE_FRESH_PARENT", trace),
+                )
 
     def test_failed_inner_write_leaves_outer_fallback_available(self) -> None:
         trace = self.verifier.engineering_change_runtime_diagnostic_trace()
@@ -222,6 +231,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 self.verifier,
                 "_write_engineering_change_runtime_diagnostic",
                 side_effect=flaky_write,
+            ), patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
                     self.verifier._record_engineering_change_runtime_diagnostic(
@@ -231,12 +244,17 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                         "P901_CHANGE_FRESH_PARENT", RuntimeError("restricted")
                     )
             self.assertEqual(attempts, 2)
-            self.assertEqual(
-                self.verifier.read_engineering_change_runtime_diagnostic(
-                    path, expected_trace=trace
-                ),
-                ("RuntimeError", "P901_CHANGE_FRESH_PARENT", trace),
-            )
+            with patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.read_engineering_change_runtime_diagnostic(
+                        path, expected_trace=trace
+                    ),
+                    ("RuntimeError", "P901_CHANGE_FRESH_PARENT", trace),
+                )
 
     def test_diagnostic_record_is_exact_o_excl_and_strictly_read(self) -> None:
         trace = self.verifier.engineering_change_runtime_diagnostic_trace()
@@ -246,6 +264,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 os.environ,
                 {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
                 clear=False,
+            ), patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
                     self.verifier._record_engineering_change_runtime_diagnostic(
@@ -254,12 +276,17 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier._record_engineering_change_runtime_diagnostic(
                         "P901_CHANGE_CLOSE_HTTP", ValueError("must-not-overwrite")
                     )
-            self.assertEqual(
-                self.verifier.read_engineering_change_runtime_diagnostic(
-                    path, expected_trace=trace
-                ),
-                ("RuntimeError", "P901_CHANGE_CREATE_HTTP", trace),
-            )
+            with patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                self.assertEqual(
+                    self.verifier.read_engineering_change_runtime_diagnostic(
+                        path, expected_trace=trace
+                    ),
+                    ("RuntimeError", "P901_CHANGE_CREATE_HTTP", trace),
+                )
             record = json.loads(path.read_text(encoding="utf-8"))
             self.assertEqual(set(record), {"code", "exceptionType", "traceId"})
             self.assertNotIn("restricted", path.read_text(encoding="utf-8"))
@@ -347,21 +374,29 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("remaining == 0", text)
 
     def test_shell_owns_default_disable_restart_recovery_and_restoration(self) -> None:
-        sequence = self.shell[self.shell.index("# P9-01 reuses") :]
+        sequence = self.shell[
+            self.shell.index("# P9-01 reuses") : self.shell.index(
+                "# Insert one marker-gated", self.shell.index("# P9-01 reuses")
+            )
+        ]
         ordered = (
             "run_engineering_change_runtime_verifier disabled",
             "set_engineering_change_route_switch false false",
-            "set_runtime_disposable_marker npi-one-engineering-change-disposable-v1",
             "run_engineering_change_runtime_verifier fresh",
             "run_engineering_change_runtime_verifier replay-only",
             "set_engineering_change_route_switch true true",
             "run_engineering_change_runtime_verifier recovered",
             "run_engineering_change_runtime_verifier cleanup",
-            "restore_runtime_disposable_marker",
             "restore_engineering_change_route_switch",
         )
         positions = [sequence.index(value) for value in ordered]
         self.assertEqual(positions, sorted(positions))
+        self.assertNotIn("set_runtime_disposable_marker", sequence)
+        self.assertNotIn("restore_runtime_disposable_marker", sequence)
+        self.assertEqual(
+            self.verifier.RUNTIME_MARKER,
+            "npi-one-local-runtime-disposable-v1",
+        )
         self.assertIn(
             "engineering_change_route_disable_original_state", self.shell
         )
@@ -374,9 +409,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn("JCE-Core", self.shell)
         self.assertNotIn("ssh ", self.shell)
         self.assertNotIn("bench --site jce.1", self.shell)
-        self.assertIn(
-            "npi-one-engineering-change-disposable-v1", self.shell
-        )
+        self.assertNotIn("npi-one-engineering-change-disposable-v1", self.shell)
 
 
 if __name__ == "__main__":
