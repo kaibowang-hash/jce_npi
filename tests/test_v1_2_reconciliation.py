@@ -811,7 +811,7 @@ class V12ReconciliationTests(unittest.TestCase):
             "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3",
             phase_status,
         )
-        self.assertIn("current_task: P9-00", phase_status)
+        self.assertIn("current_task: P9-01", phase_status)
         self.assertIn("diagnostics_off_final_level_3: 33330886346", phase_status)
         self.assertIn(
             "technical_result: PASS_INTERNAL_READ_ONLY_PROJECTION_SEAM_EXTERNAL_CONTRACT_HELD",
@@ -824,6 +824,8 @@ class V12ReconciliationTests(unittest.TestCase):
             phase_status,
         )
         self.assertIn("p9_00:", phase_status)
+        self.assertIn("repair_ordinary: 33345162833", phase_status)
+        self.assertIn("p9_01:", phase_status)
         self.assertIn("product_code_authorized: false", phase_status)
         self.assertIn(
             "diagnostics_off_final_level_3: 33318628754", phase_status

@@ -1,10 +1,12 @@
 # Phase 9 Requirement Anchor
 
-Status: `IN_PROGRESS_AUDIT`
+Status: `P9-00 PASS — P9-01 AUDIT ACTIVE`
 
 This anchor is the product-code authorization boundary for Phase 9. It closes no
-Phase 9 requirement by itself. P9-00 must first pass its exact-SHA ordinary CI;
-until then, Phase 9 product code remains unauthorized.
+Phase 9 requirement by itself. P9-00 exact SHA
+`065803ae484d885001259de8238ef01d0ad311e4` passes ordinary CI
+`33345162833`; only the P9-01 audit/plan boundary is active. Phase 9 product
+code remains unauthorized until the applicable atomic plan passes its own Gate.
 
 ## Authority and fixed boundaries
 

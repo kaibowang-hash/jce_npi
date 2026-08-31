@@ -1,20 +1,26 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P9-00`
+`IN_PROGRESS_AUDIT — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
+
+P9-00 exact SHA `065803ae484d885001259de8238ef01d0ad311e4`
+passes ordinary CI `33345162833` in all four lanes. The Phase 9 requirement
+allocation and atomic order are frozen. The sole next action is P9-01: audit
+existing change, Gate, baseline, Tooling revision, Trial revalidation, audit,
+notification and ERP integration seams; reuse the accepted P8-07F inventory;
+then freeze a minimal ownership-safe change-impact plan before any product
+code. Do not redesign current contracts, contact production unless a precise
+freshness/fact gap requires the standing bounded read-only path, or modify
+user-owned dirty documentation.
 
 P8-09 diagnostics-off exact SHA
 `6235502363e34b1279a0c0e26d8d6aecbbd7811f` passes ordinary CI
 `33342183499` and final Level 3 `33342817983`. All four ordinary-equivalent
 lanes, controlled preflight and cumulative fixed disposable-Site runtime pass.
 P8-09 and Phase 8 are closed at the approved presentation-only and bounded
-technical scope. The sole next action is P9-00: audit and freeze the Phase 9
-requirement allocation, atomic order, retained internal collaboration,
-controlled non-production UAT, security/migration/release holds, tests and
-rollback before authorizing any P9-01 product code. Do not contact production
-ERP, claim real-project pilots or modify user-owned dirty documentation.
+technical scope.
 
 P8-08 diagnostics-off exact SHA
 `1e0f3facfa31f382b469df4b8084a3c64231674b` passes ordinary CI

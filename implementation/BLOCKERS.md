@@ -4,11 +4,14 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-There is no active global or P9-00 audit blocker. P8-09 diagnostics-off exact
+There is no active global or P9-01 audit blocker. P9-00 exact SHA
+`065803ae484d885001259de8238ef01d0ad311e4` passes ordinary
+`33345162833` in all four lanes. P9-01 may audit and freeze its plan, but
+product code remains unauthorized until that plan passes its own exact-SHA
+ordinary CI. P8-09 diagnostics-off exact
 SHA `6235502363e34b1279a0c0e26d8d6aecbbd7811f` passes ordinary
 `33342183499` and final Level 3 `33342817983`; all six required jobs pass.
-Phase 8 is closed at its bounded technical scope. P9-00 is audit-only and
-product code remains unauthorized until its exact Phase 9 anchor passes.
+Phase 8 is closed at its bounded technical scope.
 
 Historical P8-08 diagnostics-off checkpoint
 `1e0f3facfa31f382b469df4b8084a3c64231674b` passes ordinary `33330200775`

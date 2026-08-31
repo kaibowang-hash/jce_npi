@@ -34,47 +34,45 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-00")
+        self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(value["status"], "IN_PROGRESS_AUDIT")
-        self.assertEqual(value["completion_gate"], "LEVEL_2")
-        self.assertEqual(value["authorized_next_task"], "P9-01")
+        self.assertEqual(value["completion_gate"], "LEVEL_3")
+        self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertIn("FR-CH-001", value["requirement_ids"])
-        self.assertIn("FR-RP-001", value["requirement_ids"])
-        self.assertIn("NFR-SEC-001", value["requirement_ids"])
-        self.assertIn("NFR-SEC-003", value["requirement_ids"])
-        self.assertIn("UX-003", value["requirement_ids"])
+        self.assertIn("FR-CH-010", value["requirement_ids"])
+        self.assertIn("INT-008", value["requirement_ids"])
+        self.assertNotIn("FR-RP-001", value["requirement_ids"])
         self.assertEqual(
             value["base_checkpoint"],
-            "6235502363e34b1279a0c0e26d8d6aecbbd7811f",
+            "065803ae484d885001259de8238ef01d0ad311e4",
         )
         for invariant in (
-            "P8_09_FINAL_CHECKPOINT_62355023_ORDINARY_33342183499_LEVEL_3_33342817983_ALL_SIX_JOBS_PASS",
-            "P8_09_PRESENTATION_ONLY_APPROVED_JCE_CORE_TEXT_AND_EXACT_CORE_PNG_TECHNICAL_PASS",
-            "P8_09_EXACT_CORE_PNG_SHA256_0C7182882022CF190925C90F0004C77AACA4DD513B86CCD0F23EFB30171E0E42",
-            "ERPNEXT_TECHNICAL_CODE_REMAINS_STABLE_IN_API_EVENT_SCHEMA_PERSISTENCE_PERMISSION_OWNERSHIP_AND_ROUTING",
-            "PHASE_8_PASS_LEVEL_3_BOUNDED_TECHNICAL_SCOPE_ONLY",
-            "DR_REC_009_EXTERNAL_EVENT_PAYLOAD_REDACTION_CONSUMER_MAPPING_AND_RECEIPT_REMAIN_HELD",
+            "P9_00_EXACT_SHA_065803AE_ORDINARY_33345162833_ALL_FOUR_JOBS_PASS",
+            "P9_01_AUDIT_ONLY_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_PLAN_EXACT_SHA_ORDINARY_PASS",
+            "ERPNEXT_OWNS_FORMAL_ECR_ECO_ECN_IDENTIFIER_EXECUTION_STATUS_AND_TRANSACTION_EFFECTIVE_TRUTH",
+            "NPI_ONE_OWNS_ENGINEERING_IMPACT_ASSESSMENT_AFFECTED_VERSION_REVALIDATION_TASK_EVIDENCE_AND_GATE_EFFECTS",
+            "CURRENT_ARCHITECTURE_DATA_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
+            "NO_PROVEN_DIFFERENCE_MEANS_DIRECT_MATCH_NO_CHANGE_AND_NO_ADJUSTMENT_TASK",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
-            "P9_00_AUDIT_ONLY_PRODUCT_CODE_AUTHORIZED_FALSE",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertEqual(
             set(value["allowed_paths"]),
             {
+                "docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md",
+                "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
                 "implementation/BLOCKERS.md",
                 "implementation/CURRENT_TASK.json",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
+                "implementation/REQUIRED_INPUTS.md",
                 "implementation/REQUIREMENT_TRACEABILITY.csv",
-                "implementation/phase-8-gate.md",
-                "implementation/phase-8-requirement-anchor.md",
                 "implementation/phase-9-requirement-anchor.md",
-                "implementation/evidence/phase-8/p8-09-plan.md",
-                "implementation/evidence/phase-8/p8-09-validation.md",
                 "implementation/evidence/phase-9/p9-00-validation.md",
+                "implementation/evidence/phase-9/p9-01-plan.md",
                 "scripts/reconcile_v1_2_traceability.py",
                 "scripts/verify_v1_2_reconciliation.py",
                 "tests/test_current_task_verifier.py",

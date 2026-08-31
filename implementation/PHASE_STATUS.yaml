@@ -4,12 +4,12 @@ current_phase: 9
 updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P9-00
+current_task: P9-01
 current_task_status: IN_PROGRESS_AUDIT
-current_task_completed_stage: PHASE_8_PASS_LEVEL_3
-current_task_next_stage: P9_00_REQUIREMENT_ANCHOR
+current_task_completed_stage: P9_00_LEVEL_2_PASS
+current_task_next_stage: P9_01_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
 current_task_next_stage_status: ACTIVE_PRODUCT_CODE_UNAUTHORIZED
-resumed_product_task: P9-00
+resumed_product_task: P9-01
 resumed_product_task_status: IN_PROGRESS_AUDIT
 scope_decisions:
   production_read_only_fact_check:
@@ -2994,7 +2994,7 @@ p8_09:
 p9_00:
   task: P9-00
   next_task: P9-01
-  status: IN_PROGRESS_AUDIT
+  status: PASS_LEVEL_2
   phase: 9
   task_kind: PRODUCT
   product_code_authorized: false
@@ -3006,6 +3006,27 @@ p9_00:
   real_project_pilots: USER_APPROVED_POST_V1_2_DEFERRED
   controlled_nonproduction_uat_required: true
   production_contact_required_for_audit: false
+  initial_checkpoint: 2422aeef9b290a69f71acf686eb5776a03d24d8d
+  initial_ordinary: 33344582849
+  initial_ordinary_result: REPOSITORY_FAILED_ONLY_DEFERRED_GOVERNANCE_EPOCH_ASSERTION
+  repair_checkpoint: 065803ae484d885001259de8238ef01d0ad311e4
+  repair_ordinary: 33345162833
+  repair_ordinary_jobs: {visual: 99347769452, repository: 99347769577, frontend: 99347769578, secret_scan: 99347769608}
+  result: PASS_ALL_FOUR_JOBS
+p9_01:
+  task: P9-01
+  next_task: P9-02
+  status: IN_PROGRESS_AUDIT
+  phase: 9
+  task_kind: PRODUCT
+  product_code_authorized: false
+  requirement_ids: [FR-CH-001, FR-CH-002, FR-CH-003, FR-CH-004, FR-CH-005, FR-CH-006, FR-CH-007, FR-CH-008, FR-CH-009, FR-CH-010, INT-008]
+  audit_scope: EXISTING_CHANGE_GATE_BASELINE_TOOLING_TRIAL_NOTIFICATION_AUDIT_AND_ERP_INTEGRATION_SEAMS
+  compatibility_baseline: CURRENT_APPROVED_ARCHITECTURE_OWNERSHIP_CONTRACTS_AND_P8_IMPLEMENTATION_DEFAULT_CORRECT
+  production_inventory_first: true
+  production_contact_required_for_transition: false
+  formal_change_owner: ERPNEXT
+  engineering_impact_owner: NPI_ONE
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3033,4 +3054,4 @@ phases:
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [], current_task: P9-00}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00], current_task: P9-01}

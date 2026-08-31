@@ -9720,3 +9720,33 @@ repeat or rewrite it merely to restore context. See
   refactor, production write, core modification, generic writer, direct ERP
   browser access, dual-master field or fake success.
 - Controller marker: `Phase 8 Level 3 PASS; P9-00 audit active`.
+
+## 2026-08-31 P9-00 Level 2 PASS; P9-01 audit activation
+
+- P9-00 initial checkpoint
+  `2422aeef9b290a69f71acf686eb5776a03d24d8d` produced ordinary CI
+  `33344582849`: frontend, governed visual and secret passed; repository alone
+  exposed that the test assumed the user's uncommitted M9-04/M9-05 deferral
+  epoch was already present in the clean CI checkout.
+- The closed two-file repair accepts only the exact committed two-portal epoch
+  or the exact extended four-decision epoch with both M9-04/M9-05 blocks
+  complete. Partial decision/release/rollback state still fails closed; no
+  user-owned document was staged.
+- Repair checkpoint `065803ae484d885001259de8238ef01d0ad311e4`
+  passes ordinary CI `33345162833`: visual `99347769452`, repository
+  `99347769577`, frontend `99347769578` and secret `99347769608` all pass.
+  P9-00 is `PASS_LEVEL_2`.
+- Activate only P9-01 audit/plan for `FR-CH-001..010` and `INT-008`.
+  `product_code_authorized=false` until the audit freezes one exact minimal
+  plan and that plan passes exact-SHA ordinary CI.
+- ERPNext retains formal ECR/ECO/ECN identifier, execution status and
+  transaction-effective truth. NPI One retains impact assessment, affected
+  engineering versions, revalidation tasks/evidence and Gate effects. Audit
+  current seams before proposing any addition; no proven difference means
+  `DIRECT_MATCH` / `NO_CHANGE`.
+- Reuse the accepted P8-07F inventory. A missing or stale fact may use only the
+  standing bounded, read-only, redacted and fail-closed JCE-Core path. This
+  controller transition itself makes no external connection.
+- Preserve the portal and real-pilot deferrals, current architecture/contracts,
+  stable ownership, and all user-owned dirty/untracked files.
+- Controller marker: `P9-00 Level 2 PASS; P9-01 audit active`.

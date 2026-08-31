@@ -4,14 +4,19 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P9-00`
+- Mode: `IN_PROGRESS_AUDIT — P9-01`
+- Authoritative P9-00 closeout: exact SHA
+  `065803ae484d885001259de8238ef01d0ad311e4` passes ordinary CI
+  `33345162833`; repository `99347769577`, frontend `99347769578`, secret
+  `99347769608` and governed visual `99347769452` all pass. P9-00 freezes the
+  Phase 9 requirement allocation and atomic order. P9-01 is now audit-only;
+  product code remains unauthorized until its separate plan checkpoint passes.
 - Authoritative P8-09/Phase-8 closeout: diagnostics-off exact SHA
   `6235502363e34b1279a0c0e26d8d6aecbbd7811f` passes ordinary CI
   `33342183499` and final Level 3 `33342817983`. Repository, frontend, secret,
   governed visual, controlled preflight and cumulative fixed disposable-Site
   runtime all pass. P8-09 closes only the approved `JCE Core` presentation
-  seam; `ERPNEXT` remains the technical identity. P9-00 is audit-only and no
-  Phase 9 product code is authorized before its separate anchor Gate.
+  seam; `ERPNEXT` remains the technical identity.
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
