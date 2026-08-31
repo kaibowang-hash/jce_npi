@@ -48,6 +48,13 @@ PASS. Before that PASS, `product_code_authorized` remains false and P9-01 may no
 change product code. After PASS, a separate controller transition may activate
 only the P9-01 audit/plan task.
 
+Ordinary CI `33344582849` exposed one governance-test epoch mismatch: its clean
+checkout correctly contained the two committed portal deferrals, while the local
+worktree also contained the user's preserved, uncommitted M9-04/M9-05 deferral
+updates. The repair accepts only those two exact complete states (2 or 4 paired
+decision/release/rollback blocks); a partial pilot decision still fails closed.
+No user-owned document was staged or rewritten.
+
 ## Rollback
 
 Revert only this governance checkpoint to the accepted P8-09 final SHA. No

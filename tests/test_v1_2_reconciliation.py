@@ -149,26 +149,62 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("customer approval evidence", governed_text)
 
         backlog = (ROOT / "implementation/backlog.yaml").read_text(encoding="utf-8")
-        self.assertEqual(backlog.count("decision_marker: USER_APPROVED_POST_V1_2_DEFERRED"), 4)
-        self.assertEqual(backlog.count("delivery_release: POST_V1_2_FUTURE_RELEASE"), 4)
-        self.assertEqual(backlog.count("restoration_trigger:"), 4)
+        deferred_count = backlog.count(
+            "decision_marker: USER_APPROVED_POST_V1_2_DEFERRED"
+        )
+        self.assertIn(deferred_count, (2, 4))
+        self.assertEqual(
+            backlog.count("delivery_release: POST_V1_2_FUTURE_RELEASE"),
+            deferred_count,
+        )
+        self.assertEqual(backlog.count("restoration_trigger:"), deferred_count)
         self.assertEqual(backlog.count("- FR-CO-003"), 1)
         self.assertEqual(backlog.count("- FR-CO-004"), 1)
+
+        customer_owned_pilot = backlog.split("  - id: M9-04", 1)[1].split(
+            "  - id: M9-05", 1
+        )[0]
+        new_tool_pilot = backlog.split("  - id: M9-05", 1)[1].split(
+            "  - id: M9-06", 1
+        )[0]
+        for pilot in (customer_owned_pilot, new_tool_pilot):
+            if deferred_count == 4:
+                self.assertIn(
+                    "decision_marker: USER_APPROVED_POST_V1_2_DEFERRED", pilot
+                )
+                self.assertIn(
+                    "delivery_release: POST_V1_2_FUTURE_RELEASE", pilot
+                )
+                self.assertIn("restoration_trigger:", pilot)
+                self.assertIn("representative non-production data", pilot)
+                self.assertIn("no real-project pilot claim", pilot)
+            else:
+                self.assertNotIn("decision_marker:", pilot)
+                self.assertNotIn("delivery_release:", pilot)
+                self.assertNotIn("restoration_trigger:", pilot)
 
         execution_plan = (ROOT / "implementation/EXECUTION_PLAN.md").read_text(
             encoding="utf-8"
         )
         normalized_execution_plan = " ".join(execution_plan.split())
-        self.assertIn(
-            "final V1.2 completion exclude FR-CO-003/004 external",
-            normalized_execution_plan,
-        )
-        self.assertIn("M9-04/M9-05 real", normalized_execution_plan)
-        self.assertIn("remain required V1.2 scope", normalized_execution_plan)
-        self.assertIn(
-            "must not be reported as a real-project pilot or real-user 80-percent usage result",
-            normalized_execution_plan,
-        )
+        if deferred_count == 4:
+            self.assertIn(
+                "final V1.2 completion exclude FR-CO-003/004 external",
+                normalized_execution_plan,
+            )
+            self.assertIn("M9-04/M9-05 real", normalized_execution_plan)
+            self.assertIn("remain required V1.2 scope", normalized_execution_plan)
+            self.assertIn(
+                "must not be reported as a real-project pilot or real-user 80-percent usage result",
+                normalized_execution_plan,
+            )
+        else:
+            self.assertIn(
+                "final V1.2 completion exclude only", normalized_execution_plan
+            )
+            self.assertIn(
+                "cannot claim either portal implemented", normalized_execution_plan
+            )
 
         phase_status = (ROOT / "implementation/PHASE_STATUS.yaml").read_text(
             encoding="utf-8"
