@@ -8584,3 +8584,75 @@ Unmatched operations remain visible with their trace IDs and recovery state.,未
 "A submitted command would record the idempotency key, input hash, actor, reason, result, and trace ID.",提交後的命令會記錄冪等鍵、輸入雜湊、操作人、原因、結果和追蹤編號。
 Open Execution prototype,開啟執行原型
 Open the existing execution and reconciliation prototype.,開啟現有的執行與對帳原型。
+Select the supported formal change type.,請選擇支援的正式變更類型。
+A version reference must include its exact hash.,版本參照必須包含其精確雜湊。
+Enter a prior or successor version.,請輸入前序版本或後續版本。
+Prior and successor versions must differ.,前序版本與後續版本必須不同。
+Date effectivity requires only an effective date.,按日期生效時只能填寫生效日期。
+This effectivity method requires only a selector reference.,此生效方式只能填寫選擇器參照。
+Satisfied revalidation requires evidence.,已滿足的重新驗證必須提供證據。
+Waived revalidation requires evidence and an approval.,豁免重新驗證必須提供證據和核准。
+Only waived revalidation may reference a waiver approval.,僅豁免的重新驗證可以參照豁免核准。
+Enter a valid currency code.,請輸入有效的貨幣代碼。
+Enter a non-negative value.,請輸入非負值。
+Enter a valid true or false value.,請輸入有效的真或假值。
+A successor revision requires its exact predecessor.,後續修訂必須參照其精確前序修訂。
+Enter a valid formal change observation.,請輸入有效的正式變更觀測。
+Assess every required impact category exactly once.,每個必要的影響類別都必須且只能評估一次。
+Affected objects require an affected category conclusion.,受影響物件必須具有對應的受影響類別結論。
+Enter a valid cost summary.,請輸入有效的成本摘要。
+Enter valid closure evidence.,請輸入有效的關閉證據。
+Enter a valid trace ID.,請輸入有效的追蹤編號。
+Complete all closeout evidence and revalidation before closing the change.,關閉變更前必須完成全部關閉證據和重新驗證。
+Engineering change records can only be changed through an authorized command.,工程變更記錄只能透過授權命令變更。
+ERP engineering change observations can only be linked by the authorized integration service.,企業資源規劃系統工程變更觀測只能由授權的整合服務關聯。
+Engineering change history cannot be changed.,工程變更歷史不可變更。
+Engineering change history cannot be deleted.,工程變更歷史不可刪除。
+{field} must be a canonical global ID.,{field} 必須是規範全域識別碼。
+{field} must be a valid value.,{field} 必須是有效值。
+{field} must be valid canonical JSON.,{field} 必須是有效的規範結構化資料。
+The current revision Link must match its exact global ID.,目前修訂連結必須與其精確全域識別碼相符。
+Engineering Change Title,工程變更標題
+Select a supported engineering change state.,請選擇支援的工程變更狀態。
+A new engineering change must start at version one.,新工程變更必須從版本一開始。
+The engineering change version must advance by exactly one.,工程變更版本必須精確遞增一版。
+The formal change observation must be complete.,正式變更觀測必須完整。
+Formal Change ID,正式變更編號
+Formal Change Raw Status,正式變更原始狀態
+Formal Change Source Version,正式變更來源版本
+Formal Change Source Modified At,正式變更來源修改時間
+Formal Change Source Hash,正式變更來源雜湊
+Formal Change Observed At,正式變更觀測時間
+Engineering Change Global ID,工程變更全域識別碼
+Engineering Change Event Hash,工程變更事件雜湊
+Select a supported engineering change event type.,請選擇支援的工程變更事件類型。
+Canonical Engineering Change Event Snapshot,規範工程變更事件快照
+The engineering change event hash does not match.,工程變更事件雜湊不相符。
+An idempotency response must be sealed after the command succeeds.,命令成功後必須密封冪等回應。
+An idempotency response can only be sealed once.,冪等回應只能密封一次。
+Impact Assessment Snapshot,影響評估快照
+Affected Object Snapshot,受影響物件快照
+Implementation Task Snapshot,實施任務快照
+Effectivity Snapshot,生效性快照
+Disposition Snapshot,處置快照
+Revalidation Snapshot,重新驗證快照
+Revision Key Hash,修訂鍵雜湊
+The engineering change revision key does not match.,工程變更修訂鍵不相符。
+Formal Change Observation Snapshot,正式變更觀測快照
+Cost Summary Snapshot,成本摘要快照
+Closure Evidence Snapshot,關閉證據快照
+Canonical Engineering Change Revision Snapshot,規範工程變更修訂快照
+The canonical revision must contain a valid closeout result.,規範修訂必須包含有效的關閉結果。
+The engineering change revision snapshot hash does not match.,工程變更修訂快照雜湊不相符。
+NPI Engineering Change,NPI 工程變更
+Engineering Change Internal State,工程變更內部狀態
+ready_to_close,準備關閉
+Current Engineering Change Revision,目前工程變更修訂
+Formal Change Type,正式變更類型
+Engineering Change Request,工程變更請求
+NPI Engineering Change Event,NPI 工程變更事件
+Engineering Change Event Type,工程變更事件類型
+revised,已修訂
+formal_observation_linked,已關聯正式觀測
+NPI Engineering Change Idempotency,NPI 工程變更冪等記錄
+NPI Engineering Change Revision,NPI 工程變更修訂

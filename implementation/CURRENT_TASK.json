@@ -100,7 +100,10 @@
     "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/npi_engineering_change_idempotency.py",
     "apps/npi_core/npi_core/patches.txt",
     "apps/npi_core/npi_core/patches/v1_2/add_change_control.py",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "apps/npi_core/npi_core/translations/zh.csv",
     "contracts/data-ownership.yaml",
+    "frontend/src/generated/catalogs.ts",
     "tests/test_phase9_change_control_domain.py",
     "tests/test_phase9_change_control_metadata.py"
   ],
@@ -110,6 +113,8 @@
       ["python", "scripts/reconcile_v1_2_traceability.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_erpnext_production_fact_collector", "tests.test_v1_2_reconciliation", "tests.test_phase9_change_control_domain", "tests.test_phase9_change_control_metadata", "-v"],
+      ["npm", "--prefix", "frontend", "run", "generate:check"],
+      ["npm", "--prefix", "frontend", "run", "lint:i18n"],
       ["git", "diff", "--check"]
     ],
     "level_2": [

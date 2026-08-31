@@ -100,13 +100,16 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/npi_engineering_change_idempotency.py",
                 "apps/npi_core/npi_core/patches.txt",
                 "apps/npi_core/npi_core/patches/v1_2/add_change_control.py",
+                "apps/npi_core/npi_core/translations/zh-TW.csv",
+                "apps/npi_core/npi_core/translations/zh.csv",
                 "contracts/data-ownership.yaml",
+                "frontend/src/generated/catalogs.ts",
                 "tests/test_phase9_change_control_domain.py",
                 "tests/test_phase9_change_control_metadata.py",
                 "tests/test_v1_2_reconciliation.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 39)
+        self.assertEqual(len(value["allowed_paths"]), 42)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])

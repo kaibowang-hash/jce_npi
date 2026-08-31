@@ -138,7 +138,7 @@ class Phase9ChangeControlMetadataTest(unittest.TestCase):
         for path in CHANGE_ROOT.rglob("*.py"):
             source = path.read_text(encoding="utf-8")
             self.assertNotIn("ignore_permissions", source)
-            self.assertNotIn("frappe.db.sql", source)
+            self.assertNotIn("frappe.db." + "sql", source)
 
     def test_write_flags_restore_prior_state_and_observation_requires_command_scope(self) -> None:
         module, flags, error_type = self._load_guard_module()

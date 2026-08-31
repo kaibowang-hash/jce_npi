@@ -8584,3 +8584,75 @@ Unmatched operations remain visible with their trace IDs and recovery state.,未
 "A submitted command would record the idempotency key, input hash, actor, reason, result, and trace ID.",提交后的命令会记录幂等键、输入哈希、操作人、原因、结果和跟踪编号。
 Open Execution prototype,打开执行原型
 Open the existing execution and reconciliation prototype.,打开现有的执行与对账原型。
+Select the supported formal change type.,请选择受支持的正式变更类型。
+A version reference must include its exact hash.,版本引用必须包含其精确哈希。
+Enter a prior or successor version.,请输入前序版本或后续版本。
+Prior and successor versions must differ.,前序版本与后续版本必须不同。
+Date effectivity requires only an effective date.,按日期生效时只能填写生效日期。
+This effectivity method requires only a selector reference.,此生效方式只能填写选择器引用。
+Satisfied revalidation requires evidence.,已满足的重新验证必须提供证据。
+Waived revalidation requires evidence and an approval.,豁免重新验证必须提供证据和批准。
+Only waived revalidation may reference a waiver approval.,仅豁免的重新验证可以引用豁免批准。
+Enter a valid currency code.,请输入有效的货币代码。
+Enter a non-negative value.,请输入非负值。
+Enter a valid true or false value.,请输入有效的真或假值。
+A successor revision requires its exact predecessor.,后续修订必须引用其精确前序修订。
+Enter a valid formal change observation.,请输入有效的正式变更观测。
+Assess every required impact category exactly once.,每个必需的影响类别都必须且只能评估一次。
+Affected objects require an affected category conclusion.,受影响对象必须具有对应的受影响类别结论。
+Enter a valid cost summary.,请输入有效的成本摘要。
+Enter valid closure evidence.,请输入有效的关闭证据。
+Enter a valid trace ID.,请输入有效的跟踪编号。
+Complete all closeout evidence and revalidation before closing the change.,关闭变更前必须完成全部关闭证据和重新验证。
+Engineering change records can only be changed through an authorized command.,工程变更记录只能通过授权命令更改。
+ERP engineering change observations can only be linked by the authorized integration service.,企业资源规划系统工程变更观测只能由授权的集成服务关联。
+Engineering change history cannot be changed.,工程变更历史不可更改。
+Engineering change history cannot be deleted.,工程变更历史不可删除。
+{field} must be a canonical global ID.,{field} 必须是规范全局标识。
+{field} must be a valid value.,{field} 必须是有效值。
+{field} must be valid canonical JSON.,{field} 必须是有效的规范结构化数据。
+The current revision Link must match its exact global ID.,当前修订链接必须与其精确全局标识匹配。
+Engineering Change Title,工程变更标题
+Select a supported engineering change state.,请选择受支持的工程变更状态。
+A new engineering change must start at version one.,新工程变更必须从版本一开始。
+The engineering change version must advance by exactly one.,工程变更版本必须精确递增一版。
+The formal change observation must be complete.,正式变更观测必须完整。
+Formal Change ID,正式变更编号
+Formal Change Raw Status,正式变更原始状态
+Formal Change Source Version,正式变更来源版本
+Formal Change Source Modified At,正式变更来源修改时间
+Formal Change Source Hash,正式变更来源哈希
+Formal Change Observed At,正式变更观测时间
+Engineering Change Global ID,工程变更全局标识
+Engineering Change Event Hash,工程变更事件哈希
+Select a supported engineering change event type.,请选择受支持的工程变更事件类型。
+Canonical Engineering Change Event Snapshot,规范工程变更事件快照
+The engineering change event hash does not match.,工程变更事件哈希不匹配。
+An idempotency response must be sealed after the command succeeds.,命令成功后必须密封幂等响应。
+An idempotency response can only be sealed once.,幂等响应只能密封一次。
+Impact Assessment Snapshot,影响评估快照
+Affected Object Snapshot,受影响对象快照
+Implementation Task Snapshot,实施任务快照
+Effectivity Snapshot,生效性快照
+Disposition Snapshot,处置快照
+Revalidation Snapshot,重新验证快照
+Revision Key Hash,修订键哈希
+The engineering change revision key does not match.,工程变更修订键不匹配。
+Formal Change Observation Snapshot,正式变更观测快照
+Cost Summary Snapshot,成本摘要快照
+Closure Evidence Snapshot,关闭证据快照
+Canonical Engineering Change Revision Snapshot,规范工程变更修订快照
+The canonical revision must contain a valid closeout result.,规范修订必须包含有效的关闭结果。
+The engineering change revision snapshot hash does not match.,工程变更修订快照哈希不匹配。
+NPI Engineering Change,NPI 工程变更
+Engineering Change Internal State,工程变更内部状态
+ready_to_close,准备关闭
+Current Engineering Change Revision,当前工程变更修订
+Formal Change Type,正式变更类型
+Engineering Change Request,工程变更请求
+NPI Engineering Change Event,NPI 工程变更事件
+Engineering Change Event Type,工程变更事件类型
+revised,已修订
+formal_observation_linked,已关联正式观测
+NPI Engineering Change Idempotency,NPI 工程变更幂等记录
+NPI Engineering Change Revision,NPI 工程变更修订
