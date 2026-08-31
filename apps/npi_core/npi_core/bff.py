@@ -186,6 +186,25 @@ _PROJECT_READINESS_REVISIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/npi-readiness/"
     r"(?P<instance_id>[^/:]+)/revisions$"
 )
+_PROJECT_ENGINEERING_CHANGES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/engineering-changes$"
+)
+_PROJECT_ENGINEERING_CHANGE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/engineering-changes/"
+    r"(?P<change_id>[^/:]+)$"
+)
+_PROJECT_ENGINEERING_CHANGE_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/engineering-changes/"
+    r"(?P<change_id>[^/:]+)/revisions$"
+)
+_PROJECT_ENGINEERING_CHANGE_OBSERVATION_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/engineering-changes/"
+    r"(?P<change_id>[^/:]+):link-formal-observation$"
+)
+_PROJECT_ENGINEERING_CHANGE_CLOSE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/engineering-changes/"
+    r"(?P<change_id>[^/:]+):close$"
+)
 _PRODUCTION_TRANSITION_POLICY_VERSION_ROUTE = re.compile(
     r"^/api/npi/v1/production-transition/policies/(?P<policy_id>[^/:]+)/versions/"
     r"(?P<policy_version>[^/:]+)$"
@@ -919,6 +938,14 @@ def route_request() -> None:
                 "npi_core.readiness_api.get_project_readiness",
             ),
             (
+                _PROJECT_ENGINEERING_CHANGES_ROUTE,
+                "npi_core.change_control_api.get_engineering_changes",
+            ),
+            (
+                _PROJECT_ENGINEERING_CHANGE_ROUTE,
+                "npi_core.change_control_api.get_engineering_change",
+            ),
+            (
                 _PROJECT_PRODUCTION_TRANSITION_ROUTE,
                 "npi_core.production_transition_api.get_project_production_transition_workspace",
             ),
@@ -1050,6 +1077,22 @@ def route_request() -> None:
             (
                 _PROJECT_READINESS_REVISIONS_ROUTE,
                 "npi_core.readiness_api.revise_project_readiness",
+            ),
+            (
+                _PROJECT_ENGINEERING_CHANGES_ROUTE,
+                "npi_core.change_control_api.create_engineering_change",
+            ),
+            (
+                _PROJECT_ENGINEERING_CHANGE_REVISIONS_ROUTE,
+                "npi_core.change_control_api.revise_engineering_change",
+            ),
+            (
+                _PROJECT_ENGINEERING_CHANGE_OBSERVATION_ROUTE,
+                "npi_core.change_control_api.link_engineering_change_formal_observation",
+            ),
+            (
+                _PROJECT_ENGINEERING_CHANGE_CLOSE_ROUTE,
+                "npi_core.change_control_api.close_engineering_change",
             ),
             (
                 _PRODUCTION_TRANSITION_POLICY_PUBLISH_ROUTE,
@@ -1753,6 +1796,9 @@ def route_request() -> None:
     if _p7_07_routes_disabled(command):
         command = "npi_core.released_summary_api.released_trial_summary_routes_disabled"
         route_params = {}
+    if _p9_01_routes_disabled(command):
+        command = "npi_core.change_control_api.engineering_change_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -2286,6 +2332,23 @@ def _p7_07_routes_disabled(command: str | None) -> bool:
     }
 
 
+def _p9_01_routes_disabled(command: str | None) -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p9_01_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False and command in {
+        "npi_core.change_control_api.get_engineering_changes",
+        "npi_core.change_control_api.get_engineering_change",
+        "npi_core.change_control_api.create_engineering_change",
+        "npi_core.change_control_api.revise_engineering_change",
+        "npi_core.change_control_api.link_engineering_change_formal_observation",
+        "npi_core.change_control_api.close_engineering_change",
+    }
+
+
 def _p5_01_routes_disabled(command: str | None) -> bool:
     return document_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.document_api.")
@@ -2376,6 +2439,17 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or (
             method == "POST"
             and _PROJECT_READINESS_REVISIONS_ROUTE.fullmatch(path)
+        )
+    ):
+        return True
+    if method in {"GET", "POST"} and any(
+        route.fullmatch(path) is not None
+        for route in (
+            _PROJECT_ENGINEERING_CHANGES_ROUTE,
+            _PROJECT_ENGINEERING_CHANGE_ROUTE,
+            _PROJECT_ENGINEERING_CHANGE_REVISIONS_ROUTE,
+            _PROJECT_ENGINEERING_CHANGE_OBSERVATION_ROUTE,
+            _PROJECT_ENGINEERING_CHANGE_CLOSE_ROUTE,
         )
     ):
         return True

@@ -1,6 +1,6 @@
 # P9-01 Change Impact and Revalidation Plan
 
-Status: `FACT DELTA ACCEPTED — MINIMAL PRODUCT CHECKPOINT PLAN AWAITS EXACT CI`
+Status: `P9-01B COMMAND/QUERY IMPLEMENTATION — EXACT-SHA ORDINARY CI PENDING`
 
 ## Accepted predecessor
 
@@ -220,3 +220,43 @@ owned; closeout facts remain explicit and cannot be inferred. P9-01C INT-008,
 all adapters/workers/event activation and P9-01D UI remain out of scope until
 their later checkpoints. P9-01B product code may start only after this
 governance checkpoint passes exact-SHA ordinary CI.
+
+## P9-01B governance Gate and implementation evidence
+
+The governance checkpoint exact SHA
+`07b869bcd88fa7406548e10edc42b07c6dadc8ed` passes ordinary CI
+`33354760251`: secret `99374683091`, visual `99374683231`, frontend
+`99374683273` and repository `99374683338` all pass. The exact twenty-path
+manifest therefore authorizes only the bounded P9-01B Project-first command and
+query slice.
+
+The implementation adds Project-contained list/detail plus create, revise,
+link-formal-observation and close commands. Requests and responses are closed;
+commands require internal NPI authority, CSRF, actor-bound idempotency and an
+exact current global ID/version/hash predecessor. The repository persists one
+receipt, immutable revision and event, current root, audit record and sealed
+receipt in one ordered transaction. Replay returns the sealed response without
+new domain writes. Conflicts and uncertain results remain explicit.
+
+Formal ECR identifier, raw ERP lifecycle state and transaction-effective facts
+remain observation-owned and can enter only through the privileged formal-
+observation command. The server derives readiness and closure only from the
+explicit current immutable evidence; callers cannot rename a change or infer
+missing released/withdrawn versions, effectivity, disposition, revalidation,
+Gate or ERP completion facts. Default-disabled BFF routes prevent accidental
+activation before the later Gate.
+
+The focused API, repository and OpenAPI suites cover all six operations,
+Project containment, role/CSRF checks, exact predecessor conflicts,
+idempotency binding, replay, rollback order, immutable title, closed shapes,
+formal-observation authority and absence of permission bypass, direct SQL,
+network or background effects. P9-01C `INT-008`, adapters/workers/events,
+production ERP configuration and P9-01D UI remain unchanged and out of scope.
+The implementation must pass complete affected validation and its own exact-SHA
+ordinary CI before the controller may authorize P9-01C.
+
+Local acceptance is complete: P9-01/current-task focused tests pass `50/50`,
+the full repository suite passes `2760/2760`, generated catalogs are current,
+and the i18n audit covers `8664` English sources with `100%` zh/zh-TW. Current-
+task/reconciliation, OpenAPI/YAML parse, compile, shell syntax and diff checks
+also pass. Exact-SHA ordinary CI remains the acceptance boundary.

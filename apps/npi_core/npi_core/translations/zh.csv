@@ -8656,3 +8656,9 @@ revised,已修订
 formal_observation_linked,已关联正式观测
 NPI Engineering Change Idempotency,NPI 工程变更幂等记录
 NPI Engineering Change Revision,NPI 工程变更修订
+This idempotency key was already used for a different engineering change command.,此幂等键已用于另一项工程变更命令。
+Complete every engineering change closeout requirement before closing the change.,请先完成所有工程变更关闭要求，再关闭该变更。
+Enter the exact required collection.,请输入完整且数量准确的必需集合。
+Engineering change control is temporarily unavailable.,工程变更控制暂时不可用。
+The engineering change is unavailable for this Project.,此项目无法访问该工程变更。
+The engineering change title cannot be changed.,工程变更标题不可更改。

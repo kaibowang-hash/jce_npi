@@ -9893,3 +9893,23 @@ repeat or rewrite it merely to restore context. See
   explicitly outside this checkpoint. This governance commit changes no
   product code and must pass its own exact-SHA ordinary CI first.
 - Controller marker: `P9-01A ordinary PASS; P9-01B command/query checkpoint exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01B governance ordinary PASS; command/query implementation
+
+- Governance exact SHA `07b869bcd88fa7406548e10edc42b07c6dadc8ed`
+  passes ordinary CI `33354760251`: secret `99374683091`, visual
+  `99374683231`, frontend `99374683273` and repository `99374683338` all pass.
+- Product authorization is now effective only for the exact twenty-path
+  P9-01B manifest. Implement Project-first list/detail and version-locked
+  create/revise/link-formal-observation/close commands with closed request and
+  response shapes, Project containment, internal authority, CSRF, actor-bound
+  idempotency, exact predecessor/version/hash, one transaction and one audit
+  record.
+- Formal ERP ECR identity, raw status and transaction-effective facts remain
+  observation-owned. Ordinary callers cannot supply them, and closeout cannot
+  infer ERP completion, Gate truth, released/withdrawn versions, effectivity,
+  dispositions or revalidation evidence.
+- P9-01C `INT-008`, adapters, workers, event activation, production ERP change
+  and P9-01D UI remain outside this atomic task. Require the implementation's
+  own exact-SHA ordinary PASS before any later checkpoint.
+- Controller marker: `P9-01B governance ordinary PASS; command/query implementation exact-SHA ordinary CI pending`.

@@ -21,6 +21,7 @@ tags:
   - { name: Tooling }
   - { name: Trials }
   - { name: Readiness }
+  - { name: Change Control }
   - { name: ProductionTransition }
   - { name: Execution }
   - { name: Integration }
@@ -6450,6 +6451,185 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/engineering-changes:
+    get:
+      tags: [Change Control]
+      operationId: listEngineeringChanges
+      description: Returns the bounded Project-contained engineering-change collection without interpreting ERP formal status.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Exact authorized engineering-change collection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EngineeringChangeList" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    post:
+      tags: [Change Control]
+      operationId: createEngineeringChange
+      description: Creates one Project-contained draft and its first immutable revision. Formal ERP change truth cannot be supplied here.
+      x-transaction-boundary: engineering-change
+      x-audit-operation: engineering_change.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [content]
+              properties:
+                content: { $ref: "#/components/schemas/EngineeringChangeContent" }
+      responses:
+        "201": { $ref: "#/components/responses/EngineeringChangeCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /projects/{projectId}/engineering-changes/{changeId}:
+    get:
+      tags: [Change Control]
+      operationId: getEngineeringChange
+      description: Returns one exact current revision, immutable history and event chain after Project-first authorization.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringChangeId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Exact engineering change workspace
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EngineeringChangeDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /projects/{projectId}/engineering-changes/{changeId}/revisions:
+    post:
+      tags: [Change Control]
+      operationId: reviseEngineeringChange
+      description: Appends an exact successor from caller-owned NPI impact content; ERP formal observation fields remain server-owned.
+      x-transaction-boundary: engineering-change
+      x-audit-operation: engineering_change.revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringChangeId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [predecessor, content]
+              properties:
+                predecessor: { $ref: "#/components/schemas/EngineeringChangePredecessor" }
+                content: { $ref: "#/components/schemas/EngineeringChangeContent" }
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringChangeCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /projects/{projectId}/engineering-changes/{changeId}:link-formal-observation:
+    post:
+      tags: [Change Control]
+      operationId: linkEngineeringChangeFormalObservation
+      description: Links one exact read-only ERP Engineering Change Request observation through the authorized integration service.
+      x-required-roles: [System Manager, NPI API User]
+      x-transaction-boundary: engineering-change
+      x-audit-operation: engineering_change.link_formal_observation
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringChangeId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [predecessor, formalChange]
+              properties:
+                predecessor: { $ref: "#/components/schemas/EngineeringChangePredecessor" }
+                formalChange: { $ref: "#/components/schemas/FormalEngineeringChangeObservation" }
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringChangeCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /projects/{projectId}/engineering-changes/{changeId}:close:
+    post:
+      tags: [Change Control]
+      operationId: closeEngineeringChange
+      description: Closes only an exact revision whose server-derived closeout predicate is already satisfied.
+      x-transaction-boundary: engineering-change
+      x-audit-operation: engineering_change.close
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringChangeId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [predecessor]
+              properties:
+                predecessor: { $ref: "#/components/schemas/EngineeringChangePredecessor" }
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringChangeCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
   /npi-readiness/templates:
     get:
       tags: [Readiness]
@@ -6995,6 +7175,12 @@ components:
       required: true
       description: Immutable Engineering Project global_id; never a mutable business code
       schema: { type: string, format: uuid }
+    EngineeringChangeId:
+      in: path
+      name: changeId
+      required: true
+      description: Immutable Project-contained engineering change global_id
+      schema: { type: string, format: uuid }
     IntegrationOperationKindParam:
       in: path
       name: operationKind
@@ -7157,6 +7343,15 @@ components:
       description: Current Frappe session CSRF token returned by SessionBootstrap
       schema: { type: string, minLength: 32, maxLength: 128 }
   responses:
+    EngineeringChangeCommandResult:
+      description: Exact engineering change successor after one atomic command or actor-bound safe replay
+      headers:
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        Idempotency-Replayed: { required: true, schema: { type: string, enum: ["true", "false"] } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringChangeCommand" }
     IntegrationOperationCollectionResult:
       description: Authorized bounded Project integration-operation collection
       headers:
@@ -8641,6 +8836,258 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/DocumentFileCapabilityResult" }
   schemas:
+    EngineeringChangePredecessor:
+      type: object
+      additionalProperties: false
+      required: [expectedRevision, expectedRevisionGlobalId, expectedRevisionSnapshotHash]
+      properties:
+        expectedRevision: { type: integer, minimum: 1 }
+        expectedRevisionGlobalId: { type: string, format: uuid }
+        expectedRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    FormalEngineeringChangeObservation:
+      type: object
+      additionalProperties: false
+      description: Exact read-only ERP observation; raw status is preserved and never translated into LaunchFlow truth.
+      required: [doctype, documentName, rawStatus, sourceVersion, sourceModifiedAt, sourceHash, observedAt]
+      properties:
+        doctype: { type: string, const: Engineering Change Request }
+        documentName: { type: string, minLength: 1, maxLength: 140 }
+        rawStatus: { type: string, minLength: 1, maxLength: 140 }
+        sourceVersion: { type: string, minLength: 1, maxLength: 140 }
+        sourceModifiedAt: { type: string, format: date-time }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        observedAt: { type: string, format: date-time }
+    EngineeringChangeImpactAssessment:
+      type: object
+      additionalProperties: false
+      required: [category, conclusion, responsibleUserId, rationale, evidenceReferenceGlobalIds]
+      properties:
+        category: { type: string, enum: [product, drawing, ebom, mbom, tooling, process, quality, inventory_wip, supplier, cost, delivery, customer] }
+        conclusion: { type: string, enum: [pending, not_affected, affected] }
+        responsibleUserId: { type: string, format: email, maxLength: 254 }
+        rationale: { type: string, minLength: 1, maxLength: 4000 }
+        evidenceReferenceGlobalIds:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { type: string, format: uuid }
+    EngineeringChangeAffectedObject:
+      type: object
+      additionalProperties: false
+      required: [category, kind, objectGlobalId, priorVersionGlobalId, priorSnapshotHash, successorVersionGlobalId, successorSnapshotHash]
+      properties:
+        category: { type: string, enum: [product, drawing, ebom, mbom, tooling, process, quality, inventory_wip, supplier, cost, delivery, customer] }
+        kind: { type: string, enum: [engineering_part_revision, engineering_bom_revision, manufacturing_bom_revision, controlled_document_revision, document_baseline, tooling_revision, tooling_set_binding, trial_plan_revision, trial_conclusion_revision, released_trial_summary_revision, gate_review_cycle, erp_item, erp_formal_quality, other_controlled_reference] }
+        objectGlobalId: { type: string, format: uuid }
+        priorVersionGlobalId: { type: [string, "null"], format: uuid }
+        priorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        successorVersionGlobalId: { type: [string, "null"], format: uuid }
+        successorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+    EngineeringChangeTaskLink:
+      type: object
+      additionalProperties: false
+      required: [kind, workItemGlobalId, purpose]
+      properties:
+        kind: { type: string, enum: [design, tool_modification, procurement, trial, quality, cutover] }
+        workItemGlobalId: { type: string, format: uuid }
+        purpose: { type: string, minLength: 1, maxLength: 500 }
+    EngineeringChangeEffectivity:
+      type: object
+      additionalProperties: false
+      required: [kind, effectiveDate, selectorReference, validationEvidenceGlobalId]
+      properties:
+        kind: { type: string, enum: [date, order, batch, inventory_depletion, serial_or_shot, customer_approval] }
+        effectiveDate: { type: [string, "null"], format: date }
+        selectorReference: { type: [string, "null"], maxLength: 280 }
+        validationEvidenceGlobalId: { type: [string, "null"], format: uuid }
+    EngineeringChangeDisposition:
+      type: object
+      additionalProperties: false
+      required: [scope, decision, approvedByUserId, approvalEvidenceGlobalId, executionEvidenceGlobalId, note]
+      properties:
+        scope: { type: string, enum: [old_inventory, work_in_progress, in_transit, old_label_or_file, customer_inventory] }
+        decision: { type: string, enum: [use_as_is, rework, scrap, return_to_supplier, segregate, relabel, customer_approval, other] }
+        approvedByUserId: { type: string, format: email, maxLength: 254 }
+        approvalEvidenceGlobalId: { type: string, format: uuid }
+        executionEvidenceGlobalId: { type: [string, "null"], format: uuid }
+        note: { type: [string, "null"], maxLength: 2000 }
+    EngineeringChangeRevalidation:
+      type: object
+      additionalProperties: false
+      required: [kind, state, responsibleUserId, workItemGlobalId, gateReviewGlobalId, evidenceReferenceGlobalIds, waiverApprovalGlobalId]
+      properties:
+        kind: { type: string, enum: [design_review, tool_modification, procurement, trial, fai, quality, customer_approval, npi_gate_review, cutover] }
+        state: { type: string, enum: [required, in_progress, satisfied, waived] }
+        responsibleUserId: { type: string, format: email, maxLength: 254 }
+        workItemGlobalId: { type: [string, "null"], format: uuid }
+        gateReviewGlobalId: { type: [string, "null"], format: uuid }
+        evidenceReferenceGlobalIds:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        waiverApprovalGlobalId: { type: [string, "null"], format: uuid }
+    EngineeringChangeCost:
+      type: object
+      additionalProperties: false
+      required: [currency, engineeringCost, toolingCost, scrapCost, logisticsCost, downtimeMinutes, deliveryImpactDays]
+      properties:
+        currency: { type: string, pattern: "^[A-Z]{3}$" }
+        engineeringCost: { type: string, pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$" }
+        toolingCost: { type: string, pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$" }
+        scrapCost: { type: string, pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$" }
+        logisticsCost: { type: string, pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$" }
+        downtimeMinutes: { type: integer, minimum: 0 }
+        deliveryImpactDays: { type: integer, minimum: 0 }
+    EngineeringChangeClosureEvidence:
+      type: object
+      additionalProperties: false
+      required: [newVersionsReleased, erpUpdateObserved, oldVersionsWithdrawn, effectivityValidated, dispositionsExecuted, evidenceReferenceGlobalIds]
+      properties:
+        newVersionsReleased: { type: boolean }
+        erpUpdateObserved: { type: boolean }
+        oldVersionsWithdrawn: { type: boolean }
+        effectivityValidated: { type: boolean }
+        dispositionsExecuted: { type: boolean }
+        evidenceReferenceGlobalIds:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { type: string, format: uuid }
+    EngineeringChangeContent:
+      type: object
+      additionalProperties: false
+      required: [title, reason, impactAssessments, affectedObjects, implementationTasks, effectivityRules, dispositions, revalidationRequirements, costSummary]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 280 }
+        reason: { type: string, minLength: 1, maxLength: 4000 }
+        impactAssessments:
+          type: array
+          minItems: 12
+          maxItems: 12
+          items: { $ref: "#/components/schemas/EngineeringChangeImpactAssessment" }
+        affectedObjects: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeAffectedObject" } }
+        implementationTasks: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeTaskLink" } }
+        effectivityRules: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeEffectivity" } }
+        dispositions: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeDisposition" } }
+        revalidationRequirements: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeRevalidation" } }
+        costSummary: { $ref: "#/components/schemas/EngineeringChangeCost" }
+        closureEvidence:
+          oneOf: [{ $ref: "#/components/schemas/EngineeringChangeClosureEvidence" }, { type: "null" }]
+    EngineeringChangeRevision:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, changeGlobalId, tenantId, projectGlobalId, revision, predecessorGlobalId, predecessorSnapshotHash, state, title, reason, formalChange, impactAssessments, affectedObjects, implementationTasks, effectivityRules, dispositions, revalidationRequirements, costSummary, closureEvidence, readyToClose, createdByUserId, createdAt, requestId, traceId, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        changeGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 140 }
+        projectGlobalId: { type: string, format: uuid }
+        revision: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        state: { type: string, enum: [draft, active, ready_to_close, closed, cancelled] }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        reason: { type: string, minLength: 1, maxLength: 4000 }
+        formalChange:
+          oneOf: [{ $ref: "#/components/schemas/FormalEngineeringChangeObservation" }, { type: "null" }]
+        impactAssessments: { type: array, minItems: 12, maxItems: 12, items: { $ref: "#/components/schemas/EngineeringChangeImpactAssessment" } }
+        affectedObjects: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeAffectedObject" } }
+        implementationTasks: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeTaskLink" } }
+        effectivityRules: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeEffectivity" } }
+        dispositions: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeDisposition" } }
+        revalidationRequirements: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeRevalidation" } }
+        costSummary: { $ref: "#/components/schemas/EngineeringChangeCost" }
+        closureEvidence:
+          oneOf: [{ $ref: "#/components/schemas/EngineeringChangeClosureEvidence" }, { type: "null" }]
+        readyToClose: { type: boolean, readOnly: true }
+        createdByUserId: { type: string, format: email, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 140 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringChangeCurrent:
+      type: object
+      additionalProperties: false
+      required: [globalId, projectGlobalId, title, state, optimisticVersion, currentRevisionGlobalId, currentRevisionNumber, currentRevisionSnapshotHash, formalChange, readyToClose]
+      properties:
+        globalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        state: { type: string, enum: [draft, active, ready_to_close, closed, cancelled] }
+        optimisticVersion: { type: integer, minimum: 1 }
+        currentRevisionGlobalId: { type: string, format: uuid }
+        currentRevisionNumber: { type: integer, minimum: 1 }
+        currentRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        formalChange:
+          oneOf: [{ $ref: "#/components/schemas/FormalEngineeringChangeObservation" }, { type: "null" }]
+        readyToClose: { type: boolean, readOnly: true }
+    EngineeringChangePermissions:
+      type: object
+      additionalProperties: false
+      required: [canView, canCreate, canRevise, canLinkFormalObservation, canClose]
+      properties:
+        canView: { type: boolean }
+        canCreate: { type: boolean }
+        canRevise: { type: boolean }
+        canLinkFormalObservation: { type: boolean }
+        canClose: { type: boolean }
+    EngineeringChangeList:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, items, permissions]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        items:
+          type: array
+          maxItems: 1000
+          items:
+            type: object
+            additionalProperties: false
+            required: [change, currentRevision]
+            properties:
+              change: { $ref: "#/components/schemas/EngineeringChangeCurrent" }
+              currentRevision: { $ref: "#/components/schemas/EngineeringChangeRevision" }
+        permissions: { $ref: "#/components/schemas/EngineeringChangePermissions" }
+    EngineeringChangeEvent:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, changeGlobalId, tenantId, projectGlobalId, revisionGlobalId, revision, revisionSnapshotHash, eventType, actorUserId, occurredAt, requestId, traceId, eventHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        changeGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 140 }
+        projectGlobalId: { type: string, format: uuid }
+        revisionGlobalId: { type: string, format: uuid }
+        revision: { type: integer, minimum: 1 }
+        revisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        eventType: { type: string, enum: [created, revised, formal_observation_linked, ready_to_close, closed, cancelled] }
+        actorUserId: { type: string, format: email, maxLength: 254 }
+        occurredAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 140 }
+        eventHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringChangeDetail:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, change, currentRevision, revisions, events, permissions]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        change: { $ref: "#/components/schemas/EngineeringChangeCurrent" }
+        currentRevision: { $ref: "#/components/schemas/EngineeringChangeRevision" }
+        revisions: { type: array, minItems: 1, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeRevision" } }
+        events: { type: array, minItems: 1, maxItems: 1000, items: { $ref: "#/components/schemas/EngineeringChangeEvent" } }
+        permissions: { $ref: "#/components/schemas/EngineeringChangePermissions" }
+    EngineeringChangeCommand:
+      type: object
+      additionalProperties: false
+      required: [operation, change, currentRevision]
+      properties:
+        operation: { type: string, enum: [engineering_change.create, engineering_change.revise, engineering_change.link_formal_observation, engineering_change.close] }
+        change: { $ref: "#/components/schemas/EngineeringChangeCurrent" }
+        currentRevision: { $ref: "#/components/schemas/EngineeringChangeRevision" }
     InboundProjectSourcePayload:
       type: object
       additionalProperties: false

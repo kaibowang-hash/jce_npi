@@ -3,7 +3,7 @@
   "task_id": "P9-01",
   "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_P9_01B_CHECKPOINT",
+  "status": "IN_PROGRESS_P9_01B_COMMAND_QUERY",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P9-02",
   "base_checkpoint": "cf24e863146d11c4a35b4589ac7a582b42fde623",
@@ -61,6 +61,7 @@
     "P9_01A_REUSES_EXISTING_BASELINE_DOCUMENT_EBOM_TOOLING_TRIAL_GATE_AND_PROJECT_WORK_IDENTITIES",
     "P9_01A_ERP_FORMAL_ID_STATUS_AND_EFFECTIVITY_FIELDS_ARE_OBSERVATION_OWNED_NOT_CALLER_EDITABLE",
     "P9_01A_EXACT_SHA_CF24E863_ORDINARY_33353974303_ALL_FOUR_JOBS_PASS",
+    "P9_01B_GOVERNANCE_EXACT_SHA_07B869BC_ORDINARY_33354760251_ALL_FOUR_JOBS_PASS",
     "P9_01B_PROJECT_FIRST_COMMAND_QUERY_API_ONLY_INT008_AND_UI_REMAIN_OUT_OF_SCOPE",
     "P9_01B_EVERY_SUCCESSOR_BINDS_EXACT_CURRENT_REVISION_VERSION_AND_SNAPSHOT_HASH",
     "P9_01B_COMMANDS_ARE_CSRF_ACTOR_IDEMPOTENCY_AUDIT_AND_SINGLE_TRANSACTION_BOUND",
@@ -125,7 +126,7 @@
     "phase_status_resumed_product_task": "P9-01",
     "active_goal_marker": "P9-01",
     "next_action_marker": "P9-01",
-    "controller_marker": "P9-01A ordinary PASS; P9-01B command/query checkpoint exact-SHA ordinary CI pending"
+    "controller_marker": "P9-01B governance ordinary PASS; command/query implementation exact-SHA ordinary CI pending"
   },
   "rollback": {
     "before_product_resume": "Restore exact P9-00 checkpoint 065803ae484d885001259de8238ef01d0ad311e4 and its ordinary CI 33345162833. This P9-01 audit transition changes no product or external state.",

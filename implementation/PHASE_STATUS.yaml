@@ -5,12 +5,12 @@ updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-01
-current_task_status: IN_PROGRESS_P9_01B_CHECKPOINT
-current_task_completed_stage: P9_01A_EXACT_SHA_ORDINARY_PASS
+current_task_status: IN_PROGRESS_P9_01B_COMMAND_QUERY
+current_task_completed_stage: P9_01B_GOVERNANCE_EXACT_SHA_ORDINARY_PASS
 current_task_next_stage: P9_01B_PROJECT_FIRST_COMMAND_QUERY
-current_task_next_stage_status: PENDING_GOVERNANCE_EXACT_SHA_ORDINARY_PRODUCT_CODE_UNAUTHORIZED
+current_task_next_stage_status: IN_PROGRESS_IMPLEMENTATION_EXACT_SHA_ORDINARY_PENDING
 resumed_product_task: P9-01
-resumed_product_task_status: IN_PROGRESS_P9_01B_CHECKPOINT
+resumed_product_task_status: IN_PROGRESS_P9_01B_COMMAND_QUERY
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -3016,10 +3016,10 @@ p9_00:
 p9_01:
   task: P9-01
   next_task: P9-02
-  status: IN_PROGRESS_P9_01B_CHECKPOINT
+  status: IN_PROGRESS_P9_01B_COMMAND_QUERY
   phase: 9
   task_kind: PRODUCT
-  product_code_authorized: false
+  product_code_authorized: true
   requirement_ids: [FR-CH-001, FR-CH-002, FR-CH-003, FR-CH-004, FR-CH-005, FR-CH-006, FR-CH-007, FR-CH-008, FR-CH-009, FR-CH-010, INT-008]
   audit_scope: EXISTING_CHANGE_GATE_BASELINE_TOOLING_TRIAL_NOTIFICATION_AUDIT_AND_ERP_INTEGRATION_SEAMS
   compatibility_baseline: CURRENT_APPROVED_ARCHITECTURE_OWNERSHIP_CONTRACTS_AND_P8_IMPLEMENTATION_DEFAULT_CORRECT
@@ -3063,8 +3063,11 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P9_01B_PROJECT_FIRST_COMMAND_QUERY_GOVERNANCE
-  p9_01b_product_code_authorized: false
+  active_checkpoint: P9_01B_PROJECT_FIRST_COMMAND_QUERY_IMPLEMENTATION
+  p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
+  p9_01b_governance_ordinary: 33354760251
+  p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
+  p9_01b_product_code_authorized: true
   p9_01b_scope: PROJECT_FIRST_LIST_DETAIL_CREATE_REVISE_LINK_OBSERVATION_CLOSE
   p9_01b_non_scope: INT008_WORKER_ADAPTER_AND_FRONTEND_WORKSPACE
 bridge:

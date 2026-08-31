@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_01B_CHECKPOINT")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_01B_COMMAND_QUERY")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertIn("FR-CH-001", value["requirement_ids"])
@@ -60,6 +60,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01A_REUSES_EXISTING_BASELINE_DOCUMENT_EBOM_TOOLING_TRIAL_GATE_AND_PROJECT_WORK_IDENTITIES",
             "P9_01A_ERP_FORMAL_ID_STATUS_AND_EFFECTIVITY_FIELDS_ARE_OBSERVATION_OWNED_NOT_CALLER_EDITABLE",
             "P9_01A_EXACT_SHA_CF24E863_ORDINARY_33353974303_ALL_FOUR_JOBS_PASS",
+            "P9_01B_GOVERNANCE_EXACT_SHA_07B869BC_ORDINARY_33354760251_ALL_FOUR_JOBS_PASS",
             "P9_01B_PROJECT_FIRST_COMMAND_QUERY_API_ONLY_INT008_AND_UI_REMAIN_OUT_OF_SCOPE",
             "P9_01B_EVERY_SUCCESSOR_BINDS_EXACT_CURRENT_REVISION_VERSION_AND_SNAPSHOT_HASH",
             "P9_01B_COMMANDS_ARE_CSRF_ACTOR_IDEMPOTENCY_AUDIT_AND_SINGLE_TRANSACTION_BOUND",

@@ -1,9 +1,20 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_01B_CHECKPOINT — P9-01`
+`IN_PROGRESS_P9_01B_COMMAND_QUERY — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
+
+P9-01B governance exact SHA
+`07b869bcd88fa7406548e10edc42b07c6dadc8ed` passes ordinary CI
+`33354760251`: secret `99374683091`, visual `99374683231`, frontend
+`99374683273` and repository `99374683338` all pass. Complete only the exact
+Project-first list/detail and version-locked create/revise/link-formal-
+observation/close vertical slice already authorized by the twenty-path
+manifest. Run the full affected repository, contract, security, translation
+and task-manifest checks, then require this implementation commit's own
+exact-SHA ordinary PASS. Do not start P9-01C `INT-008`, P9-01D UI, production
+ERP configuration or any adapter activation in this checkpoint.
 
 P9-01A final exact SHA
 `cf24e863146d11c4a35b4589ac7a582b42fde623` passes ordinary CI

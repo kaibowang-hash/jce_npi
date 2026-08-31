@@ -4,7 +4,16 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_01B_CHECKPOINT — P9-01`
+- Mode: `IN_PROGRESS_P9_01B_COMMAND_QUERY — P9-01`
+- P9-01B governance exact SHA
+  `07b869bcd88fa7406548e10edc42b07c6dadc8ed` passes ordinary CI
+  `33354760251`: secret `99374683091`, visual `99374683231`, frontend
+  `99374683273` and repository `99374683338` all pass. The exact Project-first
+  command/query implementation is now active: list/detail plus version-locked
+  create/revise/link-formal-observation/close, closed request/response shapes,
+  CSRF, Project containment, actor-bound idempotency, one transaction and one
+  audit record. Its own exact-SHA ordinary CI is pending; P9-01C `INT-008` and
+  P9-01D UI remain outside this atomic task.
 - P9-01A final exact SHA
   `cf24e863146d11c4a35b4589ac7a582b42fde623` passes ordinary CI
   `33353974303`: repository `99372498566`, frontend `99372498667`, visual
