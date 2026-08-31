@@ -243,6 +243,32 @@ secret `99260395010`, visual `99260395168`, repository `99260395171` and
 frontend `99260395257` all pass. The private mode-0600 state was removed after
 the read.
 
+## P9-01 Engineering Change exact metadata delta
+
+P9-01 collector repair exact SHA
+`28ff94de1ffb62f9f6b5763d00f0ce5a2c15c069` passes ordinary CI
+`33350269304`: visual `99362120673`, frontend `99362120797`, repository
+`99362120857` and secret scan `99362120983` all pass. At
+`2026-08-31T02:33:29.141168Z` the fixed `change-metadata` operation completed
+against the private production Site. Result checksum:
+`sha256:fe112a1500899602db2a9585a38258b005b0052efaac0ee2bfdbec8c18d95276`.
+The temporary result remained mode `0600`; no Site, endpoint, user, key,
+secret, raw Script, business row or production write was recorded.
+
+| Fact area | Sanitized accepted fact | Checksum | Compatibility consequence |
+|---|---|---|---|
+| Formal object identity | `Engineering Change Request` is present; `Engineering Change Order` and `Engineering Change Notice` are absent | DocTypes `sha256:65c4b0d03947d3c736cc2015d44523da1b118aff24b6d87ec4d0df34e3ab7c38` | Use the production ECR as the only formal change master. Do not create or emulate separate ECO/ECN masters in LaunchFlow |
+| Formal numbering and lifecycle | ECR uses `ECR-.YYYY.-.#####`; it is not submittable and has one active Workflow over `status`: Draft, Impact Review, Pending Validation, Pending Approval, Approved, Implementing, Effective, Closed and Cancelled, with revision paths | Workflow list `sha256:144181dee8bd795452acc17868db30aa6a5c11e41dead24af1eb3d8f0bd3fded`; document `sha256:1e8b185ea69ee0e709470d03aa22e67eb30b34a73d32914f9668352ec87a07c5` | `DIRECT_MATCH` for formal ID/status/effectivity truth. LaunchFlow stores raw ERP status plus a versioned display map; it never drives the ERP Workflow directly |
+| ECR mapping fields | 53 fields include customer, project, main Item, current/proposed Approval Form and version, reason/description, customer/TPR/sample/QIT/BOM/Item/process/packaging/supplier impact flags, impact rows, effectivity method/date/lot, customer approval reference, validation/implementation summaries and current/new baselines | DocFields `sha256:0a3e6d40cd2e9dd33ffca652508d854448d95423e6c1af45de3fd83d71ac29e4` | `DIRECT_MATCH` or `CONFIG_OR_MAPPING_ONLY`; keep NPI impact/version/task/evidence truth in LaunchFlow and map only explicit ERP-owned fields |
+| Permissions | Five DocPerm rows: Manufacturing roles read only, Quality roles have the existing edit boundary, and System Manager has administration; there is no accepted dedicated integration role | DocPerm `sha256:1f278d73214aaa4ad6613ee2a1f6c3d41a1ab54781ffb43c7b57749a2d24ec8a` | Production activation remains held on a separate least-privilege operation-specific principal and owner/Sandbox approval; no permission widening in P9-01 |
+| Declarative customization | No Custom Field, Custom DocPerm, Client Script, Server Script, Webhook, Notification or Document Naming Rule matches the exact three-name scope. One Property Setter selects a default print format; its value is retained only as a hash | Empty families `sha256:37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570`; Property Setter `sha256:82ae76886c2c1f47179ed1f7b8d31ce37ad46db5cb28419cd450ff617109b60f` | No existing signed event or operation-specific API is proved. Implement only the approved default-disabled LaunchFlow seam; any ERP event/API addition is a separate minimal custom-app task |
+| Audit and approval hardening | ECR `track_changes` is disabled and all accepted approval transitions allow self approval | Bound in the DocType and Workflow checksums above | Concrete production activation gap. Prefer configuration to enable change tracking and disable self approval; if configuration is insufficient, use one additive independent-app guard. Do not silently reinterpret this as LaunchFlow authority |
+
+The accepted result is a compatibility delta, not a production configuration
+approval. It proves no need to redesign LaunchFlow, rename current contracts,
+make ERP and NPI dual masters or add a generic ERP writer. Status-option text
+and operation-principal approval remain explicit Sandbox/owner inputs.
+
 ## Freshness and delta policy
 
 The accepted Bench/Site checksums, HEAD/status table and tracked-path checksums

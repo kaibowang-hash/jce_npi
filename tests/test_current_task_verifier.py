@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_FACT_DELTA_COLLECTOR")
+        self.assertEqual(value["status"], "IN_PROGRESS_PLAN_CHECKPOINT")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertIn("FR-CH-001", value["requirement_ids"])
@@ -55,6 +55,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "CURRENT_ARCHITECTURE_DATA_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
             "NO_PROVEN_DIFFERENCE_MEANS_DIRECT_MATCH_NO_CHANGE_AND_NO_ADJUSTMENT_TASK",
             "P9_01_FACT_DELTA_LIMITED_TO_EXACT_ECR_ECO_ECN_DECLARATIVE_METADATA_NO_BUSINESS_ROWS_OR_TARGET_METHODS",
+            "P9_01_PRODUCTION_FACT_RESULT_FE112A15_ACCEPTED_ECR_PRESENT_ECO_ECN_ABSENT",
+            "P9_01A_ONLY_AFTER_PLAN_EXACT_SHA_ORDINARY_PASS",
+            "P9_01A_REUSES_EXISTING_BASELINE_DOCUMENT_EBOM_TOOLING_TRIAL_GATE_AND_PROJECT_WORK_IDENTITIES",
+            "P9_01A_ERP_FORMAL_ID_STATUS_AND_EFFECTIVITY_FIELDS_ARE_OBSERVATION_OWNED_NOT_CALLER_EDITABLE",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
@@ -79,10 +83,26 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "scripts/verify_v1_2_reconciliation.py",
                 "tests/test_current_task_verifier.py",
                 "tests/test_erpnext_production_fact_collector.py",
+                "apps/npi_core/npi_core/change_control/__init__.py",
+                "apps/npi_core/npi_core/change_control/domain.py",
+                "apps/npi_core/npi_core/change_control/frappe_validation.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/npi_engineering_change.json",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/npi_engineering_change.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_revision/npi_engineering_change_revision.json",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_revision/npi_engineering_change_revision.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_event/npi_engineering_change_event.json",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_event/npi_engineering_change_event.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/npi_engineering_change_idempotency.json",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/npi_engineering_change_idempotency.py",
+                "apps/npi_core/npi_core/patches.txt",
+                "apps/npi_core/npi_core/patches/v1_2/add_change_control.py",
+                "contracts/data-ownership.yaml",
+                "tests/test_phase9_change_control_domain.py",
+                "tests/test_phase9_change_control_metadata.py",
                 "tests/test_v1_2_reconciliation.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 19)
+        self.assertEqual(len(value["allowed_paths"]), 35)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])

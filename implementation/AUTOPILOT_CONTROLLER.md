@@ -9843,3 +9843,31 @@ repeat or rewrite it merely to restore context. See
   fail closed. Require one exact-SHA ordinary PASS before one complete retry;
   do not create per-family commits or expand the production allowlist.
 - Controller marker: `P9-01 empty-list stdout shape repair batched; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01 production delta accepted; P9-01A plan checkpoint
+
+- Empty-list repair exact SHA
+  `28ff94de1ffb62f9f6b5763d00f0ce5a2c15c069` passes ordinary CI
+  `33350269304`: visual `99362120673`, frontend `99362120797`, repository
+  `99362120857` and secret `99362120983` all pass.
+- The next complete bounded read succeeds with sanitized checksum
+  `sha256:fe112a1500899602db2a9585a38258b005b0052efaac0ee2bfdbec8c18d95276`.
+  Production has one formal `Engineering Change Request`, 53 fields, five
+  permissions and one active 15-state/11-transition Workflow. Separate ECO and
+  ECN DocTypes and exact-scope Client/Server Script, Webhook or Notification
+  automation are absent. Production writes remain zero.
+- Compatibility is `DIRECT_MATCH` for the approved owner split. ERP owns ECR
+  number, raw status and transaction-effective truth; LaunchFlow owns impact,
+  affected versions, implementation/revalidation evidence, tasks and Gate
+  effects. Do not invent ECO/ECN copies or make these fields dual master.
+- Concrete activation gaps are isolated: no accepted dedicated integration
+  role or signed event/summary API; ECR change tracking is disabled; Workflow
+  self approval is enabled. They require a separate configuration-first ERP
+  task and Sandbox/owner Gate, not a LaunchFlow redesign or production change
+  inside P9-01.
+- Freeze four checkpoints: A immutable aggregate/metadata, B Project-first
+  command/query API, C default-disabled reliable `INT-008` event/summary seam,
+  and D industrial three-language workspace plus Level 3. This checkpoint
+  authorizes only A after its own exact-SHA ordinary PASS. B/C/D require their
+  later exact path/Gate boundaries.
+- Controller marker: `P9-01 production delta accepted; P9-01A plan checkpoint exact-SHA ordinary CI pending`.

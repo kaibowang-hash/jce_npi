@@ -1,6 +1,6 @@
 # P9-01 Change Impact and Revalidation Plan
 
-Status: `AUDIT COMPLETE — EMPTY-LIST STDOUT SHAPE REPAIR BATCHED; EXACT CI PENDING`
+Status: `FACT DELTA ACCEPTED — MINIMAL PRODUCT CHECKPOINT PLAN AWAITS EXACT CI`
 
 ## Accepted predecessor
 
@@ -132,3 +132,71 @@ maps it to an empty list. Existing P8 runtime readers keep their prior
 fail-closed contract. Tests lock both sides and run the full P9 operation with
 realistic zero-byte empty families. One replacement exact-SHA ordinary PASS is
 required before the next single complete collector invocation.
+
+## Accepted production delta and compatibility decision
+
+Empty-list repair exact SHA
+`28ff94de1ffb62f9f6b5763d00f0ce5a2c15c069` passes ordinary CI
+`33350269304`: visual `99362120673`, frontend `99362120797`, repository
+`99362120857` and secret `99362120983` all pass. The next complete bounded read
+succeeds at `2026-08-31T02:33:29.141168Z` with result checksum
+`sha256:fe112a1500899602db2a9585a38258b005b0052efaac0ee2bfdbec8c18d95276`.
+The private result is mode `0600`; no production value, Site, endpoint, user,
+secret, raw Script, business row or write is retained.
+
+Production has exactly one formal master, `Engineering Change Request`; no
+separate Engineering Change Order or Notice DocType exists. ECR has a stable
+year-based formal number, 53 fields, five permission rows and one active
+Draft-to-Closed Workflow with impact review, validation, approval,
+implementation and effective states. Its fields already cover the main Item,
+customer/project reference, current/proposed approval and baseline versions,
+impact categories/items, effectivity, customer approval and validation/
+implementation summaries. This is a `DIRECT_MATCH` for the approved ownership
+model: ERP remains formal ID/status/effectivity owner; LaunchFlow remains
+impact/version/task/evidence/Gate owner. ECO/ECN aliases must not be invented.
+
+No Custom Field, Custom DocPerm, Client/Server Script, Webhook, Notification or
+Document Naming Rule is present in the exact scope. There is no accepted
+operation-specific service role, signed event or summary API. ECR change
+tracking is disabled and Workflow transitions allow self approval. These are
+specific activation gaps, not reasons to redesign LaunchFlow. The minimum
+future ERP task is configuration-first: enable change tracking, disable self
+approval and approve a least-privilege principal; only if configuration cannot
+provide the fixed signed event and summary command may an independent custom
+app add those two operation-specific seams. P9-01 makes no production change.
+
+## Frozen minimal product checkpoints
+
+1. **P9-01A — immutable NPI change aggregate.** Add one Project-scoped current
+   shell, immutable canonical revision, immutable event and idempotency record.
+   A revision contains impact-category conclusions/responsible actors,
+   affected object old/new version references, effectivity/disposition,
+   revalidation requirements, existing work/evidence links, cost summary and
+   closure checks. It references existing baseline, document, EBOM, Tooling,
+   Trial, Gate and Project Work identities; it does not reimplement them.
+2. **P9-01B — command/query API and permission boundary.** Add Project-first
+   list/detail plus version-locked create/revise/link-observation/close commands,
+   exact idempotency and audit. ERP number/status fields are observation-owned
+   and never caller-editable. Closure fails until required versions, ERP update
+   observation, old-version withdrawal and revalidation evidence are complete.
+3. **P9-01C — `INT-008` reliable seam.** Add a default-disabled exact signed
+   `npi.erp-engineering-change.v1` Inbox/observation path and a versioned
+   `npi.change-implementation-summary.v1` request/Outbox/attempt/result path.
+   The seam binds ECR ID, source version/hash, Project, actor/service scope,
+   trace and idempotency. Duplicate/reorder/conflict/partial/429/5xx and
+   timeout-after-commit remain explicit; uncertain outcomes are not
+   automatically redispatched. No browser calls ERP and no generic writer is
+   introduced.
+4. **P9-01D — industrial Change workspace and release proof.** Add the dense
+   Project Change workspace with current/raw ERP truth, impact matrix, affected
+   versions, work/revalidation evidence, effectivity/disposition and closeout
+   inspector. Cover loading, empty, no-permission, read-only, processing,
+   current, drifted, unavailable, validation, conflict, retryable and final
+   error states in English, Simplified Chinese and Traditional Chinese. Finish
+   with full contracts/security/migration/rollback/runtime/visual Level 3.
+
+The plan checkpoint itself authorizes no product code until its exact-SHA
+ordinary CI passes. After that PASS, only the enumerated files in
+`CURRENT_TASK.json` may be changed. Production adapter configuration remains
+off; rollback disables new routes/workers/profiles while retaining immutable
+change/audit/integration history. No P9-02 scope is included.

@@ -4,7 +4,18 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_FACT_DELTA_COLLECTOR — P9-01`
+- Mode: `IN_PROGRESS_PLAN_CHECKPOINT — P9-01`
+- Empty-list repair exact SHA
+  `28ff94de1ffb62f9f6b5763d00f0ce5a2c15c069` passes ordinary CI
+  `33350269304` in all four lanes. The next complete bounded read succeeds with
+  sanitized result checksum
+  `sha256:fe112a1500899602db2a9585a38258b005b0052efaac0ee2bfdbec8c18d95276`.
+  Production has one formal `Engineering Change Request` master, 53 fields,
+  five permissions and one active 15-state/11-transition Workflow; separate
+  ECO/ECN DocTypes and exact-scope automation metadata are absent. The current
+  checkpoint freezes P9-01A only: an immutable NPI-owned impact/version/
+  evidence aggregate reusing existing domains. Product code remains
+  unauthorized until this plan exact SHA passes ordinary CI.
 - Parent-reader repair exact SHA
   `27e79a0ab00c3f9a25537bc1f033594c7bac44d9` passes ordinary CI
   `33349073023`: repository `99358733199`, frontend `99358733278`, visual

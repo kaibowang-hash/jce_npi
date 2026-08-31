@@ -5,7 +5,7 @@ updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-01
-current_task_status: IN_PROGRESS_FACT_DELTA_COLLECTOR
+current_task_status: IN_PROGRESS_PLAN_CHECKPOINT
 current_task_completed_stage: P9_01_AUDIT_ACTIVATION_ORDINARY_PASS
 current_task_next_stage: P9_01_EXACT_CHANGE_METADATA_DELTA_GOVERNANCE
 current_task_next_stage_status: ACTIVE_ZERO_CONTACT_PRODUCT_CODE_UNAUTHORIZED
@@ -3016,7 +3016,7 @@ p9_00:
 p9_01:
   task: P9-01
   next_task: P9-02
-  status: IN_PROGRESS_FACT_DELTA_COLLECTOR
+  status: IN_PROGRESS_PLAN_CHECKPOINT
   phase: 9
   task_kind: PRODUCT
   product_code_authorized: false
@@ -3031,13 +3031,13 @@ p9_01:
   audit_activation_ordinary: 33345969806
   audit_activation_jobs: {secret_scan: 99350038718, visual: 99350038806, frontend: 99350038836, repository: 99350038884}
   accepted_change_object_fact: ENGINEERING_CHANGE_REQUEST_PRESENT_IN_27_OF_28_RELEVANT_DOCTYPES
-  missing_fact: EXACT_ECR_ECO_ECN_DECLARATIVE_MAPPING_METADATA
+  missing_fact: NONE_FOR_P9_01A_PRODUCT_FOUNDATION
   fact_delta_scope: DOCTYPE_DOCFIELD_DOCPERM_CUSTOM_FIELD_PROPERTY_SETTER_WORKFLOW_CLIENT_SERVER_SCRIPT_AND_NAMING_METADATA_ONLY
-  fact_delta_production_contact: PROHIBITED_UNTIL_THIS_GOVERNANCE_EXACT_SHA_ORDINARY_PASS
+  fact_delta_production_contact: CLOSED_AFTER_ACCEPTED_SANITIZED_DELTA
   fact_delta_governance_checkpoint: 0e56c83327b12fc5501a4d5d71c5abf5e30981f6
   fact_delta_governance_ordinary: 33347047323
   fact_delta_governance_jobs: {repository: 99353044581, secret_scan: 99353044662, frontend: 99353044670, visual: 99353044785}
-  fact_delta_collector: FIXED_THREE_NAME_DECLARATIVE_METADATA_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY
+  fact_delta_collector: FIXED_THREE_NAME_DECLARATIVE_METADATA_ACCEPTED_COMPLETE
   fact_delta_collector_checkpoint: 4749020aff01c2ba36d0a4ef6d16fe2d53e8d3d6
   fact_delta_collector_ordinary: 33348170448
   fact_delta_collector_jobs: {frontend: 99356215369, secret_scan: 99356215495, visual: 99356215504, repository: 99356215548}
@@ -3048,7 +3048,17 @@ p9_01:
   fact_delta_parent_reader_jobs: {repository: 99358733199, frontend: 99358733278, visual: 99358733289, secret_scan: 99358733309}
   fact_delta_second_read: STOPPED_FAIL_CLOSED_AT_EMPTY_LIST_ZERO_STDOUT_NO_RESULT_EMITTED
   fact_delta_shape_preflight: SEVEN_EMPTY_LIST_FAMILIES_ZERO_STDOUT_POPULATED_LISTS_AND_PARENT_DOCUMENTS_EXACT_JSON
-  fact_delta_empty_list_repair: P9_ONLY_EMPTY_STDOUT_EQUALS_EMPTY_LIST_AWAITING_EXACT_SHA_ORDINARY
+  fact_delta_empty_list_repair: P9_ONLY_EMPTY_STDOUT_EQUALS_EMPTY_LIST_PASS
+  fact_delta_empty_list_checkpoint: 28ff94de1ffb62f9f6b5763d00f0ce5a2c15c069
+  fact_delta_empty_list_ordinary: 33350269304
+  fact_delta_empty_list_jobs: {visual: 99362120673, frontend: 99362120797, repository: 99362120857, secret_scan: 99362120983}
+  fact_delta_result: ACCEPTED_SANITIZED_COMPLETE
+  fact_delta_result_checksum: sha256:fe112a1500899602db2a9585a38258b005b0052efaac0ee2bfdbec8c18d95276
+  formal_change_production_master: ENGINEERING_CHANGE_REQUEST_ONLY
+  formal_change_missing_alias_doctypes: [Engineering Change Order, Engineering Change Notice]
+  formal_change_compatibility: DIRECT_MATCH_WITH_CONFIGURATION_AND_OPERATION_SPECIFIC_ACTIVATION_HOLDS
+  product_plan: P9_01A_IMMUTABLE_AGGREGATE_THEN_B_API_C_INT008_D_UI_LEVEL3
+  product_authorization_condition: THIS_FACT_BACKED_PLAN_EXACT_SHA_ORDINARY_PASS
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

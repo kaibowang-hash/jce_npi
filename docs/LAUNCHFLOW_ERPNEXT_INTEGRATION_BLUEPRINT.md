@@ -71,6 +71,21 @@ test proves configuration/mapping insufficient. Database topology, production
 service identity, owner-approved raw-code maps and production deployment remain
 explicit activation holds, not P8-08 design blockers.
 
+## P9-01 Engineering Change compatibility reconciliation
+
+| Capability / Requirement | LaunchFlow approved baseline | Production ERPNext fact | Compatibility decision | Minimal work and no-change boundary |
+|---|---|---|---|---|
+| Formal change link and state / `FR-CH-001`, `INT-008` | ERP owns formal change number, raw status and transaction-effective truth; LaunchFlow owns the Project-scoped engineering implementation chain | One ECR master exists with `ECR-.YYYY.-.#####` and an active Draft-to-Closed Workflow; separate ECO/ECN DocTypes do not exist | `DIRECT_MATCH`, `NO_CHANGE` | Map exact ECR name, modified/version token, raw status and checksum. Do not create ECO/ECN copies or let LaunchFlow issue ERP Workflow actions |
+| Impact, versions and effectivity / `FR-CH-002`, `FR-CH-003`, `FR-CH-005`, `FR-CH-006` | LaunchFlow reuses immutable baseline, EBOM, document, Tooling, Trial and Project-work references | ECR already exposes Item/customer/project, current/proposed approval/baseline fields, impact flags/table, effectivity method/date/lot, customer approval and implementation/validation summaries | `CONFIG_OR_MAPPING_ONLY`, `NO_CHANGE` to existing domains | Add one NPI-owned immutable change revision referencing existing object versions; map only exact ERP-owned fields. No generalized change engine and no ERP schema write |
+| Task packages, revalidation, Gate and closeout / `FR-CH-004`, `FR-CH-007`, `FR-CH-008` | Existing Project Work, Gate review, Tooling revision and Trial review services remain their own owners | ERP ECR has impact-review, validation, approval, implementing, effective and closed states but no accepted target API | `DIRECT_MATCH` for state semantics; `MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT` only if configuration cannot expose a signed event/summary API | LaunchFlow records links to existing work/evidence and computes closeout readiness. A default-disabled `npi.erp-engineering-change.v1` event and `npi.change-implementation-summary.v1` command seam may be built; actual ERP hook/API is a later atomic task |
+| Cost and audit / `FR-CH-009`, `FR-CH-010` | LaunchFlow retains immutable revisions/events and source-labelled ERP observations | ECR fields support summaries, but `track_changes=0`; Workflow self approval is enabled; no dedicated integration role is accepted | `CONFIG_OR_MAPPING_ONLY` for tracking/separation; otherwise `MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT` | Keep LaunchFlow audit immutable. Before production activation, enable ERP change tracking, disable self approval and approve a least-privilege service scope in a separate task; never weaken NPI permissions or claim ERP approval |
+
+P9-01 therefore proceeds as a local, reversible extension around the existing
+architecture. The production adapter profile stays disabled until a separately
+approved ERP configuration/custom-app task and version-equivalent Sandbox Gate
+prove the exact event, command, actor, idempotency, timeout-after-commit and
+reconciliation contracts.
+
 ## Common interface and operating boundary
 
 - Browser → NPI BFF only. NPI → ERP uses fixed operation-specific adapters;

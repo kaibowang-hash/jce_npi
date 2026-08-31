@@ -1,9 +1,22 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_FACT_DELTA_COLLECTOR — P9-01`
+`IN_PROGRESS_PLAN_CHECKPOINT — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
+
+Empty-list repair exact SHA
+`28ff94de1ffb62f9f6b5763d00f0ce5a2c15c069` passes ordinary CI
+`33350269304` in all four lanes. The complete bounded read is accepted with
+sanitized checksum
+`sha256:fe112a1500899602db2a9585a38258b005b0052efaac0ee2bfdbec8c18d95276`:
+production has one ECR master with the fields and Workflow needed by the
+approved ownership model; separate ECO/ECN DocTypes and exact-scope automation
+are absent. The sole next action is the fact-backed P9-01A plan checkpoint
+ordinary Gate. After PASS, implement only the immutable NPI change shell,
+revision, event and idempotency records plus ownership/migration and focused
+tests. P9-01B/C/D, production ERP changes and adapter activation remain out of
+scope.
 
 Parent-reader repair exact SHA
 `27e79a0ab00c3f9a25537bc1f033594c7bac44d9` passes ordinary CI
