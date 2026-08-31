@@ -9690,3 +9690,33 @@ repeat or rewrite it merely to restore context. See
   3 under `release-gate`. Production ERPNext/JCE contact and user-owned
   dirty/untracked files remain prohibited.
 - Controller marker: `P8-09 final Gate predecessor Item legacy diagnostics off; awaits exact-SHA ordinary CI`.
+
+## 2026-08-31 P8-09 and Phase 8 Level 3 PASS; P9-00 audit activation
+
+- P8-09 diagnostics-off exact SHA
+  `6235502363e34b1279a0c0e26d8d6aecbbd7811f` passes ordinary CI
+  `33342183499`: repository `99339703987`, frontend `99339704058`, secret
+  `99339704008` and governed visual `99339703927` all pass.
+- The sole authoritative final Level 3 `33342817983` passes secret
+  `99341406965`, frontend `99341406968`, visual `99341406989`, repository
+  `99341407027`, controlled preflight `99342574101` and cumulative runtime
+  `99342604163`. Runtime result recording, artifact upload and disposable
+  cleanup pass. No production ERPNext/JCE connection is made.
+- P8-09 closes only `FR-BR-002` presentation truth: exact `JCE Core`, exact
+  approved `Core.png` and stable technical `ERPNEXT`. It changes no contract,
+  ownership, permission, persistence, route or external system.
+- Phase 8 closes `PASS_LEVEL_3` at its bounded technical scope. Production
+  activation, Sandbox/UAT, `DR-REC-009`, the final full production read-only
+  compatibility reconciliation and other documented holds remain mandatory.
+- Standing continuous-delivery authority activates only P9-00. P9-00 is a
+  documentation/trace audit that freezes the Phase 9 requirement allocation
+  and atomic order. `product_code_authorized=false`; P9-01 cannot start until
+  the P9-00 anchor passes exact-SHA ordinary CI and its Task Gate.
+- FR-CO-003/004 external portals and M9-04/M9-05 real-project pilots remain
+  `USER_APPROVED_POST_V1_2_DEFERRED`. Internal collaboration and controlled
+  representative non-production UAT remain required, but cannot be reported
+  as real pilots or real-user adoption.
+- Preserve all user-owned dirty/untracked work. P9-00 authorizes no redesign,
+  refactor, production write, core modification, generic writer, direct ERP
+  browser access, dual-master field or fake success.
+- Controller marker: `Phase 8 Level 3 PASS; P9-00 audit active`.

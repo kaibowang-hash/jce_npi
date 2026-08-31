@@ -4,7 +4,14 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTICS_OFF_AWAITS_EXACT_SHA_ORDINARY — P8-09`
+- Mode: `IN_PROGRESS_AUDIT — P9-00`
+- Authoritative P8-09/Phase-8 closeout: diagnostics-off exact SHA
+  `6235502363e34b1279a0c0e26d8d6aecbbd7811f` passes ordinary CI
+  `33342183499` and final Level 3 `33342817983`. Repository, frontend, secret,
+  governed visual, controlled preflight and cumulative fixed disposable-Site
+  runtime all pass. P8-09 closes only the approved `JCE Core` presentation
+  seam; `ERPNEXT` remains the technical identity. P9-00 is audit-only and no
+  Phase 9 product code is authorized before its separate anchor Gate.
 - Authoritative P8-07F closeout: diagnostics-off exact SHA `d8aba505` passes
   ordinary `33317964484` and final Level 3 `33318628754`. Repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime all
@@ -84,14 +91,14 @@ Updated: `2026-08-31T00:00:00+07:00`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `fc43c4aa5b876d98e9123977c6d5441ac088632a` (pushed; P8-08 bounded
-  internal read-only projection seam, final Level 3 PASS)
+  `f7f8dffe782c8fa6e2c4aea9620c112f03cabcd5` (pushed; P8-09 approved
+  presentation-only JCE Core identity)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `33330886346` (`PASS — LEVEL 3` at
-  `1e0f3facfa31f382b469df4b8084a3c64231674b`; repository, frontend,
+  `33342817983` (`PASS — LEVEL 3` at
+  `6235502363e34b1279a0c0e26d8d6aecbbd7811f`; repository, frontend,
   secret, governed visual, controlled preflight and cumulative runtime)
 - Latest checkpoint exact-SHA CI:
   `33334024759` (`PASS` at

@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-08 PASS; P8-09 AUDIT PLAN AWAITS EXACT-SHA ORDINARY**
+Status: **PASS — P8-01 THROUGH P8-09 BOUNDED TECHNICAL SCOPE**
 
 P8-07F accepted the bounded production compatibility facts without changing
 any requirement status, product code, contract or owner. Existing P8-01
@@ -14,10 +14,13 @@ checkpoint `1e0f3fac` passes ordinary `33330200775` and final Level 3
 `33330886346`; all six required jobs pass. Governance closeout `45f6a4d5`
 passes ordinary `33332397724`. The P8-09 audit now freezes the existing local
 display adapter/source-identity seams, exact approved Core asset hash and
-presentation-only name. Product code remains unauthorized until this plan's
-ordinary PASS and a separate activation transition. Production activation and
-the final full-release read-only drift reconciliation remain separate
-mandatory Gates.
+presentation-only name. Plan, activation, implementation, governed visual and
+diagnostics-off checkpoints all passed. Final exact SHA `62355023` passes
+ordinary `33342183499` and Level 3 `33342817983`; `JCE Core` is presentation
+only and `ERPNEXT` remains the stable technical identity. Production
+activation and the final full-release read-only drift reconciliation remain
+separate mandatory Gates. Phase 8 is closed at its bounded technical scope;
+P9-00 audit is the only next task.
 
 Anchor date: 2026-08-16
 

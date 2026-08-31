@@ -149,9 +149,9 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("customer approval evidence", governed_text)
 
         backlog = (ROOT / "implementation/backlog.yaml").read_text(encoding="utf-8")
-        self.assertEqual(backlog.count("decision_marker: USER_APPROVED_POST_V1_2_DEFERRED"), 2)
-        self.assertEqual(backlog.count("delivery_release: POST_V1_2_FUTURE_RELEASE"), 2)
-        self.assertEqual(backlog.count("restoration_trigger:"), 2)
+        self.assertEqual(backlog.count("decision_marker: USER_APPROVED_POST_V1_2_DEFERRED"), 4)
+        self.assertEqual(backlog.count("delivery_release: POST_V1_2_FUTURE_RELEASE"), 4)
+        self.assertEqual(backlog.count("restoration_trigger:"), 4)
         self.assertEqual(backlog.count("- FR-CO-003"), 1)
         self.assertEqual(backlog.count("- FR-CO-004"), 1)
 
@@ -159,9 +159,16 @@ class V12ReconciliationTests(unittest.TestCase):
             encoding="utf-8"
         )
         normalized_execution_plan = " ".join(execution_plan.split())
-        self.assertIn("final V1.2 completion exclude only", normalized_execution_plan)
+        self.assertIn(
+            "final V1.2 completion exclude FR-CO-003/004 external",
+            normalized_execution_plan,
+        )
+        self.assertIn("M9-04/M9-05 real", normalized_execution_plan)
         self.assertIn("remain required V1.2 scope", normalized_execution_plan)
-        self.assertIn("cannot claim either portal implemented", normalized_execution_plan)
+        self.assertIn(
+            "must not be reported as a real-project pilot or real-user 80-percent usage result",
+            normalized_execution_plan,
+        )
 
         phase_status = (ROOT / "implementation/PHASE_STATUS.yaml").read_text(
             encoding="utf-8"
@@ -768,14 +775,19 @@ class V12ReconciliationTests(unittest.TestCase):
             "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3",
             phase_status,
         )
-        self.assertIn(
-            "current_task: P8-09", phase_status
-        )
+        self.assertIn("current_task: P9-00", phase_status)
         self.assertIn("diagnostics_off_final_level_3: 33330886346", phase_status)
         self.assertIn(
             "technical_result: PASS_INTERNAL_READ_ONLY_PROJECTION_SEAM_EXTERNAL_CONTRACT_HELD",
             phase_status,
         )
+        self.assertIn("p8_09:", phase_status)
+        self.assertIn("diagnostics_off_final_level_3: 33342817983", phase_status)
+        self.assertIn(
+            "technical_result: PASS_PRESENTATION_ONLY_IDENTITY_TECHNICAL_CODE_UNCHANGED",
+            phase_status,
+        )
+        self.assertIn("p9_00:", phase_status)
         self.assertIn("product_code_authorized: false", phase_status)
         self.assertIn(
             "diagnostics_off_final_level_3: 33318628754", phase_status
@@ -825,6 +837,22 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn("direct_sql_and_console_status: PROHIBITED", phase_status)
         self.assertIn("FINAL_FULL_PRODUCTION", (ROOT / "implementation/CURRENT_TASK.json").read_text(encoding="utf-8"))
         self.assertIn("blocks `IMPLEMENTATION_COMPLETE`", quality_gate)
+
+    def test_p8_09_trace_is_verified_with_presentation_only_evidence(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        row = {value["requirement_id"]: value for value in rows}["FR-BR-002"]
+        self.assertEqual(row["phase"], "8")
+        self.assertEqual(
+            row["status"], self.verifier.EXPECTED_P8_09_COMPLETED_STATUS
+        )
+        evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        self.assertTrue(
+            self.verifier.EXPECTED_P8_09_COMPLETED_EVIDENCE.issubset(evidence)
+        )
 
     def test_r1_04_trace_is_verified_with_runtime_evidence(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)

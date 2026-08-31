@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
-current_phase: 8
+current_phase: 9
 updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P8-09
-current_task_status: IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTICS_OFF_AWAITS_EXACT_SHA_ORDINARY
-current_task_completed_stage: P8_09_PREDECESSOR_ITEM_LEGACY_CONTROLLED_SUCCESS_ZERO
-current_task_next_stage: P8_09_DIAGNOSTICS_OFF_EXACT_SHA_ORDINARY
-current_task_next_stage_status: PENDING_EXACT_THREE_BASELINE_PATH_AUTHORIZATION
-resumed_product_task: P8-09
-resumed_product_task_status: IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTICS_OFF_AWAITS_EXACT_SHA_ORDINARY
+current_task: P9-00
+current_task_status: IN_PROGRESS_AUDIT
+current_task_completed_stage: PHASE_8_PASS_LEVEL_3
+current_task_next_stage: P9_00_REQUIREMENT_ANCHOR
+current_task_next_stage_status: ACTIVE_PRODUCT_CODE_UNAUTHORIZED
+resumed_product_task: P9-00
+resumed_product_task_status: IN_PROGRESS_AUDIT
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -2901,7 +2901,7 @@ p8_08:
 p8_09:
   task: P8-09
   next_task: P9-00
-  status: IN_PROGRESS_FINAL_GATE_PREDECESSOR_ITEM_LEGACY_DIAGNOSTICS_OFF_AWAITS_EXACT_SHA_ORDINARY
+  status: PASS_LEVEL_3
   phase: 8
   milestone: M7-09
   task_kind: PRODUCT
@@ -2968,7 +2968,17 @@ p8_09:
   predecessor_item_legacy_controlled_runtime_job: 99338441701
   predecessor_item_legacy_controlled_result: SUCCESS_ZERO_NO_PRODUCT_REPAIR
   predecessor_item_legacy_diagnostics_all_off: true
-  predecessor_item_legacy_diagnostic_cycle: {diagnostic: 1/1, repair: 0/1, final: 0/1}
+  predecessor_item_legacy_diagnostic_cycle: {diagnostic: 1/1, repair: 0/1, final: 1/1}
+  diagnostics_off_final_checkpoint: 6235502363e34b1279a0c0e26d8d6aecbbd7811f
+  diagnostics_off_final_ordinary: 33342183499
+  diagnostics_off_final_ordinary_jobs: {repository: 99339703987, frontend: 99339704058, secret_scan: 99339704008, visual: 99339703927}
+  diagnostics_off_final_level_3: 33342817983
+  diagnostics_off_final_level_3_jobs: {secret_scan: 99341406965, frontend: 99341406968, visual: 99341406989, repository: 99341407027, controlled_preflight: 99342574101, runtime: 99342604163}
+  diagnostics_off_final_result: PASS_ALL_SIX_JOBS
+  runtime_artifact: {id: 9741314098, sha256: def1200134b9b9509c6dfe7a4983d74fd272cf0c211df27b7b049f9fa65a37d9}
+  visual_artifact: {id: 9741125285, sha256: 0f7c5a428fef1a8e8a75f1c3bbc38dc2946c15d91c69b1fb73da8d8ab9c7ddb3}
+  secret_artifact: {id: 9741066445, sha256: 1462db6b87d1f89c6a66c8f29a0932f03f35fa8696aa8cb3f378002362382434}
+  technical_result: PASS_PRESENTATION_ONLY_IDENTITY_TECHNICAL_CODE_UNCHANGED
   display_text: JCE Core
   technical_code: ERPNEXT
   approved_asset: docs/Brand Asset/Core.png
@@ -2980,6 +2990,22 @@ p8_09:
     - implementation/phase-8-requirement-anchor.md
     - implementation/evidence/phase-8/p8-08-validation.md
     - implementation/evidence/phase-8/p8-09-plan.md
+    - implementation/evidence/phase-8/p8-09-validation.md
+p9_00:
+  task: P9-00
+  next_task: P9-01
+  status: IN_PROGRESS_AUDIT
+  phase: 9
+  task_kind: PRODUCT
+  product_code_authorized: false
+  phase_8_gate_checkpoint: 6235502363e34b1279a0c0e26d8d6aecbbd7811f
+  phase_8_gate_ordinary: 33342183499
+  phase_8_gate_level_3: 33342817983
+  audit_scope: PHASE_9_REQUIREMENT_ALLOCATION_ATOMIC_ORDER_HOLDS_TESTS_ROLLBACK
+  external_portals: USER_APPROVED_POST_V1_2_DEFERRED
+  real_project_pilots: USER_APPROVED_POST_V1_2_DEFERRED
+  controlled_nonproduction_uat_required: true
+  production_contact_required_for_audit: false
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3006,5 +3032,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08], current_task: P8-09}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [], current_task: P9-00}

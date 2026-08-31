@@ -1,6 +1,6 @@
 # P8-09 Plan — Approved JCE Core Display Identity
 
-Status: **FINAL GATE PREDECESSOR ITEM LEGACY DIAGNOSTICS OFF; AWAITS EXACT-SHA ORDINARY CI**
+Status: **PASS — LEVEL 3 PRESENTATION-ONLY IDENTITY**
 
 Audit date: 2026-08-31
 
@@ -106,6 +106,14 @@ passes ordinary CI `33341193951`. Its only Level 2 controlled run
 output and restricted values remain unread. No Item product repair is
 evidenced. All nine Item diagnostic flags are now false before one new
 exact-SHA ordinary and one final P8-09/Phase-8 Level 3.
+
+Diagnostics-off checkpoint
+`6235502363e34b1279a0c0e26d8d6aecbbd7811f` passes ordinary CI
+`33342183499` in repository, frontend, secret and governed visual lanes. Its
+sole final Level 3 `33342817983` passes those same four lanes, controlled
+preflight `99342574101` and cumulative runtime `99342604163`. Runtime result
+recording, artifact upload and disposable cleanup also pass. This is the
+authoritative P8-09 and Phase 8 final Gate; no Item product repair was made.
 
 ## 1. Audit conclusion
 

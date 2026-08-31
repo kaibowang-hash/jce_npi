@@ -4,14 +4,18 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-There is no active global or P8-09 audit blocker. P8-08 diagnostics-off
-checkpoint `1e0f3facfa31f382b469df4b8084a3c64231674b` passes ordinary
-`33330200775` and final Level 3 `33330886346`; all six required jobs pass.
-Governance closeout `45f6a4d5654608fa22c968d9b22e233b8af80852` passes ordinary
-`33332397724`. P8-08 is complete only for the bounded internal read-only
-projection seam. P8-09 product code remains unauthorized until its exact
-asset/context plan and a separate activation transition each pass exact-SHA
-ordinary CI.
+There is no active global or P9-00 audit blocker. P8-09 diagnostics-off exact
+SHA `6235502363e34b1279a0c0e26d8d6aecbbd7811f` passes ordinary
+`33342183499` and final Level 3 `33342817983`; all six required jobs pass.
+Phase 8 is closed at its bounded technical scope. P9-00 is audit-only and
+product code remains unauthorized until its exact Phase 9 anchor passes.
+
+Historical P8-08 diagnostics-off checkpoint
+`1e0f3facfa31f382b469df4b8084a3c64231674b` passes ordinary `33330200775`
+and final Level 3 `33330886346`; all six required jobs pass. Governance
+closeout `45f6a4d5654608fa22c968d9b22e233b8af80852` passes ordinary
+`33332397724`. P8-08 remains complete only for the bounded internal read-only
+projection seam.
 
 The former collection blockers are closed. Exact SHA `77b4258f` passes
 ordinary `33312664804`; the sole remaining `SYSTEM_LOCALE` read succeeds,

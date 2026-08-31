@@ -405,6 +405,14 @@ EXPECTED_P8_07_COMPLETED_ALLOCATION = {
     "NFR-INT-001": "TECHNICAL_VERIFIED_INTEGRATION_RELIABILITY_FOUNDATION_PRODUCTION_SANDBOX_FACTS_HELD",
     "UX-016": "TECHNICAL_VERIFIED_FOUNDATION",
 }
+EXPECTED_P8_09_COMPLETED_EVIDENCE = {
+    "implementation/evidence/phase-8/p8-09-plan.md",
+    "implementation/evidence/phase-8/p8-09-validation.md",
+    "implementation/phase-8-gate.md",
+}
+EXPECTED_P8_09_COMPLETED_STATUS = (
+    "TECHNICAL_VERIFIED_PRESENTATION_ONLY_IDENTITY_TECHNICAL_CODE_UNCHANGED"
+)
 ERP_CUSTOMIZATION_REQUIREMENTS = ROOT / "docs" / "ERPNEXT_CUSTOMIZATION_REQUIREMENTS.md"
 ERP_PRODUCTION_FACT_INVENTORY = ROOT / "docs" / "ERPNEXT_PRODUCTION_FACT_INVENTORY.md"
 ERP_INTEGRATION_BLUEPRINT = ROOT / "docs" / "LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md"
@@ -468,6 +476,7 @@ EXPECTED_P8_CARRIED_FOUNDATIONS = {
         "8",
         "TECHNICAL_VERIFIED_NPI_SUMMARY_AND_READ_ONLY_PROJECTION_SEAM_EXTERNAL_CONTRACT_HELD",
     ),
+    "FR-BR-002": ("8", EXPECTED_P8_09_COMPLETED_STATUS),
     "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
 }
 EXPECTED_P8_SCOPED_HOLDS = {
@@ -2865,6 +2874,24 @@ def verify_trace_sets() -> None:
                 raise ReconciliationVerificationError(
                     f"{requirement_id} lacks the P8-07 completion evidence"
                 )
+
+    p8_09_row = by_id["FR-BR-002"]
+    p8_09_evidence = {
+        value.strip()
+        for value in p8_09_row["evidence"].split(";")
+        if value.strip()
+    }
+    if (
+        p8_09_row["phase"],
+        p8_09_row["status"],
+    ) != ("8", EXPECTED_P8_09_COMPLETED_STATUS):
+        raise ReconciliationVerificationError(
+            "FR-BR-002 does not retain the P8-09 presentation-only truth"
+        )
+    if not EXPECTED_P8_09_COMPLETED_EVIDENCE.issubset(p8_09_evidence):
+        raise ReconciliationVerificationError(
+            "FR-BR-002 lacks the P8-09 completion evidence"
+        )
 
     for requirement_id, expected_trace in {
         **EXPECTED_P8_CARRIED_FOUNDATIONS,
