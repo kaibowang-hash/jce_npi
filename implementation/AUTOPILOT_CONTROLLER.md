@@ -9871,3 +9871,25 @@ repeat or rewrite it merely to restore context. See
   authorizes only A after its own exact-SHA ordinary PASS. B/C/D require their
   later exact path/Gate boundaries.
 - Controller marker: `P9-01 production delta accepted; P9-01A plan checkpoint exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01A ordinary PASS; P9-01B command/query checkpoint
+
+- P9-01A final exact SHA
+  `cf24e863146d11c4a35b4589ac7a582b42fde623` passes ordinary CI
+  `33353974303`: repository `99372498566`, frontend `99372498667`, visual
+  `99372498683` and secret `99372498705` all pass.
+- Accept only the immutable Project-scoped shell, canonical revision, event,
+  idempotency, ownership, additive migration, complete direct zh/zh-TW
+  catalogs and focused domain/metadata/security tests in P9-01A.
+- Freeze P9-01B to Project-first list/detail and version-locked
+  create/revise/formal-observation-link/close commands. Commands require CSRF,
+  an internal NPI role, exact actor-bound idempotency, one transaction and one
+  audit record. Every successor binds the exact current revision/version/hash.
+- ERP formal number/raw status/source facts remain observation-owned. Callers
+  cannot supply them to ordinary create/revise/close requests, and close cannot
+  infer ERP completion, Gate truth, released versions, withdrawal,
+  effectivity, dispositions or revalidation.
+- P9-01C `INT-008`, every ERP adapter/worker/event activation and P9-01D UI are
+  explicitly outside this checkpoint. This governance commit changes no
+  product code and must pass its own exact-SHA ordinary CI first.
+- Controller marker: `P9-01A ordinary PASS; P9-01B command/query checkpoint exact-SHA ordinary CI pending`.

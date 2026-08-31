@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_PLAN_CHECKPOINT")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_01B_CHECKPOINT")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertIn("FR-CH-001", value["requirement_ids"])
@@ -45,7 +45,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertNotIn("FR-RP-001", value["requirement_ids"])
         self.assertEqual(
             value["base_checkpoint"],
-            "065803ae484d885001259de8238ef01d0ad311e4",
+            "cf24e863146d11c4a35b4589ac7a582b42fde623",
         )
         for invariant in (
             "P9_00_EXACT_SHA_065803AE_ORDINARY_33345162833_ALL_FOUR_JOBS_PASS",
@@ -59,64 +59,47 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01A_ONLY_AFTER_PLAN_EXACT_SHA_ORDINARY_PASS",
             "P9_01A_REUSES_EXISTING_BASELINE_DOCUMENT_EBOM_TOOLING_TRIAL_GATE_AND_PROJECT_WORK_IDENTITIES",
             "P9_01A_ERP_FORMAL_ID_STATUS_AND_EFFECTIVITY_FIELDS_ARE_OBSERVATION_OWNED_NOT_CALLER_EDITABLE",
+            "P9_01A_EXACT_SHA_CF24E863_ORDINARY_33353974303_ALL_FOUR_JOBS_PASS",
+            "P9_01B_PROJECT_FIRST_COMMAND_QUERY_API_ONLY_INT008_AND_UI_REMAIN_OUT_OF_SCOPE",
+            "P9_01B_EVERY_SUCCESSOR_BINDS_EXACT_CURRENT_REVISION_VERSION_AND_SNAPSHOT_HASH",
+            "P9_01B_COMMANDS_ARE_CSRF_ACTOR_IDEMPOTENCY_AUDIT_AND_SINGLE_TRANSACTION_BOUND",
+            "P9_01B_FORMAL_CHANGE_FIELDS_ARE_LINK_OBSERVATION_OWNED_AND_NEVER_CALLER_EDITABLE",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertEqual(
             set(value["allowed_paths"]),
             {
-                "docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md",
-                "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
-                "implementation/BLOCKERS.md",
                 "implementation/CURRENT_TASK.json",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
-                "implementation/REQUIRED_INPUTS.md",
-                "implementation/REQUIREMENT_TRACEABILITY.csv",
-                "implementation/phase-9-requirement-anchor.md",
-                "implementation/evidence/phase-9/p9-00-validation.md",
                 "implementation/evidence/phase-9/p9-01-plan.md",
-                "scripts/collect_erpnext_production_facts.py",
-                "scripts/reconcile_v1_2_traceability.py",
-                "scripts/verify_v1_2_reconciliation.py",
-                "tests/test_current_task_verifier.py",
-                "tests/test_erpnext_production_fact_collector.py",
-                "apps/npi_core/npi_core/change_control/__init__.py",
-                "apps/npi_core/npi_core/change_control/domain.py",
-                "apps/npi_core/npi_core/change_control/frappe_validation.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/npi_engineering_change.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/npi_engineering_change.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_revision/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_revision/npi_engineering_change_revision.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_revision/npi_engineering_change_revision.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_event/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_event/npi_engineering_change_event.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_event/npi_engineering_change_event.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/npi_engineering_change_idempotency.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change_idempotency/npi_engineering_change_idempotency.py",
-                "apps/npi_core/npi_core/patches.txt",
-                "apps/npi_core/npi_core/patches/v1_2/add_change_control.py",
+                "implementation/evidence/phase-9/p9-01-command-query-checkpoint.md",
+                "apps/npi_core/npi_core/change_control/frappe_repository.py",
+                "apps/npi_core/npi_core/change_control/request_validation.py",
+                "apps/npi_core/npi_core/change_control/response_validation.py",
+                "apps/npi_core/npi_core/change_control_api.py",
+                "apps/npi_core/npi_core/bff.py",
                 "apps/npi_core/npi_core/translations/zh-TW.csv",
                 "apps/npi_core/npi_core/translations/zh.csv",
-                "contracts/data-ownership.yaml",
+                "contracts/npi-api.openapi.yaml",
                 "frontend/src/generated/catalogs.ts",
-                "tests/test_phase9_change_control_domain.py",
-                "tests/test_phase9_change_control_metadata.py",
-                "tests/test_v1_2_reconciliation.py",
+                "tests/test_current_task_verifier.py",
+                "tests/test_phase9_change_control_api.py",
+                "tests/test_phase9_change_control_contract.py",
+                "tests/test_phase9_change_control_repository.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 42)
+        self.assertEqual(len(value["allowed_paths"]), 20)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])
         )
         self.assertEqual(
             sum(path.startswith("scripts/") for path in value["allowed_paths"]),
-            3,
+            0,
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:

@@ -200,3 +200,23 @@ ordinary CI passes. After that PASS, only the enumerated files in
 `CURRENT_TASK.json` may be changed. Production adapter configuration remains
 off; rollback disables new routes/workers/profiles while retaining immutable
 change/audit/integration history. No P9-02 scope is included.
+
+## P9-01A acceptance and P9-01B authorization checkpoint
+
+P9-01A final exact SHA
+`cf24e863146d11c4a35b4589ac7a582b42fde623` passes ordinary CI
+`33353974303`: repository `99372498566`, frontend `99372498667`, visual
+`99372498683` and secret `99372498705` all pass. Accepted scope is the
+immutable Project-scoped NPI change aggregate, canonical revision/event/
+idempotency metadata, additive no-row migration, exact owner matrix, direct
+English/zh/zh-TW sources and focused domain/metadata/security checks.
+
+The next atomic checkpoint is governance-only and freezes P9-01B to the exact
+Project-first list/detail and version-locked create/revise/link-observation/
+close API boundary. Commands require internal authenticated authority, CSRF,
+actor-bound idempotency, exact predecessor/version/hash, audit and one
+transaction. ERP formal identifiers and raw source truth remain observation-
+owned; closeout facts remain explicit and cannot be inferred. P9-01C INT-008,
+all adapters/workers/event activation and P9-01D UI remain out of scope until
+their later checkpoints. P9-01B product code may start only after this
+governance checkpoint passes exact-SHA ordinary CI.

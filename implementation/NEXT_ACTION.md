@@ -1,9 +1,19 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_PLAN_CHECKPOINT — P9-01`
+`IN_PROGRESS_P9_01B_CHECKPOINT — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
+
+P9-01A final exact SHA
+`cf24e863146d11c4a35b4589ac7a582b42fde623` passes ordinary CI
+`33353974303`: repository `99372498566`, frontend `99372498667`, visual
+`99372498683` and secret `99372498705` all pass. The sole next action is this
+zero-product P9-01B controller checkpoint. After its exact-SHA ordinary PASS,
+implement only Project-first list/detail and version-locked
+create/revise/link-observation/close commands with CSRF, actor-bound
+idempotency, audit and closed OpenAPI responses. P9-01C INT-008 and P9-01D UI
+remain out of scope.
 
 Empty-list repair exact SHA
 `28ff94de1ffb62f9f6b5763d00f0ce5a2c15c069` passes ordinary CI

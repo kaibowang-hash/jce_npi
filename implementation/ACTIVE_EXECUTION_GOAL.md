@@ -4,7 +4,16 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_PLAN_CHECKPOINT — P9-01`
+- Mode: `IN_PROGRESS_P9_01B_CHECKPOINT — P9-01`
+- P9-01A final exact SHA
+  `cf24e863146d11c4a35b4589ac7a582b42fde623` passes ordinary CI
+  `33353974303`: repository `99372498566`, frontend `99372498667`, visual
+  `99372498683` and secret `99372498705` all pass. The immutable Project-scoped
+  change shell, canonical revision/event/idempotency records, ownership,
+  migration, direct Simplified/Traditional Chinese catalogs and security
+  checks are accepted. The active work is now a governance-only checkpoint
+  freezing P9-01B Project-first command/query paths; product code remains
+  unchanged until this checkpoint's own exact-SHA ordinary CI passes.
 - Empty-list repair exact SHA
   `28ff94de1ffb62f9f6b5763d00f0ce5a2c15c069` passes ordinary CI
   `33350269304` in all four lanes. The next complete bounded read succeeds with
