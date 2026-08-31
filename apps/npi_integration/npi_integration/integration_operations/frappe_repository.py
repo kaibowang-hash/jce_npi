@@ -112,6 +112,18 @@ INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_CODES = frozenset(
         "P807_COLLECTION_MBOM_SHAPE",
         "P807_COLLECTION_TOOL_CREATE_SHAPE",
         "P807_COLLECTION_TOOL_UPDATE_SHAPE",
+        "P807_COLLECTION_CHANGE_INBOUND_QUERY",
+        "P807_COLLECTION_CHANGE_SUMMARY_QUERY",
+        "P807_COLLECTION_CHANGE_INBOUND_ROW",
+        "P807_COLLECTION_CHANGE_SUMMARY_ROW",
+        "P807_COLLECTION_CHANGE_INBOUND_VALUE",
+        "P807_COLLECTION_CHANGE_SUMMARY_VALUE",
+        "P807_COLLECTION_CHANGE_INBOUND_TIME",
+        "P807_COLLECTION_CHANGE_SUMMARY_TIME",
+        "P807_COLLECTION_CHANGE_INBOUND_BOUNDARIES",
+        "P807_COLLECTION_CHANGE_SUMMARY_BOUNDARIES",
+        "P807_COLLECTION_CHANGE_INBOUND_SHAPE",
+        "P807_COLLECTION_CHANGE_SUMMARY_SHAPE",
     }
 )
 INTEGRATION_OPERATIONS_ACTION_DIAGNOSTIC_CODES = frozenset(
@@ -385,6 +397,28 @@ _SPECS = {
         "result_global_id",
         "outbox_event_id",
     ),
+    IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: _OperationSpec(
+        IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT,
+        "NPI Engineering Change Inbox",
+        "state",
+        "attempt_count",
+        "event_id",
+        "canonical_event_hash",
+        "last_error_at",
+        None,
+        None,
+    ),
+    IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: _OperationSpec(
+        IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY,
+        "NPI Engineering Change Summary Request",
+        "state",
+        "revision_number",
+        "revision_global_id",
+        "source_hash",
+        "updated_at",
+        "result_global_id",
+        "outbox_event_id",
+    ),
 }
 _COLLECTION_QUERY_CODES = {
     IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_QUERY",
@@ -392,6 +426,8 @@ _COLLECTION_QUERY_CODES = {
     IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_QUERY",
     IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_QUERY",
     IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_QUERY",
+    IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: "P807_COLLECTION_CHANGE_INBOUND_QUERY",
+    IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: "P807_COLLECTION_CHANGE_SUMMARY_QUERY",
 }
 _COLLECTION_ROW_CODES = {
     IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_ROW",
@@ -399,6 +435,8 @@ _COLLECTION_ROW_CODES = {
     IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_ROW",
     IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_ROW",
     IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_ROW",
+    IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: "P807_COLLECTION_CHANGE_INBOUND_ROW",
+    IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: "P807_COLLECTION_CHANGE_SUMMARY_ROW",
 }
 _COLLECTION_VALUE_CODES = {
     IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_VALUE",
@@ -406,6 +444,8 @@ _COLLECTION_VALUE_CODES = {
     IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_VALUE",
     IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_VALUE",
     IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_VALUE",
+    IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: "P807_COLLECTION_CHANGE_INBOUND_VALUE",
+    IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: "P807_COLLECTION_CHANGE_SUMMARY_VALUE",
 }
 _COLLECTION_TIME_CODES = {
     IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_TIME",
@@ -413,6 +453,8 @@ _COLLECTION_TIME_CODES = {
     IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_TIME",
     IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_TIME",
     IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_TIME",
+    IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: "P807_COLLECTION_CHANGE_INBOUND_TIME",
+    IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: "P807_COLLECTION_CHANGE_SUMMARY_TIME",
 }
 _COLLECTION_BOUNDARY_CODES = {
     IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_BOUNDARIES",
@@ -420,6 +462,8 @@ _COLLECTION_BOUNDARY_CODES = {
     IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_BOUNDARIES",
     IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_BOUNDARIES",
     IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_BOUNDARIES",
+    IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: "P807_COLLECTION_CHANGE_INBOUND_BOUNDARIES",
+    IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: "P807_COLLECTION_CHANGE_SUMMARY_BOUNDARIES",
 }
 _COLLECTION_SHAPE_CODES = {
     IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION: "P807_COLLECTION_INBOUND_SHAPE",
@@ -427,6 +471,8 @@ _COLLECTION_SHAPE_CODES = {
     IntegrationOperationKind.PUBLISH_MBOM: "P807_COLLECTION_MBOM_SHAPE",
     IntegrationOperationKind.CREATE_TOOL_ASSET: "P807_COLLECTION_TOOL_CREATE_SHAPE",
     IntegrationOperationKind.UPDATE_TOOL_ASSET: "P807_COLLECTION_TOOL_UPDATE_SHAPE",
+    IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: "P807_COLLECTION_CHANGE_INBOUND_SHAPE",
+    IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: "P807_COLLECTION_CHANGE_SUMMARY_SHAPE",
 }
 
 
@@ -586,6 +632,11 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         if project is None:
             return None
         with integration_operations_action_step("P807_ACTION_REPOSITORY_REQUEST"):
+            if operation_kind in {
+                IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT,
+                IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY,
+            }:
+                raise IntegrationOperationConflict()
             request_payload = {
                 "projectGlobalId": str(project_id),
                 "operationKind": operation_kind.value,
@@ -768,7 +819,11 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         raw_state = str(_value(row, spec.state_field))
         target_key = (
             _value(row, "source_key_hash")
-            if spec.kind is IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION
+            if spec.kind
+            in {
+                IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION,
+                IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT,
+            }
             else _value(row, "target_idempotency_key_hash")
         )
         if (
@@ -831,14 +886,21 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         operation: IntegrationOperationReference,
         row: Any,
     ) -> tuple[bool, bool, bool]:
-        if operation.operation_kind is IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION:
+        if operation.operation_kind in {
+            IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION,
+            IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT,
+        }:
             return False, False, False
         outbox = self._outbox(operation.operation_kind, row, lock=False)
         boundary = bool(_value(outbox, "adapter_boundary_crossed")) if outbox else True
         result_id = _value(row, _SPECS[operation.operation_kind].result_field or "")
         result = self._result(operation.operation_kind, result_id, lock=False)
         result_state = str(_value(result, "state")) if result else ""
-        reconciliation = result_state in {"uncertain_after_timeout", "mapping_conflict"}
+        reconciliation = result_state in {
+            "uncertain_after_timeout",
+            "mapping_conflict",
+            "identity_conflict",
+        }
         partial = result_state == "partially_succeeded"
         return boundary, reconciliation, partial
 
@@ -847,7 +909,10 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         operation: IntegrationOperationReference,
         row: Any,
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-        if operation.operation_kind is IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION:
+        if operation.operation_kind in {
+            IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION,
+            IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT,
+        }:
             attempt_count = int(_value(row, "attempt_count") or 0)
             attempts = (
                 [
@@ -884,6 +949,11 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
                 "NPI Tool Asset Result",
                 "request_global_id",
             ),
+            IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: (
+                "NPI Engineering Change Summary Attempt",
+                "NPI Engineering Change Summary Result",
+                "request_global_id",
+            ),
         }[operation.operation_kind]
         attempt_names = frappe.get_all(
             attempt_doctype,
@@ -896,7 +966,12 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
             result_doctype,
             filters={request_field: str(operation.operation_global_id)},
             pluck="name",
-            order_by="attempt_number asc, name asc",
+            order_by=(
+                "observed_at asc, name asc"
+                if operation.operation_kind
+                is IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY
+                else "attempt_number asc, name asc"
+            ),
             limit_page_length=_MAX_HISTORY + 1,
         )
         if len(attempt_names) > _MAX_HISTORY or len(result_names) > _MAX_HISTORY:
@@ -904,28 +979,54 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         attempts = []
         for name in attempt_names:
             value = frappe.get_doc(attempt_doctype, str(name))
+            engineering_change = (
+                operation.operation_kind
+                is IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY
+            )
             attempts.append(
                 {
                     "attemptGlobalId": str(_value(value, "global_id")),
                     "attemptNumber": int(_value(value, "attempt_number")),
                     "state": str(_value(value, "state")),
                     "adapterBoundaryCrossed": bool(_value(value, "adapter_boundary_crossed")),
-                    "reconciliationRequired": bool(_value(value, "reconciliation_required")),
+                    "reconciliationRequired": (
+                        str(_value(value, "state"))
+                        in {"uncertain_after_timeout", "partially_succeeded"}
+                        if engineering_change
+                        else bool(_value(value, "reconciliation_required"))
+                    ),
                     "safeErrorCode": _value(value, "safe_error_code") or None,
                     "startedAt": _optional_utc_text(_value(value, "started_at")),
-                    "finishedAt": _optional_utc_text(_value(value, "finished_at")),
+                    "finishedAt": _optional_utc_text(
+                        _value(value, "completed_at")
+                        if engineering_change
+                        else _value(value, "finished_at")
+                    ),
                 }
             )
         results = []
         for name in result_names:
             value = frappe.get_doc(result_doctype, str(name))
+            engineering_change = (
+                operation.operation_kind
+                is IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY
+            )
             results.append(
                 {
                     "resultGlobalId": str(_value(value, "global_id")),
                     "attemptGlobalId": str(_value(value, "attempt_global_id")),
-                    "attemptNumber": int(_value(value, "attempt_number")),
+                    "attemptNumber": (
+                        _attempt_number_for_result(value)
+                        if engineering_change
+                        else int(_value(value, "attempt_number"))
+                    ),
                     "state": str(_value(value, "state")),
-                    "authority": str(_value(value, "authority")),
+                    "authority": (
+                        "authenticated_target"
+                        if engineering_change
+                        and bool(_value(value, "response_authenticated"))
+                        else str(_value(value, "authority") or "none")
+                    ),
                     "responseAuthenticated": bool(_value(value, "response_authenticated")),
                     "faultKind": _value(value, "fault_kind") or None,
                     "observedAt": _optional_utc_text(_value(value, "observed_at")),
@@ -1136,8 +1237,14 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
         name = _value(row, field or "")
         if not name:
             return None
+        doctype = (
+            "NPI Engineering Change Summary Outbox"
+            if kind
+            is IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY
+            else "NPI Outbox Message"
+        )
         try:
-            outbox = frappe.get_doc("NPI Outbox Message", str(name), for_update=lock)
+            outbox = frappe.get_doc(doctype, str(name), for_update=lock)
         except frappe.DoesNotExistError:
             return None
         request_field = {
@@ -1145,6 +1252,7 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
             IntegrationOperationKind.PUBLISH_MBOM: "mbom_request_global_id",
             IntegrationOperationKind.CREATE_TOOL_ASSET: "tool_asset_request_global_id",
             IntegrationOperationKind.UPDATE_TOOL_ASSET: "tool_asset_request_global_id",
+            IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: "request_global_id",
         }.get(kind)
         if request_field is None or str(_value(outbox, request_field)) != str(_value(row, "name")):
             return None
@@ -1162,6 +1270,10 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
             IntegrationOperationKind.PUBLISH_MBOM: ("NPI MBOM Publish Attempt", "mbom_last_attempt_global_id"),
             IntegrationOperationKind.CREATE_TOOL_ASSET: ("NPI Tool Asset Attempt", "tool_asset_last_attempt_global_id"),
             IntegrationOperationKind.UPDATE_TOOL_ASSET: ("NPI Tool Asset Attempt", "tool_asset_last_attempt_global_id"),
+            IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: (
+                "NPI Engineering Change Summary Attempt",
+                "last_attempt_global_id",
+            ),
         }[kind]
         name = _value(outbox, field)
         if not name:
@@ -1185,6 +1297,9 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
             IntegrationOperationKind.PUBLISH_MBOM: "NPI MBOM Publish Result",
             IntegrationOperationKind.CREATE_TOOL_ASSET: "NPI Tool Asset Result",
             IntegrationOperationKind.UPDATE_TOOL_ASSET: "NPI Tool Asset Result",
+            IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: (
+                "NPI Engineering Change Summary Result"
+            ),
         }.get(kind)
         if doctype is None:
             return None
@@ -1441,6 +1556,21 @@ def _decode_cursor(cursor: str, project_id: UUID) -> tuple[str, str]:
 def _row_datetime(row: Any, spec: _OperationSpec) -> datetime:
     value = _value(row, spec.updated_field) or _value(row, "created_at") or _value(row, "received_at")
     return _datetime(value)
+
+
+def _attempt_number_for_result(result: Any) -> int:
+    attempt_id = _value(result, "attempt_global_id")
+    if not attempt_id:
+        raise RuntimeError("Persisted integration result has no attempt identity.")
+    try:
+        attempt = frappe.get_doc(
+            "NPI Engineering Change Summary Attempt", str(attempt_id)
+        )
+    except frappe.DoesNotExistError as error:
+        raise RuntimeError(
+            "Persisted integration result attempt is unavailable."
+        ) from error
+    return int(_value(attempt, "attempt_number"))
 
 
 def _datetime(value: Any) -> datetime:

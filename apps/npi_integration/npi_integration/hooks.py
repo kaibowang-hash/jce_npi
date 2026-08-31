@@ -20,6 +20,7 @@ scheduler_events = {
         "npi_integration.item_publish.worker.recover_item_publish_outbox_messages",
         "npi_integration.mbom_publish.worker.recover_mbom_publish_outbox_messages",
         "npi_integration.tool_asset_request.worker.recover_tool_asset_outbox_messages",
+        "npi_integration.engineering_change.worker.recover_engineering_change_work",
     ]
 }
 
@@ -59,4 +60,17 @@ npi_tool_asset_execution_profile_resolver = (
 )
 npi_tool_asset_adapter_registry = (
     "npi_integration.tool_asset_request.runtime_fixture.resolve_adapter_registry"
+)
+
+# P9-01C is likewise inert outside its exact disposable marker. The built-in
+# profile has one network-free adapter and one ephemeral test-only signing key;
+# production profiles, endpoints and credentials are deliberately absent.
+npi_engineering_change_profile_resolver = (
+    "npi_integration.engineering_change.runtime_fixture.resolve_profile"
+)
+npi_engineering_change_secret_resolver = (
+    "npi_integration.engineering_change.runtime_fixture.resolve_secret"
+)
+npi_engineering_change_adapter_registry = (
+    "npi_integration.engineering_change.runtime_fixture.resolve_adapter_registry"
 )

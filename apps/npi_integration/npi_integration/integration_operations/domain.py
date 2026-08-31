@@ -50,6 +50,10 @@ class IntegrationOperationKind(StrEnum):
     PUBLISH_MBOM = "publish_mbom"
     CREATE_TOOL_ASSET = "create_tool_asset"
     UPDATE_TOOL_ASSET = "update_tool_asset"
+    RECEIVE_ENGINEERING_CHANGE_EVENT = "receive_engineering_change_event"
+    PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY = (
+        "publish_change_implementation_summary"
+    )
 
 
 class IntegrationActionKind(StrEnum):
@@ -146,6 +150,20 @@ _RAW_STATE_MAP: dict[IntegrationOperationKind, dict[str, IntegrationViewState]] 
     IntegrationOperationKind.UPDATE_TOOL_ASSET: {
         **_OUTBOUND_STATES,
         "partially_succeeded": IntegrationViewState.PARTIAL,
+    },
+    IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: {
+        "pending": IntegrationViewState.QUEUED,
+        "processing": IntegrationViewState.PROCESSING,
+        "succeeded": IntegrationViewState.SUCCEEDED,
+        "failed_retryable": IntegrationViewState.FAILED_RETRYABLE,
+        "failed_final": IntegrationViewState.FAILED_FINAL,
+        "quarantined": IntegrationViewState.QUARANTINED,
+        "superseded": IntegrationViewState.CONFLICT,
+    },
+    IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: {
+        **_OUTBOUND_STATES,
+        "partially_succeeded": IntegrationViewState.PARTIAL,
+        "identity_conflict": IntegrationViewState.CONFLICT,
     },
 }
 _DLQ_STATES = frozenset(

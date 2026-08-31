@@ -9936,3 +9936,27 @@ repeat or rewrite it merely to restore context. See
   P9-01C product code is authorized only after this exact governance commit
   passes ordinary CI. P9-01D UI remains out of scope.
 - Controller marker: `P9-01B ordinary PASS; P9-01C INT-008 governance checkpoint exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01C governance ordinary PASS; reliable-seam implementation
+
+- Governance exact SHA `83f35dde9d9ecc4f6d7f7a82c35559e8903bad4d`
+  passes ordinary CI `33358374034`: repository `99384778320`, secret
+  `99384778406`, frontend `99384778467` and visual `99384778501` all pass.
+- Implement only the exact default-disabled signed
+  `npi.erp-engineering-change.v1` Inbox/formal-observation path and versioned
+  `npi.change-implementation-summary.v1` request/Outbox/attempt/result path.
+  Persist both in dedicated additive records and expose only read-only
+  Project-first P8-07 operation projections.
+- Keep actor/session capability, Project, formal ECR identity, source version
+  and hash, trace and idempotency exact. Duplicate, reorder, conflict, partial,
+  429, 5xx and timeout-after-commit remain explicit. Synthetic verification is
+  never formal success; partial or uncertain results are terminal and are not
+  automatically redispatched.
+- Level 1 passes focused P8/P9 integration tests `108/108`, full repository
+  Python `2789/2789`, frontend unit/coverage `1086/1086`, typecheck, lint,
+  i18n (`8708`, `100%` zh/zh-TW), generated-catalog freshness, production
+  bundle compilation, current/reconciliation, compile and diff checks. The
+  sole remaining boundary is this implementation's exact-SHA ordinary CI.
+- P9-01D UI, production profile activation, target calls and all production
+  ERP writes/configuration remain out of scope.
+- Controller marker: `P9-01C implementation Level 1 PASS; exact-SHA ordinary CI pending`.

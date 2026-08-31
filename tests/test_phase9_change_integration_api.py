@@ -1,0 +1,238 @@
+from __future__ import annotations
+
+import importlib
+import sys
+import types
+import unittest
+from contextvars import ContextVar
+from pathlib import Path
+from unittest.mock import patch
+
+
+sys.path[:0] = ["apps/npi_core", "apps/npi_integration"]
+ROOT = Path(__file__).resolve().parents[1]
+PROJECT = "00000000-0000-5000-8000-000000009301"
+CHANGE = "00000000-0000-4000-8000-000000009302"
+REVISION = "00000000-0000-4000-8000-000000009303"
+REQUEST = "00000000-0000-4000-8000-000000009304"
+
+
+class Phase9ChangeIntegrationApiTest(unittest.TestCase):
+    MODULES = (
+        "frappe",
+        "npi_core.api",
+        "npi_core.foundation.errors",
+        "npi_core.foundation.security",
+        "npi_core.foundation.tracing",
+        "npi_core.project.domain",
+        "npi_core.request_security",
+        "npi_integration.engineering_change_api",
+    )
+
+    def setUp(self) -> None:
+        self.saved = {name: sys.modules.get(name) for name in self.MODULES}
+        for name in self.MODULES:
+            sys.modules.pop(name, None)
+        self.events: list[object] = []
+        self.headers = {"Idempotency-Key": "0000000000000000"}
+        frappe = types.ModuleType("frappe")
+        frappe._ = lambda value: value
+        frappe.flags = types.SimpleNamespace(
+            npi_route_params={"project_id": PROJECT, "change_id": CHANGE}
+        )
+        frappe.local = types.SimpleNamespace(
+            form_dict={},
+            response=types.SimpleNamespace(http_status_code=200),
+            request=types.SimpleNamespace(
+                method="POST",
+                headers=self.headers,
+                args={},
+            ),
+        )
+        frappe.db = types.SimpleNamespace(
+            commit=lambda: self.events.append("commit"),
+            rollback=lambda: self.events.append("rollback"),
+        )
+        frappe.get_hooks = lambda _name: []
+        frappe.get_attr = lambda _path: None
+        frappe.enqueue = lambda path, **values: self.events.append(
+            ("enqueue", path, values)
+        )
+
+        def whitelist(*, allow_guest=False, methods=None):
+            def decorate(function):
+                function.allow_guest = allow_guest
+                function.allowed_methods = tuple(methods or ())
+                return function
+
+            return decorate
+
+        frappe.whitelist = whitelist
+        sys.modules["frappe"] = frappe
+        self.frappe = frappe
+
+        errors = types.ModuleType("npi_core.foundation.errors")
+
+        class NpiProblem(Exception):
+            def __init__(self, status=500, code="PROBLEM", title=None, detail=None, retryable=False):
+                super().__init__(title)
+                self.status = status
+                self.code = code
+                self.retryable = retryable
+
+        class RequestValidationFailed(NpiProblem):
+            pass
+
+        errors.NpiProblem = NpiProblem
+        errors.RequestValidationFailed = RequestValidationFailed
+        sys.modules[errors.__name__] = errors
+        self.RequestValidationFailed = RequestValidationFailed
+
+        api = types.ModuleType("npi_core.api")
+
+        def domain_call(handle, *, success_status=200, response_headers=None, **_values):
+            result = handle()
+            frappe.local.response.http_status_code = success_status
+            frappe.local.response.headers = dict(response_headers or {})
+            return result
+
+        api.frappe_domain_call = domain_call
+        api.record_safe_diagnostic = lambda **values: self.events.append(
+            ("diagnostic", values)
+        )
+        sys.modules[api.__name__] = api
+        security = types.ModuleType("npi_core.foundation.security")
+        security.Principal = lambda **values: types.SimpleNamespace(**values)
+        security.ProjectAccess = types.SimpleNamespace(ADMINISTER="administer")
+        sys.modules[security.__name__] = security
+        tracing = types.ModuleType("npi_core.foundation.tracing")
+        tracing.current_trace_id = ContextVar("p901-api-trace", default="trace-p901-api")
+        sys.modules[tracing.__name__] = tracing
+        project = types.ModuleType("npi_core.project.domain")
+        project.actor_idempotency_key_hash = lambda actor, key: "a" * 64
+        sys.modules[project.__name__] = project
+        request_security = types.ModuleType("npi_core.request_security")
+        request_security.authenticated_user = lambda: "operator@example.invalid"
+        request_security.authenticated_principal = lambda actor: types.SimpleNamespace(
+            user_id=actor,
+            tenant_id="tenant-p901",
+            roles=frozenset({"NPI API User"}),
+            is_external=False,
+        )
+        request_security.configured_tenant_id = lambda: "tenant-p901"
+        request_security.require_csrf_token = lambda: self.events.append("csrf")
+        request_security.response_request_id = lambda: REQUEST
+
+        def reject(allowed, supplied):
+            unexpected = set(supplied) - set(allowed)
+            if unexpected:
+                raise RequestValidationFailed(422, "REQUEST_VALIDATION_FAILED")
+
+        def require(required, supplied):
+            present = set(supplied) | set(frappe.local.form_dict)
+            if any(name not in present for name in required):
+                raise RequestValidationFailed(422, "REQUEST_VALIDATION_FAILED")
+
+        request_security.reject_unexpected_request_fields = reject
+        request_security.require_request_fields = require
+        sys.modules[request_security.__name__] = request_security
+        self.module = importlib.import_module(
+            "npi_integration.engineering_change_api"
+        )
+
+    def tearDown(self) -> None:
+        for name in self.MODULES:
+            sys.modules.pop(name, None)
+            if self.saved[name] is not None:
+                sys.modules[name] = self.saved[name]
+
+    def test_summary_route_requires_csrf_exact_predecessor_and_actor_idempotency(self) -> None:
+        self.frappe.local.form_dict = {
+            "expectedRevision": 4,
+            "expectedRevisionGlobalId": REVISION,
+            "expectedRevisionSnapshotHash": "b" * 64,
+        }
+        outcome = types.SimpleNamespace(
+            response={"state": "queued", "requestGlobalId": REQUEST},
+            replayed=False,
+            should_enqueue=True,
+            queue_id=REQUEST,
+        )
+
+        class Repository:
+            def authorize_scope(_self, project):
+                self.events.append(("authorize", str(project)))
+                return True
+
+            def create_summary_request(_self, project, change, **values):
+                self.events.append(("create", str(project), str(change), values))
+                return outcome
+
+        with patch.object(self.module, "_repository", return_value=Repository()):
+            response = self.module.request_change_implementation_summary(
+                expectedRevision=4,
+                expectedRevisionGlobalId=REVISION,
+                expectedRevisionSnapshotHash="b" * 64,
+            )
+        self.assertEqual(response, outcome.response)
+        self.assertEqual(self.frappe.local.response.http_status_code, 202)
+        self.assertEqual(self.events[:3], ["csrf", ("authorize", PROJECT), ("create", PROJECT, CHANGE, {
+            "expected_revision": 4,
+            "expected_revision_global_id": self.module.UUID(REVISION),
+            "expected_revision_snapshot_hash": "b" * 64,
+            "idempotency_key_hash": "a" * 64,
+        })])
+        self.assertIn("commit", self.events)
+        enqueue = next(value for value in self.events if isinstance(value, tuple) and value[0] == "enqueue")
+        self.assertEqual(enqueue[1], "npi_integration.engineering_change.worker.execute_change_implementation_summary")
+        self.assertFalse(enqueue[2]["enqueue_after_commit"])
+        self.assertTrue(enqueue[2]["deduplicate"])
+
+    def test_summary_replay_returns_200_and_does_not_enqueue(self) -> None:
+        self.frappe.local.form_dict = {
+            "expectedRevision": 4,
+            "expectedRevisionGlobalId": REVISION,
+            "expectedRevisionSnapshotHash": "b" * 64,
+        }
+        outcome = types.SimpleNamespace(
+            response={"state": "succeeded", "requestGlobalId": REQUEST},
+            replayed=True,
+            should_enqueue=False,
+            queue_id=None,
+        )
+        repository = types.SimpleNamespace(
+            authorize_scope=lambda _project: True,
+            create_summary_request=lambda *_args, **_kwargs: outcome,
+        )
+        with patch.object(self.module, "_repository", return_value=repository):
+            self.module.request_change_implementation_summary(
+                expectedRevision=4,
+                expectedRevisionGlobalId=REVISION,
+                expectedRevisionSnapshotHash="b" * 64,
+            )
+        self.assertEqual(self.frappe.local.response.http_status_code, 200)
+        self.assertEqual(
+            self.frappe.local.response.headers["Idempotency-Replayed"], "true"
+        )
+        self.assertFalse(any(isinstance(value, tuple) and value[0] == "enqueue" for value in self.events))
+
+    def test_invalid_route_predecessor_hash_idempotency_or_hook_shape_fails_closed(self) -> None:
+        for function, args in (
+            (self.module._uuid, ("not-a-uuid", "changeId")),
+            (self.module._positive, (0, "expectedRevision")),
+            (self.module._hash, ("A" * 64, "expectedRevisionSnapshotHash")),
+        ):
+            with self.subTest(function=function.__name__), self.assertRaises(
+                self.RequestValidationFailed
+            ):
+                function(*args)
+        self.headers["Idempotency-Key"] = "short"
+        with self.assertRaises(self.RequestValidationFailed):
+            self.module._idempotency_key()
+        self.frappe.get_hooks = lambda _name: ["one", "two"]
+        with self.assertRaises(Exception):
+            self.module._hook("npi_engineering_change_profile_resolver")
+
+
+if __name__ == "__main__":
+    unittest.main()

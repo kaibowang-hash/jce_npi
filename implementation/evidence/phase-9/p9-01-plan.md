@@ -286,3 +286,35 @@ first P8-07 operations view. No browser-direct ERP access, generic DocType
 writer, dual-master field, ERP/Frappe core change, production profile, target
 call, production write or P9-01D UI is authorized. Product implementation may
 start only after this governance checkpoint passes exact-SHA ordinary CI.
+
+## P9-01C governance acceptance and implementation checkpoint
+
+Governance exact SHA `83f35dde9d9ecc4f6d7f7a82c35559e8903bad4d`
+passes ordinary CI `33358374034`: repository `99384778320`, secret
+`99384778406`, frontend `99384778467` and visual `99384778501` all pass.
+The authorized implementation uses dedicated Inbox, summary request, Outbox,
+attempt and result records. It does not extend the P8-02 Project Inbox or the
+shared Item/MBOM/Tool Asset Outbox controller.
+
+The inbound route validates the exact signed event, tenant, key, timestamp,
+nonce, Project, formal ECR identity, source version/hash, actor and trace before
+one formal observation is linked. Duplicate replay is sealed; reorder and
+identity conflict fail closed. The outbound command binds the exact current
+change revision and formal observation, then records request, Outbox, attempts
+and one authenticated/contract-valid result. 429, 5xx and pre-boundary failure
+remain retryable; partial and timeout-after-commit uncertainty remain terminal
+and are never automatically redispatched. Synthetic disposable-Site execution
+is recorded only as `synthetic_verified`, never as formal ERP success.
+
+Profiles and adapters remain default-disabled. There is no production endpoint,
+credential, target call, direct SQL, permission bypass, generic DocType writer,
+browser-direct ERP access or production connection. P8-07 exposes only exact
+read-only Project-first operation list/detail/history shapes for the two new
+operation kinds.
+
+Level 1 passes focused integration tests `108/108`, full repository Python
+`2789/2789`, frontend unit/coverage `1086/1086`, typecheck, complete lint and
+i18n (`8708` sources, `100%` zh/zh-TW), generated-catalog freshness, production
+bundle compilation, current-task/reconciliation, compile and diff checks. The
+implementation remains pending its own exact-SHA ordinary CI. P9-01D UI and
+production profile activation remain separate atomic tasks.

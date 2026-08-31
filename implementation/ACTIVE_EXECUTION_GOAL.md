@@ -4,7 +4,16 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_01C_CHECKPOINT — P9-01`
+- Mode: `IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE — P9-01`
+- P9-01C governance exact SHA
+  `83f35dde9d9ecc4f6d7f7a82c35559e8903bad4d` passes ordinary CI
+  `33358374034`: repository `99384778320`, secret `99384778406`, frontend
+  `99384778467` and visual `99384778501` all pass. The bounded signed inbound
+  ECR-observation and versioned implementation-summary seam is implemented
+  locally with operation-specific persistence, default-disabled profiles,
+  exact ownership and Project-first read-only operations. Level 1 is green;
+  its own exact-SHA ordinary CI is now the sole acceptance boundary. P9-01D UI
+  and every production ERP activation remain out of scope.
 - P9-01B exact SHA `73a7282da3d5a6e278dccdf95a681ae47f759a0d`
   passes ordinary CI `33357104386`: secret `99381251822`, visual
   `99381251969`, repository `99381251970` and frontend `99381252094` all pass.

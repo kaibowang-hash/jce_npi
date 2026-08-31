@@ -47,6 +47,23 @@ objects:
       actor_project_operation_and_payload_hash: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDEMPOTENCY_SCOPE}
       exact_change_and_sealed_response: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NONE, conflict: ONE_WAY_SEAL_EXACT_REPLAY}
 
+  EngineeringChangeIntegrationInbox:
+    owner_system: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE
+    erp_view: signed_formal_change_observation_receipt
+    fields:
+      exact_event_project_change_source_version_hash_actor_trace_and_profile: {owner: ERPNEXT_SIGNED_EVENT_VIA_NPI_ONE_INTAKE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_EXACT_EVENT}
+      receipt_claim_attempt_and_safe_failure_state: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE], direction: NONE, conflict: OPERATION_SPECIFIC_LEASE}
+      raw_request_credentials_and_unbounded_business_payload: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  EngineeringChangeImplementationSummaryRequest:
+    owner_system: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE
+    erp_view: versioned_implementation_summary
+    fields:
+      exact_change_revision_formal_observation_and_closeout_hashes: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: EXACT_VERSION_REFERENCE}
+      actor_profile_service_actor_trace_and_hashed_idempotency: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_REQUEST_SCOPE}
+      request_outbox_attempt_result_and_terminal_state: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE], direction: NONE, conflict: OPERATION_SPECIFIC_FAIL_CLOSED}
+      erp_formal_status_or_transaction_truth: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_OVERWRITE_FROM_SUMMARY}
+
   Customer:
     owner_system: ERPNEXT
     npi_view: projection
@@ -1500,10 +1517,10 @@ objects:
     owner_system: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE
     erp_view: derived_project_scoped_read_model
     fields:
-      exact_operation_source_attempt_result_and_mapping_references: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
-      raw_operation_state_and_fault_code: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: NEVER_REWRITE_OR_TRANSLATE}
+      exact_operation_source_attempt_result_and_mapping_references: {owner: P8_02_TO_P9_01_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      raw_operation_state_and_fault_code: {owner: P8_02_TO_P9_01_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: NEVER_REWRITE_OR_TRANSLATE}
       shared_state_and_logical_dlq_classification: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: REBUILD_FROM_OWNING_TRUTH}
-      replay_and_reconciliation_authority: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: NONE, conflict: OPERATION_SPECIFIC_FAIL_CLOSED}
+      replay_and_reconciliation_authority: {owner: P8_02_TO_P9_01_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: NONE, conflict: OPERATION_SPECIFIC_FAIL_CLOSED_P9_01_READ_ONLY}
 
   IntegrationActionReceipt:
     owner_system: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE

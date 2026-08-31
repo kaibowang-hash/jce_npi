@@ -1,21 +1,20 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_01C_CHECKPOINT — P9-01`
+`IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
-P9-01B exact SHA `73a7282da3d5a6e278dccdf95a681ae47f759a0d`
-passes ordinary CI `33357104386`: secret `99381251822`, visual
-`99381251969`, repository `99381251970` and frontend `99381252094` all pass.
-The sole next action is this zero-product P9-01C governance checkpoint. It
-freezes an operation-specific, default-disabled signed
-`npi.erp-engineering-change.v1` Inbox/observation path and a versioned
-`npi.change-implementation-summary.v1` request/Outbox/attempt/result path.
-Only after this checkpoint passes exact-SHA ordinary CI may the exact manifest
-be implemented. Keep duplicate, reorder, partial, conflict, 429, 5xx and
-timeout-after-commit explicit; never auto-redispatch uncertain results. Do not
-start P9-01D UI or change production ERP configuration.
+P9-01C governance exact SHA
+`83f35dde9d9ecc4f6d7f7a82c35559e8903bad4d` passes ordinary CI
+`33358374034` in repository, frontend, secret and governed visual lanes. The
+sole next action is the implementation checkpoint's exact-SHA ordinary CI.
+Accept only the default-disabled signed `npi.erp-engineering-change.v1`
+Inbox/formal-observation path, the versioned
+`npi.change-implementation-summary.v1` request/Outbox/attempt/result path and
+their read-only P8-07 operation projections. Uncertain or partial outcomes stay
+terminal and are never automatically redispatched. Do not start P9-01D UI,
+enable a production profile or change production ERP configuration.
 
 P9-01A final exact SHA
 `cf24e863146d11c4a35b4589ac7a582b42fde623` passes ordinary CI

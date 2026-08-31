@@ -46,7 +46,7 @@ const version = createHash("sha256")
 const generated = [
   "/* Generated from npi_core Frappe CSV catalogs. Do not edit. */",
   `export const catalogVersion = '${version}';`,
-  `export const catalogs = ${JSON.stringify(catalogs, null, 2)} as const;`,
+  `export const catalogs: Readonly<Record<"zh" | "zh-TW", Readonly<Record<string, string>>>> = ${JSON.stringify(catalogs, null, 2)};`,
   "",
 ].join("\n");
 

@@ -5,12 +5,12 @@ updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-01
-current_task_status: IN_PROGRESS_P9_01C_CHECKPOINT
-current_task_completed_stage: P9_01B_EXACT_SHA_ORDINARY_PASS
-current_task_next_stage: P9_01C_INT008_RELIABLE_SEAM_GOVERNANCE
-current_task_next_stage_status: IN_PROGRESS_GOVERNANCE_EXACT_SHA_ORDINARY_PENDING
+current_task_status: IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE
+current_task_completed_stage: P9_01C_GOVERNANCE_EXACT_SHA_ORDINARY_PASS
+current_task_next_stage: P9_01C_IMPLEMENTATION_EXACT_SHA_ORDINARY
+current_task_next_stage_status: IN_PROGRESS_LEVEL_1_PASS_ORDINARY_PENDING
 resumed_product_task: P9-01
-resumed_product_task_status: IN_PROGRESS_P9_01C_CHECKPOINT
+resumed_product_task_status: IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -3063,7 +3063,7 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P9_01C_INT008_RELIABLE_SEAM_GOVERNANCE
+  active_checkpoint: P9_01C_INT008_RELIABLE_SEAM_IMPLEMENTATION_GATE
   p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
   p9_01b_governance_ordinary: 33354760251
   p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
@@ -3074,10 +3074,13 @@ p9_01:
   p9_01b_final_ordinary: 33357104386
   p9_01b_final_jobs: {secret_scan: 99381251822, visual: 99381251969, repository: 99381251970, frontend: 99381252094}
   p9_01b_result: PASS_PROJECT_FIRST_COMMAND_QUERY_BOUNDARY
-  p9_01c_product_code_authorized: false
+  p9_01c_governance_checkpoint: 83f35dde9d9ecc4f6d7f7a82c35559e8903bad4d
+  p9_01c_governance_ordinary: 33358374034
+  p9_01c_governance_jobs: {repository: 99384778320, secret_scan: 99384778406, frontend: 99384778467, visual: 99384778501}
+  p9_01c_product_code_authorized: true
   p9_01c_scope: DEFAULT_DISABLED_SIGNED_ECR_OBSERVATION_AND_IMPLEMENTATION_SUMMARY_RELIABLE_SEAM
   p9_01c_persistence: OPERATION_SPECIFIC_INBOX_REQUEST_OUTBOX_ATTEMPT_RESULT
-  p9_01c_activation_condition: GOVERNANCE_EXACT_SHA_ORDINARY_PASS
+  p9_01c_activation_condition: IMPLEMENTATION_EXACT_SHA_ORDINARY_PASS_AND_SEPARATE_PROFILE_CONFIGURATION
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

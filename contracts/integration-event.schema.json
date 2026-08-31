@@ -471,6 +471,32 @@
     {
       "if": {"properties": {"event_type": {"const": "erpnext.tool_asset_status.observed"}}, "required": ["event_type"]},
       "then": {"properties": {"object_type": {"const": "Asset"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "tool_asset_status"}, "scope_kind": {"const": "tooling_set"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_tool_asset_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "npi.erp-engineering-change.v1"}}, "required": ["event_type"]},
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "object_type": {"const": "Engineering Change Request"},
+          "payload": {"$ref": "#/$defs/engineering_change_observation_event_v1"}
+        },
+        "required": ["target_system", "source_object_id", "idempotency_key", "correlation_id", "actor", "payload_hash", "sensitivity"]
+      }
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "npi.change-implementation-summary.v1"}}, "required": ["event_type"]},
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "NPI_ONE"},
+          "target_system": {"const": "ERPNEXT"},
+          "object_type": {"const": "EngineeringChangeImplementationSummary"},
+          "payload": {"$ref": "#/$defs/change_implementation_summary_v1"}
+        },
+        "required": ["target_system", "correlation_id", "actor", "payload_hash", "sensitivity"]
+      }
     }
   ],
   "properties": {
@@ -502,6 +528,8 @@
         "erpnext.tool_asset_status.observed",
         "erpnext.quotation.submitted",
         "erpnext.sales_order.submitted"
+        ,"npi.erp-engineering-change.v1"
+        ,"npi.change-implementation-summary.v1"
       ]
     },
     "event_version": {
@@ -1609,6 +1637,57 @@
         "supplierId": {"type": ["string", "null"], "minLength": 1, "maxLength": 128}
       }
     },
+    "formal_engineering_change_observation_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["doctype", "documentName", "rawStatus", "sourceVersion", "sourceModifiedAt", "sourceHash", "observedAt"],
+      "properties": {
+        "doctype": {"const": "Engineering Change Request"},
+        "documentName": {"type": "string", "minLength": 1, "maxLength": 140},
+        "rawStatus": {"type": "string", "minLength": 1, "maxLength": 140},
+        "sourceVersion": {"type": "string", "minLength": 1, "maxLength": 140},
+        "sourceModifiedAt": {"type": "string", "format": "date-time"},
+        "sourceHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "observedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "engineering_change_observation_event_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenantId", "projectGlobalId", "changeGlobalId", "formalChange"],
+      "properties": {
+        "tenantId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "projectGlobalId": {"type": "string", "format": "uuid"},
+        "changeGlobalId": {"type": "string", "format": "uuid"},
+        "formalChange": {"$ref": "#/$defs/formal_engineering_change_observation_v1"}
+      }
+    },
+    "change_implementation_summary_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["api_version", "operation", "tenant_id", "project_global_id", "change_global_id", "revision_global_id", "revision_number", "revision_snapshot_hash", "formal_change", "affected_versions_hash", "effectivity_hash", "disposition_hash", "revalidation_hash", "closure_evidence_hash", "request_global_id", "profile_id", "profile_version", "profile_snapshot_hash", "source_hash"],
+      "properties": {
+        "api_version": {"const": "npi.change-implementation-summary.v1"},
+        "operation": {"const": "record_change_implementation_summary"},
+        "tenant_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "change_global_id": {"type": "string", "format": "uuid"},
+        "revision_global_id": {"type": "string", "format": "uuid"},
+        "revision_number": {"type": "integer", "minimum": 1},
+        "revision_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "formal_change": {"$ref": "#/$defs/formal_engineering_change_observation_v1"},
+        "affected_versions_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "effectivity_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "disposition_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "revalidation_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "closure_evidence_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "request_global_id": {"type": "string", "format": "uuid"},
+        "profile_id": {"type": "string", "minLength": 1, "maxLength": 140},
+        "profile_version": {"type": "integer", "minimum": 1},
+        "profile_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
     "integration_operation_reference_v1": {
       "type": "object",
       "additionalProperties": false,
@@ -1634,6 +1713,8 @@
             "publish_mbom",
             "create_tool_asset",
             "update_tool_asset"
+            ,"receive_engineering_change_event"
+            ,"publish_change_implementation_summary"
           ]
         },
         "operation_global_id": {"type": "string", "format": "uuid"},

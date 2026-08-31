@@ -84,6 +84,34 @@ x-integration-operation-actions:
       "503": { $ref: "#/components/responses/ServiceUnavailable" }
       default: { $ref: "#/components/responses/ProjectError" }
 paths:
+  /integration/erpnext/engineering-change-events:
+    post:
+      tags: [Integration, Change Control]
+      operationId: acceptErpnextEngineeringChangeEvent
+      security: []
+      x-signature-scheme: hmac-sha256-v1
+      description: Accepts one exact signed ERP Engineering Change Request observation. Acceptance is durable Inbox evidence only and never changes ERPNext.
+      parameters:
+        - { in: header, name: X-Request-ID, required: true, schema: { type: string, format: uuid } }
+        - { in: header, name: X-NPI-Key-ID, required: true, schema: { type: string, minLength: 1, maxLength: 128 } }
+        - { in: header, name: X-NPI-Timestamp, required: true, schema: { type: string, pattern: "^(?:0|[1-9][0-9]{0,11})$" } }
+        - { in: header, name: X-NPI-Signature, required: true, schema: { type: string, pattern: "^v1=[a-f0-9]{64}$" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EngineeringChangeInboundEvent" }
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringChangeInboundReceiptResult" }
+        "202": { $ref: "#/components/responses/EngineeringChangeInboundReceiptResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "413": { $ref: "#/components/responses/ProjectError" }
+        "415": { $ref: "#/components/responses/ProjectError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
   /integration/erpnext/project-source-events:
     post:
       tags: [Integration]
@@ -6630,6 +6658,35 @@ paths:
         "500": { $ref: "#/components/responses/InternalError" }
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
 
+  /projects/{projectId}/engineering-changes/{changeId}:request-implementation-summary:
+    post:
+      tags: [Integration, Change Control]
+      operationId: requestEngineeringChangeImplementationSummary
+      description: Queues one exact version-bound implementation summary for the reviewed operation-specific adapter. It never accepts caller-owned ERP truth.
+      x-transaction-boundary: engineering-change-summary-request
+      x-audit-operation: engineering_change.summary.request
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringChangeId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EngineeringChangeSummaryRequest" }
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringChangeSummaryRequestResult" }
+        "202": { $ref: "#/components/responses/EngineeringChangeSummaryRequestResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
   /npi-readiness/templates:
     get:
       tags: [Readiness]
@@ -7343,6 +7400,24 @@ components:
       description: Current Frappe session CSRF token returned by SessionBootstrap
       schema: { type: string, minLength: 32, maxLength: 128 }
   responses:
+    EngineeringChangeInboundReceiptResult:
+      description: Authenticated Engineering Change event durably accepted or exactly replayed
+      headers:
+        Cache-Control: { required: true, schema: { type: string, const: "no-store" } }
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        Idempotency-Replayed: { required: true, schema: { type: string, enum: ["true", "false"] } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringChangeInboundReceipt" }
+    EngineeringChangeSummaryRequestResult:
+      description: Exact queued summary request or actor-bound idempotent replay
+      headers:
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        Idempotency-Replayed: { required: true, schema: { type: string, enum: ["true", "false"] } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringChangeSummaryReceipt" }
     EngineeringChangeCommandResult:
       description: Exact engineering change successor after one atomic command or actor-bound safe replay
       headers:
@@ -8836,6 +8911,75 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/DocumentFileCapabilityResult" }
   schemas:
+    EngineeringChangeInboundEvent:
+      type: object
+      additionalProperties: false
+      required: [event_id, event_type, event_version, occurred_at, source_system, target_system, global_id, object_type, source_object_id, object_version, idempotency_key, correlation_id, causation_id, trace_id, actor, payload_hash, payload, sensitivity]
+      properties:
+        event_id: { type: string, format: uuid }
+        event_type: { type: string, const: npi.erp-engineering-change.v1 }
+        event_version: { type: integer, const: 1 }
+        occurred_at: { type: string, format: date-time }
+        source_system: { type: string, const: ERPNEXT }
+        target_system: { type: string, const: NPI_ONE }
+        global_id: { type: string, format: uuid }
+        object_type: { type: string, const: Engineering Change Request }
+        source_object_id: { type: string, minLength: 1, maxLength: 255 }
+        object_version: { type: integer, minimum: 1 }
+        idempotency_key: { type: string, format: uuid }
+        correlation_id: { type: string, format: uuid }
+        causation_id: { type: "null" }
+        trace_id: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        actor:
+          type: object
+          additionalProperties: false
+          required: [type, id]
+          properties:
+            type: { type: string, const: service }
+            id: { type: string, minLength: 1, maxLength: 254 }
+        payload_hash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        payload:
+          type: object
+          additionalProperties: false
+          required: [tenantId, projectGlobalId, changeGlobalId, formalChange]
+          properties:
+            tenantId: { type: string, minLength: 1, maxLength: 128 }
+            projectGlobalId: { type: string, format: uuid }
+            changeGlobalId: { type: string, format: uuid }
+            formalChange: { $ref: "#/components/schemas/FormalEngineeringChangeObservation" }
+        sensitivity: { type: string, const: confidential }
+    EngineeringChangeInboundReceipt:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, receiptId, eventId, changeGlobalId, state, canonicalEventHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        receiptId: { type: string, format: uuid }
+        eventId: { type: string, format: uuid }
+        changeGlobalId: { type: string, format: uuid }
+        state: { type: string, enum: [pending, processing, succeeded, failed_retryable, failed_final, superseded, quarantined] }
+        canonicalEventHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringChangeSummaryRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedRevision, expectedRevisionGlobalId, expectedRevisionSnapshotHash]
+      properties:
+        expectedRevision: { type: integer, minimum: 1 }
+        expectedRevisionGlobalId: { type: string, format: uuid }
+        expectedRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringChangeSummaryReceipt:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, requestGlobalId, changeGlobalId, revisionGlobalId, revisionNumber, sourceHash, state, outboxEventId]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        requestGlobalId: { type: string, format: uuid }
+        changeGlobalId: { type: string, format: uuid }
+        revisionGlobalId: { type: string, format: uuid }
+        revisionNumber: { type: integer, minimum: 1 }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        state: { type: string, enum: [queued, processing, synthetic_verified, succeeded, failed_retryable, failed_final, partially_succeeded, uncertain_after_timeout, identity_conflict] }
+        outboxEventId: { type: string, format: uuid }
     EngineeringChangePredecessor:
       type: object
       additionalProperties: false
@@ -23043,7 +23187,7 @@ components:
     IntegrationOperationKind:
       type: string
       description: Server-resolved operation kind; it is never caller-selected authority.
-      enum: [receive_project_submission, publish_item, publish_mbom, create_tool_asset, update_tool_asset]
+      enum: [receive_project_submission, publish_item, publish_mbom, create_tool_asset, update_tool_asset, receive_engineering_change_event, publish_change_implementation_summary]
     IntegrationOperationViewState:
       type: string
       enum: [queued, processing, succeeded, failed_retryable, failed_final, uncertain, partial, conflict, quarantined, unavailable]

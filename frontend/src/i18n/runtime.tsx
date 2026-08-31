@@ -156,9 +156,7 @@ export function translate(
   const key = context ? `${source}:${context}` : source;
   let translated = source;
   if (locale !== "en") {
-    translated =
-      runtimeMessages?.[key] ??
-      catalogs[locale][key as keyof (typeof catalogs)[typeof locale]];
+    translated = runtimeMessages?.[key] ?? catalogs[locale][key] ?? "";
     if (!translated) return `⟦Missing: ${source}⟧`;
   }
   return translated.replace(

@@ -51,6 +51,9 @@ from .request_security import (
 _INBOUND_PROJECT_SOURCE_EVENT_PATH = (
     "/api/npi/v1/integration/erpnext/project-source-events"
 )
+_INBOUND_ENGINEERING_CHANGE_EVENT_PATH = (
+    "/api/npi/v1/integration/erpnext/engineering-change-events"
+)
 
 _ROUTES = {
     ("GET", "/api/npi/v1/session/bootstrap"): (
@@ -119,7 +122,8 @@ _PROJECT_INTEGRATION_OPERATION_DLQ_ROUTE = re.compile(
 _PROJECT_INTEGRATION_OPERATION_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/integration-operations/"
     r"(?P<operation_kind>receive_project_submission|publish_item|publish_mbom|"
-    r"create_tool_asset|update_tool_asset)/"
+    r"create_tool_asset|update_tool_asset|receive_engineering_change_event|"
+    r"publish_change_implementation_summary)/"
     r"(?P<integration_operation_id>[^/:]+)$"
 )
 _PROJECT_INTEGRATION_OPERATION_COMMAND_ROUTES = tuple(
@@ -204,6 +208,10 @@ _PROJECT_ENGINEERING_CHANGE_OBSERVATION_ROUTE = re.compile(
 _PROJECT_ENGINEERING_CHANGE_CLOSE_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/engineering-changes/"
     r"(?P<change_id>[^/:]+):close$"
+)
+_PROJECT_ENGINEERING_CHANGE_SUMMARY_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/engineering-changes/"
+    r"(?P<change_id>[^/:]+):request-implementation-summary$"
 )
 _PRODUCTION_TRANSITION_POLICY_VERSION_ROUTE = re.compile(
     r"^/api/npi/v1/production-transition/policies/(?P<policy_id>[^/:]+)/versions/"
@@ -855,11 +863,20 @@ def route_request() -> None:
     raw_path = request.path or "/"
     if (
         request.method == "POST"
-        and raw_path == _INBOUND_PROJECT_SOURCE_EVENT_PATH
+        and raw_path
+        in {
+            _INBOUND_PROJECT_SOURCE_EVENT_PATH,
+            _INBOUND_ENGINEERING_CHANGE_EVENT_PATH,
+        }
     ):
-        frappe.local.form_dict.cmd = (
-            "npi_integration.inbound_project_api.accept_project_source_event"
-        )
+        frappe.local.form_dict.cmd = {
+            _INBOUND_PROJECT_SOURCE_EVENT_PATH: (
+                "npi_integration.inbound_project_api.accept_project_source_event"
+            ),
+            _INBOUND_ENGINEERING_CHANGE_EVENT_PATH: (
+                "npi_integration.engineering_change_api.receive_engineering_change_event"
+            ),
+        }[raw_path]
         frappe.flags.npi_bff_request = True
         frappe.flags.npi_route_params = {}
         return
@@ -966,6 +983,14 @@ def route_request() -> None:
         match = _PROJECT_FORMAL_QUALITY_LINK_COMMAND_ROUTE.fullmatch(path)
         if match is not None:
             command = "npi_integration.quality_link_api.link_observed_formal_quality_reference"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _PROJECT_ENGINEERING_CHANGE_SUMMARY_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_integration.engineering_change_api."
+                "request_change_implementation_summary"
+            )
             route_params = match.groupdict()
     if command is None and request.method == "POST":
         for route, candidate in (

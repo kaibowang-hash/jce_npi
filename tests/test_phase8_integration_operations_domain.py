@@ -119,6 +119,26 @@ class Phase8IntegrationOperationsDomainTest(unittest.TestCase):
             IntegrationOperationKind.UPDATE_TOOL_ASSET: {
                 "partially_succeeded": "partial",
             },
+            IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT: {
+                "pending": "queued",
+                "processing": "processing",
+                "succeeded": "succeeded",
+                "failed_retryable": "failed_retryable",
+                "failed_final": "failed_final",
+                "quarantined": "quarantined",
+                "superseded": "conflict",
+            },
+            IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY: {
+                "queued": "queued",
+                "processing": "processing",
+                "synthetic_verified": "unavailable",
+                "succeeded": "succeeded",
+                "failed_retryable": "failed_retryable",
+                "failed_final": "failed_final",
+                "partially_succeeded": "partial",
+                "uncertain_after_timeout": "uncertain",
+                "identity_conflict": "conflict",
+            },
         }
         for kind, states in expected.items():
             for raw_state, shared_state in states.items():

@@ -81,6 +81,8 @@ class Phase8IntegrationOperationsContractTest(unittest.TestCase):
                 "publish_mbom",
                 "create_tool_asset",
                 "update_tool_asset",
+                "receive_engineering_change_event",
+                "publish_change_implementation_summary",
             ],
         )
         self.assertEqual(action["properties"]["schema_version"]["const"], 1)
@@ -206,8 +208,8 @@ class Phase8IntegrationOperationsContractTest(unittest.TestCase):
             "  IntegrationOperationProjection:\n    owner_system: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE",
             "  IntegrationActionReceipt:\n    owner_system: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE",
             "  IntegrationReconciliationObservation:\n    owner_system: NPI_ONE_OPERATION_SPECIFIC_RECONCILIATION_SERVICE",
-            "raw_operation_state_and_fault_code: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER",
-            "replay_and_reconciliation_authority: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER",
+            "raw_operation_state_and_fault_code: {owner: P8_02_TO_P9_01_OPERATION_SPECIFIC_OWNER",
+            "replay_and_reconciliation_authority: {owner: P8_02_TO_P9_01_OPERATION_SPECIFIC_OWNER",
             "reconciliation_request: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: NONE, conflict: OPERATOR_INTENT_ONLY_NEVER_TARGET_TRUTH}",
             "human_asserted_target_success_or_identity: {owner: NEVER_ACCEPT",
             "forward_state_or_mapping_change: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER",

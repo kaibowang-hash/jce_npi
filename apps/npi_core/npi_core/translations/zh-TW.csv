@@ -8662,3 +8662,47 @@ Enter the exact required collection.,請輸入完整且數量準確的必要集�
 Engineering change control is temporarily unavailable.,工程變更控制暫時無法使用。
 The engineering change is unavailable for this Project.,此專案無法存取該工程變更。
 The engineering change title cannot be changed.,工程變更標題不可變更。
+Completed At,完成時間
+Engineering Change,工程變更
+Engineering Change Inbox history can only be changed by the authenticated intake service.,工程變更收件匣歷史只能由已驗證的接入服務變更。
+Engineering Change integration history cannot be changed.,不能變更工程變更整合歷史。
+Engineering Change integration history cannot be deleted.,不能刪除工程變更整合歷史。
+Engineering Change integration write authority is invalid.,工程變更整合寫入權限無效。
+Engineering Change summary Outbox messages can only be changed by the controlled execution service.,工程變更摘要寄件匣訊息只能由受控執行服務變更。
+Engineering Change summary attempts can only be changed by the controlled execution service.,工程變更摘要嘗試只能由受控執行服務變更。
+Engineering Change summary requests can only be changed through an authorized command.,工程變更摘要請求只能透過已授權命令變更。
+Engineering Change summary results can only be appended by the controlled execution service.,工程變更摘要結果只能由受控執行服務附加。
+Engineering change event authentication failed.,工程變更事件驗證失敗。
+Engineering change integration conflict,工程變更整合衝突
+Engineering change integration is unavailable.,工程變更整合無法使用。
+Fault Kind,故障類型
+Integration Profile Hash,整合設定檔雜湊
+Integration Profile ID,整合設定檔識別碼
+Integration Profile Version,整合設定檔版本
+Last Attempt ID,上次嘗試識別碼
+NPI Engineering Change Inbox,NPI 工程變更收件匣
+NPI Engineering Change Summary Attempt,NPI 工程變更摘要嘗試
+NPI Engineering Change Summary Outbox,NPI 工程變更摘要寄件匣
+NPI Engineering Change Summary Request,NPI 工程變更摘要請求
+NPI Engineering Change Summary Result,NPI 工程變更摘要結果
+Observation Revision ID,觀察修訂識別碼
+Observation Snapshot Hash,觀察快照雜湊
+Outbox Event ID,寄件匣事件識別碼
+Refresh the Engineering Change and retry with its exact current version.,請重新整理工程變更並使用其確切的目前版本重試。
+Response Contract Valid,回應合約有效
+Result Hash,結果雜湊
+Result ID,結果識別碼
+Result Snapshot,結果快照
+Retry After Seconds,重試等待秒數
+Retry Directive,重試指令
+Revision ID,修訂識別碼
+Summary Attempt,摘要嘗試
+Summary Outbox,摘要寄件匣
+Summary Request,摘要請求
+The Engineering Change event is unavailable.,工程變更事件無法使用。
+The Engineering Change integration actor is invalid.,工程變更整合操作使用者無效。
+The Engineering Change integration actor is unavailable.,工程變更整合操作使用者無法使用。
+The Engineering Change integration actor lacks the required role.,工程變更整合操作使用者缺少所需角色。
+The Engineering Change integration profile is not active for this Project.,此專案的工程變更整合設定檔未啟用。
+The signed Engineering Change event could not be accepted.,無法接受已簽署的工程變更事件。
+identity_conflict,識別衝突

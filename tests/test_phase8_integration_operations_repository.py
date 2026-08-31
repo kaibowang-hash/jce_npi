@@ -368,7 +368,7 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
             / "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py"
         ).read_text(encoding="utf-8")
         codes = self.module.INTEGRATION_OPERATIONS_COLLECTION_DIAGNOSTIC_CODES
-        self.assertEqual(len(codes), 46)
+        self.assertEqual(len(codes), 58)
         self.assertTrue(
             all(
                 api_source.count(f'"{code}"')

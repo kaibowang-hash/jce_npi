@@ -877,7 +877,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
             len(self.verifier.COLLECTION_MEMBERSHIP_DIAGNOSTIC_CODES),
             4,
         )
-        self.assertEqual(len(self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES), 46)
+        self.assertEqual(len(self.verifier.COLLECTION_SERVER_DIAGNOSTIC_CODES), 58)
         self.assertEqual(
             len(self.verifier.UNCERTAIN_REPLAY_RESPONSE_DIAGNOSTIC_CODES),
             12,
@@ -892,7 +892,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
         )
         with self.action_server_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 199)
+            self.assertEqual(len(codes), 211)
             self.assertEqual(
                 codes,
                 frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
@@ -1050,7 +1050,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
                 self.verifier.UNCERTAIN_REPLAY_ACTION_ENTRY_DIAGNOSTICS_ENABLED
             )
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 199)
+            self.assertEqual(len(codes), 211)
             self.assertTrue(self.verifier._collection_server_diagnostics_enabled())
             self.assertTrue(self.verifier._action_server_diagnostics_enabled())
             self.assertEqual(
@@ -1081,7 +1081,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
     def test_post_action_replay_shape_diagnostic_uses_exact_203_boundary(self) -> None:
         with self.post_action_replay_shape_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 203)
+            self.assertEqual(len(codes), 215)
             self.assertEqual(
                 codes,
                 frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
@@ -1104,7 +1104,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
     def test_post_action_replay_status_diagnostic_uses_exact_211_boundary(self) -> None:
         with self.post_action_replay_status_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 211)
+            self.assertEqual(len(codes), 223)
             self.assertEqual(
                 codes,
                 frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(
@@ -1126,7 +1126,7 @@ class Phase8IntegrationOperationsRuntimeVerifierTest(unittest.TestCase):
     def test_post_action_replay_client_error_diagnostic_reuses_exact_211_boundary(self) -> None:
         with self.post_action_replay_client_error_diagnostics():
             codes = self.verifier._active_fresh_runtime_diagnostic_codes()
-            self.assertEqual(len(codes), 211)
+            self.assertEqual(len(codes), 223)
             self.assertEqual(
                 codes,
                 frozenset(self.verifier.FRESH_RUNTIME_DIAGNOSTIC_CODES).union(

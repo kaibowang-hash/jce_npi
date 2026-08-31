@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_01C_CHECKPOINT")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertIn("FR-CH-001", value["requirement_ids"])
@@ -66,7 +66,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01B_COMMANDS_ARE_CSRF_ACTOR_IDEMPOTENCY_AUDIT_AND_SINGLE_TRANSACTION_BOUND",
             "P9_01B_FORMAL_CHANGE_FIELDS_ARE_LINK_OBSERVATION_OWNED_AND_NEVER_CALLER_EDITABLE",
             "P9_01B_EXACT_SHA_73A7282D_ORDINARY_33357104386_ALL_FOUR_JOBS_PASS",
-            "P9_01C_GOVERNANCE_ONLY_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_EXACT_SHA_ORDINARY_PASS",
+            "P9_01C_GOVERNANCE_EXACT_SHA_83F35DDE_ORDINARY_33358374034_ALL_FOUR_JOBS_PASS",
             "P9_01C_EXACT_SIGNED_ERP_ENGINEERING_CHANGE_V1_INBOX_AND_FORMAL_OBSERVATION_ONLY",
             "P9_01C_EXACT_CHANGE_IMPLEMENTATION_SUMMARY_V1_REQUEST_OUTBOX_ATTEMPT_RESULT_ONLY",
             "P9_01C_OPERATION_SPECIFIC_PERSISTENCE_DOES_NOT_REUSE_PROJECT_INBOX_OR_SHARED_OUTBOX_CONTROLLER",
@@ -119,14 +119,20 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "apps/npi_integration/npi_integration/translations/zh-TW.csv",
                 "apps/npi_integration/npi_integration/translations/zh.csv",
                 "apps/npi_core/npi_core/bff.py",
+                "apps/npi_core/npi_core/translations/zh-TW.csv",
+                "apps/npi_core/npi_core/translations/zh.csv",
                 "contracts/data-ownership.yaml",
                 "contracts/integration-event.schema.json",
                 "contracts/npi-api.openapi.yaml",
+                "frontend/scripts/build-catalog.mjs",
                 "frontend/src/generated/catalogs.ts",
+                "frontend/src/i18n/runtime.tsx",
+                "scripts/verify_integration_operations_runtime.py",
                 "tests/test_current_task_verifier.py",
                 "tests/test_phase8_integration_operations_contract.py",
                 "tests/test_phase8_integration_operations_domain.py",
                 "tests/test_phase8_integration_operations_repository.py",
+                "tests/test_phase8_integration_operations_runtime_verifier.py",
                 "tests/test_phase9_change_integration_api.py",
                 "tests/test_phase9_change_integration_contract.py",
                 "tests/test_phase9_change_integration_domain.py",
@@ -137,14 +143,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests/test_phase9_change_integration_worker.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 57)
+        self.assertEqual(len(value["allowed_paths"]), 63)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])
         )
         self.assertEqual(
             sum(path.startswith("scripts/") for path in value["allowed_paths"]),
-            0,
+            1,
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
