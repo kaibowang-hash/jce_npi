@@ -164,8 +164,11 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
             sum(
@@ -175,11 +178,12 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED,
                 )
             ),
             1,
         )
-        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 57)
+        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 68)
         self.assertTrue(all(literals.count(code) == 2 for code in set(literals)))
 
     def test_full_boundary_records_base_exception_without_overwriting_inner(self) -> None:
@@ -192,7 +196,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 clear=False,
             ), patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
@@ -203,7 +207,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                             raise SystemExit(1)
             with patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -237,7 +241,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 side_effect=flaky_write,
             ), patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
@@ -250,7 +254,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             self.assertEqual(attempts, 2)
             with patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -270,7 +274,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 clear=False,
             ), patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
@@ -282,7 +286,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     )
             with patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED",
                 True,
             ):
                 self.assertEqual(
@@ -307,7 +311,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
             with patch.object(
                 self.verifier,
-                "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED",
+                "ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED",
                 False,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
@@ -320,6 +324,68 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                         path, expected_trace=trace
                     )
                 )
+
+    def test_revise_outcome_status_classes_are_fixed_and_complete(self) -> None:
+        cases = (
+            (0, "P901_CHANGE_REVISE_STATUS_INVALID"),
+            (101, "P901_CHANGE_REVISE_STATUS_INFORMATIONAL"),
+            (201, "P901_CHANGE_REVISE_STATUS_SUCCESS_NON_200"),
+            (302, "P901_CHANGE_REVISE_STATUS_REDIRECTION"),
+            (409, "P901_CHANGE_REVISE_STATUS_CLIENT_ERROR"),
+            (500, "P901_CHANGE_REVISE_STATUS_SERVER_ERROR"),
+        )
+        for status, expected_code in cases:
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+                trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+                result = self.verifier.HttpResult(status, {}, {})
+                with patch.dict(
+                    os.environ,
+                    {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
+                    clear=False,
+                ), patch.object(self.verifier, "request", return_value=result):
+                    with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                        with self.assertRaises(RuntimeError):
+                            self.verifier._revise_command(
+                                object(),
+                                self.verifier.RUNTIME_BASE_URL,
+                                "/bounded",
+                                {},
+                                csrf_token="csrf",
+                                idempotency_key="key",
+                            )
+                self.assertEqual(
+                    self.verifier.read_engineering_change_runtime_diagnostic(
+                        path, expected_trace=trace
+                    ),
+                    ("RuntimeError", expected_code, trace),
+                )
+
+    def test_revise_outcome_success_preserves_response(self) -> None:
+        headers = self.verifier._request_headers(
+            "revise", csrf_token="csrf", idempotency_key="key"
+        )
+        result = self.verifier.HttpResult(
+            200,
+            {
+                "X-Request-ID": headers["X-Request-ID"],
+                "Cache-Control": "private, no-store",
+                "Idempotency-Replayed": "false",
+            },
+            {"operation": "engineering_change.revise"},
+        )
+        with patch.object(self.verifier, "request", return_value=result):
+            self.assertEqual(
+                self.verifier._revise_command(
+                    object(),
+                    self.verifier.RUNTIME_BASE_URL,
+                    "/bounded",
+                    {},
+                    csrf_token="csrf",
+                    idempotency_key="key",
+                ),
+                result.body,
+            )
 
     def test_diagnostic_reader_fails_closed_for_unknown_or_malformed_records(
         self,

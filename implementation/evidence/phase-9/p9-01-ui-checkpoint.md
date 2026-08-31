@@ -250,3 +250,19 @@ boundaries and strict diagnostic contract. Product, UI, schema, contract and
 workflow diffs remain zero. Level 1 passes focused runtime `15/15`, full
 repository Python `2804/2804` with `6167` subtests, current/reconciliation,
 compile, shell, exact-one activation and diff checks.
+
+## Revise-outcome diagnostic boundary
+
+Post-marker ordinary `33398190011` passed. Controlled `33399570369` returned
+only `P901_CHANGE_REVISE_HTTP / RuntimeError /
+trace-7cc413ffa83a530b85e523787f314cda`. The create/replay/stale sequence is
+therefore complete, but the revise block still combines independent response
+predicates and does not authorize a product repair.
+
+Freeze that diagnostic at `1/1,0/1,0/1`. The new product-zero cycle begins
+`0/1,0/1,0/1` and uses exact 68 safe codes: the prior 57 plus the complete
+revise request, fixed status-class, request-ID, cache, body and idempotency
+family. Actual response values remain unread; product/UI/schema/contracts and
+workflow remain unchanged. Level 1 passes focused `17/17` with `6` subtests,
+full repository Python `2806/2806` with `6173` subtests, current/
+reconciliation, compile, shell, exact-one activation and diff checks.

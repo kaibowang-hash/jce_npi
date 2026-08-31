@@ -70,7 +70,8 @@ ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
     {
         "P901_CHANGE_INVOCATION",
@@ -101,6 +102,17 @@ ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
         "P901_CHANGE_STALE_HTTP",
         "P901_CHANGE_STALE_SHAPE",
         "P901_CHANGE_REVISE_HTTP",
+        "P901_CHANGE_REVISE_REQUEST",
+        "P901_CHANGE_REVISE_STATUS_INVALID",
+        "P901_CHANGE_REVISE_STATUS_INFORMATIONAL",
+        "P901_CHANGE_REVISE_STATUS_SUCCESS_NON_200",
+        "P901_CHANGE_REVISE_STATUS_REDIRECTION",
+        "P901_CHANGE_REVISE_STATUS_CLIENT_ERROR",
+        "P901_CHANGE_REVISE_STATUS_SERVER_ERROR",
+        "P901_CHANGE_REVISE_REQUEST_ID",
+        "P901_CHANGE_REVISE_CACHE_CONTROL",
+        "P901_CHANGE_REVISE_BODY_SHAPE",
+        "P901_CHANGE_REVISE_IDEMPOTENCY",
         "P901_CHANGE_REVISE_SHAPE",
         "P901_CHANGE_INBOUND_HTTP",
         "P901_CHANGE_INBOUND_SHAPE",
@@ -150,6 +162,7 @@ def _engineering_change_runtime_diagnostics_enabled() -> bool:
         or ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED
+        or ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED
     )
 
 
@@ -538,6 +551,72 @@ def _command(
     return body
 
 
+def _revise_command(
+    opener,
+    base_url: str,
+    path: str,
+    payload: dict[str, object],
+    *,
+    csrf_token: str,
+    idempotency_key: str,
+) -> dict[str, Any]:
+    headers = _request_headers(
+        "revise", csrf_token=csrf_token, idempotency_key=idempotency_key
+    )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_REVISE_REQUEST"
+    ):
+        result = request(
+            opener,
+            base_url,
+            path,
+            method="POST",
+            payload=payload,
+            request_headers=headers,
+        )
+    if result.status != 200:
+        if type(result.status) is not int or result.status < 100 or result.status > 599:
+            status_code = "P901_CHANGE_REVISE_STATUS_INVALID"
+        elif result.status < 200:
+            status_code = "P901_CHANGE_REVISE_STATUS_INFORMATIONAL"
+        elif result.status < 300:
+            status_code = "P901_CHANGE_REVISE_STATUS_SUCCESS_NON_200"
+        elif result.status < 400:
+            status_code = "P901_CHANGE_REVISE_STATUS_REDIRECTION"
+        elif result.status < 500:
+            status_code = "P901_CHANGE_REVISE_STATUS_CLIENT_ERROR"
+        else:
+            status_code = "P901_CHANGE_REVISE_STATUS_SERVER_ERROR"
+        with engineering_change_runtime_diagnostic_step(status_code):
+            raise RuntimeError("P9-01 revise response status class drifted")
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_REVISE_REQUEST_ID"
+    ):
+        require(
+            result.headers.get("X-Request-ID") == headers["X-Request-ID"],
+            "P9-01 revise request identity was not echoed",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_REVISE_CACHE_CONTROL"
+    ):
+        require(
+            result.headers.get("Cache-Control") == "private, no-store",
+            "P9-01 revise cache boundary drifted",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_REVISE_BODY_SHAPE"
+    ):
+        require(isinstance(result.body, dict), "P9-01 revise response body drifted")
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_REVISE_IDEMPOTENCY"
+    ):
+        require(
+            result.headers.get("Idempotency-Replayed") == "false",
+            "P9-01 revise idempotency response drifted",
+        )
+    return result.body
+
+
 def _formal_observation() -> dict[str, object]:
     now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     return {
@@ -890,7 +969,7 @@ def run_fresh(
     with engineering_change_runtime_diagnostic_step("P901_CHANGE_STALE_SHAPE"):
         require(stale_result.status == 409, "P9-01 stale revision did not conflict")
     with engineering_change_runtime_diagnostic_step("P901_CHANGE_REVISE_HTTP"):
-        revised = _command(
+        revised = _revise_command(
             opener,
             base_url,
             _change_path(project_id, f"/{change_id}/revisions"),
@@ -900,9 +979,6 @@ def run_fresh(
             },
             csrf_token=csrf,
             idempotency_key=REVISE_KEY,
-            label="revise",
-            expected_status=200,
-            replayed=False,
         )
     with engineering_change_runtime_diagnostic_step("P901_CHANGE_REVISE_SHAPE"):
         current = revised.get("currentRevision")

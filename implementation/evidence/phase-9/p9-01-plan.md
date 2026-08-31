@@ -500,3 +500,20 @@ diagnostic, with failed child output still unread. Level 1 passes focused
 runtime `15/15`, full repository Python `2804/2804` with `6167` subtests,
 current/reconciliation verification, compilation, shell syntax, exact-one
 activation, product-zero and diff checks.
+
+## P9-01D revise-outcome diagnostic continuation
+
+Post-marker ordinary `33398190011` passed. Controlled run `33399570369`
+returned the sole safe tuple `P901_CHANGE_REVISE_HTTP / RuntimeError /
+trace-7cc413ffa83a530b85e523787f314cda` after preflight and Site initialization.
+This proves the earlier lifecycle steps but leaves all response predicates in
+one block, so product repair remains prohibited.
+
+Freeze that cycle at `1/1,0/1,0/1`. A new product-zero activation expands the
+allowlist from 57 to exact 68 with a complete revise request/status-class/
+request-ID/cache/body/idempotency family. It never records actual status,
+headers or body. Historical flags are false; the new cycle starts
+`0/1,0/1,0/1` and requires exact-SHA ordinary plus one Level 2 diagnostic.
+Level 1 passes focused `17/17` with `6` subtests, full repository Python
+`2806/2806` with `6173` subtests, current/reconciliation, compile, shell,
+exact-one activation, product-zero and diff checks.

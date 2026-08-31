@@ -10202,3 +10202,32 @@ repeat or rewrite it merely to restore context. See
   with `6167` subtests, current/reconciliation verification, compilation,
   shell syntax, exact-one activation, product-zero and diff checks.
 - Controller marker: `P9-01D post-marker Engineering Change diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01D revise-outcome diagnostic cycle
+
+- Post-marker SHA `134f91044d889c3df99d1b92d5d3575d13eaaaf1`
+  passed ordinary `33398190011`. Its sole Level 2 `33399570369` passed
+  preflight `99512285522` and fixed Bench/Site initialization; runtime
+  `99512385652` returned exactly `P901_CHANGE_REVISE_HTTP / RuntimeError /
+  trace-7cc413ffa83a530b85e523787f314cda`. Restricted output and response values
+  remain unread.
+- That boundary proves create, replay and the stale-conflict probe completed,
+  but `_command` still combines transport, status, request-ID, cache, body and
+  replay-header predicates. Freeze the post-marker cycle at `1/1,0/1,0/1`;
+  no product repair is authorized.
+- Open one product-zero revise-outcome cycle at `0/1,0/1,0/1`. Only
+  `ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED` is true.
+  Add the complete fixed family for request, invalid/informational/non-200
+  success/redirection/client/server status classes, request identity, cache,
+  body shape and idempotency, increasing the safe allowlist from 57 to exactly
+  68. No actual status, header or body is recorded. Existing trace, O_EXCL,
+  exact-three, strict reader, inner precedence and all-off behavior remain.
+- Exact paths remain verifier, focused test and three governance records;
+  product/API/repository/schema/shell/UI/contracts/workflow stay unchanged.
+  After Level 1 and exact-SHA ordinary PASS, dispatch one Level 2 controlled
+  diagnostic reusing the ordinary.
+- Level 1 passes focused runtime `17/17` with `6` subtests, full repository
+  Python `2806/2806` with `6173` subtests, current/reconciliation,
+  compilation, shell syntax, exact-one activation, product-zero and diff
+  checks.
+- Controller marker: `P9-01D revise-outcome diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
