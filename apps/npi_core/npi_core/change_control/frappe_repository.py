@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 from collections.abc import Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
-from typing import Any, Callable
+from typing import Any, Callable, Iterator
 from uuid import UUID, uuid4
 
 import frappe
@@ -47,6 +50,136 @@ _OPERATIONS = frozenset(
         "engineering_change.close",
     }
 )
+ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P901_CHANGE_REVISE_API_CALL",
+        "P901_CHANGE_REVISE_API_ROUTES",
+        "P901_CHANGE_REVISE_API_USER",
+        "P901_CHANGE_REVISE_API_CSRF",
+        "P901_CHANGE_REVISE_API_PRINCIPAL",
+        "P901_CHANGE_REVISE_API_ROLE",
+        "P901_CHANGE_REVISE_API_FIELDS",
+        "P901_CHANGE_REVISE_API_REPOSITORY_INIT",
+        "P901_CHANGE_REVISE_API_IDEMPOTENCY",
+        "P901_CHANGE_REVISE_API_REPOSITORY_CALL",
+        "P901_CHANGE_REVISE_API_OUTCOME",
+        "P901_CHANGE_REVISE_API_RESPONSE",
+        "P901_CHANGE_REVISE_REPOSITORY_PROJECT_LOCK",
+        "P901_CHANGE_REVISE_REPOSITORY_ROOT_LOCK",
+        "P901_CHANGE_REVISE_REPOSITORY_PAYLOAD",
+        "P901_CHANGE_REVISE_REPOSITORY_REPLAY",
+        "P901_CHANGE_REVISE_REPOSITORY_CURRENT",
+        "P901_CHANGE_REVISE_REPOSITORY_PREDECESSOR",
+        "P901_CHANGE_REVISE_REPOSITORY_STATE",
+        "P901_CHANGE_REVISE_REPOSITORY_TRANSFORM",
+        "P901_CHANGE_REVISE_REPOSITORY_EVENT",
+        "P901_CHANGE_REVISE_REPOSITORY_RESPONSE",
+        "P901_CHANGE_REVISE_REPOSITORY_WRITE_SCOPE",
+        "P901_CHANGE_REVISE_REPOSITORY_RECEIPT",
+        "P901_CHANGE_REVISE_REPOSITORY_RECEIPT_REPLAY",
+        "P901_CHANGE_REVISE_REPOSITORY_REVISION_INSERT",
+        "P901_CHANGE_REVISE_REPOSITORY_EVENT_INSERT",
+        "P901_CHANGE_REVISE_REPOSITORY_ROOT_APPLY",
+        "P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE",
+        "P901_CHANGE_REVISE_REPOSITORY_AUDIT",
+        "P901_CHANGE_REVISE_REPOSITORY_RECEIPT_SEAL",
+        "P901_CHANGE_REVISE_REPOSITORY_OUTCOME",
+    }
+)
+_REVISE_SERVER_DIAGNOSTIC_FLAG = "npi_p901_change_revise_server_diagnostic"
+_DIAGNOSTIC_PATH_ENV = "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH"
+_DIAGNOSTIC_PATH_NAME = "p9-01-engineering-change-runtime-diagnostic.json"
+_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+
+
+@contextmanager
+def engineering_change_revise_server_diagnostics(
+    trace_id: str | None,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    try:
+        state = None
+        if (
+            active
+            and isinstance(trace_id, str)
+            and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+        ):
+            state = {"trace_id": trace_id, "recorded": False}
+        flags = frappe.flags
+        missing = object()
+        previous = getattr(flags, _REVISE_SERVER_DIAGNOSTIC_FLAG, missing)
+        setattr(flags, _REVISE_SERVER_DIAGNOSTIC_FLAG, state)
+    except Exception:
+        yield
+        return
+    try:
+        yield
+    finally:
+        try:
+            if previous is missing:
+                delattr(flags, _REVISE_SERVER_DIAGNOSTIC_FLAG)
+            else:
+                setattr(flags, _REVISE_SERVER_DIAGNOSTIC_FLAG, previous)
+        except Exception:
+            pass
+
+
+@contextmanager
+def engineering_change_revise_server_step(code: str) -> Iterator[None]:
+    try:
+        yield
+    except Exception as error:
+        _record_engineering_change_revise_server_failure(code, error)
+        raise
+
+
+def _record_engineering_change_revise_server_failure(
+    code: str,
+    error: Exception,
+) -> None:
+    try:
+        state = getattr(frappe.flags, _REVISE_SERVER_DIAGNOSTIC_FLAG, None)
+        exception_type = type(error).__name__
+        if (
+            not isinstance(state, dict)
+            or set(state) != {"trace_id", "recorded"}
+            or state.get("recorded") is True
+            or type(state.get("recorded")) is not bool
+            or code not in ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
+            or not isinstance(state.get("trace_id"), str)
+            or _DIAGNOSTIC_TRACE_PATTERN.fullmatch(str(state["trace_id"])) is None
+            or _DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        _write_engineering_change_revise_server_diagnostic(
+            {
+                "code": code,
+                "exceptionType": exception_type,
+                "traceId": str(state["trace_id"]),
+            }
+        )
+        state["recorded"] = True
+    except Exception:
+        # Diagnostics must never replace the original exception or transaction.
+        pass
+
+
+def _write_engineering_change_revise_server_diagnostic(
+    record: dict[str, str],
+) -> None:
+    path_value = os.environ.get(_DIAGNOSTIC_PATH_ENV)
+    if not isinstance(path_value, str) or not path_value:
+        return
+    path = os.path.abspath(path_value)
+    if path != path_value or os.path.basename(path) != _DIAGNOSTIC_PATH_NAME:
+        return
+    payload = json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        stream.write(payload)
 
 
 class ChangeControlIdempotencyConflict(NpiProblem):
@@ -311,59 +444,37 @@ class FrappeChangeControlRepository:
         transform: Callable[[EngineeringChangeRevision, datetime], EngineeringChangeRevision],
         observation: bool = False,
     ) -> ChangeCommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
-        if project is None:
-            return None
-        root = self._locked_change_root(project, change_id)
-        if root is None:
-            return None
-        tenant_id = str(project.tenant_id)
-        full_payload = {
-            "projectGlobalId": str(project_id),
-            "changeGlobalId": str(change_id),
-            "predecessor": {
-                "expectedRevision": expected_revision,
-                "expectedRevisionGlobalId": str(expected_revision_global_id),
-                "expectedRevisionSnapshotHash": expected_revision_snapshot_hash,
-            },
-            **payload,
-        }
-        payload_hash = _payload_hash(full_payload)
-        replay = self._idempotency_replay(
-            tenant_id=tenant_id,
-            project_id=project_id,
-            change_id=change_id,
-            operation=operation,
-            idempotency_key_hash=idempotency_key_hash,
-            payload_hash=payload_hash,
-        )
-        if replay is not None:
-            return ChangeCommandOutcome(replay, True)
-        current = self._revision_document(root.current_revision_global_id, for_update=True)
-        if current is None:
-            return None
-        if (
-            current.revision != expected_revision
-            or current.global_id != expected_revision_global_id
-            or current.snapshot_hash != expected_revision_snapshot_hash
-            or current.change_global_id != change_id
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_PROJECT_LOCK"
         ):
-            raise VersionConflict()
-        if current.state in {EngineeringChangeState.CLOSED, EngineeringChangeState.CANCELLED}:
-            raise VersionConflict()
-        now = datetime.now(UTC)
-        successor = transform(current, now)
-        resolved_event_type = (
-            EngineeringChangeEventType.READY_TO_CLOSE
-            if successor.state is EngineeringChangeState.READY_TO_CLOSE
-            and current.state is not EngineeringChangeState.READY_TO_CLOSE
-            else event_type
-        )
-        event = self._event(successor, resolved_event_type, now)
-        response = _command_response(operation, successor)
-        scope = change_observation_write() if observation else change_command_write()
-        with scope:
-            receipt = self._insert_receipt(
+            project = self._locked_authorized_project(project_id)
+            if project is None:
+                return None
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_ROOT_LOCK"
+        ):
+            root = self._locked_change_root(project, change_id)
+            if root is None:
+                return None
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_PAYLOAD"
+        ):
+            tenant_id = str(project.tenant_id)
+            full_payload = {
+                "projectGlobalId": str(project_id),
+                "changeGlobalId": str(change_id),
+                "predecessor": {
+                    "expectedRevision": expected_revision,
+                    "expectedRevisionGlobalId": str(expected_revision_global_id),
+                    "expectedRevisionSnapshotHash": expected_revision_snapshot_hash,
+                },
+                **payload,
+            }
+            payload_hash = _payload_hash(full_payload)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_REPLAY"
+        ):
+            replay = self._idempotency_replay(
                 tenant_id=tenant_id,
                 project_id=project_id,
                 change_id=change_id,
@@ -371,15 +482,105 @@ class FrappeChangeControlRepository:
                 idempotency_key_hash=idempotency_key_hash,
                 payload_hash=payload_hash,
             )
-            if isinstance(receipt, dict):
-                return ChangeCommandOutcome(receipt, True)
-            self._insert_revision(successor)
-            self._insert_event(event)
-            self._apply_root(root, successor)
-            root.save()
-            self._append_audit(operation, successor)
-            self._seal_receipt(receipt, response)
-        return ChangeCommandOutcome(response)
+        if replay is not None:
+            return ChangeCommandOutcome(replay, True)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_CURRENT"
+        ):
+            current = self._revision_document(
+                root.current_revision_global_id,
+                for_update=True,
+            )
+            if current is None:
+                return None
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_PREDECESSOR"
+        ):
+            if (
+                current.revision != expected_revision
+                or current.global_id != expected_revision_global_id
+                or current.snapshot_hash != expected_revision_snapshot_hash
+                or current.change_global_id != change_id
+            ):
+                raise VersionConflict()
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_STATE"
+        ):
+            if current.state in {
+                EngineeringChangeState.CLOSED,
+                EngineeringChangeState.CANCELLED,
+            }:
+                raise VersionConflict()
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_TRANSFORM"
+        ):
+            now = datetime.now(UTC)
+            successor = transform(current, now)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_EVENT"
+        ):
+            resolved_event_type = (
+                EngineeringChangeEventType.READY_TO_CLOSE
+                if successor.state is EngineeringChangeState.READY_TO_CLOSE
+                and current.state is not EngineeringChangeState.READY_TO_CLOSE
+                else event_type
+            )
+            event = self._event(successor, resolved_event_type, now)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_RESPONSE"
+        ):
+            response = _command_response(operation, successor)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_WRITE_SCOPE"
+        ):
+            scope = (
+                change_observation_write() if observation else change_command_write()
+            )
+            with scope:
+                with engineering_change_revise_server_step(
+                    "P901_CHANGE_REVISE_REPOSITORY_RECEIPT"
+                ):
+                    receipt = self._insert_receipt(
+                        tenant_id=tenant_id,
+                        project_id=project_id,
+                        change_id=change_id,
+                        operation=operation,
+                        idempotency_key_hash=idempotency_key_hash,
+                        payload_hash=payload_hash,
+                    )
+                with engineering_change_revise_server_step(
+                    "P901_CHANGE_REVISE_REPOSITORY_RECEIPT_REPLAY"
+                ):
+                    if isinstance(receipt, dict):
+                        return ChangeCommandOutcome(receipt, True)
+                with engineering_change_revise_server_step(
+                    "P901_CHANGE_REVISE_REPOSITORY_REVISION_INSERT"
+                ):
+                    self._insert_revision(successor)
+                with engineering_change_revise_server_step(
+                    "P901_CHANGE_REVISE_REPOSITORY_EVENT_INSERT"
+                ):
+                    self._insert_event(event)
+                with engineering_change_revise_server_step(
+                    "P901_CHANGE_REVISE_REPOSITORY_ROOT_APPLY"
+                ):
+                    self._apply_root(root, successor)
+                with engineering_change_revise_server_step(
+                    "P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE"
+                ):
+                    root.save()
+                with engineering_change_revise_server_step(
+                    "P901_CHANGE_REVISE_REPOSITORY_AUDIT"
+                ):
+                    self._append_audit(operation, successor)
+                with engineering_change_revise_server_step(
+                    "P901_CHANGE_REVISE_REPOSITORY_RECEIPT_SEAL"
+                ):
+                    self._seal_receipt(receipt, response)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_REPOSITORY_OUTCOME"
+        ):
+            return ChangeCommandOutcome(response)
 
     def _authorized_project(self, project_id: UUID):
         project = _optional_doc("NPI Engineering Project", str(project_id))

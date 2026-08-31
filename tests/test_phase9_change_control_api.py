@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import copy
 import importlib
+import os
 import sys
 import types
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 
 sys.path.insert(0, "apps/npi_core")
@@ -201,6 +203,104 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
         self.frappe.conf.npi_p9_01_routes_disabled = True
         with self.assertRaises(self.api.ChangeControlRoutesDisabled):
             self.call(self.api.get_engineering_changes)
+
+    def test_revise_server_diagnostic_requires_exact_runtime_request_shape(self) -> None:
+        trace = "trace-" + "b" * 32
+        diagnostic_path = "/tmp/p9-01-engineering-change-runtime-diagnostic.json"
+        self.headers.update(
+            {
+                self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER: (
+                    self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_SCOPE
+                ),
+                self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER: trace,
+            }
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = AttrDict()
+        self.frappe.local.form_dict = AttrDict(
+            {
+                "predecessor": {},
+                "content": {},
+                "cmd": "npi_core.change_control_api.revise_engineering_change",
+            }
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "NPI_P9_01C_RUNTIME_ENABLED": "1",
+                "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": diagnostic_path,
+            },
+            clear=False,
+        ):
+            self.assertTrue(
+                self.api._engineering_change_revise_server_diagnostic_active(
+                    "engineering_change.revise",
+                    trace,
+                )
+            )
+            for mutation in (
+                lambda: self.headers.pop(
+                    self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER
+                ),
+                lambda: setattr(self.frappe.local.request, "method", "GET"),
+                lambda: self.frappe.local.form_dict.__setitem__("unexpected", True),
+            ):
+                saved_headers = dict(self.headers)
+                saved_method = self.frappe.local.request.method
+                saved_form = AttrDict(self.frappe.local.form_dict)
+                mutation()
+                self.assertFalse(
+                    self.api._engineering_change_revise_server_diagnostic_active(
+                        "engineering_change.revise",
+                        trace,
+                    )
+                )
+                self.headers.clear()
+                self.headers.update(saved_headers)
+                self.frappe.local.request.method = saved_method
+                self.frappe.local.form_dict = saved_form
+            self.assertFalse(
+                self.api._engineering_change_revise_server_diagnostic_active(
+                    "engineering_change.create",
+                    trace,
+                )
+            )
+
+    def test_revise_server_diagnostic_is_dormant_without_runtime_environment(self) -> None:
+        trace = "trace-" + "c" * 32
+        self.headers.update(
+            {
+                self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER: (
+                    self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_SCOPE
+                ),
+                self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER: trace,
+            }
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = AttrDict()
+        self.frappe.local.form_dict = AttrDict(
+            {
+                "predecessor": {},
+                "content": {},
+                "cmd": "npi_core.change_control_api.revise_engineering_change",
+            }
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "NPI_P9_01C_RUNTIME_ENABLED": "0",
+                "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": (
+                    "/tmp/p9-01-engineering-change-runtime-diagnostic.json"
+                ),
+            },
+            clear=False,
+        ):
+            self.assertFalse(
+                self.api._engineering_change_revise_server_diagnostic_active(
+                    "engineering_change.revise",
+                    trace,
+                )
+            )
 
     def test_bff_source_freezes_exact_routes_and_default_disabled_handler(self) -> None:
         source = (Path(__file__).resolve().parents[1] / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")

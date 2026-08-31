@@ -10231,3 +10231,32 @@ repeat or rewrite it merely to restore context. See
   compilation, shell syntax, exact-one activation, product-zero and diff
   checks.
 - Controller marker: `P9-01D revise-outcome diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01D revise-server diagnostic cycle
+
+- Revise-outcome SHA `af811227406bc3bc57c6879e955d4720a01e040a`
+  passed ordinary CI `33401502726`. Its sole Level 2 controlled run
+  `33403032026` passed preflight `99523742240` and fixed Bench/Site
+  initialization; runtime `99523822854` returned exactly
+  `P901_CHANGE_REVISE_STATUS_SERVER_ERROR / RuntimeError /
+  trace-82bfb5e4858f5e39809629e2758fab6a`. No actual status, response body,
+  business value, identity, message, stack or failed-child output was read.
+- The fixed 5xx class proves transport and response classification but remains
+  nonunique across the revise API and repository. Freeze revise-outcome at
+  `1/1,0/1,0/1`; no product repair is authorized. Open one independent
+  revise-server diagnostic at `0/1,0/1,0/1`.
+- Only `ENGINEERING_CHANGE_RUNTIME_REVISE_SERVER_DIAGNOSTICS_ENABLED` is true.
+  The active safe set is exact 100: the prior 68 parent codes plus 12 ordered
+  API and 20 ordered repository codes. Activation requires the fixed
+  disposable runtime env, exact diagnostic path, POST, empty query, exact
+  Project/change route, exact revise form/cmd, scope header and deterministic
+  trace header. The server writes only code/type/trace through exact-name
+  `O_EXCL` mode `0600`; an inner server stage wins before the parent 5xx
+  fallback. Normal requests and all production environments remain dormant.
+- Exact task paths are the verifier, shell, API/repository, their three focused
+  tests, current manifest/test and these three governance records. There is no
+  domain, schema, contract, UI, permission, transaction order or external
+  behavior change. Level 1 passes focused `45/45`, full repository Python
+  `2813/2813`, current/reconciliation, compile, shell syntax, strict activation,
+  lexical/order, security and diff checks.
+- Controller marker: `P9-01D revise-server diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

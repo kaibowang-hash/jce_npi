@@ -517,3 +517,27 @@ headers or body. Historical flags are false; the new cycle starts
 Level 1 passes focused `17/17` with `6` subtests, full repository Python
 `2806/2806` with `6173` subtests, current/reconciliation, compile, shell,
 exact-one activation, product-zero and diff checks.
+
+## P9-01D revise-server diagnostic continuation
+
+Revise-outcome ordinary `33401502726` passed. Controlled run `33403032026`
+returned only `P901_CHANGE_REVISE_STATUS_SERVER_ERROR / RuntimeError /
+trace-82bfb5e4858f5e39809629e2758fab6a` after preflight and fixed Site
+initialization. The actual status, body, business values, identities, messages,
+stack and failed-child output remain unread.
+
+Freeze revise-outcome at `1/1,0/1,0/1`. A 5xx still spans independent API and
+repository predicates, so no repair is authorized. The new revise-server cycle
+starts `0/1,0/1,0/1`, with all six historical activations false and only its
+new activation true. It adds 12 API and 20 repository stages to the existing
+68 parent codes for exact 100. Exact disposable env/path, POST/route/form/cmd,
+scope and trace headers gate the server context; inner server `O_EXCL` records
+win over the parent status fallback. The record remains exactly code/type/trace
+and success remains record-free.
+
+The bounded exact task changes only diagnostic harness/API/repository wrappers,
+focused tests, current manifest facts and governance. Domain values, write
+order, transaction semantics, permissions, schemas, public contracts, UI and
+production behavior do not change. Level 1 passes focused `45/45`, full Python
+`2813/2813`, current/reconciliation, compilation, shell, security and diff
+checks. Exact-SHA ordinary PASS must precede one sole Level 2 diagnostic.

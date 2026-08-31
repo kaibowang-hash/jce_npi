@@ -3366,6 +3366,7 @@ export_engineering_change_runtime_environment() {
   export NPI_P9_01C_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
   export NPI_P9_01C_RUNTIME_WORKER="${inbound_project_runtime_actor}"
   export NPI_P9_01C_RUNTIME_SECRET="${engineering_change_runtime_secret}"
+  export NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH="${RUNNER_TEMP:-/tmp}/p9-01-engineering-change-runtime-diagnostic.json"
 }
 
 clear_engineering_change_runtime_environment() {
@@ -3374,7 +3375,8 @@ clear_engineering_change_runtime_environment() {
     NPI_P9_01C_RUNTIME_PROJECT_ID \
     NPI_P9_01C_RUNTIME_REQUESTER \
     NPI_P9_01C_RUNTIME_WORKER \
-    NPI_P9_01C_RUNTIME_SECRET
+    NPI_P9_01C_RUNTIME_SECRET \
+    NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH
 }
 
 run_engineering_change_runtime_verifier() {

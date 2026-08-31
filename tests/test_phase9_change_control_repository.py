@@ -2,10 +2,15 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import json
+import os
 import sys
+import tempfile
 import types
 import unittest
 from datetime import UTC, datetime
+from pathlib import Path
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -175,6 +180,104 @@ class Phase9ChangeControlRepositoryTest(unittest.TestCase):
         self.assertEqual(
             self.repository._database_datetime(value),
             "2026-08-31 09:10:00.000000",
+        )
+
+    def test_revise_server_diagnostic_records_only_innermost_exact_safe_tuple(self) -> None:
+        trace = "trace-" + "d" * 32
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+            with patch.dict(
+                os.environ,
+                {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
+                clear=False,
+            ):
+                with self.repository.engineering_change_revise_server_diagnostics(
+                    trace,
+                    active=True,
+                ):
+                    with self.assertRaises(self.repository.frappe.ValidationError):
+                        with self.repository.engineering_change_revise_server_step(
+                            "P901_CHANGE_REVISE_API_CALL"
+                        ):
+                            with self.repository.engineering_change_revise_server_step(
+                                "P901_CHANGE_REVISE_REPOSITORY_REVISION_INSERT"
+                            ):
+                                raise self.repository.frappe.ValidationError(
+                                    "restricted"
+                                )
+            record = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                record,
+                {
+                    "code": "P901_CHANGE_REVISE_REPOSITORY_REVISION_INSERT",
+                    "exceptionType": "FrappeValidationError",
+                    "traceId": trace,
+                },
+            )
+            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+            self.assertNotIn("restricted", path.read_text(encoding="utf-8"))
+            self.assertFalse(
+                hasattr(
+                    self.repository.frappe.flags,
+                    "npi_p901_change_revise_server_diagnostic",
+                )
+            )
+
+    def test_revise_server_diagnostic_wrong_scope_is_dormant(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+            with patch.dict(
+                os.environ,
+                {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
+                clear=False,
+            ):
+                for trace, active in (("wrong", True), ("trace-" + "e" * 32, False)):
+                    with self.repository.engineering_change_revise_server_diagnostics(
+                        trace,
+                        active=active,
+                    ):
+                        with self.assertRaises(RuntimeError):
+                            with self.repository.engineering_change_revise_server_step(
+                                "P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE"
+                            ):
+                                raise RuntimeError("restricted")
+            self.assertFalse(path.exists())
+
+    def test_revise_server_stage_order_matches_the_transaction_order(self) -> None:
+        source = inspect.getsource(
+            self.repository.FrappeChangeControlRepository._successor_command
+        )
+        codes = (
+            "P901_CHANGE_REVISE_REPOSITORY_PROJECT_LOCK",
+            "P901_CHANGE_REVISE_REPOSITORY_ROOT_LOCK",
+            "P901_CHANGE_REVISE_REPOSITORY_PAYLOAD",
+            "P901_CHANGE_REVISE_REPOSITORY_REPLAY",
+            "P901_CHANGE_REVISE_REPOSITORY_CURRENT",
+            "P901_CHANGE_REVISE_REPOSITORY_PREDECESSOR",
+            "P901_CHANGE_REVISE_REPOSITORY_STATE",
+            "P901_CHANGE_REVISE_REPOSITORY_TRANSFORM",
+            "P901_CHANGE_REVISE_REPOSITORY_EVENT",
+            "P901_CHANGE_REVISE_REPOSITORY_RESPONSE",
+            "P901_CHANGE_REVISE_REPOSITORY_WRITE_SCOPE",
+            "P901_CHANGE_REVISE_REPOSITORY_RECEIPT",
+            "P901_CHANGE_REVISE_REPOSITORY_RECEIPT_REPLAY",
+            "P901_CHANGE_REVISE_REPOSITORY_REVISION_INSERT",
+            "P901_CHANGE_REVISE_REPOSITORY_EVENT_INSERT",
+            "P901_CHANGE_REVISE_REPOSITORY_ROOT_APPLY",
+            "P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE",
+            "P901_CHANGE_REVISE_REPOSITORY_AUDIT",
+            "P901_CHANGE_REVISE_REPOSITORY_RECEIPT_SEAL",
+            "P901_CHANGE_REVISE_REPOSITORY_OUTCOME",
+        )
+        positions = [source.index(code) for code in codes]
+        self.assertEqual(positions, sorted(positions))
+        self.assertEqual(
+            set(codes),
+            {
+                code
+                for code in self.repository.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
+                if code.startswith("P901_CHANGE_REVISE_REPOSITORY_")
+            },
         )
 
 

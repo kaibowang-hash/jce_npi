@@ -266,3 +266,25 @@ family. Actual response values remain unread; product/UI/schema/contracts and
 workflow remain unchanged. Level 1 passes focused `17/17` with `6` subtests,
 full repository Python `2806/2806` with `6173` subtests, current/
 reconciliation, compile, shell, exact-one activation and diff checks.
+
+## Revise-server diagnostic boundary
+
+Revise-outcome SHA `af811227` passed ordinary `33401502726`. Its sole
+controlled diagnostic `33403032026` returned the exact safe tuple
+`P901_CHANGE_REVISE_STATUS_SERVER_ERROR / RuntimeError /
+trace-82bfb5e4858f5e39809629e2758fab6a`. This proves the revise HTTP call
+returned a 5xx class, but it does not identify one API or repository predicate.
+No response value or restricted child/business output was read.
+
+Freeze that cycle at `1/1,0/1,0/1` and open one revise-server cycle at
+`0/1,0/1,0/1`. Its exact 100 allowlist combines the prior 68 parent stages
+with 12 API and 20 repository stages in the same request. Activation requires
+the disposable runtime environment and exact path, method, route, form/cmd,
+scope and deterministic trace; the inner exact-three `O_EXCL` record wins over
+the parent 5xx fallback. It changes no domain value, schema, permission,
+transaction order, contract, UI or production request behavior.
+
+Level 1 passes focused `45/45`, full repository Python `2813/2813`, current and
+reconciliation checks, compilation, shell syntax, exact activation/lexical/
+order/security contracts and diff hygiene. One exact-SHA ordinary and one sole
+Level 2 controlled diagnostic remain before any repair decision.

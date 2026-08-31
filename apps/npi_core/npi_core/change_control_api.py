@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import os
+import re
 from collections.abc import Callable
-from typing import Any, Protocol
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any, Iterator, Protocol
 from uuid import UUID
 
 import frappe
@@ -36,6 +40,56 @@ _CREATE_FIELDS = frozenset({"content"})
 _REVISE_FIELDS = frozenset({"predecessor", "content"})
 _OBSERVATION_FIELDS = frozenset({"predecessor", "formalChange"})
 _CLOSE_FIELDS = frozenset({"predecessor"})
+ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
+    "X-NPI-P901-Change-Revise-Diagnostic"
+)
+ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_SCOPE = (
+    "p9-01-engineering-change-revise-server-v1"
+)
+ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER = (
+    "X-NPI-P901-Change-Revise-Diagnostic-Trace"
+)
+_REVISE_SERVER_DIAGNOSTIC_ACTIVE: ContextVar[bool] = ContextVar(
+    "p901_engineering_change_revise_server_diagnostic",
+    default=False,
+)
+_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_DIAGNOSTIC_PATH_NAME = "p9-01-engineering-change-runtime-diagnostic.json"
+
+
+@contextmanager
+def engineering_change_revise_server_diagnostics(
+    trace_id: str | None,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    token = _REVISE_SERVER_DIAGNOSTIC_ACTIVE.set(active)
+    try:
+        if active:
+            from npi_core.change_control.frappe_repository import (
+                engineering_change_revise_server_diagnostics as server_scope,
+            )
+
+            with server_scope(trace_id, active=True):
+                yield
+        else:
+            yield
+    finally:
+        _REVISE_SERVER_DIAGNOSTIC_ACTIVE.reset(token)
+
+
+@contextmanager
+def engineering_change_revise_server_step(code: str) -> Iterator[None]:
+    if _REVISE_SERVER_DIAGNOSTIC_ACTIVE.get():
+        from npi_core.change_control.frappe_repository import (
+            engineering_change_revise_server_step as server_step,
+        )
+
+        with server_step(code):
+            yield
+        return
+    yield
 
 
 class ChangeControlRoutesDisabled(NpiProblem):
@@ -215,37 +269,120 @@ def _command(
     headers = {"X-Request-ID": response_request_id(), "Idempotency-Replayed": "false"}
 
     def handle() -> dict[str, Any]:
-        _require_routes_enabled()
-        actor = authenticated_user()
-        require_csrf_token()
-        principal = authenticated_principal(actor)
-        _require_api_user(principal)
-        if require_system_manager and "System Manager" not in principal.roles:
-            raise PermissionDenied()
-        reject_unexpected_request_fields(allowed_fields, request_fields)
-        require_request_fields(allowed_fields, request_fields)
-        request_id, repository = _new_repository(principal)
-        outcome = invoke(repository, actor_idempotency_key_hash(actor, frappe.get_request_header("Idempotency-Key")))
-        if outcome is None:
-            raise EngineeringChangeUnavailable()
-        if type(outcome.replayed) is not bool:
-            raise RuntimeError("The engineering change command response is invalid.")
-        response = validate_change_command_response(
-            operation,
-            outcome.response,
-            project_global_id=str(project_id),
-            change_global_id=None if change_id is None else str(change_id),
-        )
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
-        return response
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_API_ROUTES"
+        ):
+            _require_routes_enabled()
+        with engineering_change_revise_server_step("P901_CHANGE_REVISE_API_USER"):
+            actor = authenticated_user()
+        with engineering_change_revise_server_step("P901_CHANGE_REVISE_API_CSRF"):
+            require_csrf_token()
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_API_PRINCIPAL"
+        ):
+            principal = authenticated_principal(actor)
+        with engineering_change_revise_server_step("P901_CHANGE_REVISE_API_ROLE"):
+            _require_api_user(principal)
+            if require_system_manager and "System Manager" not in principal.roles:
+                raise PermissionDenied()
+        with engineering_change_revise_server_step("P901_CHANGE_REVISE_API_FIELDS"):
+            reject_unexpected_request_fields(allowed_fields, request_fields)
+            require_request_fields(allowed_fields, request_fields)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_API_REPOSITORY_INIT"
+        ):
+            request_id, repository = _new_repository(principal)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_API_IDEMPOTENCY"
+        ):
+            idempotency_key_hash = actor_idempotency_key_hash(
+                actor,
+                frappe.get_request_header("Idempotency-Key"),
+            )
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_API_REPOSITORY_CALL"
+        ):
+            outcome = invoke(repository, idempotency_key_hash)
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_API_OUTCOME"
+        ):
+            if outcome is None:
+                raise EngineeringChangeUnavailable()
+            if type(outcome.replayed) is not bool:
+                raise RuntimeError("The engineering change command response is invalid.")
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_API_RESPONSE"
+        ):
+            response = validate_change_command_response(
+                operation,
+                outcome.response,
+                project_global_id=str(project_id),
+                change_global_id=None if change_id is None else str(change_id),
+            )
+            headers["X-Request-ID"] = request_id
+            headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+            return response
 
-    return frappe_domain_call(
-        handle,
-        cache_control="private, no-store",
-        success_status=success_status,
-        response_headers=headers,
+    diagnostic_trace = frappe.get_request_header(
+        ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER
     )
+    with engineering_change_revise_server_diagnostics(
+        diagnostic_trace,
+        active=_engineering_change_revise_server_diagnostic_active(
+            operation,
+            diagnostic_trace,
+        ),
+    ):
+        with engineering_change_revise_server_step(
+            "P901_CHANGE_REVISE_API_CALL"
+        ):
+            return frappe_domain_call(
+                handle,
+                cache_control="private, no-store",
+                success_status=success_status,
+                response_headers=headers,
+            )
+
+
+def _engineering_change_revise_server_diagnostic_active(
+    operation: str,
+    trace_id: object,
+) -> bool:
+    try:
+        request = getattr(getattr(frappe, "local", None), "request", None)
+        arguments = getattr(request, "args", None)
+        route = getattr(frappe.flags, "npi_route_params", None)
+        form = getattr(getattr(frappe, "local", None), "form_dict", None)
+        diagnostic_path = os.environ.get("NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH")
+        return (
+            ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED
+            and operation == "engineering_change.revise"
+            and os.environ.get("NPI_P9_01C_RUNTIME_ENABLED") == "1"
+            and isinstance(diagnostic_path, str)
+            and os.path.isabs(diagnostic_path)
+            and os.path.basename(diagnostic_path) == _DIAGNOSTIC_PATH_NAME
+            and frappe.get_request_header(
+                ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER
+            )
+            == ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_SCOPE
+            and frappe.get_request_header(
+                ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER
+            )
+            == trace_id
+            and isinstance(trace_id, str)
+            and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+            and getattr(request, "method", None) == "POST"
+            and arguments is not None
+            and list(arguments.keys()) == []
+            and isinstance(route, dict)
+            and set(route) == {"project_id", "change_id"}
+            and isinstance(form, dict)
+            and set(form) == _REVISE_FIELDS | {"cmd"}
+            and form.get("cmd")
+            == "npi_core.change_control_api.revise_engineering_change"
+        )
+    except Exception:
+        return False
 
 
 def _principal() -> Principal:
