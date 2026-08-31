@@ -12,6 +12,13 @@ Updated: `2026-08-31T00:00:00+07:00`
   declarative metadata collector is now implemented locally with no production
   contact. Its own exact-SHA ordinary CI is the sole remaining precondition to
   one bounded read.
+- Collector activation exact SHA `4749020aff01c2ba36d0a4ef6d16fe2d53e8d3d6`
+  passes ordinary CI `33348170448` in all four lanes. Its first read stops
+  fail-closed at the direct `DocField` permission boundary and emits no result.
+  Accepted P8-07F evidence already proves direct `DocField` and `DocPerm` child
+  reads are the same rejected class. The current batch repair routes both
+  families through each already-proven fixed DocType parent document; it does
+  not widen methods, names, fields or production authority.
 - P9-01 audit activation exact SHA
   `e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes ordinary CI
   `33345969806`: secret `99350038718`, visual `99350038806`, frontend

@@ -1,6 +1,6 @@
 # P9-01 Change Impact and Revalidation Plan
 
-Status: `AUDIT COMPLETE — CHANGE-METADATA COLLECTOR IMPLEMENTED; ACTIVATION CI PENDING`
+Status: `AUDIT COMPLETE — CHILD-METADATA PARENT-READER REPAIR BATCHED; EXACT CI PENDING`
 
 ## Accepted predecessor
 
@@ -85,3 +85,24 @@ V1.2 reconciliation scripts, compileall, shell syntax and `git diff --check`.
 The full repository verifier passes with the local `python3` interpreter
 exposed through a temporary non-repository `python` PATH shim; no repository
 file, test or threshold was changed for that host-only interpreter-name fact.
+
+## First read and batched parent-reader correction
+
+Collector activation exact SHA `4749020aff01c2ba36d0a4ef6d16fe2d53e8d3d6`
+passes ordinary CI `33348170448`: frontend `99356215369`, secret
+`99356215495`, visual `99356215504` and repository `99356215548` all pass.
+The first bounded invocation stops fail-closed at `CHANGE_DOCFIELDS` because a
+direct `frappe.client.get_list` child-table read is rejected by the production
+application permission boundary. It emits no result, accepts no partial fact,
+runs no later family and performs no write.
+
+The accepted P8-07F collector history already proves direct `DocField`,
+`DocPerm` and Workflow child-table reads are the same permission-rejected
+class, while fixed parent-document projection succeeds. This checkpoint
+therefore batches the complete same-class correction: `CHANGE_DOCFIELDS` and
+`CHANGE_DOCPERMS` derive only the present names returned by the exact
+three-name `CHANGE_DOCTYPES` inventory, then project `fields` and `permissions`
+from fixed `DocType` parent documents. Workflow children already use the same
+accepted parent pattern. No method, parent name, field, output budget or
+production authority is added. The replacement collector checkpoint requires
+one exact-SHA ordinary PASS before a single retry.

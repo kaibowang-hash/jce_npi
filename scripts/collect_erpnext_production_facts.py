@@ -317,6 +317,10 @@ P9_CHANGE_SCOPE_FIELDS = {
     "CHANGE_NOTIFICATIONS": "document_type",
     "CHANGE_NAMING_RULES": "document_type",
 }
+P9_CHANGE_PARENT_FAMILIES = {
+    "CHANGE_DOCFIELDS": ("DOCFIELDS", "fields"),
+    "CHANGE_DOCPERMS": ("DOCPERMS", "permissions"),
+}
 
 
 class FactCollectionError(RuntimeError):
@@ -532,6 +536,10 @@ def _p9_change_metadata_command(
     start: int,
 ) -> tuple[str, ...]:
     require(family in P9_CHANGE_METADATA_SPECS, "change metadata family is not allowlisted")
+    require(
+        family not in P9_CHANGE_PARENT_FAMILIES,
+        "change child metadata must use its fixed parent document",
+    )
     require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
     require(
         start >= 0 and start % P9_CHANGE_PAGE_SIZE == 0,
@@ -1667,6 +1675,52 @@ def _p9_change_metadata_operation(
     family_results: dict[str, dict[str, Any]] = {}
     workflow_names: list[str] = []
     for family in P9_CHANGE_METADATA_SPECS:
+        if family in P9_CHANGE_PARENT_FAMILIES:
+            require(
+                "CHANGE_DOCTYPES" in family_results,
+                "change child metadata requires fixed DocType inventory first",
+            )
+            parent_names = [
+                row["name"]
+                for row in family_results["CHANGE_DOCTYPES"]["rows"]
+            ]
+            require(
+                len(parent_names) <= len(P9_CHANGE_DOCTYPES)
+                and set(parent_names) <= set(P9_CHANGE_DOCTYPES),
+                "change child metadata parent scope drifted",
+            )
+            runtime_family, child_key = P9_CHANGE_PARENT_FAMILIES[family]
+            rows: list[dict[str, Any]] = []
+            document_checksums: list[str] = []
+            for parent_name in parent_names:
+                raw = runner(
+                    f"{family}_PARENT",
+                    _parent_document_command(site, "DocType", parent_name),
+                    MAX_RUNTIME_BYTES,
+                )
+                rows.extend(
+                    _parse_parent_metadata_document(
+                        raw,
+                        family=runtime_family,
+                        parent_doctype="DocType",
+                        parent_name=parent_name,
+                        child_key=child_key,
+                    )
+                )
+                document_checksums.append(_checksum(raw))
+            scope_field = P9_CHANGE_SCOPE_FIELDS[family]
+            require(
+                all(row.get(scope_field) in P9_CHANGE_DOCTYPES for row in rows),
+                "change child metadata escaped the fixed DocType scope",
+            )
+            family_results[family] = {
+                "row_count": len(rows),
+                "document_count": len(document_checksums),
+                "document_checksums": document_checksums,
+                "result_checksum": _checksum(_json_bytes(rows)),
+                "rows": rows,
+            }
+            continue
         rows: list[dict[str, Any]] = []
         names: list[str] = []
         page_checksums: list[str] = []
@@ -1744,10 +1798,6 @@ def _p9_change_metadata_operation(
     present_doctypes = [
         row["name"] for row in family_results["CHANGE_DOCTYPES"]["rows"]
     ]
-    require(
-        present_doctypes == sorted(present_doctypes),
-        "change DocType order drifted",
-    )
     missing_doctypes = sorted(set(P9_CHANGE_DOCTYPES) - set(present_doctypes))
     result = {
         "fixed_doctype_names": list(P9_CHANGE_DOCTYPES),

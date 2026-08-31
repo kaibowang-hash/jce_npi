@@ -9801,3 +9801,24 @@ repeat or rewrite it merely to restore context. See
   `2716/2716`, current/reconciliation scripts, compileall, shell syntax and
   diff checks. No production connection was made.
 - Controller marker: `P9-01 change metadata collector implemented; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01 collector ordinary PASS; batch child parent-reader repair
+
+- Collector activation exact SHA
+  `4749020aff01c2ba36d0a4ef6d16fe2d53e8d3d6` passes ordinary CI
+  `33348170448`: frontend `99356215369`, secret `99356215495`, visual
+  `99356215504` and repository `99356215548` all pass.
+- Its first bounded production invocation stops at `CHANGE_DOCFIELDS` because
+  direct child-table `get_list` is rejected at the application permission
+  boundary. No final sanitized result is emitted, no later family runs and no
+  production write occurs.
+- Existing accepted P8-07F evidence classifies direct `DocField`, `DocPerm` and
+  Workflow-child reads together and already proves the fixed parent-document
+  solution. Batch both remaining direct child families now: present exact
+  change DocTypes become the sole parent names, and only their `fields` and
+  `permissions` child projections are accepted. Workflow children retain their
+  existing fixed-parent path.
+- The repair must pass one replacement exact-SHA ordinary before one retry. Do
+  not make per-family commits, repeat accepted inventory, expand methods or
+  authorize product/production writes.
+- Controller marker: `P9-01 change child metadata parent-reader repair batched; exact-SHA ordinary CI pending`.

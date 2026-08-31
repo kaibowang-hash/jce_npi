@@ -813,6 +813,17 @@ class ProductionFactCollectorTest(unittest.TestCase):
     def test_p9_change_metadata_commands_are_fixed_scoped_and_read_only(self) -> None:
         for family, spec in collector.P9_CHANGE_METADATA_SPECS.items():
             with self.subTest(family=family):
+                if family in collector.P9_CHANGE_PARENT_FAMILIES:
+                    with self.assertRaisesRegex(
+                        collector.FactCollectionError,
+                        "fixed parent document",
+                    ):
+                        collector._p9_change_metadata_command(
+                            family,
+                            "site-one",
+                            0,
+                        )
+                    continue
                 command = collector._p9_change_metadata_command(
                     family,
                     "site-one",
@@ -952,6 +963,19 @@ class ProductionFactCollectorTest(unittest.TestCase):
 
         def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
             calls.append((operation, command))
+            if operation in {
+                "CHANGE_DOCFIELDS_PARENT",
+                "CHANGE_DOCPERMS_PARENT",
+            }:
+                return json.dumps(
+                    {
+                        "doctype": "DocType",
+                        "name": "Engineering Change Request",
+                        "fields": rows["CHANGE_DOCFIELDS"],
+                        "permissions": rows["CHANGE_DOCPERMS"],
+                        "modified_by": "private@example.com",
+                    }
+                ).encode()
             if operation == "CHANGE_WORKFLOW_DOCUMENT":
                 return json.dumps(
                     {
@@ -1016,6 +1040,21 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(
             [operation for operation, _ in calls].count("CHANGE_WORKFLOW_DOCUMENT"),
             1,
+        )
+        self.assertEqual(
+            [operation for operation, _ in calls].count("CHANGE_DOCFIELDS_PARENT"),
+            1,
+        )
+        self.assertEqual(
+            [operation for operation, _ in calls].count("CHANGE_DOCPERMS_PARENT"),
+            1,
+        )
+        self.assertFalse(
+            any(
+                json.loads(command[6]).get("doctype") in {"DocField", "DocPerm"}
+                for _, command in calls
+                if len(command) > 6 and command[4] == "frappe.client.get_list"
+            )
         )
         for _, command in calls:
             self.assertEqual(command[0], "bench")

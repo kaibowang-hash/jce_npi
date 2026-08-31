@@ -14,6 +14,14 @@ The sole next action is its own exact-SHA ordinary Gate; after PASS, run it once
 against the private Site parameter and accept only sanitized, scoped output.
 Product code and production writes remain unauthorized.
 
+Collector activation exact SHA `4749020aff01c2ba36d0a4ef6d16fe2d53e8d3d6`
+passes ordinary CI `33348170448`. The first bounded read stops at the known
+Frappe application-permission boundary for direct `DocField`; no sanitized
+result is emitted and no later family runs. Apply one batch repair for both
+known direct child families, `DocField` and `DocPerm`, using only fixed DocType
+parent documents, then obtain one replacement exact-SHA ordinary Gate before
+the next and only retry. Do not add per-family commits or broaden the scope.
+
 P9-01 audit activation exact SHA
 `e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes ordinary CI
 `33345969806` in all four lanes. Existing repository seams and the accepted

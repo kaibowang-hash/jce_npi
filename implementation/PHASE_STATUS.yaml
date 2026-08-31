@@ -3038,6 +3038,11 @@ p9_01:
   fact_delta_governance_ordinary: 33347047323
   fact_delta_governance_jobs: {repository: 99353044581, secret_scan: 99353044662, frontend: 99353044670, visual: 99353044785}
   fact_delta_collector: FIXED_THREE_NAME_DECLARATIVE_METADATA_IMPLEMENTED_AWAITING_EXACT_SHA_ORDINARY
+  fact_delta_collector_checkpoint: 4749020aff01c2ba36d0a4ef6d16fe2d53e8d3d6
+  fact_delta_collector_ordinary: 33348170448
+  fact_delta_collector_jobs: {frontend: 99356215369, secret_scan: 99356215495, visual: 99356215504, repository: 99356215548}
+  fact_delta_first_read: STOPPED_FAIL_CLOSED_AT_DIRECT_CHANGE_DOCFIELDS_NO_RESULT_EMITTED
+  fact_delta_batched_repair: DOCFIELD_AND_DOCPERM_USE_FIXED_ACCEPTED_DOCTYPE_PARENT_DOCUMENTS_AWAITING_EXACT_SHA_ORDINARY
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
