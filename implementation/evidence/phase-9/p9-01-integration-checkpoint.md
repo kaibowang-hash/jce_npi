@@ -170,6 +170,31 @@ coverage), compilation, shell syntax, exact-12 and projected union-60
 manifests, unauthorized-13 rejection, new-only activation, security and diff
 hygiene.
 
+## Readiness service-actor harness repair
+
+Diagnostic SHA `8986d71394611f085585fd6f228b15556ea25de0` passes
+ordinary `33449264009`; sole Level 2 `33450160475` returns the unique safe
+tuple `P901_CHANGE_INBOUND_REPOSITORY_WRITE_SCOPE / PermissionError /
+trace-292218cf3a9e51489ad3b550542cffb5`. The restricted failure content remains
+unread.
+
+The bound worker was the retained P8-02 inbound actor, whose fixture contract
+requires `NPI API User` and excludes `System Manager`. P9's actor-bound write
+scope intentionally requires both roles before any write. Bind the P9
+synthetic worker instead to the retained P7 readiness manager already proven
+as an enabled System User with both roles in the same cumulative Site. No
+permission relaxation, product contract, event, queue, adapter or production
+change is authorized. All diagnostics are false; cycle state is
+`1/1,1/1,0/1` pending the sole Level 3.
+
+Level 1 passes focused repair/current/API/runtime `43/43`, affected P8/P9
+security/contract/domain/runtime `123/123`, full repository `2824/2824`,
+current/reconciliation and formal repository verification, frontend
+generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+coverage), compilation, shell syntax, exact-13 and projected union-60
+manifests, unauthorized-14 rejection, all-24-diagnostics-off, security and
+diff hygiene.
+
 ## Disposable loopback transport repair
 
 Exact diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

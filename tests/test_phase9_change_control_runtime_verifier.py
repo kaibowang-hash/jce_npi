@@ -214,7 +214,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
@@ -235,7 +235,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED,
                 )
             ),
-            1,
+            0,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 134)
         server_codes = set(
@@ -789,6 +789,24 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
 
     def test_shell_never_activates_a_production_target(self) -> None:
         self.assertNotIn("JCE-Core", self.shell)
+
+    def test_runtime_reuses_the_retained_readiness_service_actor(self) -> None:
+        self.assertEqual(
+            self.verifier.EXPECTED_WORKER_USER,
+            self.verifier.readiness_runtime.ACTOR_USER,
+        )
+        self.assertIn(
+            'engineering_change_runtime_worker="npi-readiness-${document_runtime_run_id:0:20}-manager@example.invalid"',
+            self.shell,
+        )
+        self.assertIn(
+            'export NPI_P9_01C_RUNTIME_WORKER="${engineering_change_runtime_worker}"',
+            self.shell,
+        )
+        self.assertNotIn(
+            'export NPI_P9_01C_RUNTIME_WORKER="${inbound_project_runtime_actor}"',
+            self.shell,
+        )
         self.assertNotIn("ssh ", self.shell)
         self.assertNotIn("bench --site jce.1", self.shell)
         self.assertNotIn("npi-one-engineering-change-disposable-v1", self.shell)

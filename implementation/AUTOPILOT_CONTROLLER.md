@@ -10585,3 +10585,33 @@ repeat or rewrite it merely to restore context. See
   manifests, unauthorized-13 rejection, new-only activation, security and
   diff hygiene.
 - Controller marker: `P9-01D post-loopback-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D readiness service-actor harness repair
+
+- Post-loopback diagnostic SHA `8986d71394611f085585fd6f228b15556ea25de0`
+  passed ordinary `33449264009`. Its sole Level 2 `33450160475` passed
+  controlled preflight and returned only
+  `P901_CHANGE_INBOUND_REPOSITORY_WRITE_SCOPE / PermissionError /
+  trace-292218cf3a9e51489ad3b550542cffb5` from runtime `99678099893`.
+  Restricted raw/child output, response/body, business values, identities,
+  exception message and stack remained unread.
+- The profile bound `inbound_project_runtime_actor` as the worker, while its
+  retained P8-02 contract explicitly requires `NPI API User` and explicitly
+  excludes `System Manager`. `service_actor_scope()` requires both roles
+  before switching the session or performing any write, so this actor binding
+  deterministically raises `PermissionError` at the exact write-scope stage.
+  The product permission contract is correct and must not be weakened.
+- Bind only the P9 disposable profile worker to the already retained P7
+  readiness manager, whose exact identity, enabled System User state and
+  `NPI API User` plus `System Manager` roles are validated earlier in the same
+  cumulative Site. Keep the P8 actor and all product ownership/permission
+  contracts unchanged. All diagnostic activations return to false. Freeze
+  this cycle at diagnostic `1/1`, repair `1/1`, final `0/1`.
+- Level 1 passes focused repair/current/API/runtime `43/43`, affected P8/P9
+  security/contract/domain/runtime `123/123`, full repository `2824/2824`,
+  current/reconciliation and formal repository verification, frontend
+  generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+  coverage), compilation, shell syntax, exact-13 and projected union-60
+  manifests, unauthorized-14 rejection, all-24-diagnostics-off, security and
+  diff hygiene.
+- Controller marker: `P9-01D readiness service-actor harness repair Level 1 PASS; exact-SHA ordinary CI pending`.

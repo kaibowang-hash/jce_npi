@@ -753,6 +753,29 @@ coverage), compilation, shell syntax, exact-12 and projected union-60
 manifests, unauthorized-13 rejection, new-only activation, security and diff
 hygiene. Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
 
+## P9-01D readiness service-actor harness repair
+
+Post-loopback diagnostic SHA `8986d71394611f085585fd6f228b15556ea25de0`
+passes ordinary `33449264009`. Sole Level 2 `33450160475` returns only
+`P901_CHANGE_INBOUND_REPOSITORY_WRITE_SCOPE / PermissionError /
+trace-292218cf3a9e51489ad3b550542cffb5`; restricted content remains unread.
+
+The P8-02 inbound actor is deliberately not a System Manager, while the P9
+service write capability requires both `NPI API User` and `System Manager`
+before any session switch or write. Reuse the already retained and validated
+P7 readiness manager only as the P9 synthetic worker. Do not change the P8
+actor, product permission, ownership, event or API contract. Close every
+diagnostic activation. The cycle is `1/1,1/1,0/1` pending exact-SHA ordinary
+and the sole Level 3.
+
+Level 1 passes focused repair/current/API/runtime `43/43`, affected P8/P9
+security/contract/domain/runtime `123/123`, full repository `2824/2824`,
+current/reconciliation and formal repository verification, frontend
+generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+coverage), compilation, shell syntax, exact-13 and projected union-60
+manifests, unauthorized-14 rejection, all-24-diagnostics-off, security and
+diff hygiene.
+
 ## P9-01D disposable runtime marker repair
 
 Post-raw-body SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b` passes

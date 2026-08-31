@@ -19,6 +19,7 @@ from typing import Any, Iterator
 from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
+import verify_readiness_runtime as readiness_runtime
 from verify_frappe_runtime import (
     HttpResult,
     RUNTIME_BASE_URL,
@@ -42,6 +43,7 @@ REQUESTER_USER = os.environ.get(
 WORKER_USER = os.environ.get(
     "NPI_P9_01C_RUNTIME_WORKER", "p9-worker@example.invalid"
 )
+EXPECTED_WORKER_USER = readiness_runtime.ACTOR_USER
 RUNTIME_MARKER = "npi-one-local-runtime-disposable-v1"
 WEBHOOK_PATH = "/api/npi/v1/integration/erpnext/engineering-change-events"
 KEY_ID = "p9-01c-runtime"
@@ -78,7 +80,7 @@ ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_RAW_BODY_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic"
 )
@@ -1050,7 +1052,8 @@ def _validate_inputs(base_url: str) -> tuple[str, str, str]:
             and WORKER_USER.endswith("@example.invalid")
             and REQUESTER_USER not in {"Administrator", "Guest"}
             and WORKER_USER not in {"Administrator", "Guest"}
-            and REQUESTER_USER != WORKER_USER,
+            and REQUESTER_USER != WORKER_USER
+            and WORKER_USER == EXPECTED_WORKER_USER,
             "P9-01 runtime actor boundary drifted",
         )
     with engineering_change_runtime_diagnostic_step(
@@ -1439,6 +1442,7 @@ def _require_local_fixture(project_id: object) -> str:
         and os.environ.get("NPI_P9_01C_RUNTIME_PROJECT_ID") == project_id
         and os.environ.get("NPI_P9_01C_RUNTIME_REQUESTER") == REQUESTER_USER
         and os.environ.get("NPI_P9_01C_RUNTIME_WORKER") == WORKER_USER
+        and WORKER_USER == EXPECTED_WORKER_USER
         and len(os.environ.get("NPI_P9_01C_RUNTIME_SECRET", "")) >= 32,
         "P9-01 Bench fixture environment drifted",
     )

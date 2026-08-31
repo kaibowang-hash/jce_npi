@@ -1968,6 +1968,7 @@ fi
 inbound_project_runtime_actor="npi-inbound-${document_runtime_run_id:0:12}@example.invalid"
 inbound_project_runtime_owner="npi-owner-${document_runtime_run_id:0:12}@example.invalid"
 item_publish_runtime_actor="npi-document-${document_runtime_run_id:0:20}-baseline@example.invalid"
+engineering_change_runtime_worker="npi-readiness-${document_runtime_run_id:0:20}-manager@example.invalid"
 tool_asset_runtime_requester="npi-tooling-manufacturing-${document_runtime_run_id:0:12}-manager@example.invalid"
 item_publish_runtime_project_id=""
 item_publish_runtime_legacy_request_id=""
@@ -1998,7 +1999,8 @@ if [[ ! "${inbound_project_runtime_template_id}" =~ ^[a-f0-9-]{36}$ ||
       ! "${inbound_project_runtime_secret_old}" =~ ^[a-f0-9]{64}$ ||
       ! "${inbound_project_runtime_secret_new}" =~ ^[a-f0-9]{64}$ ||
       ! "${engineering_change_runtime_secret}" =~ ^[a-f0-9]{64}$ ||
-      ! "${item_publish_runtime_actor}" =~ ^npi-document-[a-f0-9]{20}-baseline@example[.]invalid$ ]]; then
+      ! "${item_publish_runtime_actor}" =~ ^npi-document-[a-f0-9]{20}-baseline@example[.]invalid$ ||
+      ! "${engineering_change_runtime_worker}" =~ ^npi-readiness-[a-f0-9]{20}-manager@example[.]invalid$ ]]; then
   echo "Inbound Project runtime fixture generation failed." >&2
   exit 2
 fi
@@ -3364,7 +3366,7 @@ export_engineering_change_runtime_environment() {
   export NPI_P9_01C_RUNTIME_ENABLED=1
   export NPI_P9_01C_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
   export NPI_P9_01C_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
-  export NPI_P9_01C_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+  export NPI_P9_01C_RUNTIME_WORKER="${engineering_change_runtime_worker}"
   export NPI_P9_01C_RUNTIME_SECRET="${engineering_change_runtime_secret}"
   export NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH="${RUNNER_TEMP:-/tmp}/p9-01-engineering-change-runtime-diagnostic.json"
 }
@@ -3392,7 +3394,7 @@ run_engineering_change_runtime_verifier() {
       clear_engineering_change_runtime_environment
       export NPI_P9_01C_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
       export NPI_P9_01C_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
-      export NPI_P9_01C_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+      export NPI_P9_01C_RUNTIME_WORKER="${engineering_change_runtime_worker}"
       export NPI_P9_01C_RUNTIME_SECRET="${engineering_change_runtime_secret}"
       exec python "${repo_root}/scripts/verify_engineering_change_runtime.py" \
         --base-url "${base_url}" \

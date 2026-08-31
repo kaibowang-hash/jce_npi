@@ -440,6 +440,23 @@ coverage), compilation, shell syntax, exact-12 and projected union-60
 manifests, unauthorized-13 rejection, new-only activation, security and diff
 hygiene. No UI or visual baseline changed.
 
+## Readiness service-actor harness repair UI boundary
+
+The strict diagnostic tuple from run `33450160475` proves a disposable
+backend worker-role binding failure before any inbound write. The repair only
+selects the already retained P7 readiness service actor for the P9 synthetic
+worker and closes diagnostics. It changes no UI, copy, translations,
+accessibility, routes, screenshots or visual baselines. Cycle state is
+`1/1,1/1,0/1` pending the sole diagnostics-off Level 3.
+
+Level 1 passes focused repair/current/API/runtime `43/43`, affected P8/P9
+security/contract/domain/runtime `123/123`, full repository `2824/2824`,
+current/reconciliation and formal repository verification, frontend
+generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+coverage), compilation, shell syntax, exact-13 and projected union-60
+manifests, unauthorized-14 rejection and all-24-diagnostics-off. No UI or
+visual baseline changed.
+
 ## Disposable loopback transport repair
 
 Diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df` passes
