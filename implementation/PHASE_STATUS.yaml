@@ -5,12 +5,12 @@ updated_at: '2026-08-31T00:00:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-01
-current_task_status: IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE
-current_task_completed_stage: P9_01C_GOVERNANCE_EXACT_SHA_ORDINARY_PASS
-current_task_next_stage: P9_01C_IMPLEMENTATION_EXACT_SHA_ORDINARY
-current_task_next_stage_status: IN_PROGRESS_LEVEL_1_PASS_ORDINARY_PENDING
+current_task_status: IN_PROGRESS_P9_01D_GOVERNANCE_GATE
+current_task_completed_stage: P9_01C_IMPLEMENTATION_EXACT_SHA_ORDINARY_PASS
+current_task_next_stage: P9_01D_GOVERNANCE_EXACT_SHA_ORDINARY
+current_task_next_stage_status: IN_PROGRESS_GOVERNANCE_ORDINARY_PENDING
 resumed_product_task: P9-01
-resumed_product_task_status: IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE
+resumed_product_task_status: IN_PROGRESS_P9_01D_GOVERNANCE_GATE
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -3016,7 +3016,7 @@ p9_00:
 p9_01:
   task: P9-01
   next_task: P9-02
-  status: IN_PROGRESS_P9_01C_CHECKPOINT
+  status: IN_PROGRESS_P9_01D_GOVERNANCE_CHECKPOINT
   phase: 9
   task_kind: PRODUCT
   product_code_authorized: false
@@ -3063,7 +3063,7 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P9_01C_INT008_RELIABLE_SEAM_IMPLEMENTATION_GATE
+  active_checkpoint: P9_01D_PROJECT_CHANGE_WORKSPACE_GOVERNANCE_GATE
   p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
   p9_01b_governance_ordinary: 33354760251
   p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
@@ -3081,6 +3081,15 @@ p9_01:
   p9_01c_scope: DEFAULT_DISABLED_SIGNED_ECR_OBSERVATION_AND_IMPLEMENTATION_SUMMARY_RELIABLE_SEAM
   p9_01c_persistence: OPERATION_SPECIFIC_INBOX_REQUEST_OUTBOX_ATTEMPT_RESULT
   p9_01c_activation_condition: IMPLEMENTATION_EXACT_SHA_ORDINARY_PASS_AND_SEPARATE_PROFILE_CONFIGURATION
+  p9_01c_final_checkpoint: 0c11b1f378b1c962b6d05739f3c1f3cad18ad389
+  p9_01c_final_ordinary: 33363140068
+  p9_01c_final_jobs: {visual: 99398340139, secret_scan: 99398340217, frontend: 99398340305, repository: 99398340322}
+  p9_01c_result: PASS_DEFAULT_DISABLED_RELIABLE_ENGINEERING_CHANGE_SEAM
+  p9_01d_product_code_authorized: false
+  p9_01d_authorization_condition: GOVERNANCE_EXACT_SHA_ORDINARY_PASS
+  p9_01d_scope: PROJECT_CHANGE_CONTROL_TAB_THREE_LANGUAGE_VISUAL_AND_DISPOSABLE_SITE_LEVEL3
+  p9_01d_route: EXISTING_PROJECT_QUERY_TAB_CHANGE_CONTROL_ONLY
+  p9_01d_production_contact: false
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

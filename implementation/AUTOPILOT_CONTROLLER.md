@@ -9960,3 +9960,25 @@ repeat or rewrite it merely to restore context. See
 - P9-01D UI, production profile activation, target calls and all production
   ERP writes/configuration remain out of scope.
 - Controller marker: `P9-01C implementation Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01C ordinary PASS; P9-01D Project workspace checkpoint
+
+- P9-01C implementation exact SHA
+  `0c11b1f378b1c962b6d05739f3c1f3cad18ad389` passes ordinary CI
+  `33363140068`: visual `99398340139`, secret `99398340217`, frontend
+  `99398340305` and repository `99398340322` all pass.
+- Freeze P9-01D to one `Change Control` tab inside the existing live Project
+  route. Reuse only P9-01B Project-first queries/commands, the P9-01C summary-
+  request seam and read-only P8-07 operation projections. Add no top-level
+  route, general writer, browser ERP call or dual-master field.
+- Show current/history, ERP observation truth, impact/affected versions,
+  implementation/revalidation evidence, effectivity/disposition and closeout
+  in a dense rectangular workspace. ERP-owned values remain read-only.
+- Require the complete loading/empty/permission/read-only/processing/current/
+  drifted/unavailable/validation/conflict/retryable/final state matrix, direct
+  en/zh/zh-TW translations, accessibility, three governed Linux visuals and a
+  fixed disposable-Site Engineering Change runtime proof before the sole
+  P9-01 Level 3.
+- This governance checkpoint changes no product and contacts no production
+  ERP. Its own exact-SHA ordinary CI must pass before any P9-01D product edit.
+- Controller marker: `P9-01C ordinary PASS; P9-01D UI governance checkpoint exact-SHA ordinary CI pending`.

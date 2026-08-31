@@ -1,9 +1,19 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE — P9-01`
+`IN_PROGRESS_P9_01D_GOVERNANCE_GATE — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
+
+P9-01C implementation exact SHA
+`0c11b1f378b1c962b6d05739f3c1f3cad18ad389` passes ordinary CI
+`33363140068` in all four lanes. The sole next action is this zero-product
+P9-01D checkpoint's exact-SHA ordinary CI. Only after that PASS may the exact
+manifest implement one Project `Change Control` tab, two new read-only P8-07
+operation labels, direct en/zh/zh-TW translations, governed visual evidence
+and a fixed disposable-Site Engineering Change runtime verifier. Do not add a
+top-level route, enable a production profile, contact ERPNext or change ERP
+configuration/data.
 
 P9-01C governance exact SHA
 `83f35dde9d9ecc4f6d7f7a82c35559e8903bad4d` passes ordinary CI

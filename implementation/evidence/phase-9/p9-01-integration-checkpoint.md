@@ -1,6 +1,6 @@
 # P9-01C Reliable Engineering Change Integration Checkpoint
 
-Status: `IMPLEMENTED — EXACT-SHA ORDINARY CI PENDING`
+Status: `ACCEPTED — EXACT-SHA ORDINARY CI PASS`
 
 ## Accepted governance Gate
 
@@ -58,7 +58,8 @@ Level 1 passes:
 - generated catalog freshness and production bundle compilation;
 - current-task/V1.2 reconciliation, Python compilation and diff checks.
 
-The implementation is not accepted until its exact-SHA ordinary CI passes all
-four repository, frontend, secret and governed visual lanes. P9-01D UI,
-production adapter/profile activation and any ERPNext change remain out of
-scope.
+Implementation exact SHA `0c11b1f378b1c962b6d05739f3c1f3cad18ad389`
+passes ordinary CI `33363140068`: visual `99398340139`, secret
+`99398340217`, frontend `99398340305` and repository `99398340322` all pass.
+P9-01C is accepted at this exact default-disabled boundary. P9-01D UI,
+production adapter/profile activation and any ERPNext change remain separate.

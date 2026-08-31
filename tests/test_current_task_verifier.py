@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_01D_GOVERNANCE_GATE")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertIn("FR-CH-001", value["requirement_ids"])
@@ -45,7 +45,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertNotIn("FR-RP-001", value["requirement_ids"])
         self.assertEqual(
             value["base_checkpoint"],
-            "73a7282da3d5a6e278dccdf95a681ae47f759a0d",
+            "0c11b1f378b1c962b6d05739f3c1f3cad18ad389",
         )
         for invariant in (
             "P9_00_EXACT_SHA_065803AE_ORDINARY_33345162833_ALL_FOUR_JOBS_PASS",
@@ -72,6 +72,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01C_OPERATION_SPECIFIC_PERSISTENCE_DOES_NOT_REUSE_PROJECT_INBOX_OR_SHARED_OUTBOX_CONTROLLER",
             "P9_01C_DUPLICATE_REORDER_CONFLICT_PARTIAL_429_5XX_TIMEOUT_AFTER_COMMIT_REMAIN_EXPLICIT",
             "P9_01C_UNCERTAIN_OR_PARTIAL_RESULT_NEVER_AUTOMATICALLY_REDISPATCHED",
+            "P9_01C_EXACT_SHA_0C11B1F3_ORDINARY_33363140068_ALL_FOUR_JOBS_PASS",
+            "P9_01D_PROJECT_TAB_ONLY_NO_NEW_TOP_LEVEL_NAVIGATION",
+            "P9_01D_EXISTING_PROJECT_FIRST_API_AND_OPERATION_SPECIFIC_INTEGRATION_SEAMS_ONLY",
+            "P9_01D_ERP_OBSERVATION_FIELDS_REMAIN_READ_ONLY_AND_NPI_IMPACT_EVIDENCE_REMAINS_NPI_OWNED",
+            "P9_01D_DISPOSABLE_SITE_RUNTIME_VISUAL_I18N_ACCESSIBILITY_AND_SECURITY_LEVEL_3_REQUIRED",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
@@ -85,72 +90,45 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/PHASE_STATUS.yaml",
                 "implementation/evidence/phase-9/p9-01-plan.md",
                 "implementation/evidence/phase-9/p9-01-integration-checkpoint.md",
-                "apps/npi_integration/npi_integration/engineering_change/__init__.py",
-                "apps/npi_integration/npi_integration/engineering_change/adapters.py",
-                "apps/npi_integration/npi_integration/engineering_change/config.py",
-                "apps/npi_integration/npi_integration/engineering_change/domain.py",
-                "apps/npi_integration/npi_integration/engineering_change/frappe_repository.py",
-                "apps/npi_integration/npi_integration/engineering_change/frappe_validation.py",
-                "apps/npi_integration/npi_integration/engineering_change/ingress.py",
-                "apps/npi_integration/npi_integration/engineering_change/problems.py",
-                "apps/npi_integration/npi_integration/engineering_change/runtime_fixture.py",
-                "apps/npi_integration/npi_integration/engineering_change/signature.py",
-                "apps/npi_integration/npi_integration/engineering_change/worker.py",
-                "apps/npi_integration/npi_integration/engineering_change/worker_repository.py",
-                "apps/npi_integration/npi_integration/engineering_change_api.py",
-                "apps/npi_integration/npi_integration/hooks.py",
-                "apps/npi_integration/npi_integration/integration_operations/domain.py",
-                "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_inbox/__init__.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_inbox/npi_engineering_change_inbox.json",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_inbox/npi_engineering_change_inbox.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_request/__init__.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_request/npi_engineering_change_summary_request.json",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_request/npi_engineering_change_summary_request.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_outbox/__init__.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_outbox/npi_engineering_change_summary_outbox.json",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_outbox/npi_engineering_change_summary_outbox.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_attempt/__init__.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_attempt/npi_engineering_change_summary_attempt.json",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_attempt/npi_engineering_change_summary_attempt.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_result/__init__.py",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_result/npi_engineering_change_summary_result.json",
-                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_result/npi_engineering_change_summary_result.py",
-                "apps/npi_integration/npi_integration/translations/zh-TW.csv",
-                "apps/npi_integration/npi_integration/translations/zh.csv",
-                "apps/npi_core/npi_core/bff.py",
+                "implementation/evidence/phase-9/p9-01-ui-checkpoint.md",
                 "apps/npi_core/npi_core/translations/zh-TW.csv",
                 "apps/npi_core/npi_core/translations/zh.csv",
-                "contracts/data-ownership.yaml",
-                "contracts/integration-event.schema.json",
-                "contracts/npi-api.openapi.yaml",
-                "frontend/scripts/build-catalog.mjs",
+                "frontend/src/api/change-control-data-source.ts",
+                "frontend/src/api/integration-operations-data-source.ts",
+                "frontend/src/app/app.tsx",
                 "frontend/src/generated/catalogs.ts",
-                "frontend/src/i18n/runtime.tsx",
+                "frontend/src/pages/execution-page.tsx",
+                "frontend/src/pages/project-change-workspace.tsx",
+                "frontend/src/pages/project-page.tsx",
+                "frontend/src/pages/project-workspace.tsx",
+                "frontend/src/styles/app.css",
+                "frontend/tests/e2e/p9-01-change-control-live.spec.ts",
+                "frontend/tests/e2e/p9-01-change-control-live.spec.ts-snapshots/p9-01-change-control-en-1366x768-100-linux.png",
+                "frontend/tests/e2e/p9-01-change-control-live.spec.ts-snapshots/p9-01-change-control-zh-1440x900-125-linux.png",
+                "frontend/tests/e2e/p9-01-change-control-live.spec.ts-snapshots/p9-01-change-control-zh-TW-1920x1080-150-linux.png",
+                "frontend/tests/support/change-control-fixture.ts",
+                "frontend/tests/support/integration-operations-fixture.ts",
+                "frontend/tests/unit/change-control-data-source.test.ts",
+                "frontend/tests/unit/execution-page.test.tsx",
+                "frontend/tests/unit/integration-operations-data-source.test.ts",
+                "frontend/tests/unit/project-change-workspace.test.tsx",
+                "frontend/tests/unit/project-workspace.test.tsx",
+                "scripts/verify-frappe-runtime.sh",
+                "scripts/verify_engineering_change_runtime.py",
                 "scripts/verify_integration_operations_runtime.py",
                 "tests/test_current_task_verifier.py",
-                "tests/test_phase8_integration_operations_contract.py",
-                "tests/test_phase8_integration_operations_domain.py",
-                "tests/test_phase8_integration_operations_repository.py",
                 "tests/test_phase8_integration_operations_runtime_verifier.py",
-                "tests/test_phase9_change_integration_api.py",
-                "tests/test_phase9_change_integration_contract.py",
-                "tests/test_phase9_change_integration_domain.py",
-                "tests/test_phase9_change_integration_ingress.py",
-                "tests/test_phase9_change_integration_metadata.py",
-                "tests/test_phase9_change_integration_repository.py",
-                "tests/test_phase9_change_integration_security.py",
-                "tests/test_phase9_change_integration_worker.py",
+                "tests/test_phase9_change_control_runtime_verifier.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 63)
+        self.assertEqual(len(value["allowed_paths"]), 36)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])
         )
         self.assertEqual(
             sum(path.startswith("scripts/") for path in value["allowed_paths"]),
-            1,
+            3,
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:

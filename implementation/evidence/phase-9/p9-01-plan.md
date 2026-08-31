@@ -318,3 +318,23 @@ i18n (`8708` sources, `100%` zh/zh-TW), generated-catalog freshness, production
 bundle compilation, current-task/reconciliation, compile and diff checks. The
 implementation remains pending its own exact-SHA ordinary CI. P9-01D UI and
 production profile activation remain separate atomic tasks.
+
+## P9-01C acceptance and P9-01D governance checkpoint
+
+P9-01C implementation exact SHA
+`0c11b1f378b1c962b6d05739f3c1f3cad18ad389` passes ordinary CI
+`33363140068`: visual `99398340139`, secret `99398340217`, frontend
+`99398340305` and repository `99398340322` all pass. The signed inbound ECR
+observation, implementation-summary request/Outbox/attempt/result and P8-07
+read-only projections are accepted only at their default-disabled boundary.
+
+P9-01D is one Project-internal `Change Control` tab. It reuses P9-01B
+list/detail/commands, P9-01C summary requests and P8-07 operation projections;
+it adds no top-level route and no browser-direct ERP access. The workspace
+must expose immutable current/history truth, ERP observation identity/status,
+impact, affected versions, work/revalidation evidence, effectivity,
+disposition and closeout with exact permissions and version conflict handling.
+The exact state matrix, three direct languages, three governed Linux visuals
+and fixed disposable-Site proof are frozen in
+`p9-01-ui-checkpoint.md`. Product code starts only after this governance
+checkpoint passes its own exact-SHA ordinary CI.

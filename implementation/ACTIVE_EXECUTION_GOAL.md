@@ -4,7 +4,15 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_01C_IMPLEMENTATION_GATE — P9-01`
+- Mode: `IN_PROGRESS_P9_01D_GOVERNANCE_GATE — P9-01`
+- P9-01C implementation exact SHA
+  `0c11b1f378b1c962b6d05739f3c1f3cad18ad389` passes ordinary CI
+  `33363140068`: visual `99398340139`, secret `99398340217`, frontend
+  `99398340305` and repository `99398340322` all pass. The active atomic task
+  is now the zero-product P9-01D governance checkpoint for one Project Change
+  Control tab, exact three-language/visual state matrix and fixed disposable-
+  Site runtime proof. Product changes remain unauthorized until this
+  checkpoint's own exact-SHA ordinary CI passes.
 - P9-01C governance exact SHA
   `83f35dde9d9ecc4f6d7f7a82c35559e8903bad4d` passes ordinary CI
   `33358374034`: repository `99384778320`, secret `99384778406`, frontend
