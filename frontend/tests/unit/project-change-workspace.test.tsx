@@ -81,7 +81,7 @@ describe("Project Change Control workspace", () => {
     expect(
       (await screen.findAllByText("Gate-safe material substitution"))[0],
     ).toBeVisible();
-    const matrix = screen.getByRole("table");
+    const matrix = await screen.findByRole("table");
     expect(within(matrix).getAllByRole("row")).toHaveLength(13);
     expect(screen.getByText("ERP formal observation")).toBeVisible();
     expect(screen.getByText("Engineering Change Request")).toBeVisible();
