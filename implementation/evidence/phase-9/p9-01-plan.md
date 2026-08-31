@@ -373,3 +373,26 @@ workflow or product edit. The exact pinned Linux/x86_64 five-spec matrix passes
 baseline manifest checksum is
 `sha256:055b93b28acd8b8c269299fc4de8a722c1d651c9a73f4f0802aebf7b2a15cf04`.
 Only one replacement exact-SHA ordinary and the sole P9-01 Level 3 may follow.
+
+## P9-01D Level 3 runtime diagnostic boundary
+
+Exact visual repair SHA `ce43896bcb5b92ce929a92150383f5eb8695a98a`
+passes ordinary CI `33378070267` in all four lanes. The sole Level 3
+`33379345826` passes the four ordinary-equivalent jobs and controlled preflight,
+then controlled runtime `99451364175` fails after disposable Bench/Site
+initialization. Source-fixed allowlist filtering returns exactly
+`Local Frappe Engineering Change runtime verification failed.` and no other
+runtime-family label. No failed child output, signed content, target identity,
+business value, response body, ID, message or stack was read.
+
+That label proves only that the fresh P9-01 verifier returned nonzero. It cannot
+select among create/revise, stale conflict, signed intake, Inbox worker, formal
+observation, summary request/worker/replay, operation projection or close.
+Freeze the failed final attempt and open one product-zero diagnostic cycle.
+The verifier records only one of 38 fixed lexical stage codes, an exception
+type and a deterministic trace in an exact-name absolute `O_EXCL` `0600`
+record; the strict reader accepts one exact three-key line and nothing else.
+Child bootstrap/worker stages inherit the same trace so the first inner failure
+wins without exposing child stdout/stderr. This cycle authorizes one exact-SHA
+ordinary and, only after it passes, one `level_2_controlled` diagnostic. A
+repair remains prohibited until that evidence identifies a unique boundary.

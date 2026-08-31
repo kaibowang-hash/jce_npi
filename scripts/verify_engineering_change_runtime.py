@@ -5,14 +5,17 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import subprocess
 import tempfile
 import time
 import urllib.parse
 import urllib.request
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
@@ -62,6 +65,164 @@ REVISE_KEY = f"p9-change-revise-{FIXTURE_RUN_ID}"
 SUMMARY_KEY = f"p9-change-summary-{FIXTURE_RUN_ID}"
 CLOSE_KEY = f"p9-change-close-{FIXTURE_RUN_ID}"
 _NAMESPACE = UUID("5d97e7f7-886a-50b9-8946-5740d5dc5927")
+ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P901_CHANGE_LOGIN",
+        "P901_CHANGE_CSRF",
+        "P901_CHANGE_CREATE_HTTP",
+        "P901_CHANGE_CREATE_SHAPE",
+        "P901_CHANGE_CREATE_REPLAY_HTTP",
+        "P901_CHANGE_CREATE_REPLAY_SHAPE",
+        "P901_CHANGE_STALE_HTTP",
+        "P901_CHANGE_STALE_SHAPE",
+        "P901_CHANGE_REVISE_HTTP",
+        "P901_CHANGE_REVISE_SHAPE",
+        "P901_CHANGE_INBOUND_HTTP",
+        "P901_CHANGE_INBOUND_SHAPE",
+        "P901_CHANGE_INBOUND_WORKER_PARENT",
+        "P901_CHANGE_INBOUND_WORKER_SHAPE",
+        "P901_CHANGE_INBOUND_REPLAY_HTTP",
+        "P901_CHANGE_INBOUND_REPLAY_SHAPE",
+        "P901_CHANGE_DETAIL_AFTER_INBOUND",
+        "P901_CHANGE_FORMAL_OBSERVATION_SHAPE",
+        "P901_CHANGE_SUMMARY_HTTP",
+        "P901_CHANGE_SUMMARY_SHAPE",
+        "P901_CHANGE_SUMMARY_WORKER_PARENT",
+        "P901_CHANGE_SUMMARY_WORKER_SHAPE",
+        "P901_CHANGE_SUMMARY_REPLAY_HTTP",
+        "P901_CHANGE_SUMMARY_REPLAY_SHAPE",
+        "P901_CHANGE_INBOUND_OPERATIONS",
+        "P901_CHANGE_OUTBOUND_OPERATIONS",
+        "P901_CHANGE_OPERATIONS_SHAPE",
+        "P901_CHANGE_CLOSE_HTTP",
+        "P901_CHANGE_CLOSE_SHAPE",
+        "P901_CHANGE_BENCH_INIT",
+        "P901_CHANGE_BENCH_CONNECT",
+        "P901_CHANGE_BENCH_MARKER",
+        "P901_CHANGE_INBOX_CHILD_INPUT",
+        "P901_CHANGE_INBOX_CHILD_WORKER",
+        "P901_CHANGE_INBOX_CHILD_RESPONSE",
+        "P901_CHANGE_SUMMARY_CHILD_INPUT",
+        "P901_CHANGE_SUMMARY_CHILD_WORKER",
+        "P901_CHANGE_SUMMARY_CHILD_RESPONSE",
+    }
+)
+_DIAGNOSTIC_PATH_ENV = "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH"
+_DIAGNOSTIC_TRACE_ENV = "NPI_P9_01_RUNTIME_DIAGNOSTIC_TRACE"
+_DIAGNOSTIC_RECORD_KEYS = frozenset({"code", "exceptionType", "traceId"})
+_DIAGNOSTIC_RECORD_LIMIT = 4096
+_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_DIAGNOSTIC_STATE: ContextVar[dict[str, object] | None] = ContextVar(
+    "p901_engineering_change_runtime_diagnostic_state", default=None
+)
+
+
+def engineering_change_runtime_diagnostic_trace() -> str:
+    return f"trace-{uuid5(_NAMESPACE, f'diagnostic:{FIXTURE_RUN_ID}').hex}"
+
+
+@contextmanager
+def engineering_change_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
+    state = None
+    if (
+        ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED
+        and _TRACE_PATTERN.fullmatch(trace_id) is not None
+    ):
+        state = {"trace_id": trace_id, "recorded": False}
+    token = _DIAGNOSTIC_STATE.set(state)
+    try:
+        yield
+    finally:
+        _DIAGNOSTIC_STATE.reset(token)
+
+
+@contextmanager
+def engineering_change_runtime_diagnostic_step(code: str) -> Iterator[None]:
+    try:
+        yield
+    except Exception as error:
+        _record_engineering_change_runtime_diagnostic(code, error)
+        raise
+
+
+def _record_engineering_change_runtime_diagnostic(
+    code: str, error: Exception
+) -> None:
+    try:
+        state = _DIAGNOSTIC_STATE.get()
+        exception_type = type(error).__name__
+        if (
+            state is None
+            or state["recorded"] is True
+            or code not in ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES
+            or _TYPE_PATTERN.fullmatch(exception_type) is None
+        ):
+            return
+        state["recorded"] = True
+        _write_engineering_change_runtime_diagnostic(
+            {
+                "code": code,
+                "exceptionType": exception_type,
+                "traceId": str(state["trace_id"]),
+            }
+        )
+    except Exception:
+        # Diagnostics must never replace the original verifier failure.
+        pass
+
+
+def _write_engineering_change_runtime_diagnostic(record: dict[str, str]) -> None:
+    path_value = os.environ.get(_DIAGNOSTIC_PATH_ENV)
+    if not isinstance(path_value, str) or not path_value:
+        return
+    path = Path(path_value)
+    if (
+        not path.is_absolute()
+        or path.name != "p9-01-engineering-change-runtime-diagnostic.json"
+    ):
+        return
+    payload = json.dumps(record, separators=(",", ":"), sort_keys=True) + "\n"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        stream.write(payload)
+
+
+def read_engineering_change_runtime_diagnostic(
+    path: Path, *, expected_trace: str
+) -> tuple[str, str, str] | None:
+    if (
+        not ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED
+        or _TRACE_PATTERN.fullmatch(expected_trace) is None
+    ):
+        return None
+    try:
+        payload = path.read_bytes()
+        if not payload or len(payload) > _DIAGNOSTIC_RECORD_LIMIT:
+            return None
+        text = payload.decode("utf-8")
+        lines = [line for line in text.splitlines() if line]
+        if len(lines) != 1:
+            return None
+        record = json.loads(lines[0])
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(record, dict) or set(record) != _DIAGNOSTIC_RECORD_KEYS:
+        return None
+    code = record.get("code")
+    exception_type = record.get("exceptionType")
+    trace_id = record.get("traceId")
+    if (
+        not isinstance(code, str)
+        or code not in ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES
+        or not isinstance(exception_type, str)
+        or _TYPE_PATTERN.fullmatch(exception_type) is None
+        or trace_id != expected_trace
+    ):
+        return None
+    return exception_type, code, expected_trace
 
 
 def deterministic_uuid(label: str) -> str:
@@ -518,192 +679,263 @@ def run_disabled_probe(
 def run_fresh(
     base_url: str, fixture_password: str, project_id: str, secret: str
 ) -> dict[str, object]:
-    opener = login(base_url, REQUESTER_USER, fixture_password)
-    csrf = bootstrap_csrf(opener, base_url, REQUESTER_USER)
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_LOGIN"):
+        opener = login(base_url, REQUESTER_USER, fixture_password)
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CSRF"):
+        csrf = bootstrap_csrf(opener, base_url, REQUESTER_USER)
     create_path = _change_path(project_id)
-    created = _command(
-        opener,
-        base_url,
-        create_path,
-        {"content": revision_content(complete=False)},
-        csrf_token=csrf,
-        idempotency_key=CREATE_KEY,
-        label="create",
-        expected_status=201,
-        replayed=False,
-    )
-    change = created.get("change")
-    current = created.get("currentRevision")
-    require(
-        created.get("operation") == "engineering_change.create"
-        and isinstance(change, dict)
-        and isinstance(current, dict)
-        and change.get("projectGlobalId") == project_id
-        and change.get("state") == "draft"
-        and current.get("revision") == 1,
-        "P9-01 create response drifted",
-    )
-    change_id = str(change.get("globalId"))
-    require(_uuid(change_id), "P9-01 created change identity drifted")
-    replay = _command(
-        opener,
-        base_url,
-        create_path,
-        {"content": revision_content(complete=False)},
-        csrf_token=csrf,
-        idempotency_key=CREATE_KEY,
-        label="create-replay",
-        expected_status=201,
-        replayed=True,
-    )
-    require(
-        replay.get("change") == change and replay.get("currentRevision") == current,
-        "P9-01 create replay drifted",
-    )
-    stale = dict(predecessor(current))
-    stale["expectedRevisionSnapshotHash"] = "f" * 64
-    stale_headers = _request_headers(
-        "stale-revise", csrf_token=csrf, idempotency_key=f"p9-stale-{FIXTURE_RUN_ID}"
-    )
-    stale_result = request(
-        opener,
-        base_url,
-        _change_path(project_id, f"/{change_id}/revisions"),
-        method="POST",
-        payload={"predecessor": stale, "content": revision_content(complete=True)},
-        request_headers=stale_headers,
-    )
-    require(stale_result.status == 409, "P9-01 stale revision did not conflict")
-    revised = _command(
-        opener,
-        base_url,
-        _change_path(project_id, f"/{change_id}/revisions"),
-        {"predecessor": predecessor(current), "content": revision_content(complete=True)},
-        csrf_token=csrf,
-        idempotency_key=REVISE_KEY,
-        label="revise",
-        expected_status=200,
-        replayed=False,
-    )
-    current = revised.get("currentRevision")
-    require(
-        revised.get("operation") == "engineering_change.revise"
-        and isinstance(current, dict)
-        and current.get("revision") == 2
-        and current.get("state") == "active"
-        and current.get("readyToClose") is False,
-        "P9-01 revision response drifted",
-    )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CREATE_HTTP"):
+        created = _command(
+            opener,
+            base_url,
+            create_path,
+            {"content": revision_content(complete=False)},
+            csrf_token=csrf,
+            idempotency_key=CREATE_KEY,
+            label="create",
+            expected_status=201,
+            replayed=False,
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CREATE_SHAPE"):
+        change = created.get("change")
+        current = created.get("currentRevision")
+        require(
+            created.get("operation") == "engineering_change.create"
+            and isinstance(change, dict)
+            and isinstance(current, dict)
+            and change.get("projectGlobalId") == project_id
+            and change.get("state") == "draft"
+            and current.get("revision") == 1,
+            "P9-01 create response drifted",
+        )
+        change_id = str(change.get("globalId"))
+        require(_uuid(change_id), "P9-01 created change identity drifted")
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_CREATE_REPLAY_HTTP"
+    ):
+        replay = _command(
+            opener,
+            base_url,
+            create_path,
+            {"content": revision_content(complete=False)},
+            csrf_token=csrf,
+            idempotency_key=CREATE_KEY,
+            label="create-replay",
+            expected_status=201,
+            replayed=True,
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_CREATE_REPLAY_SHAPE"
+    ):
+        require(
+            replay.get("change") == change
+            and replay.get("currentRevision") == current,
+            "P9-01 create replay drifted",
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_STALE_HTTP"):
+        stale = dict(predecessor(current))
+        stale["expectedRevisionSnapshotHash"] = "f" * 64
+        stale_headers = _request_headers(
+            "stale-revise",
+            csrf_token=csrf,
+            idempotency_key=f"p9-stale-{FIXTURE_RUN_ID}",
+        )
+        stale_result = request(
+            opener,
+            base_url,
+            _change_path(project_id, f"/{change_id}/revisions"),
+            method="POST",
+            payload={
+                "predecessor": stale,
+                "content": revision_content(complete=True),
+            },
+            request_headers=stale_headers,
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_STALE_SHAPE"):
+        require(stale_result.status == 409, "P9-01 stale revision did not conflict")
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_REVISE_HTTP"):
+        revised = _command(
+            opener,
+            base_url,
+            _change_path(project_id, f"/{change_id}/revisions"),
+            {
+                "predecessor": predecessor(current),
+                "content": revision_content(complete=True),
+            },
+            csrf_token=csrf,
+            idempotency_key=REVISE_KEY,
+            label="revise",
+            expected_status=200,
+            replayed=False,
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_REVISE_SHAPE"):
+        current = revised.get("currentRevision")
+        require(
+            revised.get("operation") == "engineering_change.revise"
+            and isinstance(current, dict)
+            and current.get("revision") == 2
+            and current.get("state") == "active"
+            and current.get("readyToClose") is False,
+            "P9-01 revision response drifted",
+        )
     event = _inbound_event(change_id)
-    inbound = _send_inbound(base_url, event, secret, replayed=False)
-    receipt_id = inbound.get("receiptId")
-    require(
-        _uuid(receipt_id)
-        and inbound.get("eventId") == event["event_id"]
-        and inbound.get("changeGlobalId") == change_id
-        and inbound.get("state") == "pending",
-        "P9-01 inbound receipt drifted",
-    )
-    inbound_worker = run_bench_fixture(
-        "process_inbox", {"receipt_id": receipt_id, "project_id": project_id}
-    )
-    require(
-        inbound_worker.get("state") == "succeeded",
-        "P9-01 inbound worker did not seal success",
-    )
-    inbound_replay = _send_inbound(base_url, event, secret, replayed=True)
-    require(
-        inbound_replay.get("receiptId") == receipt_id
-        and inbound_replay.get("state") == "succeeded",
-        "P9-01 inbound replay drifted",
-    )
-    detail = _get_detail(opener, base_url, project_id, change_id, "after-inbound")
-    current = detail["currentRevision"]
-    formal = current.get("formalChange")
-    require(
-        current.get("revision") == 3
-        and current.get("state") == "ready_to_close"
-        and current.get("readyToClose") is True
-        and isinstance(formal, dict)
-        and formal.get("documentName")
-        == event["payload"]["formalChange"]["documentName"],
-        "P9-01 formal observation drifted",
-    )
-    summary = _command(
-        opener,
-        base_url,
-        _change_path(project_id, f"/{change_id}:request-implementation-summary"),
-        predecessor(current),
-        csrf_token=csrf,
-        idempotency_key=SUMMARY_KEY,
-        label="summary",
-        expected_status=202,
-        replayed=False,
-    )
-    event_id = summary.get("outboxEventId")
-    require(
-        _uuid(summary.get("requestGlobalId"))
-        and _uuid(event_id)
-        and summary.get("changeGlobalId") == change_id
-        and summary.get("state") == "queued",
-        "P9-01 implementation summary receipt drifted",
-    )
-    summary_worker = run_bench_fixture(
-        "process_summary", {"event_id": event_id, "project_id": project_id}
-    )
-    require(
-        summary_worker.get("state") == "synthetic_verified"
-        and summary_worker.get("adapterCalls") == 1,
-        "P9-01 summary worker boundary drifted",
-    )
-    summary_replay = _command(
-        opener,
-        base_url,
-        _change_path(project_id, f"/{change_id}:request-implementation-summary"),
-        predecessor(current),
-        csrf_token=csrf,
-        idempotency_key=SUMMARY_KEY,
-        label="summary-replay",
-        expected_status=200,
-        replayed=True,
-    )
-    require(
-        summary_replay.get("requestGlobalId") == summary.get("requestGlobalId")
-        and summary_replay.get("state") == "synthetic_verified",
-        "P9-01 summary replay drifted",
-    )
-    inbound_operations = _operations(
-        opener, base_url, project_id, "receive_engineering_change_event"
-    )
-    outbound_operations = _operations(
-        opener, base_url, project_id, "publish_change_implementation_summary"
-    )
-    require(
-        len(inbound_operations["items"]) == 1
-        and inbound_operations["items"][0].get("sharedState") == "succeeded"
-        and len(outbound_operations["items"]) == 1
-        and outbound_operations["items"][0].get("rawState")
-        == "synthetic_verified"
-        and outbound_operations["items"][0].get("sharedState") == "succeeded",
-        "P9-01 integration operation projection drifted",
-    )
-    closed = _command(
-        opener,
-        base_url,
-        _change_path(project_id, f"/{change_id}:close"),
-        {"predecessor": predecessor(current)},
-        csrf_token=csrf,
-        idempotency_key=CLOSE_KEY,
-        label="close",
-        expected_status=200,
-        replayed=False,
-    )
-    require(
-        closed.get("operation") == "engineering_change.close"
-        and closed.get("change", {}).get("state") == "closed"
-        and closed.get("currentRevision", {}).get("revision") == 4,
-        "P9-01 close response drifted",
-    )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_INBOUND_HTTP"):
+        inbound = _send_inbound(base_url, event, secret, replayed=False)
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_INBOUND_SHAPE"):
+        receipt_id = inbound.get("receiptId")
+        require(
+            _uuid(receipt_id)
+            and inbound.get("eventId") == event["event_id"]
+            and inbound.get("changeGlobalId") == change_id
+            and inbound.get("state") == "pending",
+            "P9-01 inbound receipt drifted",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_WORKER_PARENT"
+    ):
+        inbound_worker = run_bench_fixture(
+            "process_inbox", {"receipt_id": receipt_id, "project_id": project_id}
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_WORKER_SHAPE"
+    ):
+        require(
+            inbound_worker.get("state") == "succeeded",
+            "P9-01 inbound worker did not seal success",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_REPLAY_HTTP"
+    ):
+        inbound_replay = _send_inbound(base_url, event, secret, replayed=True)
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_REPLAY_SHAPE"
+    ):
+        require(
+            inbound_replay.get("receiptId") == receipt_id
+            and inbound_replay.get("state") == "succeeded",
+            "P9-01 inbound replay drifted",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_DETAIL_AFTER_INBOUND"
+    ):
+        detail = _get_detail(
+            opener, base_url, project_id, change_id, "after-inbound"
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_FORMAL_OBSERVATION_SHAPE"
+    ):
+        current = detail["currentRevision"]
+        formal = current.get("formalChange")
+        require(
+            current.get("revision") == 3
+            and current.get("state") == "ready_to_close"
+            and current.get("readyToClose") is True
+            and isinstance(formal, dict)
+            and formal.get("documentName")
+            == event["payload"]["formalChange"]["documentName"],
+            "P9-01 formal observation drifted",
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_SUMMARY_HTTP"):
+        summary = _command(
+            opener,
+            base_url,
+            _change_path(project_id, f"/{change_id}:request-implementation-summary"),
+            predecessor(current),
+            csrf_token=csrf,
+            idempotency_key=SUMMARY_KEY,
+            label="summary",
+            expected_status=202,
+            replayed=False,
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_SUMMARY_SHAPE"):
+        event_id = summary.get("outboxEventId")
+        require(
+            _uuid(summary.get("requestGlobalId"))
+            and _uuid(event_id)
+            and summary.get("changeGlobalId") == change_id
+            and summary.get("state") == "queued",
+            "P9-01 implementation summary receipt drifted",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_SUMMARY_WORKER_PARENT"
+    ):
+        summary_worker = run_bench_fixture(
+            "process_summary", {"event_id": event_id, "project_id": project_id}
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_SUMMARY_WORKER_SHAPE"
+    ):
+        require(
+            summary_worker.get("state") == "synthetic_verified"
+            and summary_worker.get("adapterCalls") == 1,
+            "P9-01 summary worker boundary drifted",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_SUMMARY_REPLAY_HTTP"
+    ):
+        summary_replay = _command(
+            opener,
+            base_url,
+            _change_path(project_id, f"/{change_id}:request-implementation-summary"),
+            predecessor(current),
+            csrf_token=csrf,
+            idempotency_key=SUMMARY_KEY,
+            label="summary-replay",
+            expected_status=200,
+            replayed=True,
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_SUMMARY_REPLAY_SHAPE"
+    ):
+        require(
+            summary_replay.get("requestGlobalId")
+            == summary.get("requestGlobalId")
+            and summary_replay.get("state") == "synthetic_verified",
+            "P9-01 summary replay drifted",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_OPERATIONS"
+    ):
+        inbound_operations = _operations(
+            opener, base_url, project_id, "receive_engineering_change_event"
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_OUTBOUND_OPERATIONS"
+    ):
+        outbound_operations = _operations(
+            opener, base_url, project_id, "publish_change_implementation_summary"
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_OPERATIONS_SHAPE"
+    ):
+        require(
+            len(inbound_operations["items"]) == 1
+            and inbound_operations["items"][0].get("sharedState") == "succeeded"
+            and len(outbound_operations["items"]) == 1
+            and outbound_operations["items"][0].get("rawState")
+            == "synthetic_verified"
+            and outbound_operations["items"][0].get("sharedState") == "succeeded",
+            "P9-01 integration operation projection drifted",
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CLOSE_HTTP"):
+        closed = _command(
+            opener,
+            base_url,
+            _change_path(project_id, f"/{change_id}:close"),
+            {"predecessor": predecessor(current)},
+            csrf_token=csrf,
+            idempotency_key=CLOSE_KEY,
+            label="close",
+            expected_status=200,
+            replayed=False,
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CLOSE_SHAPE"):
+        require(
+            closed.get("operation") == "engineering_change.close"
+            and closed.get("change", {}).get("state") == "closed"
+            and closed.get("currentRevision", {}).get("revision") == 4,
+            "P9-01 close response drifted",
+        )
     return {
         "closed": True,
         "createReplay": True,
@@ -815,23 +1047,35 @@ def _require_local_fixture(project_id: object) -> str:
 
 
 def _process_inbox(*, receipt_id: object, project_id: object) -> dict[str, object]:
-    _require_local_fixture(project_id)
-    require(_uuid(receipt_id), "P9-01 Inbox receipt drifted")
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOX_CHILD_INPUT"
+    ):
+        _require_local_fixture(project_id)
+        require(_uuid(receipt_id), "P9-01 Inbox receipt drifted")
     from npi_integration.engineering_change.worker import (
         process_engineering_change_inbox,
     )
 
-    result = process_engineering_change_inbox(str(receipt_id))
-    require(
-        isinstance(result, dict) and result.get("receiptId") == receipt_id,
-        "P9-01 Inbox worker response drifted",
-    )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOX_CHILD_WORKER"
+    ):
+        result = process_engineering_change_inbox(str(receipt_id))
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOX_CHILD_RESPONSE"
+    ):
+        require(
+            isinstance(result, dict) and result.get("receiptId") == receipt_id,
+            "P9-01 Inbox worker response drifted",
+        )
     return result
 
 
 def _process_summary(*, event_id: object, project_id: object) -> dict[str, object]:
-    _require_local_fixture(project_id)
-    require(_uuid(event_id), "P9-01 summary event drifted")
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_SUMMARY_CHILD_INPUT"
+    ):
+        _require_local_fixture(project_id)
+        require(_uuid(event_id), "P9-01 summary event drifted")
     from npi_integration.engineering_change.runtime_fixture import (
         synthetic_adapter_call_count,
     )
@@ -839,11 +1083,17 @@ def _process_summary(*, event_id: object, project_id: object) -> dict[str, objec
         execute_change_implementation_summary,
     )
 
-    result = execute_change_implementation_summary(str(event_id))
-    require(
-        isinstance(result, dict) and result.get("outboxEventId") == event_id,
-        "P9-01 summary worker response drifted",
-    )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_SUMMARY_CHILD_WORKER"
+    ):
+        result = execute_change_implementation_summary(str(event_id))
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_SUMMARY_CHILD_RESPONSE"
+    ):
+        require(
+            isinstance(result, dict) and result.get("outboxEventId") == event_id,
+            "P9-01 summary worker response drifted",
+        )
     return {**result, "adapterCalls": synthetic_adapter_call_count()}
 
 
@@ -950,22 +1200,32 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
         "process_inbox": _process_inbox,
         "process_summary": _process_summary,
     }
-    require(method in fixtures, "P9-01 Bench fixture is unavailable")
-    frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
-    frappe.connect()
-    try:
-        require(
-            frappe.conf.get("npi_runtime_disposable_marker") == RUNTIME_MARKER,
-            "P9-01 disposable Site marker drifted",
-        )
-        result = fixtures[method](**kwargs)
-        frappe.db.commit()
-        print(json.dumps(result, separators=(",", ":"), sort_keys=True))
-    except Exception:
-        frappe.db.rollback()
-        raise
-    finally:
-        frappe.destroy()
+    trace_id = os.environ.get(_DIAGNOSTIC_TRACE_ENV, "")
+    with engineering_change_runtime_diagnostic_scope(trace_id):
+        require(method in fixtures, "P9-01 Bench fixture is unavailable")
+        with engineering_change_runtime_diagnostic_step("P901_CHANGE_BENCH_INIT"):
+            frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_BENCH_CONNECT"
+        ):
+            frappe.connect()
+        try:
+            with engineering_change_runtime_diagnostic_step(
+                "P901_CHANGE_BENCH_MARKER"
+            ):
+                require(
+                    frappe.conf.get("npi_runtime_disposable_marker")
+                    == RUNTIME_MARKER,
+                    "P9-01 disposable Site marker drifted",
+                )
+            result = fixtures[method](**kwargs)
+            frappe.db.commit()
+            print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+        except Exception:
+            frappe.db.rollback()
+            raise
+        finally:
+            frappe.destroy()
 
 
 def main() -> int:
@@ -978,7 +1238,59 @@ def main() -> int:
     parser.add_argument("--cleanup", action="store_true")
     parser.add_argument("--bench-fixture")
     parser.add_argument("--fixture-kwargs")
+    parser.add_argument("--diagnostic-trace", action="store_true")
+    parser.add_argument("--read-diagnostic")
+    parser.add_argument("--expected-trace")
     arguments = parser.parse_args()
+    if arguments.diagnostic_trace:
+        require(
+            arguments.base_url is None
+            and arguments.project_id is None
+            and arguments.bench_fixture is None
+            and arguments.fixture_kwargs is None
+            and arguments.read_diagnostic is None
+            and arguments.expected_trace is None
+            and not any(
+                (
+                    arguments.disabled_probe,
+                    arguments.replay_only,
+                    arguments.recovered_probe,
+                    arguments.cleanup,
+                )
+            ),
+            "P9-01 diagnostic trace invocation drifted",
+        )
+        print(engineering_change_runtime_diagnostic_trace())
+        return 0
+    if arguments.read_diagnostic:
+        if (
+            arguments.base_url is not None
+            or arguments.project_id is not None
+            or arguments.bench_fixture is not None
+            or arguments.fixture_kwargs is not None
+            or arguments.expected_trace is None
+            or any(
+                (
+                    arguments.disabled_probe,
+                    arguments.replay_only,
+                    arguments.recovered_probe,
+                    arguments.cleanup,
+                )
+            )
+        ):
+            return 2
+        diagnostic = read_engineering_change_runtime_diagnostic(
+            Path(arguments.read_diagnostic),
+            expected_trace=arguments.expected_trace,
+        )
+        if diagnostic is None:
+            return 2
+        exception_type, code, trace_id = diagnostic
+        print(
+            f"diagnostic_code={code}; exception_type={exception_type}; "
+            f"trace_id={trace_id}"
+        )
+        return 0
     if arguments.bench_fixture:
         require(
             arguments.base_url is None
@@ -1015,19 +1327,25 @@ def main() -> int:
         <= 1,
         "P9-01 runtime invocation drifted",
     )
-    base_url, project_id, secret = _validate_inputs(arguments.base_url)
-    fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
-    if arguments.disabled_probe:
-        result = run_disabled_probe(base_url, fixture_password, project_id)
-    elif arguments.replay_only:
-        result = run_replay(base_url, fixture_password, project_id)
-    elif arguments.recovered_probe:
-        result = run_recovered(base_url, fixture_password, project_id)
-    elif arguments.cleanup:
-        result = run_bench_fixture("cleanup", {"project_id": project_id})
-    else:
-        result = run_fresh(base_url, fixture_password, project_id, secret)
-    require(result and all(value is True for value in result.values()), "P9-01 runtime result drifted")
+    trace_id = engineering_change_runtime_diagnostic_trace()
+    os.environ[_DIAGNOSTIC_TRACE_ENV] = trace_id
+    with engineering_change_runtime_diagnostic_scope(trace_id):
+        base_url, project_id, secret = _validate_inputs(arguments.base_url)
+        fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
+        if arguments.disabled_probe:
+            result = run_disabled_probe(base_url, fixture_password, project_id)
+        elif arguments.replay_only:
+            result = run_replay(base_url, fixture_password, project_id)
+        elif arguments.recovered_probe:
+            result = run_recovered(base_url, fixture_password, project_id)
+        elif arguments.cleanup:
+            result = run_bench_fixture("cleanup", {"project_id": project_id})
+        else:
+            result = run_fresh(base_url, fixture_password, project_id, secret)
+        require(
+            result and all(value is True for value in result.values()),
+            "P9-01 runtime result drifted",
+        )
     return 0
 
 

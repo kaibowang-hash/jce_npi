@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -137,6 +139,105 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             text.index("require(completed.returncode == 0"),
             text.index("output.seek(0)"),
         )
+
+    def test_diagnostic_codes_are_exact_unique_and_cover_fresh_child_boundaries(
+        self,
+    ) -> None:
+        tree = ast.parse(self.source)
+        literals = [
+            node.value
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Constant)
+            and isinstance(node.value, str)
+            and node.value.startswith("P901_CHANGE_")
+        ]
+        self.assertEqual(
+            set(literals), set(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES)
+        )
+        self.assertTrue(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED)
+        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 38)
+        self.assertTrue(all(literals.count(code) == 2 for code in set(literals)))
+
+    def test_diagnostic_record_is_exact_o_excl_and_strictly_read(self) -> None:
+        trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+            with patch.dict(
+                os.environ,
+                {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
+                clear=False,
+            ):
+                with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                    self.verifier._record_engineering_change_runtime_diagnostic(
+                        "P901_CHANGE_CREATE_HTTP", RuntimeError("restricted")
+                    )
+                    self.verifier._record_engineering_change_runtime_diagnostic(
+                        "P901_CHANGE_CLOSE_HTTP", ValueError("must-not-overwrite")
+                    )
+            self.assertEqual(
+                self.verifier.read_engineering_change_runtime_diagnostic(
+                    path, expected_trace=trace
+                ),
+                ("RuntimeError", "P901_CHANGE_CREATE_HTTP", trace),
+            )
+            record = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(set(record), {"code", "exceptionType", "traceId"})
+            self.assertNotIn("restricted", path.read_text(encoding="utf-8"))
+            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+            self.assertIsNone(
+                self.verifier.read_engineering_change_runtime_diagnostic(
+                    path, expected_trace="trace-" + "f" * 32
+                )
+            )
+
+    def test_diagnostic_reader_fails_closed_for_unknown_or_malformed_records(
+        self,
+    ) -> None:
+        trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+            for payload in (
+                "{}\n",
+                json.dumps(
+                    {
+                        "code": "P901_CHANGE_UNKNOWN",
+                        "exceptionType": "RuntimeError",
+                        "traceId": trace,
+                    }
+                )
+                + "\n",
+                json.dumps(
+                    {
+                        "code": "P901_CHANGE_CREATE_HTTP",
+                        "exceptionType": "RuntimeError",
+                        "traceId": trace,
+                        "message": "restricted",
+                    }
+                )
+                + "\n",
+            ):
+                path.write_text(payload, encoding="utf-8")
+                self.assertIsNone(
+                    self.verifier.read_engineering_change_runtime_diagnostic(
+                        path, expected_trace=trace
+                    )
+                )
+
+    def test_shell_reports_only_the_strict_diagnostic_reader_result(self) -> None:
+        self.assertIn(
+            'export NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH="${RUNNER_TEMP:-/tmp}/p9-01-engineering-change-runtime-diagnostic.json"',
+            self.shell,
+        )
+        self.assertIn("read_engineering_change_runtime_diagnostic()", self.shell)
+        self.assertIn("--diagnostic-trace", self.shell)
+        self.assertIn("--read-diagnostic", self.shell)
+        report = self.shell[
+            self.shell.index("report_engineering_change_runtime_failure()") :
+        ]
+        self.assertIn(
+            'P9-01 Engineering Change runtime diagnostic [${diagnostic}]', report
+        )
+        self.assertNotIn("tail -", report.split("}", 1)[0])
 
     def test_cleanup_is_project_and_exact_fixture_bounded(self) -> None:
         tree = ast.parse(self.source)

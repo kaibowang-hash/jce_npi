@@ -3385,6 +3385,7 @@ run_engineering_change_runtime_verifier() {
     export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
     export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
     export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    export NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH="${RUNNER_TEMP:-/tmp}/p9-01-engineering-change-runtime-diagnostic.json"
     if [[ "${mode}" == "disabled" ]]; then
       clear_engineering_change_runtime_environment
       export NPI_P9_01C_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
@@ -3423,6 +3424,20 @@ run_engineering_change_runtime_verifier() {
     echo "Unknown P9-01 engineering change runtime verification mode." >&2
     exit 2
   )
+}
+
+read_engineering_change_runtime_diagnostic() {
+  local diagnostic_path="${RUNNER_TEMP:-/tmp}/p9-01-engineering-change-runtime-diagnostic.json"
+  local expected_trace
+  expected_trace="$(
+    NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}" \
+      python "${repo_root}/scripts/verify_engineering_change_runtime.py" \
+      --diagnostic-trace
+  )" || return 1
+  NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}" \
+    python "${repo_root}/scripts/verify_engineering_change_runtime.py" \
+    --read-diagnostic "${diagnostic_path}" \
+    --expected-trace "${expected_trace}"
 }
 
 run_quality_link_runtime_verifier() {
@@ -3667,6 +3682,10 @@ verify_engineering_change_runtime_log_redaction() {
 }
 
 report_engineering_change_runtime_failure() {
+  local diagnostic
+  if diagnostic="$(read_engineering_change_runtime_diagnostic)"; then
+    echo "P9-01 Engineering Change runtime diagnostic [${diagnostic}]" >&2
+  fi
   echo "P9-01 runtime log output withheld because it may contain signed change values or target identities." >&2
 }
 

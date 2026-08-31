@@ -10003,6 +10003,32 @@ repeat or rewrite it merely to restore context. See
   product scope, modify CI workflow or contact production ERP.
 - Controller marker: `P9-01D implementation Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
 
+## 2026-08-31 P9-01D Level 3 Engineering Change runtime diagnostic cycle
+
+- Exact repair SHA `ce43896bcb5b92ce929a92150383f5eb8695a98a`
+  passes ordinary CI `33378070267`: repository `99443942910`, visual
+  `99443943063`, frontend `99443943079` and secret `99443943130` all pass.
+- Its sole Level 3 `33379345826` passes visual `99447891375`, frontend
+  `99447891552`, repository `99447891562`, secret `99447891564` and
+  controlled preflight `99451313320`. Controlled runtime `99451364175`
+  initializes the pinned Bench and disposable Site, then fails inside the
+  fresh Engineering Change verifier. Fixed-label filtering yields only
+  `Local Frappe Engineering Change runtime verification failed.`; child output,
+  signed values, target identities and business payloads remain unread.
+- The outer label does not distinguish create, revise, signed intake, either
+  operation-specific worker, summary execution, operation projection or close.
+  One independent diagnostic cycle is therefore authorized before any repair:
+  exact deterministic trace plus exactly 38 lexical stage codes, exception type
+  only, an absolute exact-name `O_EXCL` `0600` three-key record and a strict
+  allowlist reader. The first child code wins; parent fallback cannot overwrite
+  it. Failed child stdout/stderr remains unread and no product, schema, route,
+  profile or production boundary changes.
+- Only `scripts/verify_engineering_change_runtime.py`,
+  `scripts/verify-frappe-runtime.sh`, its focused test and these three existing
+  P9-01 governance records may change. After Level 1 and exact-SHA ordinary
+  PASS, dispatch one `level_2_controlled` diagnostic reusing that ordinary.
+  Do not rerun the failed Level 3 or guess a repair.
+
 ## 2026-08-31 P9-01D ordinary bounded CI repair checkpoint
 
 - Product exact SHA `3d1baf39feff9065a58fcf06a07dc036d39bcfa7` produced

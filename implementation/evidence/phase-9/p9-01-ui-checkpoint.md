@@ -133,3 +133,22 @@ ordered thirteen-file checksum manifest is
 This repair changes no product source, test timeout, CI workflow or production
 boundary. A replacement exact-SHA ordinary PASS and the sole Level 3 remain
 mandatory.
+
+## Exact-SHA ordinary PASS and bounded runtime diagnosis
+
+Visual repair exact SHA `ce43896bcb5b92ce929a92150383f5eb8695a98a`
+passes ordinary CI `33378070267`: repository `99443942910`, visual
+`99443943063`, frontend `99443943079` and secret `99443943130` all pass. Sole
+Level 3 `33379345826` also passes those four job families and controlled
+preflight, while runtime `99451364175` fails only at the fresh Engineering
+Change verifier after its fixed disposable Site is ready. The sole fixed safe
+label is `Local Frappe Engineering Change runtime verification failed.`.
+
+The failure is not attributed to product code without further evidence. One
+independent diagnostic activation uses exactly 38 fixed stage codes across the
+fresh parent and its Inbox/summary Bench children. It writes only code,
+exception type and deterministic trace to an exact-name `O_EXCL` `0600` file;
+the shell prints only a strict allowlisted three-field result. No response
+status value, body, Project/change identity, signed event value, adapter value,
+message, stack or failed child output is recorded. The UI, visual baselines,
+translations, production profiles and ERP boundary remain unchanged.
