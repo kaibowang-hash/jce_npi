@@ -154,9 +154,81 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             set(literals), set(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES)
         )
-        self.assertTrue(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED)
-        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 38)
+        self.assertFalse(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED)
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+        )
+        self.assertEqual(
+            sum(
+                (
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED,
+                )
+            ),
+            1,
+        )
+        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 43)
         self.assertTrue(all(literals.count(code) == 2 for code in set(literals)))
+
+    def test_full_boundary_records_base_exception_without_overwriting_inner(self) -> None:
+        trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+            with patch.dict(
+                os.environ,
+                {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
+                clear=False,
+            ):
+                with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                    with self.assertRaises(SystemExit):
+                        with self.verifier.engineering_change_runtime_diagnostic_step(
+                            "P901_CHANGE_FRESH_PARENT"
+                        ):
+                            raise SystemExit(1)
+            self.assertEqual(
+                self.verifier.read_engineering_change_runtime_diagnostic(
+                    path, expected_trace=trace
+                ),
+                ("SystemExit", "P901_CHANGE_FRESH_PARENT", trace),
+            )
+
+    def test_failed_inner_write_leaves_outer_fallback_available(self) -> None:
+        trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+        original_write = self.verifier._write_engineering_change_runtime_diagnostic
+        attempts = 0
+
+        def flaky_write(record: dict[str, str]) -> None:
+            nonlocal attempts
+            attempts += 1
+            if attempts == 1:
+                raise OSError("controlled diagnostic write failure")
+            original_write(record)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+            with patch.dict(
+                os.environ,
+                {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
+                clear=False,
+            ), patch.object(
+                self.verifier,
+                "_write_engineering_change_runtime_diagnostic",
+                side_effect=flaky_write,
+            ):
+                with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                    self.verifier._record_engineering_change_runtime_diagnostic(
+                        "P901_CHANGE_CREATE_HTTP", RuntimeError("restricted")
+                    )
+                    self.verifier._record_engineering_change_runtime_diagnostic(
+                        "P901_CHANGE_FRESH_PARENT", RuntimeError("restricted")
+                    )
+            self.assertEqual(attempts, 2)
+            self.assertEqual(
+                self.verifier.read_engineering_change_runtime_diagnostic(
+                    path, expected_trace=trace
+                ),
+                ("RuntimeError", "P901_CHANGE_FRESH_PARENT", trace),
+            )
 
     def test_diagnostic_record_is_exact_o_excl_and_strictly_read(self) -> None:
         trace = self.verifier.engineering_change_runtime_diagnostic_trace()

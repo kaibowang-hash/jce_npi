@@ -65,9 +65,15 @@ REVISE_KEY = f"p9-change-revise-{FIXTURE_RUN_ID}"
 SUMMARY_KEY = f"p9-change-summary-{FIXTURE_RUN_ID}"
 CLOSE_KEY = f"p9-change-close-{FIXTURE_RUN_ID}"
 _NAMESPACE = UUID("5d97e7f7-886a-50b9-8946-5740d5dc5927")
-ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
     {
+        "P901_CHANGE_INVOCATION",
+        "P901_CHANGE_INPUTS",
+        "P901_CHANGE_FIXTURE_SECRET",
+        "P901_CHANGE_FRESH_PARENT",
+        "P901_CHANGE_RESULT",
         "P901_CHANGE_LOGIN",
         "P901_CHANGE_CSRF",
         "P901_CHANGE_CREATE_HTTP",
@@ -119,6 +125,13 @@ _DIAGNOSTIC_STATE: ContextVar[dict[str, object] | None] = ContextVar(
 )
 
 
+def _engineering_change_runtime_diagnostics_enabled() -> bool:
+    return (
+        ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED
+        or ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+    )
+
+
 def engineering_change_runtime_diagnostic_trace() -> str:
     return f"trace-{uuid5(_NAMESPACE, f'diagnostic:{FIXTURE_RUN_ID}').hex}"
 
@@ -127,7 +140,7 @@ def engineering_change_runtime_diagnostic_trace() -> str:
 def engineering_change_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]:
     state = None
     if (
-        ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED
+        _engineering_change_runtime_diagnostics_enabled()
         and _TRACE_PATTERN.fullmatch(trace_id) is not None
     ):
         state = {"trace_id": trace_id, "recorded": False}
@@ -142,13 +155,13 @@ def engineering_change_runtime_diagnostic_scope(trace_id: str) -> Iterator[None]
 def engineering_change_runtime_diagnostic_step(code: str) -> Iterator[None]:
     try:
         yield
-    except Exception as error:
+    except BaseException as error:
         _record_engineering_change_runtime_diagnostic(code, error)
         raise
 
 
 def _record_engineering_change_runtime_diagnostic(
-    code: str, error: Exception
+    code: str, error: BaseException
 ) -> None:
     try:
         state = _DIAGNOSTIC_STATE.get()
@@ -160,7 +173,6 @@ def _record_engineering_change_runtime_diagnostic(
             or _TYPE_PATTERN.fullmatch(exception_type) is None
         ):
             return
-        state["recorded"] = True
         _write_engineering_change_runtime_diagnostic(
             {
                 "code": code,
@@ -168,6 +180,7 @@ def _record_engineering_change_runtime_diagnostic(
                 "traceId": str(state["trace_id"]),
             }
         )
+        state["recorded"] = True
     except Exception:
         # Diagnostics must never replace the original verifier failure.
         pass
@@ -194,7 +207,7 @@ def read_engineering_change_runtime_diagnostic(
     path: Path, *, expected_trace: str
 ) -> tuple[str, str, str] | None:
     if (
-        not ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED
+        not _engineering_change_runtime_diagnostics_enabled()
         or _TRACE_PATTERN.fullmatch(expected_trace) is None
     ):
         return None
@@ -1310,28 +1323,38 @@ def main() -> int:
         require(isinstance(kwargs, dict), "P9-01 Bench fixture arguments drifted")
         run_local_bench_fixture(arguments.bench_fixture, kwargs)
         return 0
-    require(
-        isinstance(arguments.base_url, str)
-        and arguments.project_id == os.environ.get("NPI_P9_01C_RUNTIME_PROJECT_ID")
-        and sum(
-            map(
-                int,
-                (
-                    arguments.disabled_probe,
-                    arguments.replay_only,
-                    arguments.recovered_probe,
-                    arguments.cleanup,
-                ),
-            )
-        )
-        <= 1,
-        "P9-01 runtime invocation drifted",
-    )
     trace_id = engineering_change_runtime_diagnostic_trace()
     os.environ[_DIAGNOSTIC_TRACE_ENV] = trace_id
     with engineering_change_runtime_diagnostic_scope(trace_id):
-        base_url, project_id, secret = _validate_inputs(arguments.base_url)
-        fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INVOCATION"
+        ):
+            require(
+                isinstance(arguments.base_url, str)
+                and arguments.project_id
+                == os.environ.get("NPI_P9_01C_RUNTIME_PROJECT_ID")
+                and sum(
+                    map(
+                        int,
+                        (
+                            arguments.disabled_probe,
+                            arguments.replay_only,
+                            arguments.recovered_probe,
+                            arguments.cleanup,
+                        ),
+                    )
+                )
+                <= 1,
+                "P9-01 runtime invocation drifted",
+            )
+        with engineering_change_runtime_diagnostic_step("P901_CHANGE_INPUTS"):
+            base_url, project_id, secret = _validate_inputs(arguments.base_url)
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_FIXTURE_SECRET"
+        ):
+            fixture_password = secret_from_environment(
+                "NPI_RUNTIME_FIXTURE_PASSWORD"
+            )
         if arguments.disabled_probe:
             result = run_disabled_probe(base_url, fixture_password, project_id)
         elif arguments.replay_only:
@@ -1341,11 +1364,17 @@ def main() -> int:
         elif arguments.cleanup:
             result = run_bench_fixture("cleanup", {"project_id": project_id})
         else:
-            result = run_fresh(base_url, fixture_password, project_id, secret)
-        require(
-            result and all(value is True for value in result.values()),
-            "P9-01 runtime result drifted",
-        )
+            with engineering_change_runtime_diagnostic_step(
+                "P901_CHANGE_FRESH_PARENT"
+            ):
+                result = run_fresh(
+                    base_url, fixture_password, project_id, secret
+                )
+        with engineering_change_runtime_diagnostic_step("P901_CHANGE_RESULT"):
+            require(
+                result and all(value is True for value in result.values()),
+                "P9-01 runtime result drifted",
+            )
     return 0
 
 

@@ -396,3 +396,31 @@ Child bootstrap/worker stages inherit the same trace so the first inner failure
 wins without exposing child stdout/stderr. This cycle authorizes one exact-SHA
 ordinary and, only after it passes, one `level_2_controlled` diagnostic. A
 repair remains prohibited until that evidence identifies a unique boundary.
+
+## P9-01D exact-38 diagnostic blind spot and full-boundary cycle
+
+Diagnostic SHA `191dd70f5e16a34dbc19cc5205778d3b5160e2e3`
+passes ordinary CI `33382887521` in all four lanes. Its sole Level 2 run
+`33384025870` passes controlled preflight and fixed Bench/Site initialization,
+then runtime `99462533121` fails in the fresh Engineering Change verifier.
+The strict exact-38 reader returns no valid tuple; the only allowed outer label
+is `Local Frappe Engineering Change runtime verification failed.`. Restricted
+child and business output remains unread.
+
+The zero tuple does not identify a product root. The earlier disabled probe
+already crossed the same invocation, actor, Project and fixture-secret checks,
+and every normal fresh business-stage exception was inside an exact-38 step.
+Freeze that diagnostic and open a separate product-zero full-boundary cycle.
+Its historical flag is false; its new-only activation retains all 38 inner
+codes and adds invocation, inputs, fixture secret, fresh parent and final result
+for exact 43. Steps capture `BaseException`; a record is marked consumed only
+after its exact-name `O_EXCL` write succeeds. Inner child/parent precedence,
+strict three-field reading and failed-child output suppression remain intact.
+Only the verifier/test and three P9-01 governance records may change. A product
+repair is still prohibited pending one unique safe tuple.
+
+Level 1 passes focused runtime `14/14`, current/reconciliation `40/40` and the
+full repository suite `2803/2803`, together with compilation, shell syntax,
+strict active-set/reader/failed-write fallback checks, security scans and diff
+hygiene. The exact five task paths contain no product, contract, schema, UI or
+workflow file. Exact-SHA ordinary CI is the next boundary.

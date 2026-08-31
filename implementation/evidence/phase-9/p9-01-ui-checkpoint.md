@@ -152,3 +152,29 @@ the shell prints only a strict allowlisted three-field result. No response
 status value, body, Project/change identity, signed event value, adapter value,
 message, stack or failed child output is recorded. The UI, visual baselines,
 translations, production profiles and ERP boundary remain unchanged.
+
+## Exact-38 zero tuple and full-boundary continuation
+
+Exact diagnostic SHA `191dd70f5e16a34dbc19cc5205778d3b5160e2e3`
+passes ordinary CI `33382887521`. Its single controlled diagnostic
+`33384025870` passes preflight and fixed Bench/Site initialization, but runtime
+`99462533121` again stops in the fresh Engineering Change verifier. The strict
+reader accepts no exact-38 tuple; fixed-label filtering returns only the fresh
+Engineering Change outer label. No failed child output or restricted value was
+read.
+
+That result freezes the first diagnostic without authorizing a product repair.
+An independent product-zero full-boundary activation keeps the 38 ordered
+inner codes and adds five outer predicates for invocation, inputs, fixture
+secret, the whole fresh verifier and final result. It also captures
+`BaseException` and consumes the diagnostic state only after a successful
+exact-name write. Historical activation is false, the new activation alone is
+true, and the active set is exact 43. P9 product/API/schema/UI/visual and ERP
+boundaries remain byte-for-byte unchanged; one exact-SHA ordinary and one sole
+Level 2 diagnostic are required before any root repair.
+
+The full-boundary diagnostic Level 1 passes focused runtime `14/14`, current
+and reconciliation `40/40`, and full repository `2803/2803`, plus compile,
+shell, strict reader, security and diff checks. Product, visual and translation
+artifacts remain unchanged. The next action is the exact-five commit followed
+by its own ordinary CI; no Level 3 rerun is authorized at this checkpoint.

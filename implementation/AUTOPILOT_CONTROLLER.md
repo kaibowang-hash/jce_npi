@@ -10053,3 +10053,39 @@ repeat or rewrite it merely to restore context. See
   baseline/manifest/test/governance repair batch, require one replacement
   exact-SHA ordinary PASS, then execute the sole P9-01 Level 3.
 - Controller marker: `P9-01D implementation Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
+
+## 2026-08-31 P9-01D Engineering Change full-boundary diagnostic cycle
+
+- Product-zero diagnostic SHA
+  `191dd70f5e16a34dbc19cc5205778d3b5160e2e3` passes ordinary CI
+  `33382887521`: visual `99458977457`, frontend `99458977708`, secret
+  `99458977737` and repository `99458977803` all pass. Its sole Level 2
+  controlled diagnostic `33384025870` passes preflight `99462481280`, while
+  runtime `99462533121` initializes the pinned Bench and disposable Site and
+  fails in the fresh Engineering Change verifier.
+- The strict exact-38 reader returns zero valid tuple. Source-fixed filtering
+  returns only `Local Frappe Engineering Change runtime verification failed.`.
+  Failed child stdout/stderr, response bodies, values, identities, messages and
+  stacks remain unread. This is a diagnostic blind spot, not product evidence:
+  the preceding disabled probe already passed the same invocation, actor,
+  Project and fixture-secret validation, while normal exceptions inside every
+  fresh business stage should have produced an exact record.
+- Freeze the first diagnostic at `1/1`, repair `0/1`, final `0/1`; no product
+  repair is authorized. Open one independent product-zero full-boundary cycle
+  at `0/1,0/1,0/1`. The historical activation is false and the new-only
+  activation adds exactly five outer predicates around invocation, inputs,
+  fixture secret, the entire fresh verifier and final result, for exact 43
+  codes total. Diagnostic steps capture `BaseException`, and mark a record as
+  consumed only after the exact-name `O_EXCL` write succeeds, so an inner code
+  still wins and a failed write cannot silently suppress its outer fallback.
+- Exact paths are the Engineering Change runtime verifier/test and the three
+  existing P9-01 governance records. Product, API, repository, schema, UI,
+  contracts, profiles and workflow remain unchanged. Exact-SHA ordinary PASS
+  must precede one sole Level 2 controlled diagnostic; do not rerun Level 3 or
+  infer a product repair before one unique safe boundary is proven.
+- Level 1 passes the focused verifier `14/14`, current/reconciliation group
+  `40/40`, full repository `2803/2803`, compile, shell syntax, strict
+  exact-43 activation/reader tests, security scans and diff checks. The exact
+  five task paths remain within the current manifest; unrelated user-owned
+  files remain unstaged and unchanged.
+- Controller marker: `P9-01D Engineering Change full-boundary diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
