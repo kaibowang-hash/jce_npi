@@ -1143,9 +1143,12 @@ def _parse_metadata_page(
     specs: dict[str, dict[str, Any]],
     *,
     page_size: int,
+    empty_stdout_is_empty_list: bool = False,
 ) -> tuple[list[dict[str, Any]], list[str]]:
     require(family in specs, "metadata family is not allowlisted")
     require(len(raw) <= MAX_RUNTIME_BYTES, "runtime metadata output exceeded the bounded limit")
+    if not raw and empty_stdout_is_empty_list:
+        return [], []
     try:
         value = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -1737,6 +1740,7 @@ def _p9_change_metadata_operation(
                 family,
                 P9_CHANGE_METADATA_SPECS,
                 page_size=P9_CHANGE_PAGE_SIZE,
+                empty_stdout_is_empty_list=True,
             )
             require(
                 not set(names).intersection(page_names),

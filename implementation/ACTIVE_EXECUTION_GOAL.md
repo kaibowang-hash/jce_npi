@@ -5,6 +5,17 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_FACT_DELTA_COLLECTOR — P9-01`
+- Parent-reader repair exact SHA
+  `27e79a0ab00c3f9a25537bc1f033594c7bac44d9` passes ordinary CI
+  `33349073023`: repository `99358733199`, frontend `99358733278`, visual
+  `99358733289` and secret `99358733309` all pass. The retry accepts no final
+  fact because production `bench execute frappe.client.get_list` emits zero
+  stdout, rather than JSON `[]`, for every empty metadata family. A complete
+  same-scope shape preflight proves seven empty families share that form while
+  the populated DocType, Property Setter and Workflow lists, ECR parent
+  DocType and Workflow parent documents all retain the expected JSON shapes.
+  The current batch repair treats zero stdout as an empty list only in the
+  P9-01 fixed list reader; all earlier runtime readers remain fail closed.
 - P9-01 fact-delta governance exact SHA
   `0e56c83327b12fc5501a4d5d71c5abf5e30981f6` passes ordinary CI
   `33347047323`: repository `99353044581`, secret `99353044662`, frontend

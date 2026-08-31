@@ -865,6 +865,33 @@ class ProductionFactCollectorTest(unittest.TestCase):
                 1,
             )
 
+    def test_p9_change_metadata_empty_stdout_is_an_explicit_empty_list_only(self) -> None:
+        with self.assertRaisesRegex(
+            collector.FactCollectionError,
+            "not exact JSON",
+        ):
+            collector._parse_metadata_page(
+                b"",
+                "CHANGE_CUSTOM_FIELDS",
+                collector.P9_CHANGE_METADATA_SPECS,
+                page_size=collector.P9_CHANGE_PAGE_SIZE,
+            )
+
+        rows, names = collector._parse_metadata_page(
+            b"",
+            "CHANGE_CUSTOM_FIELDS",
+            collector.P9_CHANGE_METADATA_SPECS,
+            page_size=collector.P9_CHANGE_PAGE_SIZE,
+            empty_stdout_is_empty_list=True,
+        )
+        self.assertEqual(rows, [])
+        self.assertEqual(names, [])
+        with self.assertRaisesRegex(
+            collector.FactCollectionError,
+            "not exact JSON",
+        ):
+            collector._parse_runtime_page(b"", "CUSTOM_FIELDS")
+
     def test_p9_change_metadata_operation_hashes_sensitive_values_and_stays_scoped(self) -> None:
         args = argparse.Namespace(expected_sha="d" * 40, ordinary_run_id="101")
 
@@ -1009,7 +1036,8 @@ class ProductionFactCollectorTest(unittest.TestCase):
                         ],
                     }
                 ).encode()
-            return json.dumps(rows.get(operation, [])).encode()
+            payload = rows.get(operation)
+            return b"" if payload is None else json.dumps(payload).encode()
 
         with patch.object(collector, "_p9_change_preflight"), patch.dict(
             os.environ,

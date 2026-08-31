@@ -1,6 +1,6 @@
 # P9-01 Change Impact and Revalidation Plan
 
-Status: `AUDIT COMPLETE — CHILD-METADATA PARENT-READER REPAIR BATCHED; EXACT CI PENDING`
+Status: `AUDIT COMPLETE — EMPTY-LIST STDOUT SHAPE REPAIR BATCHED; EXACT CI PENDING`
 
 ## Accepted predecessor
 
@@ -106,3 +106,29 @@ from fixed `DocType` parent documents. Workflow children already use the same
 accepted parent pattern. No method, parent name, field, output budget or
 production authority is added. The replacement collector checkpoint requires
 one exact-SHA ordinary PASS before a single retry.
+
+## Second read and complete empty-list shape correction
+
+Parent-reader repair exact SHA
+`27e79a0ab00c3f9a25537bc1f033594c7bac44d9` passes ordinary CI
+`33349073023`: repository `99358733199`, frontend `99358733278`, visual
+`99358733289` and secret `99358733309` all pass. The second bounded invocation
+still accepts no final fact: the first empty `frappe.client.get_list` result is
+represented by production Bench as zero stdout instead of JSON `[]`, so the
+strict list parser stops before any later result can be accepted.
+
+A single same-scope shape preflight covers all remaining direct list calls and
+both parent-document classes without recording field values. Seven empty
+families return zero stdout with the canonical empty SHA-256; the populated
+DocType, Property Setter and Workflow calls return exact JSON lists. The fixed
+ECR parent DocType returns an exact object with 53 field and five permission
+children, and its Workflow parent returns an exact object with 15 states and
+11 transitions. Only anonymous byte counts, row counts and checksums were
+observed; no business row, raw metadata value or write was accepted.
+
+The batch repair is deliberately local: `_parse_metadata_page` defaults to
+rejecting zero stdout, while the P9-01 fixed `get_list` call site explicitly
+maps it to an empty list. Existing P8 runtime readers keep their prior
+fail-closed contract. Tests lock both sides and run the full P9 operation with
+realistic zero-byte empty families. One replacement exact-SHA ordinary PASS is
+required before the next single complete collector invocation.

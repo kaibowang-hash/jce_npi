@@ -9822,3 +9822,24 @@ repeat or rewrite it merely to restore context. See
   not make per-family commits, repeat accepted inventory, expand methods or
   authorize product/production writes.
 - Controller marker: `P9-01 change child metadata parent-reader repair batched; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01 parent-reader ordinary PASS; batch empty-list stdout repair
+
+- Parent-reader repair exact SHA
+  `27e79a0ab00c3f9a25537bc1f033594c7bac44d9` passes ordinary CI
+  `33349073023`: repository `99358733199`, frontend `99358733278`, visual
+  `99358733289` and secret `99358733309` all pass.
+- The second bounded collector invocation emits no final result. Production
+  Bench writes zero stdout for an empty `frappe.client.get_list` response,
+  rather than JSON `[]`; the strict P9 parser therefore stops at the first
+  empty family. No later result or production write is accepted.
+- One bounded same-scope shape preflight covers every remaining list call and
+  both parent-document forms. Seven empty metadata families share zero stdout;
+  populated DocType, Property Setter and Workflow families are JSON lists;
+  fixed ECR DocType and Workflow parents are JSON objects with exact list
+  children. No raw value or business record is retained.
+- Batch one local shape correction: zero stdout means empty list only when the
+  P9-01 fixed `get_list` call site opts in. Existing runtime readers remain
+  fail closed. Require one exact-SHA ordinary PASS before one complete retry;
+  do not create per-family commits or expand the production allowlist.
+- Controller marker: `P9-01 empty-list stdout shape repair batched; exact-SHA ordinary CI pending`.

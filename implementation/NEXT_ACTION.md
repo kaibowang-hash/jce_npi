@@ -5,6 +5,20 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+Parent-reader repair exact SHA
+`27e79a0ab00c3f9a25537bc1f033594c7bac44d9` passes ordinary CI
+`33349073023` in all four lanes. Its bounded retry stops without accepting a
+result because production Bench represents an empty `frappe.client.get_list`
+result as zero stdout. One same-scope shape preflight covers every remaining
+direct list and both parent-document classes: seven empty metadata families
+share the zero-stdout form, populated families are exact JSON lists, and ECR
+DocType/Workflow parents are exact JSON objects with list children. Batch the
+single local contract now: only the P9-01 fixed list reader may interpret zero
+stdout as an empty list; the earlier runtime reader must continue rejecting it.
+After one exact-SHA ordinary PASS, run the collector once and accept only the
+complete sanitized result. Do not add per-family commits or widen production
+scope.
+
 P9-01 fact-delta governance exact SHA
 `0e56c83327b12fc5501a4d5d71c5abf5e30981f6` passes ordinary CI
 `33347047323` in all four lanes. The fixed, no-state `change-metadata`
