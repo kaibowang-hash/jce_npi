@@ -211,7 +211,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_RAW_BODY_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
@@ -231,7 +231,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED,
                 )
             ),
-            1,
+            0,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 134)
         server_codes = set(

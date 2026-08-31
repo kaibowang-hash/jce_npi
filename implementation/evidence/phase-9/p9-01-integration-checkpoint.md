@@ -144,6 +144,30 @@ current/reconciliation, repository verification, frontend generation and
 i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
+
+## Disposable loopback transport repair
+
+Exact diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`
+passes ordinary `33442412785`. Sole Level 2 `33443753239` returns only the
+strict safe tuple `P901_CHANGE_INBOUND_API_AUTHENTICATE / NpiProblem /
+trace-c1e7e74e4289536e8b4ee897d06a2cdf`; restricted content remains unread.
+
+The fixed verifier uses `http://127.0.0.1:8003`, and the API deliberately
+does not trust `X-Forwarded-Proto`. The repair therefore remains inside the
+guarded synthetic harness: exact enabled environment, shared disposable Site
+marker, POST, webhook path, empty query, loopback peer and fixed host are all
+required before local HTTP can satisfy transport. All other traffic still
+requires the server's secure-request fact. No Sandbox or production profile,
+secret, adapter, contract, permission, ownership, write, replay or queue
+behavior changes. The cycle is `1/1,1/1,0/1`, diagnostics off, final Level 3
+pending.
+
+Level 1 passes focused repair/current/API/runtime `48/48`, affected P8/P9
+security/contract/domain/runtime `122/122`, full repository `2823/2823`,
+current/reconciliation and repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-14 and projected union-60 manifests,
+unauthorized-15 rejection, all 21 diagnostics off, security and diff hygiene.
 Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
 
 ## Disposable runtime marker repair

@@ -64,6 +64,9 @@ class Phase9ChangeIntegrationWorkerTest(unittest.TestCase):
             '_RUNTIME_MARKER = "npi-one-local-runtime-disposable-v1"',
             "TargetMode.SYNTHETIC",
             "disposable_runtime_marker=True",
+            "allows_disposable_loopback_http",
+            'getattr(request, "remote_addr", None) == "127.0.0.1"',
+            'getattr(request, "host", None) == "127.0.0.1:8003"',
             "authenticated=True",
             "contract_valid=True",
         ):
@@ -71,6 +74,7 @@ class Phase9ChangeIntegrationWorkerTest(unittest.TestCase):
         for forbidden in ("requests.", "httpx.", "base_url=", "production"):
             self.assertNotIn(forbidden, source.casefold())
         self.assertNotIn("npi-one-engineering-change-disposable-v1", source)
+        self.assertNotIn("X-Forwarded-Proto", source)
 
 
 if __name__ == "__main__":

@@ -421,6 +421,26 @@ current/reconciliation, repository verification, frontend generation and
 i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
+
+## Disposable loopback transport repair
+
+Diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df` passes
+ordinary `33442412785`; sole Level 2 `33443753239` returns only
+`P901_CHANGE_INBOUND_API_AUTHENTICATE / NpiProblem /
+trace-c1e7e74e4289536e8b4ee897d06a2cdf`. Restricted output remains unread.
+The fix is limited to the exact marker- and loopback-gated synthetic runtime
+transport. It does not change the Change workspace, routes, messages,
+translations, visual baselines, user permissions, product contracts or any
+production profile. Forwarded-header-only and every non-exact request remain
+rejected; diagnostics are all off and the sole Level 3 remains pending.
+
+Level 1 passes focused repair/current/API/runtime `48/48`, affected P8/P9
+security/contract/domain/runtime `122/122`, full repository `2823/2823`,
+current/reconciliation and repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-14 and projected union-60 manifests,
+unauthorized-15 rejection, all 21 diagnostics off, security and diff hygiene.
+No UI or visual baseline changed.
 Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
 
 ## Disposable runtime marker repair

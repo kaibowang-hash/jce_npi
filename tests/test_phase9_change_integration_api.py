@@ -28,6 +28,7 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         "npi_core.foundation.tracing",
         "npi_core.project.domain",
         "npi_core.request_security",
+        "npi_integration.engineering_change.runtime_fixture",
         "npi_integration.engineering_change_api",
     )
 
@@ -42,6 +43,9 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         frappe.flags = types.SimpleNamespace(
             npi_route_params={"project_id": PROJECT, "change_id": CHANGE}
         )
+        frappe.conf = {
+            "npi_runtime_disposable_marker": "npi-one-local-runtime-disposable-v1"
+        }
         frappe.local = types.SimpleNamespace(
             form_dict={},
             response=types.SimpleNamespace(http_status_code=200),
@@ -49,6 +53,12 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
                 method="POST",
                 headers=self.headers,
                 args={},
+                path=(
+                    "/api/npi/v1/integration/erpnext/engineering-change-events"
+                ),
+                host="127.0.0.1:8003",
+                remote_addr="127.0.0.1",
+                is_secure=False,
             ),
         )
         frappe.db = types.SimpleNamespace(
@@ -161,7 +171,11 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
                 self.module.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER: trace,
             }
         )
-        with patch.dict(
+        with patch.object(
+            self.module,
+            "ENGINEERING_CHANGE_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.dict(
             os.environ,
             {
                 "NPI_P9_01C_RUNTIME_ENABLED": "1",
@@ -185,6 +199,32 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
             self.assertFalse(
                 self.module._engineering_change_inbound_diagnostic_active(trace)
             )
+
+    def test_inbound_transport_accepts_only_exact_disposable_loopback_http(self) -> None:
+        request = self.frappe.local.request
+        with patch.dict(
+            os.environ,
+            {"NPI_P9_01C_RUNTIME_ENABLED": "1"},
+            clear=False,
+        ):
+            self.assertTrue(self.module._request_is_secure(request))
+            for field, value in (
+                ("host", "localhost:8003"),
+                ("remote_addr", "192.0.2.1"),
+                ("method", "GET"),
+                ("path", "/api/method/ping"),
+            ):
+                original = getattr(request, field)
+                with self.subTest(field=field):
+                    setattr(request, field, value)
+                    self.assertFalse(self.module._request_is_secure(request))
+                    setattr(request, field, original)
+            request.headers["X-Forwarded-Proto"] = "https"
+            request.host = "localhost:8003"
+            self.assertFalse(self.module._request_is_secure(request))
+            request.host = "127.0.0.1:8003"
+            request.is_secure = True
+            self.assertTrue(self.module._request_is_secure(request))
 
     def test_inbound_diagnostic_stages_follow_handler_order(self) -> None:
         source = (
@@ -212,7 +252,7 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED
         )
 

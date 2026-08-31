@@ -12,6 +12,7 @@ from .adapters import (
 )
 from .config import IntegrationProfile
 from .domain import AdapterResponse, SUMMARY_OPERATION, TargetMode, canonical_hash
+from .signature import WEBHOOK_PATH
 
 
 _RUNTIME_MARKER = "npi-one-local-runtime-disposable-v1"
@@ -104,6 +105,23 @@ def synthetic_adapter_call_count() -> int:
     if not _enabled():
         raise RuntimeError("Engineering Change runtime adapter is unavailable.")
     return _adapter_calls
+
+
+def allows_disposable_loopback_http(request: object) -> bool:
+    """Allow only the fixed loopback fixture to substitute for transport TLS."""
+    try:
+        arguments = getattr(request, "args", None)
+        return bool(
+            _enabled()
+            and getattr(request, "method", None) == "POST"
+            and getattr(request, "path", None) == WEBHOOK_PATH
+            and getattr(request, "remote_addr", None) == "127.0.0.1"
+            and getattr(request, "host", None) == "127.0.0.1:8003"
+            and arguments is not None
+            and list(arguments.keys()) == []
+        )
+    except Exception:
+        return False
 
 
 def _enabled() -> bool:

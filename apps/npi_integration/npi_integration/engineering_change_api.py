@@ -37,7 +37,7 @@ _SECRET_HOOK = "npi_engineering_change_secret_resolver"
 _SUMMARY_FIELDS = frozenset({"expectedRevision", "expectedRevisionGlobalId", "expectedRevisionSnapshotHash"})
 ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Inbound-Diagnostic"
 )
@@ -124,7 +124,7 @@ def _receive_engineering_change_event() -> dict[str, Any] | None:
                     content_type=request.headers.get("Content-Type"), content_encoding=request.headers.get("Content-Encoding"),
                     raw_body=request.get_data(cache=True), request_id=request.headers.get("X-Request-ID"),
                     key_id=request.headers.get("X-NPI-Key-ID"), timestamp=request.headers.get("X-NPI-Timestamp"),
-                    signature=request.headers.get("X-NPI-Signature"), is_secure=bool(request.is_secure),
+                    signature=request.headers.get("X-NPI-Signature"), is_secure=_request_is_secure(request),
                     site_tenant_id=_site_tenant_id(), now=datetime.now(UTC),
                     profile_resolver=_profile_resolver(), secret_resolver=_secret_resolver(),
                 )
@@ -299,6 +299,14 @@ def _hook(name: str):
 
 def _site_tenant_id() -> str:
     return configured_tenant_id()
+
+
+def _request_is_secure(request: object) -> bool:
+    if bool(getattr(request, "is_secure", False)):
+        return True
+    from .engineering_change.runtime_fixture import allows_disposable_loopback_http
+
+    return allows_disposable_loopback_http(request)
 
 
 def _route_uuid(name: str) -> UUID:

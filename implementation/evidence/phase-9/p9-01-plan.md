@@ -702,6 +702,31 @@ current/reconciliation, repository verification, frontend generation and
 i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
+
+## P9-01D disposable loopback transport repair
+
+Post-marker diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`
+passes ordinary `33442412785` in all four lanes. Its sole Level 2
+`33443753239` passes preflight `99657854477`; runtime `99657930146` returns
+only `P901_CHANGE_INBOUND_API_AUTHENTICATE / NpiProblem /
+trace-c1e7e74e4289536e8b4ee897d06a2cdf`. No restricted raw/child output,
+response, business value, identity, message or stack was read.
+
+The runtime endpoint is fixed HTTP loopback, while the signed ingress
+correctly refuses forwarded-header impersonation and previously required
+`request.is_secure` unconditionally. The minimal repair recognizes only the
+already marker-gated synthetic fixture's exact POST/path/empty-query/host and
+loopback-peer shape. Sandbox and production profiles still require the
+server-owned TLS fact; `X-Forwarded-Proto` remains ineffective. All diagnostic
+activations are false and the cycle is `1/1,1/1,0/1` pending the sole
+exact-SHA Level 3.
+
+Level 1 passes focused repair/current/API/runtime `48/48`, affected P8/P9
+security/contract/domain/runtime `122/122`, full repository `2823/2823`,
+current/reconciliation and repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-14 and projected union-60 manifests,
+unauthorized-15 rejection, all 21 diagnostics off, security and diff hygiene.
 Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
 
 ## P9-01D disposable runtime marker repair

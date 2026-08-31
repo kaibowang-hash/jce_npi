@@ -10523,3 +10523,39 @@ repeat or rewrite it merely to restore context. See
   compilation, shell syntax, exact-12 and projected union-60 manifests,
   unauthorized-13 rejection, new-only activation, security and diff hygiene.
 - Controller marker: `P9-01D post-marker-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D disposable loopback transport repair
+
+- Post-marker diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`
+  passed ordinary `33442412785`: frontend `99653517896`, secret scan
+  `99653518092`, visual `99653518164` and repository `99653518205` all
+  passed. Its sole Level 2 `33443753239` passed controlled preflight
+  `99657854477`; runtime `99657930146` returned only
+  `P901_CHANGE_INBOUND_API_AUTHENTICATE / NpiProblem /
+  trace-c1e7e74e4289536e8b4ee897d06a2cdf` through the strict exact-134
+  reader. Restricted raw/child output, response/body, business values,
+  identities, exception message and stack remained unread.
+- Static cross-proof closes the remaining authentication prerequisite. The
+  fixed runtime endpoint is `http://127.0.0.1:8003`, while ingress requires
+  a server-owned secure-transport fact and intentionally ignores
+  `X-Forwarded-Proto`. Marker, process environment, profile identity, tenant,
+  Project, signing key and secret bindings are already exact, so the fixed
+  loopback request deterministically reached the unavailable transport
+  predicate before signature verification.
+- The same-cycle repair does not trust a forwarding header or weaken Sandbox
+  transport. Only an exact POST to the fixed webhook path, empty query,
+  `127.0.0.1:8003` host, loopback peer, enabled process environment and the
+  fixed disposable Site marker may substitute for TLS. Every other request
+  still requires `request.is_secure`; wrong host, peer, method, path, marker,
+  environment and forwarded-header-only variants fail closed. All diagnostic
+  activations return to false. No production profile, adapter, endpoint,
+  permission, contract, UI or workflow changes. Cycle state is diagnostic
+  `1/1`, repair `1/1`, final `0/1`.
+- Level 1 passes focused repair/current/API/runtime `48/48`, affected P8/P9
+  security/contract/domain/runtime `122/122`, full repository `2823/2823`,
+  current/reconciliation and repository verification, frontend generation
+  and i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+  compilation, shell syntax, exact-14 and projected union-60 manifests,
+  unauthorized-15 rejection, all-21-diagnostics-off, security and diff
+  hygiene.
+- Controller marker: `P9-01D disposable loopback transport repair Level 1 PASS; exact-SHA ordinary CI pending`.
