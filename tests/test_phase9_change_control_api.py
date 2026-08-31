@@ -231,6 +231,10 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
                 "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": diagnostic_path,
             },
             clear=False,
+        ), patch.object(
+            self.api,
+            "ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED",
+            True,
         ):
             self.assertTrue(
                 self.api._engineering_change_revise_server_diagnostic_active(
@@ -267,6 +271,9 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
             )
 
     def test_revise_server_diagnostic_is_dormant_without_runtime_environment(self) -> None:
+        self.assertFalse(
+            self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED
+        )
         trace = "trace-" + "c" * 32
         self.headers.update(
             {

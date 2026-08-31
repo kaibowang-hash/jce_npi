@@ -24,6 +24,7 @@ from npi_core.change_control.domain import (
 from npi_core.change_control.frappe_validation import (
     change_command_write,
     change_observation_write,
+    save_change_support_document,
 )
 from npi_core.change_control.request_validation import (
     parse_formal_observation,
@@ -296,7 +297,10 @@ class FrappeChangeControlRepository:
         )
         event = self._event(revision, EngineeringChangeEventType.CREATED, now)
         response = _command_response(operation, revision)
-        with change_command_write():
+        with change_command_write(
+            service_actor_user_id=self.actor,
+            scope=operation,
+        ):
             receipt = self._insert_receipt(
                 tenant_id=tenant_id,
                 project_id=project_id,
@@ -534,9 +538,17 @@ class FrappeChangeControlRepository:
             "P901_CHANGE_REVISE_REPOSITORY_WRITE_SCOPE"
         ):
             scope = (
-                change_observation_write() if observation else change_command_write()
+                change_observation_write(
+                    service_actor_user_id=self.actor,
+                    scope=operation,
+                )
+                if observation
+                else change_command_write(
+                    service_actor_user_id=self.actor,
+                    scope=operation,
+                )
             )
-            with scope:
+            with scope as capability:
                 with engineering_change_revise_server_step(
                     "P901_CHANGE_REVISE_REPOSITORY_RECEIPT"
                 ):
@@ -568,7 +580,7 @@ class FrappeChangeControlRepository:
                 with engineering_change_revise_server_step(
                     "P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE"
                 ):
-                    root.save()
+                    save_change_support_document(root, capability=capability)
                 with engineering_change_revise_server_step(
                     "P901_CHANGE_REVISE_REPOSITORY_AUDIT"
                 ):

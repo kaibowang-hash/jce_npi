@@ -4,8 +4,10 @@ import hashlib
 import json
 import re
 from contextlib import contextmanager
+from contextvars import ContextVar
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Iterable, Iterator
+from typing import Any, Iterable, Iterator
 from uuid import UUID
 
 import frappe
@@ -16,6 +18,28 @@ CHANGE_COMMAND_WRITE_FLAG = "npi_change_control_command_write"
 CHANGE_OBSERVATION_WRITE_FLAG = "npi_change_control_observation_write"
 AUDIT_APPEND_FLAG = "npi_audit_append"
 _HASH = re.compile(r"^[0-9a-f]{64}$")
+_CHANGE_COMMAND_SCOPES = frozenset(
+    {
+        "engineering_change.create",
+        "engineering_change.revise",
+        "engineering_change.link_formal_observation",
+        "engineering_change.close",
+    }
+)
+_CHANGE_COMMAND_WRITES = frozenset({("NPI Engineering Change", "save")})
+
+
+@dataclass(frozen=True, slots=True)
+class ChangeWriteCapability:
+    actor: str
+    scope: str
+    allowed: frozenset[tuple[str, str]]
+
+
+_CURRENT_CHANGE_CAPABILITY: ContextVar[ChangeWriteCapability | None] = ContextVar(
+    "npi_change_control_write_capability",
+    default=None,
+)
 
 
 def require_change_command_write() -> None:
@@ -40,15 +64,80 @@ def require_change_observation_write() -> None:
 
 
 @contextmanager
-def change_command_write() -> Iterator[None]:
-    with _flag_scope(CHANGE_COMMAND_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
-        yield
+def change_command_write(
+    *,
+    service_actor_user_id: str,
+    scope: str,
+) -> Iterator[ChangeWriteCapability]:
+    _require_change_service_actor(service_actor_user_id)
+    if scope not in _CHANGE_COMMAND_SCOPES:
+        raise ValueError("Engineering change capability scope is unsupported.")
+    capability = ChangeWriteCapability(
+        actor=service_actor_user_id,
+        scope=scope,
+        allowed=_CHANGE_COMMAND_WRITES,
+    )
+    token = _CURRENT_CHANGE_CAPABILITY.set(capability)
+    try:
+        with _flag_scope(CHANGE_COMMAND_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
+            yield capability
+    finally:
+        _CURRENT_CHANGE_CAPABILITY.reset(token)
 
 
 @contextmanager
-def change_observation_write() -> Iterator[None]:
-    with change_command_write(), _flag_scope(CHANGE_OBSERVATION_WRITE_FLAG):
-        yield
+def change_observation_write(
+    *,
+    service_actor_user_id: str,
+    scope: str,
+) -> Iterator[ChangeWriteCapability]:
+    with change_command_write(
+        service_actor_user_id=service_actor_user_id,
+        scope=scope,
+    ) as capability, _flag_scope(CHANGE_OBSERVATION_WRITE_FLAG):
+        yield capability
+
+
+def save_change_support_document(
+    document: Any,
+    *,
+    capability: ChangeWriteCapability,
+) -> Any:
+    doctype = str(getattr(document, "doctype", ""))
+    if (
+        _CURRENT_CHANGE_CAPABILITY.get() is not capability
+        or getattr(getattr(frappe, "session", None), "user", None)
+        != capability.actor
+        or (doctype, "save") not in capability.allowed
+        or not getattr(frappe.flags, CHANGE_COMMAND_WRITE_FLAG, False)
+    ):
+        frappe.throw(
+            _(
+                "Engineering change records can only be changed through an authorized command."
+            ),
+            frappe.PermissionError,
+        )
+    return document.save(ignore_permissions=True)
+
+
+def _require_change_service_actor(service_actor_user_id: str) -> None:
+    session_user = getattr(getattr(frappe, "session", None), "user", None)
+    get_roles = getattr(frappe, "get_roles", None)
+    if (
+        not isinstance(service_actor_user_id, str)
+        or not service_actor_user_id
+        or service_actor_user_id != service_actor_user_id.strip()
+        or service_actor_user_id.casefold() in {"guest", "administrator"}
+        or session_user != service_actor_user_id
+        or not callable(get_roles)
+        or "NPI API User" not in set(get_roles(service_actor_user_id) or ())
+    ):
+        frappe.throw(
+            _(
+                "Engineering change records can only be changed through an authorized command."
+            ),
+            frappe.PermissionError,
+        )
 
 
 def deny_change_history_update() -> None:

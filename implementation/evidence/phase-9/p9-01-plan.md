@@ -541,3 +541,29 @@ order, transaction semantics, permissions, schemas, public contracts, UI and
 production behavior do not change. Level 1 passes focused `45/45`, full Python
 `2813/2813`, current/reconciliation, compilation, shell, security and diff
 checks. Exact-SHA ordinary PASS must precede one sole Level 2 diagnostic.
+
+## P9-01D revise root-save capability repair
+
+Revise-server SHA `8c90b94c` passed ordinary `33406427057`. Controlled run
+`33407800720` passed preflight and disposable Bench/Site initialization, then
+the strict exact-100 reader returned only
+`P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE / PermissionError /
+trace-ec856a083b0d5f72b0e1f4f74ffbcf4e`. Restricted output remained unread.
+
+The repository write order proves the revision and event append completed and
+the root projection was applied before the save failed. The active command
+scope and unchanged immutable/formal fields exclude the controller's other
+permission branches, leaving the Frappe root-save permission boundary as the
+first source. The repair does not widen metadata permissions. It adds one
+opaque request-local capability bound to the exact internal NPI API actor,
+operation scope, DocType, action and command flag, and permits only the root
+save helper to call `save(ignore_permissions=True)`. Security tests lock the
+single literal call and reject forged, expired or mismatched capabilities.
+
+The revise-server cycle is `1/1,1/1,0/1`. All runtime and API diagnostic
+activations return to false. Exact-SHA ordinary PASS must precede the sole
+diagnostics-off Level 3; no additional Level 2 is authorized. Level 1 passes
+focused repair/current/security `59/59`, full repository `2815/2815`, current
+and reconciliation checks, frontend generation and i18n (`8774` literal
+English sources with `100%` zh/zh-TW coverage), compilation, shell syntax,
+manifest and diff hygiene.

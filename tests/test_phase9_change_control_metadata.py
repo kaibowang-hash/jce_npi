@@ -137,7 +137,11 @@ class Phase9ChangeControlMetadataTest(unittest.TestCase):
             self.assertEqual(api_permission.get("read", 0), 0)
         for path in CHANGE_ROOT.rglob("*.py"):
             source = path.read_text(encoding="utf-8")
-            self.assertNotIn("ignore_permissions", source)
+            if path.name == "frappe_validation.py":
+                self.assertEqual(source.count("ignore_permissions=True"), 1)
+                self.assertIn("save_change_support_document", source)
+            else:
+                self.assertNotIn("ignore_permissions", source)
             self.assertNotIn("frappe.db." + "sql", source)
 
     def test_write_flags_restore_prior_state_and_observation_requires_command_scope(self) -> None:
@@ -146,17 +150,84 @@ class Phase9ChangeControlMetadataTest(unittest.TestCase):
             module.require_change_command_write()
         with self.assertRaises(error_type):
             module.require_change_observation_write()
-        with module.change_command_write():
+        with module.change_command_write(
+            service_actor_user_id="service@example.invalid",
+            scope="engineering_change.revise",
+        ):
             self.assertTrue(flags.npi_change_control_command_write)
             with self.assertRaises(error_type):
                 module.require_change_observation_write()
         self.assertFalse(hasattr(flags, "npi_change_control_command_write"))
-        with module.change_observation_write():
+        with module.change_observation_write(
+            service_actor_user_id="service@example.invalid",
+            scope="engineering_change.link_formal_observation",
+        ):
             module.require_change_observation_write()
             self.assertTrue(flags.npi_change_control_command_write)
             self.assertTrue(flags.npi_change_control_observation_write)
             self.assertTrue(flags.npi_audit_append)
         self.assertEqual(vars(flags), {})
+
+    def test_support_save_is_actor_bound_exact_and_expires_with_capability(self) -> None:
+        module, flags, error_type = self._load_guard_module()
+
+        class Document:
+            doctype = "NPI Engineering Change"
+
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def save(self, *, ignore_permissions: bool = False):
+                self.calls += 1
+                self.ignore_permissions = ignore_permissions
+                return self
+
+        document = Document()
+        with module.change_command_write(
+            service_actor_user_id="service@example.invalid",
+            scope="engineering_change.revise",
+        ) as capability:
+            self.assertIs(
+                module.save_change_support_document(
+                    document,
+                    capability=capability,
+                ),
+                document,
+            )
+            self.assertTrue(document.ignore_permissions)
+            wrong = Document()
+            wrong.doctype = "NPI Engineering Change Revision"
+            with self.assertRaises(error_type):
+                module.save_change_support_document(wrong, capability=capability)
+            self.assertEqual(wrong.calls, 0)
+        with self.assertRaises(error_type):
+            module.save_change_support_document(document, capability=capability)
+        self.assertEqual(document.calls, 1)
+        self.assertEqual(vars(flags), {})
+
+    def test_capability_rejects_wrong_actor_role_and_scope_before_write(self) -> None:
+        module, _flags, error_type = self._load_guard_module()
+        for actor in ("Guest", "Administrator", "other@example.invalid"):
+            with self.subTest(actor=actor), self.assertRaises(error_type):
+                with module.change_command_write(
+                    service_actor_user_id=actor,
+                    scope="engineering_change.revise",
+                ):
+                    self.fail("invalid actor reached the write scope")
+        module.frappe.session.user = "no-role@example.invalid"
+        with self.assertRaises(error_type):
+            with module.change_command_write(
+                service_actor_user_id="no-role@example.invalid",
+                scope="engineering_change.revise",
+            ):
+                self.fail("actor without the API role reached the write scope")
+        module.frappe.session.user = "service@example.invalid"
+        with self.assertRaises(ValueError):
+            with module.change_command_write(
+                service_actor_user_id="service@example.invalid",
+                scope="engineering_change.unsupported",
+            ):
+                self.fail("invalid scope reached the write scope")
 
     def test_data_ownership_keeps_formal_truth_in_erp_and_npi_impact_in_launchflow(self) -> None:
         source = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
@@ -198,6 +269,10 @@ class Phase9ChangeControlMetadataTest(unittest.TestCase):
         flags = types.SimpleNamespace()
         frappe = types.ModuleType("frappe")
         frappe.flags = flags
+        frappe.session = types.SimpleNamespace(user="service@example.invalid")
+        frappe.get_roles = lambda user: (
+            ["NPI API User"] if user == "service@example.invalid" else []
+        )
         frappe.PermissionError = PermissionErrorForTest
         frappe.ValidationError = ValidationErrorForTest
 
@@ -206,19 +281,24 @@ class Phase9ChangeControlMetadataTest(unittest.TestCase):
 
         frappe.throw = throw
         frappe._ = lambda source: source
-        previous = {name: sys.modules.get(name) for name in ("frappe",)}
+        module_name = "phase9_change_guard"
+        previous = {
+            name: sys.modules.get(name) for name in ("frappe", module_name)
+        }
         sys.modules["frappe"] = frappe
         try:
             path = CHANGE_ROOT / "frappe_validation.py"
-            spec = importlib.util.spec_from_file_location("phase9_change_guard", path)
+            spec = importlib.util.spec_from_file_location(module_name, path)
             assert spec and spec.loader
             module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
             spec.loader.exec_module(module)
         finally:
-            if previous["frappe"] is None:
-                sys.modules.pop("frappe", None)
-            else:
-                sys.modules["frappe"] = previous["frappe"]
+            for name, value in previous.items():
+                if value is None:
+                    sys.modules.pop(name, None)
+                else:
+                    sys.modules[name] = value
         return module, flags, PermissionErrorForTest
 
 

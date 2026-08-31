@@ -45,6 +45,10 @@ class Phase9ChangeControlRepositoryTest(unittest.TestCase):
         frappe = types.ModuleType("frappe")
         frappe._ = lambda source: source
         frappe.flags = types.SimpleNamespace()
+        frappe.session = types.SimpleNamespace(user="service@example.invalid")
+        frappe.get_roles = lambda user: (
+            ["NPI API User"] if user == "service@example.invalid" else []
+        )
         frappe.PermissionError = type("FrappePermissionError", (Exception,), {})
         frappe.ValidationError = type("FrappeValidationError", (Exception,), {})
         frappe.throw = lambda message, error_type: (_ for _ in ()).throw(error_type(str(message)))
@@ -122,8 +126,11 @@ class Phase9ChangeControlRepositoryTest(unittest.TestCase):
                 source.index("self._seal_receipt("),
             ]
             self.assertEqual(positions, sorted(positions))
-        self.assertIn("with change_command_write():", create)
-        self.assertIn("change_observation_write() if observation", successor)
+        self.assertIn("with change_command_write(", create)
+        self.assertIn("change_observation_write(", successor)
+        self.assertIn("service_actor_user_id=self.actor", create)
+        self.assertIn("service_actor_user_id=self.actor", successor)
+        self.assertIn("save_change_support_document(root, capability=capability)", successor)
 
     def test_actor_bound_receipts_include_tenant_project_actor_operation_and_key(self) -> None:
         first = self.repository._actor_key_hash(

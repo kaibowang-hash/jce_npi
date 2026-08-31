@@ -10260,3 +10260,34 @@ repeat or rewrite it merely to restore context. See
   `2813/2813`, current/reconciliation, compile, shell syntax, strict activation,
   lexical/order, security and diff checks.
 - Controller marker: `P9-01D revise-server diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01D revise root-save capability repair
+
+- Revise-server SHA `8c90b94c045624c692f93ae23e01f7d29eb25e68`
+  passed ordinary CI `33406427057` in all four lanes. Its sole Level 2
+  controlled run `33407800720` passed preflight `99539620431` and fixed
+  Bench/Site initialization; runtime `99539717716` returned exactly
+  `P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE / PermissionError /
+  trace-ec856a083b0d5f72b0e1f4f74ffbcf4e`. No response body, actual status,
+  business value, identity, exception message, stack or failed-child output
+  was read.
+- Source order proves revision/event insertion and root application completed
+  before Frappe rejected the root save. The command flag is active, the three
+  immutable ownership fields are unchanged and the first revise has no formal
+  observation, so the root `Document._save()` write-permission boundary is the
+  unique first source.
+- Keep DocType permissions unchanged. Authorize only one request-local,
+  actor-bound capability for `NPI Engineering Change/save`: exact session
+  actor, non-Guest/non-Administrator, `NPI API User`, exact operation scope,
+  exact DocType/action and active command flag. Only its single helper may use
+  the literal Frappe permission bypass; forged, expired, wrong-actor,
+  wrong-role, wrong-scope and wrong-DocType uses fail before writing.
+- Freeze revise-server diagnostic at `1/1`, repair at `1/1` and final at
+  `0/1`. Disable all seven runtime diagnostic activations and the API server
+  activation. After the exact-14 repair passes Level 1 and exact-SHA ordinary
+  CI, dispatch the sole diagnostics-off Level 3; do not run another Level 2.
+- Level 1 passes focused repair/current/security `59/59`, full repository
+  `2815/2815`, current/reconciliation, frontend generation and i18n (`8774`
+  literal English sources with `100%` zh/zh-TW coverage), compilation, shell
+  syntax, manifest and diff checks.
+- Controller marker: `P9-01D revise root-save capability repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.

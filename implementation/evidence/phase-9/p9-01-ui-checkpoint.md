@@ -288,3 +288,23 @@ Level 1 passes focused `45/45`, full repository Python `2813/2813`, current and
 reconciliation checks, compilation, shell syntax, exact activation/lexical/
 order/security contracts and diff hygiene. One exact-SHA ordinary and one sole
 Level 2 controlled diagnostic remain before any repair decision.
+
+## Revise root-save capability repair
+
+Exact-SHA ordinary `33406427057` passed. Controlled `33407800720` produced
+only `P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE / PermissionError /
+trace-ec856a083b0d5f72b0e1f4f74ffbcf4e`; no restricted runtime content was
+read. Static write and controller order excludes all later writes and all
+other root controller permission predicates for this first revise.
+
+The minimal repair leaves UI, contracts, schema, ownership and DocType role
+permissions unchanged. One actor-bound capability permits only the exact root
+save inside the already authorized command transaction, with exact session,
+role, scope, DocType, action and flag checks plus finally restoration. The
+global permission-bypass AST scanner locks this as the fourteenth and only new
+controlled literal call. All diagnostics are off. The cycle is
+`1/1,1/1,0/1`; exact-SHA ordinary and the sole Level 3 remain. Level 1 passes
+focused repair/current/security `59/59`, full repository `2815/2815`, current
+and reconciliation checks, frontend generation and i18n (`8774` literal
+English sources with `100%` zh/zh-TW coverage), compilation, shell syntax,
+manifest and diff hygiene.

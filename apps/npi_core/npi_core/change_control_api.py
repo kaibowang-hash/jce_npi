@@ -40,7 +40,7 @@ _CREATE_FIELDS = frozenset({"content"})
 _REVISE_FIELDS = frozenset({"predecessor", "content"})
 _OBSERVATION_FIELDS = frozenset({"predecessor", "formalChange"})
 _CLOSE_FIELDS = frozenset({"predecessor"})
-ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic"
 )
