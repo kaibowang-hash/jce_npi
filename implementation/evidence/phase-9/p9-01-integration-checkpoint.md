@@ -145,6 +145,31 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## Post-loopback-repair combined runtime boundary
+
+Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`
+passes ordinary `33445857640`. Its sole diagnostics-off Level 3
+`33446974525` passes four base jobs and controlled preflight `99671412959`;
+runtime `99671491574` fails only at the cumulative Engineering Change
+boundary. The source-derived allowlist matches exactly the fixed Engineering
+Change runtime failure label; restricted content remains unread.
+
+Freeze the repaired loopback cycle at `1/1,1/1,1/1`. A new independent
+product-behavior-neutral cycle starts `0/1,0/1,0/1`; only the new
+post-loopback-repair runtime/API activations are true. Exact 134 safe codes,
+deterministic trace, exact scopes, `O_EXCL` exact-three recording, strict
+reader, inner-first precedence, failed-output-unread and success-zero
+contracts are unchanged. Integration ownership, event, permission,
+idempotency, replay, queue, adapter and production contracts do not change.
+
+Level 1 passes focused current/API/runtime `42/42`, affected P8/P9
+security/contract/domain/runtime `122/122`, full repository `2823/2823`,
+current/reconciliation and formal repository verification, frontend
+generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+coverage), compilation, shell syntax, exact-12 and projected union-60
+manifests, unauthorized-13 rejection, new-only activation, security and diff
+hygiene.
+
 ## Disposable loopback transport repair
 
 Exact diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

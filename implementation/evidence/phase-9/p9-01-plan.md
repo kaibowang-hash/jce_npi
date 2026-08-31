@@ -729,6 +729,30 @@ compilation, shell syntax, exact-14 and projected union-60 manifests,
 unauthorized-15 rejection, all 21 diagnostics off, security and diff hygiene.
 Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
 
+## P9-01D post-loopback-repair combined diagnostic
+
+Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`
+passes ordinary `33445857640`. Its sole diagnostics-off Level 3
+`33446974525` passes the four ordinary-equivalent lanes and controlled
+preflight `99671412959`, then cumulative runtime `99671491574` returns only
+the fixed Engineering Change runtime failure label. Restricted content
+remains unread.
+
+Freeze the repaired loopback cycle at `1/1,1/1,1/1`. The independent
+product-behavior-neutral post-loopback-repair cycle starts `0/1,0/1,0/1`;
+its new-only activation reuses exact 134, deterministic trace, exact request
+scopes, exact-three `O_EXCL` recording, strict reader and inner-first
+precedence. All twelve historical activations are false. Product contracts,
+schema, permissions, UI, workflow and production behavior remain unchanged.
+
+Level 1 passes focused current/API/runtime `42/42`, affected P8/P9
+security/contract/domain/runtime `122/122`, full repository `2823/2823`,
+current/reconciliation and formal repository verification, frontend
+generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+coverage), compilation, shell syntax, exact-12 and projected union-60
+manifests, unauthorized-13 rejection, new-only activation, security and diff
+hygiene. Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
+
 ## P9-01D disposable runtime marker repair
 
 Post-raw-body SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b` passes

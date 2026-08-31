@@ -214,6 +214,9 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED
+        )
         self.assertEqual(
             sum(
                 (
@@ -229,9 +232,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_RAW_BODY_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED,
                 )
             ),
-            0,
+            1,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 134)
         server_codes = set(
@@ -408,6 +412,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             ), patch.object(
                 self.verifier,
                 "ENGINEERING_CHANGE_RUNTIME_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED",
                 False,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):

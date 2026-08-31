@@ -422,6 +422,24 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## Post-loopback-repair diagnostic UI boundary
+
+Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`
+passes ordinary `33445857640`; its diagnostics-off Level 3 `33446974525`
+fails only inside the Engineering Change runtime verifier after visual,
+frontend, repository, secret and controlled-preflight jobs pass. The new
+exact-134 diagnostic changes no UI, copy, translation, accessibility, route,
+screenshot or product behavior. Existing governed visual evidence remains
+the UI fact source; no visual refresh is authorized.
+
+Level 1 passes focused current/API/runtime `42/42`, affected P8/P9
+security/contract/domain/runtime `122/122`, full repository `2823/2823`,
+current/reconciliation and formal repository verification, frontend
+generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+coverage), compilation, shell syntax, exact-12 and projected union-60
+manifests, unauthorized-13 rejection, new-only activation, security and diff
+hygiene. No UI or visual baseline changed.
+
 ## Disposable loopback transport repair
 
 Diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df` passes

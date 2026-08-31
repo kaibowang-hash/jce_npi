@@ -10559,3 +10559,29 @@ repeat or rewrite it merely to restore context. See
   unauthorized-15 rejection, all-21-diagnostics-off, security and diff
   hygiene.
 - Controller marker: `P9-01D disposable loopback transport repair Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D post-loopback-repair combined diagnostic cycle
+
+- Disposable-loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`
+  passed ordinary CI `33445857640` in all four lanes. Its sole diagnostics-off
+  Level 3 `33446974525` passed the same four lanes and controlled preflight
+  `99671412959`; cumulative runtime `99671491574` failed after fixed
+  disposable Bench/Site initialization.
+- Fixed-source allowlist classification returned exactly `Local Frappe
+  Engineering Change runtime verification failed.` No raw/child output,
+  response/body, business value, identity, exception message or stack was
+  read. Freeze the closed loopback repair cycle at diagnostic `1/1`, repair
+  `1/1`, final `1/1`; the all-off label cannot identify a later predicate.
+- Open one independent product-behavior-neutral post-loopback-repair cycle at
+  `0/1,0/1,0/1`. Its only new activation reuses exact 134, deterministic
+  trace, exact request scopes, `O_EXCL` exact-three recording, strict reading
+  and inner-first precedence. All twelve historical runtime activations are
+  false; product and production behavior remain unchanged.
+- Level 1 passes focused current/API/runtime `42/42`, affected P8/P9
+  security/contract/domain/runtime `122/122`, full repository `2823/2823`,
+  current/reconciliation and formal repository verification, frontend
+  generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+  coverage), compilation, shell syntax, exact-12 and projected union-60
+  manifests, unauthorized-13 rejection, new-only activation, security and
+  diff hygiene.
+- Controller marker: `P9-01D post-loopback-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
