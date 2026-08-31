@@ -198,3 +198,20 @@ Level 1 passes the complete Phase 9 group `86/86` with `41` subtests and the
 focused runtime/current/reconciliation group `54/54` with `19` subtests.
 Compile, shell syntax and diff checks also pass; the exact-five change remains
 product-zero.
+
+## Exact-47 local-fixture tuple and bounded continuation
+
+Input-boundary SHA `9d402382` passed ordinary `33388932728`. Controlled run
+`33390091817` passed preflight and disposable Bench/Site initialization; its
+strict reader returned only `P901_CHANGE_INPUT_LOCAL_FIXTURE / RuntimeError /
+trace-cd5a27524dc759dc8c0b732a28a37007`.
+
+The cycle is frozen at `1/1,0/1,0/1`; this is still harness evidence only.
+One independent product-zero activation adds all ten local-fixture predicates
+to the existing 47 boundaries in a single batch, preserving inner precedence,
+strict records and unread restricted output. Product, API, repository, schema,
+route, UI, visual and contracts remain unchanged.
+
+Level 1 passes Phase 9 plus current/reconciliation `126/126` with `60`
+subtests, the governance scripts, compile, shell and diff checks. The
+exact-five change remains product-zero.

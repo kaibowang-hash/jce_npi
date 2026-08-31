@@ -10114,3 +10114,27 @@ repeat or rewrite it merely to restore context. See
   plus current/reconciliation scripts, compile, shell syntax and diff checks.
   Product, contract, schema, UI and workflow diffs remain zero.
 - Controller marker: `P9-01D Engineering Change input-boundary diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01D Engineering Change local-fixture diagnostic cycle
+
+- Input-boundary SHA `9d402382341fa6a5ec94b73c6f1a27226898e1d0`
+  passed ordinary `33388932728`: repository `99477806759`, secret
+  `99477806963`, visual `99477806990` and frontend `99477807037` all passed.
+  The sole Level 2 `33390091817` passed preflight `99481491719` and fixed
+  Bench/Site initialization; runtime `99481565000` returned exactly
+  `P901_CHANGE_INPUT_LOCAL_FIXTURE / RuntimeError /
+  trace-cd5a27524dc759dc8c0b732a28a37007`.
+- Freeze the input-boundary cycle at `1/1,0/1,0/1`; the local-fixture tuple is
+  still a harness boundary, not product repair evidence. Open one independent
+  product-zero local-fixture cycle at `0/1,0/1,0/1`.
+- Historical activations are false and only
+  `ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED` is true. The
+  existing exact 47 set gains all ten local-fixture predicates in one batch:
+  base URL, URL shape, Administrator literal, requester domain/case/standard
+  identity, tmp directory, Bench directory, Site guard and DB override env.
+  Inner predicates win before the existing local-fixture/input/full outer
+  fallbacks; restricted output stays unread.
+- Level 1 passes Phase 9 plus current/reconciliation `126/126` with `60`
+  subtests, both governance scripts, compile, shell syntax and diff checks.
+  Product, contract, schema, UI and workflow diffs remain zero.
+- Controller marker: `P9-01D Engineering Change local-fixture diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

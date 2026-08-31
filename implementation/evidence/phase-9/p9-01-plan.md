@@ -444,3 +444,21 @@ Level 1 passes all Phase 9 tests `86/86` with `41` subtests and the focused
 runtime/current/reconciliation group `54/54` with `19` subtests, plus current
 and reconciliation scripts, compilation, shell syntax and diff hygiene. The
 five changed paths remain product-zero.
+
+## P9-01D input-boundary result and local-fixture continuation
+
+Input-boundary ordinary `33388932728` passed all four lanes. Its sole Level 2
+`33390091817` passed preflight and fixed Bench/Site initialization, then the
+strict exact-47 reader returned `P901_CHANGE_INPUT_LOCAL_FIXTURE /
+RuntimeError / trace-cd5a27524dc759dc8c0b732a28a37007`.
+
+Freeze that cycle at `1/1,0/1,0/1`. The shared local-fixture guard still has
+ten independent conditions, so no product repair is authorized. A new
+product-zero activation retains all 47 existing boundaries and instruments
+the ten local-fixture conditions in one batch. Only that activation is true;
+the exact active set is 57 and the existing inner-to-outer `O_EXCL` precedence
+remains unchanged.
+
+Level 1 passes Phase 9 plus current/reconciliation `126/126` with `60`
+subtests, both governance scripts, compilation, shell syntax and diff hygiene.
+The exact-five change remains product-zero.

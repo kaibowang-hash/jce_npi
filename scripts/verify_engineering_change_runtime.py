@@ -21,6 +21,7 @@ from uuid import UUID, uuid5
 import verify_document_runtime as document_runtime
 from verify_frappe_runtime import (
     HttpResult,
+    RUNTIME_BASE_URL,
     login,
     request,
     require,
@@ -67,12 +68,23 @@ CLOSE_KEY = f"p9-change-close-{FIXTURE_RUN_ID}"
 _NAMESPACE = UUID("5d97e7f7-886a-50b9-8946-5740d5dc5927")
 ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
     {
         "P901_CHANGE_INVOCATION",
         "P901_CHANGE_INPUTS",
         "P901_CHANGE_INPUT_LOCAL_FIXTURE",
+        "P901_CHANGE_INPUT_BASE_URL",
+        "P901_CHANGE_INPUT_URL_SHAPE",
+        "P901_CHANGE_INPUT_ADMINISTRATOR",
+        "P901_CHANGE_INPUT_REQUESTER_DOMAIN",
+        "P901_CHANGE_INPUT_REQUESTER_CASE",
+        "P901_CHANGE_INPUT_REQUESTER_STANDARD",
+        "P901_CHANGE_INPUT_TMP_DIRECTORY",
+        "P901_CHANGE_INPUT_BENCH_DIRECTORY",
+        "P901_CHANGE_INPUT_SITE_GUARD",
+        "P901_CHANGE_INPUT_DATABASE_ENV",
         "P901_CHANGE_INPUT_PROJECT",
         "P901_CHANGE_INPUT_ACTORS",
         "P901_CHANGE_INPUT_RUNTIME_SECRET",
@@ -135,6 +147,7 @@ def _engineering_change_runtime_diagnostics_enabled() -> bool:
         ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED
+        or ENGINEERING_CHANGE_RUNTIME_LOCAL_FIXTURE_DIAGNOSTICS_ENABLED
     )
 
 
@@ -664,6 +677,99 @@ def _validate_inputs(base_url: str) -> tuple[str, str, str]:
     with engineering_change_runtime_diagnostic_step(
         "P901_CHANGE_INPUT_LOCAL_FIXTURE"
     ):
+        normalized_candidate = base_url.rstrip("/")
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_BASE_URL"
+        ):
+            require(
+                normalized_candidate == RUNTIME_BASE_URL,
+                "P9-01 runtime endpoint drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_URL_SHAPE"
+        ):
+            parsed = urllib.parse.urlparse(normalized_candidate)
+            require(
+                parsed.scheme == "http"
+                and parsed.hostname == "127.0.0.1"
+                and parsed.port == 8003
+                and parsed.username is None
+                and parsed.password is None
+                and parsed.path in {"", "/"}
+                and not parsed.params
+                and not parsed.query
+                and not parsed.fragment,
+                "P9-01 runtime URL shape drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_ADMINISTRATOR"
+        ):
+            require(
+                "Administrator" == "Administrator",
+                "P9-01 Administrator fixture drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_REQUESTER_DOMAIN"
+        ):
+            require(
+                REQUESTER_USER.lower().endswith("@example.invalid"),
+                "P9-01 requester fixture domain drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_REQUESTER_CASE"
+        ):
+            require(
+                REQUESTER_USER == REQUESTER_USER.lower(),
+                "P9-01 requester fixture case drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_REQUESTER_STANDARD"
+        ):
+            require(
+                REQUESTER_USER not in {"Administrator", "Guest"},
+                "P9-01 requester fixture identity drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_TMP_DIRECTORY"
+        ):
+            require(
+                not (ROOT / "tmp").is_symlink(),
+                "P9-01 runtime tmp directory drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_BENCH_DIRECTORY"
+        ):
+            expected_bench = ROOT / "tmp" / "frappe-bench"
+            require(
+                BENCH_PATH == expected_bench
+                and BENCH_PATH.is_dir()
+                and not BENCH_PATH.is_symlink()
+                and BENCH_PATH.resolve(strict=True) == expected_bench,
+                "P9-01 runtime Bench directory drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_SITE_GUARD"
+        ):
+            site_guard = ROOT / "scripts" / "verify_local_frappe_site.py"
+            require(
+                site_guard.is_file() and not site_guard.is_symlink(),
+                "P9-01 runtime Site guard drifted",
+            )
+        with engineering_change_runtime_diagnostic_step(
+            "P901_CHANGE_INPUT_DATABASE_ENV"
+        ):
+            require(
+                not any(
+                    os.environ.get(name)
+                    for name in (
+                        "FRAPPE_DB_HOST",
+                        "FRAPPE_DB_PORT",
+                        "FRAPPE_DB_SOCKET",
+                        "FRAPPE_DB_TYPE",
+                    )
+                ),
+                "P9-01 runtime database environment drifted",
+            )
         normalized = validate_local_fixture_inputs(
             base_url, "Administrator", REQUESTER_USER
         )
