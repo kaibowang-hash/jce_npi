@@ -424,3 +424,23 @@ full repository suite `2803/2803`, together with compilation, shell syntax,
 strict active-set/reader/failed-write fallback checks, security scans and diff
 hygiene. The exact five task paths contain no product, contract, schema, UI or
 workflow file. Exact-SHA ordinary CI is the next boundary.
+
+## P9-01D full-boundary result and input-boundary continuation
+
+Exact-SHA ordinary `33386534669` for `fd25830a` passed all four ordinary
+lanes. The sole Level 2 controlled run `33387724137` passed preflight and
+fixed Bench/Site initialization. Its strict exact-43 reader returned one safe
+tuple: `P901_CHANGE_INPUTS / RuntimeError /
+trace-5d58934faf5e581d8506479232ce96a9`.
+
+This freezes the full-boundary cycle at `1/1,0/1,0/1`, but does not authorize a
+product change. `_validate_inputs` contains four independent predicates, so a
+new product-zero cycle adds ordered codes for the local fixture, retained
+Project, actors and runtime secret while retaining the existing outer
+fallback. Only the new input-boundary activation is enabled; the exact active
+set is 47 codes and restricted output stays unread.
+
+Level 1 passes all Phase 9 tests `86/86` with `41` subtests and the focused
+runtime/current/reconciliation group `54/54` with `19` subtests, plus current
+and reconciliation scripts, compilation, shell syntax and diff hygiene. The
+five changed paths remain product-zero.

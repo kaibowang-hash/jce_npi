@@ -155,19 +155,23 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             set(literals), set(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES)
         )
         self.assertFalse(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED)
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
             sum(
                 (
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED,
                 )
             ),
             1,
         )
-        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 43)
+        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 47)
         self.assertTrue(all(literals.count(code) == 2 for code in set(literals)))
 
     def test_full_boundary_records_base_exception_without_overwriting_inner(self) -> None:

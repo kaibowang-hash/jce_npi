@@ -10089,3 +10089,28 @@ repeat or rewrite it merely to restore context. See
   five task paths remain within the current manifest; unrelated user-owned
   files remain unstaged and unchanged.
 - Controller marker: `P9-01D Engineering Change full-boundary diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01D Engineering Change input-boundary diagnostic cycle
+
+- Exact-SHA ordinary `33386534669` for `fd25830a` passed repository, secret,
+  visual and frontend. The sole Level 2 controlled run `33387724137` passed
+  preflight `99474011395` and fixed Bench/Site initialization, then runtime
+  `99474105666` returned the unique strict tuple
+  `P901_CHANGE_INPUTS / RuntimeError / trace-5d58934faf5e581d8506479232ce96a9`.
+- Freeze the product-zero full-boundary cycle at diagnostic `1/1`, repair
+  `0/1`, final `0/1`. The tuple is not a product repair authorization because
+  the input block contains four independent predicates: fixed local fixture,
+  retained Project identity, requester/worker actor boundary and the runtime
+  signing secret.
+- Open one independent product-zero input-boundary cycle at diagnostic `0/1`,
+  repair `0/1`, final `0/1`. Historical activations are false; only
+  `ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED` is true.
+  The active set is the existing 43 full-boundary codes plus four ordered
+  input codes. Inner input records win through the existing exact-name
+  `O_EXCL` record; the outer `P901_CHANGE_INPUTS` remains a fail-closed
+  fallback. Restricted child/business output remains unread.
+- Level 1 passes the full Phase 9 group `86/86` with `41` subtests and the
+  focused runtime/current/reconciliation group `54/54` with `19` subtests,
+  plus current/reconciliation scripts, compile, shell syntax and diff checks.
+  Product, contract, schema, UI and workflow diffs remain zero.
+- Controller marker: `P9-01D Engineering Change input-boundary diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

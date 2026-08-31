@@ -178,3 +178,23 @@ and reconciliation `40/40`, and full repository `2803/2803`, plus compile,
 shell, strict reader, security and diff checks. Product, visual and translation
 artifacts remain unchanged. The next action is the exact-five commit followed
 by its own ordinary CI; no Level 3 rerun is authorized at this checkpoint.
+
+## Exact-43 input tuple and bounded continuation
+
+Ordinary `33386534669` on `fd25830a` passed all ordinary lanes. Controlled
+run `33387724137` passed preflight `99474011395` and disposable Bench/Site
+initialization; runtime `99474105666` produced exactly
+`P901_CHANGE_INPUTS / RuntimeError /
+trace-5d58934faf5e581d8506479232ce96a9` through the strict safe reader.
+
+The full-boundary diagnostic is frozen at `1/1,0/1,0/1`. Because the input
+block covers four independent harness predicates, no product repair is
+authorized. A new product-zero activation reuses the exact-43 set and adds
+four ordered input codes, with inner record precedence and the existing input
+code as outer fallback. Product, API, repository, schema, route, UI and
+contracts remain unchanged.
+
+Level 1 passes the complete Phase 9 group `86/86` with `41` subtests and the
+focused runtime/current/reconciliation group `54/54` with `19` subtests.
+Compile, shell syntax and diff checks also pass; the exact-five change remains
+product-zero.

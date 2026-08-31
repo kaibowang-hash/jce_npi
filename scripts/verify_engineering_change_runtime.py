@@ -66,11 +66,16 @@ SUMMARY_KEY = f"p9-change-summary-{FIXTURE_RUN_ID}"
 CLOSE_KEY = f"p9-change-close-{FIXTURE_RUN_ID}"
 _NAMESPACE = UUID("5d97e7f7-886a-50b9-8946-5740d5dc5927")
 ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
     {
         "P901_CHANGE_INVOCATION",
         "P901_CHANGE_INPUTS",
+        "P901_CHANGE_INPUT_LOCAL_FIXTURE",
+        "P901_CHANGE_INPUT_PROJECT",
+        "P901_CHANGE_INPUT_ACTORS",
+        "P901_CHANGE_INPUT_RUNTIME_SECRET",
         "P901_CHANGE_FIXTURE_SECRET",
         "P901_CHANGE_FRESH_PARENT",
         "P901_CHANGE_RESULT",
@@ -129,6 +134,7 @@ def _engineering_change_runtime_diagnostics_enabled() -> bool:
     return (
         ENGINEERING_CHANGE_RUNTIME_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_FULL_BOUNDARY_DIAGNOSTICS_ENABLED
+        or ENGINEERING_CHANGE_RUNTIME_INPUT_BOUNDARY_DIAGNOSTICS_ENABLED
     )
 
 
@@ -655,19 +661,28 @@ def _runtime_secret() -> str:
 
 
 def _validate_inputs(base_url: str) -> tuple[str, str, str]:
-    normalized = validate_local_fixture_inputs(
-        base_url, "Administrator", REQUESTER_USER
-    )
-    project_id = _project_id()
-    require(
-        REQUESTER_USER.endswith("@example.invalid")
-        and WORKER_USER.endswith("@example.invalid")
-        and REQUESTER_USER not in {"Administrator", "Guest"}
-        and WORKER_USER not in {"Administrator", "Guest"}
-        and REQUESTER_USER != WORKER_USER,
-        "P9-01 runtime actor boundary drifted",
-    )
-    return normalized, project_id, _runtime_secret()
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INPUT_LOCAL_FIXTURE"
+    ):
+        normalized = validate_local_fixture_inputs(
+            base_url, "Administrator", REQUESTER_USER
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_INPUT_PROJECT"):
+        project_id = _project_id()
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_INPUT_ACTORS"):
+        require(
+            REQUESTER_USER.endswith("@example.invalid")
+            and WORKER_USER.endswith("@example.invalid")
+            and REQUESTER_USER not in {"Administrator", "Guest"}
+            and WORKER_USER not in {"Administrator", "Guest"}
+            and REQUESTER_USER != WORKER_USER,
+            "P9-01 runtime actor boundary drifted",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INPUT_RUNTIME_SECRET"
+    ):
+        secret = _runtime_secret()
+    return normalized, project_id, secret
 
 
 def run_disabled_probe(
