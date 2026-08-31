@@ -3,7 +3,7 @@
   "task_id": "P9-01",
   "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_FACT_DELTA_GOVERNANCE",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P9-02",
   "base_checkpoint": "065803ae484d885001259de8238ef01d0ad311e4",
@@ -26,6 +26,7 @@
     "Audit the existing LaunchFlow change-related domain, Gate, baseline, Tooling revision, Trial revalidation, audit, notification, ERP projection and integration-operation seams before defining any P9-01 product change.",
     "Freeze ERPNext as owner of the formal ECR, ECO or ECN identifier and execution status while LaunchFlow owns NPI impact assessment, affected engineering versions, revalidation tasks, evidence and Gate effects.",
     "Reuse accepted P8-07F production inventory first; only a missing, stale or checksum-drifted fact may use the standing bounded read-only JCE-Core boundary, with no production write or scope expansion.",
+    "Treat the accepted 27-of-28 relevant-DocType result as proof that Engineering Change Request exists, but collect only the missing exact ECR/ECO/ECN declarative metadata needed by P9-01 after a separate exact-SHA ordinary CI authorizes the existing collector and its focused test.",
     "Determine whether the approved architecture and contracts are a direct match; absent a specific proven difference, record NO_CHANGE and do not create an adjustment task.",
     "Freeze the smallest complete P9-01 vertical slices, exact ownership, contracts, permissions, idempotency, event/reconciliation behavior, migration and rollback, normal and fault tests, and applicable Level 3 boundary before product code."
   ],
@@ -46,6 +47,7 @@
     "CURRENT_ARCHITECTURE_DATA_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
     "NO_PROVEN_DIFFERENCE_MEANS_DIRECT_MATCH_NO_CHANGE_AND_NO_ADJUSTMENT_TASK",
     "PRODUCTION_FACT_READ_REUSES_FRESH_INVENTORY_AND_REMAINS_TASK_SCOPED_READ_ONLY_REDACTED_AND_FAIL_CLOSED",
+    "P9_01_FACT_DELTA_LIMITED_TO_EXACT_ECR_ECO_ECN_DECLARATIVE_METADATA_NO_BUSINESS_ROWS_OR_TARGET_METHODS",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
     "FORMAL_CHANGE_NUMBER_MAPPING_VERSION_ACTOR_TRACE_HASH_AND_IDEMPOTENCY_REMAIN_EXPLICIT",
     "TIMEOUT_AFTER_COMMIT_PARTIAL_STALE_CONFLICT_DUPLICATE_REPLAY_AND_RECONCILIATION_NEVER_BECOME_FAKE_SUCCESS",
@@ -69,9 +71,11 @@
     "implementation/phase-9-requirement-anchor.md",
     "implementation/evidence/phase-9/p9-00-validation.md",
     "implementation/evidence/phase-9/p9-01-plan.md",
+    "scripts/collect_erpnext_production_facts.py",
     "scripts/reconcile_v1_2_traceability.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
+    "tests/test_erpnext_production_fact_collector.py",
     "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {
@@ -79,7 +83,7 @@
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/reconcile_v1_2_traceability.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
-      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"],
+      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_erpnext_production_fact_collector", "tests.test_v1_2_reconciliation", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [

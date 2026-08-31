@@ -1,6 +1,6 @@
 # Phase 9 Requirement Anchor
 
-Status: `P9-00 PASS — P9-01 AUDIT ACTIVE`
+Status: `P9-00 PASS — P9-01 FACT-DELTA GOVERNANCE ACTIVE`
 
 This anchor is the product-code authorization boundary for Phase 9. It closes no
 Phase 9 requirement by itself. P9-00 exact SHA
@@ -73,3 +73,23 @@ Failure restores the P8-09 final checkpoint
 `6235502363e34b1279a0c0e26d8d6aecbbd7811f`; no product or external state needs
 rollback. A passing P9-00 may authorize only the P9-01 audit/plan boundary, not
 unreviewed product code.
+
+## P9-01 audit result and bounded fact delta
+
+P9-01 audit activation exact SHA
+`e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes ordinary CI
+`33345969806` in all four lanes. The existing LaunchFlow baseline-impact,
+Gate-review, Tooling-revision, Trial-revalidation, audit and integration
+mechanics are reusable. They do not create an ERP-owned formal change object.
+
+The accepted P8-07F 27-of-28 relevant-DocType result proves production
+`Engineering Change Request` is present and only `Injection Molding Condition`
+is absent. Its aggregate checksums do not retain the exact ECR/ECO/ECN fields,
+permissions, Workflow/Script and naming metadata needed for an evidence-based
+`INT-008` mapping. A separately gated delta may therefore extend only the
+existing collector and its focused test to query that exact three-name set and
+directly related declarative metadata. It may not read business rows, raw
+Scripts, secrets, target methods or unrelated metadata, and may not write or
+execute any ERP business action. Product code remains unauthorized until the
+sanitized result is accepted and the final P9-01 plan passes exact-SHA ordinary
+CI.

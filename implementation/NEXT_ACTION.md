@@ -1,9 +1,21 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P9-01`
+`IN_PROGRESS_FACT_DELTA_GOVERNANCE — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
+
+P9-01 audit activation exact SHA
+`e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes ordinary CI
+`33345969806` in all four lanes. Existing repository seams and the accepted
+production inventory have been audited. The inventory proves production
+`Engineering Change Request` exists, but it retains only aggregate
+DocType/DocField/DocPerm checksums, not the exact ECR/ECO/ECN mapping metadata
+needed to freeze `INT-008`. The sole next action is a zero-contact exact-SHA
+ordinary Gate for the existing collector and focused test paths. Only after it
+passes may one bounded read collect exact declarative change metadata; no
+business row, raw Script, secret, target command or production write is in
+scope. Product code remains unauthorized.
 
 P9-00 exact SHA `065803ae484d885001259de8238ef01d0ad311e4`
 passes ordinary CI `33345162833` in all four lanes. The Phase 9 requirement

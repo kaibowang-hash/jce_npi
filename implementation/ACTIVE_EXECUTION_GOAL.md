@@ -4,7 +4,16 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P9-01`
+- Mode: `IN_PROGRESS_FACT_DELTA_GOVERNANCE — P9-01`
+- P9-01 audit activation exact SHA
+  `e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes ordinary CI
+  `33345969806`: secret `99350038718`, visual `99350038806`, frontend
+  `99350038836` and repository `99350038884` all pass. The audit reuses the
+  accepted production inventory and proves `Engineering Change Request` is in
+  the accepted 27-of-28 object set, but its exact mapping metadata was not
+  retained. Product code remains unauthorized. The only active next boundary
+  is a zero-contact governance checkpoint authorizing a task-scoped,
+  declarative ECR/ECO/ECN metadata delta in the existing read-only collector.
 - Authoritative P9-00 closeout: exact SHA
   `065803ae484d885001259de8238ef01d0ad311e4` passes ordinary CI
   `33345162833`; repository `99347769577`, frontend `99347769578`, secret

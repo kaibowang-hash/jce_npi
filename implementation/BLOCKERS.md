@@ -4,7 +4,15 @@ Updated: `2026-08-30T00:00:00+07:00`
 
 ## Active hard blockers
 
-There is no active global or P9-01 audit blocker. P9-00 exact SHA
+There is no active global blocker. P9-01 has one bounded fact dependency, not a
+hard blocker: accepted production evidence proves `Engineering Change Request`
+exists but does not retain the exact declarative mapping metadata. Audit
+activation exact SHA `e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes
+ordinary `33345969806` in all four lanes. A zero-contact governance checkpoint
+must pass its own exact-SHA ordinary CI before the existing collector may read
+only ECR/ECO/ECN DocType, field, permission and directly related declarative
+metadata. Product implementation remains unauthorized until that fact delta is
+accepted and the frozen P9-01 plan passes. P9-00 exact SHA
 `065803ae484d885001259de8238ef01d0ad311e4` passes ordinary
 `33345162833` in all four lanes. P9-01 may audit and freeze its plan, but
 product code remains unauthorized until that plan passes its own exact-SHA

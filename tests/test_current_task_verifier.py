@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_AUDIT")
+        self.assertEqual(value["status"], "IN_PROGRESS_FACT_DELTA_GOVERNANCE")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertIn("FR-CH-001", value["requirement_ids"])
@@ -54,6 +54,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "NPI_ONE_OWNS_ENGINEERING_IMPACT_ASSESSMENT_AFFECTED_VERSION_REVALIDATION_TASK_EVIDENCE_AND_GATE_EFFECTS",
             "CURRENT_ARCHITECTURE_DATA_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
             "NO_PROVEN_DIFFERENCE_MEANS_DIRECT_MATCH_NO_CHANGE_AND_NO_ADJUSTMENT_TASK",
+            "P9_01_FACT_DELTA_LIMITED_TO_EXACT_ECR_ECO_ECN_DECLARATIVE_METADATA_NO_BUSINESS_ROWS_OR_TARGET_METHODS",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
@@ -73,20 +74,22 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/phase-9-requirement-anchor.md",
                 "implementation/evidence/phase-9/p9-00-validation.md",
                 "implementation/evidence/phase-9/p9-01-plan.md",
+                "scripts/collect_erpnext_production_facts.py",
                 "scripts/reconcile_v1_2_traceability.py",
                 "scripts/verify_v1_2_reconciliation.py",
                 "tests/test_current_task_verifier.py",
+                "tests/test_erpnext_production_fact_collector.py",
                 "tests/test_v1_2_reconciliation.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 17)
+        self.assertEqual(len(value["allowed_paths"]), 19)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])
         )
         self.assertEqual(
             sum(path.startswith("scripts/") for path in value["allowed_paths"]),
-            2,
+            3,
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:

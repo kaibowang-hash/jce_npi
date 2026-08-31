@@ -9750,3 +9750,31 @@ repeat or rewrite it merely to restore context. See
 - Preserve the portal and real-pilot deferrals, current architecture/contracts,
   stable ownership, and all user-owned dirty/untracked files.
 - Controller marker: `P9-00 Level 2 PASS; P9-01 audit active`.
+
+## 2026-08-31 P9-01 audit ordinary PASS; exact change-metadata delta governance
+
+- P9-01 audit activation exact SHA
+  `e6a99666f2f1101bb21ffd4d499728d015c5e98c` passes ordinary CI
+  `33345969806`: secret `99350038718`, visual `99350038806`, frontend
+  `99350038836` and repository `99350038884` all pass.
+- The existing baseline-impact, Gate-review, Tooling-revision,
+  Trial-revalidation, audit and integration seams remain the default-correct
+  LaunchFlow baseline. No product code is authorized and no redesign is
+  proposed.
+- Accepted P8-07F evidence proves production `Engineering Change Request` is
+  present in the 27-of-28 relevant-DocType set, but only aggregate field and
+  permission checksums were retained. Exact ECR/ECO/ECN mapping metadata is a
+  task-specific missing fact for `INT-008`.
+- This transition authorizes only the existing production-fact collector and
+  its focused test as future task paths. It makes zero production contact.
+  After this exact transition passes ordinary CI, the collector may add one
+  fixed three-name declarative metadata family covering DocType, DocField,
+  DocPerm, Custom Field, Property Setter, Workflow, Client/Server Script and
+  naming metadata. It must hash raw Script/condition/value content, read no
+  business rows, and retain the existing BatchMode, strict host-key,
+  no-forwarding, bounded-output, redaction, checksum and fail-closed rules.
+- The sanitized delta must be written to the accepted inventory and blueprint
+  before the P9-01 implementation plan is frozen. ERPNext remains formal-change
+  owner; LaunchFlow remains impact/revalidation owner. Product code, target
+  methods, production writes and scope expansion remain prohibited.
+- Controller marker: `P9-01 audit PASS; exact change metadata delta governance awaits ordinary CI`.
