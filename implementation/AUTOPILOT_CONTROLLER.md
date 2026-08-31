@@ -10291,3 +10291,28 @@ repeat or rewrite it merely to restore context. See
   literal English sources with `100%` zh/zh-TW coverage), compilation, shell
   syntax, manifest and diff checks.
 - Controller marker: `P9-01D revise root-save capability repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
+
+## 2026-08-31 P9-01D post-root-save combined diagnostic cycle
+
+- Root-save repair SHA `bef369aa5f81565190b8361a4061c7bc635405af`
+  passed ordinary CI `33411095363`: repository `99550557888`, frontend
+  `99550557869`, visual `99550557669` and secret scan `99550557947` all
+  passed. Its sole diagnostics-off Level 3 `33412574417` passed those four
+  lanes and controlled preflight `99559946254`, then controlled runtime
+  `99560052579` failed after fixed Bench/Site initialization.
+- Fixed-source allowlist classification returned exactly `Local Frappe
+  Engineering Change runtime verification failed.` No child output, response
+  status/body, business value, identity, exception message or stack was read.
+  The root-save cycle is frozen at diagnostic `1/1`, repair `1/1`, final
+  `1/1`; the all-off failure does not identify a later product predicate.
+- Open an independent product-zero post-root-save cycle at `0/1,0/1,0/1`.
+  Its only new activation reuses the same exact 100 outer/API/repository safe
+  codes, deterministic trace, exact request scope, `O_EXCL` exact-three
+  record, strict reader and inner-first precedence. All seven historical
+  runtime activations remain false. Product/domain/schema/permission/UI/
+  workflow behavior is unchanged outside the controlled disposable runtime.
+- Level 1 passes focused current/API/runtime `34/34`, full repository
+  `2815/2815`, current/reconciliation, frontend generation and i18n (`8774`
+  literal English sources with `100%` zh/zh-TW coverage), compilation, shell
+  syntax, exact-nine manifest and diff checks.
+- Controller marker: `P9-01D post-root-save combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

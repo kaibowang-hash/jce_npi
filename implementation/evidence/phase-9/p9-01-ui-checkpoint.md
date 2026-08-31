@@ -308,3 +308,23 @@ focused repair/current/security `59/59`, full repository `2815/2815`, current
 and reconciliation checks, frontend generation and i18n (`8774` literal
 English sources with `100%` zh/zh-TW coverage), compilation, shell syntax,
 manifest and diff hygiene.
+
+## Post-root-save combined runtime boundary
+
+Root-save repair SHA `bef369aa` passed ordinary `33411095363`, but its sole
+diagnostics-off Level 3 `33412574417` failed only inside the fresh Engineering
+Change runtime after fixed Bench/Site initialization. Fixed-source filtering
+matched exactly the Engineering Change runtime label; no restricted child or
+business content was read. Freeze the repaired cycle at `1/1,1/1,1/1`.
+
+The new independent product-zero cycle starts `0/1,0/1,0/1`. A single new
+activation reuses the exact 100 safe outer/API/repository stages and strict
+record/reader contract so the next controlled run can identify the first
+remaining predicate without guessing or changing product, UI, schema,
+permission, contract or workflow behavior.
+
+Level 1 passes focused current/API/runtime `34/34`, full repository
+`2815/2815`, current/reconciliation, frontend generation and i18n (`8774`
+literal English sources with `100%` zh/zh-TW coverage), compilation, shell
+syntax, exact-nine manifest and diff hygiene. Exact-SHA ordinary PASS must
+precede the cycle's sole Level 2 controlled diagnostic.

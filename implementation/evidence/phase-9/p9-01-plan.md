@@ -567,3 +567,23 @@ focused repair/current/security `59/59`, full repository `2815/2815`, current
 and reconciliation checks, frontend generation and i18n (`8774` literal
 English sources with `100%` zh/zh-TW coverage), compilation, shell syntax,
 manifest and diff hygiene.
+
+## P9-01D post-root-save combined diagnostic
+
+Root-save repair SHA `bef369aa` passed ordinary `33411095363`. Its sole
+diagnostics-off Level 3 `33412574417` passed the four ordinary-equivalent
+lanes and controlled preflight, then runtime `99560052579` failed after fixed
+Bench/Site initialization. Fixed-source label classification returned only
+`Local Frappe Engineering Change runtime verification failed.` Restricted
+runtime and child content remained unread.
+
+Freeze the root-save cycle at `1/1,1/1,1/1`. The independent post-root-save
+cycle starts `0/1,0/1,0/1` and changes no product behavior. Its new-only
+activation reuses the exact 100 outer/API/repository safe stages in the same
+run, deterministic trace and request scope, exact-three `O_EXCL` record,
+strict reader and inner-first precedence. Historical activations remain
+false; one exact-SHA ordinary PASS must precede its sole Level 2 diagnostic.
+Level 1 passes focused current/API/runtime `34/34`, full repository
+`2815/2815`, current/reconciliation, frontend generation and i18n (`8774`
+literal English sources with `100%` zh/zh-TW coverage), compilation, shell
+syntax, exact-nine manifest and diff hygiene.

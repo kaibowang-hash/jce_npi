@@ -41,6 +41,7 @@ _REVISE_FIELDS = frozenset({"predecessor", "content"})
 _OBSERVATION_FIELDS = frozenset({"predecessor", "formalChange"})
 _CLOSE_FIELDS = frozenset({"predecessor"})
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic"
 )
@@ -355,7 +356,10 @@ def _engineering_change_revise_server_diagnostic_active(
         form = getattr(getattr(frappe, "local", None), "form_dict", None)
         diagnostic_path = os.environ.get("NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH")
         return (
-            ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED
+            (
+                ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED
+                or ENGINEERING_CHANGE_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED
+            )
             and operation == "engineering_change.revise"
             and os.environ.get("NPI_P9_01C_RUNTIME_ENABLED") == "1"
             and isinstance(diagnostic_path, str)
