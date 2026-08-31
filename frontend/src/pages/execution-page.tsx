@@ -69,6 +69,10 @@ function operationLabel(t: T, kind: IntegrationOperationKind): string {
       return t("Create Tool Asset");
     case "update_tool_asset":
       return t("Update Tool Asset");
+    case "receive_engineering_change_event":
+      return t("Receive engineering change event");
+    case "publish_change_implementation_summary":
+      return t("Publish change implementation summary");
   }
 }
 
@@ -142,6 +146,12 @@ function faultLabel(
 function availableAction(
   item: IntegrationOperationItem,
 ): IntegrationOperationActionKind | null {
+  if (
+    item.operationKind === "receive_engineering_change_event" ||
+    item.operationKind === "publish_change_implementation_summary"
+  ) {
+    return null;
+  }
   if (item.replayEligible) return "replay";
   if (item.reconciliationRequired) return "request_reconciliation";
   return null;

@@ -4,7 +4,15 @@ Updated: `2026-08-31T00:00:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_01D_GOVERNANCE_GATE — P9-01`
+- Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- P9-01D governance exact SHA
+  `0e46d2d294176571fe620d6760151fb4df56fd13` passes ordinary CI
+  `33364478666`: repository `99402193443`, visual `99402193567`, secret
+  `99402193610` and frontend `99402193686` all pass. The authorized Project
+  Change Control tab, direct three-language catalogs, fixed disposable-Site
+  runtime harness and exact Linux visuals are implemented and locally green.
+  The sole next action is their exact-task commit and ordinary PASS, followed
+  by one P9-01 Level 3. No production ERP target/profile is active or contacted.
 - P9-01C implementation exact SHA
   `0c11b1f378b1c962b6d05739f3c1f3cad18ad389` passes ordinary CI
   `33363140068`: visual `99398340139`, secret `99398340217`, frontend

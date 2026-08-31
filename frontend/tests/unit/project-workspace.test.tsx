@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ProjectCockpitDataSource } from "../../src/api/project-data-source";
+import type { ChangeControlDataSource } from "../../src/api/change-control-data-source";
 import {
   NpiApiError,
   NpiTransportError,
@@ -25,16 +26,25 @@ import {
   projectWorkContextFixture,
 } from "../support/project-work-fixture";
 import { renderWithLocale } from "../support/render";
+import {
+  changeControlIds,
+  engineeringChangeCommandResult,
+  engineeringChangeDetail,
+  engineeringChangeList,
+  engineeringChangeSummaryReceipt,
+} from "../support/change-control-fixture";
 
 function renderWorkspace({
   cockpit = projectWorkCockpitFixture(),
   contextDataSource,
   domainWorkItemsDataSource,
+  changeControlDataSource,
   path = "/",
 }: {
   cockpit?: ProjectCockpitViewModel;
   contextDataSource?: ProjectWorkContextDataSource;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource;
+  changeControlDataSource?: ChangeControlDataSource;
   path?: string;
 } = {}): void {
   const dataSource: ProjectCockpitDataSource = {
@@ -45,6 +55,7 @@ function renderWorkspace({
       contextDataSource={contextDataSource}
       dataSource={dataSource}
       domainWorkItemsDataSource={domainWorkItemsDataSource}
+      changeControlDataSource={changeControlDataSource}
       globalId={cockpit.project.globalId}
       navigate={vi.fn()}
     />,
@@ -66,6 +77,47 @@ function problem(status: number, code: string, retryable = false): NpiApiError {
 }
 
 describe("live Project workspace tabs", () => {
+  it("loads Change Control only when its Project tab is selected", async () => {
+    const loadChanges = vi.fn<ChangeControlDataSource["loadChanges"]>(() =>
+      Promise.resolve(engineeringChangeList()),
+    );
+    const loadChange = vi.fn<ChangeControlDataSource["loadChange"]>(() =>
+      Promise.resolve(engineeringChangeDetail()),
+    );
+    const changeControlDataSource: ChangeControlDataSource = {
+      loadChanges,
+      loadChange,
+      createChange: () =>
+        Promise.resolve(
+          engineeringChangeCommandResult("engineering_change.create"),
+        ),
+      reviseChange: () =>
+        Promise.resolve(
+          engineeringChangeCommandResult("engineering_change.revise"),
+        ),
+      closeChange: () =>
+        Promise.resolve(
+          engineeringChangeCommandResult("engineering_change.close"),
+        ),
+      requestImplementationSummary: () =>
+        Promise.resolve(engineeringChangeSummaryReceipt()),
+    };
+    const user = userEvent.setup();
+    renderWorkspace({ changeControlDataSource });
+
+    await screen.findByRole("tab", { name: "Overview" });
+    expect(loadChanges).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("tab", { name: "Change control" }));
+    expect(
+      (await screen.findAllByText("Gate-safe material substitution"))[0],
+    ).toBeVisible();
+    expect(loadChanges).toHaveBeenCalledWith(
+      changeControlIds.project,
+      expect.any(AbortSignal),
+    );
+    expect(loadChange).toHaveBeenCalledTimes(1);
+  });
+
   it("preserves Overview as the default and does not prefetch protected tab resources", async () => {
     const contextLoad = vi.fn<ProjectWorkContextDataSource["load"]>(() =>
       Promise.resolve(projectWorkContextFixture()),

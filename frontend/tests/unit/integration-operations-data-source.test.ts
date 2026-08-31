@@ -151,6 +151,21 @@ describe("integration operations data source", () => {
     await expect(
       source.loadOperations("not-a-project", {}, signal),
     ).rejects.toBeInstanceOf(NpiTransportError);
+    await expect(
+      source.requestAction(
+        projectId,
+        {
+          ...integrationOperationItem("failed_retryable", 4),
+          operationKind: "receive_engineering_change_event",
+        },
+        "replay",
+        {
+          csrfToken: "c".repeat(32),
+          idempotencyKey: "p901-no-generic-replay-0001",
+          signal,
+        },
+      ),
+    ).rejects.toBeInstanceOf(NpiTransportError);
     expect(request).not.toHaveBeenCalled();
   });
 });

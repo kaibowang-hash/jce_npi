@@ -6,6 +6,8 @@ export const integrationOperationKinds = [
   "publish_mbom",
   "create_tool_asset",
   "update_tool_asset",
+  "receive_engineering_change_event",
+  "publish_change_implementation_summary",
 ] as const;
 export type IntegrationOperationKind =
   (typeof integrationOperationKinds)[number];
@@ -212,13 +214,14 @@ const LOGICAL_DLQ_STATES = new Set<IntegrationOperationState>([
   "conflict",
   "quarantined",
 ]);
-const ACTION_PATH: Readonly<Record<IntegrationOperationKind, string>> = {
-  receive_project_submission: "receive-project-submissions",
-  publish_item: "item-publishes",
-  publish_mbom: "mbom-publishes",
-  create_tool_asset: "tool-asset-creates",
-  update_tool_asset: "tool-asset-updates",
-};
+const ACTION_PATH: Readonly<Partial<Record<IntegrationOperationKind, string>>> =
+  {
+    receive_project_submission: "receive-project-submissions",
+    publish_item: "item-publishes",
+    publish_mbom: "mbom-publishes",
+    create_tool_asset: "tool-asset-creates",
+    update_tool_asset: "tool-asset-updates",
+  };
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -556,6 +559,7 @@ function commandReady(
   return (
     uuid(projectId) &&
     isIntegrationOperationItem(operation, projectId) &&
+    ACTION_PATH[operation.operationKind] !== undefined &&
     context.csrfToken.length >= 32 &&
     context.csrfToken.length <= 128 &&
     SAFE_IDEMPOTENCY.test(context.idempotencyKey) &&
@@ -651,9 +655,11 @@ export class LiveIntegrationOperationsDataSource implements IntegrationOperation
   ): Promise<IntegrationOperationActionResult> {
     if (!commandReady(projectId, operation, action, context))
       throw requestNotReady();
+    const actionPath = ACTION_PATH[operation.operationKind];
+    if (!actionPath) throw requestNotReady();
     const suffix = action === "replay" ? "replay" : "request-reconciliation";
     return this.http.request(
-      `/projects/${projectId}/integration-operations/${ACTION_PATH[operation.operationKind]}/${operation.operationGlobalId}:${suffix}`,
+      `/projects/${projectId}/integration-operations/${actionPath}/${operation.operationGlobalId}:${suffix}`,
       {
         body: JSON.stringify({
           expectedRawState: operation.rawState,

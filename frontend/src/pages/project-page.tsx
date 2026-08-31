@@ -17,6 +17,7 @@ import type { MbomPublishDataSource } from "../api/mbom-publish-data-source";
 import type { ControlledPrintDataSource } from "../api/controlled-print-data-source";
 import type { ReadinessDataSource } from "../api/readiness-data-source";
 import type { ProductionTransitionDataSource } from "../api/production-transition-data-source";
+import type { ChangeControlDataSource } from "../api/change-control-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type {
   ReportWorkspaceDirty,
@@ -240,6 +241,7 @@ function ProjectCockpit({
   publishRequestDataSource,
   productionTransitionDataSource,
   readinessDataSource,
+  changeControlDataSource,
   navigate,
   reportWorkspaceDirty,
   requestWorkspaceTransition,
@@ -256,6 +258,7 @@ function ProjectCockpit({
   publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   productionTransitionDataSource?: ProductionTransitionDataSource | undefined;
   readinessDataSource?: ReadinessDataSource | undefined;
+  changeControlDataSource?: ChangeControlDataSource | undefined;
   navigate: (target: string) => void;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
   requestWorkspaceTransition?: RequestWorkspaceTransition | undefined;
@@ -379,6 +382,7 @@ function ProjectCockpit({
         publishRequestDataSource={publishRequestDataSource}
         productionTransitionDataSource={productionTransitionDataSource}
         readinessDataSource={readinessDataSource}
+        changeControlDataSource={changeControlDataSource}
         navigate={navigate}
         onProjectChanged={synchronizeProjectControlState}
         reportWorkspaceDirty={reportWorkspaceDirty}
@@ -578,6 +582,7 @@ export default function ProjectPage({
   publishRequestDataSource,
   productionTransitionDataSource,
   readinessDataSource,
+  changeControlDataSource,
   globalId,
   navigate,
   reportWorkspaceDirty,
@@ -595,6 +600,7 @@ export default function ProjectPage({
   publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   productionTransitionDataSource?: ProductionTransitionDataSource | undefined;
   readinessDataSource?: ReadinessDataSource | undefined;
+  changeControlDataSource?: ChangeControlDataSource | undefined;
   globalId: string;
   navigate: (target: string) => void;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
@@ -685,6 +691,7 @@ export default function ProjectPage({
       publishRequestDataSource={publishRequestDataSource}
       productionTransitionDataSource={productionTransitionDataSource}
       readinessDataSource={readinessDataSource}
+      changeControlDataSource={changeControlDataSource}
       key={`${state.cockpit.project.globalId}:${String(state.cockpit.project.version)}`}
       navigate={navigate}
       reportWorkspaceDirty={reportWorkspaceDirty}

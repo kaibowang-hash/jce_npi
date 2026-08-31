@@ -9982,3 +9982,23 @@ repeat or rewrite it merely to restore context. See
 - This governance checkpoint changes no product and contacts no production
   ERP. Its own exact-SHA ordinary CI must pass before any P9-01D product edit.
 - Controller marker: `P9-01C ordinary PASS; P9-01D UI governance checkpoint exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01D governance PASS and implementation checkpoint
+
+- Governance exact SHA `0e46d2d294176571fe620d6760151fb4df56fd13`
+  passes ordinary CI `33364478666`: repository `99402193443`, visual
+  `99402193567`, secret `99402193610` and frontend `99402193686` all pass.
+- Implement exactly one Project-internal Change Control tab using the accepted
+  P9-01B Project-first commands, P9-01C implementation-summary seam and
+  read-only P8-07 operations. ERP observation identity/status stays read-only;
+  no top-level route, generic writer, browser ERP call or dual-master value is
+  introduced.
+- Local evidence passes full Python `2797/2797`, frontend unit `1097/1097`, P9
+  nonvisual E2E `2/2`, runtime/current focused `61/61`, type/lint/i18n (`8774`
+  direct sources, `100%` zh/zh-TW) and Linux x86_64 visuals `3/3` twice. The
+  fixed runtime harness is default-disabled, synthetic-only and exact-cleanup;
+  its authoritative execution is reserved for the exact-SHA Level 3.
+- Require one exact-task ordinary PASS followed by one P9-01 Level 3. A failed
+  Gate may only repair its evidenced bounded root in batch; it may not expand
+  product scope, modify CI workflow or contact production ERP.
+- Controller marker: `P9-01D implementation Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.

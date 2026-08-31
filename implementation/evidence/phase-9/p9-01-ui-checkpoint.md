@@ -1,6 +1,6 @@
 # P9-01D Project Change Workspace and Release-Proof Checkpoint
 
-Status: `GOVERNANCE FROZEN — EXACT-SHA ORDINARY CI PENDING`
+Status: `IMPLEMENTED — EXACT-SHA ORDINARY CI AND SOLE LEVEL 3 PENDING`
 
 ## Accepted predecessor
 
@@ -10,6 +10,12 @@ P9-01C implementation exact SHA
 `99398340305` and repository `99398340322` all pass. This accepts only the
 default-disabled reliable Engineering Change seam; it does not activate a
 production profile or authorize a production target call.
+
+P9-01D governance exact SHA
+`0e46d2d294176571fe620d6760151fb4df56fd13` passes ordinary CI
+`33364478666`: repository `99402193443`, visual `99402193567`, secret
+`99402193610` and frontend `99402193686` all pass. Product work therefore
+started only after its exact manifest and release boundary were accepted.
 
 ## Frozen product boundary
 
@@ -61,3 +67,39 @@ The exact file manifest is `implementation/CURRENT_TASK.json`. Product edits
 must not begin until this governance checkpoint's own exact-SHA ordinary CI
 passes all repository, frontend, secret and governed visual lanes. User-owned
 dirty documentation, local evidence and unrelated snapshots remain preserved.
+
+## Implementation and local evidence
+
+- The live Project workspace now contains one Project-internal `Change
+  control` tab. Its browser data source validates only the existing
+  Project-first P9-01B list/detail/command shapes and the P9-01C
+  implementation-summary receipt. No top-level route or ERP request exists.
+- The dense list, current immutable revision, impact matrix, affected objects,
+  implementation/revalidation evidence, effectivity, disposition, cost,
+  closure and event/ERP observation inspector preserve the approved ownership
+  split. Formal ERP identity and raw status are visibly read-only.
+- Loading, empty, permission, read-only, processing, current, drifted,
+  unavailable, validation, conflict, retryable and final failure behavior is
+  covered by unit/E2E fixtures. Command review binds the exact current
+  revision, actor, CSRF and a fresh idempotency key; conflict recovery reloads
+  current truth rather than replaying stale input.
+- The fixed disposable-Site verifier covers disabled, fresh, cross-process
+  replay, signed intake, operation-specific workers, route disable/recovery,
+  exact cleanup and log redaction. Failed Bench child output remains unread.
+  The local host Bench virtualenv is not portable, so the authoritative Site
+  execution remains the exact-SHA Level 3 rather than a simulated local PASS.
+
+Local Level 1 evidence is green: full repository Python `2797/2797`, full
+frontend unit `1097/1097`, focused nonvisual P9 E2E `2/2`, focused
+runtime/current-task checks `61/61`, TypeScript, ESLint, Prettier, Stylelint,
+industrial UI and boundary audits, and direct i18n `8774` sources with `100%`
+zh/zh-TW coverage. The three deterministic Playwright `1.61.1` Linux x86_64
+visuals pass create and unchanged verification `3/3`:
+
+- English: `sha256:245c6c6a4ad12e7f286fafb0763f34b8b787af4c8507a8e0f92a36bffc1c12df`;
+- Simplified Chinese: `sha256:772d113120b2775577904c48eb308007a70e6fa07de925f8b421dd97e5dcd5c8`;
+- Traditional Chinese: `sha256:79568ad958b65162f6897483140ee7dc28920aadec16b17b31b911c9053733e8`.
+
+The sole remaining acceptance sequence is one exact-task commit, its ordinary
+CI PASS, and one P9-01/Phase-9 applicable Level 3. No production ERP profile,
+target, configuration or data is contacted or changed.

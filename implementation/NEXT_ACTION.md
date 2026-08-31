@@ -1,9 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_01D_GOVERNANCE_GATE — P9-01`
+`IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
 
 Recovery time: `2026-08-31T00:00:00+07:00`
+
+P9-01D governance exact SHA
+`0e46d2d294176571fe620d6760151fb4df56fd13` passes ordinary CI
+`33364478666` in all four lanes. The exact manifest implementation is locally
+green: Project-internal Change Control only, direct en/zh/zh-TW, P9 nonvisual
+E2E, three deterministic Linux x86_64 visuals and the fixed disposable-Site
+runtime harness. The sole next action is one exact-task commit and ordinary CI
+PASS followed by one P9-01 Level 3. Do not contact production ERPNext, enable a
+profile, add a top-level route, or stage user-owned documentation/snapshots.
 
 P9-01C implementation exact SHA
 `0c11b1f378b1c962b6d05739f3c1f3cad18ad389` passes ordinary CI

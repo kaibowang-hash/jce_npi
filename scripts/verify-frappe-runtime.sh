@@ -64,7 +64,12 @@ unset \
   NPI_P8_07_RUNTIME_MARKER \
   NPI_P8_07_RUNTIME_PROJECT_ID \
   NPI_P8_07_RUNTIME_REQUESTER \
-  NPI_P8_07_RUNTIME_WORKER
+  NPI_P8_07_RUNTIME_WORKER \
+  NPI_P9_01C_RUNTIME_ENABLED \
+  NPI_P9_01C_RUNTIME_PROJECT_ID \
+  NPI_P9_01C_RUNTIME_REQUESTER \
+  NPI_P9_01C_RUNTIME_WORKER \
+  NPI_P9_01C_RUNTIME_SECRET
 
 # shellcheck disable=SC1090
 source "${toolchain_file}"
@@ -518,6 +523,31 @@ else:
     "${bench_path}/sites/${site_name}/site_config.json"
 }
 
+engineering_change_route_switch_state() {
+  "${bench_path}/env/bin/python" -c \
+    'import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+switch_name = "npi_p9_01_routes_disabled"
+if switch_name not in config:
+    print("absent")
+elif config[switch_name] is True:
+    print("true")
+elif config[switch_name] is False:
+    print("false")
+else:
+    print("invalid")' \
+    "${bench_path}/sites/${site_name}/site_config.json"
+}
+
+runtime_disposable_marker_state() {
+  "${bench_path}/env/bin/python" -c \
+    'import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+value = config.get("npi_runtime_disposable_marker")
+print(value if isinstance(value, str) else "invalid")' \
+    "${bench_path}/sites/${site_name}/site_config.json"
+}
+
 verify_p405_route_switch_state() {
   local expected="$1"
   local actual
@@ -892,6 +922,13 @@ if [[ "${integration_operations_route_disable_original_state}" != "absent" ]]; t
   echo "Runtime Site must start without the P8-07 route-disable switch." >&2
   exit 2
 fi
+engineering_change_route_disable_original_state="$(
+  engineering_change_route_switch_state
+)"
+if [[ "${engineering_change_route_disable_original_state}" != "absent" ]]; then
+  echo "Runtime Site must start without the P9-01 route-disable switch." >&2
+  exit 2
+fi
 if [[ "${verification_mode}" == "all" ||
       "${verification_mode}" == "--document-only" ||
       "${verification_mode}" == "--tooling-only" ||
@@ -941,6 +978,9 @@ mbom_publish_runtime_environment_active=false
 tool_asset_runtime_environment_active=false
 integration_operations_route_disable_config_changed=false
 integration_operations_runtime_environment_active=false
+engineering_change_route_disable_config_changed=false
+engineering_change_runtime_environment_active=false
+runtime_disposable_marker_changed=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -1298,6 +1338,35 @@ set_integration_operations_route_switch() {
   fi
 }
 
+set_engineering_change_route_switch() {
+  local value="$1"
+  local expected="$2"
+  (
+    cd "${bench_path}"
+    bench --site "${site_name}" set-config \
+      npi_p9_01_routes_disabled "${value}"
+  )
+  local actual
+  actual="$(engineering_change_route_switch_state)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "P9-01 route-disable switch state is ${actual}, expected ${expected}." >&2
+    return 1
+  fi
+}
+
+set_runtime_disposable_marker() {
+  local value="$1"
+  (
+    cd "${bench_path}"
+    bench --site "${site_name}" set-config \
+      npi_runtime_disposable_marker "${value}"
+  )
+  if [[ "$(runtime_disposable_marker_state)" != "${value}" ]]; then
+    echo "Runtime disposable marker state drifted." >&2
+    return 1
+  fi
+}
+
 restore_p405_route_switch() {
   if ! set_p405_route_switch None absent; then
     return 1
@@ -1466,6 +1535,20 @@ restore_integration_operations_route_switch() {
   integration_operations_route_disable_config_changed=false
 }
 
+restore_engineering_change_route_switch() {
+  if ! set_engineering_change_route_switch None absent; then
+    return 1
+  fi
+  engineering_change_route_disable_config_changed=false
+}
+
+restore_runtime_disposable_marker() {
+  if ! set_runtime_disposable_marker "${runtime_marker}"; then
+    return 1
+  fi
+  runtime_disposable_marker_changed=false
+}
+
 cleanup() {
   local exit_status=$?
   trap - EXIT
@@ -1491,6 +1574,16 @@ cleanup() {
   if [[ "${integration_operations_runtime_environment_active}" == true ]]; then
     clear_integration_operations_runtime_environment
     integration_operations_runtime_environment_active=false
+  fi
+  if [[ "${engineering_change_runtime_environment_active}" == true ]]; then
+    clear_engineering_change_runtime_environment
+    engineering_change_runtime_environment_active=false
+  fi
+  if [[ "${runtime_disposable_marker_changed}" == true ]]; then
+    if ! restore_runtime_disposable_marker; then
+      echo "Failed to restore the disposable runtime marker." >&2
+      exit_status=1
+    fi
   fi
   if [[ "${route_disable_config_changed}" == true ]]; then
     if ! restore_p405_route_switch; then
@@ -1633,6 +1726,12 @@ cleanup() {
   if [[ "${integration_operations_route_disable_config_changed}" == true ]]; then
     if ! restore_integration_operations_route_switch; then
       echo "Failed to restore the P8-07 route-disable switch to absent." >&2
+      exit_status=1
+    fi
+  fi
+  if [[ "${engineering_change_route_disable_config_changed}" == true ]]; then
+    if ! restore_engineering_change_route_switch; then
+      echo "Failed to restore the P9-01 route-disable switch to absent." >&2
       exit_status=1
     fi
   fi
@@ -1890,9 +1989,15 @@ inbound_project_runtime_secret_new="$(
     'import hashlib, sys; print(hashlib.sha256(("p8-new:" + sys.argv[1]).encode()).hexdigest())' \
     "${document_runtime_run_id}"
 )"
+engineering_change_runtime_secret="$(
+  "${bench_path}/env/bin/python" -c \
+    'import hashlib, sys; print(hashlib.sha256(("p9-change:" + sys.argv[1]).encode()).hexdigest())' \
+    "${document_runtime_run_id}"
+)"
 if [[ ! "${inbound_project_runtime_template_id}" =~ ^[a-f0-9-]{36}$ ||
       ! "${inbound_project_runtime_secret_old}" =~ ^[a-f0-9]{64}$ ||
       ! "${inbound_project_runtime_secret_new}" =~ ^[a-f0-9]{64}$ ||
+      ! "${engineering_change_runtime_secret}" =~ ^[a-f0-9]{64}$ ||
       ! "${item_publish_runtime_actor}" =~ ^npi-document-[a-f0-9]{20}-baseline@example[.]invalid$ ]]; then
   echo "Inbound Project runtime fixture generation failed." >&2
   exit 2
@@ -3255,6 +3360,71 @@ run_integration_operations_runtime_verifier() {
   )
 }
 
+export_engineering_change_runtime_environment() {
+  export NPI_P9_01C_RUNTIME_ENABLED=1
+  export NPI_P9_01C_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
+  export NPI_P9_01C_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
+  export NPI_P9_01C_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+  export NPI_P9_01C_RUNTIME_SECRET="${engineering_change_runtime_secret}"
+}
+
+clear_engineering_change_runtime_environment() {
+  unset \
+    NPI_P9_01C_RUNTIME_ENABLED \
+    NPI_P9_01C_RUNTIME_PROJECT_ID \
+    NPI_P9_01C_RUNTIME_REQUESTER \
+    NPI_P9_01C_RUNTIME_WORKER \
+    NPI_P9_01C_RUNTIME_SECRET
+}
+
+run_engineering_change_runtime_verifier() {
+  local mode="$1"
+  (
+    unset FRAPPE_DB_HOST FRAPPE_DB_PORT FRAPPE_DB_SOCKET FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD NPI_DATABASE_ROOT_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    if [[ "${mode}" == "disabled" ]]; then
+      clear_engineering_change_runtime_environment
+      export NPI_P9_01C_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
+      export NPI_P9_01C_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
+      export NPI_P9_01C_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+      export NPI_P9_01C_RUNTIME_SECRET="${engineering_change_runtime_secret}"
+      exec python "${repo_root}/scripts/verify_engineering_change_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}" \
+        --disabled-probe
+    fi
+    export_engineering_change_runtime_environment
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_engineering_change_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}"
+    fi
+    if [[ "${mode}" == "replay-only" ]]; then
+      exec python "${repo_root}/scripts/verify_engineering_change_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}" \
+        --replay-only
+    fi
+    if [[ "${mode}" == "recovered" ]]; then
+      exec python "${repo_root}/scripts/verify_engineering_change_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}" \
+        --recovered-probe
+    fi
+    if [[ "${mode}" == "cleanup" ]]; then
+      exec python "${repo_root}/scripts/verify_engineering_change_runtime.py" \
+        --base-url "${base_url}" \
+        --project-id "${item_publish_runtime_project_id}" \
+        --cleanup
+    fi
+    echo "Unknown P9-01 engineering change runtime verification mode." >&2
+    exit 2
+  )
+}
+
 run_quality_link_runtime_verifier() {
   (
     unset \
@@ -3478,6 +3648,26 @@ verify_integration_operations_runtime_log_redaction() {
 
 report_integration_operations_runtime_failure() {
   echo "P8-07 runtime log output withheld because it may contain integration history or target identities." >&2
+}
+
+verify_engineering_change_runtime_log_redaction() {
+  local marker
+  for marker in \
+    "${engineering_change_runtime_secret}" \
+    "P9 runtime engineering change" \
+    "ECR-RUNTIME-" \
+    "erpnext-disposable-runtime" \
+    "network-free-engineering-change-v1" \
+    "/private/files/"; do
+    if grep --fixed-strings --quiet -- "${marker}" "${runtime_log}"; then
+      echo "P9-01 runtime fixture, signed value, target identity or private path leaked into the runtime log." >&2
+      return 1
+    fi
+  done
+}
+
+report_engineering_change_runtime_failure() {
+  echo "P9-01 runtime log output withheld because it may contain signed change values or target identities." >&2
 }
 
 report_item_publish_runtime_failure() {
@@ -4432,6 +4622,85 @@ if [[ "${verification_mode}" == "all" ||
   if ! run_integration_operations_runtime_verifier recovered; then
     echo "Local Frappe integration operations route recovery verification failed." >&2
     report_integration_operations_runtime_failure
+    exit 1
+  fi
+  # P9-01 reuses the retained disposable Project and the two already-bound
+  # non-Administrator service actors. Its target is the reviewed network-free
+  # Synthetic adapter only; production profiles and transport remain absent.
+  if ! run_engineering_change_runtime_verifier disabled; then
+    echo "Local Frappe Engineering Change default-disabled probe failed." >&2
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_engineering_change_route_switch false false
+  engineering_change_route_disable_config_changed=true
+  set_runtime_disposable_marker npi-one-engineering-change-disposable-v1
+  runtime_disposable_marker_changed=true
+  export_engineering_change_runtime_environment
+  engineering_change_runtime_environment_active=true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  if ! run_engineering_change_runtime_verifier fresh; then
+    echo "Local Frappe Engineering Change runtime verification failed." >&2
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  if ! run_engineering_change_runtime_verifier replay-only; then
+    echo "Local Frappe Engineering Change cross-process replay verification failed." >&2
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_engineering_change_route_switch true true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  if ! run_engineering_change_runtime_verifier disabled; then
+    echo "Local Frappe Engineering Change route-disable verification failed." >&2
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_engineering_change_route_switch false false
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  if ! run_engineering_change_runtime_verifier recovered; then
+    echo "Local Frappe Engineering Change route recovery verification failed." >&2
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  if ! run_engineering_change_runtime_verifier cleanup; then
+    echo "Local Frappe Engineering Change cleanup verification failed." >&2
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  if ! verify_engineering_change_runtime_log_redaction; then
+    report_engineering_change_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  clear_engineering_change_runtime_environment
+  engineering_change_runtime_environment_active=false
+  restore_runtime_disposable_marker
+  restore_engineering_change_route_switch
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_engineering_change_runtime_failure
     exit 1
   fi
   # Insert one marker-gated 8dd-shaped row after the executable proof, run the

@@ -148,7 +148,6 @@ describe("live integration operations workspace", () => {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
     expect(screen.getByText("Showing 10 operations")).toBeVisible();
-
     const processing = integrationOperationItem("processing", 2);
     const row = operationRow(processing.operationGlobalId);
     row.focus();
@@ -169,6 +168,50 @@ describe("live integration operations workspace", () => {
     expect(screen.getByText("Attempts")).toBeVisible();
     expect(screen.getByText("Results")).toBeVisible();
     expect(screen.getByText("Action history")).toBeVisible();
+  });
+
+  it("shows the two engineering-change operations as observe-only", async () => {
+    const received = {
+      ...integrationOperationItem("uncertain", 6),
+      operationKind: "receive_engineering_change_event" as const,
+    };
+    const published = {
+      ...integrationOperationItem("failed_retryable", 7),
+      operationKind: "publish_change_implementation_summary" as const,
+    };
+    renderPage(
+      source({
+        loadOperations: vi.fn(() =>
+          Promise.resolve(
+            integrationOperationCollection({ items: [received, published] }),
+          ),
+        ),
+        loadOperation: vi.fn((_project, _kind, id) =>
+          Promise.resolve(
+            integrationOperationDetail(
+              id === received.operationGlobalId ? received : published,
+            ),
+          ),
+        ),
+      }),
+    );
+
+    expect(
+      (await screen.findAllByText("Receive engineering change event"))[0],
+    ).toBeVisible();
+    expect(
+      screen.getAllByText("Publish change implementation summary")[0],
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        "This operation is observe-only. Correction or new owning commands remain outside this workspace.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", {
+        name: "Review and request reconciliation",
+      }),
+    ).toBeNull();
   });
 
   it("renders the empty state and requests the logical DLQ projection", async () => {

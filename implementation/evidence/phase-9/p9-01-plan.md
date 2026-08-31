@@ -1,6 +1,6 @@
 # P9-01 Change Impact and Revalidation Plan
 
-Status: `P9-01C INT-008 GOVERNANCE CHECKPOINT — EXACT-SHA ORDINARY CI PENDING`
+Status: `P9-01D IMPLEMENTATION — EXACT-SHA ORDINARY CI AND LEVEL 3 PENDING`
 
 ## Accepted predecessor
 
@@ -338,3 +338,21 @@ The exact state matrix, three direct languages, three governed Linux visuals
 and fixed disposable-Site proof are frozen in
 `p9-01-ui-checkpoint.md`. Product code starts only after this governance
 checkpoint passes its own exact-SHA ordinary CI.
+
+## P9-01D governance acceptance and implementation evidence
+
+The governance checkpoint exact SHA
+`0e46d2d294176571fe620d6760151fb4df56fd13` passes ordinary CI
+`33364478666`: repository `99402193443`, visual `99402193567`, secret
+`99402193610` and frontend `99402193686` all pass. The bounded P9-01D manifest
+is therefore effective without any production ERP contact or activation.
+
+The implementation adds only the existing Project route's Change Control tab,
+strict P9-01B/P9-01C browser validation, two read-only operation labels,
+direct catalogs, focused fixtures/tests, exact Linux baselines and the
+synthetic fixed-Site runtime proof. It does not alter P9 domain/API/schema,
+production profiles or ERP configuration. Local Level 1 passes full Python
+`2797/2797`, frontend unit `1097/1097`, P9 E2E `2/2`, runtime/current focused
+`61/61`, complete static/i18n checks and deterministic Linux visuals `3/3`.
+The remaining atomic boundary is one exact-task ordinary PASS and one P9-01
+Level 3; P9-02 and production activation remain excluded until that Gate.

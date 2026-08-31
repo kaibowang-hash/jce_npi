@@ -63,3 +63,11 @@ passes ordinary CI `33363140068`: visual `99398340139`, secret
 `99398340217`, frontend `99398340305` and repository `99398340322` all pass.
 P9-01C is accepted at this exact default-disabled boundary. P9-01D UI,
 production adapter/profile activation and any ERPNext change remain separate.
+
+P9-01D governance exact SHA
+`0e46d2d294176571fe620d6760151fb4df56fd13` and ordinary CI `33364478666`
+accept the later UI/runtime manifest. The implemented workspace only consumes
+this checkpoint's existing operation-specific boundaries; it does not change
+the signed event, summary contract, worker/retry semantics or production
+activation state. The fixed disposable-Site verifier adds cumulative proof,
+not a new target adapter or an ERP success claim.

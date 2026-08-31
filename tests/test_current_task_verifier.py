@@ -36,9 +36,15 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_01D_GOVERNANCE_GATE")
+        self.assertEqual(
+            value["status"], "IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE"
+        )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
+        self.assertEqual(
+            value["expected_state"]["controller_marker"],
+            "P9-01D implementation Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending",
+        )
         self.assertIn("FR-CH-001", value["requirement_ids"])
         self.assertIn("FR-CH-010", value["requirement_ids"])
         self.assertIn("INT-008", value["requirement_ids"])
@@ -73,6 +79,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01C_DUPLICATE_REORDER_CONFLICT_PARTIAL_429_5XX_TIMEOUT_AFTER_COMMIT_REMAIN_EXPLICIT",
             "P9_01C_UNCERTAIN_OR_PARTIAL_RESULT_NEVER_AUTOMATICALLY_REDISPATCHED",
             "P9_01C_EXACT_SHA_0C11B1F3_ORDINARY_33363140068_ALL_FOUR_JOBS_PASS",
+            "P9_01D_GOVERNANCE_EXACT_SHA_0E46D2D2_ORDINARY_33364478666_ALL_FOUR_JOBS_PASS",
             "P9_01D_PROJECT_TAB_ONLY_NO_NEW_TOP_LEVEL_NAVIGATION",
             "P9_01D_EXISTING_PROJECT_FIRST_API_AND_OPERATION_SPECIFIC_INTEGRATION_SEAMS_ONLY",
             "P9_01D_ERP_OBSERVATION_FIELDS_REMAIN_READ_ONLY_AND_NPI_IMPACT_EVIDENCE_REMAINS_NPI_OWNED",

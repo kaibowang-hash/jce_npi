@@ -34,6 +34,7 @@ import { LiveTrialDataSource } from "../api/trial-data-source";
 import { LiveReadinessDataSource } from "../api/readiness-data-source";
 import { LiveProductionTransitionDataSource } from "../api/production-transition-data-source";
 import { LiveIntegrationOperationsDataSource } from "../api/integration-operations-data-source";
+import { LiveChangeControlDataSource } from "../api/change-control-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -79,6 +80,7 @@ const liveProductionTransitionDataSource =
   new LiveProductionTransitionDataSource();
 const liveIntegrationOperationsDataSource =
   new LiveIntegrationOperationsDataSource();
+const liveChangeControlDataSource = new LiveChangeControlDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -196,6 +198,7 @@ export function App(): React.JSX.Element {
         publishRequestDataSource={liveEngineeringBomPublishRequestDataSource}
         productionTransitionDataSource={liveProductionTransitionDataSource}
         readinessDataSource={liveReadinessDataSource}
+        changeControlDataSource={liveChangeControlDataSource}
         globalId={route.projectGlobalId ?? ""}
         navigate={guardedNavigate}
         reportWorkspaceDirty={reportWorkspaceDirty}
