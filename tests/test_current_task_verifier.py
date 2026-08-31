@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-01")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_01B_COMMAND_QUERY")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_01C_CHECKPOINT")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertIn("FR-CH-001", value["requirement_ids"])
@@ -45,7 +45,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertNotIn("FR-RP-001", value["requirement_ids"])
         self.assertEqual(
             value["base_checkpoint"],
-            "cf24e863146d11c4a35b4589ac7a582b42fde623",
+            "73a7282da3d5a6e278dccdf95a681ae47f759a0d",
         )
         for invariant in (
             "P9_00_EXACT_SHA_065803AE_ORDINARY_33345162833_ALL_FOUR_JOBS_PASS",
@@ -65,6 +65,13 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01B_EVERY_SUCCESSOR_BINDS_EXACT_CURRENT_REVISION_VERSION_AND_SNAPSHOT_HASH",
             "P9_01B_COMMANDS_ARE_CSRF_ACTOR_IDEMPOTENCY_AUDIT_AND_SINGLE_TRANSACTION_BOUND",
             "P9_01B_FORMAL_CHANGE_FIELDS_ARE_LINK_OBSERVATION_OWNED_AND_NEVER_CALLER_EDITABLE",
+            "P9_01B_EXACT_SHA_73A7282D_ORDINARY_33357104386_ALL_FOUR_JOBS_PASS",
+            "P9_01C_GOVERNANCE_ONLY_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_EXACT_SHA_ORDINARY_PASS",
+            "P9_01C_EXACT_SIGNED_ERP_ENGINEERING_CHANGE_V1_INBOX_AND_FORMAL_OBSERVATION_ONLY",
+            "P9_01C_EXACT_CHANGE_IMPLEMENTATION_SUMMARY_V1_REQUEST_OUTBOX_ATTEMPT_RESULT_ONLY",
+            "P9_01C_OPERATION_SPECIFIC_PERSISTENCE_DOES_NOT_REUSE_PROJECT_INBOX_OR_SHARED_OUTBOX_CONTROLLER",
+            "P9_01C_DUPLICATE_REORDER_CONFLICT_PARTIAL_429_5XX_TIMEOUT_AFTER_COMMIT_REMAIN_EXPLICIT",
+            "P9_01C_UNCERTAIN_OR_PARTIAL_RESULT_NEVER_AUTOMATICALLY_REDISPATCHED",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
@@ -77,23 +84,60 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
                 "implementation/evidence/phase-9/p9-01-plan.md",
-                "implementation/evidence/phase-9/p9-01-command-query-checkpoint.md",
-                "apps/npi_core/npi_core/change_control/frappe_repository.py",
-                "apps/npi_core/npi_core/change_control/request_validation.py",
-                "apps/npi_core/npi_core/change_control/response_validation.py",
-                "apps/npi_core/npi_core/change_control_api.py",
+                "implementation/evidence/phase-9/p9-01-integration-checkpoint.md",
+                "apps/npi_integration/npi_integration/engineering_change/__init__.py",
+                "apps/npi_integration/npi_integration/engineering_change/adapters.py",
+                "apps/npi_integration/npi_integration/engineering_change/config.py",
+                "apps/npi_integration/npi_integration/engineering_change/domain.py",
+                "apps/npi_integration/npi_integration/engineering_change/frappe_repository.py",
+                "apps/npi_integration/npi_integration/engineering_change/frappe_validation.py",
+                "apps/npi_integration/npi_integration/engineering_change/ingress.py",
+                "apps/npi_integration/npi_integration/engineering_change/problems.py",
+                "apps/npi_integration/npi_integration/engineering_change/runtime_fixture.py",
+                "apps/npi_integration/npi_integration/engineering_change/signature.py",
+                "apps/npi_integration/npi_integration/engineering_change/worker.py",
+                "apps/npi_integration/npi_integration/engineering_change/worker_repository.py",
+                "apps/npi_integration/npi_integration/engineering_change_api.py",
+                "apps/npi_integration/npi_integration/hooks.py",
+                "apps/npi_integration/npi_integration/integration_operations/domain.py",
+                "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_inbox/__init__.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_inbox/npi_engineering_change_inbox.json",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_inbox/npi_engineering_change_inbox.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_request/__init__.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_request/npi_engineering_change_summary_request.json",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_request/npi_engineering_change_summary_request.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_outbox/__init__.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_outbox/npi_engineering_change_summary_outbox.json",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_outbox/npi_engineering_change_summary_outbox.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_attempt/__init__.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_attempt/npi_engineering_change_summary_attempt.json",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_attempt/npi_engineering_change_summary_attempt.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_result/__init__.py",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_result/npi_engineering_change_summary_result.json",
+                "apps/npi_integration/npi_integration/npi_integration/doctype/npi_engineering_change_summary_result/npi_engineering_change_summary_result.py",
+                "apps/npi_integration/npi_integration/translations/zh-TW.csv",
+                "apps/npi_integration/npi_integration/translations/zh.csv",
                 "apps/npi_core/npi_core/bff.py",
-                "apps/npi_core/npi_core/translations/zh-TW.csv",
-                "apps/npi_core/npi_core/translations/zh.csv",
+                "contracts/data-ownership.yaml",
+                "contracts/integration-event.schema.json",
                 "contracts/npi-api.openapi.yaml",
                 "frontend/src/generated/catalogs.ts",
                 "tests/test_current_task_verifier.py",
-                "tests/test_phase9_change_control_api.py",
-                "tests/test_phase9_change_control_contract.py",
-                "tests/test_phase9_change_control_repository.py",
+                "tests/test_phase8_integration_operations_contract.py",
+                "tests/test_phase8_integration_operations_domain.py",
+                "tests/test_phase8_integration_operations_repository.py",
+                "tests/test_phase9_change_integration_api.py",
+                "tests/test_phase9_change_integration_contract.py",
+                "tests/test_phase9_change_integration_domain.py",
+                "tests/test_phase9_change_integration_ingress.py",
+                "tests/test_phase9_change_integration_metadata.py",
+                "tests/test_phase9_change_integration_repository.py",
+                "tests/test_phase9_change_integration_security.py",
+                "tests/test_phase9_change_integration_worker.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 20)
+        self.assertEqual(len(value["allowed_paths"]), 57)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])

@@ -9913,3 +9913,26 @@ repeat or rewrite it merely to restore context. See
   and P9-01D UI remain outside this atomic task. Require the implementation's
   own exact-SHA ordinary PASS before any later checkpoint.
 - Controller marker: `P9-01B governance ordinary PASS; command/query implementation exact-SHA ordinary CI pending`.
+
+## 2026-08-31 P9-01B ordinary PASS; P9-01C INT-008 checkpoint
+
+- P9-01B exact SHA `73a7282da3d5a6e278dccdf95a681ae47f759a0d`
+  passes ordinary CI `33357104386`: secret `99381251822`, visual
+  `99381251969`, repository `99381251970` and frontend `99381252094` all pass.
+- Accept only the Project-first list/detail and version-locked create, revise,
+  formal-observation-link and close boundary. ERP formal identity/status/source
+  facts remain observation-owned; NPI impact/version/task/evidence truth remains
+  LaunchFlow-owned.
+- Freeze P9-01C to a default-disabled exact signed
+  `npi.erp-engineering-change.v1` Inbox/observation path and a versioned
+  `npi.change-implementation-summary.v1` request/Outbox/attempt/result path.
+  Use operation-specific additive records and expose them through the existing
+  read-only Project-first P8-07 operations view.
+- Bind ECR identity, source version/hash, Project, actor/service scope, trace and
+  idempotency. Duplicate, reorder, conflict, partial, 429, 5xx and timeout-after-
+  commit remain explicit; uncertain or partial results are never automatically
+  redispatched.
+- This checkpoint changes no product code and makes no production connection.
+  P9-01C product code is authorized only after this exact governance commit
+  passes ordinary CI. P9-01D UI remains out of scope.
+- Controller marker: `P9-01B ordinary PASS; P9-01C INT-008 governance checkpoint exact-SHA ordinary CI pending`.

@@ -1,6 +1,6 @@
 # P9-01 Change Impact and Revalidation Plan
 
-Status: `P9-01B COMMAND/QUERY IMPLEMENTATION — EXACT-SHA ORDINARY CI PENDING`
+Status: `P9-01C INT-008 GOVERNANCE CHECKPOINT — EXACT-SHA ORDINARY CI PENDING`
 
 ## Accepted predecessor
 
@@ -260,3 +260,29 @@ the full repository suite passes `2760/2760`, generated catalogs are current,
 and the i18n audit covers `8664` English sources with `100%` zh/zh-TW. Current-
 task/reconciliation, OpenAPI/YAML parse, compile, shell syntax and diff checks
 also pass. Exact-SHA ordinary CI remains the acceptance boundary.
+
+## P9-01B acceptance and P9-01C authorization checkpoint
+
+P9-01B exact SHA `73a7282da3d5a6e278dccdf95a681ae47f759a0d`
+passes ordinary CI `33357104386`: secret `99381251822`, visual
+`99381251969`, repository `99381251970` and frontend `99381252094` all pass.
+The accepted slice is limited to Project-first list/detail and version-locked
+create, revise, formal-observation-link and close commands with closed shapes,
+CSRF, Project containment, actor-bound idempotency, one transaction and one
+audit record.
+
+The next checkpoint is governance-only. P9-01C is frozen to one exact signed
+`npi.erp-engineering-change.v1` inbound Inbox and formal-observation path plus
+one `npi.change-implementation-summary.v1` request, Outbox, attempt and result
+path. Both remain default-disabled. Every boundary binds the formal ECR ID,
+source version/hash, Project, service actor, trace and idempotency. Duplicate,
+reordered, conflicting, partial, 429, 5xx and timeout-after-commit outcomes stay
+explicit; uncertain or partial outcomes are never automatically redispatched.
+
+P9-01C uses operation-specific additive persistence rather than extending the
+P8-02 Project Inbox or the existing shared Item/MBOM/Tool-Asset Outbox
+controller. Its records are exposed read-only through the existing Project-
+first P8-07 operations view. No browser-direct ERP access, generic DocType
+writer, dual-master field, ERP/Frappe core change, production profile, target
+call, production write or P9-01D UI is authorized. Product implementation may
+start only after this governance checkpoint passes exact-SHA ordinary CI.
