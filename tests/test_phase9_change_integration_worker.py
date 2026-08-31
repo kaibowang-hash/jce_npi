@@ -61,6 +61,7 @@ class Phase9ChangeIntegrationWorkerTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
         for marker in (
             "NPI_P9_01C_RUNTIME_ENABLED",
+            '_RUNTIME_MARKER = "npi-one-local-runtime-disposable-v1"',
             "TargetMode.SYNTHETIC",
             "disposable_runtime_marker=True",
             "authenticated=True",
@@ -69,6 +70,7 @@ class Phase9ChangeIntegrationWorkerTest(unittest.TestCase):
             self.assertIn(marker, source)
         for forbidden in ("requests.", "httpx.", "base_url=", "production"):
             self.assertNotIn(forbidden, source.casefold())
+        self.assertNotIn("npi-one-engineering-change-disposable-v1", source)
 
 
 if __name__ == "__main__":

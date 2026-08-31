@@ -170,6 +170,10 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
                 ),
             },
             clear=False,
+        ), patch.object(
+            self.module,
+            "ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED",
+            True,
         ):
             self.assertTrue(
                 self.module._engineering_change_inbound_diagnostic_active(trace)
@@ -209,7 +213,7 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         self.assertFalse(
             self.module.ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED
         )
 

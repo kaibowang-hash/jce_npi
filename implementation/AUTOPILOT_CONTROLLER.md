@@ -10459,3 +10459,36 @@ repeat or rewrite it merely to restore context. See
   compilation, shell syntax, exact-12 and projected union-58 manifests,
   unauthorized-13 rejection, new-only activation, security and diff checks.
 - Controller marker: `P9-01D post-raw-body combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D disposable runtime marker repair
+
+- Post-raw-body diagnostic SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b`
+  passed ordinary CI `33435386410`: secret scan `99630412976`, repository
+  `99630413160`, visual `99630413219` and frontend `99630413302` all passed.
+  Its sole Level 2 `33436775999` passed controlled preflight `99635022710`;
+  controlled runtime `99635123514` returned exactly
+  `P901_CHANGE_INBOUND_API_AUTHENTICATE / NpiProblem /
+  trace-7f19d6ce03cf5328ac2cd1d17b379d39` through the strict exact-134 reader.
+  Restricted raw/child output, response/body, business values, identities,
+  exception message and stack remained unread.
+- The first source is the disposable fixture activation contract. The fixed
+  Site owns `npi-one-local-runtime-disposable-v1`, while the Engineering
+  Change runtime profile required the stale
+  `npi-one-engineering-change-disposable-v1`; `_enabled()` was therefore
+  deterministically false and the profile resolver returned no profile before
+  secret or signature verification. This is a runtime-fixture defect, not an
+  integration contract, authentication-policy or production-profile defect.
+- The same-cycle repair binds the synthetic Engineering Change fixture to the
+  existing shared disposable marker, retains all production/network guards,
+  and adds an exact regression against the stale marker. All eighteen runtime
+  and process-local diagnostic activation declarations return to false. No
+  domain, schema, API, permission, event, adapter, UI, workflow or production
+  behavior changes. The cycle is diagnostic `1/1`, repair `1/1`, final `0/1`.
+- Level 1 passes focused repair/current/API/runtime `44/44`, affected P8/P9
+  security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+  current/reconciliation, repository verification, frontend generation and
+  i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+  compilation, shell syntax, exact-14 and projected union-60 manifests,
+  unauthorized-15 rejection, all-18-diagnostics-off, security and diff
+  hygiene.
+- Controller marker: `P9-01D runtime marker repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.

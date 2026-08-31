@@ -14,7 +14,7 @@ from .config import IntegrationProfile
 from .domain import AdapterResponse, SUMMARY_OPERATION, TargetMode, canonical_hash
 
 
-_RUNTIME_MARKER = "npi-one-engineering-change-disposable-v1"
+_RUNTIME_MARKER = "npi-one-local-runtime-disposable-v1"
 _PROFILE_ID = "engineering-change-synthetic-disposable-v1"
 _ADAPTER_PATH = "npi_integration.engineering_change.runtime_fixture.synthetic_adapter"
 _KEY_ID = "p9-01c-runtime"

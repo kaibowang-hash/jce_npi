@@ -422,3 +422,26 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
+
+## Disposable runtime marker repair
+
+Post-raw-body diagnostic SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b`
+passes ordinary `33435386410`. Sole Level 2 `33436775999` returns only the
+safe `P901_CHANGE_INBOUND_API_AUTHENTICATE / NpiProblem /
+trace-7f19d6ce03cf5328ac2cd1d17b379d39` tuple; restricted output remains
+unread. The failure precedes secret/signature verification because the
+synthetic Engineering Change fixture expected a stale marker instead of the
+fixed Site's shared `npi-one-local-runtime-disposable-v1` marker.
+
+The repair is runtime-fixture only, restores all diagnostics to false and
+does not change the Change workspace, routes, messages, translations,
+permissions, product contracts or production profiles. Cycle state is
+`1/1,1/1,0/1`; exact-SHA ordinary PASS must precede the sole Level 3.
+
+Level 1 passes focused repair/current/API/runtime `44/44`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-14 and projected union-60 manifests,
+unauthorized-15 rejection, all eighteen diagnostic activations off, security
+and diff hygiene. The UI and visual baselines remain unchanged.

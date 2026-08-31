@@ -703,3 +703,31 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
+
+## P9-01D disposable runtime marker repair
+
+Post-raw-body SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b` passes
+ordinary `33435386410` in all four lanes. Its sole controlled diagnostic
+`33436775999` passes preflight and returns only
+`P901_CHANGE_INBOUND_API_AUTHENTICATE / NpiProblem /
+trace-7f19d6ce03cf5328ac2cd1d17b379d39` from runtime `99635123514`.
+No restricted raw/child output, body, value, identity, message or stack was
+read.
+
+The disposable Site is fixed to `npi-one-local-runtime-disposable-v1`, but
+the Engineering Change synthetic profile required the stale
+`npi-one-engineering-change-disposable-v1`. Its `_enabled()` predicate was
+therefore false and profile resolution failed before secret/signature
+verification. The minimal repair changes only that synthetic fixture marker,
+adds exact regression coverage, closes every diagnostic activation and leaves
+product/production behavior unchanged. Freeze this cycle at
+`1/1,1/1,0/1`; exact-SHA ordinary PASS must precede the sole diagnostics-off
+Level 3.
+
+Level 1 passes focused repair/current/API/runtime `44/44`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-14 and projected union-60 manifests,
+unauthorized-15 rejection, all eighteen diagnostic activations off, security
+and diff hygiene.

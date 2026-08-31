@@ -36,7 +36,7 @@ _PROFILE_HOOK = "npi_engineering_change_profile_resolver"
 _SECRET_HOOK = "npi_engineering_change_secret_resolver"
 _SUMMARY_FIELDS = frozenset({"expectedRevision", "expectedRevisionGlobalId", "expectedRevisionSnapshotHash"})
 ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Inbound-Diagnostic"
 )
