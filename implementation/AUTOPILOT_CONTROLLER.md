@@ -10002,3 +10002,28 @@ repeat or rewrite it merely to restore context. See
   Gate may only repair its evidenced bounded root in batch; it may not expand
   product scope, modify CI workflow or contact production ERP.
 - Controller marker: `P9-01D implementation Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
+
+## 2026-08-31 P9-01D ordinary bounded CI repair checkpoint
+
+- Product exact SHA `3d1baf39feff9065a58fcf06a07dc036d39bcfa7` produced
+  ordinary CI `33372768445`. Repository `99427394390` and secret
+  `99427394411` passed. Frontend `99427394542` exposed one bounded async
+  rendering race in the Change Control unit test; visual `99427394307`
+  independently exposed the intentional Project-tab addition in existing
+  governed Project baselines.
+- The one-line test-only repair exact SHA
+  `d048a80caa4b725d7c661d75eb2189101927011e` awaits the same table through
+  `findByRole`. Its ordinary CI `33373250631` proves frontend `99428881275`,
+  repository `99428881322` and secret `99428881442` pass. Visual
+  `99428881100` then isolates exactly thirteen existing Project screenshots;
+  every diff is confined to the newly authorized internal `Change control`
+  tab strip, with no product or workflow failure.
+- Refresh the thirteen exact Linux baselines in one batch and no others. The
+  pinned CI container, Node `24.18.0`, Playwright `1.61.1` and Chromium matrix
+  pass the affected five specs `22/22` both while regenerating and during an
+  unchanged zero-diff verification. The ordered baseline checksum manifest is
+  `sha256:055b93b28acd8b8c269299fc4de8a722c1d651c9a73f4f0802aebf7b2a15cf04`.
+- Do not modify the CI workflow or product scope. Commit only the exact
+  baseline/manifest/test/governance repair batch, require one replacement
+  exact-SHA ordinary PASS, then execute the sole P9-01 Level 3.
+- Controller marker: `P9-01D implementation Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.

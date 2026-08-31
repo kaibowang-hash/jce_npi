@@ -356,3 +356,20 @@ production profiles or ERP configuration. Local Level 1 passes full Python
 `61/61`, complete static/i18n checks and deterministic Linux visuals `3/3`.
 The remaining atomic boundary is one exact-task ordinary PASS and one P9-01
 Level 3; P9-02 and production activation remain excluded until that Gate.
+
+## P9-01D exact-SHA CI repair batch
+
+The first product ordinary `33372768445` exposed one async unit-test race and
+the intentional Project-tab visual delta. Exact SHA
+`d048a80caa4b725d7c661d75eb2189101927011e` closes the race and passes the full
+frontend lane in replacement ordinary `33373250631`; repository and secret
+also pass. Its only remaining failure is visual job `99428881100`, whose
+artifact proves exactly thirteen legacy Project screenshots differ solely by
+the authorized internal `Change control` tab.
+
+Refresh all thirteen affected baselines as one bounded family, with no CI
+workflow or product edit. The exact pinned Linux/x86_64 five-spec matrix passes
+`22/22` for regeneration and `22/22` for unchanged verification; the ordered
+baseline manifest checksum is
+`sha256:055b93b28acd8b8c269299fc4de8a722c1d651c9a73f4f0802aebf7b2a15cf04`.
+Only one replacement exact-SHA ordinary and the sole P9-01 Level 3 may follow.

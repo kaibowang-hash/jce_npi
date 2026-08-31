@@ -103,3 +103,33 @@ visuals pass create and unchanged verification `3/3`:
 The sole remaining acceptance sequence is one exact-task commit, its ordinary
 CI PASS, and one P9-01/Phase-9 applicable Level 3. No production ERP profile,
 target, configuration or data is contacted or changed.
+
+## Exact-SHA CI repair evidence
+
+Product exact SHA `3d1baf39feff9065a58fcf06a07dc036d39bcfa7`
+started ordinary CI `33372768445`. Repository `99427394390` and secret
+`99427394411` passed. Frontend `99427394542` failed only because the unit test
+queried the detail table after list text resolved but before the asynchronous
+detail render completed. The one-line test repair at exact SHA
+`d048a80caa4b725d7c661d75eb2189101927011e` awaits the table itself; its
+ordinary CI `33373250631` passes frontend `99428881275`, repository
+`99428881322` and secret `99428881442`, including the complete nonvisual E2E
+lane.
+
+Visual job `99428881100` then reports exactly thirteen expected legacy Project
+baseline deltas. They are the three direct-language P5-01 Documents, P5-04
+EBOM, P5-06 Controlled Print and P7-06 Production Transition views plus the
+English P8-03 inactive Item view. Artifact review confines every delta to the
+existing Project tab strip where the authorized internal `Change control` tab
+now appears. No page content, status, ownership, permission or workflow truth
+changes.
+
+The complete same-family repair refreshes those thirteen Linux images once in
+the exact pinned CI container and expands the task manifest by those exact
+paths. The five affected visual specs pass `22/22` during regeneration and a
+second `22/22` unchanged verification with zero tolerated pixel drift. The
+ordered thirteen-file checksum manifest is
+`sha256:055b93b28acd8b8c269299fc4de8a722c1d651c9a73f4f0802aebf7b2a15cf04`.
+This repair changes no product source, test timeout, CI workflow or production
+boundary. A replacement exact-SHA ordinary PASS and the sole Level 3 remain
+mandatory.
