@@ -77,6 +77,33 @@ class Phase9ChangeControlMetadataTest(unittest.TestCase):
         self.assertIn("FORMAL_CHANGE_DOCTYPE", source)
         self.assertIn("must advance by exactly one", source)
 
+    def test_empty_formal_observation_values_do_not_create_a_false_permission_change(self) -> None:
+        path = DOCTYPE_ROOT / "npi_engineering_change/npi_engineering_change.py"
+        source = path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        function = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "_optional_value"
+        )
+        namespace: dict[str, object] = {}
+        exec(
+            compile(
+                ast.Module(body=[function], type_ignores=[]),
+                str(path),
+                "exec",
+            ),
+            namespace,
+        )
+        normalize = namespace["_optional_value"]
+        self.assertIsNone(normalize(None))
+        self.assertIsNone(normalize(""))
+        self.assertEqual(normalize("Engineering Change Request"), "Engineering Change Request")
+        self.assertIn(
+            "_optional_value(getattr(previous, name, None))",
+            source,
+        )
+
     def test_revision_stores_exact_canonical_snapshots_without_copying_source_objects(self) -> None:
         metadata = self.load("npi_engineering_change_revision")
         fields = self.fields(metadata)

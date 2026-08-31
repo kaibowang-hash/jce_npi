@@ -587,3 +587,23 @@ Level 1 passes focused current/API/runtime `34/34`, full repository
 `2815/2815`, current/reconciliation, frontend generation and i18n (`8774`
 literal English sources with `100%` zh/zh-TW coverage), compilation, shell
 syntax, exact-nine manifest and diff hygiene.
+
+## P9-01D optional-empty observation normalization repair
+
+Post-root SHA `aba98c09` passed ordinary `33415418687`. Its sole Level 2
+`33416578183` returned only `P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE /
+PermissionError / trace-bf563a96e4475000a5050934f6529bbb` after preflight and
+fixed Bench/Site initialization. Restricted content remained unread.
+
+The capability and command scope complete before the save, so Frappe reaches
+the root controller. Immutable ownership fields are unchanged. The remaining
+permission branch compares formal-observation fields and treats persisted
+`""` as different from domain absence `None`, falsely requiring observation
+permission during an ordinary revise. Normalize only those two absent forms;
+all non-empty formal fields remain exact and observation-owned. The cycle is
+`1/1,1/1,0/1`; diagnostics return off and the next authorized controlled run
+is the sole Level 3 after exact-SHA ordinary PASS. Level 1 passes focused
+repair/current/security `60/60`, full repository `2816/2816`, current/
+reconciliation, frontend generation and i18n (`8774` literal English sources
+with `100%` zh/zh-TW coverage), compilation, shell syntax, exact-eleven
+manifest and diff hygiene.

@@ -43,7 +43,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertEqual(
             value["expected_state"]["controller_marker"],
-            "P9-01D post-root-save combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending",
+            "P9-01D optional-empty observation normalization repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending",
         )
         self.assertIn("FR-CH-001", value["requirement_ids"])
         self.assertIn("FR-CH-010", value["requirement_ids"])
@@ -101,6 +101,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "apps/npi_core/npi_core/change_control/frappe_validation.py",
                 "apps/npi_core/npi_core/change_control/frappe_repository.py",
                 "apps/npi_core/npi_core/change_control_api.py",
+                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/npi_engineering_change.py",
                 "apps/npi_core/npi_core/translations/zh-TW.csv",
                 "apps/npi_core/npi_core/translations/zh.csv",
                 "frontend/src/api/change-control-data-source.ts",
@@ -148,7 +149,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests/test_phase9_change_control_runtime_verifier.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 56)
+        self.assertEqual(len(value["allowed_paths"]), 57)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])

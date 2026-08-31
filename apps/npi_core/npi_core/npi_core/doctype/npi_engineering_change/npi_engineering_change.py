@@ -30,6 +30,10 @@ _FORMAL_FIELDS = (
 )
 
 
+def _optional_value(value: object) -> object | None:
+    return None if value in (None, "") else value
+
+
 class NPIEngineeringChange(Document):
     """Current Project-scoped pointer; history remains in immutable revisions."""
 
@@ -70,7 +74,11 @@ class NPIEngineeringChange(Document):
         assert_immutable_fields(self, previous, ("global_id", "tenant_id", "project_global_id"))
         if self.optimistic_version != int(previous.optimistic_version) + 1 or self.current_revision_number != int(previous.current_revision_number) + 1:
             frappe.throw(_("The engineering change version must advance by exactly one."), frappe.ValidationError)
-        if any(getattr(self, name, None) != getattr(previous, name, None) for name in _FORMAL_FIELDS):
+        if any(
+            _optional_value(getattr(self, name, None))
+            != _optional_value(getattr(previous, name, None))
+            for name in _FORMAL_FIELDS
+        ):
             require_change_observation_write()
 
     def on_trash(self) -> None:

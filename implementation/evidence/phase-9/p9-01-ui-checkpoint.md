@@ -328,3 +328,22 @@ Level 1 passes focused current/API/runtime `34/34`, full repository
 literal English sources with `100%` zh/zh-TW coverage), compilation, shell
 syntax, exact-nine manifest and diff hygiene. Exact-SHA ordinary PASS must
 precede the cycle's sole Level 2 controlled diagnostic.
+
+## Optional-empty observation normalization repair
+
+Post-root diagnostic `33416578183` returned only the root-save PermissionError
+safe tuple. The capability and command scope have already passed; the root
+controller's formal-observation change detector is the remaining permission
+branch. Frappe may materialize an absent Data/Select field as `""` while the
+domain projection writes absence as `None`, so an ordinary revise was
+misclassified as an observation change.
+
+The repair treats only `None` and `""` as the same absent value. Non-empty ERP
+formal identifiers, raw status, source version/time/hash and observed time
+remain exact, read-only and observation-capability guarded. No UI, contract,
+schema, role, ownership or transaction-order behavior changes. The cycle is
+`1/1,1/1,0/1`; all diagnostics return off before ordinary CI and the sole
+Level 3. Level 1 passes focused repair/current/security `60/60`, full
+repository `2816/2816`, current/reconciliation, frontend generation and i18n
+(`8774` literal English sources with `100%` zh/zh-TW coverage), compilation,
+shell syntax, exact-eleven manifest and diff hygiene.

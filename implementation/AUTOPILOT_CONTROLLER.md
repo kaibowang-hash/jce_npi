@@ -10316,3 +10316,31 @@ repeat or rewrite it merely to restore context. See
   literal English sources with `100%` zh/zh-TW coverage), compilation, shell
   syntax, exact-nine manifest and diff checks.
 - Controller marker: `P9-01D post-root-save combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D optional-empty observation normalization repair
+
+- Post-root-save SHA `aba98c09dc3837767d5fa285f0989ca2f9a925aa`
+  passed ordinary CI `33415418687`. Its sole Level 2 `33416578183` passed
+  preflight `99568555362` and fixed Bench/Site initialization; strict exact-100
+  reading returned only `P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE /
+  PermissionError / trace-bf563a96e4475000a5050934f6529bbb`. Restricted
+  response, business and child-process output remained unread.
+- The actor-bound capability, exact service actor/role/scope, root DocType and
+  command flag all complete before the save. The permission-bypassed save then
+  reaches the root controller. Immutable fields are untouched; its only later
+  PermissionError branch compares formal-observation fields and incorrectly
+  treats Frappe's persisted empty string as different from domain absence
+  (`None`).
+- Normalize only `None` and `""` to the same absent value for this change
+  detector. Every non-empty formal identifier/status/version/time/hash remains
+  exact and still requires the observation capability. Do not change DocType
+  permissions, ownership, schema, API, transaction order or UI. Disable the
+  post-root diagnostic in both parent and API after the repair.
+- Freeze post-root diagnostic at `1/1`, repair at `1/1`, final at `0/1`.
+  Expand the manifest by only the exact root controller path and run one
+  diagnostics-off Level 3 after exact-SHA ordinary PASS.
+- Level 1 passes focused repair/current/security `60/60`, full repository
+  `2816/2816`, current/reconciliation, frontend generation and i18n (`8774`
+  literal English sources with `100%` zh/zh-TW coverage), compilation, shell
+  syntax, exact-eleven manifest and diff checks.
+- Controller marker: `P9-01D optional-empty observation normalization repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
