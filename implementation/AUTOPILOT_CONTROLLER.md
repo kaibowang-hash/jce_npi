@@ -10432,3 +10432,30 @@ repeat or rewrite it merely to restore context. See
   compilation, shell syntax, exact-12 and projected union-58 manifests,
   unauthorized-13 rejection, all-diagnostics-off, security and diff checks.
 - Controller marker: `P9-01D inbound raw-body binding repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
+
+## 2026-09-01 P9-01D post-raw-body combined diagnostic cycle
+
+- Raw-body repair SHA `20a3d7d1ae0620c3773a1f25201c22b78563df43`
+  passed ordinary CI `33430715697`: secret scan `99615109283`, repository
+  `99615109352`, visual `99615109496` and frontend `99615109621` all passed.
+  Its sole diagnostics-off Level 3 `33432150853` passed those four lanes and
+  controlled preflight `99624458295`; controlled runtime `99624531160` failed
+  after fixed disposable Bench/Site initialization.
+- Fixed-source allowlist classification returned exactly `Local Frappe
+  Engineering Change runtime verification failed.` No raw or child output,
+  response status/body, business value, identity, exception message or stack
+  was read. The repaired raw-body cycle is frozen at diagnostic `1/1`, repair
+  `1/1`, final `1/1`; the outer label cannot identify a later predicate.
+- Open an independent product-zero post-raw-body cycle at `0/1,0/1,0/1`.
+  Its only new activation reuses the exact 134 outer, revise server, inbound
+  transport, API and repository safe stages, deterministic trace, exact
+  request scope, `O_EXCL` exact-three record, strict reader and inner-first
+  precedence. All ten historical runtime activations remain false. No domain,
+  schema, permission, contract, UI, workflow or production behavior changes.
+- Level 1 passes focused current/API/runtime `41/41`, affected P8/P9
+  security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+  current/reconciliation, repository verification, frontend generation and
+  i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+  compilation, shell syntax, exact-12 and projected union-58 manifests,
+  unauthorized-13 rejection, new-only activation, security and diff checks.
+- Controller marker: `P9-01D post-raw-body combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

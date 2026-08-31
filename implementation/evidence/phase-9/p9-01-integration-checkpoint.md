@@ -121,3 +121,27 @@ current/reconciliation, repository verification, frontend generation and
 i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, all-diagnostics-off, security and diff hygiene.
+
+## Post-raw-body combined runtime boundary
+
+Raw-body repair SHA `20a3d7d1` passed ordinary `33430715697`, but its sole
+diagnostics-off Level 3 `33432150853` failed only inside the Engineering
+Change runtime after fixed Bench/Site initialization. Fixed-source filtering
+matched exactly the Engineering Change runtime label; restricted raw,
+response, business and child content remained unread. The repaired cycle is
+frozen at `1/1,1/1,1/1`.
+
+The independent product-zero post-raw-body cycle starts `0/1,0/1,0/1`. Its
+new-only activation reuses exact 134 across the complete outer/revise/inbound
+API/repository chain with the same exact request scope, deterministic trace,
+`O_EXCL` exact-three record and inner-first precedence. Integration event,
+ownership, permission, write order, retry, replay, queue and target behavior
+remain unchanged.
+
+Level 1 passes focused current/API/runtime `41/41`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-12 and projected union-58 manifests,
+unauthorized-13 rejection, new-only activation, security and diff hygiene.
+Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.

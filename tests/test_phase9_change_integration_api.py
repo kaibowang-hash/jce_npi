@@ -170,10 +170,6 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
                 ),
             },
             clear=False,
-        ), patch.object(
-            self.module,
-            "ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED",
-            True,
         ):
             self.assertTrue(
                 self.module._engineering_change_inbound_diagnostic_active(trace)
@@ -212,6 +208,9 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         self.assertEqual(positions, sorted(positions))
         self.assertFalse(
             self.module.ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.module.ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED
         )
 
     def test_inbound_handler_keeps_raw_signed_json_out_of_keyword_fields(self) -> None:

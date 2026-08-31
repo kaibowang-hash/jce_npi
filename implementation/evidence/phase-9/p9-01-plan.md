@@ -679,3 +679,27 @@ current/reconciliation, repository verification, frontend generation and
 i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, all-diagnostics-off, security and diff hygiene.
+
+## P9-01D post-raw-body combined diagnostic
+
+Raw-body repair SHA `20a3d7d1` passed ordinary `33430715697`. Its sole
+diagnostics-off Level 3 `33432150853` passed the four ordinary-equivalent
+lanes and controlled preflight, then runtime `99624531160` failed after fixed
+Bench/Site initialization. Fixed-source filtering matched only the
+Engineering Change runtime label; restricted raw, response, business and
+child output remained unread.
+
+Freeze the repaired cycle at `1/1,1/1,1/1`. The independent product-zero
+post-raw-body cycle starts `0/1,0/1,0/1`; its new-only activation reuses exact
+134, the deterministic trace and request scopes, exact-three `O_EXCL` record,
+strict reader and inner-first precedence. All ten historical activations are
+false, and no product, schema, permission, contract, UI, workflow or
+production behavior changes.
+
+Level 1 passes focused current/API/runtime `41/41`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-12 and projected union-58 manifests,
+unauthorized-13 rejection, new-only activation, security and diff hygiene.
+Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.

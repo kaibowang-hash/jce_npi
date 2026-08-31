@@ -36,6 +36,7 @@ _PROFILE_HOOK = "npi_engineering_change_profile_resolver"
 _SECRET_HOOK = "npi_engineering_change_secret_resolver"
 _SUMMARY_FIELDS = frozenset({"expectedRevision", "expectedRevisionGlobalId", "expectedRevisionSnapshotHash"})
 ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Inbound-Diagnostic"
 )
@@ -185,7 +186,10 @@ def _engineering_change_inbound_diagnostic_active(trace_id: object) -> bool:
         headers = getattr(request, "headers", None)
         diagnostic_path = os.environ.get("NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH")
         return (
-            ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED
+            (
+                ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED
+                or ENGINEERING_CHANGE_POST_RAW_BODY_DIAGNOSTICS_ENABLED
+            )
             and os.environ.get("NPI_P9_01C_RUNTIME_ENABLED") == "1"
             and isinstance(diagnostic_path, str)
             and os.path.isabs(diagnostic_path)

@@ -208,6 +208,9 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_RAW_BODY_DIAGNOSTICS_ENABLED
+        )
         self.assertEqual(
             sum(
                 (
@@ -221,9 +224,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_RAW_BODY_DIAGNOSTICS_ENABLED,
                 )
             ),
-            0,
+            1,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 134)
         server_codes = set(
@@ -393,6 +397,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 self.verifier,
                 "ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED",
                 False,
+            ), patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_POST_RAW_BODY_DIAGNOSTICS_ENABLED",
+                False,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
                     self.verifier._record_engineering_change_runtime_diagnostic(
@@ -494,15 +502,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 "00000000-0000-4000-8000-000000009102"
             )
         for status, expected_code in cases:
-            with (
-                self.subTest(status=status),
-                tempfile.TemporaryDirectory() as directory,
-                patch.object(
-                    self.verifier,
-                    "ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED",
-                    True,
-                ),
-            ):
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as directory:
                 path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
                 trace = self.verifier.engineering_change_runtime_diagnostic_trace()
                 with patch.dict(
@@ -546,11 +546,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             return response
 
         trace = self.verifier.engineering_change_runtime_diagnostic_trace()
-        with patch.object(
-            self.verifier,
-            "ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED",
-            True,
-        ), patch.object(self.verifier, "request", side_effect=fake_request):
+        with patch.object(self.verifier, "request", side_effect=fake_request):
             with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
                 self.assertEqual(
                     self.verifier._send_inbound(
