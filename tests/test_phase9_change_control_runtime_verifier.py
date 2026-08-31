@@ -23,6 +23,17 @@ REPOSITORY = (
     / "change_control"
     / "frappe_repository.py"
 )
+INTEGRATION_API = (
+    ROOT / "apps" / "npi_integration" / "npi_integration" / "engineering_change_api.py"
+)
+INTEGRATION_REPOSITORY = (
+    ROOT
+    / "apps"
+    / "npi_integration"
+    / "npi_integration"
+    / "engineering_change"
+    / "frappe_repository.py"
+)
 RUN_ID = "0123456789abcdef0123456789abcdef"
 PROJECT_ID = "00000000-0000-5000-8000-000000009101"
 REQUESTER = "p9-requester@example.invalid"
@@ -63,6 +74,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         cls.shell = SHELL.read_text(encoding="utf-8")
         cls.api_source = API.read_text(encoding="utf-8")
         cls.repository_source = REPOSITORY.read_text(encoding="utf-8")
+        cls.integration_api_source = INTEGRATION_API.read_text(encoding="utf-8")
+        cls.integration_repository_source = INTEGRATION_REPOSITORY.read_text(
+            encoding="utf-8"
+        )
 
     def test_fixture_content_is_exact_closed_and_version_ready(self) -> None:
         draft = self.verifier.revision_content(complete=False)
@@ -187,8 +202,11 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
             sum(
@@ -202,15 +220,16 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_REVISE_SERVER_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED,
                 )
             ),
             1,
         )
-        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 100)
+        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 134)
         server_codes = set(
             self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
-        )
-        self.assertEqual(len(server_codes), 32)
+        ) | set(self.verifier.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_CODES)
+        self.assertEqual(len(server_codes), 55)
         self.assertTrue(
             all(
                 literals.count(code) == 1
@@ -221,11 +240,15 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         )
         server_literals = [
             node.value
-            for source in (self.api_source, self.repository_source)
+            for source in (
+                self.api_source,
+                self.repository_source,
+                self.integration_api_source,
+                self.integration_repository_source,
+            )
             for node in ast.walk(ast.parse(source))
             if isinstance(node, ast.Constant)
             and isinstance(node.value, str)
-            and node.value.startswith("P901_CHANGE_REVISE_")
             and node.value in server_codes
         ]
         self.assertEqual(set(server_literals), server_codes)
@@ -366,6 +389,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 self.verifier,
                 "ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED",
                 False,
+            ), patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED",
+                False,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
                     self.verifier._record_engineering_change_runtime_diagnostic(
@@ -448,6 +475,92 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 ),
                 result.body,
             )
+
+    def test_inbound_status_classes_and_server_header_are_fixed(self) -> None:
+        cases = (
+            (0, "P901_CHANGE_INBOUND_STATUS_INVALID"),
+            (101, "P901_CHANGE_INBOUND_STATUS_INFORMATIONAL"),
+            (200, "P901_CHANGE_INBOUND_STATUS_SUCCESS_UNEXPECTED"),
+            (302, "P901_CHANGE_INBOUND_STATUS_REDIRECTION"),
+            (409, "P901_CHANGE_INBOUND_STATUS_CLIENT_ERROR"),
+            (500, "P901_CHANGE_INBOUND_STATUS_SERVER_ERROR"),
+        )
+        with patch.dict(
+            os.environ,
+            {"NPI_P9_01C_RUNTIME_PROJECT_ID": PROJECT_ID},
+            clear=False,
+        ):
+            event = self.verifier._inbound_event(
+                "00000000-0000-4000-8000-000000009102"
+            )
+        for status, expected_code in cases:
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "p9-01-engineering-change-runtime-diagnostic.json"
+                trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+                with patch.dict(
+                    os.environ,
+                    {"NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": str(path)},
+                    clear=False,
+                ), patch.object(
+                    self.verifier,
+                    "request",
+                    return_value=self.verifier.HttpResult(status, {}, {}),
+                ):
+                    with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                        with self.assertRaises(RuntimeError):
+                            self.verifier._send_inbound(
+                                self.verifier.RUNTIME_BASE_URL,
+                                event,
+                                "a" * 64,
+                                replayed=False,
+                            )
+                self.assertEqual(
+                    self.verifier.read_engineering_change_runtime_diagnostic(
+                        path, expected_trace=trace
+                    ),
+                    ("RuntimeError", expected_code, trace),
+                )
+
+        captured: list[dict[str, str]] = []
+        request_id = self.verifier.deterministic_uuid("request:inbound")
+        response = self.verifier.HttpResult(
+            202,
+            {
+                "X-Request-ID": request_id,
+                "Cache-Control": "no-store",
+                "Idempotency-Replayed": "false",
+            },
+            {"state": "pending"},
+        )
+
+        def fake_request(*_args, **kwargs):
+            captured.append(dict(kwargs["request_headers"]))
+            return response
+
+        trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+        with patch.object(self.verifier, "request", side_effect=fake_request):
+            with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                self.assertEqual(
+                    self.verifier._send_inbound(
+                        self.verifier.RUNTIME_BASE_URL,
+                        event,
+                        "a" * 64,
+                        replayed=False,
+                    ),
+                    response.body,
+                )
+        self.assertEqual(
+            captured[0][
+                self.verifier.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER
+            ],
+            self.verifier.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(
+            captured[0][
+                self.verifier.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER
+            ],
+            trace,
+        )
 
     def test_revise_server_header_is_exact_scope_and_trace_only_when_active(self) -> None:
         trace = self.verifier.engineering_change_runtime_diagnostic_trace()

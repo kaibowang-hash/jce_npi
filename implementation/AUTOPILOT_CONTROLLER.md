@@ -10370,3 +10370,34 @@ repeat or rewrite it merely to restore context. See
   literal English sources with `100%` zh/zh-TW coverage), compilation, shell
   syntax, exact-nine manifest, security and diff checks.
 - Controller marker: `P9-01D post-optional-empty combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D inbound-full combined diagnostic cycle
+
+- Post-optional-empty SHA `7fe375f54bc428fa163266930a9a2fb956293fc3`
+  passed ordinary CI `33422208751`. Its sole Level 2 `33423616127` passed
+  controlled preflight `99591743411`; strict exact-100 reading from runtime
+  `99591814295` returned only `P901_CHANGE_INBOUND_HTTP / RuntimeError /
+  trace-d75d7f003059503887df977d4602721a`. No response status/body, business
+  value, identity, exception message, stack or failed-child output was read.
+- `INBOUND_HTTP` wraps request transport, the complete response boundary,
+  signed intake API, profile/principal creation, repository transaction,
+  commit and enqueue. Therefore the tuple is nonunique and does not authorize
+  a product repair. Freeze the post-optional-empty cycle at diagnostic `1/1`,
+  repair `0/1`, final `0/1`.
+- Open one product-zero inbound-full cycle at `0/1,0/1,0/1`. Its new-only
+  activation keeps the prior 100 codes and adds 11 deterministic inbound
+  transport/status/header/body stages plus 11 API and 12 repository stages,
+  for exact 134. Exact runtime/path/method/route/query/header/trace gating,
+  `O_EXCL` exact-three records, server-inner precedence, same-exception
+  propagation and success-zero behavior remain mandatory. All nine historical
+  activations are false.
+- Expand the current manifest only for the existing P9-01C integration API,
+  repository and their two focused tests; no schema, permission, transaction,
+  contract, UI, workflow, production target or business behavior changes.
+- Level 1 passes focused current/API/repository/runtime `56/56`, affected
+  integration security/contract/domain/runtime `23/23`, full repository
+  `2821/2821`, current/reconciliation, repository verification, frontend
+  generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+  coverage), compilation, shell syntax, exact-16 and projected union-58
+  manifests, unauthorized-17 rejection, security and diff checks.
+- Controller marker: `P9-01D inbound-full combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

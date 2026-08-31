@@ -287,6 +287,41 @@ class Phase9ChangeControlRepositoryTest(unittest.TestCase):
             },
         )
 
+    def test_inbound_server_diagnostic_codes_are_exact(self) -> None:
+        expected = {
+            "P901_CHANGE_INBOUND_API_CALL",
+            "P901_CHANGE_INBOUND_API_FIELDS",
+            "P901_CHANGE_INBOUND_API_REQUEST",
+            "P901_CHANGE_INBOUND_API_AUTHENTICATE",
+            "P901_CHANGE_INBOUND_API_PRINCIPAL",
+            "P901_CHANGE_INBOUND_API_REPOSITORY_INIT",
+            "P901_CHANGE_INBOUND_API_REPOSITORY_CALL",
+            "P901_CHANGE_INBOUND_API_COMMIT",
+            "P901_CHANGE_INBOUND_API_ENQUEUE",
+            "P901_CHANGE_INBOUND_API_OUTCOME",
+            "P901_CHANGE_INBOUND_API_RESPONSE",
+            "P901_CHANGE_INBOUND_REPOSITORY_INPUT",
+            "P901_CHANGE_INBOUND_REPOSITORY_EVENT",
+            "P901_CHANGE_INBOUND_REPOSITORY_HASHES",
+            "P901_CHANGE_INBOUND_REPOSITORY_REPLAY",
+            "P901_CHANGE_INBOUND_REPOSITORY_SOURCE_KEY",
+            "P901_CHANGE_INBOUND_REPOSITORY_LATEST",
+            "P901_CHANGE_INBOUND_REPOSITORY_VERSION",
+            "P901_CHANGE_INBOUND_REPOSITORY_RESPONSE",
+            "P901_CHANGE_INBOUND_REPOSITORY_WRITE_SCOPE",
+            "P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT",
+            "P901_CHANGE_INBOUND_REPOSITORY_AUDIT",
+            "P901_CHANGE_INBOUND_REPOSITORY_OUTCOME",
+        }
+        self.assertEqual(
+            expected,
+            {
+                code
+                for code in self.repository.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
+                if code.startswith("P901_CHANGE_INBOUND_")
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

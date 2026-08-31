@@ -367,3 +367,24 @@ Level 1 passes focused current/API/runtime `34/34`, full repository
 `2816/2816`, current/reconciliation, frontend generation and i18n (`8774`
 literal English sources with `100%` zh/zh-TW coverage), compilation, shell
 syntax, exact-nine manifest, security and diff hygiene.
+
+## Inbound-full combined runtime boundary
+
+Post-optional-empty SHA `7fe375f5` passed ordinary `33422208751`. Its sole
+Level 2 `33423616127` returned only `P901_CHANGE_INBOUND_HTTP / RuntimeError /
+trace-d75d7f003059503887df977d4602721a`; no restricted response, business or
+child output was read. Because this code wraps the entire signed intake call,
+it is nonunique and does not permit a UI, contract or product repair.
+
+Freeze that cycle at `1/1,0/1,0/1`. The new product-zero inbound-full cycle
+starts `0/1,0/1,0/1`, with only its new activation enabled. Exact 134 covers
+the prior lifecycle plus the full inbound transport/API/repository chain in
+one disposable-Site run. The UI and all user-visible behavior are unchanged.
+
+Level 1 passes focused current/API/repository/runtime `56/56`, affected
+integration security/contract/domain/runtime `23/23`, full repository
+`2821/2821`, current/reconciliation, repository verification, frontend
+generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+coverage), compilation, shell syntax, exact-16 and projected union-58
+manifests, unauthorized-17 rejection, security and diff hygiene. Exact-SHA
+ordinary PASS must precede the cycle's sole Level 2 diagnostic.

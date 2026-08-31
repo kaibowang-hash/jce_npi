@@ -71,3 +71,29 @@ this checkpoint's existing operation-specific boundaries; it does not change
 the signed event, summary contract, worker/retry semantics or production
 activation state. The fixed disposable-Site verifier adds cumulative proof,
 not a new target adapter or an ERP success claim.
+
+## P9-01D inbound-full diagnostic boundary
+
+Post-optional-empty controlled run `33423616127` returned only
+`P901_CHANGE_INBOUND_HTTP / RuntimeError /
+trace-d75d7f003059503887df977d4602721a`. This proves the fresh lifecycle
+reached the exact signed inbound request, but the outer code still spans HTTP
+transport/response, signature/profile handling, repository receipt/audit,
+commit and enqueue. Restricted values and failed-child output remain unread,
+so no integration repair is authorized.
+
+The independent inbound-full diagnostic keeps all production profiles and
+targets disabled and adds only exact request-scoped safe stages. Its exact 134
+allowlist combines the prior 100 with a complete inbound transport/status/
+header/body family and ordered API/repository stages. Server-inner records win
+over parent fallbacks through the existing exact-three `O_EXCL` writer. No
+event, ownership, permission, write order, retry, replay, queue or target
+behavior changes.
+
+Level 1 passes focused current/API/repository/runtime `56/56`, affected
+integration security/contract/domain/runtime `23/23`, full repository
+`2821/2821`, current/reconciliation, repository verification, frontend
+generation and i18n (`8774` literal English sources with `100%` zh/zh-TW
+coverage), compilation, shell syntax, exact-16 and projected union-58
+manifests, unauthorized-17 rejection, security and diff hygiene. Exact-SHA
+ordinary PASS must precede the cycle's sole Level 2 diagnostic.

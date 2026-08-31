@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
-from hashlib import sha256
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any
+from hashlib import sha256
+from typing import Any, Iterator
 from uuid import UUID, uuid4
 
 import frappe
@@ -35,6 +36,24 @@ from .ingress import AuthenticatedInboundRequest
 from .problems import EngineeringChangeIntegrationConflict, EngineeringChangeIntegrationUnavailable
 
 
+_SERVER_DIAGNOSTIC_FLAG = "npi_p901_change_revise_server_diagnostic"
+
+
+@contextmanager
+def engineering_change_inbound_repository_step(code: str) -> Iterator[None]:
+    flags = getattr(frappe, "flags", None)
+    state = getattr(flags, _SERVER_DIAGNOSTIC_FLAG, None)
+    if isinstance(state, dict):
+        from npi_core.change_control.frappe_repository import (
+            engineering_change_revise_server_step as server_step,
+        )
+
+        with server_step(code):
+            yield
+    else:
+        yield
+
+
 @dataclass(frozen=True, slots=True)
 class CommandOutcome:
     response: dict[str, Any]
@@ -54,71 +73,121 @@ class FrappeEngineeringChangeIntegrationRepository(FrappeDocumentRepository):
         return self._authorized_project(project_id) is not None
 
     def receive_inbound(self, request: AuthenticatedInboundRequest) -> CommandOutcome:
-        if not isinstance(request, AuthenticatedInboundRequest):
-            raise EngineeringChangeIntegrationUnavailable()
-        event = request.event
-        profile = request.profile
-        event_hash = canonical_hash(event.envelope())
-        raw_hash = sha256(request.raw_body).hexdigest()
-        existing = _get_optional("NPI Engineering Change Inbox", str(event.event_id))
-        if existing is not None:
-            if str(existing.canonical_event_hash) != event_hash:
-                raise EngineeringChangeIntegrationConflict()
-            return CommandOutcome(_inbox_response(existing), replayed=True)
-
-        source_key_hash = canonical_hash({
-            "tenantId": event.tenant_id,
-            "projectGlobalId": str(event.project_global_id),
-            "doctype": FORMAL_CHANGE_DOCTYPE,
-            "documentName": event.observation.document_name,
-        })
-        latest_names = frappe.get_all(
-            "NPI Engineering Change Inbox",
-            filters={"source_key_hash": source_key_hash},
-            pluck="name",
-            order_by="object_version desc, received_at desc, name desc",
-            limit_page_length=1,
-        )
-        state = "pending"
-        if latest_names:
-            latest = frappe.get_doc("NPI Engineering Change Inbox", str(latest_names[0]))
-            latest_version = int(latest.object_version)
-            if event.object_version < latest_version:
-                state = "superseded"
-            elif event.object_version == latest_version:
-                state = "superseded" if str(latest.canonical_event_hash) == event_hash else "quarantined"
-        receipt_id = uuid4()
-        response = {
-            "schemaVersion": 1,
-            "receiptId": str(receipt_id),
-            "eventId": str(event.event_id),
-            "changeGlobalId": str(event.change_global_id),
-            "state": state,
-            "canonicalEventHash": event_hash,
-        }
-        with service_actor_scope(profile.service_actor_user_id), inbound_transaction_write(profile.service_actor_user_id):
-            row = frappe.get_doc({
-                "doctype": "NPI Engineering Change Inbox",
-                "receipt_id": str(receipt_id), "schema_version": SCHEMA_VERSION,
-                "tenant_id": event.tenant_id, "project_global_id": str(event.project_global_id),
-                "change_global_id": str(event.change_global_id), "event_id": str(event.event_id),
-                "object_version": event.object_version, "source_key_hash": source_key_hash,
-                "canonical_event_hash": event_hash, "raw_body_hash": raw_hash,
-                "event_snapshot": _json(event.envelope()), "profile_id": profile.profile_id,
-                "profile_version": profile.profile_version, "profile_snapshot_hash": profile.reference.snapshot_hash,
-                "signing_key_id": request.headers.key_id, "signed_at": request.headers.signed_at,
-                "received_at": request.received_at, "request_id": request.headers.request_id,
-                "trace_id": event.trace_id, "state": state, "attempt_count": 0,
-            })
-            row.insert()
-            self._append_audit(
-                operation="engineering_change.integration.receive",
-                global_id=event.change_global_id,
-                object_version=event.object_version,
-                result=state,
-                summary={"eventId": str(event.event_id), "sourceKeyHash": source_key_hash, "canonicalEventHash": event_hash},
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_INPUT"
+        ):
+            if not isinstance(request, AuthenticatedInboundRequest):
+                raise EngineeringChangeIntegrationUnavailable()
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_EVENT"
+        ):
+            event = request.event
+            profile = request.profile
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_HASHES"
+        ):
+            event_hash = canonical_hash(event.envelope())
+            raw_hash = sha256(request.raw_body).hexdigest()
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_REPLAY"
+        ):
+            existing = _get_optional(
+                "NPI Engineering Change Inbox", str(event.event_id)
             )
-        return CommandOutcome(response, should_enqueue=state == "pending", queue_id=receipt_id)
+            if existing is not None:
+                if str(existing.canonical_event_hash) != event_hash:
+                    raise EngineeringChangeIntegrationConflict()
+                return CommandOutcome(_inbox_response(existing), replayed=True)
+
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_SOURCE_KEY"
+        ):
+            source_key_hash = canonical_hash({
+                "tenantId": event.tenant_id,
+                "projectGlobalId": str(event.project_global_id),
+                "doctype": FORMAL_CHANGE_DOCTYPE,
+                "documentName": event.observation.document_name,
+            })
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_LATEST"
+        ):
+            latest_names = frappe.get_all(
+                "NPI Engineering Change Inbox",
+                filters={"source_key_hash": source_key_hash},
+                pluck="name",
+                order_by="object_version desc, received_at desc, name desc",
+                limit_page_length=1,
+            )
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_VERSION"
+        ):
+            state = "pending"
+            if latest_names:
+                latest = frappe.get_doc(
+                    "NPI Engineering Change Inbox", str(latest_names[0])
+                )
+                latest_version = int(latest.object_version)
+                if event.object_version < latest_version:
+                    state = "superseded"
+                elif event.object_version == latest_version:
+                    state = (
+                        "superseded"
+                        if str(latest.canonical_event_hash) == event_hash
+                        else "quarantined"
+                    )
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_RESPONSE"
+        ):
+            receipt_id = uuid4()
+            response = {
+                "schemaVersion": 1,
+                "receiptId": str(receipt_id),
+                "eventId": str(event.event_id),
+                "changeGlobalId": str(event.change_global_id),
+                "state": state,
+                "canonicalEventHash": event_hash,
+            }
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_WRITE_SCOPE"
+        ):
+            with service_actor_scope(
+                profile.service_actor_user_id
+            ), inbound_transaction_write(profile.service_actor_user_id):
+                with engineering_change_inbound_repository_step(
+                    "P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT"
+                ):
+                    row = frappe.get_doc({
+                        "doctype": "NPI Engineering Change Inbox",
+                        "receipt_id": str(receipt_id), "schema_version": SCHEMA_VERSION,
+                        "tenant_id": event.tenant_id, "project_global_id": str(event.project_global_id),
+                        "change_global_id": str(event.change_global_id), "event_id": str(event.event_id),
+                        "object_version": event.object_version, "source_key_hash": source_key_hash,
+                        "canonical_event_hash": event_hash, "raw_body_hash": raw_hash,
+                        "event_snapshot": _json(event.envelope()), "profile_id": profile.profile_id,
+                        "profile_version": profile.profile_version, "profile_snapshot_hash": profile.reference.snapshot_hash,
+                        "signing_key_id": request.headers.key_id, "signed_at": request.headers.signed_at,
+                        "received_at": request.received_at, "request_id": request.headers.request_id,
+                        "trace_id": event.trace_id, "state": state, "attempt_count": 0,
+                    })
+                    row.insert()
+                with engineering_change_inbound_repository_step(
+                    "P901_CHANGE_INBOUND_REPOSITORY_AUDIT"
+                ):
+                    self._append_audit(
+                        operation="engineering_change.integration.receive",
+                        global_id=event.change_global_id,
+                        object_version=event.object_version,
+                        result=state,
+                        summary={"eventId": str(event.event_id), "sourceKeyHash": source_key_hash, "canonicalEventHash": event_hash},
+                    )
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_INBOUND_REPOSITORY_OUTCOME"
+        ):
+            return CommandOutcome(
+                response,
+                should_enqueue=state == "pending",
+                queue_id=receipt_id,
+            )
 
     def create_summary_request(
         self,

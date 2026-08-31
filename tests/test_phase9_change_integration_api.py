@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import os
 import sys
 import types
 import unittest
@@ -145,6 +146,68 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
             sys.modules.pop(name, None)
             if self.saved[name] is not None:
                 sys.modules[name] = self.saved[name]
+
+    def test_inbound_diagnostic_requires_exact_runtime_request_shape(self) -> None:
+        trace = "trace-" + "d" * 32
+        request = self.frappe.local.request
+        request.path = self.module.WEBHOOK_PATH
+        request.args = {}
+        request.headers.update(
+            {
+                self.module.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER: (
+                    self.module.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_SCOPE
+                ),
+                self.module.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER: trace,
+            }
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "NPI_P9_01C_RUNTIME_ENABLED": "1",
+                "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": (
+                    "/tmp/p9-01-engineering-change-runtime-diagnostic.json"
+                ),
+            },
+            clear=False,
+        ):
+            self.assertTrue(
+                self.module._engineering_change_inbound_diagnostic_active(trace)
+            )
+            request.method = "GET"
+            self.assertFalse(
+                self.module._engineering_change_inbound_diagnostic_active(trace)
+            )
+            request.method = "POST"
+            request.headers.pop(
+                self.module.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER
+            )
+            self.assertFalse(
+                self.module._engineering_change_inbound_diagnostic_active(trace)
+            )
+
+    def test_inbound_diagnostic_stages_follow_handler_order(self) -> None:
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/engineering_change_api.py"
+        ).read_text(encoding="utf-8")
+        codes = (
+            "P901_CHANGE_INBOUND_API_CALL",
+            "P901_CHANGE_INBOUND_API_FIELDS",
+            "P901_CHANGE_INBOUND_API_REQUEST",
+            "P901_CHANGE_INBOUND_API_AUTHENTICATE",
+            "P901_CHANGE_INBOUND_API_PRINCIPAL",
+            "P901_CHANGE_INBOUND_API_REPOSITORY_INIT",
+            "P901_CHANGE_INBOUND_API_REPOSITORY_CALL",
+            "P901_CHANGE_INBOUND_API_COMMIT",
+            "P901_CHANGE_INBOUND_API_ENQUEUE",
+            "P901_CHANGE_INBOUND_API_OUTCOME",
+            "P901_CHANGE_INBOUND_API_RESPONSE",
+        )
+        positions = [source.index(code) for code in codes]
+        self.assertEqual(positions, sorted(positions))
+        self.assertTrue(
+            self.module.ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED
+        )
 
     def test_summary_route_requires_csrf_exact_predecessor_and_actor_idempotency(self) -> None:
         self.frappe.local.form_dict = {

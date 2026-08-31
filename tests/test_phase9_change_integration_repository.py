@@ -47,6 +47,7 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
         self.audits: list[object] = []
         self.existing: Row | None = None
         frappe = types.ModuleType("frappe")
+        frappe.flags = types.SimpleNamespace()
         frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         frappe.get_all = lambda *_args, **_kwargs: []
 
@@ -180,6 +181,28 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
             self.assertIn(marker, source)
         for forbidden in ("frappe.client", "target_doctype", "target_method"):
             self.assertNotIn(forbidden, source)
+
+    def test_inbound_diagnostic_stages_follow_transaction_order(self) -> None:
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/engineering_change/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        codes = (
+            "P901_CHANGE_INBOUND_REPOSITORY_INPUT",
+            "P901_CHANGE_INBOUND_REPOSITORY_EVENT",
+            "P901_CHANGE_INBOUND_REPOSITORY_HASHES",
+            "P901_CHANGE_INBOUND_REPOSITORY_REPLAY",
+            "P901_CHANGE_INBOUND_REPOSITORY_SOURCE_KEY",
+            "P901_CHANGE_INBOUND_REPOSITORY_LATEST",
+            "P901_CHANGE_INBOUND_REPOSITORY_VERSION",
+            "P901_CHANGE_INBOUND_REPOSITORY_RESPONSE",
+            "P901_CHANGE_INBOUND_REPOSITORY_WRITE_SCOPE",
+            "P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT",
+            "P901_CHANGE_INBOUND_REPOSITORY_AUDIT",
+            "P901_CHANGE_INBOUND_REPOSITORY_OUTCOME",
+        )
+        positions = [source.index(code) for code in codes]
+        self.assertEqual(positions, sorted(positions))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import os
+import re
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import UTC, datetime
-from typing import Any, Callable
+from typing import Any, Callable, Iterator
 from uuid import UUID
 
 import frappe
@@ -31,59 +35,181 @@ from .engineering_change.signature import WEBHOOK_PATH
 _PROFILE_HOOK = "npi_engineering_change_profile_resolver"
 _SECRET_HOOK = "npi_engineering_change_secret_resolver"
 _SUMMARY_FIELDS = frozenset({"expectedRevision", "expectedRevisionGlobalId", "expectedRevisionSnapshotHash"})
+ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER = (
+    "X-NPI-P901-Change-Inbound-Diagnostic"
+)
+ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_SCOPE = (
+    "p9-01-engineering-change-inbound-server-v1"
+)
+ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER = (
+    "X-NPI-P901-Change-Inbound-Diagnostic-Trace"
+)
+_INBOUND_DIAGNOSTIC_ACTIVE: ContextVar[bool] = ContextVar(
+    "p901_engineering_change_inbound_diagnostic_active", default=False
+)
+_DIAGNOSTIC_PATH_NAME = "p9-01-engineering-change-runtime-diagnostic.json"
+_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+
+
+@contextmanager
+def engineering_change_inbound_diagnostics(
+    trace_id: object,
+    *,
+    active: bool,
+) -> Iterator[None]:
+    token = _INBOUND_DIAGNOSTIC_ACTIVE.set(active)
+    try:
+        if active and isinstance(trace_id, str):
+            from npi_core.change_control.frappe_repository import (
+                engineering_change_revise_server_diagnostics as server_scope,
+            )
+
+            with server_scope(trace_id, active=True):
+                yield
+        else:
+            yield
+    finally:
+        _INBOUND_DIAGNOSTIC_ACTIVE.reset(token)
+
+
+@contextmanager
+def engineering_change_inbound_step(code: str) -> Iterator[None]:
+    if _INBOUND_DIAGNOSTIC_ACTIVE.get():
+        from npi_core.change_control.frappe_repository import (
+            engineering_change_revise_server_step as server_step,
+        )
+
+        with server_step(code):
+            yield
+    else:
+        yield
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def receive_engineering_change_event(**request_fields: Any) -> dict[str, Any] | None:
+    request = getattr(frappe.local, "request", None)
+    trace_id = (
+        request.headers.get(ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER)
+        if request is not None and hasattr(request, "headers")
+        else None
+    )
+    with engineering_change_inbound_diagnostics(
+        trace_id,
+        active=_engineering_change_inbound_diagnostic_active(trace_id),
+    ):
+        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_CALL"):
+            return _receive_engineering_change_event(request_fields)
+
+
+def _receive_engineering_change_event(
+    request_fields: dict[str, Any],
+) -> dict[str, Any] | None:
     headers = {"X-Request-ID": response_request_id(), "Idempotency-Replayed": "false"}
     replayed = False
 
     def handle() -> dict[str, Any]:
         nonlocal replayed
-        reject_unexpected_request_fields(frozenset(), request_fields)
-        request = getattr(frappe.local, "request", None)
-        if request is None:
-            raise EngineeringChangeIntegrationUnavailable()
-        try:
-            authenticated = authenticate_inbound_request(
-                method=str(request.method), path=WEBHOOK_PATH,
-                content_type=request.headers.get("Content-Type"), content_encoding=request.headers.get("Content-Encoding"),
-                raw_body=request.get_data(cache=True), request_id=request.headers.get("X-Request-ID"),
-                key_id=request.headers.get("X-NPI-Key-ID"), timestamp=request.headers.get("X-NPI-Timestamp"),
-                signature=request.headers.get("X-NPI-Signature"), is_secure=bool(request.is_secure),
-                site_tenant_id=_site_tenant_id(), now=datetime.now(UTC),
-                profile_resolver=_profile_resolver(), secret_resolver=_secret_resolver(),
+        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_FIELDS"):
+            reject_unexpected_request_fields(frozenset(), request_fields)
+        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_REQUEST"):
+            request = getattr(frappe.local, "request", None)
+            if request is None:
+                raise EngineeringChangeIntegrationUnavailable()
+        with engineering_change_inbound_step(
+            "P901_CHANGE_INBOUND_API_AUTHENTICATE"
+        ):
+            try:
+                authenticated = authenticate_inbound_request(
+                    method=str(request.method), path=WEBHOOK_PATH,
+                    content_type=request.headers.get("Content-Type"), content_encoding=request.headers.get("Content-Encoding"),
+                    raw_body=request.get_data(cache=True), request_id=request.headers.get("X-Request-ID"),
+                    key_id=request.headers.get("X-NPI-Key-ID"), timestamp=request.headers.get("X-NPI-Timestamp"),
+                    signature=request.headers.get("X-NPI-Signature"), is_secure=bool(request.is_secure),
+                    site_tenant_id=_site_tenant_id(), now=datetime.now(UTC),
+                    profile_resolver=_profile_resolver(), secret_resolver=_secret_resolver(),
+                )
+            except IngressProblem as error:
+                if error.status == 401:
+                    raise EngineeringChangeAuthenticationFailed() from error
+                raise NpiProblem(
+                    error.status,
+                    error.code,
+                    _("The Engineering Change event is unavailable."),
+                    retryable=error.retryable,
+                ) from error
+        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_PRINCIPAL"):
+            profile = authenticated.profile
+            principal = Principal(
+                user_id=profile.service_actor_user_id,
+                roles=frozenset({"NPI API User", "System Manager"}),
+                project_access={str(authenticated.event.project_global_id): ProjectAccess.ADMINISTER},
+                tenant_id=profile.tenant_id,
             )
-        except IngressProblem as error:
-            if error.status == 401:
-                raise EngineeringChangeAuthenticationFailed() from error
-            raise NpiProblem(
-                error.status,
-                error.code,
-                _("The Engineering Change event is unavailable."),
-                retryable=error.retryable,
-            ) from error
-        profile = authenticated.profile
-        principal = Principal(
-            user_id=profile.service_actor_user_id,
-            roles=frozenset({"NPI API User", "System Manager"}),
-            project_access={str(authenticated.event.project_global_id): ProjectAccess.ADMINISTER},
-            tenant_id=profile.tenant_id,
-        )
-        repository = _repository(principal, authenticated.headers.request_id, authenticated.event.trace_id)
-        outcome = repository.receive_inbound(authenticated)
-        frappe.db.commit()
-        if outcome.should_enqueue and outcome.queue_id is not None:
-            _enqueue_inbox(outcome.queue_id)
-        replayed = outcome.replayed
-        headers["X-Request-ID"] = authenticated.headers.request_id
-        headers["Idempotency-Replayed"] = str(replayed).lower()
-        return outcome.response
+        with engineering_change_inbound_step(
+            "P901_CHANGE_INBOUND_API_REPOSITORY_INIT"
+        ):
+            repository = _repository(
+                principal,
+                authenticated.headers.request_id,
+                authenticated.event.trace_id,
+            )
+        with engineering_change_inbound_step(
+            "P901_CHANGE_INBOUND_API_REPOSITORY_CALL"
+        ):
+            outcome = repository.receive_inbound(authenticated)
+        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_COMMIT"):
+            frappe.db.commit()
+        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_ENQUEUE"):
+            if outcome.should_enqueue and outcome.queue_id is not None:
+                _enqueue_inbox(outcome.queue_id)
+        with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_OUTCOME"):
+            replayed = outcome.replayed
+            headers["X-Request-ID"] = authenticated.headers.request_id
+            headers["Idempotency-Replayed"] = str(replayed).lower()
+            return outcome.response
 
-    result = frappe_domain_call(handle, cache_control="no-store", success_status=202, response_headers=headers)
-    if replayed and frappe.local.response.http_status_code == 202:
-        frappe.local.response.http_status_code = 200
-    return result
+    with engineering_change_inbound_step("P901_CHANGE_INBOUND_API_RESPONSE"):
+        result = frappe_domain_call(
+            handle,
+            cache_control="no-store",
+            success_status=202,
+            response_headers=headers,
+        )
+        if replayed and frappe.local.response.http_status_code == 202:
+            frappe.local.response.http_status_code = 200
+        return result
+
+
+def _engineering_change_inbound_diagnostic_active(trace_id: object) -> bool:
+    try:
+        request = getattr(frappe.local, "request", None)
+        arguments = getattr(request, "args", None)
+        headers = getattr(request, "headers", None)
+        diagnostic_path = os.environ.get("NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH")
+        return (
+            ENGINEERING_CHANGE_INBOUND_FULL_DIAGNOSTICS_ENABLED
+            and os.environ.get("NPI_P9_01C_RUNTIME_ENABLED") == "1"
+            and isinstance(diagnostic_path, str)
+            and os.path.isabs(diagnostic_path)
+            and os.path.basename(diagnostic_path) == _DIAGNOSTIC_PATH_NAME
+            and request is not None
+            and getattr(request, "method", None) == "POST"
+            and getattr(request, "path", None) == WEBHOOK_PATH
+            and arguments is not None
+            and list(arguments.keys()) == []
+            and headers is not None
+            and headers.get(ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER)
+            == ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_SCOPE
+            and headers.get(
+                ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER
+            )
+            == trace_id
+            and isinstance(trace_id, str)
+            and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+        )
+    except Exception:
+        return False
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])

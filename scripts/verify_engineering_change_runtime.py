@@ -74,7 +74,8 @@ ENGINEERING_CHANGE_RUNTIME_POST_MARKER_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_REVISE_OUTCOME_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_REVISE_SERVER_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic"
 )
@@ -83,6 +84,15 @@ ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_SCOPE = (
 )
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic-Trace"
+)
+ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER = (
+    "X-NPI-P901-Change-Inbound-Diagnostic"
+)
+ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_SCOPE = (
+    "p9-01-engineering-change-inbound-server-v1"
+)
+ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER = (
+    "X-NPI-P901-Change-Inbound-Diagnostic-Trace"
 )
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES = frozenset(
     {
@@ -118,6 +128,33 @@ ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES = frozenset(
         "P901_CHANGE_REVISE_REPOSITORY_AUDIT",
         "P901_CHANGE_REVISE_REPOSITORY_RECEIPT_SEAL",
         "P901_CHANGE_REVISE_REPOSITORY_OUTCOME",
+    }
+)
+ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P901_CHANGE_INBOUND_API_CALL",
+        "P901_CHANGE_INBOUND_API_FIELDS",
+        "P901_CHANGE_INBOUND_API_REQUEST",
+        "P901_CHANGE_INBOUND_API_AUTHENTICATE",
+        "P901_CHANGE_INBOUND_API_PRINCIPAL",
+        "P901_CHANGE_INBOUND_API_REPOSITORY_INIT",
+        "P901_CHANGE_INBOUND_API_REPOSITORY_CALL",
+        "P901_CHANGE_INBOUND_API_COMMIT",
+        "P901_CHANGE_INBOUND_API_ENQUEUE",
+        "P901_CHANGE_INBOUND_API_OUTCOME",
+        "P901_CHANGE_INBOUND_API_RESPONSE",
+        "P901_CHANGE_INBOUND_REPOSITORY_INPUT",
+        "P901_CHANGE_INBOUND_REPOSITORY_EVENT",
+        "P901_CHANGE_INBOUND_REPOSITORY_HASHES",
+        "P901_CHANGE_INBOUND_REPOSITORY_REPLAY",
+        "P901_CHANGE_INBOUND_REPOSITORY_SOURCE_KEY",
+        "P901_CHANGE_INBOUND_REPOSITORY_LATEST",
+        "P901_CHANGE_INBOUND_REPOSITORY_VERSION",
+        "P901_CHANGE_INBOUND_REPOSITORY_RESPONSE",
+        "P901_CHANGE_INBOUND_REPOSITORY_WRITE_SCOPE",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT",
+        "P901_CHANGE_INBOUND_REPOSITORY_AUDIT",
+        "P901_CHANGE_INBOUND_REPOSITORY_OUTCOME",
     }
 )
 ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
@@ -163,6 +200,17 @@ ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
         "P901_CHANGE_REVISE_IDEMPOTENCY",
         "P901_CHANGE_REVISE_SHAPE",
         "P901_CHANGE_INBOUND_HTTP",
+        "P901_CHANGE_INBOUND_REQUEST",
+        "P901_CHANGE_INBOUND_STATUS_INVALID",
+        "P901_CHANGE_INBOUND_STATUS_INFORMATIONAL",
+        "P901_CHANGE_INBOUND_STATUS_SUCCESS_UNEXPECTED",
+        "P901_CHANGE_INBOUND_STATUS_REDIRECTION",
+        "P901_CHANGE_INBOUND_STATUS_CLIENT_ERROR",
+        "P901_CHANGE_INBOUND_STATUS_SERVER_ERROR",
+        "P901_CHANGE_INBOUND_REQUEST_ID",
+        "P901_CHANGE_INBOUND_CACHE_CONTROL",
+        "P901_CHANGE_INBOUND_BODY_SHAPE",
+        "P901_CHANGE_INBOUND_IDEMPOTENCY",
         "P901_CHANGE_INBOUND_SHAPE",
         "P901_CHANGE_INBOUND_WORKER_PARENT",
         "P901_CHANGE_INBOUND_WORKER_SHAPE",
@@ -191,7 +239,10 @@ ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
         "P901_CHANGE_SUMMARY_CHILD_WORKER",
         "P901_CHANGE_SUMMARY_CHILD_RESPONSE",
     }
-) | ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
+) | (
+    ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
+    | ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_CODES
+)
 _DIAGNOSTIC_PATH_ENV = "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH"
 _DIAGNOSTIC_TRACE_ENV = "NPI_P9_01_RUNTIME_DIAGNOSTIC_TRACE"
 _DIAGNOSTIC_RECORD_KEYS = frozenset({"code", "exceptionType", "traceId"})
@@ -214,6 +265,7 @@ def _engineering_change_runtime_diagnostics_enabled() -> bool:
         or ENGINEERING_CHANGE_RUNTIME_REVISE_SERVER_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED
+        or ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED
     )
 
 
@@ -623,6 +675,7 @@ def _revise_command(
             ENGINEERING_CHANGE_RUNTIME_REVISE_SERVER_DIAGNOSTICS_ENABLED
             or ENGINEERING_CHANGE_RUNTIME_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED
             or ENGINEERING_CHANGE_RUNTIME_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED
+            or ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED
         )
         and isinstance(diagnostic_trace, str)
         and _TRACE_PATTERN.fullmatch(diagnostic_trace) is not None
@@ -758,32 +811,83 @@ def _send_inbound(
     signature = hmac.new(
         secret.encode("utf-8"), signing_input, hashlib.sha256
     ).hexdigest()
-    result = request(
-        urllib.request.build_opener(),
-        base_url,
-        WEBHOOK_PATH,
-        method="POST",
-        raw_payload=raw,
-        request_headers={
-            "Content-Type": "application/json",
-            "X-Forwarded-Proto": "https",
-            "X-NPI-Key-ID": KEY_ID,
-            "X-NPI-Timestamp": timestamp,
-            "X-NPI-Signature": f"v1={signature}",
-            "X-Request-ID": request_id,
-            "X-Trace-ID": f"{TRACE_PREFIX}-{label}",
-        },
+    headers = {
+        "Content-Type": "application/json",
+        "X-Forwarded-Proto": "https",
+        "X-NPI-Key-ID": KEY_ID,
+        "X-NPI-Timestamp": timestamp,
+        "X-NPI-Signature": f"v1={signature}",
+        "X-Request-ID": request_id,
+        "X-Trace-ID": f"{TRACE_PREFIX}-{label}",
+    }
+    state = _DIAGNOSTIC_STATE.get()
+    diagnostic_trace = (
+        state.get("trace_id") if isinstance(state, dict) else None
     )
-    body = _validate_http(
-        result,
-        expected_status=200 if replayed else 202,
-        expected_request_id=request_id,
-        private=False,
-    )
-    require(
-        result.headers.get("Idempotency-Replayed") == str(replayed).lower(),
-        "P9-01 inbound replay marker drifted",
-    )
+    if (
+        ENGINEERING_CHANGE_RUNTIME_INBOUND_FULL_DIAGNOSTICS_ENABLED
+        and isinstance(diagnostic_trace, str)
+        and _TRACE_PATTERN.fullmatch(diagnostic_trace) is not None
+    ):
+        headers[ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_HEADER] = (
+            ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_SCOPE
+        )
+        headers[ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER] = (
+            diagnostic_trace
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_REQUEST"
+    ):
+        result = request(
+            urllib.request.build_opener(),
+            base_url,
+            WEBHOOK_PATH,
+            method="POST",
+            raw_payload=raw,
+            request_headers=headers,
+        )
+    expected_status = 200 if replayed else 202
+    if result.status != expected_status:
+        if type(result.status) is not int or result.status < 100 or result.status > 599:
+            status_code = "P901_CHANGE_INBOUND_STATUS_INVALID"
+        elif result.status < 200:
+            status_code = "P901_CHANGE_INBOUND_STATUS_INFORMATIONAL"
+        elif result.status < 300:
+            status_code = "P901_CHANGE_INBOUND_STATUS_SUCCESS_UNEXPECTED"
+        elif result.status < 400:
+            status_code = "P901_CHANGE_INBOUND_STATUS_REDIRECTION"
+        elif result.status < 500:
+            status_code = "P901_CHANGE_INBOUND_STATUS_CLIENT_ERROR"
+        else:
+            status_code = "P901_CHANGE_INBOUND_STATUS_SERVER_ERROR"
+        with engineering_change_runtime_diagnostic_step(status_code):
+            raise RuntimeError("P9-01 inbound response status class drifted")
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_REQUEST_ID"
+    ):
+        require(
+            result.headers.get("X-Request-ID") == request_id,
+            "P9-01 inbound request identity was not echoed",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_CACHE_CONTROL"
+    ):
+        require(
+            result.headers.get("Cache-Control") == "no-store",
+            "P9-01 inbound cache boundary drifted",
+        )
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_BODY_SHAPE"
+    ):
+        require(isinstance(result.body, dict), "P9-01 inbound response body drifted")
+        body = result.body
+    with engineering_change_runtime_diagnostic_step(
+        "P901_CHANGE_INBOUND_IDEMPOTENCY"
+    ):
+        require(
+            result.headers.get("Idempotency-Replayed") == str(replayed).lower(),
+            "P9-01 inbound replay marker drifted",
+        )
     return body
 
 
