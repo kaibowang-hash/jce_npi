@@ -10492,3 +10492,34 @@ repeat or rewrite it merely to restore context. See
   unauthorized-15 rejection, all-18-diagnostics-off, security and diff
   hygiene.
 - Controller marker: `P9-01D runtime marker repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
+
+## 2026-09-01 P9-01D post-marker-repair combined diagnostic cycle
+
+- Runtime marker repair SHA `b28e7cd276fe1fe2774c2539edbb521b17bcd172`
+  passed ordinary `33438745063`: visual `99641480700`, repository
+  `99641480944`, frontend `99641481018` and secret scan `99641481059` all
+  passed. Its sole diagnostics-off Level 3 `33439824471` passed those four
+  lanes and controlled preflight `99649005777`; cumulative runtime
+  `99649098941` failed with exactly the fixed safe label `Local Frappe
+  Engineering Change runtime verification failed.` Restricted raw/child
+  output, response/body, business values, identities, message and stack
+  remained unread.
+- The stale marker root is closed by the shared-marker fixture binding and its
+  focused/full/ordinary evidence. With all diagnostics off, the fixed label
+  cannot distinguish the remaining P9-01 lifecycle predicates, so no further
+  repair is inferred. Freeze that cycle at diagnostic `1/1`, repair `1/1`,
+  final `1/1`.
+- Open an independent product-zero post-marker-repair cycle at
+  `0/1,0/1,0/1`. Its only new activation reuses exact 134 across the complete
+  outer, revise and inbound API/repository chain, deterministic trace, exact
+  request scope, `O_EXCL` exact-three record, strict reader and inner-first
+  precedence. All eleven historical runtime activations remain false. No
+  domain, schema, API, permission, event, adapter, UI, workflow or production
+  behavior changes.
+- Level 1 passes focused current/API/runtime `41/41`, affected P8/P9
+  security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+  current/reconciliation, repository verification, frontend generation and
+  i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+  compilation, shell syntax, exact-12 and projected union-60 manifests,
+  unauthorized-13 rejection, new-only activation, security and diff hygiene.
+- Controller marker: `P9-01D post-marker-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

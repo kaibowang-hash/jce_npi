@@ -172,3 +172,26 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-14 and projected union-60 manifests,
 unauthorized-15 rejection, all eighteen diagnostic activations off, security
 and diff hygiene.
+
+## Post-marker-repair combined runtime boundary
+
+Marker repair SHA `b28e7cd276fe1fe2774c2539edbb521b17bcd172` passes
+ordinary `33438745063`. Its sole Level 3 `33439824471` passes the ordinary
+lanes and preflight, while runtime `99649098941` emits only the fixed safe
+Engineering Change failure label. Restricted raw/child/response/business
+content remains unread. The repaired marker root is closed, but the all-off
+label cannot safely select a later integration predicate, so that cycle is
+frozen `1/1,1/1,1/1` without a guessed repair.
+
+The new product-zero post-marker-repair cycle begins `0/1,0/1,0/1` and
+reuses exact 134 with one new-only activation, deterministic trace, exact
+request scopes, `O_EXCL` exact-three record, strict reader and inner-first
+precedence. Event, ownership, permission, idempotency, replay, queue, adapter
+and production contracts remain unchanged.
+
+Level 1 passes focused current/API/runtime `41/41`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-12 and projected union-60 manifests,
+unauthorized-13 rejection, new-only activation, security and diff hygiene.

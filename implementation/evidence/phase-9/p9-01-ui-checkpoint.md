@@ -445,3 +445,21 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-14 and projected union-60 manifests,
 unauthorized-15 rejection, all eighteen diagnostic activations off, security
 and diff hygiene. The UI and visual baselines remain unchanged.
+
+## Post-marker-repair combined runtime boundary
+
+Marker repair SHA `b28e7cd276fe1fe2774c2539edbb521b17bcd172` passes
+ordinary `33438745063`. Its sole Level 3 `33439824471` passes the four base
+lanes and preflight, then returns only the fixed Engineering Change runtime
+failure label; restricted content remains unread. The marker defect is closed,
+but the all-off label cannot distinguish the remaining internal predicate, so
+freeze that cycle `1/1,1/1,1/1` and open a product-zero exact-134 diagnostic
+cycle at `0/1,0/1,0/1`. The Change workspace, visual baselines, translations,
+routes, permissions, product contracts and production profiles do not change.
+
+Level 1 passes focused current/API/runtime `41/41`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-12 and projected union-60 manifests,
+unauthorized-13 rejection, new-only activation, security and diff hygiene.

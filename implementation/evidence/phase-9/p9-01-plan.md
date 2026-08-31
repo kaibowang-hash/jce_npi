@@ -731,3 +731,27 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-14 and projected union-60 manifests,
 unauthorized-15 rejection, all eighteen diagnostic activations off, security
 and diff hygiene.
+
+## P9-01D post-marker-repair combined diagnostic
+
+Marker repair SHA `b28e7cd276fe1fe2774c2539edbb521b17bcd172` passes
+ordinary `33438745063`. Its sole diagnostics-off Level 3 `33439824471`
+passes all four ordinary-equivalent lanes and controlled preflight, then
+cumulative runtime `99649098941` returns only the fixed Engineering Change
+runtime failure label. Restricted content remains unread. The stale marker
+root is closed, but the all-off label cannot identify a later internal
+predicate; freeze the repair cycle at `1/1,1/1,1/1` and do not guess.
+
+The independent product-zero post-marker-repair cycle starts
+`0/1,0/1,0/1`. Its single new activation reuses exact 134, the deterministic
+trace and exact request scopes, exact-three `O_EXCL` record, strict reader and
+inner-first precedence. All eleven historical runtime activations are false;
+product, production and UI behavior remain unchanged. Exact-SHA ordinary PASS
+must precede the sole Level 2 diagnostic.
+
+Level 1 passes focused current/API/runtime `41/41`, affected P8/P9
+security/contract/domain/runtime `121/121`, full repository `2822/2822`,
+current/reconciliation, repository verification, frontend generation and
+i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
+compilation, shell syntax, exact-12 and projected union-60 manifests,
+unauthorized-13 rejection, new-only activation, security and diff hygiene.
