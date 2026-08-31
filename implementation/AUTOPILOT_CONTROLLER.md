@@ -10344,3 +10344,29 @@ repeat or rewrite it merely to restore context. See
   literal English sources with `100%` zh/zh-TW coverage), compilation, shell
   syntax, exact-eleven manifest and diff checks.
 - Controller marker: `P9-01D optional-empty observation normalization repair Level 1 PASS; exact-SHA ordinary CI and sole Level 3 pending`.
+
+## 2026-09-01 P9-01D post-optional-empty combined diagnostic cycle
+
+- Optional-empty repair SHA `1715592044030aff930c34e99c95cde792f055fd`
+  passed ordinary CI `33418112287`. Its sole diagnostics-off Level 3
+  `33419526576` passed repository `99578212690`, secret scan `99578212775`,
+  frontend `99578212817`, visual `99578212988` and controlled preflight
+  `99582348893`; controlled runtime `99582428762` failed after fixed
+  disposable Bench/Site initialization.
+- Fixed-source allowlist classification returned exactly `Local Frappe
+  Engineering Change runtime verification failed.` No child output, response
+  status/body, business value, identity, exception message or stack was read.
+  The optional-empty repair cycle is frozen at diagnostic `1/1`, repair
+  `1/1`, final `1/1`; the outer label cannot identify a remaining predicate.
+- Open an independent product-zero post-optional-empty cycle at
+  `0/1,0/1,0/1`. Its only new activation reuses the exact 100 outer/API/
+  repository safe codes, deterministic trace, exact request scope, `O_EXCL`
+  exact-three record, strict reader and inner-first precedence. All eight
+  historical runtime activations remain false. Product/domain/schema/
+  permission/UI/workflow behavior remains unchanged outside the controlled
+  disposable runtime.
+- Level 1 passes focused current/API/runtime `34/34`, full repository
+  `2816/2816`, current/reconciliation, frontend generation and i18n (`8774`
+  literal English sources with `100%` zh/zh-TW coverage), compilation, shell
+  syntax, exact-nine manifest, security and diff checks.
+- Controller marker: `P9-01D post-optional-empty combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

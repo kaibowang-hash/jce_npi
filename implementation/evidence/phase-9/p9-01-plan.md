@@ -607,3 +607,25 @@ repair/current/security `60/60`, full repository `2816/2816`, current/
 reconciliation, frontend generation and i18n (`8774` literal English sources
 with `100%` zh/zh-TW coverage), compilation, shell syntax, exact-eleven
 manifest and diff hygiene.
+
+## P9-01D post-optional-empty combined diagnostic
+
+Optional-empty repair SHA `171559204` passed ordinary `33418112287`. Its sole
+diagnostics-off Level 3 `33419526576` passed the four ordinary-equivalent
+lanes and controlled preflight, then runtime `99582428762` failed after fixed
+Bench/Site initialization. Fixed-source filtering matched exactly the
+Engineering Change runtime label; restricted runtime and child content
+remained unread.
+
+Freeze the optional-empty repair cycle at `1/1,1/1,1/1`. The independent
+post-optional-empty cycle starts `0/1,0/1,0/1` and changes no product behavior.
+Its new-only activation reuses the exact 100 outer/API/repository safe stages
+in the same run, deterministic trace and request scope, exact-three `O_EXCL`
+record, strict reader and inner-first precedence. All eight historical
+activations remain false; one exact-SHA ordinary PASS must precede its sole
+Level 2 diagnostic.
+
+Level 1 passes focused current/API/runtime `34/34`, full repository
+`2816/2816`, current/reconciliation, frontend generation and i18n (`8774`
+literal English sources with `100%` zh/zh-TW coverage), compilation, shell
+syntax, exact-nine manifest, security and diff hygiene.

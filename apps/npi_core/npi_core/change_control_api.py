@@ -42,6 +42,7 @@ _OBSERVATION_FIELDS = frozenset({"predecessor", "formalChange"})
 _CLOSE_FIELDS = frozenset({"predecessor"})
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic"
 )
@@ -359,6 +360,7 @@ def _engineering_change_revise_server_diagnostic_active(
             (
                 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTICS_ENABLED
                 or ENGINEERING_CHANGE_POST_ROOT_SAVE_DIAGNOSTICS_ENABLED
+                or ENGINEERING_CHANGE_POST_OPTIONAL_EMPTY_DIAGNOSTICS_ENABLED
             )
             and operation == "engineering_change.revise"
             and os.environ.get("NPI_P9_01C_RUNTIME_ENABLED") == "1"

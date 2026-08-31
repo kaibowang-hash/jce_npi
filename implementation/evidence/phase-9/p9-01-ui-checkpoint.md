@@ -347,3 +347,23 @@ Level 3. Level 1 passes focused repair/current/security `60/60`, full
 repository `2816/2816`, current/reconciliation, frontend generation and i18n
 (`8774` literal English sources with `100%` zh/zh-TW coverage), compilation,
 shell syntax, exact-eleven manifest and diff hygiene.
+
+## Post-optional-empty combined runtime boundary
+
+Optional-empty repair SHA `171559204` passed ordinary `33418112287`, but its
+sole diagnostics-off Level 3 `33419526576` failed only inside the fresh
+Engineering Change runtime after fixed Bench/Site initialization. Fixed-source
+filtering matched exactly the Engineering Change runtime label; no restricted
+child or business content was read. Freeze the repaired cycle at
+`1/1,1/1,1/1`.
+
+The new independent product-zero cycle starts `0/1,0/1,0/1`. A single new
+activation reuses the exact 100 safe outer/API/repository stages and strict
+record/reader contract so the next controlled run can identify the first
+remaining predicate without guessing or changing product, UI, schema,
+permission, contract or workflow behavior.
+
+Level 1 passes focused current/API/runtime `34/34`, full repository
+`2816/2816`, current/reconciliation, frontend generation and i18n (`8774`
+literal English sources with `100%` zh/zh-TW coverage), compilation, shell
+syntax, exact-nine manifest, security and diff hygiene.
