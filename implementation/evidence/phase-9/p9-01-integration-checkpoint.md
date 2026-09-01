@@ -145,6 +145,30 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## P9-01D Inbox replay identity repair
+
+Post-datetime diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4`
+passes ordinary `33462460736`. Sole Level 2 `33463349508` returns the strict
+safe tuple `P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_OTHER /
+UniqueValidationError / trace-a78a62694fe55a8f9cfae7d9d761a3d7` from runtime
+`99718091378`; restricted content remains unread.
+
+The Inbox controller and metadata use `receipt_id` as the document name while
+`event_id` is a separate unique idempotency field. Exact replay previously
+looked up the event ID as a document name, guaranteeing a miss followed by a
+duplicate unique-field insert. The repair performs a bounded exact
+`event_id`-to-name lookup, rejects multiple results, and loads the original
+receipt by its real name. The test fake now enforces both query filter and
+document name, preventing this class of false replay success. No integration
+contract, persistence schema, write authority, queue or target behavior is
+changed. All diagnostics are off and the cycle is `1/1,1/1,0/1` pending final
+Level 3.
+
+Level 1 passes focused `49/49`, full Python/formal repository `2826/2826`,
+current/reconciliation, frontend generation and complete `8774`-source i18n,
+compile, shell and diff checks. Exact-14/projected union-60 are accepted,
+unauthorized-15 is rejected and all 33 diagnostic declarations are false.
+
 ## Post-loopback-repair combined runtime boundary
 
 Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`

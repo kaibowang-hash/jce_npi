@@ -703,6 +703,29 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## P9-01D Inbox event replay identity repair
+
+Diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4` passes
+ordinary `33462460736`. Controlled `33463349508` passes preflight and returns
+only `P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_OTHER / UniqueValidationError /
+trace-a78a62694fe55a8f9cfae7d9d761a3d7` from runtime `99718091378`.
+Restricted output remains unread.
+
+The exact runtime order proves the first event was accepted and processed
+before its exact replay. The Inbox DocType names rows from `receipt_id` and
+defines `event_id` as a separate unique field. The repository incorrectly used
+the event ID as document name, missed the existing receipt and attempted a
+duplicate unique event insert. The bounded repair queries the unique
+`event_id`, rejects an impossible duplicate result and then reads the returned
+receipt name. Diagnostics are all false; cycle state is `1/1,1/1,0/1` pending
+the sole diagnostics-off Level 3. Contracts, ownership, schemas, permissions,
+queues and production profiles are unchanged.
+
+Level 1 passes focused `49/49`, full Python/formal repository `2826/2826`,
+current/reconciliation, frontend generation and complete `8774`-source i18n,
+compile, shell and diff checks. Exact-14/projected union-60 remain bounded,
+unauthorized-15 is rejected and all 33 diagnostic declarations are off.
+
 ## P9-01D disposable loopback transport repair
 
 Post-marker diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

@@ -298,7 +298,7 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
         self.assertFalse(
             self.api.ENGINEERING_CHANGE_POST_INBOX_INSERT_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.api.ENGINEERING_CHANGE_POST_DATETIME_REPAIR_DIAGNOSTICS_ENABLED
         )
         trace = "trace-" + "c" * 32

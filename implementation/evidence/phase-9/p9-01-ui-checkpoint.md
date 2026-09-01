@@ -422,6 +422,16 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## Inbox replay identity repair UI boundary
+
+Ordinary `33462460736` passes frontend and governed visual evidence. The
+diagnostic and repair are confined to backend Inbox replay identity lookup;
+they change no Project Change tab route, response shape, copy, translation,
+accessibility state, fixture or visual baseline. The existing UI evidence
+therefore remains authoritative while the diagnostics-off Level 3 is pending.
+Frontend generation and the complete `8774`-source English/zh/zh-TW i18n
+audit pass without any UI source or governed screenshot change.
+
 ## Post-loopback-repair diagnostic UI boundary
 
 Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`

@@ -10745,3 +10745,32 @@ repeat or rewrite it merely to restore context. See
   100% `zh`/`zh-TW`), compilation, shell syntax and diff hygiene. Exact-12
   remains within projected union-60, unauthorized-13 is rejected, and exactly
   the three new post-datetime-repair declarations are active.
+
+## 2026-09-01 P9-01D Inbox event replay identity repair
+
+- Diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4` passed
+  ordinary `33462460736`. Its sole Level 2 `33463349508` passed preflight
+  `99718030854`; runtime `99718091378` produced only
+  `P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_OTHER / UniqueValidationError /
+  trace-a78a62694fe55a8f9cfae7d9d761a3d7`. Restricted child output, response
+  content, business values, identifiers, message and stack remained unread.
+- The runtime had already inserted and processed the first signed Inbox event,
+  then replayed that exact event. Inbox metadata fixes document `name` to
+  `receipt_id` and separately makes `event_id` unique, but the repository
+  replay lookup passed `event_id` to the document-name reader. It therefore
+  missed the accepted receipt and attempted a second insert with the same
+  unique event ID. This is the unique first source of the observed exception.
+- Resolve replay through an exact unique-field query on `event_id`, fail closed
+  if more than one name is returned, and fetch the accepted document by its
+  receipt-backed name. Strengthen the fake repository test so arbitrary names
+  no longer return the existing row. No schema, event, API, ownership,
+  permission, queue, response or production behavior changes.
+- Freeze this cycle at diagnostic `1/1`, repair `1/1`, final `0/1`; disable all
+  Engineering Change diagnostic activations. Controller marker:
+  `P9-01D Inbox event replay identity repair Level 1 PASS; exact-SHA ordinary CI pending`.
+- Level 1 passes focused current/API/repository/runtime `49/49`, full Python
+  and formal repository verification `2826/2826`, current-task and V1.2
+  reconciliation, frontend generation and i18n (`8774`, 100% `zh`/`zh-TW`),
+  compilation, shell syntax and diff hygiene. Exact-14 and projected union-60
+  are accepted, unauthorized-15 is rejected, and all 33 Engineering Change
+  diagnostic declarations are false.

@@ -127,8 +127,21 @@ class FrappeEngineeringChangeIntegrationRepository(FrappeDocumentRepository):
         with engineering_change_inbound_repository_step(
             "P901_CHANGE_INBOUND_REPOSITORY_REPLAY"
         ):
-            existing = _get_optional(
-                "NPI Engineering Change Inbox", str(event.event_id)
+            existing_names = frappe.get_all(
+                "NPI Engineering Change Inbox",
+                filters={"event_id": str(event.event_id)},
+                pluck="name",
+                order_by="name asc",
+                limit_page_length=2,
+            )
+            if len(existing_names) > 1:
+                raise EngineeringChangeIntegrationConflict()
+            existing = (
+                _get_optional(
+                    "NPI Engineering Change Inbox", str(existing_names[0])
+                )
+                if existing_names
+                else None
             )
             if existing is not None:
                 if str(existing.canonical_event_hash) != event_hash:

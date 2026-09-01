@@ -47,17 +47,38 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
         self.rows: list[Row] = []
         self.audits: list[object] = []
         self.existing: Row | None = None
+        self.get_all_calls: list[tuple[tuple[object, ...], dict[str, object]]] = []
+        self.get_doc_name_calls: list[tuple[str, str]] = []
         frappe = types.ModuleType("frappe")
         frappe.flags = types.SimpleNamespace()
+        frappe._ = lambda value: value
         frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
-        frappe.get_all = lambda *_args, **_kwargs: []
+
+        def get_all(*args, **kwargs):
+            self.get_all_calls.append((args, kwargs))
+            if (
+                args
+                and args[0] == "NPI Engineering Change Inbox"
+                and self.existing is not None
+                and kwargs.get("filters")
+                == {"event_id": self.existing.get("event_id")}
+            ):
+                return [self.existing["receipt_id"]]
+            return []
+
+        frappe.get_all = get_all
 
         def get_doc(*args):
             if len(args) == 1 and isinstance(args[0], dict):
                 row = Row(args[0])
                 self.rows.append(row)
                 return row
-            if self.existing is not None:
+            self.get_doc_name_calls.append((str(args[0]), str(args[1])))
+            if (
+                self.existing is not None
+                and str(args[0]) == "NPI Engineering Change Inbox"
+                and str(args[1]) == str(self.existing.get("receipt_id"))
+            ):
                 return self.existing
             raise frappe.DoesNotExistError()
 
@@ -157,6 +178,25 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
         self.assertTrue(replay.replayed)
         self.assertFalse(replay.should_enqueue)
         self.assertEqual(len(self.rows), 1)
+        self.assertIn(
+            (
+                ("NPI Engineering Change Inbox",),
+                {
+                    "filters": {"event_id": str(event.event_id)},
+                    "pluck": "name",
+                    "order_by": "name asc",
+                    "limit_page_length": 2,
+                },
+            ),
+            self.get_all_calls,
+        )
+        self.assertIn(
+            (
+                "NPI Engineering Change Inbox",
+                str(self.rows[0]["receipt_id"]),
+            ),
+            self.get_doc_name_calls,
+        )
 
     def test_inbound_replay_with_changed_canonical_event_is_conflict(self) -> None:
         from npi_integration.engineering_change.ingress import AuthenticatedInboundRequest
@@ -164,7 +204,12 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
         from npi_integration.engineering_change.signature import SignatureHeaders
         from tests.test_phase9_change_integration_domain import NOW, inbound_event, profile
 
-        self.existing = Row(canonical_event_hash="f" * 64)
+        event = inbound_event()
+        self.existing = Row(
+            receipt_id="00000000-0000-4000-8000-000000009404",
+            event_id=str(event.event_id),
+            canonical_event_hash="f" * 64,
+        )
         request = AuthenticatedInboundRequest(
             profile(),
             SignatureHeaders(
@@ -173,7 +218,7 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
                 str(int(NOW.timestamp())),
                 "v1=" + "0" * 64,
             ),
-            inbound_event(),
+            event,
             b"exact-raw-body",
             NOW,
         )
