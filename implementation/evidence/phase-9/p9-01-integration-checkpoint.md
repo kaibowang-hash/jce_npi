@@ -169,6 +169,27 @@ current/reconciliation, frontend generation and complete `8774`-source i18n,
 compile, shell and diff checks. Exact-14/projected union-60 are accepted,
 unauthorized-15 is rejected and all 33 diagnostic declarations are false.
 
+## Post-replay-identity-repair combined runtime boundary
+
+Repair SHA `1e8b2a667adf4df510587edba6e50c43c2899e30` passes
+ordinary `33464452876`. Its sole Level 3 `33465390683` passes base jobs and
+preflight, while runtime `99726596791` emits only the fixed safe Engineering
+Change failure label. Restricted raw, child, response and business content
+remains unread. The repaired replay identity root is closed, but the all-off
+label cannot select the remaining internal predicate; freeze the repair cycle
+`1/1,1/1,1/1`.
+
+The new product-zero combined cycle begins `0/1,0/1,0/1` and reuses exact 144
+with one new-only activation, deterministic trace, exact request scopes,
+`O_EXCL` exact-three record, strict reader and inner-first precedence. Event,
+ownership, permission, idempotency, replay, queue, adapter and production
+contracts do not change.
+
+Level 1 passes focused `43/43`, full Python/formal repository `2826/2826`,
+current/reconciliation, frontend generation and complete `8774`-source i18n,
+compile, shell and diff checks. Exact-12/projected union-60 are accepted,
+unauthorized-13 is rejected and only the three new declarations are active.
+
 ## Post-loopback-repair combined runtime boundary
 
 Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`

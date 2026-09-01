@@ -726,6 +726,27 @@ current/reconciliation, frontend generation and complete `8774`-source i18n,
 compile, shell and diff checks. Exact-14/projected union-60 remain bounded,
 unauthorized-15 is rejected and all 33 diagnostic declarations are off.
 
+## P9-01D post-replay-identity-repair combined diagnostic
+
+Replay-identity repair SHA `1e8b2a667adf4df510587edba6e50c43c2899e30`
+passes ordinary `33464452876`. Its sole Level 3 `33465390683` passes all four
+base lanes and preflight, while runtime `99726596791` returns only the fixed
+Engineering Change outer failure label. Restricted content remains unread.
+The proven replay-identity root is closed, but the outer label is internally
+nonunique, so freeze its cycle `1/1,1/1,1/1` without guessing.
+
+Open an independent product-zero exact-144 cycle at `0/1,0/1,0/1`. One
+new-only post-replay-identity-repair activation reuses the existing bounded
+runtime/core/integration recorder chain; all sixteen historical activations
+are false. Ownership, contracts, schemas, permissions, writes and production
+behavior remain unchanged.
+
+Level 1 passes focused `43/43`, full Python/formal repository `2826/2826`,
+current/reconciliation, frontend generation and complete `8774`-source i18n,
+compile, shell and diff checks. Exact-12/projected union-60 remain bounded,
+unauthorized-13 is rejected and activation is new-only across
+runtime/core/integration.
+
 ## P9-01D disposable loopback transport repair
 
 Post-marker diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

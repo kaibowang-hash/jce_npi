@@ -432,6 +432,13 @@ therefore remains authoritative while the diagnostics-off Level 3 is pending.
 Frontend generation and the complete `8774`-source English/zh/zh-TW i18n
 audit pass without any UI source or governed screenshot change.
 
+## Post-replay-identity diagnostic UI boundary
+
+Level 3 `33465390683` passes frontend `99724062265` and governed visual
+`99724062387`. Its later fixed backend runtime label cannot invalidate the
+accepted UI evidence. The independent exact-144 diagnostic changes no route,
+copy, translation, accessibility state, fixture or visual baseline.
+
 ## Post-loopback-repair diagnostic UI boundary
 
 Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`

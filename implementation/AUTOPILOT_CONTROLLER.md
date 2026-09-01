@@ -10774,3 +10774,29 @@ repeat or rewrite it merely to restore context. See
   compilation, shell syntax and diff hygiene. Exact-14 and projected union-60
   are accepted, unauthorized-15 is rejected, and all 33 Engineering Change
   diagnostic declarations are false.
+
+## 2026-09-01 P9-01D post-replay-identity-repair combined diagnostic
+
+- Replay-identity repair SHA `1e8b2a667adf4df510587edba6e50c43c2899e30`
+  passed ordinary `33464452876` in all four lanes. Its sole diagnostics-off
+  Level 3 `33465390683` passed frontend `99724062265`, repository
+  `99724062364`, visual `99724062387`, secret scan `99724062439` and
+  controlled preflight `99726557517`; runtime `99726596791` returned only the
+  fixed Engineering Change outer failure label. Restricted output remained
+  unread.
+- Exact event replay lookup and its strict-name regression test close the
+  observed unique-field root, while an all-off outer label cannot identify a
+  later internal predicate. Freeze that cycle at diagnostic `1/1`, repair
+  `1/1`, final `1/1`; do not infer recurrence or guess another repair.
+- Open one independent product-behavior-neutral combined diagnostic at
+  `0/1,0/1,0/1`. Only the new post-replay-identity-repair activation is true;
+  exact 144, deterministic trace/scopes, exact-three `O_EXCL` recording,
+  strict reader, inner-first precedence, failed-output-unread and success-zero
+  behavior remain unchanged. All sixteen historical activations are false.
+- Controller marker: `P9-01D post-replay-identity-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+- Level 1 passes focused current/API/runtime `43/43`, full Python and formal
+  repository verification `2826/2826`, current/reconciliation, frontend
+  generation and i18n (`8774`, 100% `zh`/`zh-TW`), compilation, shell syntax
+  and diff hygiene. Exact-12/projected union-60 are accepted,
+  unauthorized-13 is rejected, and exactly the three new declarations are
+  active among 36 Engineering Change diagnostic declarations.
