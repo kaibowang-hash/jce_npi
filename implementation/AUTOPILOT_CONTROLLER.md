@@ -10642,3 +10642,32 @@ repeat or rewrite it merely to restore context. See
   `zh`/`zh-TW`), compilation, shell syntax and diff hygiene all pass. The
   exact-12 task manifest and projected union-60 remain bounded; all three
   active declarations are the same new-only post-service-actor-repair flag.
+
+## 2026-09-01 P9-01D Inbox insert SQL-class diagnostic
+
+- Post-service-actor diagnostic SHA
+  `3453ef66a9b49f160dcb54cde6ab7e52be36f8dd` passed ordinary
+  `33453886007`. Sole Level 2 `33454878580` passed preflight
+  `99692624277`; runtime `99692686813` returned exactly
+  `P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT / OperationalError /
+  trace-915a7a055a4159b4b892e22b4c552d9b` through the strict exact-134
+  reader. Restricted output was not read.
+- The retained service actor is proven past the write-scope boundary, but an
+  `OperationalError` at `row.insert()` is not enough to distinguish missing
+  table/column/default, invalid datetime/value/length, duplicate, lock or an
+  unclassified database condition. Freeze that diagnostic cycle at
+  `1/1,0/1,0/1`; do not guess a product repair.
+- Open one independent product-behavior-neutral SQL-class diagnostic at
+  `0/1,0/1,0/1`. A fixed numeric error-class map adds ten safe codes and no
+  message/value output, yielding exact 144. The prior fourteen runtime
+  activations are false; only the new Inbox-insert activation is true across
+  runtime/core/integration declarations. The original exception is re-raised
+  unchanged and normal behavior is identical.
+- Controller marker: `P9-01D inbox-insert SQL-class diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+- Level 1 passes focused `48/48`, affected P9/integration `124/124`, full
+  Python and formal repository verification `2825/2825`, current-task and
+  reconciliation, frontend generation and i18n (`8774`, 100% `zh`/`zh-TW`),
+  compilation, shell syntax, exact-14/projected union-60 manifests,
+  unauthorized-15 rejection and diff hygiene. Exactly the three new
+  Inbox-insert declarations are active; all other diagnostic declarations
+  are false.

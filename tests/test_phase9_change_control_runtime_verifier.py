@@ -217,8 +217,11 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SERVICE_ACTOR_REPAIR_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_INBOX_INSERT_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
             sum(
@@ -237,15 +240,16 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_MARKER_REPAIR_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SERVICE_ACTOR_REPAIR_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_INBOX_INSERT_DIAGNOSTICS_ENABLED,
                 )
             ),
             1,
         )
-        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 134)
+        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 144)
         server_codes = set(
             self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
         ) | set(self.verifier.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_CODES)
-        self.assertEqual(len(server_codes), 55)
+        self.assertEqual(len(server_codes), 65)
         self.assertTrue(
             all(
                 literals.count(code) == 1
@@ -268,7 +272,16 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             and node.value in server_codes
         ]
         self.assertEqual(set(server_literals), server_codes)
-        self.assertTrue(all(server_literals.count(code) == 2 for code in server_codes))
+        self.assertTrue(
+            all(
+                server_literals.count(code) == (
+                    3
+                    if code == "P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT"
+                    else 2
+                )
+                for code in server_codes
+            )
+        )
 
     def test_full_boundary_records_base_exception_without_overwriting_inner(self) -> None:
         trace = self.verifier.engineering_change_runtime_diagnostic_trace()
@@ -424,6 +437,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             ), patch.object(
                 self.verifier,
                 "ENGINEERING_CHANGE_RUNTIME_POST_SERVICE_ACTOR_REPAIR_DIAGNOSTICS_ENABLED",
+                False,
+            ), patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_POST_INBOX_INSERT_DIAGNOSTICS_ENABLED",
                 False,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):

@@ -216,6 +216,26 @@ frontend generation and complete `zh`/`zh-TW` i18n, compile, shell and diff
 checks. Exact-12 remains within projected union-60 and an unauthorized
 thirteenth path is rejected.
 
+## Inbox insert SQL-class boundary
+
+Post-service-actor SHA `3453ef66a9b49f160dcb54cde6ab7e52be36f8dd`
+passes ordinary `33453886007`. Controlled run `33454878580` returns only
+`P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT / OperationalError /
+trace-915a7a055a4159b4b892e22b4c552d9b`; no restricted output is read. The
+actor/permission root is closed, while the database first source remains
+nonunique, so that cycle freezes `1/1,0/1,0/1`.
+
+One new-only product-neutral activation classifies a bounded numeric database
+error into ten fixed labels (or `OTHER`) and re-raises it. Exact 144 keeps
+inner-first recording and all existing trace/O_EXCL/strict-reader contracts;
+integration ownership, payload and write order do not change.
+
+Level 1 passes focused `48/48`, affected integration/P9 `124/124`, full
+Python and formal repository verification `2825/2825`, governance,
+reconciliation, generation, i18n, compile, shell and diff checks. Exact-14
+and projected union-60 are accepted; an unauthorized fifteenth path is
+rejected.
+
 ## Disposable loopback transport repair
 
 Exact diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

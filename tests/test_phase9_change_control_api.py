@@ -292,8 +292,11 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
         self.assertFalse(
             self.api.ENGINEERING_CHANGE_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.api.ENGINEERING_CHANGE_POST_SERVICE_ACTOR_REPAIR_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.api.ENGINEERING_CHANGE_POST_INBOX_INSERT_DIAGNOSTICS_ENABLED
         )
         trace = "trace-" + "c" * 32
         self.headers.update(

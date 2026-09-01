@@ -191,7 +191,7 @@
     "phase_status_resumed_product_task": "P9-01",
     "active_goal_marker": "P9-01",
     "next_action_marker": "P9-01",
-    "controller_marker": "P9-01D post-service-actor-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending"
+    "controller_marker": "P9-01D inbox-insert SQL-class diagnostic Level 1 PASS; exact-SHA ordinary CI pending"
   },
   "rollback": {
     "before_product_resume": "Restore exact P9-00 checkpoint 065803ae484d885001259de8238ef01d0ad311e4 and its ordinary CI 33345162833. This P9-01 audit transition changes no product or external state.",

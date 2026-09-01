@@ -201,8 +201,36 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
             "P901_CHANGE_INBOUND_REPOSITORY_AUDIT",
             "P901_CHANGE_INBOUND_REPOSITORY_OUTCOME",
         )
-        positions = [source.index(code) for code in codes]
+        receive_start = source.index("    def receive_inbound")
+        receive_end = source.index("    def create_summary_request", receive_start)
+        receive_source = source[receive_start:receive_end]
+        positions = [receive_source.index(code) for code in codes]
         self.assertEqual(positions, sorted(positions))
+
+    def test_inbox_insert_database_diagnostic_maps_only_fixed_safe_classes(self) -> None:
+        expected = {
+            1048: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_NULL",
+            1054: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_COLUMN",
+            1062: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_DUPLICATE",
+            1146: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_TABLE",
+            1205: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_LOCK",
+            1213: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_LOCK",
+            1292: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_DATETIME",
+            1364: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_DEFAULT",
+            1366: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_INVALID_VALUE",
+            1406: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_TOO_LONG",
+        }
+        for number, code in expected.items():
+            with self.subTest(number=number):
+                error = RuntimeError(number, "restricted message")
+                self.assertEqual(
+                    self.module._inbox_insert_database_diagnostic_code(error), code
+                )
+        for error in (RuntimeError(), RuntimeError(True), RuntimeError(9999)):
+            self.assertEqual(
+                self.module._inbox_insert_database_diagnostic_code(error),
+                "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_OTHER",
+            )
 
 
 if __name__ == "__main__":

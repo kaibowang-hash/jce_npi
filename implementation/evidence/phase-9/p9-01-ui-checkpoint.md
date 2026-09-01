@@ -471,6 +471,13 @@ The no-UI-diff claim is covered by frontend generation and i18n verification
 visual evidence. Repository and Python Level 1 checks are also green; no
 snapshot refresh is part of this diagnostic task.
 
+## Inbox insert SQL-class diagnostic UI boundary
+
+Ordinary `33453886007` passes every UI/visual lane. Controlled runtime
+`33454878580` narrows a backend-only Inbox insert error without reading
+restricted content. The new fixed SQL-class mapping changes no route, copy,
+translation, accessibility behavior, screenshot or visual baseline.
+
 ## Disposable loopback transport repair
 
 Diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df` passes

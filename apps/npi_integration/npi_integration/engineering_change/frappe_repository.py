@@ -37,6 +37,34 @@ from .problems import EngineeringChangeIntegrationConflict, EngineeringChangeInt
 
 
 _SERVER_DIAGNOSTIC_FLAG = "npi_p901_change_revise_server_diagnostic"
+_INBOX_INSERT_DIAGNOSTIC_CODES = {
+    1048: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_NULL",
+    1054: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_COLUMN",
+    1062: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_DUPLICATE",
+    1146: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_TABLE",
+    1205: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_LOCK",
+    1292: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_DATETIME",
+    1364: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_DEFAULT",
+    1366: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_INVALID_VALUE",
+    1406: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_TOO_LONG",
+}
+_INBOX_INSERT_DIAGNOSTIC_FALLBACK = (
+    "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_OTHER"
+)
+_INBOX_INSERT_DATABASE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_NULL",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_COLUMN",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_DUPLICATE",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_TABLE",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_LOCK",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_DATETIME",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_MISSING_DEFAULT",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_INVALID_VALUE",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_TOO_LONG",
+        "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_OTHER",
+    }
+)
 
 
 @contextmanager
@@ -48,10 +76,32 @@ def engineering_change_inbound_repository_step(code: str) -> Iterator[None]:
             engineering_change_revise_server_step as server_step,
         )
 
-        with server_step(code):
-            yield
+        if code == "P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT":
+            try:
+                yield
+            except Exception as error:
+                with server_step(_inbox_insert_database_diagnostic_code(error)):
+                    raise
+        else:
+            with server_step(code):
+                yield
     else:
         yield
+
+
+def _inbox_insert_database_diagnostic_code(error: Exception) -> str:
+    arguments = getattr(error, "args", ())
+    number = arguments[0] if isinstance(arguments, tuple) and arguments else None
+    if type(number) is not int:
+        return _INBOX_INSERT_DIAGNOSTIC_FALLBACK
+    if number == 1213:
+        number = 1205
+    result = _INBOX_INSERT_DIAGNOSTIC_CODES.get(
+        number, _INBOX_INSERT_DIAGNOSTIC_FALLBACK
+    )
+    if result not in _INBOX_INSERT_DATABASE_DIAGNOSTIC_CODES:
+        return _INBOX_INSERT_DIAGNOSTIC_FALLBACK
+    return result
 
 
 @dataclass(frozen=True, slots=True)

@@ -798,6 +798,27 @@ generation and `8774`-source 100% `zh`/`zh-TW` i18n, compilation, shell
 syntax and diff checks. The task is exact-12 within projected union-60; the
 unauthorized thirteenth path is rejected.
 
+## P9-01D Inbox insert SQL-class diagnostic
+
+Exact SHA `3453ef66a9b49f160dcb54cde6ab7e52be36f8dd` passes ordinary
+`33453886007`. Sole Level 2 `33454878580` passes preflight then returns the
+strict safe tuple `P901_CHANGE_INBOUND_REPOSITORY_INBOX_INSERT /
+OperationalError / trace-915a7a055a4159b4b892e22b4c552d9b` from runtime
+`99692686813`; restricted output remains unread. This proves the service
+actor write scope is entered but does not identify which database condition
+failed. Freeze that cycle `1/1,0/1,0/1`.
+
+The new independent cycle starts `0/1,0/1,0/1`. It maps only fixed numeric
+database error classes to ten safe codes, never records messages or values,
+re-raises the same exception, and extends the combined allowlist to exact
+144. All prior activations are false and product behavior is unchanged.
+
+Level 1 passes focused `48/48`, affected `124/124`, full Python and formal
+repository verification `2825/2825`, current/reconciliation, frontend
+generation and complete `zh`/`zh-TW` i18n, compilation, shell and diff
+checks. Exact-14 remains inside projected union-60 and the unauthorized
+fifteenth path is rejected.
+
 ## P9-01D disposable runtime marker repair
 
 Post-raw-body SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b` passes
