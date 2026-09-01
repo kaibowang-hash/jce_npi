@@ -43,7 +43,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertEqual(
             value["expected_state"]["controller_marker"],
-            "P9-01D Engineering Change database datetime repair Level 1 PASS; exact-SHA ordinary CI pending",
+            "P9-01D post-datetime-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending",
         )
         self.assertIn("FR-CH-001", value["requirement_ids"])
         self.assertIn("FR-CH-010", value["requirement_ids"])

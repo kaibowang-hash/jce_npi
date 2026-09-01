@@ -10718,3 +10718,30 @@ repeat or rewrite it merely to restore context. See
   and diff hygiene. Exact-14 remains inside projected union-60,
   unauthorized-15 is rejected, and all thirty Engineering Change diagnostic
   declarations are false.
+
+## 2026-09-01 P9-01D post-datetime-repair combined diagnostic
+
+- Datetime repair SHA `2326b977754b78ebce6a39766c937a7cb8d12cab`
+  passed ordinary `33459791960` in all four lanes. Its sole diagnostics-off
+  Level 3 `33460716573` passed frontend `99710065164`, repository
+  `99710065319`, visual `99710065332`, secret scan `99710065340` and
+  controlled preflight `99712810320`; cumulative runtime `99712852126`
+  returned only the fixed Engineering Change outer failure label. No
+  restricted child output, body, business value, identity, message or stack
+  was read.
+- The trusted SQL Datetime root is closed by exact normalization tests and
+  ordinary CI, but an all-off outer label cannot identify a later runtime
+  predicate. Freeze that repair cycle at diagnostic `1/1`, repair `1/1`,
+  final `1/1`; do not infer recurrence or guess another repair.
+- Open one independent product-behavior-neutral post-datetime-repair cycle
+  at `0/1,0/1,0/1`. One new-only activation reuses exact 144, deterministic
+  trace/scopes, exact-three `O_EXCL` recording, strict reader, inner-first
+  precedence, failed-output-unread and success-zero behavior. All fifteen
+  historical activations remain false.
+- Controller marker: `P9-01D post-datetime-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+- Level 1 passes focused current/API/runtime `43/43`, affected P8/P9
+  integration and security `125/125`, full Python/formal repository
+  `2826/2826`, current/reconciliation, frontend generation and i18n (`8774`,
+  100% `zh`/`zh-TW`), compilation, shell syntax and diff hygiene. Exact-12
+  remains within projected union-60, unauthorized-13 is rejected, and exactly
+  the three new post-datetime-repair declarations are active.

@@ -270,6 +270,25 @@ repository `2826/2826`, current/reconciliation, frontend generation and
 within projected union-60, unauthorized-15 is rejected and all thirty
 Engineering Change diagnostics are off.
 
+## Post-datetime-repair combined boundary
+
+Repair SHA `2326b977754b78ebce6a39766c937a7cb8d12cab` passes ordinary
+`33459791960`. Diagnostics-off Level 3 `33460716573` passes the base jobs and
+preflight, then runtime `99712852126` returns only the fixed Engineering
+Change outer failure label. No restricted content was read. The repaired
+Datetime root remains closed, while the later first source is nonunique.
+
+Freeze the repair cycle `1/1,1/1,1/1` and open an independent product-zero
+exact-144 cycle `0/1,0/1,0/1`. One new-only post-datetime activation enables
+the existing bounded runtime/core/integration recorder chain; ownership,
+event contracts, permissions, writes and production behavior do not change.
+
+Level 1 passes focused `43/43`, affected `125/125`, full Python/formal
+repository `2826/2826`, governance/reconciliation, frontend generation and
+complete i18n, compilation, shell and diff checks. Exact-12/projected
+union-60 are accepted, unauthorized-13 is rejected and activation is
+new-only across runtime/core/integration.
+
 ## Disposable loopback transport repair
 
 Exact diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

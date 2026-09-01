@@ -854,6 +854,27 @@ complete `8774`-source i18n, compilation, shell syntax and diff checks. The
 exact-14/projected union-60 manifests remain bounded, unauthorized-15 is
 rejected and all thirty Engineering Change diagnostics are disabled.
 
+## P9-01D post-datetime-repair combined diagnostic
+
+Datetime repair SHA `2326b977754b78ebce6a39766c937a7cb8d12cab`
+passes ordinary `33459791960`. Sole Level 3 `33460716573` passes its four
+base jobs and preflight, while runtime `99712852126` yields only the fixed
+Engineering Change outer failure label. Restricted output remains unread.
+The Datetime root is closed, but this label is internally nonunique, so the
+repair cycle is frozen `1/1,1/1,1/1` without a guessed repair.
+
+Open a separate product-zero exact-144 diagnostic cycle at `0/1,0/1,0/1`.
+Only the new post-datetime-repair activation is true; deterministic trace,
+request scopes, first-wins record, strict reader, failed-child unread and
+success-zero behavior are unchanged. Exact-SHA ordinary PASS must precede
+its sole Level 2 diagnostic.
+
+Level 1 passes focused `43/43`, affected `125/125`, full Python/formal
+repository `2826/2826`, current/reconciliation, frontend generation and
+complete `8774`-source i18n, compile, shell and diff checks. Exact-12 and
+projected union-60 remain bounded, unauthorized-13 is rejected and only the
+three new declarations are active.
+
 ## P9-01D disposable runtime marker repair
 
 Post-raw-body SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b` passes

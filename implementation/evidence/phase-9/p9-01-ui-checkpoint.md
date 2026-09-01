@@ -488,6 +488,14 @@ governed visual evidence remains authoritative.
 Frontend generation and the `8774`-source `100%` zh/zh-TW i18n audit pass;
 there is no affected UI or visual test surface in this repair.
 
+## Post-datetime diagnostic UI boundary
+
+Ordinary `33459791960` and the Level 3 frontend/visual jobs pass. The later
+fixed Engineering Change outer runtime label is backend-only and cannot
+invalidate the accepted UI evidence. The new exact-144 diagnostic changes no
+route, copy, translation, accessibility behavior, fixture response or visual
+baseline.
+
 ## Disposable loopback transport repair
 
 Diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df` passes
