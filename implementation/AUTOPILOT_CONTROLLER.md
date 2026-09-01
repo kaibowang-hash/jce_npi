@@ -10689,3 +10689,32 @@ repeat or rewrite it merely to restore context. See
   generation and `8774`-source complete i18n, compile, shell and diff checks.
   Exact-8 stays inside projected union-60 and unauthorized-9 is rejected;
   the new-only activation and exact-144 reader are unchanged.
+
+## 2026-09-01 P9-01D Engineering Change database datetime repair
+
+- Recorder SHA `33d017ec09fd82fa8a397abf47c5d44fa5e8cd2d`
+  passed ordinary `33457876877`. Sole controlled diagnostic `33458827576`
+  passed preflight `99704452868`; runtime `99704510350` produced exactly
+  `P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_DATETIME / OperationalError /
+  trace-9e7b667c34ab5adfbfd86417e0cf6c5c`. No restricted output was read.
+- The fixed `1292` classification uniquely closes the first source: the
+  Inbox passed its two UTC-aware Python datetimes directly into physical
+  Frappe Datetime columns, while established repository seams normalize
+  physical datetimes with `_database_datetime`. The same P9 repository also
+  passed the later Summary Request `created_at` and `updated_at` values
+  directly; these are the same statically certain root and are repaired in
+  the same batch.
+- Normalize exactly those four physical fields. Domain/event snapshot UTC
+  text, hashes, ownership, API, permissions, write order and business
+  semantics remain unchanged. Disable every Engineering Change diagnostic
+  activation. Freeze the SQL-class cycle at diagnostic `1/1`, repair `1/1`,
+  final `0/1`; after Level 1 and exact-SHA ordinary PASS, run the sole
+  diagnostics-off Level 3.
+- Controller marker: `P9-01D Engineering Change database datetime repair Level 1 PASS; exact-SHA ordinary CI pending`.
+- Level 1 passes focused repair/current/API/repository/runtime `61/61`,
+  affected P8/P9 integration and security `125/125`, full Python and formal
+  repository verification `2826/2826`, current-task/reconciliation, frontend
+  generation and i18n (`8774`, 100% `zh`/`zh-TW`), compilation, shell syntax
+  and diff hygiene. Exact-14 remains inside projected union-60,
+  unauthorized-15 is rejected, and all thirty Engineering Change diagnostic
+  declarations are false.

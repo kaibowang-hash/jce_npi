@@ -261,7 +261,7 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_SERVICE_ACTOR_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_INBOX_INSERT_DIAGNOSTICS_ENABLED
         )
 

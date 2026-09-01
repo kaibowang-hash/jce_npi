@@ -5,6 +5,7 @@ import sys
 import types
 import unittest
 from contextlib import contextmanager
+from datetime import UTC
 from pathlib import Path
 from unittest.mock import patch
 from uuid import UUID
@@ -78,6 +79,11 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
                 self.audits.append(values)
 
         base.FrappeDocumentRepository = FrappeDocumentRepository
+        base._database_datetime = lambda value: (
+            value.astimezone(UTC)
+            .replace(tzinfo=None)
+            .isoformat(sep=" ", timespec="microseconds")
+        )
         sys.modules[base.__name__] = base
         security = types.ModuleType("npi_core.foundation.security")
         security.Principal = object
@@ -136,6 +142,14 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
         self.assertEqual(len(self.rows), 1)
         self.assertEqual(self.rows[0]["doctype"], "NPI Engineering Change Inbox")
         self.assertEqual(self.rows[0]["state"], "pending")
+        self.assertEqual(
+            self.rows[0]["signed_at"],
+            NOW.replace(tzinfo=None).isoformat(sep=" ", timespec="microseconds"),
+        )
+        self.assertEqual(
+            self.rows[0]["received_at"],
+            NOW.replace(tzinfo=None).isoformat(sep=" ", timespec="microseconds"),
+        )
         self.assertTrue(self.rows[0]["inserted"])
         self.assertEqual(len(self.audits), 1)
         self.existing = self.rows[0]
@@ -181,6 +195,19 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
             self.assertIn(marker, source)
         for forbidden in ("frappe.client", "target_doctype", "target_method"):
             self.assertNotIn(forbidden, source)
+
+    def test_every_initial_physical_datetime_is_database_normalized(self) -> None:
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/engineering_change/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        for expression in (
+            '"signed_at": _database_datetime(request.headers.signed_at)',
+            '"received_at": _database_datetime(request.received_at)',
+            '"created_at": _database_datetime(now)',
+            '"updated_at": _database_datetime(now)',
+        ):
+            self.assertEqual(source.count(expression), 1)
 
     def test_inbound_diagnostic_stages_follow_transaction_order(self) -> None:
         source = (

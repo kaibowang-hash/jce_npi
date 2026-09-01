@@ -250,6 +250,26 @@ Python/formal repository `2825/2825`, current/reconciliation,
 generation/i18n, compile, shell and diff checks. Exact-8 remains bounded by
 projected union-60; unauthorized-9 is rejected.
 
+## Physical Datetime repair
+
+Exact recorder SHA `33d017ec09fd82fa8a397abf47c5d44fa5e8cd2d`
+passes ordinary `33457876877`; controlled `33458827576` returns only
+`INBOX_SQL_DATETIME / OperationalError /
+trace-9e7b667c34ab5adfbfd86417e0cf6c5c`. Fixed class `1292` and lexical order
+prove the first physical Inbox insert received unnormalized aware datetimes.
+
+Normalize the two Inbox and two same-root Summary Request physical Datetime
+fields with the existing repository seam. Canonical payloads, UTC snapshots,
+hashes, roles, transaction order, replay, Inbox/Outbox semantics and external
+behavior do not change. Diagnostics are all false; cycle state is
+`1/1,1/1,0/1`.
+
+Level 1 passes focused `61/61`, affected `125/125`, full Python/formal
+repository `2826/2826`, current/reconciliation, frontend generation and
+`8774`-source complete i18n, compile, shell and diff checks. Exact-14 remains
+within projected union-60, unauthorized-15 is rejected and all thirty
+Engineering Change diagnostics are off.
+
 ## Disposable loopback transport repair
 
 Exact diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

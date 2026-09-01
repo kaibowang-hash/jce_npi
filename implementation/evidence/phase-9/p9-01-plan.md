@@ -833,6 +833,27 @@ Python and formal repository `2825/2825`, governance/reconciliation,
 generation/i18n, compile, shell and diff checks. Exact-8/projected union-60
 are accepted and unauthorized-9 is rejected.
 
+## P9-01D Engineering Change database datetime repair
+
+Recorder SHA `33d017ec09fd82fa8a397abf47c5d44fa5e8cd2d` passes ordinary
+`33457876877`. Controlled `33458827576` returns the trusted safe tuple
+`P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_DATETIME / OperationalError /
+trace-9e7b667c34ab5adfbfd86417e0cf6c5c`; restricted output remains unread.
+The fixed database class plus source order uniquely identifies unnormalized
+physical Datetime values.
+
+The closed repair normalizes Inbox `signed_at`/`received_at` and the later
+Summary Request `created_at`/`updated_at` through the established
+`_database_datetime` seam. It does not alter domain or event UTC text. All
+diagnostics return false and the cycle becomes `1/1,1/1,0/1` pending its sole
+Level 3.
+
+Level 1 passes focused `61/61`, affected `125/125`, full Python and formal
+repository `2826/2826`, current/reconciliation, frontend generation and
+complete `8774`-source i18n, compilation, shell syntax and diff checks. The
+exact-14/projected union-60 manifests remain bounded, unauthorized-15 is
+rejected and all thirty Engineering Change diagnostics are disabled.
+
 ## P9-01D disposable runtime marker repair
 
 Post-raw-body SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b` passes

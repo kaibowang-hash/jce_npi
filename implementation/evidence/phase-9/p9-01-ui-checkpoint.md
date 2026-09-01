@@ -478,6 +478,16 @@ Ordinary `33453886007` passes every UI/visual lane. Controlled runtime
 restricted content. The new fixed SQL-class mapping changes no route, copy,
 translation, accessibility behavior, screenshot or visual baseline.
 
+## Database datetime repair UI boundary
+
+The trusted controlled tuple is backend-only. Normalizing four physical
+Frappe Datetime fields changes no UI state, source copy, translations,
+accessibility, routing, fixture response or visual baseline. Existing
+governed visual evidence remains authoritative.
+
+Frontend generation and the `8774`-source `100%` zh/zh-TW i18n audit pass;
+there is no affected UI or visual test surface in this repair.
+
 ## Disposable loopback transport repair
 
 Diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df` passes

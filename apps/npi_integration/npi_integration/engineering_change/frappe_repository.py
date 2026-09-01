@@ -11,7 +11,10 @@ from uuid import UUID, uuid4
 import frappe
 
 from npi_core.change_control.response_validation import validate_change_detail_response
-from npi_core.documents.frappe_repository import FrappeDocumentRepository
+from npi_core.documents.frappe_repository import (
+    FrappeDocumentRepository,
+    _database_datetime,
+)
 from npi_core.foundation.security import Principal
 
 from .config import IntegrationProfile
@@ -198,8 +201,10 @@ class FrappeEngineeringChangeIntegrationRepository(FrappeDocumentRepository):
                         "canonical_event_hash": event_hash, "raw_body_hash": raw_hash,
                         "event_snapshot": _json(event.envelope()), "profile_id": profile.profile_id,
                         "profile_version": profile.profile_version, "profile_snapshot_hash": profile.reference.snapshot_hash,
-                        "signing_key_id": request.headers.key_id, "signed_at": request.headers.signed_at,
-                        "received_at": request.received_at, "request_id": request.headers.request_id,
+                        "signing_key_id": request.headers.key_id,
+                        "signed_at": _database_datetime(request.headers.signed_at),
+                        "received_at": _database_datetime(request.received_at),
+                        "request_id": request.headers.request_id,
                         "trace_id": event.trace_id, "state": state, "attempt_count": 0,
                     })
                     row.insert()
@@ -309,7 +314,9 @@ class FrappeEngineeringChangeIntegrationRepository(FrappeDocumentRepository):
                 "profile_snapshot_hash": profile.reference.snapshot_hash, "actor_user_id": self.actor,
                 "service_actor_user_id": profile.service_actor_user_id, "request_id": self.request_id,
                 "trace_id": self.trace_id, "idempotency_key_hash": idempotency_key_hash,
-                "state": "queued", "outbox_event_id": str(event_id), "created_at": now, "updated_at": now,
+                "state": "queued", "outbox_event_id": str(event_id),
+                "created_at": _database_datetime(now),
+                "updated_at": _database_datetime(now),
             })
             request_row.insert()
             payload = request_value.event_payload()
