@@ -10800,3 +10800,31 @@ repeat or rewrite it merely to restore context. See
   and diff hygiene. Exact-12/projected union-60 are accepted,
   unauthorized-13 is rejected, and exactly the three new declarations are
   active among 36 Engineering Change diagnostic declarations.
+
+## 2026-09-01 P9-01D summary lifecycle ordering repair
+
+- Diagnostic SHA `292c0273397920fe0b5808caabe31b5a23306346` passed
+  ordinary `33467097198`. Its sole Level 2 `33467957736` passed preflight
+  `99731631508`; runtime `99731682713` returned only
+  `P901_CHANGE_SUMMARY_HTTP / RuntimeError /
+  trace-e7cfe8eb47fd594f805abcb8374ae8f5`. Restricted child output, response
+  content, business values, identifiers, message and stack remained unread.
+- The verifier's immediately preceding observation assertion fixes current
+  revision 3 in `ready_to_close`. The summary repository requires the exact
+  current revision to be `closed`, and the API tests bind summary requests to
+  revision 4. The verifier nevertheless placed its close command after summary
+  processing and operation projection, making the first summary HTTP call
+  deterministically conflict before any summary write.
+- Move only the synthetic runtime close/shape proof before summary creation,
+  carry its exact revision-4 current truth into the summary predecessor, and
+  lock the lifecycle order in the verifier test. Product API, repository,
+  schemas, ownership, permissions, queues and production behavior do not
+  change. Disable all 36 Engineering Change diagnostic declarations.
+- Freeze this cycle at diagnostic `1/1`, repair `1/1`, final `0/1`.
+  Controller marker: `P9-01D summary lifecycle ordering repair Level 1 PASS; exact-SHA ordinary CI pending`.
+- Level 1 passes focused current/API/runtime `43/43`, full Python and formal
+  repository verification `2826/2826`, current/reconciliation, frontend
+  generation and i18n (`8774`, 100% `zh`/`zh-TW`), compilation, shell syntax
+  and diff hygiene. Exact-12/projected union-60 are accepted,
+  unauthorized-13 is rejected and all 36 Engineering Change diagnostic
+  declarations are false.

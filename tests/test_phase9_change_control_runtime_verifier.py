@@ -150,6 +150,17 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             '"cleanupComplete"',
         ):
             self.assertIn(literal, self.source)
+        fresh = self.source[
+            self.source.index("def run_fresh") : self.source.index("def run_replay")
+        ]
+        self.assertLess(
+            fresh.index('"P901_CHANGE_CLOSE_HTTP"'),
+            fresh.index('"P901_CHANGE_SUMMARY_HTTP"'),
+        )
+        self.assertLess(
+            fresh.index('"P901_CHANGE_SUMMARY_REPLAY_SHAPE"'),
+            fresh.index('"P901_CHANGE_OUTBOUND_OPERATIONS"'),
+        )
 
     def test_bench_child_output_is_unread_on_failure(self) -> None:
         tree = ast.parse(self.source)
@@ -226,7 +237,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_DATETIME_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
@@ -251,7 +262,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED,
                 )
             ),
-            1,
+            0,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 144)
         server_codes = set(

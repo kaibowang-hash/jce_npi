@@ -84,7 +84,7 @@ ENGINEERING_CHANGE_RUNTIME_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_SERVICE_ACTOR_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_INBOX_INSERT_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_DATETIME_REPAIR_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic"
 )
@@ -1264,6 +1264,27 @@ def run_fresh(
             == event["payload"]["formalChange"]["documentName"],
             "P9-01 formal observation drifted",
         )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CLOSE_HTTP"):
+        closed = _command(
+            opener,
+            base_url,
+            _change_path(project_id, f"/{change_id}:close"),
+            {"predecessor": predecessor(current)},
+            csrf_token=csrf,
+            idempotency_key=CLOSE_KEY,
+            label="close",
+            expected_status=200,
+            replayed=False,
+        )
+    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CLOSE_SHAPE"):
+        current = closed.get("currentRevision")
+        require(
+            closed.get("operation") == "engineering_change.close"
+            and closed.get("change", {}).get("state") == "closed"
+            and isinstance(current, dict)
+            and current.get("revision") == 4,
+            "P9-01 close response drifted",
+        )
     with engineering_change_runtime_diagnostic_step("P901_CHANGE_SUMMARY_HTTP"):
         summary = _command(
             opener,
@@ -1345,25 +1366,6 @@ def run_fresh(
             == "synthetic_verified"
             and outbound_operations["items"][0].get("sharedState") == "succeeded",
             "P9-01 integration operation projection drifted",
-        )
-    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CLOSE_HTTP"):
-        closed = _command(
-            opener,
-            base_url,
-            _change_path(project_id, f"/{change_id}:close"),
-            {"predecessor": predecessor(current)},
-            csrf_token=csrf,
-            idempotency_key=CLOSE_KEY,
-            label="close",
-            expected_status=200,
-            replayed=False,
-        )
-    with engineering_change_runtime_diagnostic_step("P901_CHANGE_CLOSE_SHAPE"):
-        require(
-            closed.get("operation") == "engineering_change.close"
-            and closed.get("change", {}).get("state") == "closed"
-            and closed.get("currentRevision", {}).get("revision") == 4,
-            "P9-01 close response drifted",
         )
     return {
         "closed": True,

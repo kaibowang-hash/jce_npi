@@ -747,6 +747,27 @@ compile, shell and diff checks. Exact-12/projected union-60 remain bounded,
 unauthorized-13 is rejected and activation is new-only across
 runtime/core/integration.
 
+## P9-01D summary lifecycle ordering repair
+
+Diagnostic SHA `292c0273397920fe0b5808caabe31b5a23306346` passes ordinary
+`33467097198`. Sole Level 2 `33467957736` passes preflight and returns only
+`P901_CHANGE_SUMMARY_HTTP / RuntimeError /
+trace-e7cfe8eb47fd594f805abcb8374ae8f5` from runtime `99731682713`.
+Restricted output remains unread.
+
+The verifier proved revision 3 was `ready_to_close`, but invoked summary before
+its later close command. The repository admits a summary only for the exact
+closed current revision, and the API contract tests bind the request to
+revision 4. The closed harness repair moves close before summary, feeds the
+returned revision-4 predecessor to summary, preserves summary worker/replay and
+operation checks, and disables all diagnostics. Cycle state is `1/1,1/1,0/1`
+pending the sole Level 3. No product or production contract changes.
+
+Level 1 passes focused `43/43`, full Python/formal repository `2826/2826`,
+current/reconciliation, frontend generation and complete `8774`-source i18n,
+compile, shell and diff checks. Exact-12/projected union-60 remain bounded,
+unauthorized-13 is rejected and all 36 diagnostic declarations are off.
+
 ## P9-01D disposable loopback transport repair
 
 Post-marker diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

@@ -439,6 +439,13 @@ Level 3 `33465390683` passes frontend `99724062265` and governed visual
 accepted UI evidence. The independent exact-144 diagnostic changes no route,
 copy, translation, accessibility state, fixture or visual baseline.
 
+## Summary lifecycle ordering repair UI boundary
+
+The repair changes only backend disposable-runtime command ordering. It does
+not change the Project Change tab, response contract, copy, translation,
+accessibility behavior, fixture data or governed visual baseline. Existing
+frontend and visual evidence remains authoritative for the final Level 3.
+
 ## Post-loopback-repair diagnostic UI boundary
 
 Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`

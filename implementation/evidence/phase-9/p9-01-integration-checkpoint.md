@@ -190,6 +190,27 @@ current/reconciliation, frontend generation and complete `8774`-source i18n,
 compile, shell and diff checks. Exact-12/projected union-60 are accepted,
 unauthorized-13 is rejected and only the three new declarations are active.
 
+## Summary lifecycle ordering repair
+
+Post-replay diagnostic SHA `292c0273397920fe0b5808caabe31b5a23306346`
+passes ordinary `33467097198`. Sole Level 2 `33467957736` returns the strict
+safe tuple `P901_CHANGE_SUMMARY_HTTP / RuntimeError /
+trace-e7cfe8eb47fd594f805abcb8374ae8f5`; restricted content remains unread.
+
+The integration repository requires summary source truth to be the exact
+closed current revision. Runtime had revision 3 `ready_to_close` and placed
+close after summary, although close produces the revision-4 predecessor already
+used by summary API tests. Move only the disposable verifier's close proof
+before summary and preserve all subsequent worker, replay and operations
+checks. Integration product code, event contracts, persistence, permissions,
+idempotency and queues are unchanged. Diagnostics are all off; cycle state is
+`1/1,1/1,0/1` pending final Level 3.
+
+Level 1 passes focused `43/43`, full Python/formal repository `2826/2826`,
+current/reconciliation, frontend generation and complete `8774`-source i18n,
+compile, shell and diff checks. Exact-12/projected union-60 are accepted,
+unauthorized-13 is rejected and all 36 diagnostic declarations are false.
+
 ## Post-loopback-repair combined runtime boundary
 
 Loopback repair SHA `c49a8e3ef84194eab1ea10b82acfefbd33f50321`
