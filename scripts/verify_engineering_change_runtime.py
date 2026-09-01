@@ -662,6 +662,22 @@ def _command(
     headers = _request_headers(
         label, csrf_token=csrf_token, idempotency_key=idempotency_key
     )
+    state = _DIAGNOSTIC_STATE.get()
+    diagnostic_trace = (
+        state.get("trace_id") if isinstance(state, dict) else None
+    )
+    if (
+        ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
+        and label == "close"
+        and isinstance(diagnostic_trace, str)
+        and _TRACE_PATTERN.fullmatch(diagnostic_trace) is not None
+    ):
+        headers[ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER] = (
+            ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_SCOPE
+        )
+        headers[ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER] = (
+            diagnostic_trace
+        )
     result = request(
         opener,
         base_url,

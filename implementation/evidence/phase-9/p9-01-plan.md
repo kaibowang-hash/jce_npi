@@ -723,6 +723,21 @@ current/reconciliation `40/40`, frontend generation and complete
 accepted, unauthorized-13 is rejected and activation is new-only across the
 runtime/core/integration chain.
 
+### Close diagnostic harness repair
+
+Exact diagnostic SHA `f1f4f154d669f620b1ff342b0d39bd6036ac1557` passes
+ordinary `33471490007`; controlled `33472407245` yields only
+`P901_CHANGE_CLOSE_HTTP / RuntimeError /
+trace-d238a503a469549e9301fbb514ed75e1`. The generic close request did not send
+the existing successor server header and the API admitted only revise, so the
+exact-144 inner stages were unreachable. The same cycle now binds that header
+only for the new activation, exact trace and exact close shape. No product or
+production behavior changes.
+
+Level 1 passes focused `45/45`, full Python/formal repository `2828/2828`,
+current/reconciliation `40/40`, generation/i18n, compile, shell and diff
+checks. Exact-10/union-63 are accepted and unauthorized-11 is rejected.
+
 ## P9-01D Inbox event replay identity repair
 
 Diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4` passes

@@ -360,6 +360,19 @@ def _engineering_change_revise_server_diagnostic_active(
     trace_id: object,
 ) -> bool:
     try:
+        if operation == "engineering_change.revise":
+            expected_fields = _REVISE_FIELDS | {"cmd"}
+            expected_command = (
+                "npi_core.change_control_api.revise_engineering_change"
+            )
+        elif (
+            ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
+            and operation == "engineering_change.close"
+        ):
+            expected_fields = _CLOSE_FIELDS | {"cmd"}
+            expected_command = "npi_core.change_control_api.close_engineering_change"
+        else:
+            return False
         request = getattr(getattr(frappe, "local", None), "request", None)
         arguments = getattr(request, "args", None)
         route = getattr(frappe.flags, "npi_route_params", None)
@@ -380,7 +393,6 @@ def _engineering_change_revise_server_diagnostic_active(
                 or ENGINEERING_CHANGE_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED
                 or ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
             )
-            and operation == "engineering_change.revise"
             and os.environ.get("NPI_P9_01C_RUNTIME_ENABLED") == "1"
             and isinstance(diagnostic_path, str)
             and os.path.isabs(diagnostic_path)
@@ -401,9 +413,8 @@ def _engineering_change_revise_server_diagnostic_active(
             and isinstance(route, dict)
             and set(route) == {"project_id", "change_id"}
             and isinstance(form, dict)
-            and set(form) == _REVISE_FIELDS | {"cmd"}
-            and form.get("cmd")
-            == "npi_core.change_control_api.revise_engineering_change"
+            and set(form) == expected_fields
+            and form.get("cmd") == expected_command
         )
     except Exception:
         return False

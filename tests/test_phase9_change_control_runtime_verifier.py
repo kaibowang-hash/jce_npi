@@ -721,6 +721,69 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             captured[1],
         )
 
+    def test_post_summary_ordering_diagnostic_binds_close_server_header_only_in_scope(
+        self,
+    ) -> None:
+        trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+        captured: list[dict[str, str]] = []
+        expected = self.verifier._request_headers(
+            "close", csrf_token="csrf", idempotency_key="key"
+        )
+        result = self.verifier.HttpResult(
+            200,
+            {
+                "X-Request-ID": expected["X-Request-ID"],
+                "Cache-Control": "private, no-store",
+                "Idempotency-Replayed": "false",
+            },
+            {"operation": "engineering_change.close"},
+        )
+
+        def fake_request(*_args, **kwargs):
+            captured.append(dict(kwargs["request_headers"]))
+            return result
+
+        with patch.object(self.verifier, "request", side_effect=fake_request):
+            with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                self.verifier._command(
+                    object(),
+                    self.verifier.RUNTIME_BASE_URL,
+                    "/bounded",
+                    {},
+                    csrf_token="csrf",
+                    idempotency_key="key",
+                    label="close",
+                    expected_status=200,
+                    replayed=False,
+                )
+            self.verifier._command(
+                object(),
+                self.verifier.RUNTIME_BASE_URL,
+                "/bounded",
+                {},
+                csrf_token="csrf",
+                idempotency_key="key",
+                label="close",
+                expected_status=200,
+                replayed=False,
+            )
+        self.assertEqual(
+            captured[0][
+                self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER
+            ],
+            self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(
+            captured[0][
+                self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER
+            ],
+            trace,
+        )
+        self.assertNotIn(
+            self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER,
+            captured[1],
+        )
+
     def test_shell_binds_diagnostic_path_before_the_p9_server_starts(self) -> None:
         export_function = self.shell[
             self.shell.index("export_engineering_change_runtime_environment()") :

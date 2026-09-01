@@ -342,6 +342,46 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
                 )
             )
 
+    def test_post_summary_ordering_diagnostic_scopes_close_exactly(self) -> None:
+        trace = "trace-" + "c" * 32
+        self.headers.update(
+            {
+                self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER: (
+                    self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_SCOPE
+                ),
+                self.api.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_TRACE_HEADER: trace,
+            }
+        )
+        self.frappe.local.request.method = "POST"
+        self.frappe.local.request.args = AttrDict()
+        self.frappe.local.form_dict = AttrDict(
+            {
+                "predecessor": {},
+                "cmd": "npi_core.change_control_api.close_engineering_change",
+            }
+        )
+        with patch.dict(
+            os.environ,
+            {
+                "NPI_P9_01C_RUNTIME_ENABLED": "1",
+                "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": (
+                    "/tmp/p9-01-engineering-change-runtime-diagnostic.json"
+                ),
+            },
+            clear=False,
+        ):
+            self.assertTrue(
+                self.api._engineering_change_revise_server_diagnostic_active(
+                    "engineering_change.close", trace
+                )
+            )
+            self.frappe.local.form_dict["content"] = {}
+            self.assertFalse(
+                self.api._engineering_change_revise_server_diagnostic_active(
+                    "engineering_change.close", trace
+                )
+            )
+
     def test_bff_source_freezes_exact_routes_and_default_disabled_handler(self) -> None:
         source = (Path(__file__).resolve().parents[1] / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
         for handler in (

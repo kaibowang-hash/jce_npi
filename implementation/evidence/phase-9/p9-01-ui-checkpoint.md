@@ -434,6 +434,10 @@ Frontend generation and the `8774`-source `100%` `zh`/`zh-TW` i18n audit
 pass. Existing ordinary and Level 3 frontend/visual evidence remains
 authoritative because this diagnostic introduces no UI or visual diff.
 
+The close diagnostic harness repair changes only a synthetic server-recorder
+header and exact activation predicate. It changes no route, response, visible
+copy, translation, accessibility behavior or visual baseline.
+
 ## Inbox replay identity repair UI boundary
 
 Ordinary `33462460736` passes frontend and governed visual evidence. The

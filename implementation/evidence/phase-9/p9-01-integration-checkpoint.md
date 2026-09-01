@@ -165,6 +165,20 @@ current/reconciliation `40/40`, generation/i18n, compile, shell and diff
 checks. Exact-12/union-63 are bounded, unauthorized-13 is rejected and only
 the three new activation declarations are true.
 
+### Close diagnostic harness repair
+
+Controlled `33472407245` on exact SHA `f1f4f154d669f620b1ff342b0d39bd6036ac1557`
+returns only `P901_CHANGE_CLOSE_HTTP / RuntimeError /
+trace-d238a503a469549e9301fbb514ed75e1`. The close request could not activate
+the existing successor API/repository recorder because its header and exact
+operation predicate were revise-only. The sole harness repair reuses those
+bounded stages for exact close traffic under the new-only activation; writes,
+transactions, permissions, contracts and production behavior are unchanged.
+
+Level 1 passes focused `45/45`, full Python/formal repository `2828/2828`,
+current/reconciliation `40/40`, generation/i18n, compile, shell and diff
+checks. Exact-10/union-63 remain bounded and unauthorized-11 is rejected.
+
 ## P9-01D Inbox replay identity repair
 
 Post-datetime diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4`

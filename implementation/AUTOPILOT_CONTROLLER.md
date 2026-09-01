@@ -10858,3 +10858,30 @@ repeat or rewrite it merely to restore context. See
   unauthorized-13 is rejected, and exactly the three new declarations are
   active among 39 Engineering Change diagnostic declarations.
 - Controller marker: `P9-01D post-summary-ordering-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D close diagnostic harness repair
+
+- Diagnostic SHA `f1f4f154d669f620b1ff342b0d39bd6036ac1557` passes ordinary
+  `33471490007`. Its sole Level 2 `33472407245` passes controlled preflight;
+  runtime `99744724729` returns only `P901_CHANGE_CLOSE_HTTP / RuntimeError /
+  trace-d238a503a469549e9301fbb514ed75e1`. Restricted status, response, child,
+  business value, identifier, message and stack output remains unread.
+- Static cross-proof finds a bounded diagnostic blind spot: close uses the
+  same `_successor_command` API/repository chain as revise, but the generic
+  verifier command sent no diagnostic header and the server activation
+  admitted only `engineering_change.revise`. Therefore the existing successor
+  server stages were dormant and the outer close code could not identify the
+  first source.
+- Keep the same diagnostic cycle and exact-144 allowlist. Only the new
+  post-summary-ordering activation with an exact trace may attach the existing
+  fixed server header to the close request; the API accepts it only for exact
+  POST/route/empty-query/closed-form/cmd/runtime/path/trace facts. Historical
+  modes, all-off behavior, product semantics and production behavior remain
+  unchanged. The original diagnostic budget remains `1/1`; this is its sole
+  harness repair, not a product repair or an additional diagnostic cycle.
+- Level 1 passes focused current/API/runtime `45/45`, full Python and formal
+  repository verification `2828/2828`, current/reconciliation `40/40`,
+  frontend generation and i18n (`8774`, 100% `zh`/`zh-TW`), compilation,
+  shell syntax and diff hygiene. Exact-10/union-63 are accepted and the
+  unauthorized eleventh path is rejected.
+- Controller marker: `P9-01D close diagnostic harness repair Level 1 PASS; exact-SHA ordinary CI pending`.
