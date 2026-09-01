@@ -195,6 +195,27 @@ coverage), compilation, shell syntax, exact-13 and projected union-60
 manifests, unauthorized-14 rejection, all-24-diagnostics-off, security and
 diff hygiene.
 
+## Post-service-actor-repair combined runtime boundary
+
+Repair SHA `513e7e86c55220ef461cd324f746c9bfe660b6d1` passes
+ordinary `33451200775`. Sole diagnostics-off Level 3 `33452193414` passes
+four base jobs and preflight, then runtime `99686520697` returns only the
+fixed Engineering Change failure label. Restricted content remains unread.
+The role mismatch root is closed; the remaining first source is nonunique, so
+freeze the repair cycle `1/1,1/1,1/1` without inference.
+
+Open an independent product-behavior-neutral cycle at `0/1,0/1,0/1`. Only
+the new post-service-actor-repair runtime/API activations are true; exact 134,
+trace, scope, exact-three record, strict reader and inner-first precedence are
+unchanged. Integration ownership, permissions, events, queue, adapter and
+production behavior remain unchanged.
+
+Level 1 passes focused `43/43`, affected integration/P9 `123/123`, full
+Python `2824/2824`, the formal repository verifier, current/reconciliation,
+frontend generation and complete `zh`/`zh-TW` i18n, compile, shell and diff
+checks. Exact-12 remains within projected union-60 and an unauthorized
+thirteenth path is rejected.
+
 ## Disposable loopback transport repair
 
 Exact diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

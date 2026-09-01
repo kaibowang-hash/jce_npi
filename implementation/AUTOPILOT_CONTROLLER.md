@@ -10615,3 +10615,30 @@ repeat or rewrite it merely to restore context. See
   manifests, unauthorized-14 rejection, all-24-diagnostics-off, security and
   diff hygiene.
 - Controller marker: `P9-01D readiness service-actor harness repair Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-01 P9-01D post-service-actor-repair combined diagnostic
+
+- Readiness-worker repair SHA `513e7e86c55220ef461cd324f746c9bfe660b6d1`
+  passed ordinary `33451200775`. Its sole diagnostics-off Level 3
+  `33452193414` passed visual `99684362342`, frontend `99684362402`,
+  repository `99684362454`, secret scan `99684362478` and preflight
+  `99686483616`; cumulative runtime `99686520697` failed with exactly the
+  fixed Engineering Change runtime label.
+- No raw/child output, response/body, business value, identity, message or
+  stack was read. The P8 actor mismatch is closed by the retained readiness
+  service actor and exact role-binding tests, but the all-off label cannot
+  select a later lifecycle predicate. Freeze the repair cycle at diagnostic
+  `1/1`, repair `1/1`, final `1/1`; do not guess.
+- Open one independent product-behavior-neutral post-service-actor-repair
+  cycle at `0/1,0/1,0/1`. The new-only activation reuses exact 134,
+  deterministic trace/scopes, exact-three `O_EXCL` recording, strict reader,
+  inner-first precedence, failed-output-unread and success-zero behavior. All
+  thirteen historical runtime activations are false; product and production
+  behavior remain unchanged.
+- Controller marker: `P9-01D post-service-actor-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+- Level 1 is closed before commit: focused `43/43`, affected P9/integration
+  `123/123`, full Python `2824/2824`, formal repository verification,
+  current-task/reconciliation, frontend generation and i18n (`8774`, 100%
+  `zh`/`zh-TW`), compilation, shell syntax and diff hygiene all pass. The
+  exact-12 task manifest and projected union-60 remain bounded; all three
+  active declarations are the same new-only post-service-actor-repair flag.

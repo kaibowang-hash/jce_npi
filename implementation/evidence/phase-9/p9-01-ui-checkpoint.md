@@ -457,6 +457,20 @@ coverage), compilation, shell syntax, exact-13 and projected union-60
 manifests, unauthorized-14 rejection and all-24-diagnostics-off. No UI or
 visual baseline changed.
 
+## Post-service-actor-repair diagnostic UI boundary
+
+Repair SHA `513e7e86c55220ef461cd324f746c9bfe660b6d1` passes its
+ordinary run and all UI/visual lanes in final Level 3 `33452193414`; only the
+cumulative Engineering Change runtime fails with the fixed safe label. The
+new exact-134 diagnostic changes no UI, copy, translation, accessibility,
+route, screenshot or visual baseline. Existing governed evidence remains the
+UI fact source.
+
+The no-UI-diff claim is covered by frontend generation and i18n verification
+(`8774` literal sources, 100% `zh`/`zh-TW`) plus the unchanged governed
+visual evidence. Repository and Python Level 1 checks are also green; no
+snapshot refresh is part of this diagnostic task.
+
 ## Disposable loopback transport repair
 
 Diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df` passes

@@ -776,6 +776,28 @@ coverage), compilation, shell syntax, exact-13 and projected union-60
 manifests, unauthorized-14 rejection, all-24-diagnostics-off, security and
 diff hygiene.
 
+## P9-01D post-service-actor-repair combined diagnostic
+
+Readiness-worker repair SHA `513e7e86c55220ef461cd324f746c9bfe660b6d1`
+passes ordinary `33451200775`. Its sole diagnostics-off Level 3
+`33452193414` passes all base jobs and preflight, then cumulative runtime
+`99686520697` emits only the fixed Engineering Change runtime failure label.
+Restricted content remains unread. Freeze that repair cycle
+`1/1,1/1,1/1`; the exact retained worker root is closed but the later first
+source is nonunique.
+
+The independent product-behavior-neutral post-service-actor-repair cycle
+starts `0/1,0/1,0/1`, with one new-only activation reusing exact 134 and all
+existing trace/scope/O_EXCL/strict-reader/inner-precedence contracts. All
+thirteen historical activations are false; product, UI and production
+behavior remain unchanged.
+
+Level 1 passes focused `43/43`, affected `123/123`, full Python `2824/2824`,
+formal repository verification, current/reconciliation checks, frontend
+generation and `8774`-source 100% `zh`/`zh-TW` i18n, compilation, shell
+syntax and diff checks. The task is exact-12 within projected union-60; the
+unauthorized thirteenth path is rejected.
+
 ## P9-01D disposable runtime marker repair
 
 Post-raw-body SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b` passes

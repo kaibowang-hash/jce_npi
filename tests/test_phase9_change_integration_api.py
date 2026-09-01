@@ -173,7 +173,7 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         )
         with patch.object(
             self.module,
-            "ENGINEERING_CHANGE_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED",
+            "ENGINEERING_CHANGE_POST_SERVICE_ACTOR_REPAIR_DIAGNOSTICS_ENABLED",
             True,
         ), patch.dict(
             os.environ,
@@ -257,6 +257,9 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         )
         self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_LOOPBACK_REPAIR_DIAGNOSTICS_ENABLED
+        )
+        self.assertTrue(
+            self.module.ENGINEERING_CHANGE_POST_SERVICE_ACTOR_REPAIR_DIAGNOSTICS_ENABLED
         )
 
     def test_inbound_handler_keeps_raw_signed_json_out_of_keyword_fields(self) -> None:
