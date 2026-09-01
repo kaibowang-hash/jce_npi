@@ -270,6 +270,9 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.module.ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
+        )
 
     def test_inbound_handler_keeps_raw_signed_json_out_of_keyword_fields(self) -> None:
         command = (

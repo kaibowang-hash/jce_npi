@@ -703,6 +703,26 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## P9-01D post-summary-ordering-repair combined diagnostic
+
+Repair SHA `d7588537935aa600431c2f068e1d12370e1686dd` passes ordinary
+`33468779480`. Its sole all-off Level 3 `33469740238` passes every base lane
+and preflight, then runtime `99739301277` yields only the fixed Engineering
+Change outer failure label. No restricted child or business output was read.
+
+The repaired close-before-summary lifecycle remains proven, but the outer
+label cannot distinguish the next internal predicate. Freeze that repair
+cycle `1/1,1/1,1/1` and open an independent product-zero exact-144 diagnostic
+at `0/1,0/1,0/1`. One new-only post-summary-ordering activation enables the
+existing runtime/core/integration recorder chain; contracts, ownership,
+permissions, writes, UI and production behavior do not change.
+
+Level 1 passes focused `43/43`, full Python/formal repository `2826/2826`,
+current/reconciliation `40/40`, frontend generation and complete
+`8774`-source i18n, compile, shell and diff checks. Exact-12/union-63 are
+accepted, unauthorized-13 is rejected and activation is new-only across the
+runtime/core/integration chain.
+
 ## P9-01D Inbox event replay identity repair
 
 Diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4` passes

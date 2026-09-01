@@ -304,6 +304,9 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
         self.assertFalse(
             self.api.ENGINEERING_CHANGE_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.api.ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
+        )
         trace = "trace-" + "c" * 32
         self.headers.update(
             {

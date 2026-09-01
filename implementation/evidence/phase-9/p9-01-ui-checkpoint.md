@@ -422,6 +422,18 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## Post-summary-ordering diagnostic UI boundary
+
+Ordinary `33468779480` and the frontend/visual lanes in Level 3 `33469740238`
+pass. The later fixed Engineering Change outer runtime label is backend-only
+and cannot invalidate the accepted UI evidence. The independent exact-144
+diagnostic changes no route, copy, translation, accessibility behavior,
+fixture response or visual baseline.
+
+Frontend generation and the `8774`-source `100%` `zh`/`zh-TW` i18n audit
+pass. Existing ordinary and Level 3 frontend/visual evidence remains
+authoritative because this diagnostic introduces no UI or visual diff.
+
 ## Inbox replay identity repair UI boundary
 
 Ordinary `33462460736` passes frontend and governed visual evidence. The

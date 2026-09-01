@@ -145,6 +145,26 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## P9-01D post-summary-ordering-repair combined boundary
+
+Exact repair SHA `d7588537935aa600431c2f068e1d12370e1686dd` passes ordinary
+`33468779480`. Level 3 `33469740238` passes frontend, repository, visual,
+secret scan and controlled preflight; cumulative runtime `99739301277`
+returns only the fixed Engineering Change failure label. Restricted response,
+child and business content remains unread.
+
+The prior lifecycle-ordering root is closed, while this all-off boundary is
+nonunique. Freeze its cycle `1/1,1/1,1/1` without a guessed product repair.
+The new independent product-zero cycle begins `0/1,0/1,0/1` and reuses exact
+144 with one new-only activation, deterministic trace/scopes, first-wins
+recording, strict reader and success-zero behavior. No contract, ownership,
+permission, transaction or production behavior changes.
+
+Level 1 passes focused `43/43`, full Python/formal repository `2826/2826`,
+current/reconciliation `40/40`, generation/i18n, compile, shell and diff
+checks. Exact-12/union-63 are bounded, unauthorized-13 is rejected and only
+the three new activation declarations are true.
+
 ## P9-01D Inbox replay identity repair
 
 Post-datetime diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4`

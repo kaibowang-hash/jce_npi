@@ -10828,3 +10828,33 @@ repeat or rewrite it merely to restore context. See
   and diff hygiene. Exact-12/projected union-60 are accepted,
   unauthorized-13 is rejected and all 36 Engineering Change diagnostic
   declarations are false.
+
+## 2026-09-01 P9-01D post-summary-ordering-repair combined diagnostic
+
+- Repair SHA `d7588537935aa600431c2f068e1d12370e1686dd` passes exact-SHA
+  ordinary `33468779480`: repository `99734050467`, frontend `99734050584`,
+  secret scan `99734050595` and visual `99734050607` are all successful.
+  Its sole diagnostics-off Level 3 `33469740238` passes frontend
+  `99736896566`, repository `99736896524`, visual `99736896339`, secret scan
+  `99736896586` and controlled preflight `99739250687`; cumulative runtime
+  `99739301277` returns only the fixed `Local Frappe Engineering Change
+  runtime verification failed.` outer label. Restricted child output,
+  response content, business values, identifiers, messages and stacks remain
+  unread.
+- The prior summary lifecycle root remains closed by the verified close-before-
+  summary order and exact revision-4 predecessor. The all-off outer label is
+  still internally nonunique and cannot authorize another guessed repair.
+  Freeze that cycle at diagnostic `1/1`, repair `1/1`, final `1/1`.
+- Open one independent product-zero combined diagnostic at `0/1,0/1,0/1`.
+  Only `ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED`
+  and its exact core/integration counterparts are true. The existing exact-144
+  allowlist, deterministic trace and request scopes, exact-three `O_EXCL`
+  record, strict reader, innermost precedence, same-exception/finally,
+  failed-child-unread and success-zero contracts are unchanged.
+- Level 1 passes focused current/API/runtime `43/43`, full Python and formal
+  repository verification `2826/2826`, current/reconciliation `40/40`,
+  frontend generation and i18n (`8774`, 100% `zh`/`zh-TW`), compilation,
+  shell syntax and diff hygiene. Exact-12 and union-63 are accepted,
+  unauthorized-13 is rejected, and exactly the three new declarations are
+  active among 39 Engineering Change diagnostic declarations.
+- Controller marker: `P9-01D post-summary-ordering-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
