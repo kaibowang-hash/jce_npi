@@ -10671,3 +10671,21 @@ repeat or rewrite it merely to restore context. See
   unauthorized-15 rejection and diff hygiene. Exactly the three new
   Inbox-insert declarations are active; all other diagnostic declarations
   are false.
+- Diagnostic SHA `fbaa7b17af389955e9a33ed664f331ed91be7459`
+  passed ordinary `33456066308`. Controlled `33456992129` passed preflight
+  `99698968130`, but runtime `99699042683` returned outer
+  `P901_CHANGE_INBOUND_REPOSITORY_WRITE_SCOPE / OperationalError /
+  trace-b64cfa8266de5dea8b317b4916e9cfb6`.
+- Static lexical equality proved the ten new SQL classes were present in the
+  runtime reader and integration mapper but absent from the core recorder's
+  fixed allowlist. The inner record therefore failed closed and the outer
+  fallback won. This is a diagnostic-harness defect, not evidence of a new
+  product first source; the SQL-class diagnostic remains `0/1,0/1,0/1`.
+  Add exactly the ten fixed codes to the recorder allowlist and its exact-set
+  test, with no activation, product or production behavior change.
+- Controller marker: `P9-01D inbox SQL-class recorder repair Level 1 PASS; exact-SHA ordinary CI pending`.
+- Recorder-repair Level 1 passes focused `60/60`, affected `124/124`, full
+  Python/formal repository `2825/2825`, current/reconciliation, frontend
+  generation and `8774`-source complete i18n, compile, shell and diff checks.
+  Exact-8 stays inside projected union-60 and unauthorized-9 is rejected;
+  the new-only activation and exact-144 reader are unchanged.

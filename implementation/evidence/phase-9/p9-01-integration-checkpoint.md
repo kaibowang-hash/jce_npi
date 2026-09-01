@@ -236,6 +236,20 @@ reconciliation, generation, i18n, compile, shell and diff checks. Exact-14
 and projected union-60 are accepted; an unauthorized fifteenth path is
 rejected.
 
+SQL-class SHA `fbaa7b17af389955e9a33ed664f331ed91be7459` passes ordinary
+`33456066308`; controlled `33456992129` falls back to outer `WRITE_SCOPE /
+OperationalError / trace-b64cfa8266de5dea8b317b4916e9cfb6`. The mapper and
+reader contain all ten new safe codes, but the core recorder fixed allowlist
+does not, so the child record is intentionally rejected. This is a
+product-neutral diagnostic harness defect; add the exact ten recorder codes
+and keep the diagnostic counter at zero until a trusted SQL-class tuple is
+obtained.
+
+Recorder-repair Level 1 passes focused `60/60`, affected `124/124`, full
+Python/formal repository `2825/2825`, current/reconciliation,
+generation/i18n, compile, shell and diff checks. Exact-8 remains bounded by
+projected union-60; unauthorized-9 is rejected.
+
 ## Disposable loopback transport repair
 
 Exact diagnostic SHA `48dcd3d9007d91f95c1d95ad4d2ba3e4d917d0df`

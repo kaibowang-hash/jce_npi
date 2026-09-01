@@ -819,6 +819,20 @@ generation and complete `zh`/`zh-TW` i18n, compilation, shell and diff
 checks. Exact-14 remains inside projected union-60 and the unauthorized
 fifteenth path is rejected.
 
+Diagnostic SHA `fbaa7b17af389955e9a33ed664f331ed91be7459` passes ordinary
+`33456066308`; controlled `33456992129` returns only outer `WRITE_SCOPE /
+OperationalError / trace-b64cfa8266de5dea8b317b4916e9cfb6`. Static
+cross-proof finds the ten new codes missing from the core recorder allowlist,
+although the mapper and strict reader contain them. The inner record thus
+fails closed and the outer fallback wins. Treat this as a harness repair,
+keep the SQL-class diagnostic at `0/1,0/1,0/1`, and add only those ten fixed
+codes plus their exact-set test.
+
+Harness-repair Level 1 passes focused `60/60`, affected `124/124`, full
+Python and formal repository `2825/2825`, governance/reconciliation,
+generation/i18n, compile, shell and diff checks. Exact-8/projected union-60
+are accepted and unauthorized-9 is rejected.
+
 ## P9-01D disposable runtime marker repair
 
 Post-raw-body SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b` passes
