@@ -94,8 +94,19 @@ objects:
       lifecycle_state: {owner: VERSIONED_PROJECT_CONTROL_POLICY, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: VERSION_CONFLICT}
       control_policy_binding: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
       current_health_summary: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: VERSION_CONFLICT}
+      factory_reference: {owner: NPI_ONE_PROJECT_COMMAND, editable_in: [NPI_ONE_PROJECT_COMMAND], direction: REFERENCE_ONLY, conflict: EXACT_TYPED_REFERENCE}
       sales_order_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
       erp_project_source_binding_and_initial_draft_seed: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: CREATE_ONCE_NO_AUTOMATIC_REWRITE}
+
+  PortfolioAndReportingProjection:
+    owner_system: NPI_ONE_REPORTING_QUERY_SERVICE
+    erp_view: read_only_projection_inputs
+    fields:
+      project_gate_work_tooling_trial_document_change_and_file_facts: {owner: REFERENCED_NPI_SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_VERSION}
+      customer_item_cost_quality_and_asset_facts: {owner: ERPNEXT_VIA_NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXPLICIT_AVAILABLE_STALE_PARTIAL_OR_UNAVAILABLE}
+      filters_cursor_permissions_and_result_shape: {owner: NPI_ONE_REPORTING_QUERY_SERVICE, editable_in: [], direction: NPI_ONE_TO_READ_ONLY_BI, conflict: SERVER_FILTERED_DETERMINISTIC_PAGE}
+      kpi_name_numerator_denominator_source_timezone_and_availability: {owner: NPI_ONE_REPORTING_QUERY_SERVICE, editable_in: [], direction: NPI_ONE_TO_READ_ONLY_BI, conflict: FIXED_DEFINITION_NO_FAKE_VALUE}
+      reverse_write_or_generic_configuration_mutation: {owner: NEVER_ALLOWED, editable_in: [], direction: NONE, conflict: REJECT}
 
   ProjectTeam:
     owner_system: NPI_ONE
@@ -173,6 +184,32 @@ objects:
       project_and_user_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
       current_follow_state: {owner: NPI_ONE_PROJECT_CONTROL_COMMAND, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
       notification_delivery: {owner: FUTURE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  MeetingMinute:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      template_version_sections_attendees_and_content_hash: {owner: NPI_ONE_MEETING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      linked_action_and_decision_identity: {owner: NPI_ONE_PROJECT_WORK_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_VERSION}
+      actor_trace_version_and_audit: {owner: NPI_ONE_MEETING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  InternalNotification:
+    owner_system: NPI_ONE_NOTIFICATION_SERVICE
+    erp_view: none
+    fields:
+      source_identity_version_due_time_and_route: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_VERSION}
+      recipient_kind_bucket_and_delivery_key: {owner: NPI_ONE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: IDEMPOTENT_RECIPIENT_PROJECTION}
+      read_state: {owner: NPI_ONE_NOTIFICATION_COMMAND, editable_in: [NPI_ONE_NOTIFICATION_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      email_delivery_state: {owner: NPI_ONE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: QUEUED_FAILED_UNAVAILABLE_OR_NOT_REQUESTED_NO_FAKE_DELIVERY}
+      critical_audit_delivery: {owner: NPI_ONE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: MANDATORY_APPEND_ONLY}
+
+  NotificationPreference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      user_and_tenant_identity: {owner: NPI_ONE_IDENTITY, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      non_critical_email_kinds: {owner: NPI_ONE_NOTIFICATION_COMMAND, editable_in: [NPI_ONE_NOTIFICATION_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      in_app_and_critical_audit_delivery: {owner: NPI_ONE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: MANDATORY_NOT_USER_MUTABLE}
 
   ProjectLearning:
     owner_system: NPI_ONE

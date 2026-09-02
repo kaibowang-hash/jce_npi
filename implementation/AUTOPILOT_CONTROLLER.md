@@ -11344,3 +11344,35 @@ P9-01 Level 3.
   deferred. No production ERPNext contact or user-owned dirty-file staging is
   authorized in this transition.
 - Controller marker: `CI-OPT-02 Level 3 PASS; P9-02 audit and plan active`.
+
+### P9-02A/B reporting backend activation
+
+- The audit/plan exact SHA `4123eb86c930c9c091cfb18a67a37ae9552fdd04`
+  passed ordinary CI `33662703332`; the product-code hold is released.
+- The active batch is limited to read-only, permission-filtered global search,
+  Project portfolio, fixed KPI definitions and an operation-specific
+  configuration catalog. Every result retains source, freshness and explicit
+  unavailable/partial truth with deterministic bounded pagination.
+- Meeting-minute and notification commands remain inside P9-02 but outside
+  this reporting batch. No generic writer, cross-domain redesign, production
+  ERPNext contact or user-owned file change is authorized.
+
+## 2026-09-03 P9-02 backend candidate; P9-02C frontend paths frozen
+
+- The reporting batch and the previously reserved internal-collaboration
+  batch are complete as one atomic backend candidate: permission-filtered
+  search/portfolio, fixed KPI and explicit availability, read-only
+  operation-specific configuration inventory, immutable meeting minutes with
+  atomic WorkItem links, and recipient-scoped idempotent notifications.
+- Full repository verification passes `2,883` tests. The direct-SQL scanner's
+  only initial match was its token written literally in the new metadata test;
+  that self-match is removed and the exact scan passes with zero matches.
+- P9-02C exact paths are frozen for one Portfolio/Reporting/Administration
+  workspace, live Shell global search and notification feed, and one Project
+  meeting tab, with focused data-source/component tests and three governed
+  locale visuals. No existing domain, ownership, API or workflow is redesigned.
+- Commit and push this single backend checkpoint and require exact-SHA ordinary
+  CI. On PASS, continue P9-02C automatically without another approval or
+  governance micro-commit. Production ERPNext and user-owned dirty files stay
+  untouched.
+- Controller marker: `P9-02 backend candidate; P9-02C frontend paths frozen`.

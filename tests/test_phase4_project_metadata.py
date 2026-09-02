@@ -135,7 +135,7 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
         reference = self.fields(self.load_doctype("npi_project_reference"))
         self.assertEqual(
             reference["reference_type"]["options"],
-            "customer\nproduct\npart\ntooling\norder",
+            "customer\nfactory\nproduct\npart\ntooling\norder",
         )
         self.assertEqual(reference["source_system"]["options"], "NPI_ONE\nERPNEXT")
         self.assertIn("source_object_id", reference)

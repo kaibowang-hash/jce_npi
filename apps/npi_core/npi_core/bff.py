@@ -17,6 +17,7 @@ from .foundation.errors import (
     MalformedRequest,
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
+    ReportingRoutesDisabled,
     TrialRoutesDisabled,
     ToolingEngineeringControlsRoutesDisabled,
     ToolingAcceptanceAssetsRoutesDisabled,
@@ -36,6 +37,7 @@ from .request_security import (
     engineering_bom_routes_are_disabled,
     publish_request_routes_are_disabled,
     project_collaboration_routes_are_disabled,
+    reporting_routes_are_disabled,
     response_request_id,
     tooling_engineering_controls_routes_are_disabled,
     tooling_acceptance_assets_routes_are_disabled,
@@ -81,6 +83,23 @@ _ROUTES = {
     ),
     ("GET", "/api/npi/v1/learning"): (
         "npi_core.project_controls_api.search_project_learning"
+    ),
+    ("GET", "/api/npi/v1/search"): "npi_core.reporting_api.search",
+    ("GET", "/api/npi/v1/portfolio/projects"): (
+        "npi_core.reporting_api.get_project_portfolio"
+    ),
+    ("GET", "/api/npi/v1/reports/kpis"): "npi_core.reporting_api.get_kpi_trends",
+    ("GET", "/api/npi/v1/administration/capabilities"): (
+        "npi_core.reporting_api.get_configuration_catalog"
+    ),
+    ("GET", "/api/npi/v1/notifications"): (
+        "npi_core.collaboration_api.get_notifications"
+    ),
+    ("GET", "/api/npi/v1/me/preferences/notifications"): (
+        "npi_core.collaboration_api.get_notification_preference"
+    ),
+    ("PUT", "/api/npi/v1/me/preferences/notifications"): (
+        "npi_core.collaboration_api.set_notification_preference"
     ),
     ("GET", "/api/npi/v1/npi-readiness/templates"): (
         "npi_core.readiness_api.get_readiness_templates"
@@ -578,6 +597,12 @@ _PROJECT_WORK_CONTEXT_ROUTE = re.compile(
 )
 _PROJECT_DOMAIN_WORK_ITEMS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/domain-work-items$"
+)
+_PROJECT_MEETINGS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/meetings$"
+)
+_NOTIFICATION_MARK_READ_ROUTE = re.compile(
+    r"^/api/npi/v1/notifications/(?P<notification_id>[^/:]+):mark-read$"
 )
 _PROJECT_CONTROLS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/controls$"
@@ -1547,6 +1572,20 @@ def route_request() -> None:
                 else "npi_core.project_work_api.create_project_domain_work_item"
             )
             route_params = match.groupdict()
+    if command is None and request.method in {"GET", "POST"}:
+        match = _PROJECT_MEETINGS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_core.collaboration_api.get_project_meetings"
+                if request.method == "GET"
+                else "npi_core.collaboration_api.create_project_meeting"
+            )
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _NOTIFICATION_MARK_READ_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.collaboration_api.mark_notification_read"
+            route_params = match.groupdict()
     if command is None and request.method == "GET":
         match = _CONTROLLED_PRINT_CAPABILITY_ROUTE.fullmatch(path)
         if match is not None:
@@ -1824,6 +1863,9 @@ def route_request() -> None:
     if _p9_01_routes_disabled(command):
         command = "npi_core.change_control_api.engineering_change_routes_disabled"
         route_params = {}
+    if _p9_02_routes_disabled(command):
+        command = "npi_core.bff.reporting_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1851,6 +1893,20 @@ def project_collaboration_routes_disabled() -> dict[str, object] | None:
 
     def raise_disabled() -> dict[str, object]:
         raise ProjectCollaborationRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST", "PUT"])
+def reporting_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P9-02 reporting/collaboration routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ReportingRoutesDisabled()
 
     return frappe_domain_call(
         raise_disabled,
@@ -2125,6 +2181,13 @@ def _p4_05_routes_disabled(command: str | None) -> bool:
             isinstance(command, str)
             and command.startswith("npi_core.project_controls_api.")
         )
+    )
+
+
+def _p9_02_routes_disabled(command: str | None) -> bool:
+    return reporting_routes_are_disabled() and (
+        isinstance(command, str)
+        and command.startswith(("npi_core.reporting_api.", "npi_core.collaboration_api."))
     )
 
 
@@ -2511,6 +2574,14 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method in {"GET", "POST"} and (
         _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path) is not None
     ):
+        return True
+    if method in {"GET", "POST"} and _PROJECT_MEETINGS_ROUTE.fullmatch(path) is not None:
+        return True
+    if method == "POST" and _NOTIFICATION_MARK_READ_ROUTE.fullmatch(path) is not None:
+        return True
+    if method in {"GET", "PUT"} and path == "/api/npi/v1/me/preferences/notifications":
+        return True
+    if method == "GET" and path == "/api/npi/v1/notifications":
         return True
     if method in {"GET", "POST"} and (
         _PROJECT_TRIALS_ROUTE.fullmatch(path) is not None

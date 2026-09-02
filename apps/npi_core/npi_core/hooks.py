@@ -16,6 +16,10 @@ fixtures = [
 before_request = ["npi_core.bff.route_request"]
 after_request = ["npi_core.bff.attach_response_headers"]
 
+scheduler_events = {
+    "hourly": ["npi_core.collaboration.frappe_repository.refresh_due_notifications"]
+}
+
 doc_events = {
     "NPI WBS Item": {
         "on_update": (

@@ -45,6 +45,7 @@ class ProjectType(str, Enum):
 
 class ProjectReferenceType(str, Enum):
     CUSTOMER = "customer"
+    FACTORY = "factory"
     PRODUCT = "product"
     PART = "part"
     TOOLING = "tooling"

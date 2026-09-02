@@ -1,18 +1,21 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_02_AUDIT_AND_PLAN — P9-02`
+`IN_PROGRESS_P9_02C_FRONTEND_AUTHORIZED — P9-02`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
 cumulative runtime `100350396533`; its release-gate result is PASS.
 
-Commit the P9-02 audit/plan transition and require exact-SHA ordinary CI. Only
-after that PASS, freeze the P9-02A contract/ownership/implementation path set
-and begin the minimum product vertical slice. Reuse existing Project, Gate,
-My Work, Tooling, Trial, Readiness, Change and ERP projection seams. Do not
-contact production ERPNext, start external portals or pilots, introduce a
-generic writer, or stage user-owned files.
+The P9-02 audit/plan exact SHA
+`4123eb86c930c9c091cfb18a67a37ae9552fdd04` passes ordinary CI
+`33662703332`. The complete P9-02A/B reporting and internal-collaboration
+backend candidate passes all `2,883` repository tests. Commit and push this
+single backend checkpoint, require exact-SHA ordinary PASS, then automatically
+implement the frozen P9-02C trilingual Portfolio/Reporting/Admin, live global
+search, notification feed and Project meeting surfaces. Do not contact
+production ERPNext, start external portals or pilots, introduce a generic
+writer, or stage user-owned files.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

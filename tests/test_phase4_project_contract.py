@@ -114,7 +114,7 @@ def _policy_label_source_fields() -> tuple[tuple[str, int, str], ...]:
     fields: list[tuple[str, int, str]] = []
     field_pattern = re.compile(
         r"^(?P<indent>[ ]+)"
-        r"(?P<name>labelSource|statusLabelSource|stateLabelSource):(?:[ ].*)?$"
+        r"(?P<name>statusLabelSource|stateLabelSource):(?:[ ].*)?$"
     )
     for start, line in enumerate(LINES):
         match = field_pattern.fullmatch(line)
@@ -267,7 +267,7 @@ class Phase4ProjectContractTests(unittest.TestCase):
         self.assertIn("additionalProperties: false", reference)
         self.assertEqual(
             _flow_enum(_field("ProjectObjectReference", "type")),
-            ("customer", "product", "part", "tooling", "order"),
+            ("customer", "factory", "product", "part", "tooling", "order"),
         )
         self.assertEqual(
             _flow_enum(_field("ProjectObjectReference", "sourceSystem")),

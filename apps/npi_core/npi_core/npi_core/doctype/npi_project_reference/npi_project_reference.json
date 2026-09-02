@@ -6,7 +6,7 @@
   "istable": 1,
   "editable_grid": 1,
   "fields": [
-    {"fieldname": "reference_type", "fieldtype": "Select", "label": "Reference Type", "options": "customer\nproduct\npart\ntooling\norder", "reqd": 1},
+    {"fieldname": "reference_type", "fieldtype": "Select", "label": "Reference Type", "options": "customer\nfactory\nproduct\npart\ntooling\norder", "reqd": 1},
     {"fieldname": "source_system", "fieldtype": "Select", "label": "Source System", "options": "NPI_ONE\nERPNEXT", "reqd": 1},
     {"fieldname": "source_object_id", "fieldtype": "Data", "label": "Source Object ID", "reqd": 1},
     {"fieldname": "reference_global_id", "fieldtype": "Data", "label": "Global ID", "read_only": 1}

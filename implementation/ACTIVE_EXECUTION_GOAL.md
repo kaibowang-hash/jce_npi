@@ -4,7 +4,7 @@ Updated: `2026-09-03T00:34:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_02_AUDIT_AND_PLAN — P9-02`
+- Mode: `IN_PROGRESS_P9_02C_FRONTEND_AUTHORIZED — P9-02`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -15,12 +15,14 @@ Updated: `2026-09-03T00:34:00+07:00`
   E2E shards, visual, repository, secret, controlled preflight and cumulative
   disposable runtime `100350396533`. The sharded P50 is `284s`, 53.4% below
   the frozen `610s` baseline; retries remain zero and all diagnostics are off.
-- P9-02 is active for the audit/plan transition only. It covers portfolio,
-  KPI, permission-filtered global search, internal notifications, meeting
-  minutes, versioned configuration inventory and read-only BI direction. No
-  product code is authorized until this transition passes exact-SHA ordinary
-  CI. Existing domain and ERP projection seams remain the default-correct
-  baseline; production ERP is not contacted for this transition.
+- P9-02 audit/plan exact SHA
+  `4123eb86c930c9c091cfb18a67a37ae9552fdd04` passes ordinary CI
+  `33662703332`. The complete reporting and internal-collaboration backend
+  candidate is locally green with `2,883` repository tests. P9-02C exact
+  frontend paths are frozen for one Portfolio/Reporting/Admin workspace,
+  live Shell search and notifications, and one Project meeting tab. Push the
+  backend candidate, require exact-SHA ordinary PASS, then continue directly
+  into the trilingual frontend. Production ERP remains untouched.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

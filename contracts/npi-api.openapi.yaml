@@ -25,6 +25,9 @@ tags:
   - { name: ProductionTransition }
   - { name: Execution }
   - { name: Integration }
+  - { name: Reporting }
+  - { name: Collaboration }
+  - { name: Administration }
 
 x-integration-operation-actions:
   replay: &integration-replay-action
@@ -7210,6 +7213,257 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /search:
+    get:
+      tags: [Reporting]
+      operationId: searchNpiObjects
+      description: Bounded cross-object search over only Projects visible to the authenticated internal user; ERP-owned customer results are reference-only and explicitly partial.
+      x-authorization-boundary: tenant plus owned or active-member Projects; internal System Manager may view tenant Projects
+      parameters:
+        - { in: query, name: query, required: true, schema: { type: string, minLength: 2, maxLength: 100 } }
+        - { in: query, name: kinds, required: false, description: Comma-separated fixed object kinds, schema: { type: string, maxLength: 120 } }
+        - { in: query, name: cursor, required: false, schema: { type: string, minLength: 1, maxLength: 1024 } }
+        - { in: query, name: limit, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Permission-filtered deterministic search page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GlobalSearchResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /portfolio/projects:
+    get:
+      tags: [Reporting]
+      operationId: getProjectPortfolio
+      description: Returns bounded Project portfolio facts with NPI and ERP sources separated; missing, stale or partial ERP truth is never represented as zero or success.
+      x-authorization-boundary: tenant plus owned or active-member Projects; internal System Manager may view tenant Projects
+      parameters:
+        - { in: query, name: customerReferenceKey, required: false, schema: { type: string, minLength: 1, maxLength: 128 } }
+        - { in: query, name: ownerUserId, required: false, schema: { type: string, format: email, maxLength: 254 } }
+        - { in: query, name: projectType, required: false, schema: { $ref: "#/components/schemas/ProjectType" } }
+        - { in: query, name: factoryReferenceKey, required: false, schema: { type: string, minLength: 1, maxLength: 128 } }
+        - { in: query, name: sopMonth, required: false, schema: { type: string, pattern: "^\\d{4}-(?:0[1-9]|1[0-2])$" } }
+        - { in: query, name: lifecycleState, required: false, schema: { type: string, enum: [draft, proposed, active, on_hold, completed, cancelled] } }
+        - { in: query, name: cursor, required: false, schema: { type: string, minLength: 1, maxLength: 1024 } }
+        - { in: query, name: limit, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Permission-filtered deterministic portfolio page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectPortfolioResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /reports/kpis:
+    get:
+      tags: [Reporting]
+      operationId: getKpiTrends
+      description: Read-only BI-safe KPI contract with frozen numerator, denominator, source and Site-time-zone semantics. A missing controlled source returns unavailable with no fabricated point.
+      x-direction: NPI_ONE_TO_READ_ONLY_BI
+      x-reverse-write: prohibited
+      parameters:
+        - { in: query, name: fromMonth, required: true, schema: { type: string, pattern: "^\\d{4}-(?:0[1-9]|1[0-2])$" } }
+        - { in: query, name: toMonth, required: true, schema: { type: string, pattern: "^\\d{4}-(?:0[1-9]|1[0-2])$" } }
+        - { in: query, name: customerReferenceKey, required: false, schema: { type: string, minLength: 1, maxLength: 128 } }
+        - { in: query, name: ownerUserId, required: false, schema: { type: string, format: email, maxLength: 254 } }
+        - { in: query, name: projectType, required: false, schema: { $ref: "#/components/schemas/ProjectType" } }
+        - { in: query, name: factoryReferenceKey, required: false, schema: { type: string, minLength: 1, maxLength: 128 } }
+        - { in: query, name: sopMonth, required: false, schema: { type: string, pattern: "^\\d{4}-(?:0[1-9]|1[0-2])$" } }
+        - { in: query, name: lifecycleState, required: false, schema: { type: string, enum: [draft, proposed, active, on_hold, completed, cancelled] } }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Fixed KPI definitions and available or explicitly unavailable monthly points
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/KpiTrendResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/capabilities:
+    get:
+      tags: [Administration]
+      operationId: getConfigurationCapabilityCatalog
+      description: Internal-admin read-only inventory of existing operation-specific versioned configuration surfaces; it is not a generic DocType or field writer.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Read-only configuration capability inventory
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ConfigurationCapabilityCatalog" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /projects/{projectId}/meetings:
+    get:
+      tags: [Collaboration]
+      operationId: getProjectMeetings
+      description: Returns immutable meeting minutes and their durable action or decision links inside one authorized Project.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Authorized Project meeting collection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MeetingMinuteCollection" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    post:
+      tags: [Collaboration]
+      operationId: createProjectMeeting
+      description: Atomically creates one immutable minute and zero to fifty policy-governed action or decision Work Items. The source links, exact template, actor, hash and Project version are retained.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: meeting-minute-and-linked-work
+      x-audit-operation: meeting_minute.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateMeetingMinute" }
+      responses:
+        "201":
+          description: Immutable meeting minute and linked Work Items
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MeetingMinute" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /notifications:
+    get:
+      tags: [Collaboration]
+      operationId: getInternalNotifications
+      description: Returns only the authenticated internal user's bounded notification projection. Email state is queued, failed, unavailable or not requested and never claims delivery success.
+      parameters:
+        - { in: query, name: unreadOnly, required: false, schema: { type: boolean, default: false } }
+        - { in: query, name: cursor, required: false, schema: { type: string, minLength: 1, maxLength: 1024 } }
+        - { in: query, name: limit, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Recipient-filtered notification page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InternalNotificationCollection" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /notifications/{notificationId}:mark-read:
+    post:
+      tags: [Collaboration]
+      operationId: markInternalNotificationRead
+      description: Marks only the authenticated recipient's exact notification version as read with idempotent retry.
+      parameters:
+        - { in: path, name: notificationId, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MarkNotificationRead" }
+      responses:
+        "200":
+          description: Updated recipient notification
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InternalNotification" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /me/preferences/notifications:
+    get:
+      tags: [Collaboration]
+      operationId: getNotificationPreference
+      description: Returns the authenticated internal user's email subscriptions. In-app and critical audit notifications are mandatory.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Effective notification preference
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationPreference" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    put:
+      tags: [Collaboration]
+      operationId: setNotificationPreference
+      description: Updates only non-critical email subscriptions. Critical audit and in-app notifications cannot be disabled.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetNotificationPreference" }
+      responses:
+        "200":
+          description: Updated notification preference
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationPreference" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -9863,7 +10117,7 @@ components:
         globalId: { type: string, format: uuid }
         type:
           type: string
-          enum: [customer, product, part, tooling, order]
+          enum: [customer, factory, product, part, tooling, order]
         sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
         sourceObjectId:
           type: string
@@ -12916,7 +13170,7 @@ components:
         workspaceReloadRequired: { type: boolean, const: true }
     ProjectReferenceType:
       type: string
-      enum: [customer, product, part, tooling, order]
+      enum: [customer, factory, product, part, tooling, order]
     DocumentRelationshipKind:
       type: string
       enum: [project, project_reference, gate, wbs_item, domain_work_item]
@@ -23418,6 +23672,428 @@ components:
           then: { properties: { authority: { const: authoritative_sandbox }, responseAuthenticated: { const: true } } }
         - if: { properties: { reconciliationState: { const: target_unavailable } }, required: [reconciliationState] }
           then: { properties: { authority: { const: none }, responseAuthenticated: { const: false } } }
+    ReportingAvailability:
+      type: string
+      enum: [available, stale, partial, unavailable]
+    ReportingPage:
+      type: object
+      additionalProperties: false
+      required: [limit, hasMore, nextCursor]
+      properties:
+        limit: { type: integer, minimum: 1, maximum: 100 }
+        hasMore: { type: boolean }
+        nextCursor:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 1024 }
+            - { type: "null" }
+    ReportingPermissions:
+      type: object
+      additionalProperties: false
+      required: [serverFiltered]
+      properties:
+        serverFiltered: { type: boolean, const: true }
+    ReportingFilters:
+      type: object
+      additionalProperties: false
+      required: [customerReferenceKey, factoryReferenceKey, lifecycleState, ownerUserId, projectType, sopMonth]
+      properties:
+        customerReferenceKey:
+          oneOf: [{ type: string, minLength: 1, maxLength: 128 }, { type: "null" }]
+        factoryReferenceKey:
+          oneOf: [{ type: string, minLength: 1, maxLength: 128 }, { type: "null" }]
+        lifecycleState:
+          oneOf: [{ type: string, enum: [draft, proposed, active, on_hold, completed, cancelled] }, { type: "null" }]
+        ownerUserId:
+          oneOf: [{ type: string, format: email, maxLength: 254 }, { type: "null" }]
+        projectType:
+          oneOf: [{ $ref: "#/components/schemas/ProjectType" }, { type: "null" }]
+        sopMonth:
+          oneOf: [{ type: string, pattern: "^\\d{4}-(?:0[1-9]|1[0-2])$" }, { type: "null" }]
+    GlobalSearchKind:
+      type: string
+      enum: [project, customer, part, tooling, document, trial, defect, change, file]
+    GlobalSearchItem:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, kind, globalId, projectGlobalId, label, code, sourceSystem, availability, detailRoute, version]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        kind: { $ref: "#/components/schemas/GlobalSearchKind" }
+        globalId: { type: string, minLength: 1, maxLength: 140 }
+        projectGlobalId: { type: string, format: uuid }
+        label: { type: string, minLength: 1, maxLength: 280 }
+        code:
+          oneOf: [{ type: string, minLength: 1, maxLength: 280 }, { type: "null" }]
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        availability: { $ref: "#/components/schemas/ReportingAvailability" }
+        reasonCode: { type: string, minLength: 1, maxLength: 128 }
+        detailRoute: { type: string, pattern: "^/projects/[0-9a-f-]+" }
+        version: { type: integer, minimum: 1 }
+    GlobalSearchResponse:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, query, kinds, items, page, permissions]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        query: { type: string, minLength: 2, maxLength: 100 }
+        kinds:
+          type: array
+          minItems: 1
+          maxItems: 9
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/GlobalSearchKind" }
+        items:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/GlobalSearchItem" }
+        page: { $ref: "#/components/schemas/ReportingPage" }
+        permissions: { $ref: "#/components/schemas/ReportingPermissions" }
+    ProjectPortfolioHealth:
+      type: object
+      additionalProperties: false
+      required: [state, assessedAt, sourceSystem]
+      properties:
+        state: { type: string, enum: [unassessed, unavailable, green, yellow, red] }
+        assessedAt:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        sourceSystem: { type: string, const: NPI_ONE }
+    ProjectPortfolioGate:
+      type: object
+      additionalProperties: false
+      required: [globalId, key, title, sequence, reviewState, dueDate]
+      properties:
+        globalId: { type: string, format: uuid }
+        key: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        sequence: { type: integer, minimum: 1 }
+        reviewState: { type: string, enum: [not_started, in_review, decided, requires_review] }
+        dueDate:
+          oneOf: [{ type: string, format: date }, { type: "null" }]
+    ProjectPortfolioWork:
+      type: object
+      additionalProperties: false
+      required: [activeCount, overdueCount, blockerCount, decisionCount, sourceSystem]
+      properties:
+        activeCount: { type: integer, minimum: 0 }
+        overdueCount: { type: integer, minimum: 0 }
+        blockerCount: { type: integer, minimum: 0 }
+        decisionCount: { type: integer, minimum: 0 }
+        sourceSystem: { type: string, const: NPI_ONE }
+    ProjectPortfolioErpTruth:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, availability, reasonCode, observedKinds, freshestAt]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        availability: { $ref: "#/components/schemas/ReportingAvailability" }
+        reasonCode:
+          oneOf: [{ type: string, minLength: 1, maxLength: 128 }, { type: "null" }]
+        observedKinds:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 128 }
+        freshestAt:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+    ProjectPortfolioItem:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, businessCode, title, projectType, ownerUserId, targetSop, lifecycleState, version, customerReferenceKeys, factoryReferenceKeys, health, currentGate, work, erp, detailRoute]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        businessCode: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        projectType: { $ref: "#/components/schemas/ProjectType" }
+        ownerUserId: { type: string, format: email, maxLength: 254 }
+        targetSop: { type: string, format: date }
+        lifecycleState: { type: string, enum: [draft, proposed, active, on_hold, completed, cancelled] }
+        version: { type: integer, minimum: 1 }
+        customerReferenceKeys:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 128 }
+        factoryReferenceKeys:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 128 }
+        health: { $ref: "#/components/schemas/ProjectPortfolioHealth" }
+        currentGate:
+          oneOf: [{ $ref: "#/components/schemas/ProjectPortfolioGate" }, { type: "null" }]
+        work: { $ref: "#/components/schemas/ProjectPortfolioWork" }
+        erp: { $ref: "#/components/schemas/ProjectPortfolioErpTruth" }
+        detailRoute: { type: string, pattern: "^/projects/[0-9a-f-]+$" }
+    ProjectPortfolioResponse:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, asOf, filters, items, page, permissions]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        asOf: { type: string, format: date-time }
+        filters: { $ref: "#/components/schemas/ReportingFilters" }
+        items:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProjectPortfolioItem" }
+        page: { $ref: "#/components/schemas/ReportingPage" }
+        permissions: { $ref: "#/components/schemas/ReportingPermissions" }
+    KpiDefinition:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, key, labelSource, valueKind, numeratorSource, denominatorSource, sourceSystem, timeZone]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        key: { type: string, enum: [project_sop_on_time_rate, project_cycle_time_days, trial_first_pass_rate, project_cost_variance_rate] }
+        labelSource: { type: string, minLength: 1, maxLength: 140 }
+        valueKind: { type: string, enum: [percent, days] }
+        numeratorSource: { type: string, minLength: 1, maxLength: 200 }
+        denominatorSource: { type: string, minLength: 1, maxLength: 200 }
+        sourceSystem: { type: string, enum: [NPI_ONE, MIXED] }
+        timeZone: { type: string, const: site }
+    KpiPoint:
+      type: object
+      additionalProperties: false
+      required: [month, numerator, denominator, value]
+      properties:
+        month: { type: string, pattern: "^\\d{4}-(?:0[1-9]|1[0-2])$" }
+        numerator: { type: number }
+        denominator: { type: number, exclusiveMinimum: 0 }
+        value: { type: number }
+    KpiSeries:
+      type: object
+      additionalProperties: false
+      required: [definition, availability, reasonCode, points]
+      properties:
+        definition: { $ref: "#/components/schemas/KpiDefinition" }
+        availability: { $ref: "#/components/schemas/ReportingAvailability" }
+        reasonCode: { type: string, minLength: 1, maxLength: 128 }
+        points:
+          type: array
+          maxItems: 24
+          items: { $ref: "#/components/schemas/KpiPoint" }
+    KpiTrendResponse:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, fromMonth, toMonth, filters, visibleProjectCount, series, permissions]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        fromMonth: { type: string, pattern: "^\\d{4}-(?:0[1-9]|1[0-2])$" }
+        toMonth: { type: string, pattern: "^\\d{4}-(?:0[1-9]|1[0-2])$" }
+        filters: { $ref: "#/components/schemas/ReportingFilters" }
+        visibleProjectCount: { type: integer, minimum: 0, maximum: 5000 }
+        series:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: { $ref: "#/components/schemas/KpiSeries" }
+        permissions: { $ref: "#/components/schemas/ReportingPermissions" }
+    ConfigurationCapability:
+      type: object
+      additionalProperties: false
+      required: [key, labelSource, mode, route]
+      properties:
+        key: { type: string, minLength: 1, maxLength: 64 }
+        labelSource: { type: string, minLength: 1, maxLength: 140 }
+        mode: { type: string, enum: [versioned_commands, operation_specific] }
+        route: { type: string, pattern: "^/administration/" }
+    ConfigurationCapabilityCatalog:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, mode, genericWriterAvailable, items]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        mode: { type: string, const: read_only_catalog }
+        genericWriterAvailable: { type: boolean, const: false }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ConfigurationCapability" }
+    MeetingTemplateReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid, const: "00000000-0000-4000-8000-000000000902" }
+        version: { type: integer, const: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    MeetingSections:
+      type: object
+      additionalProperties: false
+      required: [agenda, discussion, decisions]
+      properties:
+        agenda: { type: string, minLength: 1, maxLength: 8000 }
+        discussion: { type: string, minLength: 1, maxLength: 8000 }
+        decisions: { type: string, minLength: 1, maxLength: 8000 }
+    CreateMeetingWorkItem:
+      type: object
+      additionalProperties: false
+      required: [itemKey, kind, title, detail, ownerUserId, dueAt, severity, blocking]
+      properties:
+        itemKey: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+        kind: { type: string, enum: [action, decision_request] }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        detail:
+          oneOf: [{ type: string, minLength: 1, maxLength: 4000 }, { type: "null" }]
+        ownerUserId: { type: string, format: email, maxLength: 254 }
+        dueAt: { type: string, format: date-time }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        blocking: { type: boolean }
+    CreateMeetingMinute:
+      type: object
+      additionalProperties: false
+      required: [expectedProjectVersion, templateRef, title, occurredAt, attendeeUserIds, sections, items]
+      properties:
+        expectedProjectVersion: { type: integer, minimum: 1 }
+        templateRef: { $ref: "#/components/schemas/MeetingTemplateReference" }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        occurredAt: { type: string, format: date-time }
+        attendeeUserIds:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, format: email, maxLength: 254 }
+        sections: { $ref: "#/components/schemas/MeetingSections" }
+        items:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/CreateMeetingWorkItem" }
+    MeetingLinkedWorkItem:
+      type: object
+      additionalProperties: false
+      required: [itemKey, kind, workItemId, title, ownerUserId, dueAt, targetRoute]
+      properties:
+        itemKey: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+        kind: { type: string, enum: [action, decision_request] }
+        workItemId: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        ownerUserId: { type: string, format: email, maxLength: 254 }
+        dueAt: { type: string, format: date-time }
+        targetRoute: { type: string, pattern: "^/projects/[0-9a-f-]+/work" }
+    MeetingMinute:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, projectId, templateRef, title, occurredAt, attendeeUserIds, sections, linkedItems, contentHash, createdBy, createdAt, version]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        projectId: { type: string, format: uuid }
+        projectVersion: { type: integer, minimum: 1 }
+        templateRef: { $ref: "#/components/schemas/MeetingTemplateReference" }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        occurredAt: { type: string, format: date-time }
+        attendeeUserIds:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, format: email, maxLength: 254 }
+        sections: { $ref: "#/components/schemas/MeetingSections" }
+        linkedItems:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/MeetingLinkedWorkItem" }
+        contentHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        createdBy: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        version: { type: integer, const: 1 }
+    MeetingMinuteCollection:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, projectId, projectVersion, items, permissions]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        projectId: { type: string, format: uuid }
+        projectVersion: { type: integer, minimum: 1 }
+        items:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/MeetingMinute" }
+        permissions: { $ref: "#/components/schemas/ProjectPermissions" }
+    NotificationKind:
+      type: string
+      enum: [due_reminder, overdue_escalation, critical_blocker, gate_attention]
+    NotificationSource:
+      type: object
+      additionalProperties: false
+      required: [type, globalId, version]
+      properties:
+        type: { type: string, enum: [domain_work_item, gate_review_assignment, gate_review_invalidation] }
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+    InternalNotification:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, projectId, source, kind, criticalAudit, titleSource, messageParameters, targetRoute, sourceDueAt, emailDeliveryState, failureCode, readAt, createdAt, version]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        projectId: { type: string, format: uuid }
+        source: { $ref: "#/components/schemas/NotificationSource" }
+        kind: { $ref: "#/components/schemas/NotificationKind" }
+        criticalAudit: { type: boolean }
+        titleSource: { type: string, minLength: 1, maxLength: 140 }
+        messageParameters:
+          type: object
+          additionalProperties: false
+          required: [dueAt]
+          properties:
+            dueAt: { type: string, format: date-time }
+        targetRoute: { type: string, pattern: "^/projects/[0-9a-f-]+" }
+        sourceDueAt: { type: string, format: date-time }
+        emailDeliveryState: { type: string, enum: [not_requested, queued, failed, unavailable] }
+        failureCode:
+          oneOf: [{ type: string, minLength: 1, maxLength: 128 }, { type: "null" }]
+        readAt:
+          oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        createdAt: { type: string, format: date-time }
+        version: { type: integer, minimum: 1 }
+    InternalNotificationCollection:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, items, page, permissions]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        items:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/InternalNotification" }
+        page: { $ref: "#/components/schemas/ReportingPage" }
+        permissions: { $ref: "#/components/schemas/ReportingPermissions" }
+    MarkNotificationRead:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion]
+      properties:
+        expectedVersion: { type: integer, minimum: 1 }
+    NotificationPreference:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, emailKinds, criticalAuditEmail, criticalAuditMutable, version]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        emailKinds:
+          type: array
+          maxItems: 3
+          uniqueItems: true
+          items: { type: string, enum: [due_reminder, overdue_escalation, gate_attention] }
+        criticalAuditEmail: { type: boolean, const: true }
+        criticalAuditMutable: { type: boolean, const: false }
+        version: { type: integer, minimum: 0 }
+    SetNotificationPreference:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion, emailKinds]
+      properties:
+        expectedVersion: { type: integer, minimum: 0 }
+        emailKinds:
+          type: array
+          maxItems: 3
+          uniqueItems: true
+          items: { type: string, enum: [due_reminder, overdue_escalation, gate_attention] }
     ProblemDetails:
       type: object
       additionalProperties: false

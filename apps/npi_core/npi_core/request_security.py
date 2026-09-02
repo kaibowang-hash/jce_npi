@@ -15,6 +15,7 @@ from .foundation.errors import (
     EngineeringBomRoutesDisabled,
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
+    ReportingRoutesDisabled,
     RequestValidationFailed,
     TenantScopeUnavailable,
     TrialRoutesDisabled,
@@ -31,6 +32,25 @@ from .foundation.security import Principal
 
 TRANSPORT_FIELDS = frozenset({"cmd"})
 TENANT_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
+
+
+def reporting_routes_are_disabled() -> bool:
+    """Read the independent Site-scoped P9-02 fail-closed route switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p9_02_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def require_reporting_routes_enabled() -> None:
+    if reporting_routes_are_disabled():
+        raise ReportingRoutesDisabled()
 
 
 def tooling_routes_are_disabled() -> bool:

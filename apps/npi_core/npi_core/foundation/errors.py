@@ -329,3 +329,14 @@ class TrialRoutesDisabled(NpiProblem):
             _("The routes are disabled while a reviewed forward fix is applied."),
             retryable=True,
         )
+
+
+class ReportingRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "REPORTING_ROUTES_DISABLED",
+            _("Portfolio and reporting are temporarily unavailable."),
+            _("The routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )

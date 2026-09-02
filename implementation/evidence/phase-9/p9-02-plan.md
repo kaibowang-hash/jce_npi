@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `FROZEN AUDIT/PLAN — PRODUCT CODE HELD UNTIL EXACT-SHA ORDINARY PASS`
+Status: `P9-02A/B BACKEND CANDIDATE — P9-02C PATHS FROZEN`
 
 Base checkpoint:
 `ea6112fa04e08cee6920407df426efc685cea98b`
@@ -63,6 +63,22 @@ gap must use the standing task-scoped read-only delta process.
 
 Each checkpoint is a complete batch. Failures from the same root are
 preflighted and repaired together; one failure must not create one commit.
+
+## P9-02A/B implementation checkpoint
+
+The audit/plan exact SHA `4123eb86c930c9c091cfb18a67a37ae9552fdd04`
+passed ordinary CI `33662703332`, releasing the product hold. The resulting
+backend candidate implements the frozen reporting/search/KPI/configuration,
+meeting-minute, linked WorkItem and internal notification seams. Full
+repository verification passes 2,883 tests; the only initial security-scan
+hit was the scanner token written literally inside its own metadata test, and
+the corrected test plus the exact scan now pass with zero matches.
+
+P9-02C is limited to one live Portfolio/Reporting/Administration workspace,
+the existing Shell search and notification controls, and one Project meeting
+tab. Exact frontend source, test and three-locale visual paths are frozen in
+`CURRENT_TASK.json`. No generic writer, new domain, external identity, ERP
+mutation or production ERP contact is introduced.
 
 ## Test and evidence plan
 

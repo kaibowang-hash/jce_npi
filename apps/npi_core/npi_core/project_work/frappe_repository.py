@@ -130,6 +130,11 @@ class FrappeProjectWorkRepository:
             return None
         return self._work_context_for(project)
 
+    def locked_project_for_parent_command(self, project_id: UUID):
+        """Return the same ADMINISTER-checked lock used by parent domain commands."""
+
+        return self._locked_authorized_project(project_id, ProjectAccess.ADMINISTER)
+
     def list_domain_work_items(
         self,
         project_id: UUID,
@@ -670,7 +675,7 @@ class FrappeProjectWorkRepository:
         *,
         items: Sequence[Mapping[str, Any]],
     ) -> list[dict[str, Any]] | None:
-        """Create governed actions inside another domain's atomic command.
+        """Create governed actions or decisions inside a fixed parent command.
 
         The parent owns command idempotency and transaction rollback. Project
         Work still owns validation, lifecycle state, policy binding, Project
@@ -714,7 +719,7 @@ class FrappeProjectWorkRepository:
                 ),
             )
 
-        prepared: list[tuple[str, DomainWorkItem]] = []
+        prepared: list[tuple[str, str, DomainWorkItem]] = []
         action_keys: set[str] = set()
         for index, value in enumerate(items):
             path = f"actions[{index}]"
@@ -734,14 +739,35 @@ class FrappeProjectWorkRepository:
                     _("Action keys must be unique."),
                 )
             action_keys.add(action_key)
+            kind = _record_value(value, "kind", default="action")
+            if kind not in {"action", "decision_request"}:
+                raise _field_problem(
+                    f"{path}.kind",
+                    _("Select an action or decision request."),
+                )
+            parent_operation = _record_value(
+                value,
+                "parent_operation",
+                "parentOperation",
+                default="trial_plan.generate_actions",
+            )
+            if parent_operation not in {
+                "trial_plan.generate_actions",
+                "meeting_minute.create",
+            }:
+                raise _field_problem(
+                    f"{path}.parentOperation",
+                    _("Select a supported parent operation."),
+                )
             prepared.append(
                 (
                     action_key,
+                    parent_operation,
                     self._prepare_domain_work_item(
                         project,
                         policy,
                         item_id=uuid4(),
-                        kind="action",
+                        kind=kind,
                         title=_record_value(value, "title"),
                         detail=_record_value(
                             value,
@@ -765,7 +791,7 @@ class FrappeProjectWorkRepository:
 
         created: list[dict[str, Any]] = []
         with _controlled_work_write_scope():
-            for action_key, domain_item in prepared:
+            for action_key, _parent_operation, domain_item in prepared:
                 document = self._insert_domain_work_item_document(
                     project,
                     domain_item,
@@ -778,7 +804,7 @@ class FrappeProjectWorkRepository:
                     }
                 )
             self._advance_project(project, policy["ref"])
-            for action_key, domain_item in prepared:
+            for action_key, parent_operation, domain_item in prepared:
                 self._append_audit(
                     operation="project.domain_work_item.create",
                     global_id=domain_item.global_id,
@@ -788,7 +814,7 @@ class FrappeProjectWorkRepository:
                         "actionKey": action_key,
                         "blocking": domain_item.blocking,
                         "kind": domain_item.kind.value,
-                        "parentOperation": "trial_plan.generate_actions",
+                        "parentOperation": parent_operation,
                         "projectId": str(project_id),
                         "requestId": self.request_id,
                         "severity": domain_item.severity.value,
