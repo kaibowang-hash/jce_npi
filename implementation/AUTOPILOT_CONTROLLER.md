@@ -11028,3 +11028,39 @@ repeat or rewrite it merely to restore context. See
   P9-01 Level 3. No second Level 2, production ERPNext contact, CI workflow
   change or user-owned file staging is authorized.
 - Controller marker: `P9-01D implementation-summary Project-lock repair Level 1 PASS; exact-SHA ordinary CI then sole Level 3 pending`.
+
+## 2026-09-02 P9-01D post-summary-Project-lock combined diagnostic
+
+- Repair SHA `1afbc72a52e165e4008d823a3e28e4d4af8eb2d8` passes exact-SHA
+  ordinary `33617733342`: secret `100207373483`, repository `100207373741`,
+  frontend `100207373772` and visual `100207373824` are successful. Its sole
+  diagnostics-off Level 3 `33618742907` passes secret `100210584432`,
+  repository `100210584469`, frontend `100210584251`, visual `100210584389`
+  and preflight `100214396764`; disposable runtime `100214471356` initializes
+  the fixed Bench and Site, then returns only `Local Frappe Engineering Change
+  runtime verification failed.` Restricted response, status, business values,
+  identities, messages, stacks and failed child output remain unread.
+- The prior Project-lock root remains closed by its exact operation-specific
+  authorization regression. The all-off outer label is internally nonunique
+  across later summary API/repository, worker and operation assertions and
+  cannot authorize another product change. Freeze that repair cycle at
+  diagnostic `1/1`, harness repair `1/1`, product repair `1/1`, final `1/1`.
+- Open one independent product-zero exact-173/code-94 combined diagnostic at
+  `0/1,0/1,0/1`. Re-enable only the retained post-formal-Datetime runtime and
+  summary-server entrances; the core close entrance remains exact-scope and
+  dormant without its fixed request header. Deterministic trace, exact request
+  scopes, first-wins exact-three `O_EXCL` 0600 record, strict reader,
+  failed-child withholding and success-zero behavior remain unchanged. No
+  event, API response, persistence, role, DocPerm, ownership, transaction,
+  queue/adapter, UI, CI or production behavior changes.
+- The sole next sequence is this diagnostic checkpoint's Level 1, exact-SHA
+  ordinary PASS and one bounded controlled continuation. If it yields a strict
+  tuple, batch-prove the unique root before one minimal repair; do not inspect
+  restricted output, contact production ERPNext, change CI or stage user-owned
+  files.
+- Level 1 passes focused diagnostic/API `41/41`, complete P9 Change `117/117`,
+  full Python/formal repository `2834/2834`, current/reconciliation, frontend
+  generation and i18n (`8774`, 100% `zh`/`zh-TW`), compilation, shell syntax
+  and diff hygiene. The existing exact task manifest contains every changed
+  path; no product or CI scope is added.
+- Controller marker: `P9-01D post-summary-Project-lock combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

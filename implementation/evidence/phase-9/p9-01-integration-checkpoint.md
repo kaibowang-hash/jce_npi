@@ -145,6 +145,30 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## Post-summary-Project-lock combined diagnostic
+
+Repair SHA `1afbc72a52e165e4008d823a3e28e4d4af8eb2d8` passes ordinary
+`33617733342` in all four lanes. Its diagnostics-off Level 3 `33618742907`
+passes repository, frontend, secret, governed visual and controlled preflight.
+The disposable runtime creates the fixed Bench and Site, then runtime
+`100214471356` returns only the fixed Engineering Change fresh-verification
+outer label. No response, status, business value, Project/change identity,
+message, stack or failed child output was read.
+
+The exact operation-specific Project-lock regression keeps the prior root
+closed, while the all-off outer label spans later summary API/repository,
+worker and operation assertions and cannot authorize a guessed product repair.
+Freeze that repair cycle at `1/1,1/1,1/1,1/1` and open one independent
+product-zero exact-173/code-94 combined diagnostic at `0/1,0/1,0/1`. The
+existing deterministic trace, exact request scopes, first-wins `O_EXCL` 0600
+record, strict reader, failed-child withholding and success-zero contracts are
+unchanged. Only the retained runtime and summary-server entrances are active;
+events, API responses, persistence, permissions, ownership, transactions,
+queue/adapter behavior, UI, CI and production profiles remain unchanged.
+Focused diagnostic/API tests pass `41/41`, the complete P9 Change family
+passes `117/117`, full repository verification passes `2834/2834`, and
+generation/i18n remain green at `8774` sources with complete zh/zh-TW coverage.
+
 ## P9-01D post-summary-ordering-repair combined boundary
 
 Exact repair SHA `d7588537935aa600431c2f068e1d12370e1686dd` passes ordinary

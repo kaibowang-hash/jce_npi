@@ -422,6 +422,14 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-58 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
 
+## Post-summary-Project-lock diagnostic UI boundary
+
+Repair ordinary `33617733342` and the Level 3 frontend/visual jobs in
+`33618742907` pass. The later disposable backend runtime returns only the fixed
+Engineering Change outer label. The independent exact-173 diagnostic changes
+no route, UI source, translation, accessibility behavior, fixture response or
+visual baseline; existing P9-01D UI evidence remains authoritative.
+
 ## Post-summary-ordering diagnostic UI boundary
 
 Ordinary `33468779480` and the frontend/visual lanes in Level 3 `33469740238`

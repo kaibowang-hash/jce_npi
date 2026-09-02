@@ -5,6 +5,21 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+Summary Project-lock repair exact SHA
+`1afbc72a52e165e4008d823a3e28e4d4af8eb2d8` passes ordinary CI
+`33617733342` in all four lanes. Its diagnostics-off Level 3 `33618742907`
+passes all four base lanes and controlled preflight, then disposable runtime
+`100214471356` returns only the fixed Engineering Change fresh-verification
+outer label after fixed Bench and Site initialization. The prior Project-lock
+root is covered and remains closed; the outer label cannot distinguish a later
+API/repository/worker/operation predicate, so no further product repair is
+authorized. Freeze the prior cycle at `1/1,1/1,1/1,1/1`. The sole next action
+is this independent product-zero exact-173 combined diagnostic checkpoint,
+its exact-SHA ordinary PASS and one bounded controlled continuation. Read only
+the strict code/type/trace tuple; do not inspect restricted output, dispatch a
+second diagnostic, contact production ERPNext, change CI or stage user-owned
+files.
+
 Summary diagnostic harness SHA
 `c9317273b58326b8445b9cfeed96207c41205f9d` passes ordinary CI
 `33615098217`. Its only controlled continuation `33616195088` passes

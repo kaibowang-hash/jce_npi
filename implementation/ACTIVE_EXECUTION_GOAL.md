@@ -5,6 +5,27 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- Summary Project-lock repair exact SHA
+  `1afbc72a52e165e4008d823a3e28e4d4af8eb2d8` passes ordinary CI
+  `33617733342`: secret `100207373483`, repository `100207373741`, frontend
+  `100207373772` and visual `100207373824` all pass. Its sole diagnostics-off
+  Level 3 `33618742907` passes secret `100210584432`, repository
+  `100210584469`, frontend `100210584251`, visual `100210584389` and
+  controlled preflight `100214396764`; disposable runtime `100214471356`
+  advances through fixed Bench and Site initialization, then returns only the
+  fixed `Local Frappe Engineering Change runtime verification failed.` label.
+  Restricted response, business value, identity, message, stack and failed
+  child output remain unread. The Project-lock root stays closed by the exact
+  operation-specific regression, but the outer label cannot select a later
+  summary/worker/operation predicate. Freeze that repair cycle at
+  `1/1,1/1,1/1,1/1` and open one independent product-zero exact-173 combined
+  diagnostic at `0/1,0/1,0/1`. Only the retained post-formal-Datetime runtime
+  and summary-server entrances are active; code/type/trace-only recording,
+  exact request scopes, failed-child withholding and success-zero behavior are
+  unchanged. Focused diagnostic/API tests pass `41/41`, complete P9 Change
+  tests pass `117/117`, full repository verification passes `2834/2834`, and
+  frontend generation/i18n remain green at `8774` sources with 100% zh/zh-TW
+  coverage. No production ERP target/profile is active or contacted.
 - Summary diagnostic harness exact SHA
   `c9317273b58326b8445b9cfeed96207c41205f9d` passes ordinary CI
   `33615098217` in all four lanes. Its only controlled continuation

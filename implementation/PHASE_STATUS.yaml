@@ -3063,7 +3063,7 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P9_01D_IMPLEMENTATION_EXACT_SHA_ORDINARY_AND_LEVEL_3
+  active_checkpoint: P9_01D_POST_SUMMARY_PROJECT_LOCK_COMBINED_DIAGNOSTIC
   p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
   p9_01b_governance_ordinary: 33354760251
   p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
@@ -3115,7 +3115,15 @@ p9_01:
   p9_01d_summary_diagnostic_runtime: 100202546724
   p9_01d_summary_diagnostic_tuple: P901_CHANGE_SUMMARY_API_REPOSITORY_CALL_ENGINEERINGCHANGEINTEGRATIONUNAVAILABLE_TRACE_06C7E282
   p9_01d_summary_project_lock_repair: LEVEL_1_PASS_OPERATION_SPECIFIC_VIEW_REAUTHORIZATION_ALL_DIAGNOSTICS_OFF
-  p9_01d_next_gate: SUMMARY_PROJECT_LOCK_REPAIR_EXACT_SHA_ORDINARY_THEN_SOLE_LEVEL_3
+  p9_01d_summary_project_lock_repair_checkpoint: 1afbc72a52e165e4008d823a3e28e4d4af8eb2d8
+  p9_01d_summary_project_lock_repair_ordinary: 33617733342
+  p9_01d_summary_project_lock_repair_ordinary_jobs: {secret_scan: 100207373483, repository: 100207373741, frontend: 100207373772, visual: 100207373824}
+  p9_01d_summary_project_lock_final_level_3: 33618742907
+  p9_01d_summary_project_lock_final_jobs: {secret_scan: 100210584432, repository: 100210584469, frontend: 100210584251, visual: 100210584389, controlled_preflight: 100214396764, controlled_runtime: 100214471356}
+  p9_01d_summary_project_lock_final_result: BASE_AND_PREFLIGHT_PASS_RUNTIME_FIXED_OUTER_LABEL_ONLY
+  p9_01d_post_summary_project_lock_diagnostic: PRODUCT_ZERO_EXACT_173_CODE_94_LEVEL_1_PASS
+  p9_01d_post_summary_project_lock_cycle: DIAGNOSTIC_0_OF_1_REPAIR_0_OF_1_FINAL_0_OF_1
+  p9_01d_next_gate: POST_SUMMARY_PROJECT_LOCK_DIAGNOSTIC_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_CONTINUATION
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
