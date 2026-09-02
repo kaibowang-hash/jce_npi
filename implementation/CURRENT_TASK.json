@@ -18,7 +18,8 @@
     "Emit one bounded machine attestation containing only fixed classification, counts, run/SHA provenance and non-merge/non-release truth; never emit changed path values, runtime payloads, business values or secrets.",
     "Raise only non-visual Playwright execution from two to four workers, retain visual execution at two workers and retain zero retries.",
     "Record five accepted pre-change runs, changed-files-to-tests mapping, allow/deny/unknown unit evidence, three stable four-worker runs, P50/P95 and final exact-SHA ordinary plus Level 3 evidence.",
-    "Use native two-way Playwright sharding with an aggregate required check only if three four-worker runs are stable but fail the frozen improvement threshold."
+    "Use native two-way Playwright sharding with an aggregate required check only if three four-worker runs are stable but fail the frozen improvement threshold.",
+    "After the diagnostics-off exact-SHA Level 3 runtime 33653098092 failed only at the existing P8-03 migrated-legacy problem-code assertion, run one bounded value-free existing classifier before any repair; inspect only its fixed code/type/trace tuple, then close the classifier and apply at most one statically proven fixture-only repair."
   ],
   "non_scope": [
     "Any product, domain, API, contract, Schema, migration, permission, ownership, translation, UI, visual baseline, threshold, coverage or test-case change.",
@@ -54,9 +55,11 @@
     "implementation/evidence/delivery-pipeline-optimization-2/plan.md",
     "implementation/evidence/delivery-pipeline-optimization-2/validation.md",
     "scripts/verify_devcontainer.py",
+    "scripts/verify_item_publish_runtime.py",
     "scripts/verify_prior_gate.py",
     "tests/test_current_task_verifier.py",
     "tests/test_devcontainer_verifier.py",
+    "tests/test_phase8_item_publish_runtime_verifier.py",
     "tests/test_prior_gate_verifier.py",
     "tests/test_v1_2_reconciliation.py"
   ],

@@ -11246,3 +11246,24 @@ P9-01 Level 3.
   exact-SHA ordinary PASS and complete Level 3 before automatically resuming
   P9-02. No production ERPNext contact or product change is authorized.
 - Controller marker: `P9-01 Level 3 PASS; CI-OPT-02 implementation active`.
+
+## 2026-09-02 CI-OPT-02 stability PASS; bounded P8-03 classifier active
+
+- Native two-way sharding passes three unchanged exact-SHA attempts with
+  `230 + 230 = 460` nonvisual tests, zero retries and critical E2E durations
+  `290/284/257s`. P50 is `284s`, 53.4% below the frozen `610s` baseline; the
+  aggregate `frontend` required check passes every attempt.
+- Diagnostics-off Level 3 `33653098092` at exact SHA
+  `cdb9d9d89eaebc97da793d854deeabeb88749f1c` passes repository, secret,
+  frontend verification, both E2E shards, aggregate frontend, visual and
+  controlled preflight. Its disposable runtime fails only at the existing
+  P8-03 migrated-legacy problem-code assertion after all earlier cumulative
+  modes pass.
+- No repair is inferred from the fixed outer label. Activate exactly one
+  existing response-neutral classifier that can emit only a closed problem
+  code enum, exception type and deterministic trace. Require exact-SHA
+  ordinary PASS and one diagnostic-only controlled Site, then statically
+  prove and batch one fixture-only minimal repair with every diagnostic false.
+  Product code, CI semantics, production ERPNext and user-owned dirty files
+  remain unchanged.
+- Controller marker: `CI-OPT-02 stability PASS; P8-03 value-free classifier active`.

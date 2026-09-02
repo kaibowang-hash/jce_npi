@@ -11,6 +11,16 @@ ordinary CI, prove three stable four-worker nonvisual E2E attempts, and pass
 one complete Level 3. Denied, unknown, stale or unverifiable diagnostic input
 must run full CI. Do not contact production ERPNext or begin P9-02 before PASS.
 
+Three sharded attempts at exact SHA
+`cdb9d9d89eaebc97da793d854deeabeb88749f1c` pass `460/460` with critical
+durations `290/284/257s` (P50 `284s`). Final Level 3 `33653098092` passes all
+base lanes and preflight but fails at the existing P8-03 migrated-legacy
+problem-code assertion. The sole next action is one value-free existing
+five-code classifier through exact-SHA ordinary plus diagnostic-only Site,
+then one statically proven fixture-only repair with the classifier disabled.
+Do not inspect raw output, alter product code, contact production ERPNext or
+stage user-owned files.
+
 Recovery time: `2026-08-31T00:00:00+07:00`
 
 Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`

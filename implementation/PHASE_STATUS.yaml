@@ -7,8 +7,8 @@ execution_hold: CI_OPT_02
 current_task: CI-OPT-02
 current_task_status: IN_PROGRESS_CI_OPT_02_IMPLEMENTATION
 current_task_completed_stage: P9_01_LEVEL_3_PASS
-current_task_next_stage: CI_OPT_02_EXACT_SHA_ORDINARY_STABILITY_AND_LEVEL_3
-current_task_next_stage_status: IN_PROGRESS_IMPLEMENTATION
+current_task_next_stage: CI_OPT_02_P803_LEGACY_SAFE_DIAGNOSTIC
+current_task_next_stage_status: IN_PROGRESS_VALUE_FREE_CLASSIFIER
 resumed_product_task: P9-02
 resumed_product_task_status: PAUSED_UNTIL_CI_OPT_02_LEVEL_3_PASS
 scope_decisions:
@@ -3197,6 +3197,18 @@ delivery_pipeline_optimization_2:
   playwright_visual_workers: 2
   playwright_retries: 0
   mutable_site_cache: false
+  four_worker_attempts: [397, 560, 574]
+  four_worker_p50_seconds: 560
+  sharded_attempts_critical_seconds: [290, 284, 257]
+  sharded_p50_seconds: 284
+  sharded_p95_seconds: 290
+  sharded_improvement_percent: 53.4
+  sharded_test_count_each_attempt: 460
+  sharded_retries: 0
+  first_final_level_3: 33653098092
+  first_final_level_3_base_and_preflight: PASS
+  first_final_level_3_runtime: FAILED_P803_MIGRATED_LEGACY_PROBLEM_CODE_DRIFT
+  bounded_p803_classifier_active: true
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

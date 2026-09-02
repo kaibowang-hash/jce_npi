@@ -15,6 +15,12 @@ Updated: `2026-09-02T21:30:00+07:00`
   changes, and can never serve as merge/release evidence. It also benchmarks
   four nonvisual Playwright workers while visual stays at two and retries stay
   zero. P9-02 remains paused until this task's full Level 3 PASS.
+- CI-OPT-02 sharding passes three unchanged `460/460` attempts with critical
+  E2E durations `290/284/257s` (P50 `284s`, 53.4% below the `610s` baseline).
+  Diagnostics-off Level 3 `33653098092` passes every base lane and controlled
+  preflight, then fails only at the retained P8-03 migrated-legacy problem-code
+  assertion. One existing fixed-enum code/type/trace classifier is active;
+  product code and production ERP remain untouched.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple
