@@ -1262,6 +1262,26 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertTrue(all(command[0] == "bench" for _, command in calls))
         self.assertFalse(any("console" in " ".join(command).lower() for _, command in calls))
 
+    def test_p9_security_count_accepts_only_successful_empty_stdout_as_zero(self) -> None:
+        for operation in collector.P9_SECURITY_COUNT_SPECS:
+            with self.subTest(operation=operation):
+                self.assertEqual(
+                    collector._parse_nonnegative_json_integer(b"", operation),
+                    0,
+                )
+        self.assertEqual(
+            collector._parse_nonnegative_json_integer(b"17", "SYSTEM_USERS_TOTAL"),
+            17,
+        )
+        for invalid in (b"null", b"false", b"-1", b'"0"', b"not-json"):
+            with self.subTest(invalid=invalid), self.assertRaises(
+                collector.FactCollectionError
+            ):
+                collector._parse_nonnegative_json_integer(
+                    invalid,
+                    "USER_PERMISSIONS_PROJECT",
+                )
+
     def test_p9_security_preflight_requires_exact_activation_and_paths(self) -> None:
         manifest = {
             "task_id": "P9-04",

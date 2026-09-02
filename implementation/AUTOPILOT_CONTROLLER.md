@@ -11536,3 +11536,15 @@ P9-01 Level 3.
   a separate task. Preserve user-owned dirty documentation and deferred-pilot
   decisions.
 - Controller marker: `P9-03 Level 3 PASS; P9-04 security fact delta active`.
+
+### P9-04 fixed zero-count output repair
+
+- The first governed invocation stopped at `USER_PERMISSIONS_PROJECT` because
+  Frappe v15 `bench execute` emits empty stdout for a successful integer-zero
+  `get_count` return. No result was accepted, no sensitive value was emitted and
+  production remained unchanged.
+- Repair the complete fixed count family in one batch: exact empty stdout means
+  zero only after the existing exit-zero and empty-stderr checks and only inside
+  the allowlisted count parser. All other empty or malformed output remains
+  fail-closed. Require a new exact-SHA ordinary PASS before retrying the one
+  complete `security-metadata` operation.

@@ -1973,6 +1973,12 @@ def _p9_change_metadata_operation(
 
 def _parse_nonnegative_json_integer(raw: bytes, label: str) -> int:
     require(len(raw) <= MAX_RUNTIME_BYTES, f"{label} output exceeded the bounded limit")
+    # Frappe v15's successful `bench execute` prints no stdout for a falsy
+    # integer return. This parser runs only after `_run_ssh` has proved exit
+    # zero and empty stderr, and only for fixed `frappe.client.get_count`
+    # operations, so exact empty stdout has one safe meaning: count zero.
+    if raw == b"":
+        return 0
     try:
         value = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:

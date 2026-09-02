@@ -66,6 +66,12 @@ task, timestamp/timezone, redacted source, per-operation checksums and aggregate
 checksum. Any permission, version, shape, pagination, count, sensitive-value or
 allowlist drift fails closed without fallback or scope expansion.
 
+Production preflight exposed the Frappe v15 CLI behavior that a successful
+`bench execute` call prints no stdout when a fixed `get_count` returns integer
+zero. The collector accepts exact empty stdout as zero only in that fixed count
+parser and only after SSH exit zero plus empty stderr; empty output remains
+invalid for every list, document and settings operation.
+
 ## Current LaunchFlow audit
 
 The existing request boundary rejects Guest users and preserves Frappe roles,
