@@ -43,7 +43,8 @@
     "Freeze P9-01D to one dense Project Change Control tab that uses only the existing Project-first P9-01B API, exact P9-01C summary-request seam and read-only P8-07 operation projections.",
     "Expose current and raw ERP observation truth, impact and affected-version matrices, implementation and revalidation evidence, effectivity and disposition, closeout state and immutable event history without making ERP-owned fields editable.",
     "Cover loading, empty, no-permission, read-only, processing, current, drifted, unavailable, validation, conflict, retryable and final-error states with direct English, Simplified Chinese and Traditional Chinese translations and governed industrial visual evidence.",
-    "Run one fixed disposable-Site Engineering Change runtime proof for default-disabled routes, Project containment, create/revise/formal observation/close, exact signed intake, implementation-summary execution, replay, route recovery, log redaction and cleanup before the sole P9-01 Level 3."
+    "Run one fixed disposable-Site Engineering Change runtime proof for default-disabled routes, Project containment, create/revise/formal observation/close, exact signed intake, implementation-summary execution, replay, route recovery, log redaction and cleanup before the sole P9-01 Level 3.",
+    "Repair only the proven P9-01 summary-operation projection mismatch by mapping its owned idempotency hash into the existing P8-07 reference and preserving synthetic_verified as unavailable rather than formal success."
   ],
   "non_scope": [
     "Any P9-01 product, schema, route, API, event, job, UI, translation, migration or deployment implementation before this fact-backed plan passes exact-SHA ordinary CI.",
@@ -88,6 +89,7 @@
     "P9_01D_EXISTING_PROJECT_FIRST_API_AND_OPERATION_SPECIFIC_INTEGRATION_SEAMS_ONLY",
     "P9_01D_ERP_OBSERVATION_FIELDS_REMAIN_READ_ONLY_AND_NPI_IMPACT_EVIDENCE_REMAINS_NPI_OWNED",
     "P9_01D_DISPOSABLE_SITE_RUNTIME_VISUAL_I18N_ACCESSIBILITY_AND_SECURITY_LEVEL_3_REQUIRED",
+    "P9_01D_SUMMARY_OPERATION_OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_TRUTH",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
     "FORMAL_CHANGE_NUMBER_MAPPING_VERSION_ACTOR_TRACE_HASH_AND_IDEMPOTENCY_REMAIN_EXPLICIT",
     "TIMEOUT_AFTER_COMMIT_PARTIAL_STALE_CONFLICT_DUPLICATE_REPLAY_AND_RECONCILIATION_NEVER_BECOME_FAKE_SUCCESS",
@@ -113,6 +115,7 @@
     "apps/npi_integration/npi_integration/engineering_change_api.py",
     "apps/npi_integration/npi_integration/engineering_change/frappe_repository.py",
     "apps/npi_integration/npi_integration/engineering_change/runtime_fixture.py",
+    "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py",
     "apps/npi_core/npi_core/translations/zh-TW.csv",
     "apps/npi_core/npi_core/translations/zh.csv",
     "frontend/src/api/change-control-data-source.ts",
@@ -160,6 +163,7 @@
     "tests/test_phase9_change_integration_repository.py",
     "tests/test_phase9_change_integration_worker.py",
     "tests/test_phase8_integration_operations_runtime_verifier.py",
+    "tests/test_phase8_integration_operations_repository.py",
     "tests/test_phase9_change_control_runtime_verifier.py"
   ],
   "affected_checks": {
@@ -191,7 +195,7 @@
     "phase_status_resumed_product_task": "P9-01",
     "active_goal_marker": "P9-01",
     "next_action_marker": "P9-01",
-    "controller_marker": "P9-01D post-formal-datetime-comparison-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending"
+    "controller_marker": "P9-01D summary operation projection repair Level 1 PASS; exact-SHA ordinary CI then sole Level 3 pending"
   },
   "rollback": {
     "before_product_resume": "Restore exact P9-00 checkpoint 065803ae484d885001259de8238ef01d0ad311e4 and its ordinary CI 33345162833. This P9-01 audit transition changes no product or external state.",

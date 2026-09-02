@@ -5,6 +5,21 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+Product-zero summary diagnostic exact SHA
+`465d563e93d6b585802935ca0ba9324dc09924bb` passes ordinary CI
+`33621391719`; controlled `33622584554` passes preflight and returns only
+`P901_CHANGE_OUTBOUND_OPERATIONS / RuntimeError /
+trace-42742f0cd63b53c6b20376373f35266f`. Static same-request proof isolates the
+summary operation projection reading the earlier outbound request-family hash
+field instead of the summary request's owned `idempotency_key_hash`. The
+minimal repair selects that field for this operation only, keeps raw
+`synthetic_verified` mapped to shared `unavailable`, and disables both
+remaining diagnostics. Affected tests pass `134/134` and full repository
+verification passes `2835/2835`. The sole next action is one exact-task commit,
+push and exact-SHA ordinary PASS, followed by the one diagnostics-off P9-01
+Level 3. Do not run another diagnostic Level 2, contact production ERPNext,
+change CI, or stage user-owned files.
+
 Summary Project-lock repair exact SHA
 `1afbc72a52e165e4008d823a3e28e4d4af8eb2d8` passes ordinary CI
 `33617733342` in all four lanes. Its diagnostics-off Level 3 `33618742907`

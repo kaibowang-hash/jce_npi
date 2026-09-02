@@ -243,7 +243,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
@@ -270,7 +270,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED,
                 )
             ),
-            1,
+            0,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 173)
         server_codes = set(

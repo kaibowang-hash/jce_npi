@@ -11064,3 +11064,35 @@ repeat or rewrite it merely to restore context. See
   and diff hygiene. The existing exact task manifest contains every changed
   path; no product or CI scope is added.
 - Controller marker: `P9-01D post-summary-Project-lock combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P9-01D summary operation projection repair
+
+- Diagnostic checkpoint `465d563e93d6b585802935ca0ba9324dc09924bb`
+  passes ordinary `33621391719` in all four lanes. Its sole controlled
+  continuation `33622584554` passes exact-SHA preflight and fixed disposable
+  Bench/Site initialization, then returns only the strict safe tuple
+  `P901_CHANGE_OUTBOUND_OPERATIONS / RuntimeError /
+  trace-42742f0cd63b53c6b20376373f35266f`. Restricted response, status,
+  identities, business values, messages, child output and stacks remain
+  unread.
+- Static cross-proof selects one exact persisted-field mismatch. The P9-01
+  summary request owns `idempotency_key_hash`, and its worker enforces equality
+  with the Outbox `target_idempotency_key_hash`; the shared P8-07 operation
+  projection instead read the request field name used by earlier outbound
+  operation types. This produced an empty hash at the closed operation
+  reference boundary before any collection response could be returned.
+- Repair only that operation-specific field selector. Preserve the accepted
+  no-fake-success classifier: raw `synthetic_verified` remains shared
+  `unavailable`, and correct the disposable verifier's later same-family
+  assertion accordingly. Do not change contracts, schema, ownership, role,
+  write authority, adapter behavior, target activation, UI or production
+  state. Close the two remaining request-emitting diagnostic activations.
+- Controller marker: `P9-01D summary operation projection repair Level 1 PASS; exact-SHA ordinary CI then sole Level 3 pending`.
+
+Level 1 closes the repair batch: the exact affected manifest passes `134/134`,
+full repository verification passes `2835/2835`, current-task and reconciliation
+checks pass, frontend generation and i18n remain green at `8774` literal English
+sources with 100% `zh`/`zh-TW` coverage, and compilation, shell syntax and diff
+hygiene pass. The cycle is diagnostic `1/1`, repair `1/1`, final `0/1`; the sole
+next sequence is one exact-SHA ordinary PASS followed by the diagnostics-off
+P9-01 Level 3.

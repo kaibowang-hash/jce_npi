@@ -86,7 +86,7 @@ ENGINEERING_CHANGE_RUNTIME_POST_INBOX_INSERT_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_DATETIME_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED = False
-ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED = True
+ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic"
 )
@@ -1446,7 +1446,7 @@ def run_fresh(
             and len(outbound_operations["items"]) == 1
             and outbound_operations["items"][0].get("rawState")
             == "synthetic_verified"
-            and outbound_operations["items"][0].get("sharedState") == "succeeded",
+            and outbound_operations["items"][0].get("sharedState") == "unavailable",
             "P9-01 integration operation projection drifted",
         )
     return {

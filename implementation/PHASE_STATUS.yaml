@@ -6,8 +6,8 @@ authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-01
 current_task_status: IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE
-current_task_completed_stage: P9_01D_GOVERNANCE_EXACT_SHA_ORDINARY_PASS
-current_task_next_stage: P9_01D_IMPLEMENTATION_EXACT_SHA_ORDINARY_AND_LEVEL_3
+current_task_completed_stage: P9_01D_SUMMARY_OPERATION_PROJECTION_REPAIR_LEVEL_1_PASS
+current_task_next_stage: P9_01D_REPAIR_EXACT_SHA_ORDINARY_AND_LEVEL_3
 current_task_next_stage_status: IN_PROGRESS_LOCAL_LEVEL_1
 resumed_product_task: P9-01
 resumed_product_task_status: IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE
@@ -3063,7 +3063,7 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P9_01D_POST_SUMMARY_PROJECT_LOCK_COMBINED_DIAGNOSTIC
+  active_checkpoint: P9_01D_SUMMARY_OPERATION_PROJECTION_REPAIR
   p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
   p9_01b_governance_ordinary: 33354760251
   p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
@@ -3122,8 +3122,17 @@ p9_01:
   p9_01d_summary_project_lock_final_jobs: {secret_scan: 100210584432, repository: 100210584469, frontend: 100210584251, visual: 100210584389, controlled_preflight: 100214396764, controlled_runtime: 100214471356}
   p9_01d_summary_project_lock_final_result: BASE_AND_PREFLIGHT_PASS_RUNTIME_FIXED_OUTER_LABEL_ONLY
   p9_01d_post_summary_project_lock_diagnostic: PRODUCT_ZERO_EXACT_173_CODE_94_LEVEL_1_PASS
-  p9_01d_post_summary_project_lock_cycle: DIAGNOSTIC_0_OF_1_REPAIR_0_OF_1_FINAL_0_OF_1
-  p9_01d_next_gate: POST_SUMMARY_PROJECT_LOCK_DIAGNOSTIC_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_CONTINUATION
+  p9_01d_post_summary_project_lock_diagnostic_checkpoint: 465d563e93d6b585802935ca0ba9324dc09924bb
+  p9_01d_post_summary_project_lock_diagnostic_ordinary: 33621391719
+  p9_01d_post_summary_project_lock_diagnostic_jobs: {visual: 100218971769, repository: 100218971889, secret_scan: 100218971901, frontend: 100218971943}
+  p9_01d_post_summary_project_lock_controlled: 33622584554
+  p9_01d_post_summary_project_lock_preflight: 100222805174
+  p9_01d_post_summary_project_lock_runtime: 100222880376
+  p9_01d_post_summary_project_lock_tuple: P901_CHANGE_OUTBOUND_OPERATIONS_RUNTIMEERROR_TRACE_42742F0C
+  p9_01d_summary_operation_projection_repair: OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_LEVEL_1_PASS
+  p9_01d_summary_operation_projection_tests: {affected: 134_PASS, full_repository: 2835_PASS, i18n: 8774_SOURCES_100_PERCENT_ZH_ZH_TW}
+  p9_01d_post_summary_project_lock_cycle: DIAGNOSTIC_1_OF_1_REPAIR_1_OF_1_FINAL_0_OF_1
+  p9_01d_next_gate: SUMMARY_OPERATION_PROJECTION_REPAIR_EXACT_SHA_ORDINARY_THEN_SOLE_DIAGNOSTICS_OFF_LEVEL_3
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -642,3 +642,14 @@ current/reconciliation, repository verification, frontend generation and
 i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-60 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
+
+## Summary operation projection repair UI boundary
+
+Diagnostic ordinary `33621391719` passes frontend and governed visual lanes;
+controlled `33622584554` isolates a backend-only P8-07 projection field
+mismatch. Selecting the P9 summary request's owned idempotency hash and keeping
+synthetic runtime truth `unavailable` changes no route, UI source, translation,
+accessibility behavior, fixture response, permission display or visual
+baseline. Existing P9-01D visual evidence remains authoritative. Frontend
+generation and the `8774`-source 100% `zh`/`zh-TW` i18n audit pass; the sole
+next UI boundary is the final diagnostics-off Level 3.

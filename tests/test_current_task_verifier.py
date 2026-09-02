@@ -43,7 +43,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertEqual(
             value["expected_state"]["controller_marker"],
-            "P9-01D post-formal-datetime-comparison-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending",
+            "P9-01D summary operation projection repair Level 1 PASS; exact-SHA ordinary CI then sole Level 3 pending",
         )
         self.assertIn("FR-CH-001", value["requirement_ids"])
         self.assertIn("FR-CH-010", value["requirement_ids"])
@@ -84,6 +84,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01D_EXISTING_PROJECT_FIRST_API_AND_OPERATION_SPECIFIC_INTEGRATION_SEAMS_ONLY",
             "P9_01D_ERP_OBSERVATION_FIELDS_REMAIN_READ_ONLY_AND_NPI_IMPACT_EVIDENCE_REMAINS_NPI_OWNED",
             "P9_01D_DISPOSABLE_SITE_RUNTIME_VISUAL_I18N_ACCESSIBILITY_AND_SECURITY_LEVEL_3_REQUIRED",
+            "P9_01D_SUMMARY_OPERATION_OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_TRUTH",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
@@ -105,6 +106,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "apps/npi_integration/npi_integration/engineering_change_api.py",
                 "apps/npi_integration/npi_integration/engineering_change/frappe_repository.py",
                 "apps/npi_integration/npi_integration/engineering_change/runtime_fixture.py",
+                "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py",
                 "apps/npi_core/npi_core/translations/zh-TW.csv",
                 "apps/npi_core/npi_core/translations/zh.csv",
                 "frontend/src/api/change-control-data-source.ts",
@@ -152,10 +154,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests/test_phase9_change_integration_repository.py",
                 "tests/test_phase9_change_integration_worker.py",
                 "tests/test_phase8_integration_operations_runtime_verifier.py",
+                "tests/test_phase8_integration_operations_repository.py",
                 "tests/test_phase9_change_control_runtime_verifier.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 63)
+        self.assertEqual(len(value["allowed_paths"]), 65)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])

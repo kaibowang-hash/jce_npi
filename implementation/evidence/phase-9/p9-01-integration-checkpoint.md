@@ -585,3 +585,33 @@ current/reconciliation, repository verification, frontend generation and
 i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-12 and projected union-60 manifests,
 unauthorized-13 rejection, new-only activation, security and diff hygiene.
+
+## Summary operation projection repair
+
+Product-zero diagnostic exact SHA
+`465d563e93d6b585802935ca0ba9324dc09924bb` passes ordinary
+`33621391719`. Its sole controlled continuation `33622584554` passes preflight
+and fixed disposable Bench/Site initialization, then exposes only
+`P901_CHANGE_OUTBOUND_OPERATIONS / RuntimeError /
+trace-42742f0cd63b53c6b20376373f35266f`. Restricted response, business data,
+identity, message, stack and failed-child output remain unread.
+
+Static cross-proof selects one persisted-field mismatch. The P9-01
+implementation-summary request owns `idempotency_key_hash`, and its worker
+already proves it equals the Outbox `target_idempotency_key_hash`; the shared
+P8-07 outbound operation projection instead read the request field used by
+earlier outbound operation kinds. The closed operation reference therefore
+received an empty target hash before the collection response completed.
+
+The repair changes only the field selector for
+`PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY`. It preserves the accepted truth rule:
+raw `synthetic_verified` maps to shared `unavailable`, never `succeeded`, and
+the disposable verifier now asserts that contract. Both remaining diagnostic
+activations are false. No schema, ownership, event, permission, request write,
+retry/replay, adapter, target, profile, UI or production behavior changes.
+
+Level 1 passes the exact affected suite `134/134`, the complete P9 Change
+family `117/117`, full repository verification `2835/2835`, current-task and
+reconciliation checks, frontend generation and i18n (`8774`, 100% `zh` and
+`zh-TW`), compilation, shell syntax and diff hygiene. Exact-SHA ordinary PASS
+must precede the sole diagnostics-off P9-01 Level 3.

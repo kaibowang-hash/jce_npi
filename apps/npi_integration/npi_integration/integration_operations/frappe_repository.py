@@ -824,7 +824,12 @@ class FrappeIntegrationOperationsRepository(FrappeDocumentRepository):
                 IntegrationOperationKind.RECEIVE_PROJECT_SUBMISSION,
                 IntegrationOperationKind.RECEIVE_ENGINEERING_CHANGE_EVENT,
             }
-            else _value(row, "target_idempotency_key_hash")
+            else (
+                _value(row, "idempotency_key_hash")
+                if spec.kind
+                is IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY
+                else _value(row, "target_idempotency_key_hash")
+            )
         )
         if (
             spec.kind is IntegrationOperationKind.PUBLISH_ITEM

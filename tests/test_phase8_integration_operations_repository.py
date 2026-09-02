@@ -427,6 +427,31 @@ class Phase8IntegrationOperationsRepositoryTest(unittest.TestCase):
         self.assertEqual(operation.raw_state, "queued")
         self.assertEqual(operation.target_idempotency_key_hash, "b" * 64)
 
+    def test_change_summary_uses_its_owned_idempotency_hash_without_fake_success(self) -> None:
+        spec = self.module._SPECS[
+            self.module.IntegrationOperationKind.PUBLISH_CHANGE_IMPLEMENTATION_SUMMARY
+        ]
+        row = AttrDict(
+            name=str(OPERATION),
+            tenant_id=TENANT,
+            project_global_id=str(PROJECT),
+            state="synthetic_verified",
+            revision_number=4,
+            revision_global_id=str(SOURCE),
+            source_hash="a" * 64,
+            idempotency_key_hash="b" * 64,
+        )
+
+        operation = self.repository._operation_value(self.project, spec, row)
+
+        self.assertIsNotNone(operation)
+        self.assertEqual(operation.target_idempotency_key_hash, "b" * 64)
+        self.assertEqual(operation.raw_state, "synthetic_verified")
+        self.assertIs(
+            operation.shared_state,
+            self.module.IntegrationViewState.UNAVAILABLE,
+        )
+
     def test_action_permission_projection_matches_command_authority(self) -> None:
         operation = self.operation()
         row = AttrDict(doctype="NPI Item Publish Request")

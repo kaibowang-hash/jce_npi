@@ -5,6 +5,22 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- Product-zero summary diagnostic exact SHA
+  `465d563e93d6b585802935ca0ba9324dc09924bb` passes ordinary CI
+  `33621391719` in all four lanes. Its single controlled continuation
+  `33622584554` passes preflight and returns only
+  `P901_CHANGE_OUTBOUND_OPERATIONS / RuntimeError /
+  trace-42742f0cd63b53c6b20376373f35266f`. Static cross-proof identifies one
+  operation-projection field mismatch: the P9 implementation-summary request
+  owns `idempotency_key_hash`, while the shared outbound projection read the
+  earlier request-family field. The minimal repair selects the owned field for
+  this operation only, preserves `synthetic_verified` as shared `unavailable`
+  rather than fake success, and closes all remaining diagnostics. Affected
+  tests pass `134/134`, full repository verification passes `2835/2835`, and
+  frontend generation/i18n remain green at `8774` sources with 100% zh/zh-TW
+  coverage. The sole next sequence is exact-SHA ordinary CI followed by the
+  diagnostics-off P9-01 Level 3. No production ERP target/profile is active or
+  contacted.
 - Summary Project-lock repair exact SHA
   `1afbc72a52e165e4008d823a3e28e4d4af8eb2d8` passes ordinary CI
   `33617733342`: secret `100207373483`, repository `100207373741`, frontend
