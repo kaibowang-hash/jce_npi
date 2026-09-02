@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-09-02T23:46:18+07:00`
+Updated: `2026-09-03T00:09:16+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
@@ -28,6 +28,13 @@ Updated: `2026-09-02T23:46:18+07:00`
   frozen `3.1.5` transitive development lock. The active batch repair changes
   only that lock entry to compatible fixed `3.1.7`; direct dependencies,
   product behavior, test coverage and Gate semantics remain unchanged.
+- Security-lock checkpoint `5b77dcf7b9fb37c17570dbd9f1091bba2cd0cd59`
+  passes complete ordinary CI `33657532266`. Its sole diagnostic-only run
+  `33658159139` reuses only the attested frontend/visual evidence, passes
+  repository, secret, preflight and the complete cumulative disposable Site
+  `100342416427`, and emits no P8-03 diagnostic tuple. No root is proved, so no
+  repair is permitted. The classifier is now closed; the sole remaining
+  sequence is exact-SHA ordinary CI and one diagnostics-off Level 3.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

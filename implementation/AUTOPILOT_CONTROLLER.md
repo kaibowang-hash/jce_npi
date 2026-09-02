@@ -11291,3 +11291,24 @@ P9-01 Level 3.
   diagnostic Site; production ERPNext and user-owned dirty files remain
   untouched.
 - Controller marker: `P9-01 Level 3 PASS; CI-OPT-02 implementation active`.
+
+## 2026-09-03 CI-OPT-02 bounded classifier PASS; diagnostics closed
+
+- Security-lock checkpoint `5b77dcf7b9fb37c17570dbd9f1091bba2cd0cd59`
+  passes ordinary CI `33657532266`: secret `100339710967`, repository
+  `100339710979`, visual `100339711048`, frontend verification
+  `100339711148`, E2E shards `100339711208`/`100339711137` and aggregate
+  frontend `100341674121` all pass. Each shard executes `230/230` tests with
+  zero retries. The exact lock reports zero vulnerabilities.
+- Its one diagnostic-only run `33658159139` passes plan `100341822118`,
+  repository `100341930295`, secret `100341930540`, controlled preflight
+  `100342340611` and complete cumulative disposable runtime `100342416427`.
+  The attested fast path skips only frontend/visual already proved by the
+  same-SHA ordinary run. No P8-03 code/type/trace tuple is emitted.
+- Because the failure does not reproduce and no unique root exists, no
+  fixture or product repair is authorized. Disable the sole temporary
+  classifier and retain the accepted post-migration isolation fixture
+  unchanged. Require one exact-SHA ordinary PASS and one final diagnostics-off
+  Level 3; no second diagnostic dispatch is allowed.
+- Production ERPNext and all user-owned dirty files remain untouched.
+- Controller marker: `P9-01 Level 3 PASS; CI-OPT-02 implementation active`.

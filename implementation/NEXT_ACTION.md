@@ -10,17 +10,15 @@ three unchanged `460/460` attempts have critical durations `290/284/257s`
 base lane and preflight before stopping only at the retained P8-03
 migrated-legacy assertion.
 
-Classifier checkpoint `e6672a4afcd22f6fb35f0857fff15e5853812ae3`
-ordinary run `33655458898` passes repository, secret, visual and both E2E
-shards. Frontend verification fails only because the newly published
-high-severity `fast-uri` advisory rejects transitive development lock `3.1.5`;
-the aggregate frontend check correctly fails closed. Batch the compatible
-lock-only `3.1.7` repair, rerun affected and complete ordinary CI once, then
-run the one authorized diagnostic-only Site. Inspect only its fixed
-code/type/trace tuple, apply at most one statically proven fixture-only repair
-with diagnostics closed, and finish with one exact-SHA ordinary CI plus one
-Level 3. Do not change product behavior, weaken audit/coverage, contact
-production ERPNext or stage user-owned files.
+Security-lock checkpoint `5b77dcf7b9fb37c17570dbd9f1091bba2cd0cd59`
+passes complete ordinary CI `33657532266`. The sole diagnostic-only run
+`33658159139` passes its fail-closed plan, repository, secret, preflight and
+complete cumulative disposable runtime `100342416427`; frontend/visual are
+reused only through the exact attestation. No fixed P8-03 diagnostic tuple is
+emitted, so no root or repair is authorized. Close the temporary classifier,
+run affected/full local checks, then pass exact-SHA ordinary CI followed by
+one diagnostics-off Level 3. Do not add another diagnostic, guess a fixture or
+product repair, contact production ERPNext or stage user-owned files.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

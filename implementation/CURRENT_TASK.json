@@ -20,7 +20,8 @@
     "Record five accepted pre-change runs, changed-files-to-tests mapping, allow/deny/unknown unit evidence, three stable four-worker runs, P50/P95 and final exact-SHA ordinary plus Level 3 evidence.",
     "Use native two-way Playwright sharding with an aggregate required check only if three four-worker runs are stable but fail the frozen improvement threshold.",
     "After the diagnostics-off exact-SHA Level 3 runtime 33653098092 failed only at the existing P8-03 migrated-legacy problem-code assertion, run one bounded value-free existing classifier before any repair; inspect only its fixed code/type/trace tuple, then close the classifier and apply at most one statically proven fixture-only repair.",
-    "If a newly published security advisory makes the otherwise unchanged frontend audit fail, update only the affected transitive development dependency lock entry to the first compatible fixed release, retain exact install and audit checks, and batch that repair before the next CI dispatch."
+    "If a newly published security advisory makes the otherwise unchanged frontend audit fail, update only the affected transitive development dependency lock entry to the first compatible fixed release, retain exact install and audit checks, and batch that repair before the next CI dispatch.",
+    "If the sole diagnostic Site passes the complete cumulative runtime and emits no fixed tuple, make no guessed repair, close the temporary classifier, and proceed through exact-SHA ordinary CI and one final diagnostics-off Level 3."
   ],
   "non_scope": [
     "Any product, domain, API, contract, Schema, migration, permission, ownership, translation, UI, visual baseline, threshold, coverage or test-case change.",
