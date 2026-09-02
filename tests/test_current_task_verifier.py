@@ -34,146 +34,65 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-01")
-        self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(
-            value["status"], "IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE"
-        )
+        self.assertEqual(value["task_id"], "CI-OPT-02")
+        self.assertEqual(value["task_kind"], "delivery_infrastructure")
+        self.assertEqual(value["status"], "IN_PROGRESS_CI_OPT_02_IMPLEMENTATION")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-02")
-        self.assertEqual(
-            value["expected_state"]["controller_marker"],
-            "P8-03 post-migration legacy probe repair Level 1 PASS; exact-SHA ordinary CI pending",
-        )
-        self.assertIn("FR-CH-001", value["requirement_ids"])
-        self.assertIn("FR-CH-010", value["requirement_ids"])
-        self.assertIn("INT-008", value["requirement_ids"])
-        self.assertNotIn("FR-RP-001", value["requirement_ids"])
+        self.assertEqual(value["requirement_ids"], [])
         self.assertEqual(
             value["base_checkpoint"],
-            "0c11b1f378b1c962b6d05739f3c1f3cad18ad389",
+            "a439043f96976c562edb8d4af69d51c709390043",
+        )
+        self.assertEqual(
+            value["predecessor_product_checkpoint"],
+            "a439043f96976c562edb8d4af69d51c709390043",
+        )
+        self.assertEqual(
+            value["expected_state"],
+            {
+                "phase_status_current_task": "CI-OPT-02",
+                "phase_status_execution_hold": "CI_OPT_02",
+                "phase_status_resumed_product_task": "P9-02",
+                "active_goal_marker": "CI-OPT-02",
+                "next_action_marker": "CI-OPT-02",
+                "controller_marker": "P9-01 Level 3 PASS; CI-OPT-02 implementation active",
+            },
         )
         for invariant in (
-            "P9_00_EXACT_SHA_065803AE_ORDINARY_33345162833_ALL_FOUR_JOBS_PASS",
-            "P9_01_AUDIT_ONLY_PRODUCT_CODE_AUTHORIZED_FALSE_UNTIL_PLAN_EXACT_SHA_ORDINARY_PASS",
-            "ERPNEXT_OWNS_FORMAL_ECR_ECO_ECN_IDENTIFIER_EXECUTION_STATUS_AND_TRANSACTION_EFFECTIVE_TRUTH",
-            "NPI_ONE_OWNS_ENGINEERING_IMPACT_ASSESSMENT_AFFECTED_VERSION_REVALIDATION_TASK_EVIDENCE_AND_GATE_EFFECTS",
-            "CURRENT_ARCHITECTURE_DATA_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P8_09_REMAIN_DEFAULT_CORRECT",
-            "NO_PROVEN_DIFFERENCE_MEANS_DIRECT_MATCH_NO_CHANGE_AND_NO_ADJUSTMENT_TASK",
-            "P9_01_FACT_DELTA_LIMITED_TO_EXACT_ECR_ECO_ECN_DECLARATIVE_METADATA_NO_BUSINESS_ROWS_OR_TARGET_METHODS",
-            "P9_01_PRODUCTION_FACT_RESULT_FE112A15_ACCEPTED_ECR_PRESENT_ECO_ECN_ABSENT",
-            "P9_01A_ONLY_AFTER_PLAN_EXACT_SHA_ORDINARY_PASS",
-            "P9_01A_REUSES_EXISTING_BASELINE_DOCUMENT_EBOM_TOOLING_TRIAL_GATE_AND_PROJECT_WORK_IDENTITIES",
-            "P9_01A_ERP_FORMAL_ID_STATUS_AND_EFFECTIVITY_FIELDS_ARE_OBSERVATION_OWNED_NOT_CALLER_EDITABLE",
-            "P9_01A_EXACT_SHA_CF24E863_ORDINARY_33353974303_ALL_FOUR_JOBS_PASS",
-            "P9_01B_GOVERNANCE_EXACT_SHA_07B869BC_ORDINARY_33354760251_ALL_FOUR_JOBS_PASS",
-            "P9_01B_PROJECT_FIRST_COMMAND_QUERY_API_ONLY_INT008_AND_UI_REMAIN_OUT_OF_SCOPE",
-            "P9_01B_EVERY_SUCCESSOR_BINDS_EXACT_CURRENT_REVISION_VERSION_AND_SNAPSHOT_HASH",
-            "P9_01B_COMMANDS_ARE_CSRF_ACTOR_IDEMPOTENCY_AUDIT_AND_SINGLE_TRANSACTION_BOUND",
-            "P9_01B_FORMAL_CHANGE_FIELDS_ARE_LINK_OBSERVATION_OWNED_AND_NEVER_CALLER_EDITABLE",
-            "P9_01B_EXACT_SHA_73A7282D_ORDINARY_33357104386_ALL_FOUR_JOBS_PASS",
-            "P9_01C_GOVERNANCE_EXACT_SHA_83F35DDE_ORDINARY_33358374034_ALL_FOUR_JOBS_PASS",
-            "P9_01C_EXACT_SIGNED_ERP_ENGINEERING_CHANGE_V1_INBOX_AND_FORMAL_OBSERVATION_ONLY",
-            "P9_01C_EXACT_CHANGE_IMPLEMENTATION_SUMMARY_V1_REQUEST_OUTBOX_ATTEMPT_RESULT_ONLY",
-            "P9_01C_OPERATION_SPECIFIC_PERSISTENCE_DOES_NOT_REUSE_PROJECT_INBOX_OR_SHARED_OUTBOX_CONTROLLER",
-            "P9_01C_DUPLICATE_REORDER_CONFLICT_PARTIAL_429_5XX_TIMEOUT_AFTER_COMMIT_REMAIN_EXPLICIT",
-            "P9_01C_UNCERTAIN_OR_PARTIAL_RESULT_NEVER_AUTOMATICALLY_REDISPATCHED",
-            "P9_01C_EXACT_SHA_0C11B1F3_ORDINARY_33363140068_ALL_FOUR_JOBS_PASS",
-            "P9_01D_GOVERNANCE_EXACT_SHA_0E46D2D2_ORDINARY_33364478666_ALL_FOUR_JOBS_PASS",
-            "P9_01D_PROJECT_TAB_ONLY_NO_NEW_TOP_LEVEL_NAVIGATION",
-            "P9_01D_EXISTING_PROJECT_FIRST_API_AND_OPERATION_SPECIFIC_INTEGRATION_SEAMS_ONLY",
-            "P9_01D_ERP_OBSERVATION_FIELDS_REMAIN_READ_ONLY_AND_NPI_IMPACT_EVIDENCE_REMAINS_NPI_OWNED",
-            "P9_01D_DISPOSABLE_SITE_RUNTIME_VISUAL_I18N_ACCESSIBILITY_AND_SECURITY_LEVEL_3_REQUIRED",
-            "P9_01D_SUMMARY_OPERATION_OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_TRUTH",
-            "P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_PROVES_P9_COMPLETE_BEFORE_P8_03_LEGACY_GATE",
-            "P8_03_POST_P809_LEGACY_FINAL_GATE_DIAGNOSTIC_PRODUCT_ZERO_CODE_TYPE_TRACE_ONLY",
-            "P8_03_LEGACY_RECONCILIATION_PROBLEM_CLASSIFIER_IS_EXACT_CLOSED_AND_VALUE_FREE",
-            "P8_03_POST_MIGRATION_LEGACY_PROBE_ISOLATES_ONLY_THE_DISPOSABLE_DERIVED_GUARD",
-            "P8_03_AND_P9_TEMPORARY_RUNTIME_DIAGNOSTICS_ARE_DEFAULT_FALSE",
+            "P9_01_PRODUCT_SHA_A439043F_ORDINARY_33638920721_AND_LEVEL3_33640546810_PASS",
+            "DELIVERY_ONLY_ZERO_PRODUCT_REQUIREMENTS",
+            "DIAGNOSTIC_ALLOWLIST_EXACT_DENY_AND_UNKNOWN_FALL_BACK_TO_FULL_CI",
+            "DIAGNOSTIC_RUN_ALWAYS_REPOSITORY_SECRET_AND_CONTROLLED_SITE",
+            "DIAGNOSTIC_FAST_PATH_NEVER_MERGE_RELEASE_OR_LEVEL3_EVIDENCE",
+            "NONVISUAL_PLAYWRIGHT_WORKERS_FOUR_VISUAL_WORKERS_TWO_RETRIES_ZERO",
+            "MUTABLE_FRAPPE_SITE_CACHE_FORBIDDEN",
+            "THREE_STABLE_RUNS_AND_P50_P95_REQUIRED_BEFORE_ACCEPTANCE",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
+            "NO_PRODUCTION_ERPNEXT_CONTACT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertEqual(
             set(value["allowed_paths"]),
             {
+                ".github/workflows/ci.yml",
+                "frontend/package.json",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
                 "implementation/CURRENT_TASK.json",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
-                "implementation/evidence/phase-9/p9-01-plan.md",
-                "implementation/evidence/phase-9/p9-01-integration-checkpoint.md",
-                "implementation/evidence/phase-9/p9-01-ui-checkpoint.md",
-                "apps/npi_core/npi_core/change_control/frappe_validation.py",
-                "apps/npi_core/npi_core/change_control/frappe_repository.py",
-                "apps/npi_core/npi_core/change_control_api.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_engineering_change/npi_engineering_change.py",
-                "apps/npi_integration/npi_integration/engineering_change_api.py",
-                "apps/npi_integration/npi_integration/engineering_change/frappe_repository.py",
-                "apps/npi_integration/npi_integration/engineering_change/runtime_fixture.py",
-                "apps/npi_integration/npi_integration/integration_operations/frappe_repository.py",
-                "apps/npi_core/npi_core/translations/zh-TW.csv",
-                "apps/npi_core/npi_core/translations/zh.csv",
-                "frontend/src/api/change-control-data-source.ts",
-                "frontend/src/api/integration-operations-data-source.ts",
-                "frontend/src/app/app.tsx",
-                "frontend/src/generated/catalogs.ts",
-                "frontend/src/pages/execution-page.tsx",
-                "frontend/src/pages/project-change-workspace.tsx",
-                "frontend/src/pages/project-page.tsx",
-                "frontend/src/pages/project-workspace.tsx",
-                "frontend/src/styles/app.css",
-                "frontend/tests/e2e/p9-01-change-control-live.spec.ts",
-                "frontend/tests/e2e/p9-01-change-control-live.spec.ts-snapshots/p9-01-change-control-en-1366x768-100-linux.png",
-                "frontend/tests/e2e/p9-01-change-control-live.spec.ts-snapshots/p9-01-change-control-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p9-01-change-control-live.spec.ts-snapshots/p9-01-change-control-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-01-documents-en-1366x768-100-linux.png",
-                "frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-01-documents-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-01-documents-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-ebom-workspace-en-1366x768-100-linux.png",
-                "frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-ebom-workspace-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-ebom-workspace-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-controlled-print-en-1366x768-100-linux.png",
-                "frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-controlled-print-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-controlled-print-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p7-06-production-transition-live.spec.ts-snapshots/p7-06-production-transition-en-1366x768-100-linux.png",
-                "frontend/tests/e2e/p7-06-production-transition-live.spec.ts-snapshots/p7-06-production-transition-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p7-06-production-transition-live.spec.ts-snapshots/p7-06-production-transition-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p8-03-item-publish-live.spec.ts-snapshots/p8-03-item-inactive-en-1366x768-100-linux.png",
-                "frontend/tests/support/change-control-fixture.ts",
-                "frontend/tests/support/integration-operations-fixture.ts",
-                "frontend/tests/unit/change-control-data-source.test.ts",
-                "frontend/tests/unit/execution-page.test.tsx",
-                "frontend/tests/unit/integration-operations-data-source.test.ts",
-                "frontend/tests/unit/project-change-workspace.test.tsx",
-                "frontend/tests/unit/project-workspace.test.tsx",
-                "scripts/verify-frappe-runtime.sh",
-                "scripts/verify_engineering_change_runtime.py",
-                "scripts/verify_integration_operations_runtime.py",
-                "scripts/verify_item_publish_runtime.py",
+                "implementation/evidence/delivery-pipeline-optimization-2/plan.md",
+                "implementation/evidence/delivery-pipeline-optimization-2/validation.md",
+                "scripts/verify_devcontainer.py",
+                "scripts/verify_prior_gate.py",
                 "tests/test_current_task_verifier.py",
-                "tests/test_phase8_item_publish_runtime_verifier.py",
-                "tests/test_phase8_item_publish_security.py",
-                "tests/test_phase9_change_control_api.py",
-                "tests/test_phase9_change_control_metadata.py",
-                "tests/test_phase9_change_control_repository.py",
-                "tests/test_phase9_change_integration_api.py",
-                "tests/test_phase9_change_integration_repository.py",
-                "tests/test_phase9_change_integration_worker.py",
-                "tests/test_phase8_integration_operations_runtime_verifier.py",
-                "tests/test_phase8_integration_operations_repository.py",
-                "tests/test_phase9_change_control_runtime_verifier.py",
+                "tests/test_devcontainer_verifier.py",
+                "tests/test_prior_gate_verifier.py",
+                "tests/test_v1_2_reconciliation.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 67)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
-        self.assertFalse(
-            any(path.startswith(".github/") for path in value["allowed_paths"])
-        )
-        self.assertEqual(
-            sum(path.startswith("scripts/") for path in value["allowed_paths"]),
-            4,
-        )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
         source = MANIFEST.read_text(encoding="utf-8")
@@ -190,12 +109,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             load_manifest(self.write_manifest({**self.manifest, "extra": True}))
 
     def test_delivery_task_rejects_product_requirement_claim(self) -> None:
-        changed = {
-            **self.manifest,
-            "task_kind": "delivery_infrastructure",
-            "completion_gate": "LEVEL_3",
-            "requirement_ids": ["FR-TR-001"],
-        }
+        changed = {**self.manifest, "requirement_ids": ["FR-TR-001"]}
         with self.assertRaisesRegex(CurrentTaskError, "must not claim"):
             validate_current_task(self.write_manifest(changed), check_git=False)
 
@@ -203,7 +117,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         for key, value in (
             ("status", "PASS"),
             ("completion_gate", "LEVEL_1"),
-            ("authorized_next_task", "p7-03"),
+            ("authorized_next_task", "p9-02"),
             ("base_checkpoint", "short"),
         ):
             with self.subTest(key=key):
@@ -216,7 +130,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             validate_allowed_paths(["../*"], [])
         with self.assertRaisesRegex(CurrentTaskError, "outside"):
             validate_allowed_paths(
-                ["implementation/evidence/phase-8/p8-08-plan.md"],
+                ["implementation/evidence/delivery-pipeline-optimization-2/plan.md"],
                 ["apps/npi_core/npi_core/trial/domain.py"],
             )
 
@@ -236,7 +150,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
     def test_git_path_validation_is_invoked_for_normal_check(self) -> None:
         with patch(
             "scripts.verify_current_task.changed_paths",
-            return_value=("docs/ARCHITECTURE.md",),
+            return_value=("apps/npi_core/npi_core/change_control/domain.py",),
         ):
             with self.assertRaisesRegex(CurrentTaskError, "outside"):
                 validate_current_task(check_git=True)

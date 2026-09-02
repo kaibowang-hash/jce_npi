@@ -11218,3 +11218,31 @@ P9-01 Level 3.
   Require exact-SHA ordinary PASS and one final diagnostics-off Level 3; no
   further diagnostic run is authorized.
 - Controller marker: `P8-03 post-migration legacy probe repair Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P9-01 Level 3 PASS; CI-OPT-02 implementation active
+
+- Exact P9-01 product SHA
+  `a439043f96976c562edb8d4af69d51c709390043` passes ordinary pull-request CI
+  `33638920721`: secret `100276736935`, repository `100276737225`, frontend
+  `100276737332` and visual `100276737373` all succeed. Its final
+  diagnostics-off Level 3 `33640546810` passes visual `100282230113`,
+  repository `100282230504`, frontend `100282230577`, secret
+  `100282230597`, controlled preflight `100286125569` and cumulative runtime
+  `100286234711`. P9-01 is complete with all temporary diagnostics false.
+- Under the user's standing autopilot-efficiency authorization, insert the
+  independent delivery task `CI-OPT-02` before P9-02. The frozen manifest and
+  plan are `implementation/CURRENT_TASK.json` and
+  `implementation/evidence/delivery-pipeline-optimization-2/plan.md`.
+- Implement only a diagnostic controlled mode keyed to the latest successful
+  ordinary pull-request run on the same repository branch and ancestor SHA.
+  Exact diagnostic paths may reuse frontend/visual; repository, current-tree
+  secret scan and cumulative Site remain mandatory. Denied, unknown, stale,
+  foreign or unverifiable evidence selects full CI. The bounded attestation
+  contains no changed path values and is explicitly ineligible for merge or
+  release evidence.
+- Benchmark four workers for nonvisual Playwright only. Visual remains two,
+  retries remain zero, test/coverage/Gate semantics remain complete, and no
+  mutable Frappe Site cache is allowed. Require three stable runs, P50/P95,
+  exact-SHA ordinary PASS and complete Level 3 before automatically resuming
+  P9-02. No production ERPNext contact or product change is authorized.
+- Controller marker: `P9-01 Level 3 PASS; CI-OPT-02 implementation active`.

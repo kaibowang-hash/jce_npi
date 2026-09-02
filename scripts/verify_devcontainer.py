@@ -370,13 +370,18 @@ def validate_ci_verification_tools(
     )
     for job in ("repository", "frontend", "secret_scan", "visual"):
         require(f"\n  {job}:\n" in ci_workflow, f"CI ordinary lane is missing: {job}")
+    for marker in (
+        "diagnostic_plan:",
+        "inputs.gate_mode == 'diagnostic_only'",
+        "needs.diagnostic_plan.outputs.run_full == 'true'",
+        "--mode diagnostic",
+        '--branch "${{ github.ref_name }}"',
+        "diagnostic-gate-attestation-${{ github.run_id }}",
+    ):
+        require(marker in ci_workflow, f"CI diagnostic fast-path contract is missing: {marker}")
     require(
-        ci_workflow.count(
-            "if: github.event_name != 'workflow_dispatch' || "
-            "inputs.gate_mode == 'level_3'"
-        )
-        == 4,
-        "Every ordinary lane must run for PR/push and complete Level 3 only",
+        ci_workflow.count("needs: diagnostic_plan") == 4,
+        "Every ordinary lane must wait for the optional diagnostic plan",
     )
     require(
         "bash scripts/verify.sh --repository" in ci_workflow
@@ -425,12 +430,30 @@ def validate_ci_verification_tools(
         "needs: controlled_preflight",
         "needs.controlled_preflight.result == 'success'",
         "inputs.gate_mode == 'level_3'",
+        "inputs.gate_mode == 'diagnostic_only'",
     ):
         require(marker in ci_workflow, f"CI controlled Gate contract is missing: {marker}")
+    require(
+        ci_workflow.count("python scripts/verify_prior_gate.py") == 2,
+        "CI must retain both diagnostic planning and exact Level 2 prior-Gate verification",
+    )
     require(
         ci_workflow.find("python scripts/verify_current_task.py", preflight)
         < ci_workflow.find("Initialize pinned Frappe Bench", controlled),
         "Task and runtime preflight must precede expensive Site setup",
+    )
+    require(
+        "playwright test --workers=4 --grep-invert @visual" in (
+            REPO_ROOT / "frontend" / "package.json"
+        ).read_text(encoding="utf-8")
+        and "--workers=2\n          --grep @visual" in ci_workflow,
+        "CI must use four non-visual workers while retaining two visual workers",
+    )
+    require(
+        "retries: 0" in (
+            REPO_ROOT / "frontend" / "playwright.config.ts"
+        ).read_text(encoding="utf-8"),
+        "Playwright retries must remain disabled",
     )
 
     visual_container = ci_workflow.find(

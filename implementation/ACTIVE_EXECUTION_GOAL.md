@@ -1,10 +1,20 @@
 # Active Execution Goal
 
-Updated: `2026-08-31T00:00:00+07:00`
+Updated: `2026-09-02T21:30:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- Mode: `IN_PROGRESS_CI_OPT_02_IMPLEMENTATION — CI-OPT-02`
+- P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
+  passes ordinary CI `33638920721` and diagnostics-off Level 3
+  `33640546810`, including cumulative controlled runtime `100286234711`.
+  P9-01 is complete.
+- CI-OPT-02 is the active independent delivery task. It adds one latest-
+  successful-ordinary-run diagnostic fast path that always retains repository,
+  secret and controlled Site checks, falls back to full CI for denied/unknown
+  changes, and can never serve as merge/release evidence. It also benchmarks
+  four nonvisual Playwright workers while visual stays at two and retries stay
+  zero. P9-02 remains paused until this task's full Level 3 PASS.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

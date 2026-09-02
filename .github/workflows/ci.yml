@@ -9,15 +9,16 @@ on:
   workflow_dispatch:
     inputs:
       gate_mode:
-        description: Complete Level 3 Gate or exact-SHA Level 2 controlled reuse
+        description: Complete Level 3, exact-SHA Level 2, or diagnostic-only controlled run
         required: true
         default: level_3
         type: choice
         options:
           - level_3
           - level_2_controlled
+          - diagnostic_only
       ordinary_run_id:
-        description: Required successful pull-request run ID for level_2_controlled
+        description: Required successful pull-request run ID for Level 2 or diagnostic-only reuse
         required: false
         type: string
 
@@ -30,8 +31,44 @@ concurrency:
 
 permissions: { actions: read, contents: read }
 jobs:
+  diagnostic_plan:
+    if: github.event_name == 'workflow_dispatch' && inputs.gate_mode == 'diagnostic_only'
+    runs-on: ubuntu-latest
+    outputs:
+      run_full: ${{ steps.plan.outputs.run_full }}
+      fast_path: ${{ steps.plan.outputs.fast_path }}
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.11" }
+      - name: Plan one fail-closed diagnostic run
+        id: plan
+        run: >-
+          python scripts/verify_prior_gate.py
+          --mode diagnostic
+          --repository "${{ github.repository }}"
+          --run-id "${{ inputs.ordinary_run_id }}"
+          --sha "${{ github.sha }}"
+          --branch "${{ github.ref_name }}"
+          --output "${RUNNER_TEMP}/diagnostic-gate/attestation.json"
+          --github-output "${GITHUB_OUTPUT}"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: diagnostic-gate-attestation-${{ github.run_id }}
+          path: ${{ runner.temp }}/diagnostic-gate/attestation.json
+          if-no-files-found: error
+          retention-days: 30
+
   repository:
-    if: github.event_name != 'workflow_dispatch' || inputs.gate_mode == 'level_3'
+    needs: diagnostic_plan
+    if: >-
+      always() && !cancelled() &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.gate_mode == 'level_3' ||
+      inputs.gate_mode == 'diagnostic_only')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -48,7 +85,14 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
   frontend:
-    if: github.event_name != 'workflow_dispatch' || inputs.gate_mode == 'level_3'
+    needs: diagnostic_plan
+    if: >-
+      always() && !cancelled() &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.gate_mode == 'level_3' ||
+      (inputs.gate_mode == 'diagnostic_only' &&
+      (needs.diagnostic_plan.result != 'success' ||
+      needs.diagnostic_plan.outputs.run_full == 'true')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -66,7 +110,12 @@ jobs:
         working-directory: frontend
 
   secret_scan:
-    if: github.event_name != 'workflow_dispatch' || inputs.gate_mode == 'level_3'
+    needs: diagnostic_plan
+    if: >-
+      always() && !cancelled() &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.gate_mode == 'level_3' ||
+      inputs.gate_mode == 'diagnostic_only')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -88,7 +137,14 @@ jobs:
           --log-opts="--no-merges origin/main..HEAD"
 
   visual:
-    if: github.event_name != 'workflow_dispatch' || inputs.gate_mode == 'level_3'
+    needs: diagnostic_plan
+    if: >-
+      always() && !cancelled() &&
+      (github.event_name != 'workflow_dispatch' ||
+      inputs.gate_mode == 'level_3' ||
+      (inputs.gate_mode == 'diagnostic_only' &&
+      (needs.diagnostic_plan.result != 'success' ||
+      needs.diagnostic_plan.outputs.run_full == 'true')))
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/devcontainers/python:1-3.11-bookworm@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b
@@ -138,6 +194,7 @@ jobs:
           tests/e2e/p7-07-released-trial-summary-live.spec.ts
           tests/e2e/p7-08-mobile-field-actions.spec.ts
           tests/e2e/gate-evidence-live.spec.ts
+          --workers=2
           --grep @visual
         env:
           NPI_EVIDENCE_SCOPE: phase-5/r1-06-stage-3
@@ -219,6 +276,7 @@ jobs:
     # Preserved P7-04 predecessor evidence: python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier tests.test_phase7_trial_review_runtime_verifier -v
     # Preserved P7-05 predecessor evidence: python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier tests.test_phase7_trial_review_runtime_verifier tests.test_phase7_readiness_runtime_verifier -v
     needs:
+      - diagnostic_plan
       - repository
       - frontend
       - secret_scan
@@ -236,7 +294,18 @@ jobs:
       needs.repository.result == 'skipped' &&
       needs.frontend.result == 'skipped' &&
       needs.secret_scan.result == 'skipped' &&
-      needs.visual.result == 'skipped'))
+      needs.visual.result == 'skipped') ||
+      (inputs.gate_mode == 'diagnostic_only' &&
+      needs.repository.result == 'success' &&
+      needs.secret_scan.result == 'success' &&
+      ((needs.diagnostic_plan.result == 'success' &&
+      needs.diagnostic_plan.outputs.run_full == 'false' &&
+      needs.frontend.result == 'skipped' &&
+      needs.visual.result == 'skipped') ||
+      ((needs.diagnostic_plan.result != 'success' ||
+      needs.diagnostic_plan.outputs.run_full == 'true') &&
+      needs.frontend.result == 'success' &&
+      needs.visual.result == 'success'))))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -294,7 +363,7 @@ jobs:
     # predecessor_scope=p5-01-through-p7-05
     name: P5 controlled runtime through P8-06 formal quality link
     needs: controlled_preflight
-    if: github.event_name == 'workflow_dispatch' && !cancelled() && (inputs.gate_mode == 'level_3' || inputs.gate_mode == 'level_2_controlled') && needs.controlled_preflight.result == 'success'
+    if: github.event_name == 'workflow_dispatch' && !cancelled() && (inputs.gate_mode == 'level_3' || inputs.gate_mode == 'level_2_controlled' || inputs.gate_mode == 'diagnostic_only') && needs.controlled_preflight.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
