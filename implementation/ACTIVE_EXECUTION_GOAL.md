@@ -1,40 +1,26 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T00:09:16+07:00`
+Updated: `2026-09-03T00:34:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CI_OPT_02_IMPLEMENTATION — CI-OPT-02`
+- Mode: `IN_PROGRESS_P9_02_AUDIT_AND_PLAN — P9-02`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
   P9-01 is complete.
-- CI-OPT-02 is the active independent delivery task. It adds one latest-
-  successful-ordinary-run diagnostic fast path that always retains repository,
-  secret and controlled Site checks, falls back to full CI for denied/unknown
-  changes, and can never serve as merge/release evidence. It also benchmarks
-  four nonvisual Playwright workers while visual stays at two and retries stay
-  zero. P9-02 remains paused until this task's full Level 3 PASS.
-- CI-OPT-02 sharding passes three unchanged `460/460` attempts with critical
-  E2E durations `290/284/257s` (P50 `284s`, 53.4% below the `610s` baseline).
-  Diagnostics-off Level 3 `33653098092` passes every base lane and controlled
-  preflight, then fails only at the retained P8-03 migrated-legacy problem-code
-  assertion. One existing fixed-enum code/type/trace classifier is active;
-  product code and production ERP remain untouched.
-- Classifier checkpoint `e6672a4afcd22f6fb35f0857fff15e5853812ae3`
-  ordinary run `33655458898` passes repository, secret, visual and both
-  `230/230` E2E shards. Frontend verification and its aggregate fail only
-  because a newly published high-severity `fast-uri` advisory now rejects the
-  frozen `3.1.5` transitive development lock. The active batch repair changes
-  only that lock entry to compatible fixed `3.1.7`; direct dependencies,
-  product behavior, test coverage and Gate semantics remain unchanged.
-- Security-lock checkpoint `5b77dcf7b9fb37c17570dbd9f1091bba2cd0cd59`
-  passes complete ordinary CI `33657532266`. Its sole diagnostic-only run
-  `33658159139` reuses only the attested frontend/visual evidence, passes
-  repository, secret, preflight and the complete cumulative disposable Site
-  `100342416427`, and emits no P8-03 diagnostic tuple. No root is proved, so no
-  repair is permitted. The classifier is now closed; the sole remaining
-  sequence is exact-SHA ordinary CI and one diagnostics-off Level 3.
+- CI-OPT-02 is complete at exact SHA
+  `ea6112fa04e08cee6920407df426efc685cea98b`. Ordinary CI `33659491378`
+  and diagnostics-off Level 3 `33660141866` pass, including both `230/230`
+  E2E shards, visual, repository, secret, controlled preflight and cumulative
+  disposable runtime `100350396533`. The sharded P50 is `284s`, 53.4% below
+  the frozen `610s` baseline; retries remain zero and all diagnostics are off.
+- P9-02 is active for the audit/plan transition only. It covers portfolio,
+  KPI, permission-filtered global search, internal notifications, meeting
+  minutes, versioned configuration inventory and read-only BI direction. No
+  product code is authorized until this transition passes exact-SHA ordinary
+  CI. Existing domain and ERP projection seams remain the default-correct
+  baseline; production ERP is not contacted for this transition.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

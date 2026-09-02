@@ -11312,3 +11312,35 @@ P9-01 Level 3.
   Level 3; no second diagnostic dispatch is allowed.
 - Production ERPNext and all user-owned dirty files remain untouched.
 - Controller marker: `P9-01 Level 3 PASS; CI-OPT-02 implementation active`.
+
+## 2026-09-03 CI-OPT-02 Level 3 PASS; P9-02 audit and plan active
+
+- CI-OPT-02 closure SHA
+  `ea6112fa04e08cee6920407df426efc685cea98b` passes ordinary pull-request CI
+  `33659491378`: secret `100346237590`, repository `100346237571`, frontend
+  verify `100346237471`, E2E shards `100346237574`/`100346237443`, visual
+  `100346237299` and aggregate frontend `100348208185` all pass. Each shard
+  executes `230/230` tests with zero retries.
+- Its one final diagnostics-off Level 3 `33660141866` passes secret
+  `100348403326`, repository `100348403450`, frontend verify `100348402873`,
+  E2E shards `100348403186`/`100348403361`, visual `100348403072`, aggregate
+  frontend `100350269092`, controlled preflight `100350306172` and the complete
+  cumulative disposable runtime `100350396533`. `release-gate` result is PASS.
+- The accepted sharded stability set remains three unchanged `460/460`
+  attempts with zero retries, critical durations `290/284/257s`, P50 `284s`,
+  P95 `290s` and 53.4% improvement from the frozen `610s` baseline. The
+  diagnostic fast path remains fail closed and never supplies merge, release
+  or Level 3 evidence. All temporary runtime diagnostics are false.
+- Close CI-OPT-02 and automatically resume P9-02 under the Phase 9 Requirement
+  anchor. The frozen audit/plan is
+  `implementation/evidence/phase-9/p9-02-plan.md`. It reuses existing Project,
+  Gate, My Work, Tooling, Trial, Readiness, Change and ERP projection seams;
+  it authorizes no product code until this governance transition passes
+  exact-SHA ordinary CI.
+- P9-02 must preserve server-side permission filtering, source-labelled NPI
+  and ERP truth, explicit stale/partial/unavailable states, fixed KPI
+  definitions, version/audit lineage, operation-specific configuration and
+  read-only BI direction. External portals and real-project pilots remain
+  deferred. No production ERPNext contact or user-owned dirty-file staging is
+  authorized in this transition.
+- Controller marker: `CI-OPT-02 Level 3 PASS; P9-02 audit and plan active`.

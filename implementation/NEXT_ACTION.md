@@ -1,24 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CI_OPT_02_IMPLEMENTATION — CI-OPT-02`
+`IN_PROGRESS_P9_02_AUDIT_AND_PLAN — P9-02`
 
-P9-01 is complete at exact product SHA
-`a439043f96976c562edb8d4af69d51c709390043`. CI-OPT-02 sharding is stable:
-three unchanged `460/460` attempts have critical durations `290/284/257s`
-(P50 `284s`, 53.4% below baseline). Final Level 3 `33653098092` passes every
-base lane and preflight before stopping only at the retained P8-03
-migrated-legacy assertion.
+CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
+passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
+cumulative runtime `100350396533`; its release-gate result is PASS.
 
-Security-lock checkpoint `5b77dcf7b9fb37c17570dbd9f1091bba2cd0cd59`
-passes complete ordinary CI `33657532266`. The sole diagnostic-only run
-`33658159139` passes its fail-closed plan, repository, secret, preflight and
-complete cumulative disposable runtime `100342416427`; frontend/visual are
-reused only through the exact attestation. No fixed P8-03 diagnostic tuple is
-emitted, so no root or repair is authorized. Close the temporary classifier,
-run affected/full local checks, then pass exact-SHA ordinary CI followed by
-one diagnostics-off Level 3. Do not add another diagnostic, guess a fixture or
-product repair, contact production ERPNext or stage user-owned files.
+Commit the P9-02 audit/plan transition and require exact-SHA ordinary CI. Only
+after that PASS, freeze the P9-02A contract/ownership/implementation path set
+and begin the minimum product vertical slice. Reuse existing Project, Gate,
+My Work, Tooling, Trial, Readiness, Change and ERP projection seams. Do not
+contact production ERPNext, start external portals or pilots, introduce a
+generic writer, or stage user-owned files.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

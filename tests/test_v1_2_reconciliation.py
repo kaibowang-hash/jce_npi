@@ -811,7 +811,9 @@ class V12ReconciliationTests(unittest.TestCase):
             "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3",
             phase_status,
         )
-        self.assertIn("current_task: CI-OPT-02", phase_status)
+        self.assertIn("current_task: P9-02", phase_status)
+        self.assertIn("status: PASS_LEVEL_3", phase_status)
+        self.assertIn("final_level_3: 33660141866", phase_status)
         self.assertIn("p9_01d_final_result: PASS_ALL_DIAGNOSTICS_OFF_COMPLETE_CUMULATIVE_RUNTIME", phase_status)
         self.assertIn("diagnostics_off_final_level_3: 33330886346", phase_status)
         self.assertIn(

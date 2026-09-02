@@ -1,88 +1,85 @@
 {
   "schema_version": 1,
-  "task_id": "CI-OPT-02",
-  "task_kind": "delivery_infrastructure",
+  "task_id": "P9-02",
+  "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_CI_OPT_02_IMPLEMENTATION",
+  "status": "IN_PROGRESS_P9_02_AUDIT_AND_PLAN",
   "completion_gate": "LEVEL_3",
-  "authorized_next_task": "P9-02",
-  "base_checkpoint": "a439043f96976c562edb8d4af69d51c709390043",
+  "authorized_next_task": "P9-03",
+  "base_checkpoint": "ea6112fa04e08cee6920407df426efc685cea98b",
   "predecessor_product_checkpoint": "a439043f96976c562edb8d4af69d51c709390043",
-  "requirement_ids": [],
+  "requirement_ids": [
+    "FR-SG-008",
+    "FR-SG-009",
+    "FR-CO-005",
+    "FR-CO-007",
+    "FR-RP-001",
+    "FR-RP-002",
+    "FR-RP-003",
+    "FR-RP-004",
+    "FR-RP-005",
+    "FR-RP-006",
+    "FR-RP-007",
+    "INT-014"
+  ],
   "scope": [
-    "Accept P9-01 only at exact product SHA a439043f96976c562edb8d4af69d51c709390043 with ordinary CI 33638920721 and diagnostics-off Level 3 workflow 33640546810 fully passing.",
-    "Insert one independent delivery-infrastructure task after P9-01 and before P9-02 under the user's standing autopilot efficiency authorization.",
-    "Add a diagnostic-only controlled mode keyed to the latest successful ordinary pull-request run ID and SHA on the same repository branch.",
-    "Run repository verification, current-tree secret scanning and the cumulative disposable Site on every diagnostic-only dispatch; reuse frontend and visual evidence only when every changed path is in the exact diagnostic allowlist.",
-    "Automatically fall back to complete repository, frontend, secret, visual and controlled-Site CI when the prior Gate, ancestry, latest-run identity or changed-path classification is denied, unknown or unverifiable.",
-    "Emit one bounded machine attestation containing only fixed classification, counts, run/SHA provenance and non-merge/non-release truth; never emit changed path values, runtime payloads, business values or secrets.",
-    "Raise only non-visual Playwright execution from two to four workers, retain visual execution at two workers and retain zero retries.",
-    "Record five accepted pre-change runs, changed-files-to-tests mapping, allow/deny/unknown unit evidence, three stable four-worker runs, P50/P95 and final exact-SHA ordinary plus Level 3 evidence.",
-    "Use native two-way Playwright sharding with an aggregate required check only if three four-worker runs are stable but fail the frozen improvement threshold.",
-    "After the diagnostics-off exact-SHA Level 3 runtime 33653098092 failed only at the existing P8-03 migrated-legacy problem-code assertion, run one bounded value-free existing classifier before any repair; inspect only its fixed code/type/trace tuple, then close the classifier and apply at most one statically proven fixture-only repair.",
-    "If a newly published security advisory makes the otherwise unchanged frontend audit fail, update only the affected transitive development dependency lock entry to the first compatible fixed release, retain exact install and audit checks, and batch that repair before the next CI dispatch.",
-    "If the sole diagnostic Site passes the complete cumulative runtime and emits no fixed tuple, make no guessed repair, close the temporary classifier, and proceed through exact-SHA ordinary CI and one final diagnostics-off Level 3."
+    "Accept CI-OPT-02 only at exact SHA ea6112fa04e08cee6920407df426efc685cea98b with ordinary CI 33659491378 and diagnostics-off Level 3 33660141866 fully passing.",
+    "Audit and freeze the minimum P9-02 portfolio, KPI, global search, internal notification, meeting-minute and read-only BI implementation against existing Project, Gate, My Work, Tooling, Trial, Readiness, Change and ERP projection seams.",
+    "Preserve server-side permission filtering, source-labelled Hub and ERP truth, explicit availability and freshness, deterministic pagination, fixed KPI definitions, audit and version lineage.",
+    "Implement product code only after this audit and plan transition passes exact-SHA ordinary CI, then use bounded P9-02A through P9-02D checkpoints and one final Level 3.",
+    "Reuse accepted P8-07F production inventory; perform a task-scoped read-only delta only if a later exact dependency is missing or stale and only under the standing fail-closed boundary."
   ],
   "non_scope": [
-    "Any product, domain, API, contract, Schema, migration, permission, ownership, translation, UI, visual baseline, threshold, coverage or test-case change.",
-    "Any retry, ignored failure, removed test, reduced coverage, mutable Frappe Site cache or reuse of a diagnostic run as merge, release or Level 3 evidence.",
-    "Any production ERPNext connection, read, write, profile activation, target command or external-system mutation.",
-    "Any P9-02 reporting implementation or other Phase 9 product work before this independent task passes Level 3.",
-    "Any staging, rollback or overwrite of the user's unrelated dirty documentation, local evidence, screenshots, prerequisites or editor files."
+    "Any domain redesign, object merge or split, API rename, workflow rewrite, technology replacement, permission-model rewrite, generic abstraction or unrelated optimization.",
+    "Any external supplier or customer portal, external identity surface, M9-04 or M9-05 real-project pilot, or real-user adoption claim.",
+    "Any generic DocType writer, generic configuration writer, BI reverse write, browser-direct ERP access, cross-database access, dual-master field or Mock and HTTP fake success.",
+    "Any uncontrolled Excel or PDF export hardening allocated to P9-06, production ETL job, production credential, ERPNext mutation or core patch.",
+    "Any staging, rollback or overwrite of the user's unrelated dirty documentation, local evidence, screenshots, prerequisite files, public assets or editor files."
   ],
   "frozen_invariants": [
-    "P9_01_PRODUCT_SHA_A439043F_ORDINARY_33638920721_AND_LEVEL3_33640546810_PASS",
-    "DELIVERY_ONLY_ZERO_PRODUCT_REQUIREMENTS",
-    "DIAGNOSTIC_FAST_PATH_LATEST_SUCCESSFUL_ORDINARY_PR_RUN_SAME_REPOSITORY_BRANCH_AND_ANCESTOR_ONLY",
-    "DIAGNOSTIC_ALLOWLIST_EXACT_DENY_AND_UNKNOWN_FALL_BACK_TO_FULL_CI",
-    "DIAGNOSTIC_RUN_ALWAYS_REPOSITORY_SECRET_AND_CONTROLLED_SITE",
-    "DIAGNOSTIC_ATTESTATION_FIXED_BOUNDED_PATH_VALUE_FREE_AND_SECRET_FREE",
-    "DIAGNOSTIC_FAST_PATH_NEVER_MERGE_RELEASE_OR_LEVEL3_EVIDENCE",
-    "NONVISUAL_PLAYWRIGHT_WORKERS_FOUR_VISUAL_WORKERS_TWO_RETRIES_ZERO",
-    "TESTS_COVERAGE_THRESHOLDS_REQUIRED_CHECKS_AND_FINAL_LEVEL3_UNCHANGED",
-    "MUTABLE_FRAPPE_SITE_CACHE_FORBIDDEN",
-    "THREE_STABLE_RUNS_AND_P50_P95_REQUIRED_BEFORE_ACCEPTANCE",
-    "P9_02_RESUMES_ONLY_AFTER_EXACT_SHA_LEVEL3_PASS",
+    "CI_OPT_02_EXACT_SHA_EA6112FA_ORDINARY_33659491378_AND_LEVEL3_33660141866_PASS",
+    "P9_02_PRODUCT_CODE_HELD_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_PASS",
+    "CURRENT_ARCHITECTURE_DATA_OWNERSHIP_OPENAPI_EVENTS_AND_P8_01_THROUGH_P9_01_REMAIN_DEFAULT_CORRECT",
+    "NPI_ENGINEERING_TRUTH_REMAINS_NPI_ONE_OWNED_AND_ERP_EXECUTION_TRUTH_REMAINS_READ_ONLY_SOURCE_LABELLED",
+    "EVERY_CROSS_OBJECT_QUERY_IS_SERVER_SIDE_PERMISSION_FILTERED_AND_DETERMINISTICALLY_PAGED",
+    "MISSING_STALE_PARTIAL_OR_UNAVAILABLE_ERP_TRUTH_NEVER_BECOMES_ZERO_HEALTHY_OR_SUCCESSFUL",
+    "KPI_NAME_NUMERATOR_DENOMINATOR_SOURCE_TIMEZONE_AND_AVAILABILITY_ARE_FIXED_BEFORE_CALCULATION",
+    "BI_DIRECTION_IS_READ_ONLY_WITH_NO_REVERSE_WRITE_OR_PRODUCTION_ETL_IN_P9_02",
+    "ADMIN_CONFIGURATION_REUSES_OPERATION_SPECIFIC_VERSIONED_AUDITED_COMMANDS_NO_GENERIC_WRITER",
+    "MEETING_MINUTES_ARE_INTERNAL_VERSIONED_AND_LINK_ACTIONS_OR_DECISIONS_TO_THE_EXACT_SOURCE",
+    "REMINDER_ESCALATION_AND_CRITICAL_AUDIT_NOTIFICATION_DELIVERY_IS_IDEMPOTENT_AND_FAILS_EXPLICITLY",
+    "FR_CO_003_FR_CO_004_EXTERNAL_PORTALS_USER_APPROVED_POST_V1_2_DEFERRED",
+    "M9_04_M9_05_REAL_PILOTS_USER_APPROVED_POST_V1_2_DEFERRED_CONTROLLED_UAT_RETAINED",
+    "EN_ZH_ZH_TW_LITERAL_ENGLISH_SOURCE_COMPLETE_TRANSLATION_AND_INDUSTRIAL_UI_REQUIRED",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
-    "TRANSITIVE_DEV_SECURITY_LOCK_REPAIR_ONLY_NO_DIRECT_OR_PRODUCT_DEPENDENCY_CHANGE",
-    "NO_PRODUCTION_ERPNEXT_CONTACT"
+    "NO_ERPNEXT_FRAPPE_CORE_CHANGE_BROWSER_DIRECT_ERP_CROSS_DATABASE_WRITE_GENERIC_DOCTYPE_WRITER_OR_DUAL_MASTER",
+    "NO_PRODUCTION_ERPNEXT_CONTACT_DURING_P9_02_AUDIT_PLAN_TRANSITION",
+    "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
-    ".github/workflows/ci.yml",
-    "frontend/package-lock.json",
-    "frontend/package.json",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/CURRENT_TASK.json",
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
-    "implementation/evidence/delivery-pipeline-optimization-2/plan.md",
     "implementation/evidence/delivery-pipeline-optimization-2/validation.md",
-    "scripts/verify_devcontainer.py",
-    "scripts/verify_item_publish_runtime.py",
-    "scripts/verify_prior_gate.py",
+    "implementation/evidence/phase-9/p9-02-plan.md",
     "tests/test_current_task_verifier.py",
-    "tests/test_devcontainer_verifier.py",
-    "tests/test_phase8_item_publish_runtime_verifier.py",
-    "tests/test_prior_gate_verifier.py",
     "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {
     "level_1": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
-      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_prior_gate_verifier", "tests.test_devcontainer_verifier", "-v"],
-      ["npm", "--prefix", "frontend", "run", "test:e2e", "--", "--list"],
+      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh", "--repository"],
-      ["bash", "scripts/verify.sh", "--frontend"],
-      ["npm", "--prefix", "frontend", "run", "test:e2e"]
+      ["bash", "scripts/verify.sh", "--repository"]
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
-      ["python", "-m", "unittest", "tests.test_prior_gate_verifier", "tests.test_devcontainer_verifier", "-v"],
+      ["python", "scripts/verify_v1_2_reconciliation.py"],
       ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],
     "level_3": [
@@ -92,15 +89,15 @@
     ]
   },
   "expected_state": {
-    "phase_status_current_task": "CI-OPT-02",
-    "phase_status_execution_hold": "CI_OPT_02",
+    "phase_status_current_task": "P9-02",
+    "phase_status_execution_hold": "NONE",
     "phase_status_resumed_product_task": "P9-02",
-    "active_goal_marker": "CI-OPT-02",
-    "next_action_marker": "CI-OPT-02",
-    "controller_marker": "P9-01 Level 3 PASS; CI-OPT-02 implementation active"
+    "active_goal_marker": "P9-02",
+    "next_action_marker": "P9-02",
+    "controller_marker": "CI-OPT-02 Level 3 PASS; P9-02 audit and plan active"
   },
   "rollback": {
-    "before_product_resume": "Revert only CI-OPT-02 delivery commits to exact P9-01 checkpoint a439043f96976c562edb8d4af69d51c709390043. No product, database or external-state rollback exists.",
-    "after_product_resume": "Disable diagnostic_only and restore two non-visual workers while retaining the complete ordinary and Level 3 paths; forward-fix delivery mechanics without rewriting later product evidence."
+    "before_product_resume": "Restore exact accepted CI-OPT-02 checkpoint ea6112fa04e08cee6920407df426efc685cea98b. The P9-02 audit transition changes no product, database, ERPNext or external state.",
+    "after_product_resume": "Disable only independently approved P9-02 routes and scheduler hooks, preserve immutable meeting, notification and audit history, and deliver a reviewed forward fix without changing ERP-owned truth."
   }
 }

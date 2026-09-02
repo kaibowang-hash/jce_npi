@@ -34,15 +34,31 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "CI-OPT-02")
-        self.assertEqual(value["task_kind"], "delivery_infrastructure")
-        self.assertEqual(value["status"], "IN_PROGRESS_CI_OPT_02_IMPLEMENTATION")
+        self.assertEqual(value["task_id"], "P9-02")
+        self.assertEqual(value["task_kind"], "product")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_02_AUDIT_AND_PLAN")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P9-02")
-        self.assertEqual(value["requirement_ids"], [])
+        self.assertEqual(value["authorized_next_task"], "P9-03")
+        self.assertEqual(
+            value["requirement_ids"],
+            [
+                "FR-SG-008",
+                "FR-SG-009",
+                "FR-CO-005",
+                "FR-CO-007",
+                "FR-RP-001",
+                "FR-RP-002",
+                "FR-RP-003",
+                "FR-RP-004",
+                "FR-RP-005",
+                "FR-RP-006",
+                "FR-RP-007",
+                "INT-014",
+            ],
+        )
         self.assertEqual(
             value["base_checkpoint"],
-            "a439043f96976c562edb8d4af69d51c709390043",
+            "ea6112fa04e08cee6920407df426efc685cea98b",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
@@ -51,48 +67,38 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "CI-OPT-02",
-                "phase_status_execution_hold": "CI_OPT_02",
+                "phase_status_current_task": "P9-02",
+                "phase_status_execution_hold": "NONE",
                 "phase_status_resumed_product_task": "P9-02",
-                "active_goal_marker": "CI-OPT-02",
-                "next_action_marker": "CI-OPT-02",
-                "controller_marker": "P9-01 Level 3 PASS; CI-OPT-02 implementation active",
+                "active_goal_marker": "P9-02",
+                "next_action_marker": "P9-02",
+                "controller_marker": "CI-OPT-02 Level 3 PASS; P9-02 audit and plan active",
             },
         )
         for invariant in (
-            "P9_01_PRODUCT_SHA_A439043F_ORDINARY_33638920721_AND_LEVEL3_33640546810_PASS",
-            "DELIVERY_ONLY_ZERO_PRODUCT_REQUIREMENTS",
-            "DIAGNOSTIC_ALLOWLIST_EXACT_DENY_AND_UNKNOWN_FALL_BACK_TO_FULL_CI",
-            "DIAGNOSTIC_RUN_ALWAYS_REPOSITORY_SECRET_AND_CONTROLLED_SITE",
-            "DIAGNOSTIC_FAST_PATH_NEVER_MERGE_RELEASE_OR_LEVEL3_EVIDENCE",
-            "NONVISUAL_PLAYWRIGHT_WORKERS_FOUR_VISUAL_WORKERS_TWO_RETRIES_ZERO",
-            "MUTABLE_FRAPPE_SITE_CACHE_FORBIDDEN",
-            "THREE_STABLE_RUNS_AND_P50_P95_REQUIRED_BEFORE_ACCEPTANCE",
+            "CI_OPT_02_EXACT_SHA_EA6112FA_ORDINARY_33659491378_AND_LEVEL3_33660141866_PASS",
+            "P9_02_PRODUCT_CODE_HELD_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_PASS",
+            "EVERY_CROSS_OBJECT_QUERY_IS_SERVER_SIDE_PERMISSION_FILTERED_AND_DETERMINISTICALLY_PAGED",
+            "MISSING_STALE_PARTIAL_OR_UNAVAILABLE_ERP_TRUTH_NEVER_BECOMES_ZERO_HEALTHY_OR_SUCCESSFUL",
+            "KPI_NAME_NUMERATOR_DENOMINATOR_SOURCE_TIMEZONE_AND_AVAILABILITY_ARE_FIXED_BEFORE_CALCULATION",
+            "BI_DIRECTION_IS_READ_ONLY_WITH_NO_REVERSE_WRITE_OR_PRODUCTION_ETL_IN_P9_02",
+            "ADMIN_CONFIGURATION_REUSES_OPERATION_SPECIFIC_VERSIONED_AUDITED_COMMANDS_NO_GENERIC_WRITER",
+            "FR_CO_003_FR_CO_004_EXTERNAL_PORTALS_USER_APPROVED_POST_V1_2_DEFERRED",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
-            "TRANSITIVE_DEV_SECURITY_LOCK_REPAIR_ONLY_NO_DIRECT_OR_PRODUCT_DEPENDENCY_CHANGE",
-            "NO_PRODUCTION_ERPNEXT_CONTACT",
+            "NO_PRODUCTION_ERPNEXT_CONTACT_DURING_P9_02_AUDIT_PLAN_TRANSITION",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertEqual(
             set(value["allowed_paths"]),
             {
-                ".github/workflows/ci.yml",
-                "frontend/package-lock.json",
-                "frontend/package.json",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
                 "implementation/CURRENT_TASK.json",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
-                "implementation/evidence/delivery-pipeline-optimization-2/plan.md",
                 "implementation/evidence/delivery-pipeline-optimization-2/validation.md",
-                "scripts/verify_devcontainer.py",
-                "scripts/verify_item_publish_runtime.py",
-                "scripts/verify_prior_gate.py",
+                "implementation/evidence/phase-9/p9-02-plan.md",
                 "tests/test_current_task_verifier.py",
-                "tests/test_devcontainer_verifier.py",
-                "tests/test_phase8_item_publish_runtime_verifier.py",
-                "tests/test_prior_gate_verifier.py",
                 "tests/test_v1_2_reconciliation.py",
             },
         )
@@ -112,9 +118,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         with self.assertRaisesRegex(CurrentTaskError, "keys drifted"):
             load_manifest(self.write_manifest({**self.manifest, "extra": True}))
 
-    def test_delivery_task_rejects_product_requirement_claim(self) -> None:
-        changed = {**self.manifest, "requirement_ids": ["FR-TR-001"]}
-        with self.assertRaisesRegex(CurrentTaskError, "must not claim"):
+    def test_product_task_rejects_missing_or_unknown_requirement(self) -> None:
+        changed = {**self.manifest, "requirement_ids": []}
+        with self.assertRaisesRegex(CurrentTaskError, "freeze at least one"):
+            validate_current_task(self.write_manifest(changed), check_git=False)
+        changed = {**self.manifest, "requirement_ids": ["FR-NOT-REAL"]}
+        with self.assertRaisesRegex(CurrentTaskError, "unknown Requirement"):
             validate_current_task(self.write_manifest(changed), check_git=False)
 
     def test_state_or_resume_drift_fails_closed(self) -> None:
@@ -134,7 +143,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             validate_allowed_paths(["../*"], [])
         with self.assertRaisesRegex(CurrentTaskError, "outside"):
             validate_allowed_paths(
-                ["implementation/evidence/delivery-pipeline-optimization-2/plan.md"],
+                ["implementation/evidence/phase-9/p9-02-plan.md"],
                 ["apps/npi_core/npi_core/trial/domain.py"],
             )
 
