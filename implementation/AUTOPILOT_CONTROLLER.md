@@ -11391,3 +11391,33 @@ P9-01 Level 3.
 - Local generated-catalog check, 8,863-source i18n audit at 100% coverage,
   TypeScript typecheck and diff check pass. Push one repair checkpoint and
   require exact-SHA ordinary PASS, then automatically continue P9-02C.
+
+## 2026-09-03 P9-02C frontend candidate; P9-02D final gate pending
+
+- Backend catalog-repair SHA
+  `2432144515e8b632ee2a50bf717c2a6e919c2bf2` passes complete exact-SHA
+  ordinary CI `33669976985`: repository `100380878712`, secret
+  `100380878741`, frontend verification `100380878336`, E2E shards
+  `100380878683`/`100380878742`, governed visual `100380878555` and frontend
+  aggregate `100382821023` all succeed.
+- The P9-02C frontend is complete as one frozen batch: live
+  permission-filtered global search, recipient-only notification center,
+  Portfolio/KPI/read-only administration workspace and immutable Project
+  meeting minutes with existing WorkItem linkage. It adds no generic writer,
+  BI writeback, browser-direct ERP access, external identity or domain
+  redesign.
+- Local TypeScript and full lint pass. Focused data-source, component, shell,
+  route and Project tests pass `103/103`; P9-02 functional E2E passes `3/3`;
+  governed trilingual visual verification passes `3/3`; i18n passes all 8,982
+  literal English sources with 100% `zh`/`zh-TW` coverage. Regenerated visuals
+  were inspected after correcting table separation and translated primary
+  action width.
+- Production compilation succeeds. The final local static-brand tree check
+  stops only on a pre-existing user-owned untracked `frontend/public` asset;
+  it remains untouched and excluded, so clean-tree exact-SHA CI is the
+  authoritative complete build proof.
+- Commit and push this single frontend checkpoint, require exact-SHA ordinary
+  PASS, then continue automatically into P9-02D disposable runtime, Level 2
+  and the sole diagnostics-off Level 3. No production ERPNext contact or
+  user-owned dirty-file staging is authorized.
+- Controller marker: `P9-02C frontend candidate; P9-02D final gate pending`.

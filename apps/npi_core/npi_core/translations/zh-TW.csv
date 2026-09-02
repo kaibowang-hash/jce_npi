@@ -448,8 +448,6 @@ You have unsaved changes. Leave protection is active.,您有未儲存的變更�
 Protected object,受保護物件
 Cross-object work queue,跨物件工作佇列
 Cross-system operations,跨系統操作
-No prototype search result matched this query.,沒有與此查詢相符的原型搜尋結果。
-No prototype notification feed is connected. Use My Work for assigned actions.,未連線原型通知來源。請在「我的工作」中處理已指派操作。
 "Select an object to see its source, sync state, and next safe action.",選取物件以查看其資料來源、同步狀態和下一個安全操作。
 Current user,目前使用者
 Signed in for the test environment with prototype data.,已登入使用原型資料的測試環境。
@@ -515,7 +513,6 @@ An unexpected request error occurred.,發生未預期的請求錯誤。
 The session language and catalog could not be loaded.,無法載入工作階段語言與目錄。
 The language change could not be confirmed.,無法確認語言變更。
 "This screen kept its previous language and catalog. Retry to reconcile with the session, or share the reference ID with support.",此頁面保留先前的語言與目錄。請重試以核對工作階段狀態，或將參考編號提供給支援人員。
-Live global search is not available in this phase. Open this project from an authorized project link.,即時全域搜尋在目前階段不可用。請透過獲授權的專案連結開啟此專案。
 The current identity is managed by the Frappe session.,目前身分由 Frappe 會話管理。
 Signed-in user,已登入使用者
 Live project data,即時專案資料
@@ -1723,7 +1720,6 @@ Gate review invalidation,階段門評審失效
 Integration unavailable,整合無法使用
 Live My Work data,即時「我的工作」資料
 Live My Work data. No production ERPNext system is connected.,即時「我的工作」資料。未連線生產 ERPNext 系統。
-Live global search is not available in this phase. Open an authorized work item or project link.,本階段不提供即時全域搜尋。請開啟已獲授權的工作項或專案連結。
 Loading My Work,正在載入「我的工作」
 My Work access is not available,無法存取「我的工作」
 My Work changed,「我的工作」已變更
@@ -1736,7 +1732,6 @@ Upcoming,即將到期
 Member global identifier,成員全域識別碼
 Select an exact learning record without additional filters.,請選擇精確的學習記錄且不要加入其他篩選條件。
 Enter a positive Project version.,請輸入正整數的專案版本。
-No live notification feed is connected in this phase. Use My Work for assigned actions.,本階段未連線即時通知摘要。請在「我的工作」中處理已指派操作。
 No priority,無優先級
 No work data was displayed. Share the displayed reference ID with support before trying another action.,未顯示任何工作資料。請先將顯示的參考識別碼提供給支援人員，再嘗試其他操作。
 No work data was displayed. Share the displayed reference ID with support.,未顯示任何工作資料。請將顯示的參考識別碼提供給支援人員。
@@ -8861,3 +8856,127 @@ identity_conflict,識別衝突
 "User ID","使用者識別碼"
 "Critical Audit Email","關鍵稽核郵件"
 "factory","工廠"
+KPI reporting,關鍵績效指標報告
+Administration capabilities,管理功能
+Reporting,報告
+Open Project Portfolio,開啟專案組合
+Open the permission-filtered Project portfolio.,開啟依權限篩選的專案組合。
+Portfolio,專案組合
+Projects,專案
+Open KPI reporting,開啟關鍵績效指標報告
+Open governed monthly KPI trends.,開啟受控的每月關鍵績效指標趨勢。
+KPI,關鍵績效指標
+Reports,報告
+Open Administration capabilities,開啟管理功能
+Open the read-only configuration capability catalog.,開啟唯讀設定功能目錄。
+Configuration,設定
+Live reporting data,即時報告資料
+The live reporting request is being refreshed.,正在重新整理即時報告請求。
+Live reporting data. No production ERPNext system is connected.,即時報告資料。未連線正式環境 ERPNext 系統。
+Global search results,全域搜尋結果
+Close global search,關閉全域搜尋
+Searching authorized objects,正在搜尋已授權物件
+Global search is unavailable.,全域搜尋無法使用。
+Partial,部分可用
+No authorized object matches this query.,沒有與此查詢相符的已授權物件。
+Enter a search term and press Enter.,輸入搜尋詞並按確認鍵。
+Due reminders by email,透過電子郵件傳送到期提醒
+Overdue escalations by email,透過電子郵件傳送逾期升級
+Gate attention by email,透過電子郵件傳送階段門關注提醒
+Email not requested,未要求郵件
+Email queued,郵件已排入佇列
+Email failed,郵件傳送失敗
+Email unavailable,郵件無法使用
+Recipient-filtered internal feed,依接收者篩選的內部通知
+Close notifications,關閉通知
+Loading notifications,正在載入通知
+Notifications are unavailable.,通知無法使用。
+Due {{time}},截止時間 {{time}}
+Critical audit,關鍵稽核
+Unread,未讀
+Read,已讀
+No notifications are available.,沒有可用的通知。
+Email notification preferences,電子郵件通知偏好
+Loading notification preferences,正在載入通知偏好
+Critical audit email is mandatory,關鍵稽核郵件為必選項
+Save preferences,儲存偏好
+Project SOP on-time rate,專案 SOP 準時率
+Project cycle time,專案週期時間
+Trial first-pass rate,試模一次通過率
+Project cost variance rate,專案成本差異率
+Project templates,專案範本
+Gate templates,階段門範本
+Project work policies,專案工作原則
+NPI readiness templates,NPI 就緒範本
+Production transition policies,量產移交原則
+Controlled configuration,受控設定
+The reporting response could not be used safely,無法安全使用報告回應
+No reporting data was displayed. Retry or share the reference ID with support.,未顯示任何報告資料。請重試或將參考識別碼提供給支援人員。
+All,全部
+Customer-owned tool,客戶自有模具
+New tool,新模具
+Tool change,模具變更
+Factory reference,工廠參照
+SOP month,SOP 月份
+Year and month,年與月
+Lifecycle,生命週期
+Clear,清除
+No Projects match these filters.,沒有專案符合這些篩選條件。
+Type and owner,類型與負責人
+Current Gate,目前階段門
+Active work,進行中的工作
+Health,健康狀態
+ERPNext truth,ERPNext 事實
+{{overdue}} overdue · {{blockers}} blockers,{{overdue}} 項逾期 · {{blockers}} 項阻斷
+Latest value,最新值
+Definition,定義
+No verified point,沒有已驗證的資料點
+Numerator,分子
+Denominator,分母
+Configuration remains operation-specific. A generic field or DocType writer is not available.,設定仍依特定操作管理。不提供通用欄位或單據類型寫入器。
+Capability,功能
+Control mode,控制模式
+Authorized workspace,授權工作區
+Versioned commands,版本化命令
+Operation-specific command,操作專用命令
+Available through its governed command workspace,可透過其受控命令工作區使用
+Permission-filtered cross-project status with NPI One and ERPNext truth kept separate.,依權限篩選跨專案狀態，並將 NPI One 與 ERPNext 事實分開顯示。
+Fixed KPI definitions expose unavailable data instead of fabricated trends.,固定的關鍵績效指標定義會明確顯示無法使用的資料，而不會虛構趨勢。
+"Read-only inventory of versioned, operation-specific configuration surfaces.",版本化操作專用設定介面的唯讀清單。
+As of {{time}},截至 {{time}}
+{{count}} visible Projects,{{count}} 個可見專案
+Reporting workspaces,報告工作區
+KPI trends,關鍵績效指標趨勢
+Loading reporting workspace,正在載入報告工作區
+No meeting minutes have been recorded for this Project.,尚未為此專案記錄會議紀錄。
+{{count}} attendees,{{count}} 名參與者
+Agenda,議程
+Discussion,討論
+Decisions,決策
+{{count}} linked work items,{{count}} 個關聯工作項
+Meeting minute draft,會議紀錄草稿
+Unsaved,未儲存
+The live meeting-minute data source is not configured.,未設定即時會議紀錄資料來源。
+Loading meeting minutes,正在載入會議紀錄
+Meeting minutes are unavailable.,會議紀錄無法使用。
+The immutable meeting minute and {{count}} linked work items were created.,已建立不可變更的會議紀錄與 {{count}} 個關聯工作項。
+The meeting minute was not created.,未建立會議紀錄。
+Meeting minutes,會議紀錄
+Record meeting minute,記錄會議紀錄
+Meeting title,會議標題
+Meeting time,會議時間
+Attendee emails,參與者電子郵件
+Optional linked work item,選用的關聯工作項
+Work item title,工作項標題
+Work item type,工作項類型
+Due time,截止時間
+Creating,正在建立
+Review and create,檢閱並建立
+Only Project administrators can create immutable meeting minutes.,只有專案管理員可以建立不可變更的會議紀錄。
+Review meeting-minute command,檢閱會議紀錄命令
+Create meeting minute,建立會議紀錄
+Creates one immutable meeting minute and {{count}} linked work items.,建立一份不可變更的會議紀錄與 {{count}} 個關聯工作項。
+Project administration permission is required.,需要專案管理權限。
+The meeting minute cannot be edited or deleted after creation.,會議紀錄建立後無法編輯或刪除。
+A failed transaction creates neither the minute nor linked work items. Retry uses a new command identity.,交易失敗時不會建立會議紀錄或關聯工作項。重試將使用新的命令識別碼。
+"The actor, Project version, template, content hash and linked work are audited.",操作者、專案版本、範本、內容雜湊與關聯工作均會被稽核。

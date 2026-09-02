@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `P9-02A/B BACKEND CANDIDATE — P9-02C PATHS FROZEN`
+Status: `P9-02C FRONTEND LOCAL PASS — P9-02D FINAL GATE AUTHORIZED`
 
 Base checkpoint:
 `ea6112fa04e08cee6920407df426efc685cea98b`
@@ -79,6 +79,38 @@ the existing Shell search and notification controls, and one Project meeting
 tab. Exact frontend source, test and three-locale visual paths are frozen in
 `CURRENT_TASK.json`. No generic writer, new domain, external identity, ERP
 mutation or production ERP contact is introduced.
+
+## P9-02C frontend checkpoint
+
+Backend catalog-repair SHA
+`2432144515e8b632ee2a50bf717c2a6e919c2bf2` passes complete ordinary CI
+`33669976985`, including repository, secret, frontend verification, both
+complete nonvisual E2E shards, governed visual and aggregate frontend lanes.
+
+The frontend checkpoint implements the exact frozen paths as one batch. The
+Shell now uses the permission-filtered typed search and recipient-only
+notification APIs. Portfolio, KPI trend and read-only administration views
+consume their operation-specific contracts without a generic writer or BI
+writeback. Project meeting minutes are immutable and may create only their
+atomically linked action or decision WorkItems through the existing Project
+command boundary. Source/freshness, stale, partial and unavailable truth stay
+explicit.
+
+Local validation passes TypeScript typecheck, the full frontend lint chain,
+`103/103` affected unit tests, `3/3` P9-02 functional E2E tests and `3/3`
+governed English/Simplified-Chinese/Traditional-Chinese visual tests. The
+i18n audit covers 8,982 literal English sources with 100% `zh` and `zh-TW`
+coverage. The three regenerated snapshots were inspected at their governed
+viewports and scales after correcting table separation and translated primary
+button width. Production compilation succeeds; the final local brand step
+correctly stops on a user-owned untracked `frontend/public` asset that remains
+untouched and excluded, so clean-tree exact-SHA CI is the authoritative full
+build proof.
+
+P9-02D is now limited to the exact frontend checkpoint ordinary CI, the
+planned disposable-Site normal/fault/security proof, Level 2 and one final
+diagnostics-off Level 3. No production ERPNext connection is needed or
+authorized.
 
 ## Test and evidence plan
 

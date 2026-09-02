@@ -18,6 +18,7 @@ import type { ControlledPrintDataSource } from "../api/controlled-print-data-sou
 import type { ReadinessDataSource } from "../api/readiness-data-source";
 import type { ProductionTransitionDataSource } from "../api/production-transition-data-source";
 import type { ChangeControlDataSource } from "../api/change-control-data-source";
+import type { CollaborationDataSource } from "../api/collaboration-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type {
   ReportWorkspaceDirty,
@@ -242,6 +243,7 @@ function ProjectCockpit({
   productionTransitionDataSource,
   readinessDataSource,
   changeControlDataSource,
+  collaborationDataSource,
   navigate,
   reportWorkspaceDirty,
   requestWorkspaceTransition,
@@ -259,6 +261,7 @@ function ProjectCockpit({
   productionTransitionDataSource?: ProductionTransitionDataSource | undefined;
   readinessDataSource?: ReadinessDataSource | undefined;
   changeControlDataSource?: ChangeControlDataSource | undefined;
+  collaborationDataSource?: CollaborationDataSource | undefined;
   navigate: (target: string) => void;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
   requestWorkspaceTransition?: RequestWorkspaceTransition | undefined;
@@ -383,6 +386,7 @@ function ProjectCockpit({
         productionTransitionDataSource={productionTransitionDataSource}
         readinessDataSource={readinessDataSource}
         changeControlDataSource={changeControlDataSource}
+        collaborationDataSource={collaborationDataSource}
         navigate={navigate}
         onProjectChanged={synchronizeProjectControlState}
         reportWorkspaceDirty={reportWorkspaceDirty}
@@ -583,6 +587,7 @@ export default function ProjectPage({
   productionTransitionDataSource,
   readinessDataSource,
   changeControlDataSource,
+  collaborationDataSource,
   globalId,
   navigate,
   reportWorkspaceDirty,
@@ -601,6 +606,7 @@ export default function ProjectPage({
   productionTransitionDataSource?: ProductionTransitionDataSource | undefined;
   readinessDataSource?: ReadinessDataSource | undefined;
   changeControlDataSource?: ChangeControlDataSource | undefined;
+  collaborationDataSource?: CollaborationDataSource | undefined;
   globalId: string;
   navigate: (target: string) => void;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
@@ -692,6 +698,7 @@ export default function ProjectPage({
       productionTransitionDataSource={productionTransitionDataSource}
       readinessDataSource={readinessDataSource}
       changeControlDataSource={changeControlDataSource}
+      collaborationDataSource={collaborationDataSource}
       key={`${state.cockpit.project.globalId}:${String(state.cockpit.project.version)}`}
       navigate={navigate}
       reportWorkspaceDirty={reportWorkspaceDirty}

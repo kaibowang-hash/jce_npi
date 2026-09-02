@@ -35,6 +35,8 @@ import { LiveReadinessDataSource } from "../api/readiness-data-source";
 import { LiveProductionTransitionDataSource } from "../api/production-transition-data-source";
 import { LiveIntegrationOperationsDataSource } from "../api/integration-operations-data-source";
 import { LiveChangeControlDataSource } from "../api/change-control-data-source";
+import { LiveReportingDataSource } from "../api/reporting-data-source";
+import { LiveCollaborationDataSource } from "../api/collaboration-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -57,6 +59,7 @@ const ExecutionPage = lazy(() => import("../pages/execution-page"));
 const ExecutionPrototypePage = lazy(
   () => import("../pages/execution-prototype-page"),
 );
+const PortfolioPage = lazy(() => import("../pages/portfolio-page"));
 const liveProjectDataSource = new LiveProjectCockpitDataSource();
 const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
 const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
@@ -81,6 +84,8 @@ const liveProductionTransitionDataSource =
 const liveIntegrationOperationsDataSource =
   new LiveIntegrationOperationsDataSource();
 const liveChangeControlDataSource = new LiveChangeControlDataSource();
+const liveReportingDataSource = new LiveReportingDataSource();
+const liveCollaborationDataSource = new LiveCollaborationDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -199,6 +204,7 @@ export function App(): React.JSX.Element {
         productionTransitionDataSource={liveProductionTransitionDataSource}
         readinessDataSource={liveReadinessDataSource}
         changeControlDataSource={liveChangeControlDataSource}
+        collaborationDataSource={liveCollaborationDataSource}
         globalId={route.projectGlobalId ?? ""}
         navigate={guardedNavigate}
         reportWorkspaceDirty={reportWorkspaceDirty}
@@ -255,6 +261,13 @@ export function App(): React.JSX.Element {
       />
     ) : route.screen === "execution" ? (
       <ExecutionPrototypePage scenario={route.scenario} />
+    ) : route.screen === "portfolio" ? (
+      <PortfolioPage
+        dataSource={liveReportingDataSource}
+        key={route.reportingView}
+        navigate={guardedNavigate}
+        view={route.reportingView ?? "portfolio"}
+      />
     ) : route.workMode === "demo" ? (
       <WorkPage navigate={guardedNavigate} />
     ) : (
@@ -273,14 +286,18 @@ export function App(): React.JSX.Element {
   const pageClass =
     route.screen === "work"
       ? "page--work"
-      : route.screen === "execution"
-        ? "page--execution"
-        : "page--object";
+      : route.screen === "portfolio"
+        ? "page--reporting"
+        : route.screen === "execution"
+          ? "page--execution"
+          : "page--object";
   return (
     <>
       <AppShell
+        collaborationDataSource={liveCollaborationDataSource}
         navigate={guardedNavigate}
         projectControlsDataSource={liveProjectControlsDataSource}
+        reportingDataSource={liveReportingDataSource}
         route={route}
       >
         <Suspense

@@ -4,6 +4,7 @@ export type { ProjectPolicyLabelSource } from "../generated/project-policy-label
 
 export type ScreenId =
   | "work"
+  | "portfolio"
   | "project"
   | "gate"
   | "tooling"

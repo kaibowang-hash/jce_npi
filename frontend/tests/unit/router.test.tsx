@@ -16,6 +16,9 @@ function locationFor(path: string): Location {
 describe("application routing", () => {
   it.each([
     ["/work", "work"],
+    ["/portfolio", "portfolio"],
+    ["/reports", "portfolio"],
+    ["/administration", "portfolio"],
     ["/demo/work", "work"],
     ["/demo/projects/PJ-26018", "project"],
     ["/projects/11111111-1111-4111-8111-111111111111", "project"],
@@ -42,6 +45,19 @@ describe("application routing", () => {
   });
 
   it("separates the explicit demo route from the live UUID route", () => {
+    expect(parseRoute(locationFor("/portfolio"))).toMatchObject({
+      reportingView: "portfolio",
+      scenario: "normal",
+      screen: "portfolio",
+    });
+    expect(parseRoute(locationFor("/reports"))).toMatchObject({
+      reportingView: "kpis",
+      screen: "portfolio",
+    });
+    expect(parseRoute(locationFor("/administration"))).toMatchObject({
+      reportingView: "configuration",
+      screen: "portfolio",
+    });
     expect(parseRoute(locationFor("/demo/work?scenario=error"))).toMatchObject({
       scenario: "error",
       workMode: "demo",
@@ -199,6 +215,9 @@ describe("application routing", () => {
     const gateId = "44444444-4444-4444-8444-444444444444";
     for (const target of [
       "/work",
+      "/portfolio",
+      "/reports",
+      "/administration",
       "/demo/work?scenario=partial",
       "/demo/projects/PJ-26018",
       "/demo/projects/PJ-26018/gates/G5",

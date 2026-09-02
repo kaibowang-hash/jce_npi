@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T00:34:00+07:00`
+Updated: `2026-09-03T02:40:02+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_02C_FRONTEND_AUTHORIZED — P9-02`
+- Mode: `IN_PROGRESS_P9_02D_FINAL_GATE_AUTHORIZED — P9-02`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -17,12 +17,16 @@ Updated: `2026-09-03T00:34:00+07:00`
   the frozen `610s` baseline; retries remain zero and all diagnostics are off.
 - P9-02 audit/plan exact SHA
   `4123eb86c930c9c091cfb18a67a37ae9552fdd04` passes ordinary CI
-  `33662703332`. The complete reporting and internal-collaboration backend
-  candidate is locally green with `2,883` repository tests. P9-02C exact
-  frontend paths are frozen for one Portfolio/Reporting/Admin workspace,
-  live Shell search and notifications, and one Project meeting tab. Push the
-  backend candidate, require exact-SHA ordinary PASS, then continue directly
-  into the trilingual frontend. Production ERP remains untouched.
+  `33662703332`. Backend catalog-repair SHA
+  `2432144515e8b632ee2a50bf717c2a6e919c2bf2` passes complete ordinary CI
+  `33669976985`. The frozen P9-02C live Portfolio/Reporting/Admin workspace,
+  Shell search and notifications, and Project meeting tab are implemented as
+  one frontend batch. Typecheck, lint, `103/103` affected unit tests, `3/3`
+  functional E2E, `3/3` governed trilingual visuals and the 8,982-source
+  i18n audit at 100% `zh`/`zh-TW` pass locally. Commit and push this frontend
+  checkpoint, require exact-SHA ordinary PASS, then continue automatically to
+  the P9-02D runtime, Level 2 and sole final Level 3. Production ERP remains
+  untouched.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

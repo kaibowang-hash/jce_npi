@@ -448,8 +448,6 @@ You have unsaved changes. Leave protection is active.,您有未保存的变更�
 Protected object,受保护对象
 Cross-object work queue,跨对象工作队列
 Cross-system operations,跨系统操作
-No prototype search result matched this query.,没有与此查询匹配的原型搜索结果。
-No prototype notification feed is connected. Use My Work for assigned actions.,未连接原型通知源。请在“我的工作”中处理已分配操作。
 "Select an object to see its source, sync state, and next safe action.",选择对象以查看其数据源、同步状态和下一个安全操作。
 Current user,当前用户
 Signed in for the test environment with prototype data.,已登录使用原型数据的测试环境。
@@ -515,7 +513,6 @@ An unexpected request error occurred.,发生意外的请求错误。
 The session language and catalog could not be loaded.,无法加载会话语言和目录。
 The language change could not be confirmed.,无法确认语言更改。
 "This screen kept its previous language and catalog. Retry to reconcile with the session, or share the reference ID with support.",此页面保留了先前的语言和目录。请重试以核对会话状态，或将参考编号提供给支持人员。
-Live global search is not available in this phase. Open this project from an authorized project link.,实时全局搜索在当前阶段不可用。请通过获授权的项目链接打开此项目。
 The current identity is managed by the Frappe session.,当前身份由 Frappe 会话管理。
 Signed-in user,已登录用户
 Live project data,实时项目数据
@@ -1723,7 +1720,6 @@ Gate review invalidation,阶段门评审失效
 Integration unavailable,集成不可用
 Live My Work data,实时“我的工作”数据
 Live My Work data. No production ERPNext system is connected.,实时“我的工作”数据。未连接生产 ERPNext 系统。
-Live global search is not available in this phase. Open an authorized work item or project link.,当前阶段不提供实时全局搜索。请打开已授权的工作项或项目链接。
 Loading My Work,正在加载“我的工作”
 My Work access is not available,无法访问“我的工作”
 My Work changed,“我的工作”已更改
@@ -1736,7 +1732,6 @@ Upcoming,即将到期
 Member global identifier,成员全局标识符
 Select an exact learning record without additional filters.,请选择精确的学习记录且不要添加其他筛选条件。
 Enter a positive Project version.,请输入正整数的项目版本。
-No live notification feed is connected in this phase. Use My Work for assigned actions.,当前阶段未连接实时通知源。请在“我的工作”中处理已分配操作。
 No priority,无优先级
 No work data was displayed. Share the displayed reference ID with support before trying another action.,未显示任何工作数据。请先将显示的参考标识符提供给支持人员，再尝试其他操作。
 No work data was displayed. Share the displayed reference ID with support.,未显示任何工作数据。请将显示的参考标识符提供给支持人员。
@@ -8861,3 +8856,127 @@ identity_conflict,标识冲突
 "User ID","用户标识"
 "Critical Audit Email","关键审计邮件"
 "factory","工厂"
+KPI reporting,关键绩效指标报告
+Administration capabilities,管理功能
+Reporting,报告
+Open Project Portfolio,打开项目组合
+Open the permission-filtered Project portfolio.,打开按权限筛选的项目组合。
+Portfolio,项目组合
+Projects,项目
+Open KPI reporting,打开关键绩效指标报告
+Open governed monthly KPI trends.,打开受控的月度关键绩效指标趋势。
+KPI,关键绩效指标
+Reports,报告
+Open Administration capabilities,打开管理功能
+Open the read-only configuration capability catalog.,打开只读配置功能目录。
+Configuration,配置
+Live reporting data,实时报告数据
+The live reporting request is being refreshed.,正在刷新实时报告请求。
+Live reporting data. No production ERPNext system is connected.,实时报告数据。未连接生产 ERPNext 系统。
+Global search results,全局搜索结果
+Close global search,关闭全局搜索
+Searching authorized objects,正在搜索已授权对象
+Global search is unavailable.,全局搜索不可用。
+Partial,部分可用
+No authorized object matches this query.,没有与此查询匹配的已授权对象。
+Enter a search term and press Enter.,输入搜索词并按回车键。
+Due reminders by email,通过邮件发送到期提醒
+Overdue escalations by email,通过邮件发送逾期升级
+Gate attention by email,通过邮件发送阶段门关注提醒
+Email not requested,未请求邮件
+Email queued,邮件已排队
+Email failed,邮件发送失败
+Email unavailable,邮件不可用
+Recipient-filtered internal feed,按接收人筛选的内部通知
+Close notifications,关闭通知
+Loading notifications,正在加载通知
+Notifications are unavailable.,通知不可用。
+Due {{time}},截止时间 {{time}}
+Critical audit,关键审计
+Unread,未读
+Read,已读
+No notifications are available.,没有可用通知。
+Email notification preferences,邮件通知偏好
+Loading notification preferences,正在加载通知偏好
+Critical audit email is mandatory,关键审计邮件为必选项
+Save preferences,保存偏好
+Project SOP on-time rate,项目 SOP 准时率
+Project cycle time,项目周期时间
+Trial first-pass rate,试模一次通过率
+Project cost variance rate,项目成本偏差率
+Project templates,项目模板
+Gate templates,阶段门模板
+Project work policies,项目工作策略
+NPI readiness templates,NPI 就绪模板
+Production transition policies,量产移交策略
+Controlled configuration,受控配置
+The reporting response could not be used safely,无法安全使用报告响应
+No reporting data was displayed. Retry or share the reference ID with support.,未显示任何报告数据。请重试或将参考编号提供给支持人员。
+All,全部
+Customer-owned tool,客户自有模具
+New tool,新模具
+Tool change,模具变更
+Factory reference,工厂引用
+SOP month,SOP 月份
+Year and month,年和月
+Lifecycle,生命周期
+Clear,清除
+No Projects match these filters.,没有项目符合这些筛选条件。
+Type and owner,类型和负责人
+Current Gate,当前阶段门
+Active work,进行中的工作
+Health,健康状态
+ERPNext truth,ERPNext 事实
+{{overdue}} overdue · {{blockers}} blockers,{{overdue}} 项逾期 · {{blockers}} 项阻断
+Latest value,最新值
+Definition,定义
+No verified point,没有已验证数据点
+Numerator,分子
+Denominator,分母
+Configuration remains operation-specific. A generic field or DocType writer is not available.,配置仍按具体操作管理。不提供通用字段或单据类型写入器。
+Capability,功能
+Control mode,控制模式
+Authorized workspace,授权工作区
+Versioned commands,版本化命令
+Operation-specific command,操作专用命令
+Available through its governed command workspace,可通过其受控命令工作区使用
+Permission-filtered cross-project status with NPI One and ERPNext truth kept separate.,按权限筛选跨项目状态，并将 NPI One 与 ERPNext 事实分开显示。
+Fixed KPI definitions expose unavailable data instead of fabricated trends.,固定的关键绩效指标定义会明确显示不可用数据，而不会伪造趋势。
+"Read-only inventory of versioned, operation-specific configuration surfaces.",版本化操作专用配置界面的只读清单。
+As of {{time}},截至 {{time}}
+{{count}} visible Projects,{{count}} 个可见项目
+Reporting workspaces,报告工作区
+KPI trends,关键绩效指标趋势
+Loading reporting workspace,正在加载报告工作区
+No meeting minutes have been recorded for this Project.,尚未为此项目记录会议纪要。
+{{count}} attendees,{{count}} 名参与人
+Agenda,议程
+Discussion,讨论
+Decisions,决策
+{{count}} linked work items,{{count}} 个关联工作项
+Meeting minute draft,会议纪要草稿
+Unsaved,未保存
+The live meeting-minute data source is not configured.,未配置实时会议纪要数据源。
+Loading meeting minutes,正在加载会议纪要
+Meeting minutes are unavailable.,会议纪要不可用。
+The immutable meeting minute and {{count}} linked work items were created.,已创建不可变会议纪要和 {{count}} 个关联工作项。
+The meeting minute was not created.,未创建会议纪要。
+Meeting minutes,会议纪要
+Record meeting minute,记录会议纪要
+Meeting title,会议标题
+Meeting time,会议时间
+Attendee emails,参与人邮箱
+Optional linked work item,可选关联工作项
+Work item title,工作项标题
+Work item type,工作项类型
+Due time,截止时间
+Creating,正在创建
+Review and create,审核并创建
+Only Project administrators can create immutable meeting minutes.,只有项目管理员可以创建不可变会议纪要。
+Review meeting-minute command,审核会议纪要命令
+Create meeting minute,创建会议纪要
+Creates one immutable meeting minute and {{count}} linked work items.,创建一份不可变会议纪要和 {{count}} 个关联工作项。
+Project administration permission is required.,需要项目管理权限。
+The meeting minute cannot be edited or deleted after creation.,会议纪要创建后无法编辑或删除。
+A failed transaction creates neither the minute nor linked work items. Retry uses a new command identity.,事务失败时不会创建会议纪要或关联工作项。重试将使用新的命令标识。
+"The actor, Project version, template, content hash and linked work are audited.",操作人、项目版本、模板、内容哈希和关联工作均会被审计。

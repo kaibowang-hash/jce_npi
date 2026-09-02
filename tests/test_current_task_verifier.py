@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-02")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_02C_FRONTEND_AUTHORIZED")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_02D_FINAL_GATE_AUTHORIZED")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-03")
         self.assertEqual(
@@ -72,7 +72,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-02",
                 "active_goal_marker": "P9-02",
                 "next_action_marker": "P9-02",
-                "controller_marker": "P9-02 backend candidate; P9-02C frontend paths frozen",
+                "controller_marker": "P9-02C frontend candidate; P9-02D final gate pending",
             },
         )
         for invariant in (

@@ -2,7 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { AppShell } from "../../src/app/app-shell";
+import { AppShell as ProductionAppShell } from "../../src/app/app-shell";
 import { App } from "../../src/app/app";
 import type { AppRoute } from "../../src/app/router";
 import { LiveMyWorkDataSource } from "../../src/api/my-work-data-source";
@@ -16,6 +16,26 @@ import TrialPage from "../../src/pages/trial-page";
 import WorkPage from "../../src/pages/work-page";
 import { UsabilityRecorder } from "../../src/telemetry/recorder";
 import { renderWithLocale } from "../support/render";
+import { SyntheticReportingDataSource } from "../support/reporting-fixture";
+import { SyntheticCollaborationDataSource } from "../support/collaboration-fixture";
+
+const syntheticReportingDataSource = new SyntheticReportingDataSource();
+const syntheticCollaborationDataSource = new SyntheticCollaborationDataSource();
+
+function AppShell(
+  props: Omit<
+    Parameters<typeof ProductionAppShell>[0],
+    "reportingDataSource" | "collaborationDataSource"
+  >,
+): React.JSX.Element {
+  return (
+    <ProductionAppShell
+      {...props}
+      collaborationDataSource={syntheticCollaborationDataSource}
+      reportingDataSource={syntheticReportingDataSource}
+    />
+  );
+}
 
 function route(
   screen: AppRoute["screen"],
@@ -53,6 +73,14 @@ function route(
     toolingWorkspace: "cockpit",
     trialMode: screen === "trial" ? (liveTrial ? "live" : "demo") : null,
     workMode: screen === "work" ? (demo ? "demo" : "live") : null,
+    reportingView:
+      screen === "portfolio"
+        ? pathname.startsWith("/reports")
+          ? "kpis"
+          : pathname.startsWith("/administration")
+            ? "configuration"
+            : "portfolio"
+        : null,
   };
 }
 
@@ -614,7 +642,7 @@ describe("application shell behavior", () => {
     });
     expect(
       within(domainNavigation).getByLabelText("Project Portfolio"),
-    ).toHaveAttribute("aria-disabled", "true");
+    ).not.toHaveAttribute("aria-disabled");
     const tooling = within(domainNavigation).getByRole("button", {
       name: "Tooling",
     });
@@ -666,12 +694,8 @@ describe("application shell behavior", () => {
     ).toBeVisible();
 
     const search = screen.getByRole("searchbox", { name: "Global search" });
-    await user.type(search, "PJ-26018{Enter}");
-    expect(
-      screen.getByText(
-        "Live global search is not available in this phase. Open this project from an authorized project link.",
-      ),
-    ).toBeVisible();
+    await user.type(search, "SYN{Enter}");
+    expect(await screen.findByText("Synthetic project cockpit")).toBeVisible();
   });
 
   it("labels live My Work, hides fixture controls, and dispatches its scoped refresh", async () => {
@@ -708,9 +732,7 @@ describe("application shell behavior", () => {
     const search = screen.getByRole("searchbox", { name: "Global search" });
     await user.type(search, "PJ-26018{Enter}");
     expect(
-      screen.getByText(
-        "Live global search is not available in this phase. Open an authorized work item or project link.",
-      ),
+      await screen.findByText("No authorized object matches this query."),
     ).toBeVisible();
   });
 
@@ -948,7 +970,7 @@ describe("application shell behavior", () => {
     expect(document.body).not.toHaveTextContent("secret malformed content");
   });
 
-  it("searches only known fixture identities and reports unavailable utilities honestly", async () => {
+  it("searches permission-filtered identities and exposes the internal notification feed", async () => {
     const user = userEvent.setup();
     const navigate = vi.fn<(target: string) => void>();
     renderWithLocale(
@@ -963,21 +985,20 @@ describe("application shell behavior", () => {
     await user.type(search, "TL-99999{Enter}");
     expect(navigate).not.toHaveBeenCalled();
     expect(
-      screen.getByText("No prototype search result matched this query."),
+      await screen.findByText("No authorized object matches this query."),
     ).toBeVisible();
     await user.clear(search);
-    await user.type(search, "TL-26018-01{Enter}");
-    expect(navigate).toHaveBeenLastCalledWith("/tooling/TL-26018-01");
+    await user.type(search, "SYN{Enter}");
+    await user.click(await screen.findByText("Synthetic project cockpit"));
+    expect(navigate).toHaveBeenLastCalledWith(
+      "/projects/11111111-1111-4111-8111-111111111111",
+    );
     expect(
-      screen.queryByText("No prototype search result matched this query."),
+      screen.queryByText("No authorized object matches this query."),
     ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Notifications" }));
-    expect(
-      screen.getByText(
-        "No prototype notification feed is connected. Use My Work for assigned actions.",
-      ),
-    ).toBeVisible();
+    expect(await screen.findByText("Work item due soon")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Refresh" }));
     expect(
       screen.getByText(

@@ -18,6 +18,8 @@ import {
   ProjectControlsRequestCancelledError,
   type ProjectControlsDataSource,
 } from "../api/project-controls-data-source";
+import type { ReportingDataSource } from "../api/reporting-data-source";
+import type { CollaborationDataSource } from "../api/collaboration-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import { scenarioLabel } from "../i18n/copy";
 import { supportedLocales, useI18n, type Locale } from "../i18n/runtime";
@@ -27,7 +29,6 @@ import {
   focusControl,
   Icon,
   Select,
-  TextInput,
   type NpiIconName,
 } from "../ui-adapters/npi-ui";
 import {
@@ -36,8 +37,11 @@ import {
   DisplayBrandWordmark,
 } from "../ui-adapters/display-brand";
 import { RequestFailurePanel } from "../components/problem-details-panel";
+import { GlobalSearchPanel } from "../components/global-search-panel";
+import { NotificationCenter } from "../components/notification-center";
 
 interface NavigationItem {
+  active?: boolean;
   id: string;
   label: string;
   icon: NpiIconName;
@@ -61,12 +65,6 @@ type QuickCreateState =
   | { kind: "available"; projectId: string }
   | { kind: "unavailable"; reason: string }
   | { kind: "failed"; failure: RequestFailure };
-
-const prototypeSearchTargets: Readonly<Record<string, string>> = {
-  "PJ-26018": "/demo/projects/PJ-26018",
-  "TL-26018-01": "/tooling/TL-26018-01",
-  T1: "/trials/T1",
-};
 
 function optionalMatchMedia(query: string): MediaQueryList | null {
   const matchMedia = (
@@ -110,11 +108,15 @@ export function AppShell({
   route,
   navigate,
   projectControlsDataSource,
+  reportingDataSource,
+  collaborationDataSource,
   children,
 }: PropsWithChildren<{
   route: AppRoute;
   navigate: (target: string) => void;
   projectControlsDataSource?: ProjectControlsDataSource | undefined;
+  reportingDataSource: ReportingDataSource;
+  collaborationDataSource: CollaborationDataSource;
 }>): React.JSX.Element {
   const {
     locale,
@@ -154,13 +156,15 @@ export function AppShell({
   const isLiveExecution =
     route.screen === "execution" && route.projectGlobalId !== null;
   const isLiveWork = route.screen === "work" && route.workMode === "live";
+  const isLivePortfolio = route.screen === "portfolio";
   const isLiveProjectContext =
     isLiveProject ||
     isLiveGate ||
     isLiveTooling ||
     isLiveTrial ||
     isLiveExecution;
-  const isLiveDataContext = isLiveWork || isLiveProjectContext;
+  const isLiveDataContext =
+    isLiveWork || isLiveProjectContext || isLivePortfolio;
   const prototypeNavigationAllowed = !isLiveDataContext;
   const liveProjectPath =
     route.projectGlobalId === null
@@ -172,50 +176,58 @@ export function AppShell({
     ? `${liveProjectPath}/integration-operations`
     : null;
   const denied = route.scenario === "no_permission";
+  const reportingContext =
+    route.reportingView === "kpis"
+      ? t("KPI reporting")
+      : route.reportingView === "configuration"
+        ? t("Administration capabilities")
+        : t("Project Portfolio");
   const routeContext = denied
     ? { exempt: false, value: t("Protected object") }
     : route.screen === "work"
       ? { exempt: false, value: t("Cross-object work queue") }
-      : route.screen === "project"
-        ? {
-            exempt:
-              route.projectMode === "demo" || route.projectGlobalId !== null,
-            value:
-              route.projectMode === "demo"
-                ? "PJ-26018"
-                : (route.projectGlobalId ?? t("Project")),
-          }
-        : route.screen === "gate"
+      : route.screen === "portfolio"
+        ? { exempt: false, value: reportingContext }
+        : route.screen === "project"
           ? {
-              exempt: true,
-              value: isLiveGate
-                ? `${route.gateGlobalId ?? ""} · ${route.projectGlobalId ?? ""}`
-                : `${route.qualityFailure ? "G6" : "G5"} · PJ-26018`,
+              exempt:
+                route.projectMode === "demo" || route.projectGlobalId !== null,
+              value:
+                route.projectMode === "demo"
+                  ? "PJ-26018"
+                  : (route.projectGlobalId ?? t("Project")),
             }
-          : route.screen === "tooling"
+          : route.screen === "gate"
             ? {
                 exempt: true,
-                value: isLiveTooling
-                  ? `${route.projectGlobalId ?? ""}${
-                      route.toolingMasterGlobalId
-                        ? ` · ${route.toolingMasterGlobalId}`
-                        : ""
-                    }`
-                  : "PJ-26018 · TL-26018-01",
+                value: isLiveGate
+                  ? `${route.gateGlobalId ?? ""} · ${route.projectGlobalId ?? ""}`
+                  : `${route.qualityFailure ? "G6" : "G5"} · PJ-26018`,
               }
-            : route.screen === "trial"
+            : route.screen === "tooling"
               ? {
                   exempt: true,
-                  value: isLiveTrial
-                    ? (route.projectGlobalId ?? "")
-                    : "TL-26018-01 · T1",
+                  value: isLiveTooling
+                    ? `${route.projectGlobalId ?? ""}${
+                        route.toolingMasterGlobalId
+                          ? ` · ${route.toolingMasterGlobalId}`
+                          : ""
+                      }`
+                    : "PJ-26018 · TL-26018-01",
                 }
-              : isLiveExecution
+              : route.screen === "trial"
                 ? {
                     exempt: true,
-                    value: route.projectGlobalId ?? "",
+                    value: isLiveTrial
+                      ? (route.projectGlobalId ?? "")
+                      : "TL-26018-01 · T1",
                   }
-                : { exempt: false, value: t("Cross-system operations") };
+                : isLiveExecution
+                  ? {
+                      exempt: true,
+                      value: route.projectGlobalId ?? "",
+                    }
+                  : { exempt: false, value: t("Cross-system operations") };
   const breadcrumbRoot =
     route.screen === "tooling"
       ? t("Tooling")
@@ -223,7 +235,9 @@ export function AppShell({
         ? t("Trial and NPI")
         : route.screen === "execution"
           ? t("Execution and Reconciliation")
-          : t("Engineering projects");
+          : route.screen === "portfolio"
+            ? t("Reporting")
+            : t("Engineering projects");
   const breadcrumbCurrent = denied
     ? { exempt: false, value: t("Protected object") }
     : route.screen === "work"
@@ -244,9 +258,10 @@ export function AppShell({
       id: "portfolio",
       icon: "projects",
       label: t("Project Portfolio"),
-      ...(prototypeNavigationAllowed
-        ? { path: "/demo/projects/PJ-26018" }
-        : { unavailableReason: liveNavigationUnavailable }),
+      path: "/portfolio",
+      screen: "portfolio",
+      active:
+        route.screen === "portfolio" && route.reportingView === "portfolio",
     },
     {
       id: "project",
@@ -311,13 +326,18 @@ export function AppShell({
       id: "analytics",
       icon: "analysis",
       label: t("Analytics"),
-      unavailableReason: t("Available in a later phase"),
+      path: "/reports",
+      screen: "portfolio",
+      active: route.screen === "portfolio" && route.reportingView === "kpis",
     },
     {
       id: "administration",
       icon: "user",
       label: t("Administration"),
-      unavailableReason: t("Available in a later phase"),
+      path: "/administration",
+      screen: "portfolio",
+      active:
+        route.screen === "portfolio" && route.reportingView === "configuration",
     },
   ];
   const commands = useMemo<readonly ShellCommand[]>(
@@ -329,6 +349,30 @@ export function AppShell({
         icon: "work",
         keywords: [t("Work"), t("Actions"), t("Approvals")],
         target: "/work",
+      },
+      {
+        id: "portfolio",
+        label: t("Open Project Portfolio"),
+        description: t("Open the permission-filtered Project portfolio."),
+        icon: "projects",
+        keywords: [t("Portfolio"), t("Projects")],
+        target: "/portfolio",
+      },
+      {
+        id: "reporting",
+        label: t("Open KPI reporting"),
+        description: t("Open governed monthly KPI trends."),
+        icon: "analysis",
+        keywords: [t("KPI"), t("Reports")],
+        target: "/reports",
+      },
+      {
+        id: "administration",
+        label: t("Open Administration capabilities"),
+        description: t("Open the read-only configuration capability catalog."),
+        icon: "user",
+        keywords: [t("Administration"), t("Configuration")],
+        target: "/administration",
       },
       {
         id: "project",
@@ -609,40 +653,10 @@ export function AppShell({
         >
           {routeContext.value}
         </span>
-        <label className="global-search">
-          <span className="visually-hidden">{t("Global search")}</span>
-          <Icon name="search" />
-          <TextInput
-            aria-label={t("Global search")}
-            onKeyDown={(event) => {
-              if (event.key !== "Enter") return;
-              if (isLiveDataContext) {
-                setUtilityMessage(
-                  isLiveWork
-                    ? t(
-                        "Live global search is not available in this phase. Open an authorized work item or project link.",
-                      )
-                    : t(
-                        "Live global search is not available in this phase. Open this project from an authorized project link.",
-                      ),
-                );
-                return;
-              }
-              const query = event.currentTarget.value.trim().toUpperCase();
-              const target = prototypeSearchTargets[query];
-              if (target) {
-                setUtilityMessage(null);
-                navigate(target);
-                return;
-              }
-              setUtilityMessage(
-                t("No prototype search result matched this query."),
-              );
-            }}
-            placeholder={t("Search projects, tools, trials, and drawings")}
-            type="search"
-          />
-        </label>
+        <GlobalSearchPanel
+          dataSource={reportingDataSource}
+          navigate={navigate}
+        />
         <Button
           aria-expanded={commandPaletteOpen}
           aria-haspopup="dialog"
@@ -656,24 +670,11 @@ export function AppShell({
           <span>{t("Commands")}</span>
           <kbd data-language-exempt="identifier">Ctrl/⌘+K</kbd>
         </Button>
-        <Button
-          aria-label={t("Notifications")}
-          icon="alarm"
-          onClick={() => {
-            setUtilityMessage(
-              isLiveDataContext
-                ? t(
-                    "No live notification feed is connected in this phase. Use My Work for assigned actions.",
-                  )
-                : t(
-                    "No prototype notification feed is connected. Use My Work for assigned actions.",
-                  ),
-            );
-          }}
-          visual="ghost"
-        >
-          {t("{{count}} notifications", { count: 0 })}
-        </Button>
+        <NotificationCenter
+          dataSource={collaborationDataSource}
+          navigate={navigate}
+          session={sessionCommandContext}
+        />
         <Button
           aria-label={t("Help")}
           icon="help"
@@ -779,8 +780,9 @@ export function AppShell({
           <ul>
             {navigation.map((item) => {
               const active =
-                route.screen === item.screen ||
-                (item.id === "project" && route.screen === "gate");
+                item.active ??
+                (route.screen === item.screen ||
+                  (item.id === "project" && route.screen === "gate"));
               const tooltipId = `navigation-${item.id}-tooltip`;
               return (
                 <li key={item.id}>
@@ -910,9 +912,11 @@ export function AppShell({
           <span className="environment-marker__detail">
             {isLiveWork
               ? t("Live My Work data")
-              : isLiveProjectContext
-                ? t("Live project data")
-                : t("Prototype data")}
+              : isLivePortfolio
+                ? t("Live reporting data")
+                : isLiveProjectContext
+                  ? t("Live project data")
+                  : t("Prototype data")}
           </span>
         </div>
       </aside>
@@ -1039,6 +1043,15 @@ export function AppShell({
                   );
                   return;
                 }
+                if (isLivePortfolio) {
+                  globalThis.dispatchEvent(
+                    new CustomEvent("npi:refresh-reporting"),
+                  );
+                  setUtilityMessage(
+                    t("The live reporting request is being refreshed."),
+                  );
+                  return;
+                }
                 if (isLiveProjectContext) {
                   if (isLiveGate) {
                     globalThis.dispatchEvent(
@@ -1122,11 +1135,15 @@ export function AppShell({
                 ? t(
                     "Live My Work data. No production ERPNext system is connected.",
                   )
-                : isLiveProjectContext
+                : isLivePortfolio
                   ? t(
-                      "Live project data. No production ERPNext system is connected.",
+                      "Live reporting data. No production ERPNext system is connected.",
                     )
-                  : t("Prototype data - no production system is connected.")}
+                  : isLiveProjectContext
+                    ? t(
+                        "Live project data. No production ERPNext system is connected.",
+                      )
+                    : t("Prototype data - no production system is connected.")}
             </strong>
             {localizationFailure ? (
               <div className="localization-failure">

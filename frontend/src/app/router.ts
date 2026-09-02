@@ -34,6 +34,9 @@ const liveIntegrationOperationsRoutePattern = new RegExp(
 );
 const approvedPathPatterns = [
   /^\/work\/?$/u,
+  /^\/portfolio\/?$/u,
+  /^\/reports\/?$/u,
+  /^\/administration\/?$/u,
   /^\/demo\/work\/?$/u,
   new RegExp(`^/demo/projects/${fixtureRouteSegment}/?$`, "u"),
   new RegExp(
@@ -72,6 +75,7 @@ export interface AppRoute {
   toolingMode: "live" | "demo" | null;
   toolingWorkspace: "cockpit" | "import";
   trialMode: "live" | "demo" | null;
+  reportingView: "portfolio" | "kpis" | "configuration" | null;
 }
 
 function parseScenario(value: string | null): Scenario {
@@ -154,25 +158,34 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
   const liveIntegrationOperationsMatch =
     liveIntegrationOperationsRoutePattern.exec(pathname);
   const demoWork = /^\/demo\/work\/?$/u.test(pathname);
-  const screen: ScreenId = liveIntegrationOperationsMatch
-    ? "execution"
-    : demoGateMatch || liveGateMatch || liveGatePathPattern.test(pathname)
-      ? "gate"
-      : liveTrialMatch
-        ? "trial"
-        : liveToolingMatch || liveToolingMasterMatch
-          ? "tooling"
-          : demoProjectMatch
-            ? "project"
-            : pathname.startsWith("/projects/")
+  const reportingView = /^\/portfolio\/?$/u.test(pathname)
+    ? "portfolio"
+    : /^\/reports\/?$/u.test(pathname)
+      ? "kpis"
+      : /^\/administration\/?$/u.test(pathname)
+        ? "configuration"
+        : null;
+  const screen: ScreenId = reportingView
+    ? "portfolio"
+    : liveIntegrationOperationsMatch
+      ? "execution"
+      : demoGateMatch || liveGateMatch || liveGatePathPattern.test(pathname)
+        ? "gate"
+        : liveTrialMatch
+          ? "trial"
+          : liveToolingMatch || liveToolingMasterMatch
+            ? "tooling"
+            : demoProjectMatch
               ? "project"
-              : pathname.startsWith("/tooling/")
-                ? "tooling"
-                : pathname.startsWith("/trials/")
-                  ? "trial"
-                  : pathname.startsWith("/execution")
-                    ? "execution"
-                    : "work";
+              : pathname.startsWith("/projects/")
+                ? "project"
+                : pathname.startsWith("/tooling/")
+                  ? "tooling"
+                  : pathname.startsWith("/trials/")
+                    ? "trial"
+                    : pathname.startsWith("/execution")
+                      ? "execution"
+                      : "work";
   const projectMode =
     screen === "project" ? (demoProjectMatch ? "demo" : "live") : null;
   const gateMode = screen === "gate" ? (demoGateMatch ? "demo" : "live") : null;
@@ -186,6 +199,7 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
     screen === "trial" ? (liveTrialMatch ? "live" : "demo") : null;
   const workMode = screen === "work" ? (demoWork ? "demo" : "live") : null;
   const liveRoute =
+    screen === "portfolio" ||
     workMode === "live" ||
     projectMode === "live" ||
     gateMode === "live" ||
@@ -218,6 +232,7 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
         : "cockpit",
     trialMode,
     workMode,
+    reportingView,
   };
 }
 
