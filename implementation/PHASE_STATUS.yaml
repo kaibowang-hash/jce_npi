@@ -1,24 +1,24 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T05:45:31+07:00'
+updated_at: '2026-09-03T15:30:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P9-03
-current_task_status: IN_PROGRESS_P9_03_FINAL_GATE_AUTHORIZED
-current_task_completed_stage: P9_03_LOCAL_LEVEL_2_PASS_PINNED_AUDIT_AWAITING_EXACT_CI
-current_task_next_stage: P9_03_LEVEL_2_THEN_EXACT_SHA_ORDINARY_AND_LEVEL_3
-current_task_next_stage_status: IN_PROGRESS_PRODUCT_CANDIDATE
-resumed_product_task: P9-03
-resumed_product_task_status: ACTIVE_PRODUCT_CANDIDATE
+current_task: P9-04
+current_task_status: IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR
+current_task_completed_stage: P9_03_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
+current_task_next_stage: P9_04_TRANSITION_EXACT_SHA_ORDINARY_THEN_ONE_SECURITY_METADATA_READ
+current_task_next_stage_status: IN_PROGRESS_ZERO_CONTACT_GOVERNANCE
+resumed_product_task: P9-04
+resumed_product_task_status: FACT_DELTA_PRODUCT_HELD
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
-    connection_authorized: CLOSED_AFTER_ACCEPTED_P8_07F_FACT_WINDOW
+    connection_authorized: P9_04_TRANSITION_EXACT_SHA_ORDINARY_PENDING
     current_task_may_connect: false
-    connection_effective_condition: COMPLETE_FOR_CURRENT_TASK
+    connection_effective_condition: P9_04_TRANSITION_EXACT_SHA_ORDINARY_PASS
     documentation_authorized_after_transition_ordinary: true
-    current_rule: NO_FURTHER_PRODUCTION_READ_BEFORE_FINAL_P8_07F_GATE
+    current_rule: ONE_FIXED_P9_SECURITY_METADATA_READ_ONLY_AFTER_EXACT_SHA_ORDINARY_PASS
     future_activation_trigger: TASK_SCOPED_FRESHNESS_OR_DELTA_NEED_UNDER_STANDING_BOUNDARY
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
@@ -3266,7 +3266,7 @@ p9_02:
   next_gate: COMPLETE
 p9_03:
   task: P9-03
-  status: IN_PROGRESS_FINAL_GATE_AUTHORIZED
+  status: PASS_LEVEL_3
   predecessor_product_checkpoint: 36cfe4cec8f31525e836c714236116704be066f3
   governance_checkpoint: c845f93d27d29a692582599e4c5bdcec97693223
   governance_ordinary: 33689961261
@@ -3286,7 +3286,23 @@ p9_03:
   production_sla_claim: false
   product_code_authorized: true
   production_erp_contact: false
-  next_gate: LEVEL_2_THEN_EXACT_SHA_ORDINARY_AND_LEVEL_3
+  final_checkpoint: 957d307d26bc93fedb08b03fae25f15d0241e1d7
+  final_ordinary: 33693636192
+  final_ordinary_jobs: {frontend_verify: 100457698019, frontend_e2e_shard_1: 100457698120, visual: 100457698294, secret_scan: 100457698298, frontend_e2e_shard_2: 100457698313, repository: 100457698319, frontend_aggregate: 100458843256}
+  final_level_3: 33694055699
+  final_level_3_jobs: {frontend_e2e_shard_2: 100458991152, frontend_verify: 100458991404, secret_scan: 100458991411, frontend_e2e_shard_1: 100458991446, visual: 100458991455, repository: 100458991524, frontend_aggregate: 100460235392, controlled_preflight: 100460289944, controlled_runtime: 100460350172}
+  final_release_gate: PASS
+  next_gate: COMPLETE
+p9_04:
+  task: P9-04
+  status: IN_PROGRESS_FACT_DELTA_COLLECTOR
+  predecessor_product_checkpoint: 957d307d26bc93fedb08b03fae25f15d0241e1d7
+  plan: implementation/evidence/phase-9/p9-04-plan.md
+  production_fact_inventory_reused: true
+  transition_production_contact: false
+  production_delta_operation: P9_SECURITY_AUTHORIZATION_METADATA
+  product_code_authorized: false
+  next_gate: TRANSITION_EXACT_SHA_ORDINARY_THEN_ONE_FIXED_READ
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3314,4 +3330,4 @@ phases:
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02], current_task: P9-03}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03], current_task: P9-04}

@@ -1157,6 +1157,143 @@ class ProductionFactCollectorTest(unittest.TestCase):
             ):
                 collector._p9_change_preflight("d" * 40)
 
+    def test_p9_security_commands_are_fixed_read_only_and_exclude_sensitive_fields(self) -> None:
+        for family, spec in collector.P9_SECURITY_METADATA_SPECS.items():
+            command = collector._p9_security_metadata_command(family, "site-one", 0)
+            self.assertEqual(command[4], "frappe.client.get_list")
+            kwargs = json.loads(command[6])
+            self.assertEqual(kwargs["doctype"], spec["doctype"])
+            self.assertEqual(kwargs["fields"], list(spec["fields"]))
+            rendered = " ".join(command).lower()
+            for forbidden in ("client_secret", "api_key", "email", "password", "console", "sql"):
+                self.assertNotIn(forbidden, rendered)
+        with self.assertRaises(collector.FactCollectionError):
+            collector._p9_security_metadata_command("CALLER_SELECTED", "site-one", 0)
+        with self.assertRaises(collector.FactCollectionError):
+            collector._p9_security_metadata_command(
+                "SECURITY_ROLE_PROFILES",
+                "site-one",
+                1,
+            )
+
+        operations = dict(collector._p9_security_count_commands("site-one"))
+        self.assertEqual(set(operations), set(collector.P9_SECURITY_COUNT_SPECS))
+        for operation, command in operations.items():
+            self.assertEqual(command[4], "frappe.client.get_count")
+            self.assertEqual(
+                json.loads(command[6]),
+                collector.P9_SECURITY_COUNT_SPECS[operation],
+            )
+            self.assertNotIn("user\":", command[6])
+            self.assertNotIn("for_value", command[6])
+
+        settings = collector._p9_security_settings_command("site-one")
+        self.assertEqual(settings[4], "frappe.client.get_value")
+        self.assertEqual(
+            json.loads(settings[6]),
+            {"doctype": "Website Settings", "fieldname": ["disable_signup"]},
+        )
+
+    def test_p9_security_operation_emits_only_sanitized_metadata_and_counts(self) -> None:
+        args = argparse.Namespace(expected_sha="e" * 40, ordinary_run_id="202")
+        role_profile = {
+            "name": "NPI Engineer",
+            "role_profile": "NPI Engineer",
+            "modified": "2026-09-03 10:00:00.000000",
+        }
+        social_login = {
+            "name": "Microsoft",
+            "provider_name": "Microsoft",
+            "enable_social_login": 1,
+            "modified": "2026-09-03 10:00:00.000000",
+        }
+        counts = {
+            "SYSTEM_USERS_TOTAL": 10,
+            "SYSTEM_USERS_ENABLED": 8,
+            "SYSTEM_USERS_DISABLED": 2,
+            "USER_PERMISSIONS_TOTAL": 9,
+            "USER_PERMISSIONS_PROJECT": 4,
+            "USER_PERMISSIONS_COMPANY": 2,
+            "USER_PERMISSIONS_CUSTOMER": 1,
+            "USER_PERMISSIONS_SUPPLIER": 1,
+        }
+        calls: list[tuple[str, tuple[str, ...]]] = []
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            calls.append((operation, command))
+            if operation == "SECURITY_ROLE_PROFILES":
+                return json.dumps([role_profile]).encode()
+            if operation == "SECURITY_SOCIAL_LOGIN_KEYS":
+                return json.dumps([social_login]).encode()
+            if operation == "SECURITY_ROLE_PROFILE_DOCUMENT":
+                return json.dumps(
+                    {
+                        "doctype": "Role Profile",
+                        "name": "NPI Engineer",
+                        "roles": [{"role": "Projects User"}, {"role": "NPI API User"}],
+                        "owner": "private@example.com",
+                    }
+                ).encode()
+            if operation in counts:
+                return json.dumps(counts[operation]).encode()
+            if operation == "SECURITY_WEBSITE_SETTINGS":
+                return b'{"disable_signup": 1}'
+            raise AssertionError(operation)
+
+        with patch.object(collector, "_p9_security_preflight"), patch.dict(
+            os.environ,
+            {"NPI_P8_07F_SITE": "site-one"},
+            clear=True,
+        ), patch.object(collector, "_emit") as emit:
+            collector._p9_security_metadata_operation(args, runner)
+
+        output = emit.call_args.args[0]
+        rendered = json.dumps(output)
+        self.assertEqual(output["task_id"], "P9-04")
+        self.assertEqual(output["operation"], "P9_SECURITY_AUTHORIZATION_METADATA")
+        self.assertTrue(output["result"]["settings"]["self_signup_disabled"])
+        self.assertEqual(output["result"]["counts"]["system_users_enabled"], 8)
+        self.assertEqual(
+            output["result"]["role_profiles"][0]["roles"],
+            ["NPI API User", "Projects User"],
+        )
+        self.assertNotIn("private@example.com", rendered)
+        self.assertNotIn("site-one", rendered)
+        self.assertTrue(all(command[0] == "bench" for _, command in calls))
+        self.assertFalse(any("console" in " ".join(command).lower() for _, command in calls))
+
+    def test_p9_security_preflight_requires_exact_activation_and_paths(self) -> None:
+        manifest = {
+            "task_id": "P9-04",
+            "status": "IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR",
+            "allowed_paths": [
+                "implementation/evidence/phase-9/p9-04-plan.md",
+                "scripts/collect_erpnext_production_facts.py",
+                "tests/test_erpnext_production_fact_collector.py",
+            ],
+        }
+        path = self.write_manifest(manifest)
+
+        def git(*args: str) -> str:
+            return "e" * 40 if args == ("rev-parse", "HEAD") else ""
+
+        with patch.object(collector, "MANIFEST", path), patch.object(
+            collector,
+            "_git",
+            side_effect=git,
+        ):
+            self.assertEqual(collector._p9_security_preflight("e" * 40), manifest)
+
+        invalid = {**manifest, "status": "IN_PROGRESS_P9_04_PRODUCT"}
+        with patch.object(
+            collector,
+            "MANIFEST",
+            self.write_manifest(invalid),
+        ), patch.object(collector, "_git", side_effect=git), self.assertRaises(
+            collector.FactCollectionError
+        ):
+            collector._p9_security_preflight("e" * 40)
+
     def test_status_rejects_untracked_and_paths_reject_nondeterminism(self) -> None:
         with self.assertRaises(collector.FactCollectionError):
             collector._parse_status(b"?? unknown.txt\n")
@@ -1195,6 +1332,15 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(
             emit.call_args.args[0]["p9_change_metadata_families"],
             list(collector.P9_CHANGE_METADATA_SPECS),
+        )
+        self.assertEqual(emit.call_args.args[0]["p9_security_task_id"], "P9-04")
+        self.assertEqual(
+            emit.call_args.args[0]["p9_security_metadata_families"],
+            list(collector.P9_SECURITY_METADATA_SPECS),
+        )
+        self.assertEqual(
+            emit.call_args.args[0]["p9_security_count_operations"],
+            list(collector.P9_SECURITY_COUNT_SPECS),
         )
 
 

@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_03_FINAL_GATE_AUTHORIZED — P9-03`
+`IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR — P9-04`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -12,15 +12,16 @@ passes exact-SHA ordinary CI `33687630510` and the sole final Level 3
 `33688112727`, including complete frontend/E2E/visual lanes and fresh
 disposable-Site runtime `100442085873`. Its release-gate result is PASS.
 
-P9-03 governance checkpoint `c845f93d27d29a692582599e4c5bdcec97693223`
-passes exact-SHA ordinary CI `33689961261`. Finish the already frozen single
-product batch, run affected checks once and one complete Level 2, then create
-one product commit, require its exact-SHA ordinary PASS, and run one final
-diagnostics-off Level 3 including cumulative disposable-Site measurements.
-The three-second and five-second targets are non-production engineering
-thresholds, not a production SLA. Do not contact production systems, redesign
-domains or CI, add a generic cache or search service, hide the Vite warning,
-relax any Gate, or stage user-owned files.
+P9-03 product checkpoint `957d307d26bc93fedb08b03fae25f15d0241e1d7`
+passes ordinary CI `33693636192` and final Level 3 `33694055699`; P9-03 is
+complete. P9-04 now freezes one zero-contact governance and fixed security fact
+delta. Commit and push this transition as one batch, require its exact-SHA
+ordinary CI PASS, then execute exactly one `security-metadata` production
+read-only invocation through `JCE-Core` and `frappe-bench`. Reuse all prior
+inventory. Never emit identities, permission values, secrets, endpoints or
+business rows. After accepting the sanitized result, decide and implement only
+the evidenced minimum local change as one product batch. P9-04 marker:
+`P9-03 Level 3 PASS; P9-04 security fact delta active`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

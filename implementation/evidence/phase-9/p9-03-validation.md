@@ -78,17 +78,25 @@ release input.
 
 Governance transition `c845f93d27d29a692582599e4c5bdcec97693223`
 passed exact-SHA ordinary CI `33689961261` in repository, secret, frontend,
-both E2E shards, governed visual and frontend aggregate lanes. The product
-candidate's local Level 2 passes `2,891/2,891` repository tests,
+both E2E shards, governed visual and frontend aggregate lanes. Product
+checkpoint `957d307d26bc93fedb08b03fae25f15d0241e1d7` then passes exact-SHA
+ordinary CI `33693636192`: frontend verify `100457698019`, E2E shard 1
+`100457698120`, visual `100457698294`, secret scan `100457698298`, E2E shard 2
+`100457698313`, repository `100457698319` and frontend aggregate
+`100458843256`. Its sole diagnostics-off Level 3 `33694055699` also passes:
+E2E shard 2 `100458991152`, frontend `100458991404`, secret scan
+`100458991411`, E2E shard 1 `100458991446`, visual `100458991455`, repository
+`100458991524`, frontend aggregate `100460235392`, controlled preflight
+`100460289944` and cumulative disposable runtime `100460350172` in `9m25s`.
+
+The product's local Level 2 passes `2,891/2,891` repository tests,
 `1,117/1,117` frontend units with 80.07% statement coverage, `463/463`
 nonvisual E2E, generation, type checking, lint, 8,982-source complete
 `zh`/`zh-TW` coverage, build budgets and reconciliation/diff checks. The host's
 npm 11.3 cannot execute the repository-pinned npm 11.16 `approve-scripts`
 command, so the clean exact-SHA CI frontend lane remains the authoritative
-install-script and audit proof. The product candidate must pass exact-SHA
-ordinary CI and one diagnostics-off Level 3 including the cumulative disposable
-runtime before P9-03 can close. Until then this file is candidate evidence, not
-a release PASS.
+install-script and audit proof. The evidence-based `release-gate` result is
+PASS. No production system was contacted.
 
 ## Rollback
 

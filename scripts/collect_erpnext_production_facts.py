@@ -32,6 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "implementation" / "CURRENT_TASK.json"
 TASK_ID = "P8-07F-FACTS"
 P9_CHANGE_TASK_ID = "P9-01"
+P9_SECURITY_TASK_ID = "P9-04"
 SSH_ALIAS = "JCE-Core"
 REMOTE_BENCH_ROOT = "frappe-bench"
 LOCAL_TIMEZONE = ZoneInfo("Asia/Bangkok")
@@ -321,6 +322,52 @@ P9_CHANGE_PARENT_FAMILIES = {
     "CHANGE_DOCFIELDS": ("DOCFIELDS", "fields"),
     "CHANGE_DOCPERMS": ("DOCPERMS", "permissions"),
 }
+P9_SECURITY_PAGE_SIZE = 100
+P9_SECURITY_MAX_PAGES = 5
+P9_SECURITY_METADATA_SPECS: dict[str, dict[str, Any]] = {
+    "SECURITY_ROLE_PROFILES": {
+        "doctype": "Role Profile",
+        "fields": ("name", "role_profile", "modified"),
+    },
+    "SECURITY_SOCIAL_LOGIN_KEYS": {
+        "doctype": "Social Login Key",
+        "fields": ("name", "provider_name", "enable_social_login", "modified"),
+    },
+}
+P9_SECURITY_COUNT_SPECS: dict[str, dict[str, Any]] = {
+    "SYSTEM_USERS_TOTAL": {
+        "doctype": "User",
+        "filters": {"user_type": "System User"},
+    },
+    "SYSTEM_USERS_ENABLED": {
+        "doctype": "User",
+        "filters": {"user_type": "System User", "enabled": 1},
+    },
+    "SYSTEM_USERS_DISABLED": {
+        "doctype": "User",
+        "filters": {"user_type": "System User", "enabled": 0},
+    },
+    "USER_PERMISSIONS_TOTAL": {
+        "doctype": "User Permission",
+        "filters": {},
+    },
+    "USER_PERMISSIONS_PROJECT": {
+        "doctype": "User Permission",
+        "filters": {"allow": "Project"},
+    },
+    "USER_PERMISSIONS_COMPANY": {
+        "doctype": "User Permission",
+        "filters": {"allow": "Company"},
+    },
+    "USER_PERMISSIONS_CUSTOMER": {
+        "doctype": "User Permission",
+        "filters": {"allow": "Customer"},
+    },
+    "USER_PERMISSIONS_SUPPLIER": {
+        "doctype": "User Permission",
+        "filters": {"allow": "Supplier"},
+    },
+}
 
 
 class FactCollectionError(RuntimeError):
@@ -417,6 +464,40 @@ def _p9_change_preflight(expected_sha: str) -> dict[str, Any]:
     require(
         type(allowed_paths) is list and required_paths.issubset(set(allowed_paths)),
         "P9-01 change metadata collector paths are not authorized",
+    )
+    return manifest
+
+
+def _p9_security_preflight(expected_sha: str) -> dict[str, Any]:
+    require(HEX_SHA.fullmatch(expected_sha) is not None, "expected SHA is invalid")
+    require(_git("rev-parse", "HEAD") == expected_sha, "local HEAD differs from expected SHA")
+    for path in (
+        "implementation/CURRENT_TASK.json",
+        "implementation/evidence/phase-9/p9-04-plan.md",
+        "scripts/collect_erpnext_production_facts.py",
+    ):
+        require(
+            not _git("status", "--short", "--untracked-files=no", "--", path),
+            f"governed security collector path is dirty: {path}",
+        )
+    try:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError("cannot load the current task manifest") from exc
+    require(manifest.get("task_id") == P9_SECURITY_TASK_ID, "P9-04 task is not active")
+    require(
+        manifest.get("status") == "IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR",
+        "P9-04 security metadata collector is not active",
+    )
+    required_paths = {
+        "implementation/evidence/phase-9/p9-04-plan.md",
+        "scripts/collect_erpnext_production_facts.py",
+        "tests/test_erpnext_production_fact_collector.py",
+    }
+    allowed_paths = manifest.get("allowed_paths")
+    require(
+        type(allowed_paths) is list and required_paths.issubset(set(allowed_paths)),
+        "P9-04 security metadata collector paths are not authorized",
     )
     return manifest
 
@@ -567,6 +648,74 @@ def _p9_change_metadata_command(
     return command
 
 
+def _p9_security_metadata_command(
+    family: str,
+    site: str,
+    start: int,
+) -> tuple[str, ...]:
+    require(family in P9_SECURITY_METADATA_SPECS, "security metadata family is not allowlisted")
+    require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
+    require(
+        start >= 0 and start % P9_SECURITY_PAGE_SIZE == 0,
+        "security metadata page start is invalid",
+    )
+    spec = P9_SECURITY_METADATA_SPECS[family]
+    kwargs = {
+        "doctype": spec["doctype"],
+        "fields": list(spec["fields"]),
+        "filters": [],
+        "order_by": "name asc",
+        "limit_start": start,
+        "limit_page_length": P9_SECURITY_PAGE_SIZE,
+    }
+    command = (
+        "bench",
+        "--site",
+        site,
+        "execute",
+        "frappe.client.get_list",
+        "--kwargs",
+        json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
+    )
+    _validate_command_tokens(command)
+    return command
+
+
+def _p9_security_count_commands(site: str) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
+    commands: list[tuple[str, tuple[str, ...]]] = []
+    for operation, spec in P9_SECURITY_COUNT_SPECS.items():
+        kwargs = {"doctype": spec["doctype"], "filters": spec["filters"]}
+        command = (
+            "bench",
+            "--site",
+            site,
+            "execute",
+            "frappe.client.get_count",
+            "--kwargs",
+            json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
+        )
+        _validate_command_tokens(command)
+        commands.append((operation, command))
+    return tuple(commands)
+
+
+def _p9_security_settings_command(site: str) -> tuple[str, ...]:
+    require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
+    kwargs = {"doctype": "Website Settings", "fieldname": ["disable_signup"]}
+    command = (
+        "bench",
+        "--site",
+        site,
+        "execute",
+        "frappe.client.get_value",
+        "--kwargs",
+        json.dumps(kwargs, sort_keys=True, separators=(",", ":")),
+    )
+    _validate_command_tokens(command)
+    return command
+
+
 def _site_fact_commands(family: str, site: str) -> tuple[tuple[str, tuple[str, ...]], ...]:
     require(family in SITE_FACT_FAMILIES, "site fact family is not allowlisted")
     require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
@@ -607,7 +756,7 @@ def _site_fact_commands(family: str, site: str) -> tuple[tuple[str, tuple[str, .
 
 def _parent_document_command(site: str, parent_doctype: str, name: str) -> tuple[str, ...]:
     require(APP_TOKEN.fullmatch(site) is not None, "runtime site parameter is invalid")
-    require(parent_doctype in {"DocType", "Workflow", "Document Naming Rule"}, "parent metadata type is not allowlisted")
+    require(parent_doctype in {"DocType", "Workflow", "Document Naming Rule", "Role Profile"}, "parent metadata type is not allowlisted")
     require(type(name) is str and 0 < len(name) <= 160, "parent metadata name is invalid")
     require("@" not in name and "://" not in name, "parent metadata name may contain sensitive identity or endpoint data")
     kwargs = {"doctype": parent_doctype, "name": name}
@@ -1822,6 +1971,175 @@ def _p9_change_metadata_operation(
     )
 
 
+def _parse_nonnegative_json_integer(raw: bytes, label: str) -> int:
+    require(len(raw) <= MAX_RUNTIME_BYTES, f"{label} output exceeded the bounded limit")
+    try:
+        value = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError(f"{label} output is not exact JSON") from exc
+    require(type(value) is int and value >= 0, f"{label} count shape drifted")
+    return value
+
+
+def _parse_role_profile_document(raw: bytes, profile_name: str) -> dict[str, Any]:
+    require(len(raw) <= MAX_RUNTIME_BYTES, "role profile output exceeded the bounded limit")
+    try:
+        value = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError("role profile output is not exact JSON") from exc
+    require(type(value) is dict, "role profile document must be an object")
+    require(
+        value.get("doctype") == "Role Profile" and value.get("name") == profile_name,
+        "role profile identity drifted",
+    )
+    children = value.get("roles")
+    require(type(children) is list and len(children) <= 200, "role profile role shape drifted")
+    roles: list[str] = []
+    for child in children:
+        require(type(child) is dict, "role profile role row drifted")
+        role = _safe_scalar(child.get("role"))
+        require(type(role) is str and role, "role profile role value drifted")
+        roles.append(role)
+    require(len(roles) == len(set(roles)), "role profile contains duplicate roles")
+    return {
+        "name": profile_name,
+        "role_count": len(roles),
+        "roles": sorted(roles),
+        "document_checksum": _checksum(raw),
+    }
+
+
+def _parse_security_settings(raw: bytes) -> dict[str, bool]:
+    require(len(raw) <= MAX_RUNTIME_BYTES, "website settings output exceeded the bounded limit")
+    try:
+        value = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError("website settings output is not exact JSON") from exc
+    require(type(value) is dict and set(value) == {"disable_signup"}, "website settings shape drifted")
+    disabled = value["disable_signup"]
+    require(type(disabled) in {bool, int} and disabled in {0, 1, False, True}, "self-signup flag shape drifted")
+    return {"self_signup_disabled": bool(disabled)}
+
+
+def _p9_security_metadata_operation(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+) -> None:
+    _validate_ordinary_run_id(args.ordinary_run_id)
+    _p9_security_preflight(args.expected_sha)
+    site = os.environ.get("NPI_P8_07F_SITE")
+    require(
+        site is not None and APP_TOKEN.fullmatch(site) is not None,
+        "runtime site parameter is missing or invalid",
+    )
+
+    family_results: dict[str, dict[str, Any]] = {}
+    raw_profile_names: list[str] = []
+    for family in P9_SECURITY_METADATA_SPECS:
+        rows: list[dict[str, Any]] = []
+        names: list[str] = []
+        page_checksums: list[str] = []
+        exhausted = False
+        for page_index in range(P9_SECURITY_MAX_PAGES):
+            start = page_index * P9_SECURITY_PAGE_SIZE
+            raw = runner(
+                family,
+                _p9_security_metadata_command(family, site, start),
+                MAX_RUNTIME_BYTES,
+            )
+            page_rows, page_names = _parse_metadata_page(
+                raw,
+                family,
+                P9_SECURITY_METADATA_SPECS,
+                page_size=P9_SECURITY_PAGE_SIZE,
+                empty_stdout_is_empty_list=True,
+            )
+            require(
+                not set(names).intersection(page_names),
+                "security metadata pagination contains duplicate names",
+            )
+            rows.extend(page_rows)
+            names.extend(page_names)
+            page_checksums.append(_checksum(raw))
+            if len(page_rows) < P9_SECURITY_PAGE_SIZE:
+                exhausted = True
+                break
+        require(exhausted, "security metadata exceeded the fixed pagination limit")
+        if family == "SECURITY_ROLE_PROFILES":
+            raw_profile_names = list(names)
+        family_results[family] = {
+            "row_count": len(rows),
+            "page_count": len(page_checksums),
+            "page_checksums": page_checksums,
+            "result_checksum": _checksum(_json_bytes(rows)),
+            "rows": rows,
+        }
+
+    require(len(raw_profile_names) <= P9_SECURITY_PAGE_SIZE, "role profile count exceeded")
+    role_profiles: list[dict[str, Any]] = []
+    for profile_name in raw_profile_names:
+        raw = runner(
+            "SECURITY_ROLE_PROFILE_DOCUMENT",
+            _parent_document_command(site, "Role Profile", profile_name),
+            MAX_RUNTIME_BYTES,
+        )
+        role_profiles.append(_parse_role_profile_document(raw, profile_name))
+
+    counts: dict[str, int] = {}
+    count_checksums: dict[str, str] = {}
+    for operation, command in _p9_security_count_commands(site):
+        raw = runner(operation, command, MAX_RUNTIME_BYTES)
+        counts[operation.lower()] = _parse_nonnegative_json_integer(raw, operation)
+        count_checksums[operation] = _checksum(raw)
+    require(
+        counts["system_users_enabled"] + counts["system_users_disabled"]
+        == counts["system_users_total"],
+        "system user counts are inconsistent",
+    )
+    require(
+        sum(
+            counts[f"user_permissions_{scope}"]
+            for scope in ("project", "company", "customer", "supplier")
+        )
+        <= counts["user_permissions_total"],
+        "user permission counts are inconsistent",
+    )
+
+    settings_raw = runner(
+        "SECURITY_WEBSITE_SETTINGS",
+        _p9_security_settings_command(site),
+        MAX_RUNTIME_BYTES,
+    )
+    settings = _parse_security_settings(settings_raw)
+    result = {
+        "families": family_results,
+        "role_profiles": role_profiles,
+        "counts": counts,
+        "count_checksums": count_checksums,
+        "settings": settings,
+        "settings_checksum": _checksum(settings_raw),
+        "excluded_sensitive_fields": [
+            "User.name",
+            "User.email",
+            "User.api_key",
+            "Social Login Key.client_id",
+            "Social Login Key.client_secret",
+            "User Permission.user",
+            "User Permission.for_value",
+        ],
+    }
+    _emit(
+        {
+            "task_id": P9_SECURITY_TASK_ID,
+            "operation": "P9_SECURITY_AUTHORIZATION_METADATA",
+            "timestamp": _timestamp(),
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "result_checksum": _checksum(_json_bytes(result)),
+            "result": result,
+        }
+    )
+
+
 def _cleanup(args: argparse.Namespace) -> None:
     _validate_ordinary_run_id(args.ordinary_run_id)
     _preflight(args.expected_sha)
@@ -1866,6 +2184,9 @@ def _parser() -> argparse.ArgumentParser:
     change_metadata_parser = subparsers.add_parser("change-metadata")
     change_metadata_parser.add_argument("--expected-sha", required=True)
     change_metadata_parser.add_argument("--ordinary-run-id", required=True)
+    security_metadata_parser = subparsers.add_parser("security-metadata")
+    security_metadata_parser.add_argument("--expected-sha", required=True)
+    security_metadata_parser.add_argument("--ordinary-run-id", required=True)
     governed("cleanup")
     return parser
 
@@ -1898,6 +2219,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "p9_change_operation": "P9_CHANGE_DECLARATIVE_METADATA",
                     "p9_change_doctypes": list(P9_CHANGE_DOCTYPES),
                     "p9_change_metadata_families": list(P9_CHANGE_METADATA_SPECS),
+                    "p9_security_task_id": P9_SECURITY_TASK_ID,
+                    "p9_security_operation": "P9_SECURITY_AUTHORIZATION_METADATA",
+                    "p9_security_metadata_families": list(P9_SECURITY_METADATA_SPECS),
+                    "p9_security_count_operations": list(P9_SECURITY_COUNT_SPECS),
                     "remote_contact": False,
                 }
             )
@@ -1918,6 +2243,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             _site_fact_operation(args)
         elif args.command == "change-metadata":
             _p9_change_metadata_operation(args)
+        elif args.command == "security-metadata":
+            _p9_security_metadata_operation(args)
         elif args.command == "cleanup":
             _cleanup(args)
         else:

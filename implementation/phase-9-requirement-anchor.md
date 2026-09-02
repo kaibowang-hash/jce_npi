@@ -1,6 +1,6 @@
 # Phase 9 Requirement Anchor
 
-Status: `P9-00 PASS — P9-01 FACT-DELTA GOVERNANCE ACTIVE`
+Status: `P9-03 PASS — P9-04 SECURITY FACT-DELTA GOVERNANCE ACTIVE`
 
 This anchor is the product-code authorization boundary for Phase 9. It closes no
 Phase 9 requirement by itself. P9-00 exact SHA
@@ -93,3 +93,20 @@ Scripts, secrets, target methods or unrelated metadata, and may not write or
 execute any ERP business action. Product code remains unauthorized until the
 sanitized result is accepted and the final P9-01 plan passes exact-SHA ordinary
 CI.
+
+## P9-04 approved security boundary and bounded fact delta
+
+P9-03 product checkpoint `957d307d26bc93fedb08b03fae25f15d0241e1d7`
+passes ordinary CI `33693636192` and diagnostics-off Level 3 `33694055699`.
+P9-04 now applies the approved Entra/Frappe/ERP authority split. Existing
+server-side role, tenant, Project, object, file and operation authorization is
+retained; the task may neither redesign domains nor make NPI a second editable
+permission master.
+
+The accepted P8-07F inventory is reused. A separately exact-SHA ordinary-gated,
+fixed collector may read only Role Profile role membership, non-secret Social
+Login provider metadata, System User and selected User Permission aggregate
+counts, and the self-signup flag. It excludes identities, permission values,
+secrets, endpoints and business records. The fact checkpoint makes no product
+change and no production mutation. Only a concrete compatibility difference
+may authorize a later minimal local adjustment.

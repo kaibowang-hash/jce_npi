@@ -2,11 +2,16 @@
 
 Recorded: `2026-09-03`
 
-Status: `IMPLEMENTATION CANDIDATE — FINAL GATE PENDING`
+Status: `PASS — EXACT-SHA ORDINARY AND LEVEL 3`
 
 Governance checkpoint:
 `c845f93d27d29a692582599e4c5bdcec97693223`; exact-SHA ordinary CI
 `33689961261` passed before product implementation began.
+
+Product checkpoint `957d307d26bc93fedb08b03fae25f15d0241e1d7`
+passes exact-SHA ordinary CI `33693636192` and diagnostics-off Level 3
+`33694055699`, including the cumulative disposable-Site runtime. P9-03 is
+complete and P9-04 may proceed under its separate security boundary.
 
 ## Outcome and boundaries
 

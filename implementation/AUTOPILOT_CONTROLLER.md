@@ -11507,3 +11507,32 @@ P9-01 Level 3.
   metadata-family or test-by-test micro-commits. P9-04 remains held until that
   final Gate passes. Production ERPNext and LaunchFlow remain untouched.
 - Controller marker: `P9-03 implementation candidate; final Level 3 pending`.
+
+## 2026-09-03 P9-03 Level 3 PASS; P9-04 security fact delta active
+
+- P9-03 product checkpoint `957d307d26bc93fedb08b03fae25f15d0241e1d7`
+  passes ordinary CI `33693636192` and the sole diagnostics-off Level 3
+  `33694055699`. Repository, secret, frontend, both E2E shards, governed visual,
+  frontend aggregate, controlled preflight and cumulative disposable runtime
+  all pass. `release-gate` is PASS; no production system was contacted.
+- Automatically activate P9-04 for `NFR-SEC-001`, `NFR-SEC-003` and `INT-012`.
+  The approved boundary is Entra authentication/MFA, Frappe session and
+  ERPNext-authoritative enabled internal users, NPI roles and approved scopes.
+  Existing server-side authorization remains mandatory.
+- Reuse the accepted P8-07F inventory. It does not retain exact Role Profile
+  membership, selected User Permission usage, active non-secret Social Login
+  metadata or self-signup setting, so one fixed delta is necessary. This
+  transition is zero SSH/Site/ERP contact and makes no product change.
+- After this transition's exact-SHA ordinary CI passes, one fixed
+  `security-metadata` operation may use `JCE-Core` and `frappe-bench`. It reads
+  only Role Profile names/roles, Social Login provider name/enabled state,
+  aggregate System User and Project/Company/Customer/Supplier User Permission
+  counts, and `Website Settings.disable_signup`. It excludes identities,
+  permission values, credentials, endpoints, secrets, business rows and Script
+  bodies. Any shape, permission, output, checksum or allowlist drift stops the
+  read without expansion.
+- The fact result may authorize only the smallest compatible local projection,
+  adapter or fail-closed check. ERPNext customization or any production write is
+  a separate task. Preserve user-owned dirty documentation and deferred-pilot
+  decisions.
+- Controller marker: `P9-03 Level 3 PASS; P9-04 security fact delta active`.

@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T05:45:31+07:00`
+Updated: `2026-09-03T15:30:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_03_FINAL_GATE_AUTHORIZED — P9-03`
+- Mode: `IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR — P9-04`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -21,16 +21,16 @@ Updated: `2026-09-03T05:45:31+07:00`
   secret, frontend, `230/230` E2E-shard, `135/135` visual, controlled preflight
   and fresh cumulative disposable-Site lane. Runtime `100442085873` completes
   fixture verification and cleanup in `7m59s`; `release-gate` is PASS.
-- P9-03 governance checkpoint
-  `c845f93d27d29a692582599e4c5bdcec97693223` passes exact-SHA ordinary CI
-  `33689961261`. The single product candidate batches the already authorized
-  reporting reads, defers route-owned data sources and unselected full locale
-  catalogs, adds deterministic build budgets, and measures the existing
-  disposable-Site runtime with a monotonic clock. The local initial-JS result
-  is 804,996 / 196,501 deterministic-gzip bytes versus the frozen 2,519.56 kB /
-  620.55 kB baseline; the candidate still requires one Level 2, exact-SHA
-  ordinary CI and one final Level 3. No production SLA, production system
-  contact, domain redesign, threshold relaxation or CI redesign is authorized.
+- P9-03 product checkpoint `957d307d26bc93fedb08b03fae25f15d0241e1d7`
+  passes exact-SHA ordinary CI `33693636192` and diagnostics-off Level 3
+  `33694055699`, including cumulative disposable runtime `100460350172` in
+  `9m25s`; its release-gate result is PASS and P9-03 is complete.
+- P9-04 is active only as a zero-contact governance and fixed fact-delta
+  collector checkpoint. It reuses accepted P8-07F version/app/source/DocType/
+  DocPerm facts and freezes one non-secret Role Profile, Social Login, aggregate
+  User/User Permission and self-signup read. Product code and production contact
+  remain held until this transition's exact-SHA ordinary CI passes. Controller
+  marker: `P9-03 Level 3 PASS; P9-04 security fact delta active`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

@@ -34,55 +34,51 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-03")
+        self.assertEqual(value["task_id"], "P9-04")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_03_FINAL_GATE_AUTHORIZED")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P9-04")
+        self.assertEqual(value["authorized_next_task"], "P9-05")
         self.assertEqual(
             value["requirement_ids"],
-            ["NFR-PER-001", "NFR-PER-002", "NFR-AVL-001", "NFR-SCL-001"],
+            ["NFR-SEC-001", "NFR-SEC-003", "INT-012"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "c845f93d27d29a692582599e4c5bdcec97693223",
+            "957d307d26bc93fedb08b03fae25f15d0241e1d7",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "36cfe4cec8f31525e836c714236116704be066f3",
+            "957d307d26bc93fedb08b03fae25f15d0241e1d7",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "P9-03",
+                "phase_status_current_task": "P9-04",
                 "phase_status_execution_hold": "NONE",
-                "phase_status_resumed_product_task": "P9-03",
-                "active_goal_marker": "P9-03",
-                "next_action_marker": "P9-03",
-                "controller_marker": "P9-03 implementation candidate; final Level 3 pending",
+                "phase_status_resumed_product_task": "P9-04",
+                "active_goal_marker": "P9-04",
+                "next_action_marker": "P9-04",
+                "controller_marker": "P9-03 Level 3 PASS; P9-04 security fact delta active",
             },
         )
         for invariant in (
-            "P9_02_EXACT_SHA_36CFE4CE_ORDINARY_33687630510_AND_LEVEL3_33688112727_PASS",
-            "P9_03_GOVERNANCE_EXACT_SHA_C845F93D_ORDINARY_33689961261_PASS",
-            "PERFORMANCE_EVIDENCE_IS_NON_PRODUCTION_ENVIRONMENT_AND_FIXTURE_LABELLED_NOT_A_PRODUCTION_SLA",
-            "COMMON_REQUEST_P95_TARGET_THREE_SECONDS_AND_METADATA_SEARCH_TARGET_FIVE_SECONDS",
-            "MONOTONIC_CLOCK_FIXED_WARMUP_SAMPLE_COUNT_PERCENTILE_METHOD_PROVENANCE_AND_CHECKSUM_REQUIRED",
-            "REPORTING_AND_SEARCH_OPTIMIZATION_MAY_BATCH_ONLY_EXISTING_AUTHORIZED_BOUNDED_READS",
-            "FRONTEND_LOADING_MAY_DEFER_ONLY_ROUTE_OWNED_DATA_SOURCES_AND_UNSELECTED_LOCALE_CATALOGS",
-            "PRODUCTION_AVAILABILITY_TARGET_REMAINS_IT_AND_BUSINESS_HELD_WITHOUT_ACCEPTED_MONITORING_FACTS",
+            "P9_03_EXACT_SHA_957D307D_ORDINARY_33693636192_AND_LEVEL3_33694055699_PASS",
+            "MICROSOFT_ENTRA_OWNS_AUTHENTICATION_AND_MFA_FRAPPE_OWNS_SESSION_ERP_OWNS_ENABLED_INTERNAL_USERS_ROLES_AND_APPROVED_SCOPES",
+            "EVERY_NPI_DOMAIN_API_RETAINS_SERVER_SIDE_ROLE_TENANT_PROJECT_OBJECT_FILE_EXPORT_AND_OPERATION_AUTHORIZATION",
+            "UNKNOWN_DISABLED_REVOKED_STALE_OR_UNMAPPED_PRINCIPALS_FAIL_CLOSED_WITHOUT_DEFAULT_ROLE",
+            "CURRENT_LAUNCHFLOW_ARCHITECTURE_OWNERSHIP_CONTRACTS_AND_P8_01_THROUGH_P8_09_ARE_DEFAULT_CORRECT",
+            "PRODUCTION_DELTA_REUSES_ACCEPTED_INVENTORY_AND_READS_ONLY_FIXED_ROLE_PROFILE_LOGIN_COUNT_AND_SIGNUP_FACTS",
+            "PRODUCTION_CONTACT_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_PASS_AND_PRIVATE_SITE_CONFIGURATION",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
-            "NO_PRODUCTION_ERPNEXT_OR_LAUNCHFLOW_CONTACT_DURING_P9_03_IMPLEMENTATION",
+            "NO_PRODUCTION_MUTATION_AND_NO_LAUNCHFLOW_PRODUCT_CHANGE_IN_THE_FACT_COLLECTION_CHECKPOINT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "apps/npi_core/npi_core/reporting/frappe_repository.py",
-                "frontend/src/i18n/runtime.tsx",
-                "frontend/scripts/verify-build-budget.mjs",
-                "implementation/evidence/phase-9/p9-03-validation.md",
-                "scripts/verify_reporting_collaboration_runtime.py",
-                "tests/test_phase9_reporting_repository.py",
+                "implementation/evidence/phase-9/p9-04-plan.md",
+                "scripts/collect_erpnext_production_facts.py",
+                "tests/test_erpnext_production_fact_collector.py",
             }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
