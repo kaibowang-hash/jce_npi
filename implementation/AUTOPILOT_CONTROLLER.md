@@ -11157,3 +11157,31 @@ P9-01 Level 3.
   tests because this host exposes `python3` without a `python` alias; rerunning
   with a temporary PATH-only alias passes and changes no repository or CI file.
 - Controller marker: `P8-03 post-P8-09 migrated-legacy final-gate diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P8-03 migrated-legacy closed problem-code classifier
+
+- Diagnostic exact SHA `7e9e0f242a01465b3cf12eb5dadd6356b671f97b`
+  passes ordinary CI `33631552203`: visual `100251974014`, secret
+  `100251974405`, frontend `100251974465` and repository `100251975037` pass.
+  Its only controlled continuation `33632861952` passes preflight
+  `100256364084`; runtime `100256447688` returns exactly
+  `P803_LEGACY_RECONCILIATION_BODY_CODE / RuntimeError /
+  trace-fdcf4300e40353e598da3ecf82dc31f8`. Fixed-label counts are one outer,
+  one safe tuple and one withheld label. No raw or restricted output is read.
+- Status and problem-body status already pass; only the closed business code
+  differs. Static enumeration of all earlier 409 exits is nonunique, so no
+  product repair is authorized. Expand the existing value-free classifier in
+  one batch for all five possible known predecessor codes: Project history
+  lock, Item state conflict, Item idempotency conflict, stream active and
+  effect retained. Unknown or non-string values remain the generic body-code
+  class. The safe allowlist becomes exact 72; response values are never
+  rendered.
+- Product code, contracts, schema, permissions, workflow, CI and production
+  ERPNext remain unchanged. Require one exact-SHA ordinary PASS and one
+  bounded controlled Level 2. The resulting unique enum must be statically
+  cross-proved before one minimal repair; no third diagnostic layer is
+  authorized.
+- Local verification passes the focused governance/P8-03/P9 runtime set
+  `61/61` and the full repository set `2836/2836`, including current-task,
+  reconciliation, compilation, shell syntax and diff hygiene.
+- Controller marker: `P8-03 migrated-legacy closed problem-code classifier Level 1 PASS; exact-SHA ordinary CI pending`.

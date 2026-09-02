@@ -3063,7 +3063,7 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P8_03_POST_P809_MIGRATED_LEGACY_FINAL_GATE_DIAGNOSTIC
+  active_checkpoint: P8_03_MIGRATED_LEGACY_CLOSED_PROBLEM_CODE_CLASSIFIER
   p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
   p9_01b_governance_ordinary: 33354760251
   p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
@@ -3150,7 +3150,16 @@ p9_01:
   p9_01d_post_summary_operation_repair_cycle: DIAGNOSTIC_1_OF_1_REPAIR_0_OF_1_FINAL_0_OF_1
   p8_03_post_p809_legacy_diagnostic: PRODUCT_ZERO_EXISTING_FULL_BOUNDARY_RECORDER_LEVEL_1_PASS
   p8_03_post_p809_legacy_diagnostic_tests: {focused: 61_PASS, full_repository: 2836_PASS}
-  p9_01d_next_gate: P8_03_POST_P809_LEGACY_DIAGNOSTIC_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_LEVEL_2
+  p8_03_post_p809_legacy_diagnostic_checkpoint: 7e9e0f242a01465b3cf12eb5dadd6356b671f97b
+  p8_03_post_p809_legacy_diagnostic_ordinary: 33631552203
+  p8_03_post_p809_legacy_diagnostic_jobs: {visual: 100251974014, secret_scan: 100251974405, frontend: 100251974465, repository: 100251975037}
+  p8_03_post_p809_legacy_controlled: 33632861952
+  p8_03_post_p809_legacy_preflight: 100256364084
+  p8_03_post_p809_legacy_runtime: 100256447688
+  p8_03_post_p809_legacy_tuple: P803_LEGACY_RECONCILIATION_BODY_CODE_RUNTIMEERROR_TRACE_FDCF4300
+  p8_03_legacy_problem_classifier: EXACT_FIVE_KNOWN_PREDECESSOR_CODES_UNKNOWN_CLOSED_ALLOWLIST_72_LEVEL_1_PASS
+  p8_03_legacy_problem_classifier_tests: {focused: 61_PASS, full_repository: 2836_PASS}
+  p9_01d_next_gate: P8_03_CLOSED_PROBLEM_CLASSIFIER_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_LEVEL_2
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

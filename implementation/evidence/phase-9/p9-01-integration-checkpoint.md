@@ -649,3 +649,17 @@ code/type/trace recorder. This changes no product or production behavior.
 Focused governance/P8-03/P9 runtime tests pass `61/61`; full repository
 verification passes `2836/2836`, with current-task/reconciliation,
 compilation, shell syntax and diff hygiene also green.
+
+## Closed P8-03 reconciliation problem classifier
+
+Diagnostic SHA `7e9e0f242a01465b3cf12eb5dadd6356b671f97b`
+passes ordinary `33631552203`. Controlled `33632861952` passes preflight and
+returns exactly `P803_LEGACY_RECONCILIATION_BODY_CODE / RuntimeError /
+trace-fdcf4300e40353e598da3ecf82dc31f8`; one fixed outer and one withheld
+label accompany it. Status and body-status are correct, but five known 409
+predecessors remain statically possible. The existing classifier is therefore
+expanded once for all five closed enum cases. Unknown values remain generic;
+no response value, product behavior or production state is exposed or changed.
+Focused governance/P8-03/P9 runtime verification passes `61/61`; full
+repository verification passes `2836/2836` with current-task, reconciliation,
+compilation, shell syntax and diff hygiene green.

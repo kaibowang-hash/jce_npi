@@ -5,6 +5,13 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- P8-03 diagnostic exact SHA `7e9e0f242a01465b3cf12eb5dadd6356b671f97b`
+  passes ordinary `33631552203`. Its only controlled run `33632861952`
+  returns the strict `P803_LEGACY_RECONCILIATION_BODY_CODE / RuntimeError /
+  trace-fdcf4300e40353e598da3ecf82dc31f8` tuple. The active product-zero
+  checkpoint classifies every possible known earlier 409 code into one fixed,
+  value-free enum in a single batch; unknown values remain closed. No product
+  or production behavior changes.
 - Mode diagnostic exact SHA `7669d55414cd8567fcb2576151f17460592d0779`
   passes ordinary CI `33628445755`. Its sole controlled run `33629748143`
   proves every P9-01 runtime mode completes before the cumulative Gate reaches

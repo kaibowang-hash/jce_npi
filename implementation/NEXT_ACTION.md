@@ -5,6 +5,16 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+P8-03 diagnostic exact SHA `7e9e0f242a01465b3cf12eb5dadd6356b671f97b`
+passes ordinary `33631552203`. Controlled `33632861952` passes preflight and
+returns only `P803_LEGACY_RECONCILIATION_BODY_CODE / RuntimeError /
+trace-fdcf4300e40353e598da3ecf82dc31f8`. The status boundary is correct but
+the generic code class is not unique enough for a repair. The sole next action
+is this one-batch, fixed five-code classifier, its exact-SHA ordinary PASS and
+one bounded Level 2. Use the unique enum for static proof, then apply one
+minimal repair and disable all diagnostics. Do not inspect raw output, modify
+CI, contact production ERPNext or stage user-owned files.
+
 Mode diagnostic exact SHA `7669d55414cd8567fcb2576151f17460592d0779`
 passes ordinary CI `33628445755`. Its one controlled run `33629748143` passes
 preflight and proves P9-01 fresh, replay, recovery, cleanup and redaction all

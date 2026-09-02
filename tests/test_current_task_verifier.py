@@ -43,7 +43,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertEqual(
             value["expected_state"]["controller_marker"],
-            "P8-03 post-P8-09 migrated-legacy final-gate diagnostic Level 1 PASS; exact-SHA ordinary CI pending",
+            "P8-03 migrated-legacy closed problem-code classifier Level 1 PASS; exact-SHA ordinary CI pending",
         )
         self.assertIn("FR-CH-001", value["requirement_ids"])
         self.assertIn("FR-CH-010", value["requirement_ids"])
@@ -87,6 +87,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01D_SUMMARY_OPERATION_OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_TRUTH",
             "P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_PROVES_P9_COMPLETE_BEFORE_P8_03_LEGACY_GATE",
             "P8_03_POST_P809_LEGACY_FINAL_GATE_DIAGNOSTIC_PRODUCT_ZERO_CODE_TYPE_TRACE_ONLY",
+            "P8_03_LEGACY_RECONCILIATION_PROBLEM_CLASSIFIER_IS_EXACT_CLOSED_AND_VALUE_FREE",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])

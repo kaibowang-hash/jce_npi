@@ -668,3 +668,8 @@ and governed visual lanes. Controlled `33629748143` proves P9-01 runtime
 completion and fails only in the later backend P8-03 migrated-legacy recheck.
 The active P8-03 diagnostic changes no UI, source string, translation,
 accessibility behavior, fixture response or visual baseline.
+
+Ordinary `33631552203` passes frontend and governed visual again. Controlled
+`33632861952` isolates a backend P8-03 problem-code predicate. The one-batch
+closed classifier changes no UI source, route, translation, accessibility
+behavior, fixture response or visual baseline.

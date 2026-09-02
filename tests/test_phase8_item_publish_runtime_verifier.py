@@ -390,7 +390,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             )
             self.assertEqual(
                 len(module._active_legacy_full_diagnostic_codes()),
-                67,
+                72,
             )
         run_legacy = source.split("def run_legacy(", 1)[1].split("\ndef ", 1)[0]
         self.assertIn(
@@ -504,6 +504,37 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             (
                 result(body={"status": 409, "code": "PRIVATE_CODE"}),
                 "P803_LEGACY_RECONCILIATION_BODY_CODE",
+            ),
+            (
+                result(body={"status": 409, "code": "PROJECT_HISTORY_LOCKED"}),
+                "P803_LEGACY_RECONCILIATION_CODE_PROJECT_HISTORY_LOCKED",
+            ),
+            (
+                result(
+                    body={"status": 409, "code": "ITEM_PUBLISH_STATE_CONFLICT"}
+                ),
+                "P803_LEGACY_RECONCILIATION_CODE_STATE_CONFLICT",
+            ),
+            (
+                result(
+                    body={
+                        "status": 409,
+                        "code": "ITEM_PUBLISH_IDEMPOTENCY_CONFLICT",
+                    }
+                ),
+                "P803_LEGACY_RECONCILIATION_CODE_IDEMPOTENCY_CONFLICT",
+            ),
+            (
+                result(
+                    body={"status": 409, "code": "ITEM_PUBLISH_STREAM_ACTIVE"}
+                ),
+                "P803_LEGACY_RECONCILIATION_CODE_STREAM_ACTIVE",
+            ),
+            (
+                result(
+                    body={"status": 409, "code": "ITEM_PUBLISH_EFFECT_RETAINED"}
+                ),
+                "P803_LEGACY_RECONCILIATION_CODE_EFFECT_RETAINED",
             ),
             (
                 result(content_type="application/json"),
