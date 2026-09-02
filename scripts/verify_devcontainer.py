@@ -380,8 +380,8 @@ def validate_ci_verification_tools(
     ):
         require(marker in ci_workflow, f"CI diagnostic fast-path contract is missing: {marker}")
     require(
-        ci_workflow.count("needs: diagnostic_plan") == 4,
-        "Every ordinary lane must wait for the optional diagnostic plan",
+        ci_workflow.count("needs: diagnostic_plan") == 5,
+        "Every executable ordinary lane must wait for the optional diagnostic plan",
     )
     require(
         "bash scripts/verify.sh --repository" in ci_workflow
@@ -446,8 +446,14 @@ def validate_ci_verification_tools(
         "playwright test --workers=4 --grep-invert @visual" in (
             REPO_ROOT / "frontend" / "package.json"
         ).read_text(encoding="utf-8")
+        and "frontend_e2e shard ${{ matrix.shard }} of 2" in ci_workflow
+        and "fail-fast: false" in ci_workflow
+        and "shard: [1, 2]" in ci_workflow
+        and "npm run test:e2e -- --shard=${{ matrix.shard }}/2" in ci_workflow
+        and "FRONTEND_VERIFY_RESULT: ${{ needs.frontend_verify.result }}" in ci_workflow
+        and "FRONTEND_E2E_RESULT: ${{ needs.frontend_e2e.result }}" in ci_workflow
         and "--workers=2\n          --grep @visual" in ci_workflow,
-        "CI must use four non-visual workers while retaining two visual workers",
+        "CI must aggregate two native non-visual shards while retaining two visual workers",
     )
     require(
         "retries: 0" in (

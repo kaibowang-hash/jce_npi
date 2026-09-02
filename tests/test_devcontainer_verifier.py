@@ -190,6 +190,12 @@ class DevcontainerVerifierTest(unittest.TestCase):
             repository_workflow.replace("gitleaks/gitleaks-action@v3", "gitleaks/gitleaks-action@v2", 1),
             repository_workflow.replace("python scripts/verify_current_task.py", "true"),
             repository_workflow.replace("python scripts/verify_prior_gate.py", "true", 1),
+            repository_workflow.replace("shard: [1, 2]", "shard: [1]", 1),
+            repository_workflow.replace(
+                "FRONTEND_E2E_RESULT: ${{ needs.frontend_e2e.result }}",
+                "FRONTEND_E2E_RESULT: success",
+                1,
+            ),
             repository_workflow.replace(f"image: {visual_image}", "image: ubuntu:24.04", 1),
             repository_workflow.replace("include-hidden-files: true", "include-hidden-files: false", 1),
             repository_workflow.replace("--grep @visual", "--grep @visual --update-snapshots=all", 1),
