@@ -615,3 +615,23 @@ family `117/117`, full repository verification `2835/2835`, current-task and
 reconciliation checks, frontend generation and i18n (`8774`, 100% `zh` and
 `zh-TW`), compilation, shell syntax and diff hygiene. Exact-SHA ordinary PASS
 must precede the sole diagnostics-off P9-01 Level 3.
+
+## Post-summary-operation-repair mode diagnostic
+
+Repair exact SHA `70684e308308db027db86ab9920d337981f74ea3` passes
+ordinary `33624647220` in all four lanes. Its diagnostics-off Level 3
+`33625621507` passes all base jobs and controlled preflight, while disposable
+runtime `100236622147` fails in the cumulative step after fixed Bench and Site
+initialization. No restricted output was read.
+
+The product repair remains closed. One product-zero diagnostic adds fixed
+parent codes for disabled, cross-process replay, route recovery and cleanup;
+the existing fresh path retains its exact inner codes. The strict allowlist is
+177 with 94 server stages, only the new runtime activation is enabled, and the
+recorder can persist only code, exception type and deterministic trace through
+the existing first-wins `O_EXCL` 0600 file. No integration contract, write,
+permission, adapter, target or production behavior changes.
+
+Level 1 passes the exact affected suite `135/135`, full repository
+verification `2836/2836`, current-task/reconciliation, compilation, shell
+syntax and diff hygiene.

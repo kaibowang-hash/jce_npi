@@ -5,6 +5,18 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+Repair exact SHA `70684e308308db027db86ab9920d337981f74ea3`
+passes ordinary CI `33624647220` in all four lanes. Its diagnostics-off Level
+3 `33625621507` passes all four base lanes and controlled preflight, while the
+cumulative disposable runtime `100236622147` fails after fixed Bench/Site
+initialization. The closed output does not identify whether the remaining
+failure is in fresh verification, cross-process replay, route recovery or
+cleanup, so no product repair is authorized. The sole next action is this
+product-zero exact-177/code-94 mode diagnostic checkpoint, exact-SHA ordinary
+PASS and one bounded Level 2 continuation. It records only fixed stage code,
+exception type and deterministic trace; do not inspect restricted output,
+contact production ERPNext, change CI or stage user-owned files.
+
 Product-zero summary diagnostic exact SHA
 `465d563e93d6b585802935ca0ba9324dc09924bb` passes ordinary CI
 `33621391719`; controlled `33622584554` passes preflight and returns only

@@ -87,6 +87,7 @@ ENGINEERING_CHANGE_RUNTIME_POST_DATETIME_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED = False
 ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED = False
+ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_OPERATION_REPAIR_DIAGNOSTICS_ENABLED = True
 ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER = (
     "X-NPI-P901-Change-Revise-Diagnostic"
 )
@@ -240,6 +241,10 @@ ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES = frozenset(
         "P901_CHANGE_INPUT_RUNTIME_SECRET",
         "P901_CHANGE_FIXTURE_SECRET",
         "P901_CHANGE_FRESH_PARENT",
+        "P901_CHANGE_DISABLED_PARENT",
+        "P901_CHANGE_REPLAY_PARENT",
+        "P901_CHANGE_RECOVERED_PARENT",
+        "P901_CHANGE_CLEANUP_PARENT",
         "P901_CHANGE_RESULT",
         "P901_CHANGE_LOGIN",
         "P901_CHANGE_CSRF",
@@ -339,6 +344,7 @@ def _engineering_change_runtime_diagnostics_enabled() -> bool:
         or ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
         or ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED
+        or ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_OPERATION_REPAIR_DIAGNOSTICS_ENABLED
     )
 
 
@@ -1857,13 +1863,25 @@ def main() -> int:
                 "NPI_RUNTIME_FIXTURE_PASSWORD"
             )
         if arguments.disabled_probe:
-            result = run_disabled_probe(base_url, fixture_password, project_id)
+            with engineering_change_runtime_diagnostic_step(
+                "P901_CHANGE_DISABLED_PARENT"
+            ):
+                result = run_disabled_probe(base_url, fixture_password, project_id)
         elif arguments.replay_only:
-            result = run_replay(base_url, fixture_password, project_id)
+            with engineering_change_runtime_diagnostic_step(
+                "P901_CHANGE_REPLAY_PARENT"
+            ):
+                result = run_replay(base_url, fixture_password, project_id)
         elif arguments.recovered_probe:
-            result = run_recovered(base_url, fixture_password, project_id)
+            with engineering_change_runtime_diagnostic_step(
+                "P901_CHANGE_RECOVERED_PARENT"
+            ):
+                result = run_recovered(base_url, fixture_password, project_id)
         elif arguments.cleanup:
-            result = run_bench_fixture("cleanup", {"project_id": project_id})
+            with engineering_change_runtime_diagnostic_step(
+                "P901_CHANGE_CLEANUP_PARENT"
+            ):
+                result = run_bench_fixture("cleanup", {"project_id": project_id})
         else:
             with engineering_change_runtime_diagnostic_step(
                 "P901_CHANGE_FRESH_PARENT"

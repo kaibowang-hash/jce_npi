@@ -3063,7 +3063,7 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P9_01D_SUMMARY_OPERATION_PROJECTION_REPAIR
+  active_checkpoint: P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC
   p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
   p9_01b_governance_ordinary: 33354760251
   p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
@@ -3131,8 +3131,17 @@ p9_01:
   p9_01d_post_summary_project_lock_tuple: P901_CHANGE_OUTBOUND_OPERATIONS_RUNTIMEERROR_TRACE_42742F0C
   p9_01d_summary_operation_projection_repair: OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_LEVEL_1_PASS
   p9_01d_summary_operation_projection_tests: {affected: 134_PASS, full_repository: 2835_PASS, i18n: 8774_SOURCES_100_PERCENT_ZH_ZH_TW}
-  p9_01d_post_summary_project_lock_cycle: DIAGNOSTIC_1_OF_1_REPAIR_1_OF_1_FINAL_0_OF_1
-  p9_01d_next_gate: SUMMARY_OPERATION_PROJECTION_REPAIR_EXACT_SHA_ORDINARY_THEN_SOLE_DIAGNOSTICS_OFF_LEVEL_3
+  p9_01d_summary_operation_projection_repair_checkpoint: 70684e308308db027db86ab9920d337981f74ea3
+  p9_01d_summary_operation_projection_repair_ordinary: 33624647220
+  p9_01d_summary_operation_projection_repair_ordinary_jobs: {frontend: 100229437886, repository: 100229438143, visual: 100229438177, secret_scan: 100229438268}
+  p9_01d_summary_operation_projection_final_level_3: 33625621507
+  p9_01d_summary_operation_projection_final_jobs: {repository: 100232551392, secret_scan: 100232551713, visual: 100232551784, frontend: 100232551827, controlled_preflight: 100236559140, controlled_runtime: 100236622147}
+  p9_01d_summary_operation_projection_final_result: BASE_AND_PREFLIGHT_PASS_CUMULATIVE_RUNTIME_OPAQUE_FAILURE
+  p9_01d_post_summary_project_lock_cycle: DIAGNOSTIC_1_OF_1_REPAIR_1_OF_1_FINAL_1_OF_1
+  p9_01d_post_summary_operation_repair_diagnostic: PRODUCT_ZERO_EXACT_177_CODE_94_LEVEL_1_PASS
+  p9_01d_post_summary_operation_repair_diagnostic_tests: {affected: 135_PASS, full_repository: 2836_PASS}
+  p9_01d_post_summary_operation_repair_cycle: DIAGNOSTIC_0_OF_1_REPAIR_0_OF_1_FINAL_0_OF_1
+  p9_01d_next_gate: POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_LEVEL_2
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

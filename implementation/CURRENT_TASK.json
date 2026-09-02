@@ -44,7 +44,8 @@
     "Expose current and raw ERP observation truth, impact and affected-version matrices, implementation and revalidation evidence, effectivity and disposition, closeout state and immutable event history without making ERP-owned fields editable.",
     "Cover loading, empty, no-permission, read-only, processing, current, drifted, unavailable, validation, conflict, retryable and final-error states with direct English, Simplified Chinese and Traditional Chinese translations and governed industrial visual evidence.",
     "Run one fixed disposable-Site Engineering Change runtime proof for default-disabled routes, Project containment, create/revise/formal observation/close, exact signed intake, implementation-summary execution, replay, route recovery, log redaction and cleanup before the sole P9-01 Level 3.",
-    "Repair only the proven P9-01 summary-operation projection mismatch by mapping its owned idempotency hash into the existing P8-07 reference and preserving synthetic_verified as unavailable rather than formal success."
+    "Repair only the proven P9-01 summary-operation projection mismatch by mapping its owned idempotency hash into the existing P8-07 reference and preserving synthetic_verified as unavailable rather than formal success.",
+    "After repair exact SHA 70684e308308db027db86ab9920d337981f74ea3 passes ordinary CI 33624647220 and its diagnostics-off Level 3 33625621507 passes every base lane plus controlled preflight but fails the cumulative disposable runtime at an opaque shell boundary, activate one product-zero mode-boundary diagnostic before any further product repair."
   ],
   "non_scope": [
     "Any P9-01 product, schema, route, API, event, job, UI, translation, migration or deployment implementation before this fact-backed plan passes exact-SHA ordinary CI.",
@@ -90,6 +91,7 @@
     "P9_01D_ERP_OBSERVATION_FIELDS_REMAIN_READ_ONLY_AND_NPI_IMPACT_EVIDENCE_REMAINS_NPI_OWNED",
     "P9_01D_DISPOSABLE_SITE_RUNTIME_VISUAL_I18N_ACCESSIBILITY_AND_SECURITY_LEVEL_3_REQUIRED",
     "P9_01D_SUMMARY_OPERATION_OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_TRUTH",
+    "P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_PRODUCT_ZERO_CODE_TYPE_TRACE_ONLY",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
     "FORMAL_CHANGE_NUMBER_MAPPING_VERSION_ACTOR_TRACE_HASH_AND_IDEMPOTENCY_REMAIN_EXPLICIT",
     "TIMEOUT_AFTER_COMMIT_PARTIAL_STALE_CONFLICT_DUPLICATE_REPLAY_AND_RECONCILIATION_NEVER_BECOME_FAKE_SUCCESS",
@@ -195,7 +197,7 @@
     "phase_status_resumed_product_task": "P9-01",
     "active_goal_marker": "P9-01",
     "next_action_marker": "P9-01",
-    "controller_marker": "P9-01D summary operation projection repair Level 1 PASS; exact-SHA ordinary CI then sole Level 3 pending"
+    "controller_marker": "P9-01D post-summary-operation-repair mode diagnostic Level 1 PASS; exact-SHA ordinary CI pending"
   },
   "rollback": {
     "before_product_resume": "Restore exact P9-00 checkpoint 065803ae484d885001259de8238ef01d0ad311e4 and its ordinary CI 33345162833. This P9-01 audit transition changes no product or external state.",

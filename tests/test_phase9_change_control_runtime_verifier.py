@@ -246,6 +246,9 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_OPERATION_REPAIR_DIAGNOSTICS_ENABLED
+        )
         self.assertEqual(
             sum(
                 (
@@ -268,11 +271,12 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED,
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED,
+                    self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_OPERATION_REPAIR_DIAGNOSTICS_ENABLED,
                 )
             ),
-            0,
+            1,
         )
-        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 173)
+        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 177)
         server_codes = set(
             self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
         ) | set(
@@ -489,6 +493,10 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                 self.verifier,
                 "ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED",
                 False,
+            ), patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_OPERATION_REPAIR_DIAGNOSTICS_ENABLED",
+                False,
             ):
                 with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
                     self.verifier._record_engineering_change_runtime_diagnostic(
@@ -500,6 +508,20 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                         path, expected_trace=trace
                     )
                 )
+
+    def test_post_summary_operation_repair_diagnostic_covers_nonfresh_modes(
+        self,
+    ) -> None:
+        main = self.source[self.source.index("def main()") :]
+        for code, call in (
+            ("P901_CHANGE_DISABLED_PARENT", "run_disabled_probe("),
+            ("P901_CHANGE_REPLAY_PARENT", "run_replay("),
+            ("P901_CHANGE_RECOVERED_PARENT", "run_recovered("),
+            ("P901_CHANGE_CLEANUP_PARENT", 'run_bench_fixture("cleanup"'),
+        ):
+            with self.subTest(code=code):
+                self.assertIn(code, main)
+                self.assertLess(main.index(code), main.index(call))
 
     def test_revise_outcome_status_classes_are_fixed_and_complete(self) -> None:
         cases = (

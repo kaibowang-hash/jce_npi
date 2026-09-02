@@ -653,3 +653,12 @@ accessibility behavior, fixture response, permission display or visual
 baseline. Existing P9-01D visual evidence remains authoritative. Frontend
 generation and the `8774`-source 100% `zh`/`zh-TW` i18n audit pass; the sole
 next UI boundary is the final diagnostics-off Level 3.
+
+## Post-summary-operation-repair mode diagnostic UI boundary
+
+Repair ordinary `33624647220` passes frontend and governed visual lanes. The
+failed diagnostics-off Level 3 `33625621507` also passes frontend and visual;
+only the cumulative backend disposable runtime fails after preflight. The
+product-zero mode diagnostic changes no route, UI source, translation,
+accessibility behavior, fixture response, permission display or visual
+baseline. Existing P9-01D UI evidence remains authoritative.

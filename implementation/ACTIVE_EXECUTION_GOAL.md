@@ -5,6 +5,17 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- Summary-operation repair exact SHA
+  `70684e308308db027db86ab9920d337981f74ea3` passes ordinary CI
+  `33624647220` in all four lanes. Its diagnostics-off Level 3 `33625621507`
+  passes repository, secret, visual, frontend and controlled preflight, then
+  cumulative disposable runtime `100236622147` fails at a closed shell
+  boundary after fixed Bench/Site setup. Because the failure could be in
+  fresh, replay, recovery or cleanup, the active checkpoint is one
+  product-zero exact-177/code-94 mode diagnostic. Only its new runtime
+  activation is enabled; fixed code/type/trace recording, first-wins `O_EXCL`
+  0600 output, strict reader and restricted-output withholding remain intact.
+  No product behavior or production ERP target/profile changes.
 - Product-zero summary diagnostic exact SHA
   `465d563e93d6b585802935ca0ba9324dc09924bb` passes ordinary CI
   `33621391719` in all four lanes. Its single controlled continuation

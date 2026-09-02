@@ -11096,3 +11096,38 @@ sources with 100% `zh`/`zh-TW` coverage, and compilation, shell syntax and diff
 hygiene pass. The cycle is diagnostic `1/1`, repair `1/1`, final `0/1`; the sole
 next sequence is one exact-SHA ordinary PASS followed by the diagnostics-off
 P9-01 Level 3.
+
+## 2026-09-02 P9-01D post-summary-operation-repair mode diagnostic
+
+- Repair exact SHA `70684e308308db027db86ab9920d337981f74ea3` passes
+  ordinary CI `33624647220`: frontend `100229437886`, repository
+  `100229438143`, visual `100229438177` and secret `100229438268` all pass.
+  Its diagnostics-off Level 3 `33625621507` passes repository
+  `100232551392`, secret `100232551713`, visual `100232551784`, frontend
+  `100232551827` and controlled preflight `100236559140`. The cumulative
+  disposable runtime `100236622147` initializes the fixed Bench and Site,
+  then fails inside its single closed verification step.
+- The preceding projection regression and exact ordinary PASS close the owned
+  idempotency-field and no-fake-success repair. The remaining shell step spans
+  fresh verification, cross-process replay, route disable/recovery, cleanup
+  and redaction, so the all-off failure cannot authorize a guessed product
+  change. Restricted logs, responses, identities, business values, messages,
+  stacks and child output remain unread.
+- Freeze the prior cycle at diagnostic `1/1`, repair `1/1`, final `1/1` and
+  open one independent product-zero mode diagnostic at `0/1,0/1,0/1`.
+  Add only fixed parent stages for disabled, replay, recovered and cleanup to
+  the retained first-wins recorder; fresh already has exact inner stages.
+  Exact allowlist becomes 177 with 94 server stages. Only the new runtime
+  activation is true.
+- The record remains exactly code, exception type and deterministic trace in
+  one `O_EXCL` 0600 file with strict reading and failed-child withholding.
+  Product APIs, persistence, roles, ownership, transactions, queue/adapter,
+  UI, CI and production behavior do not change. After Level 1, require one
+  exact-SHA ordinary PASS and one bounded controlled Level 2. Do not rerun
+  Level 3 or contact production ERPNext until a strict tuple is statically
+  cross-proved and any unique minimal repair is complete.
+- Level 1 passes the exact affected suite `135/135`, full repository
+  verification `2836/2836`, current-task and reconciliation checks,
+  compilation, shell syntax and diff hygiene. The exact task manifest already
+  contains every changed path.
+- Controller marker: `P9-01D post-summary-operation-repair mode diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
