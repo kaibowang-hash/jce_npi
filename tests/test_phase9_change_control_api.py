@@ -307,6 +307,9 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
         self.assertFalse(
             self.api.ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
         )
+        self.assertTrue(
+            self.api.ENGINEERING_CHANGE_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED
+        )
         trace = "trace-" + "c" * 32
         self.headers.update(
             {
@@ -362,7 +365,7 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
         )
         with patch.object(
             self.api,
-            "ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED",
+            "ENGINEERING_CHANGE_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED",
             True,
         ), patch.dict(
             os.environ,

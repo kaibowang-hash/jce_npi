@@ -768,6 +768,30 @@ repository `2828/2828`, current/reconciliation `40/40`, frontend generation
 and i18n (`8774`, 100% `zh`/`zh-TW`), compile, shell, security and diff checks.
 Exact-14/projected union-63 remain bounded and unauthorized-15 is rejected.
 
+### Post-formal-Datetime-repair combined diagnostic
+
+Repair SHA `2d7a76d02893f36c004a064bff6c1a84c8c608e8` passes ordinary
+`33607597980` in all four lanes. Sole diagnostics-off Level 3 `33608430759`
+passes those lanes and controlled preflight; cumulative runtime
+`100181028119` returns only the fixed Engineering Change outer failure label.
+No restricted response, identity, business value, message, child output or
+stack was read.
+
+The comparison repair is retained, but the all-off label cannot identify the
+next internal predicate. Freeze that repair cycle at diagnostic `1/1`, harness
+repair `1/1`, product repair `1/1`, final `1/1` without a guessed repair. Open
+one independent product-zero exact-144 combined diagnostic at `0/1,0/1,0/1`.
+Only the three new post-formal-Datetime-repair declarations are true; all 39
+historical activations remain false. Existing bounded recorder, exact trace/
+request scopes, strict reader, first-wins and success-zero behavior are reused.
+Product, contracts, permissions, UI, CI and production behavior do not change.
+
+Level 1 passes focused `38/38`, full Python/formal repository `2828/2828`,
+current/reconciliation `40/40`, generation and complete `8774`-source i18n,
+compile, shell, security and diff checks. Exact-12/projected union-63 remain
+bounded; unauthorized-13 is rejected and exactly three of 42 declarations are
+active.
+
 ## P9-01D Inbox event replay identity repair
 
 Diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4` passes

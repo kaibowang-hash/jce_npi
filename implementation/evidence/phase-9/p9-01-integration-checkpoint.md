@@ -203,6 +203,26 @@ repository `2828/2828`, current/reconciliation `40/40`, complete i18n and
 security/diff checks. Exact-14/union-63 remain bounded and unauthorized-15 is
 rejected.
 
+### Post-formal-Datetime-repair integration diagnostic
+
+Repair SHA `2d7a76d02893f36c004a064bff6c1a84c8c608e8` passes ordinary
+`33607597980`. Its sole diagnostics-off Level 3 `33608430759` passes all base
+lanes and preflight, then cumulative runtime `100181028119` emits only the
+fixed Engineering Change outer label. Restricted integration output remains
+unread.
+
+The label cannot distinguish a later API, repository, Inbox, summary or
+operation predicate, so no integration repair is inferred. The closed repair
+cycle is `1/1,1/1,1/1,1/1`; an independent product-zero exact-144 diagnostic
+starts at `0/1,0/1,0/1` with only three new declarations active across the
+runtime/core/integration recorder chain. Signed facts, ownership, contracts,
+permissions, queues, replay, reconciliation, CI and production behavior remain
+unchanged.
+
+Level 1 passes focused `38/38`, full repository `2828/2828`, current/
+reconciliation `40/40`, complete i18n, security and diff checks. Exact-12/
+union-63 remain bounded and unauthorized-13 is rejected.
+
 ## P9-01D Inbox replay identity repair
 
 Post-datetime diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4`

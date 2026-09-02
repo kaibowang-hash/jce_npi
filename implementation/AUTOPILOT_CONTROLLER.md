@@ -10920,3 +10920,33 @@ repeat or rewrite it merely to restore context. See
   security and diff hygiene. Exact-14 and projected union-63 remain bounded;
   unauthorized-15 is rejected.
 - Controller marker: `P9-01D formal observation datetime comparison repair Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P9-01D post-formal-Datetime-repair combined diagnostic
+
+- Repair SHA `2d7a76d02893f36c004a064bff6c1a84c8c608e8` passes exact-SHA
+  ordinary `33607597980`: frontend `100175053097`, visual `100175053396`,
+  secret scan `100175053411` and repository `100175053436` all succeed.
+- Its sole diagnostics-off Level 3 `33608430759` passes repository
+  `100177698151`, secret scan `100177698528`, frontend `100177698556`, visual
+  `100177698590` and controlled preflight `100180949511`. Cumulative runtime
+  `100181028119` fails only with the fixed `Local Frappe Engineering Change
+  runtime verification failed.` outer label. Restricted response, business
+  value, identity, message, child output and stack remain unread.
+- The prior representation-comparison root remains repaired in source and
+  Level 1, but an all-off outer label cannot prove whether the disposable
+  runtime reached that boundary or select a later first source. Freeze that
+  repair cycle at diagnostic `1/1`, harness repair `1/1`, product repair
+  `1/1`, final `1/1`; do not infer another product change.
+- Open one independent product-zero exact-144 combined diagnostic cycle at
+  diagnostic `0/1`, repair `0/1`, final `0/1`. Only the three new
+  post-formal-Datetime-repair declarations are true across runtime/core/
+  integration; all 39 historical declarations remain false. Reuse the exact
+  trace/scopes, exact-three `O_EXCL` record, strict reader, inner-first and
+  success-zero contracts. No API, persistence, permission, workflow, UI, CI
+  or production behavior changes.
+- Level 1 passes focused runtime/core/integration `38/38`, full Python/formal
+  repository `2828/2828`, current/reconciliation `40/40`, frontend generation
+  and i18n (`8774`, 100% `zh`/`zh-TW`), compilation, shell syntax, security and
+  diff hygiene. Exact-12/projected union-63 remain bounded; unauthorized-13 is
+  rejected and exactly three of 42 declarations are active.
+- Controller marker: `P9-01D post-formal-datetime-comparison-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

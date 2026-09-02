@@ -448,6 +448,15 @@ evidence remains authoritative. Level 1 passes focused `49/49`, full repository
 `8774`-source i18n, security and diff checks. After exact-SHA ordinary PASS,
 the next and only remote gate is the diagnostics-off P9-01 Level 3.
 
+The diagnostics-off Level 3 `33608430759` passes frontend `100177698556` and
+visual `100177698590`; its later fixed backend runtime label does not invalidate
+accepted UI evidence. The new product-zero exact-144 diagnostic changes no UI
+route, response, state, copy, translation, accessibility behavior, fixture or
+visual baseline. Existing English, Simplified Chinese and Traditional Chinese
+evidence remains authoritative. Level 1 passes focused `38/38`, full repository
+`2828/2828`, current/reconciliation `40/40`, frontend generation and complete
+`8774`-source i18n, security and diff checks.
+
 ## Inbox replay identity repair UI boundary
 
 Ordinary `33462460736` passes frontend and governed visual evidence. The
