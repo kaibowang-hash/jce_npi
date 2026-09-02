@@ -5,6 +5,22 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+Summary diagnostic harness SHA
+`c9317273b58326b8445b9cfeed96207c41205f9d` passes ordinary CI
+`33615098217`. Its only controlled continuation `33616195088` passes
+preflight and returns only
+`P901_CHANGE_SUMMARY_API_REPOSITORY_CALL /
+EngineeringChangeIntegrationUnavailable /
+trace-06c7e2822b335f9dbc9d523a5bd63bd4`. Static same-request proof leaves one
+root: the implementation-summary transaction inherited the controlled-
+document repository's System-Manager-only lock even though this command is
+authorized for the current internal Project member admitted by its exact
+profile. Apply only the summary-specific locking visibility recheck, keep the
+generic admin boundary unchanged, close all diagnostics, then run exact-SHA
+ordinary CI and the one final diagnostics-off P9-01 Level 3. Do not run another
+Level 2, contact production ERPNext, relax a role/profile/write guard, or stage
+user-owned files.
+
 Post-formal-Datetime diagnostic SHA
 `f5d95e28aa64750e8cca9274af55bec9320a5015` passes ordinary CI
 `33610959690`. Controlled `33612235309` passes preflight and the full change

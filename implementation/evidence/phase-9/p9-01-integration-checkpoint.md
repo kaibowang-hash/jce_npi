@@ -244,6 +244,35 @@ transaction, ownership, worker, adapter, retry/replay, UI, CI or production
 behavior changes. Exact-SHA ordinary PASS must precede the one bounded
 controlled continuation.
 
+### Implementation-summary Project-lock repair
+
+Harness SHA `c9317273b58326b8445b9cfeed96207c41205f9d` passes ordinary
+`33615098217` in all four lanes. The one controlled continuation
+`33616195088` passes preflight and returns only
+`P901_CHANGE_SUMMARY_API_REPOSITORY_CALL /
+EngineeringChangeIntegrationUnavailable /
+trace-06c7e2822b335f9dbc9d523a5bd63bd4` from runtime `100202546724`.
+No restricted output was read.
+
+The exact Project scope check passed before the call. The exact change was
+closed by the same enabled internal Project member in the immediately preceding
+step and remained current, excluding the later detail lookup. The remaining
+return-only path is the inherited controlled-document Project lock, whose
+generic semantics require System Manager. The summary command instead freezes
+authority as current Project visibility plus exact integration-profile
+membership. One operation-specific locking helper now reacquires the exact
+Project row and rechecks the unchanged visibility predicate. It does not alter
+the inherited admin helper, any role, DocPerm, profile, write capability,
+contract, ownership or target behavior.
+
+Focused integration/API/runtime/core tests pass `53/53`, the complete P9 Change
+family passes `117/117`, and full Python/formal repository verification passes
+`2834/2834`. Current/reconciliation, frontend generation and i18n (`8774`,
+100% `zh`/`zh-TW`), compilation, shell syntax and diff hygiene pass. All
+Engineering Change diagnostic activations are off. The cycle is
+`1/1,1/1,1/1,0/1`; exact-SHA ordinary PASS must precede the sole
+diagnostics-off Level 3.
+
 Level 1 passes focused `38/38`, full repository `2828/2828`, current/
 reconciliation `40/40`, complete i18n, security and diff checks. Exact-12/
 union-63 remain bounded and unauthorized-13 is rejected.

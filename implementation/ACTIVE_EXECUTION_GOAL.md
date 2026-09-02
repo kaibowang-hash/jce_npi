@@ -5,6 +5,21 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- Summary diagnostic harness exact SHA
+  `c9317273b58326b8445b9cfeed96207c41205f9d` passes ordinary CI
+  `33615098217` in all four lanes. Its only controlled continuation
+  `33616195088` passes preflight `100202473598`; runtime `100202546724`
+  returns the strict tuple
+  `P901_CHANGE_SUMMARY_API_REPOSITORY_CALL /
+  EngineeringChangeIntegrationUnavailable /
+  trace-06c7e2822b335f9dbc9d523a5bd63bd4`. The exact root is the summary
+  transaction inheriting a controlled-document System-Manager-only Project
+  lock after its current-member scope check already passed. The active repair
+  adds one summary-specific locking reauthorization against unchanged Project
+  visibility, keeps the profile and command write guards, and closes every
+  diagnostic activation. Product repair is `1/1`; the sole next sequence is
+  exact-SHA ordinary PASS followed by one diagnostics-off P9-01 Level 3. No
+  production ERP target/profile is active or contacted.
 - Post-formal-Datetime diagnostic exact SHA
   `f5d95e28aa64750e8cca9274af55bec9320a5015` passes ordinary CI
   `33610959690` in all four lanes. Its controlled continuation `33612235309`

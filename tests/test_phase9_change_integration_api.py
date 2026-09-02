@@ -256,6 +256,10 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
                 ),
             },
             clear=False,
+        ), patch.object(
+            self.module,
+            "ENGINEERING_CHANGE_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED",
+            True,
         ):
             self.assertTrue(
                 self.module._engineering_change_summary_diagnostic_active(trace)
@@ -312,7 +316,7 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.module.ENGINEERING_CHANGE_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED
         )
 

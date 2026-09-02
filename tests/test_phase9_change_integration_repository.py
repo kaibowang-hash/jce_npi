@@ -241,6 +241,49 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
         for forbidden in ("frappe.client", "target_doctype", "target_method"):
             self.assertNotIn(forbidden, source)
 
+    def test_summary_project_lock_reauthorizes_current_project_visibility(self) -> None:
+        project_id = UUID("00000000-0000-4000-8000-000000009405")
+        project = Row(global_id=str(project_id), tenant_id="tenant-1")
+        with patch.object(
+            self.module.frappe,
+            "get_doc",
+            return_value=project,
+        ) as get_doc, patch.object(
+            self.repository,
+            "_can_view_project",
+            create=True,
+            return_value=True,
+        ) as can_view:
+            self.assertIs(
+                self.repository._locked_summary_project(project_id),
+                project,
+            )
+        get_doc.assert_called_once_with(
+            "NPI Engineering Project",
+            str(project_id),
+            for_update=True,
+        )
+        can_view.assert_called_once_with(project, project_id)
+
+        with patch.object(
+            self.module.frappe,
+            "get_doc",
+            return_value=project,
+        ), patch.object(
+            self.repository,
+            "_can_view_project",
+            create=True,
+            return_value=False,
+        ):
+            self.assertIsNone(self.repository._locked_summary_project(project_id))
+
+        with patch.object(
+            self.module.frappe,
+            "get_doc",
+            side_effect=self.module.frappe.DoesNotExistError,
+        ):
+            self.assertIsNone(self.repository._locked_summary_project(project_id))
+
     def test_every_initial_physical_datetime_is_database_normalized(self) -> None:
         source = (
             ROOT

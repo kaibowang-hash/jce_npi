@@ -108,6 +108,17 @@ class FrappeEngineeringChangeIntegrationRepository(FrappeDocumentRepository):
     def authorize_scope(self, project_id: UUID) -> bool:
         return self._authorized_project(project_id) is not None
 
+    def _locked_summary_project(self, project_id: UUID):
+        try:
+            project = frappe.get_doc(
+                "NPI Engineering Project",
+                str(project_id),
+                for_update=True,
+            )
+        except frappe.DoesNotExistError:
+            return None
+        return project if self._can_view_project(project, project_id) else None
+
     def receive_inbound(self, request: AuthenticatedInboundRequest) -> CommandOutcome:
         with engineering_change_inbound_repository_step(
             "P901_CHANGE_INBOUND_REPOSITORY_INPUT"
@@ -253,7 +264,7 @@ class FrappeEngineeringChangeIntegrationRepository(FrappeDocumentRepository):
         with engineering_change_inbound_repository_step(
             "P901_CHANGE_SUMMARY_REPOSITORY_PROJECT_LOCK"
         ):
-            project = self._locked_authorized_project(project_id)
+            project = self._locked_summary_project(project_id)
             if project is None:
                 return None
         with engineering_change_inbound_repository_step(

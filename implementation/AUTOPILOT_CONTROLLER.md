@@ -10987,3 +10987,44 @@ repeat or rewrite it merely to restore context. See
   manifest already contains every changed path; no product or CI scope is
   added.
 - Controller marker: `P9-01D summary diagnostic harness repair Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P9-01D implementation-summary Project-lock repair
+
+- Summary diagnostic harness SHA
+  `c9317273b58326b8445b9cfeed96207c41205f9d` passes exact-SHA ordinary
+  `33615098217`: frontend `100198984156`, repository `100198984347`, visual
+  `100198984241` and secret scan `100198984126` all succeed. Its one bounded
+  controlled continuation `33616195088` passes preflight `100202473598`;
+  runtime `100202546724` returns only
+  `P901_CHANGE_SUMMARY_API_REPOSITORY_CALL /
+  EngineeringChangeIntegrationUnavailable /
+  trace-06c7e2822b335f9dbc9d523a5bd63bd4`. Restricted logs, response status/body,
+  business values, identities, messages, child output and stacks remain
+  unread.
+- The API's immediately preceding Project-scope check passed. The repository
+  call can return unavailable without an inner exception only when its Project
+  lock or same-principal change detail returns absent. The same enabled
+  internal Project member had just closed that exact change and its root/current
+  revision remained present, so change-detail absence is excluded. The unique
+  root is the integration repository inheriting
+  `FrappeDocumentRepository._locked_authorized_project`, which reauthorizes
+  only internal System Managers although the summary command's frozen authority
+  is current Project visibility plus exact profile membership.
+- Add one operation-specific `_locked_summary_project` seam: lock the exact
+  `NPI Engineering Project` row with `for_update=True`, return absent on missing
+  identity, and reauthorize through the unchanged `_can_view_project` predicate.
+  Keep the inherited generic administration boundary untouched. Profile
+  `permits`, exact predecessor, CSRF, `NPI API User`, actor-bound idempotency,
+  summary write capability, Outbox, audit, queue and adapter contracts remain
+  unchanged; no role or DocPerm is broadened.
+- Close both remaining activation booleans. The retained exact-173/code-94
+  diagnostic implementation is dormant and success emits no record. Cycle is
+  diagnostic `1/1`, harness repair `1/1`, product repair `1/1`, final `0/1`.
+- Level 1 passes focused integration/API/runtime/core `53/53`, the complete
+  P9 Change family `117/117`, full Python/formal repository `2834/2834`,
+  current/reconciliation, frontend generation and i18n (`8774`, 100%
+  `zh`/`zh-TW`), compilation, shell syntax and diff hygiene. The sole next
+  sequence is one exact-SHA ordinary PASS followed by the diagnostics-off
+  P9-01 Level 3. No second Level 2, production ERPNext contact, CI workflow
+  change or user-owned file staging is authorized.
+- Controller marker: `P9-01D implementation-summary Project-lock repair Level 1 PASS; exact-SHA ordinary CI then sole Level 3 pending`.

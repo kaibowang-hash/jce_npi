@@ -584,6 +584,16 @@ route, UI source, translation, accessibility behavior, fixture response or
 visual baseline; existing P9-01D UI evidence remains authoritative.
 Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
 
+## Implementation-summary Project-lock repair UI boundary
+
+Harness ordinary `33615098217` passes frontend and governed visual lanes. Its
+single controlled continuation isolates a backend Project-lock authorization
+mismatch before any summary write. The operation-specific repository repair
+changes no route, UI, source string, catalog, permission display, fixture
+response, accessibility behavior or visual baseline. All diagnostics are off;
+existing P9-01D UI evidence remains authoritative pending the sole final Level
+3.
+
 ## Disposable runtime marker repair
 
 Post-raw-body diagnostic SHA `cc17b5ffd38801abb07f564d6671777af7bf4a6b`

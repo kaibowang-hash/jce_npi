@@ -243,7 +243,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
@@ -270,7 +270,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED,
                 )
             ),
-            1,
+            0,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 173)
         server_codes = set(
@@ -823,7 +823,15 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             captured.append(dict(kwargs["request_headers"]))
             return result
 
-        with patch.object(self.verifier, "request", side_effect=fake_request):
+        with patch.object(
+            self.verifier,
+            "request",
+            side_effect=fake_request,
+        ), patch.object(
+            self.verifier,
+            "ENGINEERING_CHANGE_RUNTIME_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED",
+            True,
+        ):
             with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
                 self.verifier._command(
                     object(),
@@ -836,6 +844,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     expected_status=202,
                     replayed=False,
                 )
+        with patch.object(self.verifier, "request", side_effect=fake_request):
             self.verifier._command(
                 object(),
                 self.verifier.RUNTIME_BASE_URL,

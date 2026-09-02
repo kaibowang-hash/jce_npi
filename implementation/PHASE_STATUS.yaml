@@ -3107,7 +3107,15 @@ p9_01:
   p9_01d_post_formal_datetime_runtime: 100189930769
   p9_01d_post_formal_datetime_tuple: P901_CHANGE_SUMMARY_HTTP_RUNTIMEERROR_TRACE_41530FDE
   p9_01d_summary_diagnostic_harness: LEVEL_1_PASS_EXACT_173_CODE_94_SERVER_STAGE
-  p9_01d_next_gate: SUMMARY_DIAGNOSTIC_HARNESS_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_CONTINUATION
+  p9_01d_summary_diagnostic_checkpoint: c9317273b58326b8445b9cfeed96207c41205f9d
+  p9_01d_summary_diagnostic_ordinary: 33615098217
+  p9_01d_summary_diagnostic_jobs: {frontend: 100198984156, repository: 100198984347, visual: 100198984241, secret_scan: 100198984126}
+  p9_01d_summary_diagnostic_controlled: 33616195088
+  p9_01d_summary_diagnostic_preflight: 100202473598
+  p9_01d_summary_diagnostic_runtime: 100202546724
+  p9_01d_summary_diagnostic_tuple: P901_CHANGE_SUMMARY_API_REPOSITORY_CALL_ENGINEERINGCHANGEINTEGRATIONUNAVAILABLE_TRACE_06C7E282
+  p9_01d_summary_project_lock_repair: LEVEL_1_PASS_OPERATION_SPECIFIC_VIEW_REAUTHORIZATION_ALL_DIAGNOSTICS_OFF
+  p9_01d_next_gate: SUMMARY_PROJECT_LOCK_REPAIR_EXACT_SHA_ORDINARY_THEN_SOLE_LEVEL_3
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
