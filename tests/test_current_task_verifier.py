@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-03")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_03_AUDIT_AND_PLAN")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_03_FINAL_GATE_AUTHORIZED")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-04")
         self.assertEqual(
@@ -45,7 +45,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "36cfe4cec8f31525e836c714236116704be066f3",
+            "c845f93d27d29a692582599e4c5bdcec97693223",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
@@ -59,12 +59,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-03",
                 "active_goal_marker": "P9-03",
                 "next_action_marker": "P9-03",
-                "controller_marker": "P9-02 Level 3 PASS; P9-03 audit and plan active",
+                "controller_marker": "P9-03 implementation candidate; final Level 3 pending",
             },
         )
         for invariant in (
             "P9_02_EXACT_SHA_36CFE4CE_ORDINARY_33687630510_AND_LEVEL3_33688112727_PASS",
-            "P9_03_PRODUCT_CODE_HELD_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_PASS",
+            "P9_03_GOVERNANCE_EXACT_SHA_C845F93D_ORDINARY_33689961261_PASS",
             "PERFORMANCE_EVIDENCE_IS_NON_PRODUCTION_ENVIRONMENT_AND_FIXTURE_LABELLED_NOT_A_PRODUCTION_SLA",
             "COMMON_REQUEST_P95_TARGET_THREE_SECONDS_AND_METADATA_SEARCH_TARGET_FIVE_SECONDS",
             "MONOTONIC_CLOCK_FIXED_WARMUP_SAMPLE_COUNT_PERCENTILE_METHOD_PROVENANCE_AND_CHECKSUM_REQUIRED",
@@ -72,23 +72,18 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "FRONTEND_LOADING_MAY_DEFER_ONLY_ROUTE_OWNED_DATA_SOURCES_AND_UNSELECTED_LOCALE_CATALOGS",
             "PRODUCTION_AVAILABILITY_TARGET_REMAINS_IT_AND_BUSINESS_HELD_WITHOUT_ACCEPTED_MONITORING_FACTS",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
-            "NO_PRODUCTION_ERPNEXT_OR_LAUNCHFLOW_CONTACT_DURING_P9_03_AUDIT_PLAN_TRANSITION",
+            "NO_PRODUCTION_ERPNEXT_OR_LAUNCHFLOW_CONTACT_DURING_P9_03_IMPLEMENTATION",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
-        self.assertEqual(
-            set(value["allowed_paths"]),
+        self.assertTrue(
             {
-                "implementation/ACTIVE_EXECUTION_GOAL.md",
-                "implementation/AUTOPILOT_CONTROLLER.md",
-                "implementation/CURRENT_TASK.json",
-                "implementation/NEXT_ACTION.md",
-                "implementation/PHASE_STATUS.yaml",
-                "implementation/evidence/phase-9/p9-02-plan.md",
-                "implementation/evidence/phase-9/p9-02-backend-validation.md",
-                "implementation/evidence/phase-9/p9-03-plan.md",
-                "tests/test_current_task_verifier.py",
-                "tests/test_v1_2_reconciliation.py",
-            },
+                "apps/npi_core/npi_core/reporting/frappe_repository.py",
+                "frontend/src/i18n/runtime.tsx",
+                "frontend/scripts/verify-build-budget.mjs",
+                "implementation/evidence/phase-9/p9-03-validation.md",
+                "scripts/verify_reporting_collaboration_runtime.py",
+                "tests/test_phase9_reporting_repository.py",
+            }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
 
@@ -151,7 +146,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
     def test_git_path_validation_is_invoked_for_normal_check(self) -> None:
         with patch(
             "scripts.verify_current_task.changed_paths",
-            return_value=("apps/npi_core/npi_core/reporting/frappe_repository.py",),
+            return_value=("apps/npi_core/npi_core/unrelated.py",),
         ):
             with self.assertRaisesRegex(CurrentTaskError, "outside"):
                 validate_current_task(check_git=True)

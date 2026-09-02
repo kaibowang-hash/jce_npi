@@ -13,7 +13,7 @@ import type {
   GateRequirementEvidenceState,
   GateReviewViewModel,
 } from "../../src/domain/view-models";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import { gateReviewFixture } from "../support/gate-review-fixture";
 import {
   effectiveViewport,

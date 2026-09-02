@@ -6,7 +6,7 @@ import type {
   ControlledDocumentWorkspaceViewModel,
 } from "../../src/api/document-data-source";
 import type { ProblemDetails } from "../../src/api/http";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   controlledDocumentInReviewWorkspaceFixture,
   controlledDocumentPageFixture,

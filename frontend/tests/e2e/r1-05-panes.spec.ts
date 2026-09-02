@@ -15,7 +15,7 @@ import {
 } from "../../src/api/my-work-inspector-preferences-data-source";
 import { isMyWorkPageResponse } from "../../src/api/my-work-data-source";
 import type { MyWorkPageViewModel } from "../../src/domain/view-models";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   effectiveViewport,
   expectIndustrialComputedStyles,

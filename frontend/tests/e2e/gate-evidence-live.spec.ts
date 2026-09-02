@@ -7,7 +7,7 @@ import type {
   GateReviewOutcome,
   GateReviewViewModel,
 } from "../../src/domain/view-models";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import { documentBaselineWorkspaceFixture } from "../support/document-fixture";
 import {
   gateReviewDecidedFixture,

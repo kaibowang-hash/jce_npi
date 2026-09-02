@@ -7,7 +7,7 @@ import {
   type Route,
 } from "@playwright/test";
 
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   projectControlIds,
   projectLearningFixture,

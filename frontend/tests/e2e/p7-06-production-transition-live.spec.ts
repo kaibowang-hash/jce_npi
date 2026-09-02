@@ -8,7 +8,7 @@ import {
 } from "@playwright/test";
 
 import type { ProductionTransitionWorkspace } from "../../src/api/production-transition-data-source";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   productionTransitionAcknowledgedWorkspace,
   productionTransitionAcknowledgementResult,

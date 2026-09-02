@@ -28,6 +28,8 @@ from npi_core.reporting.domain import (
 
 MAX_PROJECTS = 5_000
 MAX_SOURCE_ROWS = 1_000
+MAX_PROJECT_REFERENCES = MAX_PROJECTS * 8
+MAX_GATES_PER_PROJECT = 100
 _CURSOR_CONTEXT = b"npi-one:p9-02:reporting-cursor:v1"
 
 
@@ -80,6 +82,9 @@ class FrappeReportingRepository:
     ) -> dict[str, object]:
         now = self.clock().astimezone(UTC)
         visible = self._visible_projects(now.date())
+        references_by_project = self._project_references(
+            [str(_value(item, "global_id")) for item in visible]
+        )
         fingerprint = query_fingerprint(
             "project_portfolio",
             {
@@ -93,23 +98,49 @@ class FrappeReportingRepository:
             if cursor is None
             else decode_cursor(cursor, self._cursor_signing_key(), fingerprint)
         )
-        rows: list[dict[str, object]] = []
-        for document in visible:
-            references = self._project_references(document)
-            if not self._matches_project(document, references, filters):
-                continue
-            rows.append(self._portfolio_row(document, references, now))
-        rows.sort(key=lambda item: (str(item["targetSop"]), str(item["globalId"])))
+        matching = [
+            document
+            for document in visible
+            if self._matches_project(
+                document,
+                references_by_project.get(str(_value(document, "global_id")), {}),
+                filters,
+            )
+        ]
+        matching.sort(
+            key=lambda item: (
+                _date(_value(item, "target_sop")).isoformat(),
+                str(_value(item, "global_id")),
+            )
+        )
         if position is not None:
-            rows = [
+            matching = [
                 item
-                for item in rows
-                if (str(item["targetSop"]), str(item["globalId"]))
+                for item in matching
+                if (
+                    _date(_value(item, "target_sop")).isoformat(),
+                    str(_value(item, "global_id")),
+                )
                 > (position.sort_value, position.global_id)
             ]
-        selected = rows[: limit + 1]
-        has_more = len(selected) > limit
-        selected = selected[:limit]
+        selected_projects = matching[: limit + 1]
+        has_more = len(selected_projects) > limit
+        selected_projects = selected_projects[:limit]
+        selected_ids = [str(_value(item, "global_id")) for item in selected_projects]
+        work_by_project = self._project_work_items(selected_ids)
+        gates_by_project = self._project_gates(selected_ids)
+        erp_by_project = self._erp_source_summaries(selected_ids)
+        selected = [
+            self._portfolio_row(
+                document,
+                references_by_project.get(str(_value(document, "global_id")), {}),
+                now,
+                work_by_project.get(str(_value(document, "global_id")), ()),
+                gates_by_project.get(str(_value(document, "global_id")), ()),
+                erp_by_project[str(_value(document, "global_id"))],
+            )
+            for document in selected_projects
+        ]
         next_cursor = None
         if has_more and selected:
             last = selected[-1]
@@ -220,7 +251,18 @@ class FrappeReportingRepository:
         projects = [
             item
             for item in self._visible_projects(self.clock().date())
-            if self._matches_project(item, self._project_references(item), filters)
+        ]
+        references_by_project = self._project_references(
+            [str(_value(item, "global_id")) for item in projects]
+        )
+        projects = [
+            item
+            for item in projects
+            if self._matches_project(
+                item,
+                references_by_project.get(str(_value(item, "global_id")), {}),
+                filters,
+            )
         ]
         return {
             "schemaVersion": 1,
@@ -302,16 +344,40 @@ class FrappeReportingRepository:
             )
         )
 
-    def _project_references(self, project: Any) -> dict[str, tuple[str, ...]]:
-        document = frappe.get_doc("NPI Engineering Project", str(_value(project, "global_id")))
-        if str(_value(document, "tenant_id")) != self.principal.tenant_id:
-            raise RuntimeError("A reporting Project escaped its tenant boundary.")
-        grouped: dict[str, list[str]] = {}
-        for row in getattr(document, "references", ()):
-            grouped.setdefault(str(_value(row, "reference_type")), []).append(
-                str(_value(row, "source_object_id"))
-            )
-        return {key: tuple(sorted(set(values))) for key, values in grouped.items()}
+    def _project_references(
+        self, project_ids: Sequence[str]
+    ) -> dict[str, dict[str, tuple[str, ...]]]:
+        if not project_ids:
+            return {}
+        requested = frozenset(project_ids)
+        rows = frappe.get_all(
+            "NPI Project Reference",
+            filters={
+                "parent": ["in", sorted(requested)],
+                "parenttype": "NPI Engineering Project",
+                "parentfield": "references",
+            },
+            fields=["parent", "reference_type", "source_object_id"],
+            order_by="parent asc, reference_type asc, source_object_id asc",
+            limit_page_length=MAX_PROJECT_REFERENCES + 1,
+        )
+        if len(rows) > MAX_PROJECT_REFERENCES:
+            raise RuntimeError("The reporting Project reference scope exceeds its safe bound.")
+        grouped: dict[str, dict[str, list[str]]] = {}
+        for row in rows:
+            project_id = str(_value(row, "parent"))
+            if project_id not in requested:
+                raise RuntimeError("A reporting Project reference escaped its permission boundary.")
+            grouped.setdefault(project_id, {}).setdefault(
+                str(_value(row, "reference_type")), []
+            ).append(str(_value(row, "source_object_id")))
+        return {
+            project_id: {
+                reference_type: tuple(sorted(set(values)))
+                for reference_type, values in references.items()
+            }
+            for project_id, references in grouped.items()
+        }
 
     @staticmethod
     def _matches_project(
@@ -338,30 +404,17 @@ class FrappeReportingRepository:
         project: Any,
         references: Mapping[str, tuple[str, ...]],
         now: datetime,
+        work_items: Sequence[Any],
+        gates: Sequence[Any],
+        source: Mapping[str, object],
     ) -> dict[str, object]:
         project_id = str(_value(project, "global_id"))
-        work_items = frappe.get_all(
-            "NPI Domain Work Item",
-            filters={"tenant_id": self.principal.tenant_id, "project_global_id": project_id},
-            fields=["kind", "due_at", "blocking", "state_terminal"],
-            limit_page_length=MAX_SOURCE_ROWS + 1,
-        )
-        if len(work_items) > MAX_SOURCE_ROWS:
-            raise RuntimeError("A Project reporting Work Item scope exceeds its safe bound.")
         active = [item for item in work_items if not bool(_value(item, "state_terminal"))]
         overdue = [item for item in active if _datetime(_value(item, "due_at")) < now]
-        gates = frappe.get_all(
-            "NPI Gate Shell",
-            filters={"project_global_id": project_id},
-            fields=["global_id", "gate_key", "title", "sequence", "gate_due_date", "review_state", "latest_decision_outcome"],
-            order_by="sequence asc, global_id asc",
-            limit_page_length=100,
-        )
         current_gate = next(
             (gate for gate in gates if str(_value(gate, "latest_decision_outcome", "")) not in {"pass", "conditional_pass"}),
             None,
         )
-        source = self._erp_source_summary(project_id)
         return {
             "schemaVersion": 1,
             "globalId": project_id,
@@ -394,55 +447,80 @@ class FrappeReportingRepository:
                 "decisionCount": sum(str(_value(item, "kind")) == "decision_request" for item in active),
                 "sourceSystem": SourceSystem.NPI_ONE.value,
             },
-            "erp": source,
+            "erp": dict(source),
             "detailRoute": f"/projects/{project_id}",
         }
 
-    def _erp_source_summary(self, project_id: str) -> dict[str, object]:
+    def _project_work_items(self, project_ids: Sequence[str]) -> dict[str, tuple[Any, ...]]:
+        if not project_ids:
+            return {}
+        rows = frappe.get_all(
+            "NPI Domain Work Item",
+            filters={
+                "tenant_id": self.principal.tenant_id,
+                "project_global_id": ["in", sorted(project_ids)],
+            },
+            fields=["project_global_id", "kind", "due_at", "blocking", "state_terminal"],
+            limit_page_length=MAX_SOURCE_ROWS * len(project_ids) + 1,
+        )
+        return _group_rows(
+            rows,
+            "project_global_id",
+            project_ids,
+            max_per_key=MAX_SOURCE_ROWS,
+            scope="reporting Work Item",
+        )
+
+    def _project_gates(self, project_ids: Sequence[str]) -> dict[str, tuple[Any, ...]]:
+        if not project_ids:
+            return {}
+        rows = frappe.get_all(
+            "NPI Gate Shell",
+            filters={"project_global_id": ["in", sorted(project_ids)]},
+            fields=["project_global_id", "global_id", "gate_key", "title", "sequence", "gate_due_date", "review_state", "latest_decision_outcome"],
+            order_by="project_global_id asc, sequence asc, global_id asc",
+            limit_page_length=MAX_GATES_PER_PROJECT * len(project_ids) + 1,
+        )
+        return _group_rows(
+            rows,
+            "project_global_id",
+            project_ids,
+            max_per_key=MAX_GATES_PER_PROJECT,
+            scope="reporting Gate",
+        )
+
+    def _erp_source_summaries(
+        self, project_ids: Sequence[str]
+    ) -> dict[str, dict[str, object]]:
+        if not project_ids:
+            return {}
         try:
             rows = frappe.get_all(
                 "NPI ERP Projection Head",
-                filters={"tenant_id": self.principal.tenant_id, "project_global_id": project_id},
-                fields=["projection_kind", "availability", "freshness", "updated_at"],
-                limit_page_length=MAX_SOURCE_ROWS + 1,
+                filters={
+                    "tenant_id": self.principal.tenant_id,
+                    "project_global_id": ["in", sorted(project_ids)],
+                },
+                fields=["project_global_id", "projection_kind", "availability", "freshness", "updated_at"],
+                limit_page_length=MAX_SOURCE_ROWS * len(project_ids) + 1,
             )
         except Exception as error:
             if _missing_doctype(error):
                 return {
-                    "sourceSystem": SourceSystem.ERPNEXT.value,
-                    "availability": Availability.UNAVAILABLE.value,
-                    "reasonCode": "erp_projection_store_unavailable",
-                    "observedKinds": [],
-                    "freshestAt": None,
+                    project_id: _erp_summary((), "erp_projection_store_unavailable")
+                    for project_id in project_ids
                 }
             raise
-        if len(rows) > MAX_SOURCE_ROWS:
-            raise RuntimeError("A Project ERP projection scope exceeds its safe bound.")
-        if not rows:
-            availability = Availability.UNAVAILABLE
-            reason = "erp_projection_not_observed"
-        else:
-            states = tuple(_projection_availability(row) for row in rows)
-            if all(state is Availability.AVAILABLE for state in states):
-                availability = Availability.AVAILABLE
-            elif all(state in {Availability.AVAILABLE, Availability.STALE} for state in states):
-                availability = Availability.STALE
-            else:
-                availability = Availability.PARTIAL
-            reason = None
+        grouped = _group_rows(
+            rows,
+            "project_global_id",
+            project_ids,
+            max_per_key=MAX_SOURCE_ROWS,
+            scope="ERP projection",
+        )
         return {
-            "sourceSystem": SourceSystem.ERPNEXT.value,
-            "availability": availability.value,
-            "reasonCode": reason,
-            "observedKinds": sorted({str(_value(row, "projection_kind")) for row in rows}),
-            "freshestAt": max(
-                (
-                    value
-                    for row in rows
-                    if (value := _optional_utc(_value(row, "updated_at", None))) is not None
-                ),
-                default=None,
-            ),
+            project_id: _erp_summary(grouped.get(project_id, ()))
+            for project_id in project_ids
         }
 
     @staticmethod
@@ -470,27 +548,45 @@ class FrappeReportingRepository:
         return results
 
     def _customer_search_results(self, projects: Sequence[Any], query: str) -> list[dict[str, object]]:
-        needle = query.casefold()
+        project_ids = [str(_value(project, "global_id")) for project in projects]
+        if not project_ids:
+            return []
+        rows = frappe.get_all(
+            "NPI Project Reference",
+            filters={
+                "parent": ["in", sorted(project_ids)],
+                "parenttype": "NPI Engineering Project",
+                "parentfield": "references",
+                "reference_type": "customer",
+                "source_object_id": ["like", f"%{query}%"],
+            },
+            fields=["parent", "source_object_id"],
+            order_by="parent asc, source_object_id asc",
+            limit_page_length=MAX_SOURCE_ROWS + 1,
+        )
+        if len(rows) > MAX_SOURCE_ROWS:
+            raise RuntimeError("The customer reference search scope exceeds its safe bound.")
+        visible = frozenset(project_ids)
         results: dict[tuple[str, str], dict[str, object]] = {}
-        for project in projects:
-            project_id = str(_value(project, "global_id"))
-            for customer in self._project_references(project).get("customer", ()):
-                if needle not in customer.casefold():
-                    continue
-                key = (project_id, customer)
-                results[key] = {
-                    "schemaVersion": 1,
-                    "kind": SearchKind.CUSTOMER.value,
-                    "globalId": hashlib.sha256((project_id + "\x00" + customer).encode()).hexdigest(),
-                    "projectGlobalId": project_id,
-                    "label": customer,
-                    "code": customer,
-                    "sourceSystem": SourceSystem.ERPNEXT.value,
-                    "availability": Availability.PARTIAL.value,
-                    "reasonCode": "customer_reference_only",
-                    "detailRoute": f"/projects/{project_id}",
-                    "version": 1,
-                }
+        for row in rows:
+            project_id = str(_value(row, "parent"))
+            if project_id not in visible:
+                raise RuntimeError("A customer reference escaped its Project permission boundary.")
+            customer = str(_value(row, "source_object_id"))
+            key = (project_id, customer)
+            results[key] = {
+                "schemaVersion": 1,
+                "kind": SearchKind.CUSTOMER.value,
+                "globalId": hashlib.sha256((project_id + "\x00" + customer).encode()).hexdigest(),
+                "projectGlobalId": project_id,
+                "label": customer,
+                "code": customer,
+                "sourceSystem": SourceSystem.ERPNEXT.value,
+                "availability": Availability.PARTIAL.value,
+                "reasonCode": "customer_reference_only",
+                "detailRoute": f"/projects/{project_id}",
+                "version": 1,
+            }
         return list(results.values())
 
     def _object_search_results(
@@ -605,6 +701,63 @@ def _projection_availability(row: Any) -> Availability:
     if availability != "available":
         return Availability.UNAVAILABLE
     return Availability.STALE if freshness != "fresh" else Availability.AVAILABLE
+
+
+def _group_rows(
+    rows: Iterable[Any],
+    field: str,
+    permitted_keys: Sequence[str],
+    *,
+    max_per_key: int | None = None,
+    scope: str = "batched reporting",
+) -> dict[str, tuple[Any, ...]]:
+    permitted = frozenset(permitted_keys)
+    grouped: dict[str, list[Any]] = {}
+    for row in rows:
+        key = str(_value(row, field))
+        if key not in permitted:
+            raise RuntimeError("A batched reporting row escaped its permission boundary.")
+        values = grouped.setdefault(key, [])
+        values.append(row)
+        if max_per_key is not None and len(values) > max_per_key:
+            raise RuntimeError(f"A Project {scope} scope exceeds its safe bound.")
+    return {key: tuple(values) for key, values in grouped.items()}
+
+
+def _erp_summary(
+    rows: Sequence[Any], unavailable_reason: str = "erp_projection_not_observed"
+) -> dict[str, object]:
+    if not rows:
+        availability = Availability.UNAVAILABLE
+        reason = unavailable_reason
+    else:
+        states = tuple(_projection_availability(row) for row in rows)
+        if all(state is Availability.AVAILABLE for state in states):
+            availability = Availability.AVAILABLE
+        elif all(
+            state in {Availability.AVAILABLE, Availability.STALE} for state in states
+        ):
+            availability = Availability.STALE
+        else:
+            availability = Availability.PARTIAL
+        reason = None
+    return {
+        "sourceSystem": SourceSystem.ERPNEXT.value,
+        "availability": availability.value,
+        "reasonCode": reason,
+        "observedKinds": sorted(
+            {str(_value(row, "projection_kind")) for row in rows}
+        ),
+        "freshestAt": max(
+            (
+                value
+                for row in rows
+                if (value := _optional_utc(_value(row, "updated_at", None)))
+                is not None
+            ),
+            default=None,
+        ),
+    }
 
 
 def _missing_doctype(error: Exception) -> bool:

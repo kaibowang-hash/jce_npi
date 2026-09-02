@@ -29,7 +29,7 @@ import {
   formatNumber,
   formatPercent,
 } from "../../src/i18n/formatters";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   activities,
   executionRows,

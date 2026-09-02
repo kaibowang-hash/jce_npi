@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type { ErpProjectionCollectionViewModel } from "../../src/api/erp-projections-data-source";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   erpProjectionCollectionFixture,
   projectControlIds,

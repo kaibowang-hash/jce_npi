@@ -10,7 +10,6 @@ import {
 } from "./shared.mjs";
 
 const checkOnly = process.argv.includes("--check");
-const output = path.join(frontendRoot, "src", "generated", "catalogs.ts");
 const locales = ["zh", "zh-TW"];
 const sources = await extractTranslationSources();
 const catalogs = {};
@@ -43,19 +42,52 @@ const version = createHash("sha256")
   .update(versionInput)
   .digest("hex")
   .slice(0, 16);
-const generated = [
-  "/* Generated from npi_core Frappe CSV catalogs. Do not edit. */",
-  `export const catalogVersion = '${version}';`,
-  `export const catalogs: Readonly<Record<"zh" | "zh-TW", Readonly<Record<string, string>>>> = ${JSON.stringify(catalogs, null, 2)};`,
-  "",
-].join("\n");
+const bootstrapSources = ["LaunchFlow", "Loading LaunchFlow"];
+const bootstrapCatalogs = Object.fromEntries(
+  locales.map((locale) => [
+    locale,
+    Object.fromEntries(
+      bootstrapSources.map((source) => [source, catalogs[locale][source]]),
+    ),
+  ]),
+);
+const generated = new Map([
+  [
+    "catalog-version.ts",
+    [
+      "/* Generated from npi_core Frappe CSV catalogs. Do not edit. */",
+      `export const catalogVersion = '${version}';`,
+      "",
+    ].join("\n"),
+  ],
+  [
+    "catalog-bootstrap.ts",
+    [
+      "/* Generated startup-only translations. Do not edit. */",
+      `export const bootstrapCatalogs: Readonly<Record<"zh" | "zh-TW", Readonly<Record<string, string>>>> = ${JSON.stringify(bootstrapCatalogs, null, 2)};`,
+      "",
+    ].join("\n"),
+  ],
+  ...locales.map((locale) => [
+    `catalog-${locale}.ts`,
+    [
+      "/* Generated from an npi_core Frappe CSV catalog. Do not edit. */",
+      `const messages: Readonly<Record<string, string>> = ${JSON.stringify(catalogs[locale], null, 2)};`,
+      "export default messages;",
+      "",
+    ].join("\n"),
+  ]),
+]);
 
-if (checkOnly) {
-  const current = await readFile(output, "utf8").catch(() => "");
-  if (current !== generated)
-    throw new Error(
-      "Generated React catalogs are stale. Run npm run generate.",
-    );
-} else {
-  await writeFile(output, generated, "utf8");
+for (const [fileName, content] of generated) {
+  const output = path.join(frontendRoot, "src", "generated", fileName);
+  if (checkOnly) {
+    const current = await readFile(output, "utf8").catch(() => "");
+    if (current !== content)
+      throw new Error(
+        "Generated React catalogs are stale. Run npm run generate.",
+      );
+  } else {
+    await writeFile(output, content, "utf8");
+  }
 }

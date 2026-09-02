@@ -6,7 +6,7 @@ import type {
   EngineeringBomDetailViewModel,
   EngineeringBomListViewModel,
 } from "../../src/api/ebom-data-source";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   ebomId,
   ebomRevisionOneId,

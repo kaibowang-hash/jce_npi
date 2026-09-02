@@ -13,7 +13,7 @@ import type {
   EngineeringBomPublishRequestListViewModel,
   EngineeringBomPublishRequestViewModel,
 } from "../../src/api/publish-request-data-source";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   ebomId,
   ebomRevisionOneId,

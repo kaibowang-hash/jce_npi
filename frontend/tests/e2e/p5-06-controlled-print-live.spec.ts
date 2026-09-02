@@ -6,7 +6,7 @@ import type {
   ControlledPrintSnapshotViewModel,
 } from "../../src/api/controlled-print-data-source";
 import type { ProblemDetails } from "../../src/api/http";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   controlledPrintCapabilityFixture,
   controlledPrintProjectId,

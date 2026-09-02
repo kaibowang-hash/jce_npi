@@ -1,7 +1,16 @@
 import { render, type RenderResult } from "@testing-library/react";
 import type { ReactElement } from "react";
 
-import { I18nProvider, type Locale } from "../../src/i18n/runtime";
+import zhMessages from "../../src/generated/catalog-zh";
+import zhTwMessages from "../../src/generated/catalog-zh-TW";
+import {
+  I18nProvider,
+  primePrototypeMessages,
+  type Locale,
+} from "../../src/i18n/runtime";
+
+primePrototypeMessages("zh", zhMessages);
+primePrototypeMessages("zh-TW", zhTwMessages);
 
 export function renderWithLocale(
   element: ReactElement,

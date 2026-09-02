@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_03_AUDIT_AND_PLAN — P9-03`
+`IN_PROGRESS_P9_03_FINAL_GATE_AUTHORIZED — P9-03`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -12,14 +12,15 @@ passes exact-SHA ordinary CI `33687630510` and the sole final Level 3
 `33688112727`, including complete frontend/E2E/visual lanes and fresh
 disposable-Site runtime `100442085873`. Its release-gate result is PASS.
 
-Commit and push this single P9-03 audit/plan transition and require exact-SHA
-ordinary CI. Only after that PASS, freeze one product implementation batch for
-repeatable common-request/search measurements, proven reporting-query batching,
-selected-locale and route-owned loading, controlled fault/recovery evidence and
-multi-factory/template/locale isolation. The three-second and five-second
-targets are non-production engineering thresholds, not a production SLA. Do
-not contact production systems, redesign domains or CI, add a generic cache or
-search service, hide the Vite warning, relax any Gate, or stage user-owned files.
+P9-03 governance checkpoint `c845f93d27d29a692582599e4c5bdcec97693223`
+passes exact-SHA ordinary CI `33689961261`. Finish the already frozen single
+product batch, run affected checks once and one complete Level 2, then create
+one product commit, require its exact-SHA ordinary PASS, and run one final
+diagnostics-off Level 3 including cumulative disposable-Site measurements.
+The three-second and five-second targets are non-production engineering
+thresholds, not a production SLA. Do not contact production systems, redesign
+domains or CI, add a generic cache or search service, hide the Vite warning,
+relax any Gate, or stage user-owned files.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

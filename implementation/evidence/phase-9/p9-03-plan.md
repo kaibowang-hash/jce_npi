@@ -2,10 +2,11 @@
 
 Recorded: `2026-09-03`
 
-Status: `AUDIT AND PLAN — PRODUCT CODE HELD PENDING EXACT-SHA ORDINARY CI`
+Status: `IMPLEMENTATION CANDIDATE — FINAL GATE PENDING`
 
-Base checkpoint:
-`36cfe4cec8f31525e836c714236116704be066f3`
+Governance checkpoint:
+`c845f93d27d29a692582599e4c5bdcec97693223`; exact-SHA ordinary CI
+`33689961261` passed before product implementation began.
 
 ## Outcome and boundaries
 
@@ -42,8 +43,8 @@ reliability semantics, permissions, idempotency and source labels do not change.
 
 ## Frozen implementation batch
 
-After this audit/plan transition passes exact-SHA ordinary CI, P9-03 proceeds
-as one product batch rather than a chain of micro-commits:
+The audit/plan transition passed exact-SHA ordinary CI. P9-03 therefore
+proceeds as one product batch rather than a chain of micro-commits:
 
 1. Freeze the exact benchmark fixture, sample counts, percentile calculation,
    build-budget inputs, allowed paths and failure thresholds.
@@ -54,9 +55,9 @@ as one product batch rather than a chain of micro-commits:
 4. Run affected checks once, then one complete Level 2 and one final Level 3.
    Failures sharing a root are preflighted and repaired together.
 
-Product code remains unauthorized until the governance transition itself has
-an exact-SHA ordinary PASS. No performance result may weaken a functional,
-permission, security, i18n, visual, migration or runtime Gate.
+The governance transition exact-SHA ordinary PASS authorizes only this bounded
+product candidate. No performance result may weaken a functional, permission,
+security, i18n, visual, migration or runtime Gate.
 
 ## Evidence contract
 

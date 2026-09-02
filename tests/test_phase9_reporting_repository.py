@@ -67,6 +67,8 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
                 project(3, owner="hidden@example.invalid"),
             )
         }
+        self.query_calls: list[tuple[str, dict[str, Any]]] = []
+        self.get_doc_calls = 0
         frappe = types.ModuleType("frappe")
         frappe._ = lambda source: source
         frappe.local = types.SimpleNamespace(
@@ -97,11 +99,13 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
         )
 
     def get_doc(self, doctype: str, name: str):
+        self.get_doc_calls += 1
         if doctype == "NPI Engineering Project" and name in self.projects:
             return self.projects[name]
         raise sys.modules["frappe"].DoesNotExistError()
 
     def get_all(self, doctype: str, **kwargs):
+        self.query_calls.append((doctype, kwargs))
         if doctype == "NPI Engineering Project":
             return list(self.projects.values())
         if doctype == "NPI Project Member":
@@ -114,16 +118,36 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
                     )
                 ]
             return []
+        if doctype == "NPI Project Reference":
+            visible = set(kwargs["filters"]["parent"][1])
+            reference_type = kwargs["filters"].get("reference_type")
+            like_filter = kwargs["filters"].get("source_object_id")
+            needle = "" if like_filter is None else str(like_filter[1]).strip("%").casefold()
+            return [
+                Row(
+                    parent=project_id,
+                    reference_type=reference["reference_type"],
+                    source_object_id=reference["source_object_id"],
+                )
+                for project_id, item in self.projects.items()
+                if project_id in visible
+                for reference in item.references
+                if (reference_type is None or reference["reference_type"] == reference_type)
+                and needle in reference["source_object_id"].casefold()
+            ]
         if doctype == "NPI Domain Work Item":
-            if kwargs["filters"]["project_global_id"] == list(self.projects)[0]:
+            visible = set(kwargs["filters"]["project_global_id"][1])
+            if list(self.projects)[0] in visible:
                 return [
-                    Row(kind="action", due_at=datetime(2026, 9, 1, tzinfo=UTC), blocking=1, state_terminal=0),
-                    Row(kind="decision_request", due_at=datetime(2026, 9, 5, tzinfo=UTC), blocking=0, state_terminal=0),
+                    Row(project_global_id=list(self.projects)[0], kind="action", due_at=datetime(2026, 9, 1, tzinfo=UTC), blocking=1, state_terminal=0),
+                    Row(project_global_id=list(self.projects)[0], kind="decision_request", due_at=datetime(2026, 9, 5, tzinfo=UTC), blocking=0, state_terminal=0),
                 ]
             return []
         if doctype == "NPI Gate Shell":
+            visible = set(kwargs["filters"]["project_global_id"][1])
             return [
                 Row(
+                    project_global_id=project_id,
                     global_id="10000000-0000-4000-8000-000000000001",
                     gate_key="G2",
                     title="Design release",
@@ -132,6 +156,7 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
                     review_state="in_review",
                     latest_decision_outcome="",
                 )
+                for project_id in visible
             ]
         if doctype == "NPI ERP Projection Head":
             return []
@@ -246,6 +271,37 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
             self.assertNotIn(forbidden, source)
         self.assertIn("serverFiltered", source)
         self.assertIn("customer_reference_only", source)
+
+    def test_portfolio_uses_a_fixed_number_of_batched_reads(self) -> None:
+        self.query_calls.clear()
+        self.repository(roles=frozenset({"System Manager"})).portfolio(
+            filters=PortfolioFilters(), cursor=None, limit=25
+        )
+        doctypes = [doctype for doctype, _ in self.query_calls]
+        self.assertEqual(
+            doctypes,
+            [
+                "NPI Engineering Project",
+                "NPI Project Reference",
+                "NPI Domain Work Item",
+                "NPI Gate Shell",
+                "NPI ERP Projection Head",
+            ],
+        )
+        by_doctype = {doctype: arguments for doctype, arguments in self.query_calls}
+        self.assertEqual(
+            by_doctype["NPI Domain Work Item"]["limit_page_length"],
+            3_001,
+        )
+        self.assertEqual(
+            by_doctype["NPI Gate Shell"]["limit_page_length"],
+            301,
+        )
+        self.assertEqual(
+            by_doctype["NPI ERP Projection Head"]["limit_page_length"],
+            3_001,
+        )
+        self.assertEqual(self.get_doc_calls, 0)
 
 
 if __name__ == "__main__":

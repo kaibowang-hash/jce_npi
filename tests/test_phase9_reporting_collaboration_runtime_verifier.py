@@ -4,6 +4,7 @@ import ast
 import importlib.util
 import os
 import sys
+import types
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -84,12 +85,38 @@ class Phase9ReportingCollaborationRuntimeVerifierTest(unittest.TestCase):
             '"crossProcessReplay"',
             '"routeRecovered"',
             '"cleanupComplete"',
+            '"perf_counter_ns"',
+            '"nearest-rank"',
+            '"disposable-local-frappe-site"',
         ):
             self.assertIn(literal, self.source)
         self.assertIn('method="POST"', self.source)
         self.assertIn('"expectedVersion": 0', self.source)
         self.assertNotIn("JCE-Core", self.source)
         self.assertNotIn("ssh ", self.source)
+
+    def test_performance_probe_has_fixed_samples_and_nearest_rank_p95(self) -> None:
+        ticks = iter(
+            value
+            for index in range(22)
+            for value in (index * 2_000_000, index * 2_000_000 + 1_000_000)
+        )
+        with patch.object(
+            self.verifier,
+            "_read",
+            return_value=types.SimpleNamespace(body={"schemaVersion": 1}),
+        ):
+            evidence = self.verifier.measure_read_performance(
+                object(),
+                "http://127.0.0.1:8000",
+                {"portfolio": ("/api/npi/v1/portfolio/projects", 3_000)},
+                clock=lambda: next(ticks),
+            )
+        self.assertEqual(evidence["sampleCount"], 20)
+        self.assertEqual(evidence["warmupCount"], 2)
+        self.assertEqual(evidence["percentileMethod"], "nearest-rank")
+        self.assertEqual(evidence["operations"]["portfolio"]["p95Ms"], 1.0)
+        self.assertEqual(evidence["operations"]["portfolio"]["thresholdMs"], 3_000)
 
     def test_scheduler_fixture_is_bounded_and_restores_monkeypatches(self) -> None:
         seed = self.source[

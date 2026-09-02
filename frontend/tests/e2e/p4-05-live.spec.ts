@@ -21,7 +21,7 @@ import type {
   ProjectControlsViewModel,
   ProjectLearningPageViewModel,
 } from "../../src/domain/view-models";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   projectActivityFixture,
   projectControlIds,

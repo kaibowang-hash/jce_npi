@@ -13,28 +13,7 @@ import { ImpactReview } from "../components/primitives";
 import { ScenarioBoundary } from "../components/scenario-boundary";
 import { useI18n } from "../i18n/runtime";
 import { prototypeUsabilityRecorder } from "../telemetry/recorder";
-import { LiveProjectCockpitDataSource } from "../api/project-data-source";
 import { LiveProjectControlsDataSource } from "../api/project-controls-data-source";
-import { LiveGateReviewDataSource } from "../api/gate-review-data-source";
-import { LiveMyWorkDataSource } from "../api/my-work-data-source";
-import {
-  LiveProjectDomainWorkItemsDataSource,
-  LiveProjectWorkContextDataSource,
-} from "../api/project-work-data-source";
-import { LiveDocumentDataSource } from "../api/document-data-source";
-import { LiveEngineeringBomDataSource } from "../api/ebom-data-source";
-import { LiveEngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
-import { LiveItemPublishDataSource } from "../api/item-publish-data-source";
-import { LiveMbomPublishDataSource } from "../api/mbom-publish-data-source";
-import { LiveControlledPrintDataSource } from "../api/controlled-print-data-source";
-import { LiveToolingDataSource } from "../api/tooling-data-source";
-import { LiveToolingImportDataSource } from "../api/tooling-import-data-source";
-import { LiveToolingListDataSource } from "../api/tooling-list-data-source";
-import { LiveTrialDataSource } from "../api/trial-data-source";
-import { LiveReadinessDataSource } from "../api/readiness-data-source";
-import { LiveProductionTransitionDataSource } from "../api/production-transition-data-source";
-import { LiveIntegrationOperationsDataSource } from "../api/integration-operations-data-source";
-import { LiveChangeControlDataSource } from "../api/change-control-data-source";
 import { LiveReportingDataSource } from "../api/reporting-data-source";
 import { LiveCollaborationDataSource } from "../api/collaboration-data-source";
 import type {
@@ -43,47 +22,22 @@ import type {
 } from "./workspace-navigation";
 
 const WorkPage = lazy(() => import("../pages/work-page"));
-const LiveWorkPage = lazy(() => import("../pages/live-work-page"));
-const ProjectPage = lazy(() => import("../pages/project-page"));
+const LiveWorkRoute = lazy(() => import("./live-work-route"));
+const LiveProjectRoute = lazy(() => import("./live-project-route"));
 const ProjectDemoPage = lazy(() => import("../pages/project-demo-page"));
 const GatePage = lazy(() => import("../pages/gate-page"));
-const GateEvidencePage = lazy(() => import("../pages/gate-evidence-page"));
+const LiveGateRoute = lazy(() => import("./live-gate-route"));
 const ToolingPage = lazy(() => import("../pages/tooling-page"));
-const LiveToolingPage = lazy(() => import("../pages/live-tooling-page"));
-const ToolingImportWorkspace = lazy(
-  () => import("../pages/tooling-import-workspace"),
-);
+const LiveToolingRoute = lazy(() => import("./live-tooling-route"));
+const ToolingImportRoute = lazy(() => import("./tooling-import-route"));
 const TrialPage = lazy(() => import("../pages/trial-page"));
-const LiveTrialPage = lazy(() => import("../pages/live-trial-page"));
-const ExecutionPage = lazy(() => import("../pages/execution-page"));
+const LiveTrialRoute = lazy(() => import("./live-trial-route"));
+const LiveExecutionRoute = lazy(() => import("./live-execution-route"));
 const ExecutionPrototypePage = lazy(
   () => import("../pages/execution-prototype-page"),
 );
 const PortfolioPage = lazy(() => import("../pages/portfolio-page"));
-const liveProjectDataSource = new LiveProjectCockpitDataSource();
 const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
-const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
-const liveProjectDomainWorkItemsDataSource =
-  new LiveProjectDomainWorkItemsDataSource();
-const liveDocumentDataSource = new LiveDocumentDataSource();
-const liveEngineeringBomDataSource = new LiveEngineeringBomDataSource();
-const liveEngineeringBomPublishRequestDataSource =
-  new LiveEngineeringBomPublishRequestDataSource();
-const liveItemPublishDataSource = new LiveItemPublishDataSource();
-const liveMbomPublishDataSource = new LiveMbomPublishDataSource();
-const liveControlledPrintDataSource = new LiveControlledPrintDataSource();
-const liveGateReviewDataSource = new LiveGateReviewDataSource();
-const liveMyWorkDataSource = new LiveMyWorkDataSource();
-const liveToolingDataSource = new LiveToolingDataSource();
-const liveToolingImportDataSource = new LiveToolingImportDataSource();
-const liveToolingListDataSource = new LiveToolingListDataSource();
-const liveTrialDataSource = new LiveTrialDataSource();
-const liveReadinessDataSource = new LiveReadinessDataSource();
-const liveProductionTransitionDataSource =
-  new LiveProductionTransitionDataSource();
-const liveIntegrationOperationsDataSource =
-  new LiveIntegrationOperationsDataSource();
-const liveChangeControlDataSource = new LiveChangeControlDataSource();
 const liveReportingDataSource = new LiveReportingDataSource();
 const liveCollaborationDataSource = new LiveCollaborationDataSource();
 
@@ -190,29 +144,16 @@ export function App(): React.JSX.Element {
     route.screen === "project" && route.projectMode === "demo" ? (
       <ProjectDemoPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "project" ? (
-      <ProjectPage
-        contextDataSource={liveProjectWorkContextDataSource}
-        controlsDataSource={liveProjectControlsDataSource}
-        controlledPrintDataSource={liveControlledPrintDataSource}
-        dataSource={liveProjectDataSource}
-        documentDataSource={liveDocumentDataSource}
-        domainWorkItemsDataSource={liveProjectDomainWorkItemsDataSource}
-        engineeringBomDataSource={liveEngineeringBomDataSource}
-        itemPublishDataSource={liveItemPublishDataSource}
-        mbomPublishDataSource={liveMbomPublishDataSource}
-        publishRequestDataSource={liveEngineeringBomPublishRequestDataSource}
-        productionTransitionDataSource={liveProductionTransitionDataSource}
-        readinessDataSource={liveReadinessDataSource}
-        changeControlDataSource={liveChangeControlDataSource}
+      <LiveProjectRoute
         collaborationDataSource={liveCollaborationDataSource}
+        controlsDataSource={liveProjectControlsDataSource}
         globalId={route.projectGlobalId ?? ""}
         navigate={guardedNavigate}
         reportWorkspaceDirty={reportWorkspaceDirty}
         requestWorkspaceTransition={requestWorkspaceTransition}
       />
     ) : route.screen === "gate" && route.gateMode === "live" ? (
-      <GateEvidencePage
-        dataSource={liveGateReviewDataSource}
+      <LiveGateRoute
         gateGlobalId={route.gateGlobalId ?? ""}
         navigate={guardedNavigate}
         projectGlobalId={route.projectGlobalId ?? ""}
@@ -226,28 +167,22 @@ export function App(): React.JSX.Element {
     ) : route.screen === "tooling" &&
       route.toolingMode === "live" &&
       route.toolingWorkspace === "import" ? (
-      <ToolingImportWorkspace
-        dataSource={liveToolingImportDataSource}
+      <ToolingImportRoute
         navigate={guardedNavigate}
         projectId={route.projectGlobalId ?? ""}
         reportWorkspaceDirty={reportWorkspaceDirty}
       />
     ) : route.screen === "tooling" && route.toolingMode === "live" ? (
-      <LiveToolingPage
-        dataSource={liveToolingDataSource}
-        documentDataSource={liveDocumentDataSource}
+      <LiveToolingRoute
         masterId={route.toolingMasterGlobalId}
         navigate={guardedNavigate}
         projectId={route.projectGlobalId ?? ""}
         reportWorkspaceDirty={reportWorkspaceDirty}
-        toolingListDataSource={liveToolingListDataSource}
       />
     ) : route.screen === "tooling" ? (
       <ToolingPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "trial" && route.trialMode === "live" ? (
-      <LiveTrialPage
-        controlledPrintDataSource={liveControlledPrintDataSource}
-        dataSource={liveTrialDataSource}
+      <LiveTrialRoute
         navigate={guardedNavigate}
         projectId={route.projectGlobalId ?? ""}
         reportWorkspaceDirty={reportWorkspaceDirty}
@@ -255,10 +190,7 @@ export function App(): React.JSX.Element {
     ) : route.screen === "trial" ? (
       <TrialPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "execution" && route.projectGlobalId !== null ? (
-      <ExecutionPage
-        dataSource={liveIntegrationOperationsDataSource}
-        projectId={route.projectGlobalId}
-      />
+      <LiveExecutionRoute projectId={route.projectGlobalId} />
     ) : route.screen === "execution" ? (
       <ExecutionPrototypePage scenario={route.scenario} />
     ) : route.screen === "portfolio" ? (
@@ -271,10 +203,7 @@ export function App(): React.JSX.Element {
     ) : route.workMode === "demo" ? (
       <WorkPage navigate={guardedNavigate} />
     ) : (
-      <LiveWorkPage
-        dataSource={liveMyWorkDataSource}
-        navigate={guardedNavigate}
-      />
+      <LiveWorkRoute navigate={guardedNavigate} />
     );
   const terminalScenario =
     route.workMode !== "live" &&

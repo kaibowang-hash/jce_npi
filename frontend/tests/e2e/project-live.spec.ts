@@ -3,7 +3,7 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type { ProblemDetails } from "../../src/api/http";
 import type { ProjectCockpitViewModel } from "../../src/domain/view-models";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import { projectCockpitFixture } from "../support/project-fixture";
 import {
   effectiveViewport,

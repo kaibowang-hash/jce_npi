@@ -19,6 +19,7 @@ import TrialPage from "../../src/pages/trial-page";
 import WorkPage from "../../src/pages/work-page";
 import { UsabilityRecorder } from "../../src/telemetry/recorder";
 import { renderWithLocale } from "../support/render";
+import { messagesForTest } from "../translate";
 import {
   globalSearchFixture,
   SyntheticReportingDataSource,
@@ -102,7 +103,7 @@ function sessionBootstrap(
     allowedLanguages: ["en", "zh", "zh-TW"],
     catalog: {
       language,
-      messages: {},
+      messages: messagesForTest(language),
       version: "a".repeat(64),
     },
     csrfToken,

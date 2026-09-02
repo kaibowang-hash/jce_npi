@@ -5,7 +5,7 @@ import type {
   ReadinessTemplateCatalog,
   ReadinessWorkspace,
 } from "../../src/api/readiness-data-source";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   readinessEmptyWorkspace,
   readinessFormalQualityLinks,

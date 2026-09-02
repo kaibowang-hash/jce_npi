@@ -9,7 +9,8 @@ import {
   type PropsWithChildren,
 } from "react";
 
-import { catalogs, catalogVersion } from "../generated/catalogs";
+import { catalogVersion } from "../generated/catalog-version";
+import { bootstrapCatalogs } from "../generated/catalog-bootstrap";
 import { SessionClient, type SessionBootstrap } from "../api/session";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 
@@ -54,6 +55,30 @@ export interface NavigationPreferenceFailure {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 const prototypeStorageKey = "npi-one-prototype-locale";
+type MessageCatalog = Readonly<Record<string, string>>;
+const prototypeMessageCache = new Map<Locale, MessageCatalog>();
+
+export function primePrototypeMessages(
+  locale: Locale,
+  messages: MessageCatalog,
+): void {
+  prototypeMessageCache.set(locale, messages);
+}
+
+async function loadPrototypeMessages(locale: Locale): Promise<MessageCatalog> {
+  const cached = prototypeMessageCache.get(locale);
+  if (cached) return cached;
+  let messages: MessageCatalog;
+  if (locale === "zh") {
+    messages = (await import("../generated/catalog-zh")).default;
+  } else if (locale === "zh-TW") {
+    messages = (await import("../generated/catalog-zh-TW")).default;
+  } else {
+    messages = Object.freeze({});
+  }
+  primePrototypeMessages(locale, messages);
+  return messages;
+}
 
 function isLocale(value: string | null | undefined): value is Locale {
   return supportedLocales.some((locale) => locale === value);
@@ -152,11 +177,16 @@ export function translate(
   values: TranslationValues = {},
   context?: string,
   runtimeMessages?: Readonly<Record<string, string>>,
+  fallbackMessages?: Readonly<Record<string, string>>,
 ): string {
   const key = context ? `${source}:${context}` : source;
   let translated = source;
   if (locale !== "en") {
-    translated = runtimeMessages?.[key] ?? catalogs[locale][key] ?? "";
+    translated =
+      runtimeMessages?.[key] ??
+      fallbackMessages?.[key] ??
+      bootstrapCatalogs[locale][key] ??
+      "";
     if (!translated) return `⟦Missing: ${source}⟧`;
   }
   return translated.replace(
@@ -175,6 +205,11 @@ export function I18nProvider({
   const [runtimeCatalog, setRuntimeCatalog] = useState<
     SessionBootstrap["catalog"] | null
   >(null);
+  const [prototypeMessages, setPrototypeMessages] =
+    useState<MessageCatalog | null>(
+      () => prototypeMessageCache.get(locale) ?? null,
+    );
+  const localeRef = useRef(locale);
   const [sessionCommandContext, setSessionCommandContext] =
     useState<SessionCommandContext | null>(null);
   const [navigationCollapsed, updateNavigationCollapsed] = useState(false);
@@ -224,9 +259,14 @@ export function I18nProvider({
         if (!isConsistentBootstrap(bootstrap, requestedLocale)) {
           throw new Error("The session localization response is inconsistent.");
         }
+        const fallbackMessages = prototypeFallbackIsAllowed()
+          ? await loadPrototypeMessages(bootstrap.language)
+          : null;
         if (!providerActive.current) return;
         updateLocale(bootstrap.language);
+        localeRef.current = bootstrap.language;
         setRuntimeCatalog(bootstrap.catalog);
+        setPrototypeMessages(fallbackMessages);
         updateNavigationCollapsed(bootstrap.preferences.navigationCollapsed);
         setSessionCommandContext(
           Object.freeze({
@@ -239,18 +279,25 @@ export function I18nProvider({
         setLocalizationFailure(null);
         setNavigationPreferenceFailure(null);
       } catch (error) {
+        const prototypeAllowed = prototypeFallbackIsAllowed();
+        const fallbackLocale = requestedLocale ?? localeRef.current;
+        const fallbackMessages = prototypeAllowed
+          ? await loadPrototypeMessages(fallbackLocale)
+          : null;
         if (!providerActive.current) return;
         sessionClient.clearSession();
         setSessionCommandContext(null);
-        if (prototypeFallbackIsAllowed()) {
-          if (operation === "set_language" && requestedLocale) {
+        if (prototypeAllowed && fallbackMessages) {
+          if (operation === "set_language") {
             globalThis.localStorage.setItem(
               prototypeStorageKey,
-              requestedLocale,
+              fallbackLocale,
             );
-            updateLocale(requestedLocale);
-            setRuntimeCatalog(null);
           }
+          updateLocale(fallbackLocale);
+          localeRef.current = fallbackLocale;
+          setRuntimeCatalog(null);
+          setPrototypeMessages(fallbackMessages);
           setPrototypeFallback(true);
           setLocalizationUnavailable(false);
           setLocalizationFailure(null);
@@ -363,9 +410,14 @@ export function I18nProvider({
             "The session navigation preference response is inconsistent.",
           );
         }
+        const fallbackMessages = prototypeFallbackIsAllowed()
+          ? await loadPrototypeMessages(bootstrap.language)
+          : null;
         if (!providerActive.current) return;
         updateLocale(bootstrap.language);
+        localeRef.current = bootstrap.language;
         setRuntimeCatalog(bootstrap.catalog);
+        setPrototypeMessages(fallbackMessages);
         updateNavigationCollapsed(bootstrap.preferences.navigationCollapsed);
         setSessionCommandContext(
           Object.freeze({
@@ -455,7 +507,14 @@ export function I18nProvider({
       setNavigationCollapsed,
       setLocale,
       t: (source, values, context) =>
-        translate(locale, source, values, context, runtimeCatalog?.messages),
+        translate(
+          locale,
+          source,
+          values,
+          context,
+          runtimeCatalog?.messages,
+          prototypeMessages ?? undefined,
+        ),
     }),
     [
       isLocalizationUnavailable,
@@ -466,6 +525,7 @@ export function I18nProvider({
       navigationCollapsed,
       navigationPreferenceFailure,
       pendingOperation,
+      prototypeMessages,
       retryNavigationPreference,
       retryLocalization,
       runtimeCatalog,

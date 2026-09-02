@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   projectDomainWorkItemsFixture,
   projectWorkCockpitFixture,

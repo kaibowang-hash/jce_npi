@@ -5,7 +5,7 @@ import {
   controlledUndoPrototypeId,
   controlledUndoPrototypeStates,
 } from "../../src/components/controlled-undo-prototype-model";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   expectIndustrialComputedStyles,
   expectNoDocumentOverflow,

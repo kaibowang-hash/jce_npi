@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type { ReleasedTrialSummaryWorkspace } from "../../src/api/trial-data-source";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import { controlledPrintCapabilityFixture } from "../support/controlled-print-fixture";
 import { trialExecutionWorkspace } from "../support/trial-execution-fixture";
 import {

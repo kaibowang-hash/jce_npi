@@ -8,6 +8,7 @@ import tempfile
 import urllib.parse
 from datetime import UTC, datetime
 from pathlib import Path
+from time import perf_counter_ns
 from typing import Any
 from uuid import NAMESPACE_URL, UUID, uuid5
 
@@ -67,6 +68,64 @@ def canonical_hash(value: object) -> str:
 
 
 STANDARD_MEETING_TEMPLATE_HASH = canonical_hash(STANDARD_MEETING_TEMPLATE)
+PERFORMANCE_WARMUP_COUNT = 2
+PERFORMANCE_SAMPLE_COUNT = 20
+COMMON_READ_P95_MILLISECONDS = 3_000
+METADATA_SEARCH_P95_MILLISECONDS = 5_000
+
+
+def nearest_rank_p95(samples: list[float]) -> float:
+    require(
+        len(samples) == PERFORMANCE_SAMPLE_COUNT
+        and all(value >= 0 for value in samples),
+        "P9-03 performance sample shape drifted",
+    )
+    ordered = sorted(samples)
+    return ordered[(95 * len(ordered) + 99) // 100 - 1]
+
+
+def measure_read_performance(
+    opener,
+    base_url: str,
+    operations: dict[str, tuple[str, int]],
+    *,
+    clock=perf_counter_ns,
+) -> dict[str, object]:
+    summary: dict[str, object] = {}
+    for operation, (path, threshold_milliseconds) in operations.items():
+        samples: list[float] = []
+        shape_hash = ""
+        for index in range(PERFORMANCE_WARMUP_COUNT + PERFORMANCE_SAMPLE_COUNT):
+            started = clock()
+            result = _read(
+                opener,
+                base_url,
+                path,
+                key=f"performance-{operation}-{index}",
+            )
+            elapsed_milliseconds = (clock() - started) / 1_000_000
+            shape_hash = canonical_hash(sorted(result.body))
+            if index >= PERFORMANCE_WARMUP_COUNT:
+                samples.append(elapsed_milliseconds)
+        p95 = nearest_rank_p95(samples)
+        require(
+            p95 <= threshold_milliseconds,
+            f"P9-03 {operation} P95 exceeded its engineering threshold",
+        )
+        summary[operation] = {
+            "maxMs": round(max(samples), 3),
+            "p95Ms": round(p95, 3),
+            "responseShapeHash": shape_hash,
+            "thresholdMs": threshold_milliseconds,
+        }
+    return {
+        "clock": "perf_counter_ns",
+        "environment": "disposable-local-frappe-site",
+        "operations": summary,
+        "percentileMethod": "nearest-rank",
+        "sampleCount": PERFORMANCE_SAMPLE_COUNT,
+        "warmupCount": PERFORMANCE_WARMUP_COUNT,
+    }
 
 
 def _uuid(value: object) -> bool:
@@ -287,6 +346,38 @@ def run_fresh(base_url: str, password: str) -> dict[str, bool]:
         and catalog.get("genericWriterAvailable") is False
         and isinstance(catalog.get("items"), list),
         "P9-02 read-only configuration catalog drifted",
+    )
+    performance = measure_read_performance(
+        actor,
+        base_url,
+        {
+            "configuration": (
+                "/api/npi/v1/administration/capabilities",
+                COMMON_READ_P95_MILLISECONDS,
+            ),
+            "kpiAvailability": (
+                _query(
+                    "/api/npi/v1/reports/kpis",
+                    {"fromMonth": "2026-01", "toMonth": "2026-12"},
+                ),
+                COMMON_READ_P95_MILLISECONDS,
+            ),
+            "metadataSearch": (
+                _query(
+                    "/api/npi/v1/search",
+                    {"query": business_code, "kinds": "project", "limit": 25},
+                ),
+                METADATA_SEARCH_P95_MILLISECONDS,
+            ),
+            "portfolio": (
+                _query("/api/npi/v1/portfolio/projects", {"limit": 100}),
+                COMMON_READ_P95_MILLISECONDS,
+            ),
+        },
+    )
+    print(
+        "P9-03 non-production performance evidence "
+        + json.dumps(performance, separators=(",", ":"), sort_keys=True)
     )
     denied_catalog = document_runtime.npi_request(
         limited,

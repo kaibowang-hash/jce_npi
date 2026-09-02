@@ -17,7 +17,7 @@ import {
   isMbomRequestList,
   type MbomRequestListViewModel,
 } from "../../src/api/mbom-publish-data-source";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   ebomId,
   ebomRevisionOneId,

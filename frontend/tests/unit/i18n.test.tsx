@@ -5,9 +5,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
   I18nProvider,
   supportedLocales,
-  translate,
   useI18n,
 } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import { sessionBootstrapTimeoutMilliseconds } from "../../src/api/session";
 import { buildLocalizedOperationalSurfaces } from "../../src/i18n/surfaces";
 
@@ -68,8 +68,10 @@ describe("Frappe-backed React localization", () => {
 
     expect(result.current.sessionCommandContext).toBeNull();
     await waitFor(() => {
-      expect(result.current.locale).toBe("zh-TW");
+      expect(result.current.isLocalizationPending).toBe(false);
     });
+    expect(result.current.locale).toBe("zh-TW");
+    expect(result.current.t("My Work")).toBe(translate("zh-TW", "My Work"));
     expect(document.documentElement.lang).toBe("zh-TW");
     expect(result.current.isPrototypeFallback).toBe(true);
     expect(result.current.sessionCommandContext).toBeNull();
@@ -92,6 +94,7 @@ describe("Frappe-backed React localization", () => {
     await waitFor(() => {
       expect(result.current.locale).toBe("zh");
     });
+    expect(result.current.t("My Work")).toBe(translate("zh", "My Work"));
     expect(globalThis.localStorage.getItem("npi-one-prototype-locale")).toBe(
       "zh",
     );

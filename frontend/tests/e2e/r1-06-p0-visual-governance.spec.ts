@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-import { catalogVersion } from "../../src/generated/catalogs";
+import { catalogVersion } from "../../src/generated/catalog-version";
 import {
   expectNoDocumentOverflow,
   expectNoMixedLanguage,

@@ -11478,3 +11478,32 @@ P9-01 Level 3.
   redesign, warning suppression, threshold relaxation or user-owned-file
   staging is authorized.
 - Controller marker: `P9-02 Level 3 PASS; P9-03 audit and plan active`.
+
+## 2026-09-03 P9-03 implementation candidate; final Level 3 pending
+
+- Governance checkpoint `c845f93d27d29a692582599e4c5bdcec97693223`
+  passes exact-SHA ordinary CI `33689961261`: visual `100446195018`,
+  repository `100446195129`, E2E shard 1 `100446195137`, frontend verification
+  `100446195145`, E2E shard 2 `100446195230`, secret `100446195337` and
+  frontend aggregate `100447741615` all succeed. This satisfies the frozen
+  precondition for the single P9-03 product batch.
+- The candidate batches only existing permission-filtered reporting reads,
+  instantiates route-owned data sources with their lazy routes, loads only the
+  selected full development-fallback locale catalog, and adds deterministic
+  build/runtime measurement. It preserves BFF contracts, Project visibility,
+  paging, ERP ownership, explicit failure truth, i18n sources and industrial
+  UI behavior; no cache, search service, dependency, migration or production
+  connection is added.
+- Local evidence records 804,996 raw / 196,501 deterministic-gzip initial
+  JavaScript bytes, 345,141 raw / 35,942 deterministic-gzip CSS bytes, a
+  445,556 / 95,616-byte largest lazy route, a 639,991 / 166,359-byte largest
+  selected-locale catalog, and five bounded portfolio reads independent of
+  selected Project count. Runtime evidence uses `perf_counter_ns`, two
+  warmups, twenty samples and nearest-rank P95 in the existing disposable
+  Site. These are non-production engineering thresholds, not an SLA.
+- Complete the affected checks as one batch, then run one Level 2, create and
+  push one product commit, require exact-SHA ordinary PASS, and run one final
+  diagnostics-off Level 3. Repair common-root failures together; do not create
+  metadata-family or test-by-test micro-commits. P9-04 remains held until that
+  final Gate passes. Production ERPNext and LaunchFlow remain untouched.
+- Controller marker: `P9-03 implementation candidate; final Level 3 pending`.

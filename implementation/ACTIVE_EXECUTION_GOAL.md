@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T05:14:50+07:00`
+Updated: `2026-09-03T05:45:31+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_03_AUDIT_AND_PLAN — P9-03`
+- Mode: `IN_PROGRESS_P9_03_FINAL_GATE_AUTHORIZED — P9-03`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -21,13 +21,16 @@ Updated: `2026-09-03T05:14:50+07:00`
   secret, frontend, `230/230` E2E-shard, `135/135` visual, controlled preflight
   and fresh cumulative disposable-Site lane. Runtime `100442085873` completes
   fixture verification and cleanup in `7m59s`; `release-gate` is PASS.
-- P9-03 is active for audit/plan only. Its bounded engineering evidence will
-  measure common-request P95, metadata search, frontend loading, controlled
-  faults/recovery and multi-factory/template/locale dimensions. Exact P9-02 CI
-  records a 2,519.56 kB / 620.55 kB gzip initial JS chunk and 345.14 kB /
-  36.56 kB gzip CSS. Product changes remain held until this transition passes
-  exact-SHA ordinary CI. No production SLA, production system contact, domain
-  redesign, threshold relaxation or CI redesign is authorized.
+- P9-03 governance checkpoint
+  `c845f93d27d29a692582599e4c5bdcec97693223` passes exact-SHA ordinary CI
+  `33689961261`. The single product candidate batches the already authorized
+  reporting reads, defers route-owned data sources and unselected full locale
+  catalogs, adds deterministic build budgets, and measures the existing
+  disposable-Site runtime with a monotonic clock. The local initial-JS result
+  is 804,996 / 196,501 deterministic-gzip bytes versus the frozen 2,519.56 kB /
+  620.55 kB baseline; the candidate still requires one Level 2, exact-SHA
+  ordinary CI and one final Level 3. No production SLA, production system
+  contact, domain redesign, threshold relaxation or CI redesign is authorized.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

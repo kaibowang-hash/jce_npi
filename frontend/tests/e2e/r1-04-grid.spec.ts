@@ -22,7 +22,7 @@ import type {
   MyWorkItemViewModel,
   MyWorkPageViewModel,
 } from "../../src/domain/view-models";
-import { translate } from "../../src/i18n/runtime";
+import { translate } from "../translate";
 import {
   effectiveViewport,
   expectIndustrialComputedStyles,
