@@ -69,7 +69,11 @@ unset \
   NPI_P9_01C_RUNTIME_PROJECT_ID \
   NPI_P9_01C_RUNTIME_REQUESTER \
   NPI_P9_01C_RUNTIME_WORKER \
-  NPI_P9_01C_RUNTIME_SECRET
+  NPI_P9_01C_RUNTIME_SECRET \
+  NPI_P9_02D_RUNTIME_ENABLED \
+  NPI_P9_02D_RUNTIME_PROJECT_ID \
+  NPI_P9_02D_RUNTIME_ACTOR \
+  NPI_P9_02D_RUNTIME_LIMITED_ACTOR
 
 # shellcheck disable=SC1090
 source "${toolchain_file}"
@@ -539,6 +543,22 @@ else:
     "${bench_path}/sites/${site_name}/site_config.json"
 }
 
+reporting_collaboration_route_switch_state() {
+  "${bench_path}/env/bin/python" -c \
+    'import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+switch_name = "npi_p9_02_routes_disabled"
+if switch_name not in config:
+    print("absent")
+elif config[switch_name] is True:
+    print("true")
+elif config[switch_name] is False:
+    print("false")
+else:
+    print("invalid")' \
+    "${bench_path}/sites/${site_name}/site_config.json"
+}
+
 runtime_disposable_marker_state() {
   "${bench_path}/env/bin/python" -c \
     'import json, pathlib, sys
@@ -929,6 +949,13 @@ if [[ "${engineering_change_route_disable_original_state}" != "absent" ]]; then
   echo "Runtime Site must start without the P9-01 route-disable switch." >&2
   exit 2
 fi
+reporting_collaboration_route_disable_original_state="$(
+  reporting_collaboration_route_switch_state
+)"
+if [[ "${reporting_collaboration_route_disable_original_state}" != "absent" ]]; then
+  echo "Runtime Site must start without the P9-02 route-disable switch." >&2
+  exit 2
+fi
 if [[ "${verification_mode}" == "all" ||
       "${verification_mode}" == "--document-only" ||
       "${verification_mode}" == "--tooling-only" ||
@@ -980,6 +1007,8 @@ integration_operations_route_disable_config_changed=false
 integration_operations_runtime_environment_active=false
 engineering_change_route_disable_config_changed=false
 engineering_change_runtime_environment_active=false
+reporting_collaboration_route_disable_config_changed=false
+reporting_collaboration_runtime_environment_active=false
 runtime_disposable_marker_changed=false
 
 start_runtime_server() {
@@ -1004,6 +1033,10 @@ start_runtime_server() {
       -u NPI_PROJECT_WORK_RUNTIME_RUN_ID \
       -u NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
       -u NPI_RUNTIME_FIXTURE_PASSWORD \
+      -u NPI_P9_02D_RUNTIME_ENABLED \
+      -u NPI_P9_02D_RUNTIME_PROJECT_ID \
+      -u NPI_P9_02D_RUNTIME_ACTOR \
+      -u NPI_P9_02D_RUNTIME_LIMITED_ACTOR \
       bench --site "${site_name}" serve --port "${port}" --noreload
   ) >>"${runtime_log}" 2>&1 &
   server_pid="$!"
@@ -1354,6 +1387,22 @@ set_engineering_change_route_switch() {
   fi
 }
 
+set_reporting_collaboration_route_switch() {
+  local value="$1"
+  local expected="$2"
+  (
+    cd "${bench_path}"
+    bench --site "${site_name}" set-config \
+      npi_p9_02_routes_disabled "${value}"
+  )
+  local actual
+  actual="$(reporting_collaboration_route_switch_state)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "P9-02 route-disable switch state is ${actual}, expected ${expected}." >&2
+    return 1
+  fi
+}
+
 set_runtime_disposable_marker() {
   local value="$1"
   (
@@ -1542,6 +1591,13 @@ restore_engineering_change_route_switch() {
   engineering_change_route_disable_config_changed=false
 }
 
+restore_reporting_collaboration_route_switch() {
+  if ! set_reporting_collaboration_route_switch None absent; then
+    return 1
+  fi
+  reporting_collaboration_route_disable_config_changed=false
+}
+
 restore_runtime_disposable_marker() {
   if ! set_runtime_disposable_marker "${runtime_marker}"; then
     return 1
@@ -1578,6 +1634,10 @@ cleanup() {
   if [[ "${engineering_change_runtime_environment_active}" == true ]]; then
     clear_engineering_change_runtime_environment
     engineering_change_runtime_environment_active=false
+  fi
+  if [[ "${reporting_collaboration_runtime_environment_active}" == true ]]; then
+    clear_reporting_collaboration_runtime_environment
+    reporting_collaboration_runtime_environment_active=false
   fi
   if [[ "${runtime_disposable_marker_changed}" == true ]]; then
     if ! restore_runtime_disposable_marker; then
@@ -1732,6 +1792,12 @@ cleanup() {
   if [[ "${engineering_change_route_disable_config_changed}" == true ]]; then
     if ! restore_engineering_change_route_switch; then
       echo "Failed to restore the P9-01 route-disable switch to absent." >&2
+      exit_status=1
+    fi
+  fi
+  if [[ "${reporting_collaboration_route_disable_config_changed}" == true ]]; then
+    if ! restore_reporting_collaboration_route_switch; then
+      echo "Failed to restore the P9-02 route-disable switch to absent." >&2
       exit_status=1
     fi
   fi
@@ -1969,6 +2035,8 @@ inbound_project_runtime_actor="npi-inbound-${document_runtime_run_id:0:12}@examp
 inbound_project_runtime_owner="npi-owner-${document_runtime_run_id:0:12}@example.invalid"
 item_publish_runtime_actor="npi-document-${document_runtime_run_id:0:20}-baseline@example.invalid"
 engineering_change_runtime_worker="npi-readiness-${document_runtime_run_id:0:20}-manager@example.invalid"
+reporting_collaboration_runtime_actor="${engineering_change_runtime_worker}"
+reporting_collaboration_runtime_limited_actor="${item_publish_runtime_actor}"
 tool_asset_runtime_requester="npi-tooling-manufacturing-${document_runtime_run_id:0:12}-manager@example.invalid"
 item_publish_runtime_project_id=""
 item_publish_runtime_legacy_request_id=""
@@ -2000,7 +2068,9 @@ if [[ ! "${inbound_project_runtime_template_id}" =~ ^[a-f0-9-]{36}$ ||
       ! "${inbound_project_runtime_secret_new}" =~ ^[a-f0-9]{64}$ ||
       ! "${engineering_change_runtime_secret}" =~ ^[a-f0-9]{64}$ ||
       ! "${item_publish_runtime_actor}" =~ ^npi-document-[a-f0-9]{20}-baseline@example[.]invalid$ ||
-      ! "${engineering_change_runtime_worker}" =~ ^npi-readiness-[a-f0-9]{20}-manager@example[.]invalid$ ]]; then
+      ! "${engineering_change_runtime_worker}" =~ ^npi-readiness-[a-f0-9]{20}-manager@example[.]invalid$ ||
+      "${reporting_collaboration_runtime_actor}" != "${engineering_change_runtime_worker}" ||
+      "${reporting_collaboration_runtime_limited_actor}" != "${item_publish_runtime_actor}" ]]; then
   echo "Inbound Project runtime fixture generation failed." >&2
   exit 2
 fi
@@ -3464,6 +3534,59 @@ run_engineering_change_runtime_verifier() {
   )
 }
 
+export_reporting_collaboration_runtime_environment() {
+  export NPI_P9_02D_RUNTIME_ENABLED=1
+  export NPI_P9_02D_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
+  export NPI_P9_02D_RUNTIME_ACTOR="${reporting_collaboration_runtime_actor}"
+  export NPI_P9_02D_RUNTIME_LIMITED_ACTOR="${reporting_collaboration_runtime_limited_actor}"
+}
+
+clear_reporting_collaboration_runtime_environment() {
+  unset \
+    NPI_P9_02D_RUNTIME_ENABLED \
+    NPI_P9_02D_RUNTIME_PROJECT_ID \
+    NPI_P9_02D_RUNTIME_ACTOR \
+    NPI_P9_02D_RUNTIME_LIMITED_ACTOR
+}
+
+run_reporting_collaboration_runtime_verifier() {
+  local mode="$1"
+  (
+    unset FRAPPE_DB_HOST FRAPPE_DB_PORT FRAPPE_DB_SOCKET FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD NPI_DATABASE_ROOT_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    export_reporting_collaboration_runtime_environment
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_reporting_collaboration_runtime.py" \
+        --base-url "${base_url}"
+    fi
+    if [[ "${mode}" == "disabled" ]]; then
+      exec python "${repo_root}/scripts/verify_reporting_collaboration_runtime.py" \
+        --base-url "${base_url}" \
+        --disabled-probe
+    fi
+    if [[ "${mode}" == "replay-only" ]]; then
+      exec python "${repo_root}/scripts/verify_reporting_collaboration_runtime.py" \
+        --base-url "${base_url}" \
+        --replay-only
+    fi
+    if [[ "${mode}" == "recovered" ]]; then
+      exec python "${repo_root}/scripts/verify_reporting_collaboration_runtime.py" \
+        --base-url "${base_url}" \
+        --recovered-probe
+    fi
+    if [[ "${mode}" == "cleanup" ]]; then
+      exec python "${repo_root}/scripts/verify_reporting_collaboration_runtime.py" \
+        --base-url "${base_url}" \
+        --cleanup
+    fi
+    echo "Unknown P9-02 reporting and collaboration runtime verification mode." >&2
+    exit 2
+  )
+}
+
 read_engineering_change_runtime_diagnostic() {
   local diagnostic_path="${RUNNER_TEMP:-/tmp}/p9-01-engineering-change-runtime-diagnostic.json"
   local expected_trace
@@ -3725,6 +3848,23 @@ report_engineering_change_runtime_failure() {
     echo "P9-01 Engineering Change runtime diagnostic [${diagnostic}]" >&2
   fi
   echo "P9-01 runtime log output withheld because it may contain signed change values or target identities." >&2
+}
+
+verify_reporting_collaboration_runtime_log_redaction() {
+  local marker
+  for marker in \
+    "${MEETING_TITLE:-P9 reporting review}" \
+    "Synthetic local email queue failure" \
+    "/private/files/"; do
+    if grep --fixed-strings --quiet -- "${marker}" "${runtime_log}"; then
+      echo "P9-02 runtime fixture or private value leaked into the runtime log." >&2
+      return 1
+    fi
+  done
+}
+
+report_reporting_collaboration_runtime_failure() {
+  echo "P9-02 runtime log output withheld because it may contain collaboration values or identities." >&2
 }
 
 report_item_publish_runtime_failure() {
@@ -4755,6 +4895,82 @@ if [[ "${verification_mode}" == "all" ||
   start_runtime_server
   if ! wait_for_runtime_server; then
     report_engineering_change_runtime_failure
+    exit 1
+  fi
+  # P9-02 reuses only the retained disposable Project and the two existing
+  # non-Administrator actors. Its routes remain independently default-disabled
+  # until those exact fixture identities are exported into a new process.
+  if ! run_reporting_collaboration_runtime_verifier disabled; then
+    echo "Local Frappe reporting and collaboration default-disabled probe failed." >&2
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_reporting_collaboration_route_switch false false
+  reporting_collaboration_route_disable_config_changed=true
+  export_reporting_collaboration_runtime_environment
+  reporting_collaboration_runtime_environment_active=true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  if ! run_reporting_collaboration_runtime_verifier fresh; then
+    echo "Local Frappe reporting and collaboration runtime verification failed." >&2
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  if ! run_reporting_collaboration_runtime_verifier replay-only; then
+    echo "Local Frappe reporting and collaboration cross-process replay verification failed." >&2
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_reporting_collaboration_route_switch true true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  if ! run_reporting_collaboration_runtime_verifier disabled; then
+    echo "Local Frappe reporting and collaboration route-disable verification failed." >&2
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_reporting_collaboration_route_switch false false
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  if ! run_reporting_collaboration_runtime_verifier recovered; then
+    echo "Local Frappe reporting and collaboration route recovery verification failed." >&2
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  if ! run_reporting_collaboration_runtime_verifier cleanup; then
+    echo "Local Frappe reporting and collaboration cleanup verification failed." >&2
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  if ! verify_reporting_collaboration_runtime_log_redaction; then
+    report_reporting_collaboration_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  clear_reporting_collaboration_runtime_environment
+  reporting_collaboration_runtime_environment_active=false
+  restore_reporting_collaboration_route_switch
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_reporting_collaboration_runtime_failure
     exit 1
   fi
   # Insert one marker-gated 8dd-shaped row after the executable proof, run the

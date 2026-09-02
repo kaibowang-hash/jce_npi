@@ -29,7 +29,9 @@ class NPINotificationPreference(Document):
 
     def validate(self) -> None:
         self.global_id = validate_uuid(self.global_id, _("Global ID"))
-        values, _ = canonical_json(self.email_kinds, _("Notification Email Types"), list)
+        values, _canonical = canonical_json(
+            self.email_kinds, _("Notification Email Types"), list
+        )
         self.email_kinds = json.dumps(
             [item.value for item in preference_email_kinds(values)],
             separators=(",", ":"),

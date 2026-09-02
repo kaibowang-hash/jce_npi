@@ -805,6 +805,8 @@ describe("live Project workspace tabs", () => {
       screen.getByRole("tab", { name: "Team and responsibilities" }),
     ).toHaveFocus();
     await user.keyboard("{End}");
+    expect(screen.getByRole("tab", { name: "Meeting minutes" })).toHaveFocus();
+    await user.keyboard("{ArrowLeft}");
     expect(screen.getByRole("tab", { name: "EBOM" })).toHaveFocus();
     await user.keyboard("{Home}");
     expect(overview).toHaveFocus();

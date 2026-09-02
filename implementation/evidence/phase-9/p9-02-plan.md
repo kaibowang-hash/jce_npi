@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `P9-02C FRONTEND LOCAL PASS — P9-02D FINAL GATE AUTHORIZED`
+Status: `P9-02D FINAL CANDIDATE LOCAL PASS — PENDING EXACT-SHA ORDINARY CI`
 
 Base checkpoint:
 `ea6112fa04e08cee6920407df426efc685cea98b`
@@ -131,6 +131,59 @@ and old Project index. The complete final batch normalizes Portfolio's inactive
 legacy colour and updates that existing keyboard test for the approved nine
 commands and current Project index. No visual baseline or product behavior is
 rewritten.
+
+Final frontend checkpoint `777080a35da9c059d491a68378ccda042130044f`
+ordinary CI `33678967551` passed frontend verification, both complete nonvisual
+E2E shards, secret scanning and the aggregate frontend lane. Repository failed
+only because the exact-path regression had not yet listed the already-modified
+`r1-03-shell.spec.ts`; its 37 visual failures separated exactly into 18
+Portfolio inactive-colour cases and 19 Project-tab-position cases. The final
+candidate adds that exact path, keeps Portfolio enabled while restoring its
+prior inactive colour only outside live prototype navigation, and places the
+new Meeting-minutes tab after EBOM so the prior Project tabs retain their
+positions. The established global-search auto margin remains unchanged. The
+keyboard test now proves the new final tab and the adjacent EBOM position. No
+visual tolerance, workflow or approved domain behavior changes.
+
+One intermediate candidate run `33685141055` proved repository, complete frontend
+verification and both E2E shards, while also rejecting two test-only candidate
+details before the final exact-SHA run: a high-entropy request-label string was
+correctly flagged by Gitleaks, and an attempted global-search margin change
+caused 116 common Shell visual failures. The label is now a low-entropy test
+identifier and the margin experiment is fully removed. The pinned Gitleaks
+`8.24.3` branch-history scan covers 851 commits with zero findings after the
+correction.
+
+Exact-SHA ordinary run `33686103191` then passed repository verification,
+secret scanning, complete frontend verification, both nonvisual E2E shards and
+frontend aggregation. Its governed visual lane passed `121/135`; all 14
+remaining diffs were inspected and reduced to two exact causes. Six legacy Gate
+review cases at the effective `<=920px` viewport exposed that the new search
+wrapper did not inherit the prior media-query flex basis and left margin. The
+local repair adds only that wrapper to the existing media selector. The other
+eight diffs were the approved Meeting-minutes tab appearing after EBOM in the
+Simplified- and Traditional-Chinese P5-01, P5-04, P5-06 and P7-06 views. Those
+eight Linux actuals from the exact CI artifact are the only refreshed existing
+baselines; visual tolerance and test logic remain unchanged.
+
+P9-02D adds one cumulative disposable-Site verifier to the established local
+Frappe runtime lifecycle. Its fixed operations prove permission-filtered
+portfolio/search/configuration/KPI truth; limited-actor denial; immutable
+meeting create, replay and conflicts; deterministic notification scheduling,
+recipient feed, read replay/stale handling and notification preferences;
+cross-process replay; disabled-route and recovered-route behavior; and exact
+fixture cleanup. The verifier does not accept caller-selected methods,
+DocTypes, paths or commands and neither contacts nor modifies ERPNext.
+
+The clean local cumulative runtime reached the new P9-02 slice and proved all
+fresh reporting, authorization, meeting, scheduler, email-failure,
+idempotency, notification and mark-read assertions before the preference PUT
+found one controller defect: a local unpack target named `_` shadowed Frappe's
+translation callable. The minimal fix renames only that discarded value and a
+metadata regression prevents recurrence. The repaired preference endpoint
+returns HTTP 200/version 1, and replay-only, route-disabled, recovered and
+cleanup modes all pass. The final exact-SHA Level 3 remains the authoritative
+fully fresh cumulative rerun.
 
 ## Test and evidence plan
 

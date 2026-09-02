@@ -5850,7 +5850,8 @@ textarea::placeholder {
     display: none;
   }
 
-  .global-search {
+  .global-search,
+  .global-search-surface {
     flex-basis: 220px;
     margin-left: var(--npi-space-2);
   }

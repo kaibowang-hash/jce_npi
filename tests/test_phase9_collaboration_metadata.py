@@ -70,6 +70,25 @@ class Phase9CollaborationMetadataTest(unittest.TestCase):
             for fieldname in fieldnames:
                 self.assertEqual(fields[fieldname].get("unique"), 1)
 
+    def test_notification_preference_validation_keeps_translation_callable(self) -> None:
+        source = (
+            DOCTYPE_ROOT
+            / "npi_notification_preference"
+            / "npi_notification_preference.py"
+        ).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        validate = next(
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef) and node.name == "validate"
+        )
+        assigned_names = {
+            node.id
+            for node in ast.walk(validate)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)
+        }
+        self.assertNotIn("_", assigned_names)
+
     def test_scheduler_is_fixed_hourly_operation_without_dynamic_command(self) -> None:
         hooks = (ROOT / "apps/npi_core/npi_core/hooks.py").read_text(encoding="utf-8")
         self.assertIn('"hourly": ["npi_core.collaboration.frappe_repository.refresh_due_notifications"]', hooks)

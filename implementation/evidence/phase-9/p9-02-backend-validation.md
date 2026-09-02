@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `P9-02C CI BATCH REPAIR LOCAL PASS — PENDING EXACT-SHA ORDINARY CI`
+Status: `P9-02D FINAL CANDIDATE LOCAL PASS — PENDING EXACT-SHA ORDINARY CI`
 
 The accepted P9-02 audit/plan checkpoint is
 `4123eb86c930c9c091cfb18a67a37ae9552fdd04`, ordinary CI run
@@ -130,3 +130,82 @@ nine commands and navigate explicitly to the current Project at its new fixed
 index. The regression test path is added to the exact P9-02 manifest. No
 snapshot, visual tolerance, command behavior, product contract or CI workflow
 is changed.
+
+## Final frontend and disposable-runtime candidate
+
+Exact SHA `777080a35da9c059d491a68378ccda042130044f` ordinary CI
+`33678967551` passed secret scanning, frontend verification, both full
+nonvisual E2E shards and frontend aggregation. Its repository and visual
+failures were fully bounded:
+
+- repository verification found only that `r1-03-shell.spec.ts`, already part
+  of the checkpoint repair, was absent from the exact allowed-path assertion;
+- the new Meeting-minutes tab preceded and displaced the existing EBOM tab;
+  and
+- Portfolio remained muted in the approved prototype screens even though the
+  route is now live.
+
+The 37 failures are the exact union of 19 Project-tab-position cases and 18
+Portfolio inactive-colour cases. The single candidate batch adds the exact
+regression path, places Meeting minutes after EBOM, and mutes Portfolio only
+when prototype navigation is not enabled. The global-search base placement and
+visual tolerances are unchanged. Affected nonvisual
+Playwright scenarios pass `13/13`; the Project tab keyboard regression passes
+`19/19` and now covers Meeting minutes as the new final tab plus ArrowLeft back
+to EBOM.
+
+The new disposable-Site verifier is integrated into the existing cumulative
+runtime shell rather than creating a second harness. It exercises only fixed
+P9-02 operations and owns its feature switch, synthetic actors, deterministic
+fixture identifiers, server restarts and cleanup. Local proof covers:
+
+- portfolio normal/empty truth, global search, four explicitly unavailable KPI
+  definitions and the read-only configuration catalog;
+- limited-actor 403 responses for configuration and meeting commands;
+- meeting create, timeout-safe replay, idempotency conflict and optimistic
+  version conflict;
+- one critical scheduled notification, failed-email truth and duplicate-free
+  rerun;
+- recipient feed, mark-read replay/stale behavior and preference update,
+  replay/stale behavior;
+- cross-process replay, disabled routes, recovery, exact cleanup and bounded
+  log-redaction markers.
+
+The first clean cumulative run stopped at notification-preference PUT only
+after all preceding P9-02 assertions passed. The root cause was
+`NPI Notification Preference.validate` assigning an unpacked canonical value
+to `_`, which made the imported translation function local and raised
+`UnboundLocalError`. Renaming that one unused target to `_canonical` preserves
+the contract and avoids any schema or behavior change. A structural regression
+test protects the translation callable; the repaired endpoint returns HTTP
+200/version 1, followed by PASS for replay-only, route-disabled, recovered and
+cleanup modes. Full repository functionality passes `2,889/2,889`; the only
+subsequent verifier stop was its own forbidden-SQL assertion spelling the
+scanner token literally, now replaced by an AST call inspection with the same
+fail-closed meaning.
+
+Candidate run `33685141055` then passed repository, complete frontend
+verification and both full E2E shards while rejecting two test-only candidate
+details. Gitleaks treated the deterministic request label `p902-disabled` as a
+generic API key, and a proposed search-margin change shifted 116 otherwise
+unchanged Shell screenshots. The request label is now simply `disabled`, the
+search-margin experiment is removed, and the pinned Gitleaks `8.24.3` scan of
+`origin/main..HEAD` reports zero findings across 851 commits. Neither correction
+changes a product contract, visual baseline or tolerance.
+
+No production ERPNext, endpoint, credential, business record or external write
+was used. The final proof sequence is one clean exact-SHA ordinary CI followed
+by one diagnostics-off Level 3; the latter is the authoritative fully fresh
+cumulative Site execution.
+
+Exact-SHA ordinary run `33686103191` passed every nonvisual lane: repository,
+secret, full frontend verification, both E2E shards and frontend aggregation.
+The visual lane passed `121/135`. Inspection proved six narrow/high-scale Gate
+review diffs were one wrapper-only media-query omission: the live search wrapper
+missed the existing `<=920px` 220px flex basis and 8px left margin. Adding the
+wrapper to that established selector restores the prior geometry without a
+global margin change. The other eight diffs contain only the approved
+Meeting-minutes tab after EBOM in the `zh`/`zh-TW` P5-01, P5-04, P5-06 and
+P7-06 screens. Exactly those eight Linux actuals from the run artifact replace
+their baselines. No English baseline, unrelated page, tolerance, workflow,
+contract or runtime behavior changes.

@@ -1490,8 +1490,8 @@ export function ProjectWorkspace({
     { id: "readiness", label: t("NPI readiness") },
     { id: "production-transition", label: t("Production transition") },
     { id: "change-control", label: t("Change control") },
-    { id: "meetings", label: t("Meeting minutes") },
     { id: "ebom", label: t("EBOM") },
+    { id: "meetings", label: t("Meeting minutes") },
   ] as const satisfies readonly Readonly<{
     id: ProjectWorkspaceTab;
     label: string;
