@@ -635,3 +635,17 @@ permission, adapter, target or production behavior changes.
 Level 1 passes the exact affected suite `135/135`, full repository
 verification `2836/2836`, current-task/reconciliation, compilation, shell
 syntax and diff hygiene.
+
+## P8-03 migrated-legacy regression after P9 completion
+
+Mode diagnostic SHA `7669d55414cd8567fcb2576151f17460592d0779`
+passes ordinary `33628445755`. Controlled `33629748143` passes preflight and
+all P9-01 fresh/replay/recovery/cleanup/redaction boundaries, then the
+cumulative Gate reaches the historical P8-03 migrated-legacy check and emits
+only its fixed outer failure label. No P9 tuple and no restricted value was
+read. The P9 product result is therefore retained; the active checkpoint turns
+off its recorder and turns on only the existing P8-03 post-P8-09 full-boundary
+code/type/trace recorder. This changes no product or production behavior.
+Focused governance/P8-03/P9 runtime tests pass `61/61`; full repository
+verification passes `2836/2836`, with current-task/reconciliation,
+compilation, shell syntax and diff hygiene also green.

@@ -662,3 +662,9 @@ only the cumulative backend disposable runtime fails after preflight. The
 product-zero mode diagnostic changes no route, UI source, translation,
 accessibility behavior, fixture response, permission display or visual
 baseline. Existing P9-01D UI evidence remains authoritative.
+
+The subsequent mode diagnostic ordinary `33628445755` again passes frontend
+and governed visual lanes. Controlled `33629748143` proves P9-01 runtime
+completion and fails only in the later backend P8-03 migrated-legacy recheck.
+The active P8-03 diagnostic changes no UI, source string, translation,
+accessibility behavior, fixture response or visual baseline.

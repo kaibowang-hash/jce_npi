@@ -11131,3 +11131,29 @@ P9-01 Level 3.
   compilation, shell syntax and diff hygiene. The exact task manifest already
   contains every changed path.
 - Controller marker: `P9-01D post-summary-operation-repair mode diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P8-03 post-P8-09 migrated-legacy final-gate diagnostic
+
+- Mode-diagnostic exact SHA `7669d55414cd8567fcb2576151f17460592d0779`
+  passes ordinary CI `33628445755`: visual `100241693460`, frontend
+  `100241693671`, repository `100241693694` and secret `100241693723` pass.
+  Its sole controlled continuation `33629748143` passes preflight
+  `100245998440`; runtime `100246095421` completes the P9-01 fresh, replay,
+  route-recovery, cleanup and redaction boundaries, then stops only at the
+  later P8-03 migrated-legacy verification. Fixed-label filtering yields no
+  P9 diagnostic tuple and reads no restricted output.
+- Freeze the P9 product repair as complete. Disable its diagnostic and enable
+  only the existing P8-03 post-P8-09 full-boundary recorder. It has exact
+  fixed stages, first-wins `O_EXCL` 0600 storage and emits only code,
+  exception type and deterministic trace. Product behavior, CI, production
+  ERPNext, contracts, permissions, data and adapters remain unchanged.
+- The exact manifest now admits the existing P8-03 verifier and focused test.
+  Require one exact-SHA ordinary PASS and one bounded controlled Level 2, then
+  statically prove and batch the unique minimal repair before the sole final
+  diagnostics-off Level 3.
+- Level 1 passes focused governance/P8-03/P9 runtime `61/61`, full repository
+  `2836/2836`, current-task and reconciliation checks, compilation, shell
+  syntax and diff hygiene. The first local repository invocation did not enter
+  tests because this host exposes `python3` without a `python` alias; rerunning
+  with a temporary PATH-only alias passes and changes no repository or CI file.
+- Controller marker: `P8-03 post-P8-09 migrated-legacy final-gate diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.

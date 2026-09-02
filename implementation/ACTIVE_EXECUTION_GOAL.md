@@ -5,6 +5,13 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- Mode diagnostic exact SHA `7669d55414cd8567fcb2576151f17460592d0779`
+  passes ordinary CI `33628445755`. Its sole controlled run `33629748143`
+  proves every P9-01 runtime mode completes before the cumulative Gate reaches
+  a later P8-03 migrated-legacy check. The active product-zero checkpoint
+  disables the P9 recorder and enables only the existing P8-03 post-P8-09
+  full-boundary recorder. It may emit only fixed code, exception type and
+  deterministic trace; no restricted output or production ERPNext is read.
 - Summary-operation repair exact SHA
   `70684e308308db027db86ab9920d337981f74ea3` passes ordinary CI
   `33624647220` in all four lanes. Its diagnostics-off Level 3 `33625621507`

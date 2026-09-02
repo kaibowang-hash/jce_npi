@@ -43,7 +43,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["authorized_next_task"], "P9-02")
         self.assertEqual(
             value["expected_state"]["controller_marker"],
-            "P9-01D post-summary-operation-repair mode diagnostic Level 1 PASS; exact-SHA ordinary CI pending",
+            "P8-03 post-P8-09 migrated-legacy final-gate diagnostic Level 1 PASS; exact-SHA ordinary CI pending",
         )
         self.assertIn("FR-CH-001", value["requirement_ids"])
         self.assertIn("FR-CH-010", value["requirement_ids"])
@@ -85,7 +85,8 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "P9_01D_ERP_OBSERVATION_FIELDS_REMAIN_READ_ONLY_AND_NPI_IMPACT_EVIDENCE_REMAINS_NPI_OWNED",
             "P9_01D_DISPOSABLE_SITE_RUNTIME_VISUAL_I18N_ACCESSIBILITY_AND_SECURITY_LEVEL_3_REQUIRED",
             "P9_01D_SUMMARY_OPERATION_OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_TRUTH",
-            "P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_PRODUCT_ZERO_CODE_TYPE_TRACE_ONLY",
+            "P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_PROVES_P9_COMPLETE_BEFORE_P8_03_LEGACY_GATE",
+            "P8_03_POST_P809_LEGACY_FINAL_GATE_DIAGNOSTIC_PRODUCT_ZERO_CODE_TYPE_TRACE_ONLY",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
@@ -146,7 +147,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "scripts/verify-frappe-runtime.sh",
                 "scripts/verify_engineering_change_runtime.py",
                 "scripts/verify_integration_operations_runtime.py",
+                "scripts/verify_item_publish_runtime.py",
                 "tests/test_current_task_verifier.py",
+                "tests/test_phase8_item_publish_runtime_verifier.py",
                 "tests/test_phase8_item_publish_security.py",
                 "tests/test_phase9_change_control_api.py",
                 "tests/test_phase9_change_control_metadata.py",
@@ -159,14 +162,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "tests/test_phase9_change_control_runtime_verifier.py",
             },
         )
-        self.assertEqual(len(value["allowed_paths"]), 65)
+        self.assertEqual(len(value["allowed_paths"]), 67)
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
         self.assertFalse(
             any(path.startswith(".github/") for path in value["allowed_paths"])
         )
         self.assertEqual(
             sum(path.startswith("scripts/") for path in value["allowed_paths"]),
-            3,
+            4,
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:

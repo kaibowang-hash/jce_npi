@@ -91,7 +91,8 @@
     "P9_01D_ERP_OBSERVATION_FIELDS_REMAIN_READ_ONLY_AND_NPI_IMPACT_EVIDENCE_REMAINS_NPI_OWNED",
     "P9_01D_DISPOSABLE_SITE_RUNTIME_VISUAL_I18N_ACCESSIBILITY_AND_SECURITY_LEVEL_3_REQUIRED",
     "P9_01D_SUMMARY_OPERATION_OWNED_IDEMPOTENCY_HASH_AND_SYNTHETIC_UNAVAILABLE_TRUTH",
-    "P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_PRODUCT_ZERO_CODE_TYPE_TRACE_ONLY",
+    "P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_PROVES_P9_COMPLETE_BEFORE_P8_03_LEGACY_GATE",
+    "P8_03_POST_P809_LEGACY_FINAL_GATE_DIAGNOSTIC_PRODUCT_ZERO_CODE_TYPE_TRACE_ONLY",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
     "FORMAL_CHANGE_NUMBER_MAPPING_VERSION_ACTOR_TRACE_HASH_AND_IDEMPOTENCY_REMAIN_EXPLICIT",
     "TIMEOUT_AFTER_COMMIT_PARTIAL_STALE_CONFLICT_DUPLICATE_REPLAY_AND_RECONCILIATION_NEVER_BECOME_FAKE_SUCCESS",
@@ -156,7 +157,9 @@
     "scripts/verify-frappe-runtime.sh",
     "scripts/verify_engineering_change_runtime.py",
     "scripts/verify_integration_operations_runtime.py",
+    "scripts/verify_item_publish_runtime.py",
     "tests/test_current_task_verifier.py",
+    "tests/test_phase8_item_publish_runtime_verifier.py",
     "tests/test_phase8_item_publish_security.py",
     "tests/test_phase9_change_control_api.py",
     "tests/test_phase9_change_control_metadata.py",
@@ -173,7 +176,7 @@
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/reconcile_v1_2_traceability.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
-      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_phase8_item_publish_security", "tests.test_phase9_change_control_api", "tests.test_phase9_change_control_metadata", "tests.test_phase9_change_control_repository", "tests.test_phase9_change_control_runtime_verifier", "tests.test_phase9_change_integration_domain", "tests.test_phase9_change_integration_ingress", "tests.test_phase9_change_integration_api", "tests.test_phase9_change_integration_contract", "tests.test_phase9_change_integration_metadata", "tests.test_phase9_change_integration_repository", "tests.test_phase9_change_integration_security", "tests.test_phase9_change_integration_worker", "tests.test_phase8_integration_operations_domain", "tests.test_phase8_integration_operations_contract", "tests.test_phase8_integration_operations_repository", "-v"],
+      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_phase8_item_publish_runtime_verifier", "tests.test_phase8_item_publish_security", "tests.test_phase9_change_control_api", "tests.test_phase9_change_control_metadata", "tests.test_phase9_change_control_repository", "tests.test_phase9_change_control_runtime_verifier", "tests.test_phase9_change_integration_domain", "tests.test_phase9_change_integration_ingress", "tests.test_phase9_change_integration_api", "tests.test_phase9_change_integration_contract", "tests.test_phase9_change_integration_metadata", "tests.test_phase9_change_integration_repository", "tests.test_phase9_change_integration_security", "tests.test_phase9_change_integration_worker", "tests.test_phase8_integration_operations_domain", "tests.test_phase8_integration_operations_contract", "tests.test_phase8_integration_operations_repository", "-v"],
       ["npm", "--prefix", "frontend", "run", "generate:check"],
       ["npm", "--prefix", "frontend", "run", "lint:i18n"],
       ["git", "diff", "--check"]
@@ -197,7 +200,7 @@
     "phase_status_resumed_product_task": "P9-01",
     "active_goal_marker": "P9-01",
     "next_action_marker": "P9-01",
-    "controller_marker": "P9-01D post-summary-operation-repair mode diagnostic Level 1 PASS; exact-SHA ordinary CI pending"
+    "controller_marker": "P8-03 post-P8-09 migrated-legacy final-gate diagnostic Level 1 PASS; exact-SHA ordinary CI pending"
   },
   "rollback": {
     "before_product_resume": "Restore exact P9-00 checkpoint 065803ae484d885001259de8238ef01d0ad311e4 and its ordinary CI 33345162833. This P9-01 audit transition changes no product or external state.",

@@ -5,6 +5,16 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+Mode diagnostic exact SHA `7669d55414cd8567fcb2576151f17460592d0779`
+passes ordinary CI `33628445755`. Its one controlled run `33629748143` passes
+preflight and proves P9-01 fresh, replay, recovery, cleanup and redaction all
+complete; the cumulative Gate fails only when it later rechecks P8-03 migrated
+legacy data. The sole next action is the existing product-zero P8-03
+post-P8-09 full-boundary diagnostic, exact-SHA ordinary PASS and one bounded
+controlled Level 2. Read only its fixed code/type/trace tuple, then apply one
+statically proven minimal repair, disable all diagnostics and run the sole
+final Level 3. Do not contact production ERPNext or stage user-owned files.
+
 Repair exact SHA `70684e308308db027db86ab9920d337981f74ea3`
 passes ordinary CI `33624647220` in all four lanes. Its diagnostics-off Level
 3 `33625621507` passes all four base lanes and controlled preflight, while the

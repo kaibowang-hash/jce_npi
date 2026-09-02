@@ -3063,7 +3063,7 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P9_01D_POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC
+  active_checkpoint: P8_03_POST_P809_MIGRATED_LEGACY_FINAL_GATE_DIAGNOSTIC
   p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
   p9_01b_governance_ordinary: 33354760251
   p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
@@ -3140,8 +3140,17 @@ p9_01:
   p9_01d_post_summary_project_lock_cycle: DIAGNOSTIC_1_OF_1_REPAIR_1_OF_1_FINAL_1_OF_1
   p9_01d_post_summary_operation_repair_diagnostic: PRODUCT_ZERO_EXACT_177_CODE_94_LEVEL_1_PASS
   p9_01d_post_summary_operation_repair_diagnostic_tests: {affected: 135_PASS, full_repository: 2836_PASS}
-  p9_01d_post_summary_operation_repair_cycle: DIAGNOSTIC_0_OF_1_REPAIR_0_OF_1_FINAL_0_OF_1
-  p9_01d_next_gate: POST_SUMMARY_OPERATION_REPAIR_MODE_DIAGNOSTIC_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_LEVEL_2
+  p9_01d_post_summary_operation_repair_diagnostic_checkpoint: 7669d55414cd8567fcb2576151f17460592d0779
+  p9_01d_post_summary_operation_repair_diagnostic_ordinary: 33628445755
+  p9_01d_post_summary_operation_repair_diagnostic_jobs: {visual: 100241693460, frontend: 100241693671, repository: 100241693694, secret_scan: 100241693723}
+  p9_01d_post_summary_operation_repair_controlled: 33629748143
+  p9_01d_post_summary_operation_repair_preflight: 100245998440
+  p9_01d_post_summary_operation_repair_runtime: 100246095421
+  p9_01d_post_summary_operation_repair_result: P9_ALL_MODES_PASS_THEN_P8_03_MIGRATED_LEGACY_FIXED_LABEL
+  p9_01d_post_summary_operation_repair_cycle: DIAGNOSTIC_1_OF_1_REPAIR_0_OF_1_FINAL_0_OF_1
+  p8_03_post_p809_legacy_diagnostic: PRODUCT_ZERO_EXISTING_FULL_BOUNDARY_RECORDER_LEVEL_1_PASS
+  p8_03_post_p809_legacy_diagnostic_tests: {focused: 61_PASS, full_repository: 2836_PASS}
+  p9_01d_next_gate: P8_03_POST_P809_LEGACY_DIAGNOSTIC_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_LEVEL_2
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
