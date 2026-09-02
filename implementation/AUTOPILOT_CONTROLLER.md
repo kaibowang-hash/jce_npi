@@ -11421,3 +11421,25 @@ P9-01 Level 3.
   and the sole diagnostics-off Level 3. No production ERPNext contact or
   user-owned dirty-file staging is authorized.
 - Controller marker: `P9-02C frontend candidate; P9-02D final gate pending`.
+
+### P9-02C exact-SHA frontend batch repair
+
+- Frontend checkpoint `07d42c8cc12479ca4ab9844f7ec501d728166b16`
+  ordinary CI `33675136726` passes repository (`2,883` tests) and secret lanes,
+  then identifies one complete frontend repair batch: invalid dialog ARIA on a
+  native search input, statement coverage at 79.67% against the unchanged 80%
+  floor, and inactive colour drift for the three newly enabled navigation
+  entries in pre-existing full-Shell snapshots.
+- The repair removes only the invalid input attributes, keeps the labelled
+  search-results dialog, restores exact prior inactive navigation colour
+  without disabling the routes, and adds behavioral tests for every result
+  kind, explicit failures, notification delivery/read/preference/retry states,
+  all frozen filters, deterministic cursor use and malformed responses. CI,
+  thresholds, old snapshots, contracts, ownership and product scope do not
+  change.
+- Local lint/typecheck, all `1,115/1,115` units, 80.01% statements,
+  `10/10` affected functional/accessibility E2E, 8,982-source complete
+  `zh`/`zh-TW` audit and diff check pass. Push this repair once, require its
+  exact-SHA ordinary PASS, then continue autonomously to P9-02D disposable
+  runtime, Level 2 and the sole final Level 3. Production ERPNext remains
+  untouched.

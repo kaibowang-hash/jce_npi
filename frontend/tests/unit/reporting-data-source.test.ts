@@ -61,8 +61,14 @@ describe("reporting data source", () => {
         leakedValue: "secret",
       }),
     ).toBe(false);
+    expect(
+      isGlobalSearchResponse({ ...globalSearchFixture(), items: [null] }),
+    ).toBe(false);
     const portfolio = portfolioFixture();
     expect(isProjectPortfolioResponse(portfolio)).toBe(true);
+    expect(isProjectPortfolioResponse({ ...portfolio, items: [null] })).toBe(
+      false,
+    );
     expect(
       isProjectPortfolioResponse({
         ...portfolio,
@@ -85,6 +91,12 @@ describe("reporting data source", () => {
     expect(
       isKpiTrendResponse({
         ...kpis,
+        series: [null, ...kpis.series.slice(1)],
+      }),
+    ).toBe(false);
+    expect(
+      isKpiTrendResponse({
+        ...kpis,
         series: [
           {
             ...kpis.series[0],
@@ -98,6 +110,66 @@ describe("reporting data source", () => {
       }),
     ).toBe(false);
     expect(isConfigurationCapabilityCatalog(configurationFixture())).toBe(true);
+    expect(
+      isConfigurationCapabilityCatalog({
+        ...configurationFixture(),
+        items: [null],
+      }),
+    ).toBe(false);
+  });
+
+  it("accepts every frozen filter and rejects each non-allowlisted value", async () => {
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockResolvedValue(portfolioFixture());
+    const source = new LiveReportingDataSource(http);
+    const signal = new AbortController().signal;
+
+    await source.loadPortfolio(
+      {
+        customerReferenceKey: "SYN-CUSTOMER-001",
+        factoryReferenceKey: "SYN-FACTORY-001",
+        lifecycleState: "active",
+        ownerUserId: "project.owner@example.invalid",
+        projectType: "new_tool",
+        sopMonth: "2026-09",
+      },
+      { cursor: "cursor-p9-02-next", limit: 50 },
+      signal,
+    );
+    expect(request).toHaveBeenCalledWith(
+      "/portfolio/projects",
+      { signal },
+      expect.objectContaining({
+        query: {
+          cursor: "cursor-p9-02-next",
+          customerReferenceKey: "SYN-CUSTOMER-001",
+          factoryReferenceKey: "SYN-FACTORY-001",
+          lifecycleState: "active",
+          limit: "50",
+          ownerUserId: "project.owner@example.invalid",
+          projectType: "new_tool",
+          sopMonth: "2026-09",
+        },
+      }),
+    );
+
+    const invalidFilters: readonly unknown[] = [
+      { unexpected: "not-allowlisted" },
+      { customerReferenceKey: "" },
+      { factoryReferenceKey: "" },
+      { lifecycleState: "unknown" },
+      { ownerUserId: "not-an-email" },
+      { projectType: "unknown" },
+      { sopMonth: "2026-13" },
+    ];
+    for (const filters of invalidFilters) {
+      await expect(
+        source.loadPortfolio(filters as never, { limit: 50 }, signal),
+      ).rejects.toBeInstanceOf(NpiTransportError);
+    }
+    expect(request).toHaveBeenCalledTimes(1);
   });
 
   it("rejects caller-selected filters and invalid query bounds before transport", async () => {

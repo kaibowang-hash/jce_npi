@@ -783,6 +783,11 @@ export function AppShell({
                 item.active ??
                 (route.screen === item.screen ||
                   (item.id === "project" && route.screen === "gate"));
+              const preserveLegacyMutedState =
+                !active &&
+                (item.id === "analytics" ||
+                  item.id === "administration" ||
+                  (item.id === "portfolio" && !prototypeNavigationAllowed));
               const tooltipId = `navigation-${item.id}-tooltip`;
               return (
                 <li key={item.id}>
@@ -796,7 +801,7 @@ export function AppShell({
                         aria-label={item.label}
                         className={`domain-navigation__item${
                           active ? " is-active" : ""
-                        }`}
+                        }${preserveLegacyMutedState ? " is-muted" : ""}`}
                         data-navigation-tooltip-reason={item.unavailableReason}
                         onBlur={hideNavigationTooltip}
                         onClick={() => {

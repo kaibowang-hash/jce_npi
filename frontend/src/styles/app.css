@@ -526,6 +526,10 @@ textarea::placeholder {
   cursor: not-allowed;
 }
 
+.domain-navigation__item.is-muted {
+  color: var(--npi-color-border-default);
+}
+
 .domain-navigation__item:hover {
   background: var(--npi-color-brand-active);
 }

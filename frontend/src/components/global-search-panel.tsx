@@ -103,8 +103,6 @@ export function GlobalSearchPanel({
         <span className="visually-hidden">{t("Global search")}</span>
         <Icon name="search" />
         <TextInput
-          aria-expanded={open}
-          aria-haspopup="dialog"
           aria-label={t("Global search")}
           onChange={(event) => {
             setQuery(event.currentTarget.value);

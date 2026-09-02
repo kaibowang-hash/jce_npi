@@ -1,7 +1,7 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T02:40:02+07:00'
+updated_at: '2026-09-03T03:10:27+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-02
@@ -3243,8 +3243,14 @@ p9_02:
   backend_catalog_repair_jobs: {repository: 100380878712, secret_scan: 100380878741, frontend_verify: 100380878336, frontend_e2e_shard_1: 100380878683, frontend_e2e_shard_2: 100380878742, visual: 100380878555, frontend_aggregate: 100382821023}
   first_backend_ordinary: 33669485519
   first_backend_ordinary_result: FAILED_SINGLE_ROOT_MISSING_AND_UNUSED_TRANSLATION_CATALOG_SOURCES
-  frontend_candidate: LOCAL_LEVEL_1_E2E_VISUAL_PASS_PENDING_EXACT_SHA_ORDINARY
-  frontend_affected_unit_tests: 103
+  frontend_checkpoint: 07d42c8cc12479ca4ab9844f7ec501d728166b16
+  frontend_checkpoint_ordinary: 33675136726
+  frontend_checkpoint_ordinary_result: FAILED_BOUNDED_ARIA_COVERAGE_AND_INACTIVE_NAV_VISUAL_BATCH
+  frontend_candidate: CI_BATCH_REPAIR_LOCAL_PASS_PENDING_EXACT_SHA_ORDINARY
+  frontend_affected_unit_tests: 107
+  frontend_complete_unit_tests: 1115
+  frontend_statement_coverage: 80.01_PERCENT
+  frontend_affected_functional_accessibility_e2e: 10
   frontend_e2e_tests: 3
   frontend_visual_tests: 3
   frontend_i18n_sources: 8982

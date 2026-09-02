@@ -112,6 +112,17 @@ planned disposable-Site normal/fault/security proof, Level 2 and one final
 diagnostics-off Level 3. No production ERPNext connection is needed or
 authorized.
 
+Frontend checkpoint `07d42c8cc12479ca4ab9844f7ec501d728166b16`
+ordinary CI `33675136726` then exposed one bounded frontend batch: invalid
+dialog ARIA on the native search input, aggregate statement coverage at
+79.67%, and inactive navigation colour drift in existing Shell snapshots.
+The single repair removes the invalid attributes, restores the prior inactive
+colour without disabling the new routes, and adds real filter, response,
+search, notification, retry, read and preference coverage. Local lint,
+typecheck, `1,115/1,115` units, 80.01% statements and `10/10` affected
+functional/accessibility E2E pass. No CI workflow, threshold, existing visual
+baseline, contract or ownership rule changes.
+
 ## Test and evidence plan
 
 - Pure domain and contract tests for filters, cursors, KPI calculation,

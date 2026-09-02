@@ -15,15 +15,17 @@ first isolated one translation-catalog batch; repair SHA
 `33669976985` in repository, secret, frontend verification, both complete E2E
 shards, visual and aggregate frontend lanes.
 
-The frozen P9-02C trilingual Portfolio/Reporting/Admin workspace, live global
-search, notification feed and Project meeting surfaces are now one locally
-green frontend candidate: typecheck and lint pass, affected units are
-`103/103`, functional E2E is `3/3`, governed visual verification is `3/3`,
-and all 8,982 literal English sources have complete `zh`/`zh-TW` coverage.
-Commit and push this single frontend checkpoint and require exact-SHA ordinary
-PASS; then continue automatically into the P9-02D disposable runtime, Level 2
-and sole final Level 3. Do not contact production ERPNext, start external
-portals or pilots, introduce a generic writer, or stage user-owned files.
+Frontend checkpoint `07d42c8cc12479ca4ab9844f7ec501d728166b16`
+ordinary CI `33675136726` passed repository and secret lanes and exposed one
+bounded frontend batch: native-input ARIA, the unchanged 80% coverage floor,
+and inactive navigation colour in existing Shell visuals. The complete local
+repair passes lint/typecheck, `1,115/1,115` units, 80.01% statements,
+`10/10` affected functional/accessibility E2E and the unchanged 8,982-source
+complete `zh`/`zh-TW` audit. Commit and push this one repair checkpoint and
+require exact-SHA ordinary PASS; then continue automatically into P9-02D
+disposable runtime, Level 2 and the sole final Level 3. Do not contact
+production ERPNext, start external portals or pilots, introduce a generic
+writer, modify CI/thresholds/baselines, or stage user-owned files.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

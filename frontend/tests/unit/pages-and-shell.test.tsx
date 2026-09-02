@@ -7,6 +7,9 @@ import { App } from "../../src/app/app";
 import type { AppRoute } from "../../src/app/router";
 import { LiveMyWorkDataSource } from "../../src/api/my-work-data-source";
 import type { ProjectControlsDataSource } from "../../src/api/project-controls-data-source";
+import { NpiTransportError } from "../../src/api/http";
+import { GlobalSearchPanel } from "../../src/components/global-search-panel";
+import { NotificationCenter } from "../../src/components/notification-center";
 import type { Locale } from "../../src/i18n/runtime";
 import ExecutionPrototypePage from "../../src/pages/execution-prototype-page";
 import GatePage from "../../src/pages/gate-page";
@@ -16,8 +19,14 @@ import TrialPage from "../../src/pages/trial-page";
 import WorkPage from "../../src/pages/work-page";
 import { UsabilityRecorder } from "../../src/telemetry/recorder";
 import { renderWithLocale } from "../support/render";
-import { SyntheticReportingDataSource } from "../support/reporting-fixture";
-import { SyntheticCollaborationDataSource } from "../support/collaboration-fixture";
+import {
+  globalSearchFixture,
+  SyntheticReportingDataSource,
+} from "../support/reporting-fixture";
+import {
+  notificationFixture,
+  SyntheticCollaborationDataSource,
+} from "../support/collaboration-fixture";
 
 const syntheticReportingDataSource = new SyntheticReportingDataSource();
 const syntheticCollaborationDataSource = new SyntheticCollaborationDataSource();
@@ -1006,6 +1015,222 @@ describe("application shell behavior", () => {
       ),
     ).toBeVisible();
     expect(screen.getByRole("main")).toHaveTextContent("Workspace fixture");
+  });
+
+  it("keeps global search failures explicit and renders every governed result kind", async () => {
+    const source = new SyntheticReportingDataSource();
+    const navigate = vi.fn<(target: string) => void>();
+    const search = vi.spyOn(source, "search");
+    const user = userEvent.setup();
+    renderWithLocale(
+      <GlobalSearchPanel dataSource={source} navigate={navigate} />,
+      "en",
+      "/work",
+    );
+    const input = screen.getByRole("searchbox", { name: "Global search" });
+
+    await user.type(input, "x{Enter}");
+    expect(
+      screen.getByText("Enter at least two search characters."),
+    ).toBeVisible();
+    expect(search).not.toHaveBeenCalled();
+    await user.click(
+      screen.getByRole("button", { name: "Close global search" }),
+    );
+
+    search.mockRejectedValueOnce(
+      new NpiTransportError("network", "trace-p9-02-search-failure", "trace"),
+    );
+    await user.clear(input);
+    await user.type(input, "broken{Enter}");
+    expect(
+      await screen.findByText("Global search is unavailable."),
+    ).toBeVisible();
+    expect(screen.getByText("trace-p9-02-search-failure")).toBeVisible();
+    await user.keyboard("{Escape}");
+    expect(
+      screen.queryByRole("dialog", { name: "Global search results" }),
+    ).toBeNull();
+
+    const kinds = [
+      "project",
+      "customer",
+      "part",
+      "tooling",
+      "document",
+      "trial",
+      "defect",
+      "change",
+      "file",
+    ] as const;
+    const baseItem = globalSearchFixture("all").items[0];
+    if (!baseItem) throw new Error("The search fixture must contain one item.");
+    const availability = [
+      "available",
+      "stale",
+      "partial",
+      "unavailable",
+    ] as const;
+    search.mockResolvedValueOnce({
+      ...globalSearchFixture("all"),
+      kinds,
+      items: kinds.map((kind, index) => ({
+        ...baseItem,
+        kind,
+        globalId: `search-result-${kind}`,
+        label: `Synthetic ${kind}`,
+        sourceSystem:
+          index % 2 === 0 ? ("NPI_ONE" as const) : ("ERPNEXT" as const),
+        availability:
+          availability[index % availability.length] ?? "unavailable",
+      })),
+    });
+    await user.clear(input);
+    await user.type(input, "all{Enter}");
+    expect(await screen.findByText("Synthetic customer")).toBeVisible();
+    expect(screen.getAllByText(/^Synthetic /u)).toHaveLength(9);
+    expect(
+      screen.getByText("Synthetic customer").closest("button"),
+    ).toHaveTextContent("Customer");
+    expect(
+      screen.getByText("Synthetic file").closest("button"),
+    ).toHaveTextContent("File");
+    expect(screen.getAllByText("Available")).not.toHaveLength(0);
+    expect(screen.getAllByText("Stale")).not.toHaveLength(0);
+    expect(screen.getAllByText("Partial")).not.toHaveLength(0);
+    expect(screen.getAllByText("Unavailable")).not.toHaveLength(0);
+    await user.click(screen.getByText("Synthetic tooling"));
+    expect(navigate).toHaveBeenCalledWith(
+      "/projects/11111111-1111-4111-8111-111111111111",
+    );
+  });
+
+  it("marks recipient notifications read and saves only optional email preferences", async () => {
+    const source = new SyntheticCollaborationDataSource();
+    vi.spyOn(source, "loadNotifications").mockResolvedValue({
+      schemaVersion: 1,
+      items: [
+        notificationFixture(),
+        notificationFixture({
+          globalId: "33333333-3333-4333-8333-333333333334",
+          kind: "overdue_escalation",
+          emailDeliveryState: "failed",
+          failureCode: "delivery_failed",
+        }),
+        notificationFixture({
+          globalId: "33333333-3333-4333-8333-333333333335",
+          kind: "critical_blocker",
+          criticalAudit: true,
+          emailDeliveryState: "unavailable",
+          readAt: "2026-09-01T09:00:00Z",
+        }),
+        notificationFixture({
+          globalId: "33333333-3333-4333-8333-333333333336",
+          kind: "gate_attention",
+          emailDeliveryState: "not_requested",
+        }),
+      ],
+      page: { limit: 25, hasMore: false, nextCursor: null },
+      permissions: { serverFiltered: true },
+    });
+    const markRead = vi.spyOn(source, "markNotificationRead");
+    const savePreference = vi.spyOn(source, "savePreference");
+    const navigate = vi.fn<(target: string) => void>();
+    const user = userEvent.setup();
+    renderWithLocale(
+      <NotificationCenter
+        dataSource={source}
+        navigate={navigate}
+        session={{
+          csrfToken: "p9-02-notification-csrf-fixture",
+          userId: "project.admin@example.invalid",
+        }}
+      />,
+      "en",
+      "/work",
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Notifications" }),
+      ).toHaveTextContent("3 notifications");
+    });
+    await user.click(screen.getByRole("button", { name: "Notifications" }));
+    expect(screen.getByText("Work item overdue")).toBeVisible();
+    expect(
+      screen.getByText("Critical blocker requires attention"),
+    ).toBeVisible();
+    expect(screen.getByText("Gate review requires attention")).toBeVisible();
+    expect(screen.getByText("Email failed")).toBeVisible();
+    expect(screen.getByText("Email unavailable")).toBeVisible();
+    expect(screen.getByText("Email not requested")).toBeVisible();
+    await user.click(
+      screen.getByRole("checkbox", { name: "Due reminders by email" }),
+    );
+    await user.click(
+      screen.getByRole("checkbox", { name: "Overdue escalations by email" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Save preferences" }));
+    await waitFor(() => {
+      expect(savePreference).toHaveBeenCalledWith(
+        expect.objectContaining({ version: 1 }),
+        ["overdue_escalation"],
+        expect.objectContaining({
+          csrfToken: "p9-02-notification-csrf-fixture",
+        }),
+      );
+    });
+    await user.click(
+      screen.getByRole("button", { name: /Work item due soon/u }),
+    );
+    expect(markRead).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith(
+      "/projects/11111111-1111-4111-8111-111111111111/work",
+    );
+  });
+
+  it("recovers the recipient feed after an explicit retry", async () => {
+    const source = new SyntheticCollaborationDataSource();
+    vi.spyOn(source, "loadNotifications").mockRejectedValueOnce(
+      new NpiTransportError(
+        "network",
+        "trace-p9-02-notification-failure",
+        "trace",
+      ),
+    );
+    vi.spyOn(source, "loadPreference").mockRejectedValueOnce(
+      new NpiTransportError(
+        "network",
+        "trace-p9-02-preference-failure",
+        "trace",
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithLocale(
+      <NotificationCenter
+        dataSource={source}
+        navigate={vi.fn()}
+        session={null}
+      />,
+      "en",
+      "/work",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Notifications" }));
+    expect(
+      await screen.findByText("Notifications are unavailable."),
+    ).toBeVisible();
+    expect(screen.getByText("trace-p9-02-notification-failure")).toBeVisible();
+    expect(screen.getByText("trace-p9-02-preference-failure")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("Work item due soon")).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Save preferences" }),
+    ).toBeDisabled();
+    await user.click(
+      screen.getByRole("button", { name: "Close notifications" }),
+    );
+    expect(screen.queryByRole("dialog", { name: "Notifications" })).toBeNull();
   });
 
   it("removes protected object identifiers from denied shell context", () => {
