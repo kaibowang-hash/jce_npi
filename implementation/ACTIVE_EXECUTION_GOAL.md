@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T03:10:27+07:00`
+Updated: `2026-09-03T05:14:50+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_02D_FINAL_GATE_AUTHORIZED — P9-02`
+- Mode: `IN_PROGRESS_P9_03_AUDIT_AND_PLAN — P9-03`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -15,21 +15,19 @@ Updated: `2026-09-03T03:10:27+07:00`
   E2E shards, visual, repository, secret, controlled preflight and cumulative
   disposable runtime `100350396533`. The sharded P50 is `284s`, 53.4% below
   the frozen `610s` baseline; retries remain zero and all diagnostics are off.
-- P9-02 audit/plan exact SHA
-  `4123eb86c930c9c091cfb18a67a37ae9552fdd04` passes ordinary CI
-  `33662703332`. Backend catalog-repair SHA
-  `2432144515e8b632ee2a50bf717c2a6e919c2bf2` passes complete ordinary CI
-  `33669976985`. The frozen P9-02C live Portfolio/Reporting/Admin workspace,
-  Shell search and notifications, and Project meeting tab were committed at
-  `07d42c8cc12479ca4ab9844f7ec501d728166b16`. Ordinary CI `33675136726`
-  passed repository and secret lanes and exposed one bounded frontend batch:
-  native-input ARIA, aggregate coverage and inactive-navigation visual colour.
-  The complete local repair passes lint/typecheck, `1,115/1,115` units,
-  80.01% statements, `10/10` affected functional/accessibility E2E and the
-  unchanged 8,982-source complete `zh`/`zh-TW` audit. Commit and push one repair
-  checkpoint, require exact-SHA ordinary PASS, then continue automatically to
-  P9-02D runtime, Level 2 and the sole final Level 3. Production ERP remains
-  untouched.
+- P9-02 is complete at exact product SHA
+  `36cfe4cec8f31525e836c714236116704be066f3`. Ordinary CI `33687630510`
+  and the sole diagnostics-off Level 3 `33688112727` pass every repository,
+  secret, frontend, `230/230` E2E-shard, `135/135` visual, controlled preflight
+  and fresh cumulative disposable-Site lane. Runtime `100442085873` completes
+  fixture verification and cleanup in `7m59s`; `release-gate` is PASS.
+- P9-03 is active for audit/plan only. Its bounded engineering evidence will
+  measure common-request P95, metadata search, frontend loading, controlled
+  faults/recovery and multi-factory/template/locale dimensions. Exact P9-02 CI
+  records a 2,519.56 kB / 620.55 kB gzip initial JS chunk and 345.14 kB /
+  36.56 kB gzip CSS. Product changes remain held until this transition passes
+  exact-SHA ordinary CI. No production SLA, production system contact, domain
+  redesign, threshold relaxation or CI redesign is authorized.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

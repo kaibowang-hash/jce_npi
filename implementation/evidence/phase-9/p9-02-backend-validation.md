@@ -209,3 +209,26 @@ Meeting-minutes tab after EBOM in the `zh`/`zh-TW` P5-01, P5-04, P5-06 and
 P7-06 screens. Exactly those eight Linux actuals from the run artifact replace
 their baselines. No English baseline, unrelated page, tolerance, workflow,
 contract or runtime behavior changes.
+
+## Accepted final checkpoint
+
+Product SHA `36cfe4cec8f31525e836c714236116704be066f3` passes exact-SHA
+ordinary CI `33687630510`: secret `100438759823`, E2E shard 2
+`100438759925`, repository `100438760060`, frontend verification
+`100438760064`, E2E shard 1 `100438760141`, governed visual
+`100438760146` and frontend aggregate `100440217759` all succeed. The visual
+lane passes `135/135`; each nonvisual shard passes its complete `230/230` set
+with zero retries.
+
+The one final diagnostics-off Level 3 `33688112727` uses the same exact SHA and
+passes E2E shard 2 `100440336365`, frontend verification `100440336423`,
+repository `100440336474`, secret `100440336475`, E2E shard 1
+`100440336486`, visual `100440336683`, frontend aggregate `100441989038`,
+controlled preflight `100442020542` and the fresh cumulative disposable-Site
+runtime `100442085873`. The runtime initializes the pinned Bench and fixed Site,
+executes the complete cumulative verifier, records the controlled result and
+cleans all ephemeral resources in `7m59s`.
+
+`release-gate` result: **PASS**. No production ERPNext connection, credential,
+endpoint or business record was used. P9-02 is complete and P9-03 may activate
+only through its independent audit/plan exact-SHA ordinary transition.

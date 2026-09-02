@@ -11443,3 +11443,38 @@ P9-01 Level 3.
   exact-SHA ordinary PASS, then continue autonomously to P9-02D disposable
   runtime, Level 2 and the sole final Level 3. Production ERPNext remains
   untouched.
+
+## 2026-09-03 P9-02 Level 3 PASS; P9-03 audit and plan active
+
+- Final P9-02 product SHA
+  `36cfe4cec8f31525e836c714236116704be066f3` passes exact-SHA ordinary CI
+  `33687630510`: secret `100438759823`, E2E shard 2 `100438759925`,
+  repository `100438760060`, frontend verification `100438760064`, E2E shard
+  1 `100438760141`, visual `100438760146` and frontend aggregate
+  `100440217759` all succeed. Both nonvisual shards execute their complete
+  `230/230` sets with zero retries, and visual passes `135/135`.
+- Its one diagnostics-off Level 3 `33688112727` uses the same exact SHA and
+  passes E2E shard 2 `100440336365`, frontend verification `100440336423`,
+  repository `100440336474`, secret `100440336475`, E2E shard 1
+  `100440336486`, visual `100440336683`, frontend aggregate `100441989038`,
+  controlled preflight `100442020542` and fresh cumulative disposable-Site
+  runtime `100442085873`. Bench/Site initialization, complete verification,
+  controlled result recording and exact cleanup finish in `7m59s`.
+- `release-gate` result is PASS. Close P9-02 and automatically activate P9-03
+  audit/plan under the Phase 9 Requirement anchor. Production ERPNext was not
+  contacted; source ownership, operation-specific integration boundaries and
+  the final release reconciliation obligation remain unchanged.
+- P9-03 establishes only repeatable non-production engineering evidence for
+  `NFR-PER-001`, `NFR-PER-002`, `NFR-AVL-001` and `NFR-SCL-001`. It does not
+  claim a production SLA. Exact P9-02 build evidence freezes the current
+  2,519.56 kB / 620.55 kB gzip initial JS and 345.14 kB / 36.56 kB gzip CSS
+  baselines. The audit identifies only two proven local candidates: batch
+  existing authorized reporting/search reads, and defer route-owned data
+  sources plus the unselected locale catalog.
+- P9-03 product code remains held until this governance transition passes
+  exact-SHA ordinary CI. After PASS, freeze one implementation batch and run
+  affected checks once, one Level 2 and one final Level 3. No generic cache,
+  queue, search engine, telemetry vendor, production system contact, CI
+  redesign, warning suppression, threshold relaxation or user-owned-file
+  staging is authorized.
+- Controller marker: `P9-02 Level 3 PASS; P9-03 audit and plan active`.

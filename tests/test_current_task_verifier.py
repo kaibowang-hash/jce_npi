@@ -34,58 +34,45 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-02")
+        self.assertEqual(value["task_id"], "P9-03")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_02D_FINAL_GATE_AUTHORIZED")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_03_AUDIT_AND_PLAN")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P9-03")
+        self.assertEqual(value["authorized_next_task"], "P9-04")
         self.assertEqual(
             value["requirement_ids"],
-            [
-                "FR-SG-008",
-                "FR-SG-009",
-                "FR-CO-005",
-                "FR-CO-007",
-                "FR-RP-001",
-                "FR-RP-002",
-                "FR-RP-003",
-                "FR-RP-004",
-                "FR-RP-005",
-                "FR-RP-006",
-                "FR-RP-007",
-                "INT-014",
-            ],
+            ["NFR-PER-001", "NFR-PER-002", "NFR-AVL-001", "NFR-SCL-001"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "ea6112fa04e08cee6920407df426efc685cea98b",
+            "36cfe4cec8f31525e836c714236116704be066f3",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "a439043f96976c562edb8d4af69d51c709390043",
+            "36cfe4cec8f31525e836c714236116704be066f3",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "P9-02",
+                "phase_status_current_task": "P9-03",
                 "phase_status_execution_hold": "NONE",
-                "phase_status_resumed_product_task": "P9-02",
-                "active_goal_marker": "P9-02",
-                "next_action_marker": "P9-02",
-                "controller_marker": "P9-02C frontend candidate; P9-02D final gate pending",
+                "phase_status_resumed_product_task": "P9-03",
+                "active_goal_marker": "P9-03",
+                "next_action_marker": "P9-03",
+                "controller_marker": "P9-02 Level 3 PASS; P9-03 audit and plan active",
             },
         )
         for invariant in (
-            "CI_OPT_02_EXACT_SHA_EA6112FA_ORDINARY_33659491378_AND_LEVEL3_33660141866_PASS",
-            "P9_02_PRODUCT_CODE_HELD_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_PASS",
-            "EVERY_CROSS_OBJECT_QUERY_IS_SERVER_SIDE_PERMISSION_FILTERED_AND_DETERMINISTICALLY_PAGED",
-            "MISSING_STALE_PARTIAL_OR_UNAVAILABLE_ERP_TRUTH_NEVER_BECOMES_ZERO_HEALTHY_OR_SUCCESSFUL",
-            "KPI_NAME_NUMERATOR_DENOMINATOR_SOURCE_TIMEZONE_AND_AVAILABILITY_ARE_FIXED_BEFORE_CALCULATION",
-            "BI_DIRECTION_IS_READ_ONLY_WITH_NO_REVERSE_WRITE_OR_PRODUCTION_ETL_IN_P9_02",
-            "ADMIN_CONFIGURATION_REUSES_OPERATION_SPECIFIC_VERSIONED_AUDITED_COMMANDS_NO_GENERIC_WRITER",
-            "FR_CO_003_FR_CO_004_EXTERNAL_PORTALS_USER_APPROVED_POST_V1_2_DEFERRED",
+            "P9_02_EXACT_SHA_36CFE4CE_ORDINARY_33687630510_AND_LEVEL3_33688112727_PASS",
+            "P9_03_PRODUCT_CODE_HELD_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_PASS",
+            "PERFORMANCE_EVIDENCE_IS_NON_PRODUCTION_ENVIRONMENT_AND_FIXTURE_LABELLED_NOT_A_PRODUCTION_SLA",
+            "COMMON_REQUEST_P95_TARGET_THREE_SECONDS_AND_METADATA_SEARCH_TARGET_FIVE_SECONDS",
+            "MONOTONIC_CLOCK_FIXED_WARMUP_SAMPLE_COUNT_PERCENTILE_METHOD_PROVENANCE_AND_CHECKSUM_REQUIRED",
+            "REPORTING_AND_SEARCH_OPTIMIZATION_MAY_BATCH_ONLY_EXISTING_AUTHORIZED_BOUNDED_READS",
+            "FRONTEND_LOADING_MAY_DEFER_ONLY_ROUTE_OWNED_DATA_SOURCES_AND_UNSELECTED_LOCALE_CATALOGS",
+            "PRODUCTION_AVAILABILITY_TARGET_REMAINS_IT_AND_BUSINESS_HELD_WITHOUT_ACCEPTED_MONITORING_FACTS",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
-            "NO_PRODUCTION_ERPNEXT_CONTACT_DURING_P9_02_AUDIT_PLAN_TRANSITION",
+            "NO_PRODUCTION_ERPNEXT_OR_LAUNCHFLOW_CONTACT_DURING_P9_03_AUDIT_PLAN_TRANSITION",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertEqual(
@@ -96,95 +83,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/CURRENT_TASK.json",
                 "implementation/NEXT_ACTION.md",
                 "implementation/PHASE_STATUS.yaml",
-                "implementation/evidence/delivery-pipeline-optimization-2/validation.md",
                 "implementation/evidence/phase-9/p9-02-plan.md",
                 "implementation/evidence/phase-9/p9-02-backend-validation.md",
-                "contracts/data-ownership.yaml",
-                "contracts/npi-api.openapi.yaml",
-                "apps/npi_core/npi_core/bff.py",
-                "apps/npi_core/npi_core/foundation/errors.py",
-                "apps/npi_core/npi_core/request_security.py",
-                "apps/npi_core/npi_core/project/domain.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_project_reference/npi_project_reference.json",
-                "apps/npi_core/npi_core/reporting/__init__.py",
-                "apps/npi_core/npi_core/reporting/domain.py",
-                "apps/npi_core/npi_core/reporting/frappe_repository.py",
-                "apps/npi_core/npi_core/reporting_api.py",
-                "apps/npi_core/npi_core/collaboration/__init__.py",
-                "apps/npi_core/npi_core/collaboration/domain.py",
-                "apps/npi_core/npi_core/collaboration/frappe_validation.py",
-                "apps/npi_core/npi_core/collaboration/frappe_repository.py",
-                "apps/npi_core/npi_core/collaboration_api.py",
-                "apps/npi_core/npi_core/hooks.py",
-                "apps/npi_core/npi_core/project_work/frappe_repository.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_meeting_minute/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_meeting_minute/npi_meeting_minute.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_meeting_minute/npi_meeting_minute.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_meeting_work_link/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_meeting_work_link/npi_meeting_work_link.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_meeting_work_link/npi_meeting_work_link.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_collaboration_idempotency/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_collaboration_idempotency/npi_collaboration_idempotency.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_collaboration_idempotency/npi_collaboration_idempotency.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_internal_notification/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_internal_notification/npi_internal_notification.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_internal_notification/npi_internal_notification.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_notification_preference/__init__.py",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_notification_preference/npi_notification_preference.json",
-                "apps/npi_core/npi_core/npi_core/doctype/npi_notification_preference/npi_notification_preference.py",
-                "apps/npi_core/npi_core/translations/zh.csv",
-                "apps/npi_core/npi_core/translations/zh-TW.csv",
-                "frontend/src/domain/view-models.ts",
-                "frontend/src/generated/catalogs.ts",
-                "frontend/src/app/router.ts",
-                "frontend/src/app/app.tsx",
-                "frontend/src/app/app-shell.tsx",
-                "frontend/src/api/reporting-data-source.ts",
-                "frontend/src/api/collaboration-data-source.ts",
-                "frontend/src/components/global-search-panel.tsx",
-                "frontend/src/components/notification-center.tsx",
-                "frontend/src/pages/portfolio-page.tsx",
-                "frontend/src/pages/project-page.tsx",
-                "frontend/src/pages/project-workspace.tsx",
-                "frontend/src/pages/project-meeting-workspace.tsx",
-                "frontend/src/styles/app.css",
-                "frontend/tests/support/reporting-fixture.ts",
-                "frontend/tests/support/collaboration-fixture.ts",
-                "frontend/tests/unit/reporting-data-source.test.ts",
-                "frontend/tests/unit/collaboration-data-source.test.ts",
-                "frontend/tests/unit/portfolio-page.test.tsx",
-                "frontend/tests/unit/project-meeting-workspace.test.tsx",
-                "frontend/tests/unit/pages-and-shell.test.tsx",
-                "frontend/tests/unit/project-page.test.tsx",
-                "frontend/tests/unit/project-workspace.test.tsx",
-                "frontend/tests/unit/router.test.tsx",
-                "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts",
-                "frontend/tests/e2e/r1-03-shell.spec.ts",
-                "frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-01-documents-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-01-documents-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-ebom-workspace-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-ebom-workspace-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-controlled-print-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-controlled-print-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p7-06-production-transition-live.spec.ts-snapshots/p7-06-production-transition-zh-1440x900-125-linux.png",
-                "frontend/tests/e2e/p7-06-production-transition-live.spec.ts-snapshots/p7-06-production-transition-zh-TW-1920x1080-150-linux.png",
-                "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts-snapshots/p9-02-portfolio-en-1366x768-100-darwin.png",
-                "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts-snapshots/p9-02-portfolio-zh-1440x900-125-darwin.png",
-                "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts-snapshots/p9-02-portfolio-zh-TW-1920x1080-150-darwin.png",
-                "scripts/verify-frappe-runtime.sh",
-                "scripts/verify_reporting_collaboration_runtime.py",
-                "tests/test_phase9_reporting_api.py",
-                "tests/test_phase9_reporting_contract.py",
-                "tests/test_phase9_reporting_domain.py",
-                "tests/test_phase9_reporting_repository.py",
-                "tests/test_phase9_collaboration_domain.py",
-                "tests/test_phase9_collaboration_repository.py",
-                "tests/test_phase9_collaboration_api.py",
-                "tests/test_phase9_collaboration_metadata.py",
-                "tests/test_phase9_reporting_collaboration_runtime_verifier.py",
-                "tests/test_phase4_project_domain.py",
-                "tests/test_phase4_project_contract.py",
-                "tests/test_phase4_project_metadata.py",
+                "implementation/evidence/phase-9/p9-03-plan.md",
                 "tests/test_current_task_verifier.py",
                 "tests/test_v1_2_reconciliation.py",
             },
@@ -217,7 +118,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         for key, value in (
             ("status", "PASS"),
             ("completion_gate", "LEVEL_1"),
-            ("authorized_next_task", "p9-02"),
+            ("authorized_next_task", "p9-04"),
             ("base_checkpoint", "short"),
         ):
             with self.subTest(key=key):
@@ -230,8 +131,8 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             validate_allowed_paths(["../*"], [])
         with self.assertRaisesRegex(CurrentTaskError, "outside"):
             validate_allowed_paths(
-                ["implementation/evidence/phase-9/p9-02-plan.md"],
-                ["apps/npi_core/npi_core/trial/domain.py"],
+                ["implementation/evidence/phase-9/p9-03-plan.md"],
+                ["apps/npi_core/npi_core/reporting/frappe_repository.py"],
             )
 
     def test_check_commands_reject_shell_control_and_snapshot_updates(self) -> None:
@@ -250,7 +151,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
     def test_git_path_validation_is_invoked_for_normal_check(self) -> None:
         with patch(
             "scripts.verify_current_task.changed_paths",
-            return_value=("apps/npi_core/npi_core/change_control/domain.py",),
+            return_value=("apps/npi_core/npi_core/reporting/frappe_repository.py",),
         ):
             with self.assertRaisesRegex(CurrentTaskError, "outside"):
                 validate_current_task(check_git=True)

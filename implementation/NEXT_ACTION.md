@@ -1,31 +1,25 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_02D_FINAL_GATE_AUTHORIZED — P9-02`
+`IN_PROGRESS_P9_03_AUDIT_AND_PLAN — P9-03`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
 cumulative runtime `100350396533`; its release-gate result is PASS.
 
-The P9-02 audit/plan exact SHA
-`4123eb86c930c9c091cfb18a67a37ae9552fdd04` passes ordinary CI
-`33662703332`. Backend SHA `415890e117a27be707cb6e2cca20fc985c237755`
-first isolated one translation-catalog batch; repair SHA
-`2432144515e8b632ee2a50bf717c2a6e919c2bf2` then passes complete ordinary CI
-`33669976985` in repository, secret, frontend verification, both complete E2E
-shards, visual and aggregate frontend lanes.
+P9-02 product SHA `36cfe4cec8f31525e836c714236116704be066f3`
+passes exact-SHA ordinary CI `33687630510` and the sole final Level 3
+`33688112727`, including complete frontend/E2E/visual lanes and fresh
+disposable-Site runtime `100442085873`. Its release-gate result is PASS.
 
-Frontend checkpoint `07d42c8cc12479ca4ab9844f7ec501d728166b16`
-ordinary CI `33675136726` passed repository and secret lanes and exposed one
-bounded frontend batch: native-input ARIA, the unchanged 80% coverage floor,
-and inactive navigation colour in existing Shell visuals. The complete local
-repair passes lint/typecheck, `1,115/1,115` units, 80.01% statements,
-`10/10` affected functional/accessibility E2E and the unchanged 8,982-source
-complete `zh`/`zh-TW` audit. Commit and push this one repair checkpoint and
-require exact-SHA ordinary PASS; then continue automatically into P9-02D
-disposable runtime, Level 2 and the sole final Level 3. Do not contact
-production ERPNext, start external portals or pilots, introduce a generic
-writer, modify CI/thresholds/baselines, or stage user-owned files.
+Commit and push this single P9-03 audit/plan transition and require exact-SHA
+ordinary CI. Only after that PASS, freeze one product implementation batch for
+repeatable common-request/search measurements, proven reporting-query batching,
+selected-locale and route-owned loading, controlled fault/recovery evidence and
+multi-factory/template/locale isolation. The three-second and five-second
+targets are non-production engineering thresholds, not a production SLA. Do
+not contact production systems, redesign domains or CI, add a generic cache or
+search service, hide the Vite warning, relax any Gate, or stage user-owned files.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
