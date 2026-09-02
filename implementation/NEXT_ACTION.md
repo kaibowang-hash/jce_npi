@@ -3,23 +3,24 @@
 Status:
 `IN_PROGRESS_CI_OPT_02_IMPLEMENTATION — CI-OPT-02`
 
-P9-01 exact SHA `a439043f96976c562edb8d4af69d51c709390043`
-passes ordinary CI `33638920721` and final diagnostics-off Level 3
-`33640546810`. The sole active task is CI-OPT-02: finish the strict diagnostic
-fast path, run complete local affected checks, commit once, pass exact-SHA
-ordinary CI, prove three stable four-worker nonvisual E2E attempts, and pass
-one complete Level 3. Denied, unknown, stale or unverifiable diagnostic input
-must run full CI. Do not contact production ERPNext or begin P9-02 before PASS.
+P9-01 is complete at exact product SHA
+`a439043f96976c562edb8d4af69d51c709390043`. CI-OPT-02 sharding is stable:
+three unchanged `460/460` attempts have critical durations `290/284/257s`
+(P50 `284s`, 53.4% below baseline). Final Level 3 `33653098092` passes every
+base lane and preflight before stopping only at the retained P8-03
+migrated-legacy assertion.
 
-Three sharded attempts at exact SHA
-`cdb9d9d89eaebc97da793d854deeabeb88749f1c` pass `460/460` with critical
-durations `290/284/257s` (P50 `284s`). Final Level 3 `33653098092` passes all
-base lanes and preflight but fails at the existing P8-03 migrated-legacy
-problem-code assertion. The sole next action is one value-free existing
-five-code classifier through exact-SHA ordinary plus diagnostic-only Site,
-then one statically proven fixture-only repair with the classifier disabled.
-Do not inspect raw output, alter product code, contact production ERPNext or
-stage user-owned files.
+Classifier checkpoint `e6672a4afcd22f6fb35f0857fff15e5853812ae3`
+ordinary run `33655458898` passes repository, secret, visual and both E2E
+shards. Frontend verification fails only because the newly published
+high-severity `fast-uri` advisory rejects transitive development lock `3.1.5`;
+the aggregate frontend check correctly fails closed. Batch the compatible
+lock-only `3.1.7` repair, rerun affected and complete ordinary CI once, then
+run the one authorized diagnostic-only Site. Inspect only its fixed
+code/type/trace tuple, apply at most one statically proven fixture-only repair
+with diagnostics closed, and finish with one exact-SHA ordinary CI plus one
+Level 3. Do not change product behavior, weaken audit/coverage, contact
+production ERPNext or stage user-owned files.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

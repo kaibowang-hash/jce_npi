@@ -11267,3 +11267,27 @@ P9-01 Level 3.
   Product code, CI semantics, production ERPNext and user-owned dirty files
   remain unchanged.
 - Controller marker: `CI-OPT-02 stability PASS; P8-03 value-free classifier active`.
+
+## 2026-09-02 CI-OPT-02 classifier ordinary security-lock batch repair
+
+- Classifier checkpoint `e6672a4afcd22f6fb35f0857fff15e5853812ae3`
+  ordinary run `33655458898` passes repository `100332772207`, secret
+  `100332772457`, visual `100332772714` and both complete `230/230` E2E shards
+  `100332772654`/`100332772592`. The aggregate frontend check fails closed
+  because frontend verification `100332772339` encounters a newly published
+  high-severity `fast-uri` advisory during the unchanged `npm audit` gate.
+- The vulnerable `3.1.5` entry is transitive and development-only through
+  stylelint/table/ajv. The bounded repair updates only its lockfile version,
+  URL and integrity to compatible fixed `3.1.7`; no direct dependency,
+  install script, product code, threshold, test, workflow or retry changes.
+  Local exact npm audit reports zero vulnerabilities. With exact Node
+  `24.18.0` and npm `11.16.0`, typecheck, lint, `1097/1097` unit/coverage tests
+  and build pass; the local brand step then correctly rejects a user-owned
+  untracked `frontend/public` asset. That file remains untouched and excluded
+  from the checkpoint, so clean-tree CI is the authoritative full frontend
+  result.
+- Batch this security lock repair before the next ordinary dispatch. After
+  exact-SHA ordinary PASS, run only the already authorized value-free P8-03
+  diagnostic Site; production ERPNext and user-owned dirty files remain
+  untouched.
+- Controller marker: `P9-01 Level 3 PASS; CI-OPT-02 implementation active`.

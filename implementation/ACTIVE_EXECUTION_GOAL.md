@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-09-02T21:30:00+07:00`
+Updated: `2026-09-02T23:46:18+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
@@ -21,6 +21,13 @@ Updated: `2026-09-02T21:30:00+07:00`
   preflight, then fails only at the retained P8-03 migrated-legacy problem-code
   assertion. One existing fixed-enum code/type/trace classifier is active;
   product code and production ERP remain untouched.
+- Classifier checkpoint `e6672a4afcd22f6fb35f0857fff15e5853812ae3`
+  ordinary run `33655458898` passes repository, secret, visual and both
+  `230/230` E2E shards. Frontend verification and its aggregate fail only
+  because a newly published high-severity `fast-uri` advisory now rejects the
+  frozen `3.1.5` transitive development lock. The active batch repair changes
+  only that lock entry to compatible fixed `3.1.7`; direct dependencies,
+  product behavior, test coverage and Gate semantics remain unchanged.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

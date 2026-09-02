@@ -69,6 +69,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "MUTABLE_FRAPPE_SITE_CACHE_FORBIDDEN",
             "THREE_STABLE_RUNS_AND_P50_P95_REQUIRED_BEFORE_ACCEPTANCE",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
+            "TRANSITIVE_DEV_SECURITY_LOCK_REPAIR_ONLY_NO_DIRECT_OR_PRODUCT_DEPENDENCY_CHANGE",
             "NO_PRODUCTION_ERPNEXT_CONTACT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
@@ -76,6 +77,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             set(value["allowed_paths"]),
             {
                 ".github/workflows/ci.yml",
+                "frontend/package-lock.json",
                 "frontend/package.json",
                 "implementation/ACTIVE_EXECUTION_GOAL.md",
                 "implementation/AUTOPILOT_CONTROLLER.md",
