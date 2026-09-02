@@ -101,6 +101,7 @@
     "apps/npi_core/npi_core/translations/zh.csv",
     "apps/npi_core/npi_core/translations/zh-TW.csv",
     "frontend/src/domain/view-models.ts",
+    "frontend/src/generated/catalogs.ts",
     "frontend/src/app/router.ts",
     "frontend/src/app/app.tsx",
     "frontend/src/app/app-shell.tsx",

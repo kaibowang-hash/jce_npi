@@ -11376,3 +11376,18 @@ P9-01 Level 3.
   governance micro-commit. Production ERPNext and user-owned dirty files stay
   untouched.
 - Controller marker: `P9-02 backend candidate; P9-02C frontend paths frozen`.
+
+### P9-02 backend translation-catalog batch repair
+
+- Backend candidate `415890e117a27be707cb6e2cca20fc985c237755`
+  ordinary CI `33669485519` passes repository and secret lanes. Frontend
+  verification, both nonvisual shards and visual all stop before serving the
+  app at the same generated-catalog boundary.
+- The single root is the complete set of newly extracted Frappe metadata and
+  error sources missing from `zh`/`zh-TW`, followed by nine backend reporting
+  labels that are intentionally not frontend literal sources until P9-02C.
+  Repair both catalogs as one batch, regenerate the React catalog, and retain
+  the frozen P9-02C paths. No test, workflow, gate or product boundary changes.
+- Local generated-catalog check, 8,863-source i18n audit at 100% coverage,
+  TypeScript typecheck and diff check pass. Push one repair checkpoint and
+  require exact-SHA ordinary PASS, then automatically continue P9-02C.

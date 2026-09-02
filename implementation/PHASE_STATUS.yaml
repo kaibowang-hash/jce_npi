@@ -3237,7 +3237,9 @@ p9_02:
   plan: implementation/evidence/phase-9/p9-02-plan.md
   audit_plan_checkpoint: 4123eb86c930c9c091cfb18a67a37ae9552fdd04
   audit_plan_ordinary: 33662703332
-  backend_candidate: LOCAL_VERIFIED_PENDING_EXACT_SHA_ORDINARY
+  backend_candidate: CATALOG_REPAIR_LOCAL_PASS_PENDING_EXACT_SHA_ORDINARY
+  first_backend_ordinary: 33669485519
+  first_backend_ordinary_result: FAILED_SINGLE_ROOT_MISSING_AND_UNUSED_TRANSLATION_CATALOG_SOURCES
   product_code_authorized: true
   production_erp_contact: false
   next_gate: P9_02_BACKEND_EXACT_SHA_ORDINARY_THEN_FRONTEND
