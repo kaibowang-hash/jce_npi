@@ -226,6 +226,45 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
             request.is_secure = True
             self.assertTrue(self.module._request_is_secure(request))
 
+    def test_summary_diagnostic_requires_exact_runtime_request_shape(self) -> None:
+        trace = "trace-" + "e" * 32
+        request = self.frappe.local.request
+        request.args = {}
+        request.headers.update(
+            {
+                self.module.ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_HEADER: (
+                    self.module.ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_SCOPE
+                ),
+                self.module.ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_TRACE_HEADER: trace,
+            }
+        )
+        self.frappe.local.form_dict = {
+            "cmd": (
+                "npi_integration.engineering_change_api."
+                "request_change_implementation_summary"
+            ),
+            "expectedRevision": 4,
+            "expectedRevisionGlobalId": REVISION,
+            "expectedRevisionSnapshotHash": "b" * 64,
+        }
+        with patch.dict(
+            os.environ,
+            {
+                "NPI_P9_01C_RUNTIME_ENABLED": "1",
+                "NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH": (
+                    "/tmp/p9-01-engineering-change-runtime-diagnostic.json"
+                ),
+            },
+            clear=False,
+        ):
+            self.assertTrue(
+                self.module._engineering_change_summary_diagnostic_active(trace)
+            )
+            self.frappe.local.form_dict["unexpected"] = True
+            self.assertFalse(
+                self.module._engineering_change_summary_diagnostic_active(trace)
+            )
+
     def test_inbound_diagnostic_stages_follow_handler_order(self) -> None:
         source = (
             ROOT
@@ -276,6 +315,29 @@ class Phase9ChangeIntegrationApiTest(unittest.TestCase):
         self.assertTrue(
             self.module.ENGINEERING_CHANGE_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED
         )
+
+    def test_summary_diagnostic_stages_follow_handler_order(self) -> None:
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/engineering_change_api.py"
+        ).read_text(encoding="utf-8")
+        codes = (
+            "P901_CHANGE_SUMMARY_API_CALL",
+            "P901_CHANGE_SUMMARY_API_USER",
+            "P901_CHANGE_SUMMARY_API_CSRF",
+            "P901_CHANGE_SUMMARY_API_PRINCIPAL",
+            "P901_CHANGE_SUMMARY_API_ROUTES",
+            "P901_CHANGE_SUMMARY_API_REPOSITORY_INIT",
+            "P901_CHANGE_SUMMARY_API_SCOPE",
+            "P901_CHANGE_SUMMARY_API_FIELDS",
+            "P901_CHANGE_SUMMARY_API_REPOSITORY_CALL",
+            "P901_CHANGE_SUMMARY_API_COMMIT",
+            "P901_CHANGE_SUMMARY_API_ENQUEUE",
+            "P901_CHANGE_SUMMARY_API_OUTCOME",
+            "P901_CHANGE_SUMMARY_API_RESPONSE",
+        )
+        positions = [source.index(code) for code in codes]
+        self.assertEqual(positions, sorted(positions))
 
     def test_inbound_handler_keeps_raw_signed_json_out_of_keyword_fields(self) -> None:
         command = (

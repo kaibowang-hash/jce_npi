@@ -332,6 +332,47 @@ class Phase9ChangeControlRepositoryTest(unittest.TestCase):
             },
         )
 
+    def test_summary_server_diagnostic_codes_are_exact(self) -> None:
+        expected = {
+            "P901_CHANGE_SUMMARY_API_CALL",
+            "P901_CHANGE_SUMMARY_API_USER",
+            "P901_CHANGE_SUMMARY_API_CSRF",
+            "P901_CHANGE_SUMMARY_API_PRINCIPAL",
+            "P901_CHANGE_SUMMARY_API_ROUTES",
+            "P901_CHANGE_SUMMARY_API_REPOSITORY_INIT",
+            "P901_CHANGE_SUMMARY_API_SCOPE",
+            "P901_CHANGE_SUMMARY_API_FIELDS",
+            "P901_CHANGE_SUMMARY_API_REPOSITORY_CALL",
+            "P901_CHANGE_SUMMARY_API_COMMIT",
+            "P901_CHANGE_SUMMARY_API_ENQUEUE",
+            "P901_CHANGE_SUMMARY_API_OUTCOME",
+            "P901_CHANGE_SUMMARY_API_RESPONSE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_PROJECT_LOCK",
+            "P901_CHANGE_SUMMARY_REPOSITORY_PROFILE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_REPLAY_LOOKUP",
+            "P901_CHANGE_SUMMARY_REPOSITORY_REPLAY",
+            "P901_CHANGE_SUMMARY_REPOSITORY_DETAIL",
+            "P901_CHANGE_SUMMARY_REPOSITORY_DETAIL_VALIDATE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_CURRENT",
+            "P901_CHANGE_SUMMARY_REPOSITORY_SUMMARY",
+            "P901_CHANGE_SUMMARY_REPOSITORY_REQUEST_VALUE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_RESPONSE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_WRITE_SCOPE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_REQUEST_INSERT",
+            "P901_CHANGE_SUMMARY_REPOSITORY_OUTBOX_PAYLOAD",
+            "P901_CHANGE_SUMMARY_REPOSITORY_OUTBOX_INSERT",
+            "P901_CHANGE_SUMMARY_REPOSITORY_AUDIT",
+            "P901_CHANGE_SUMMARY_REPOSITORY_OUTCOME",
+        }
+        self.assertEqual(
+            expected,
+            {
+                code
+                for code in self.repository.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
+                if code.startswith("P901_CHANGE_SUMMARY_")
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

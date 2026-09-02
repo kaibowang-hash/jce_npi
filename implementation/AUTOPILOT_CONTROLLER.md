@@ -10950,3 +10950,40 @@ repeat or rewrite it merely to restore context. See
   diff hygiene. Exact-12/projected union-63 remain bounded; unauthorized-13 is
   rejected and exactly three of 42 declarations are active.
 - Controller marker: `P9-01D post-formal-datetime-comparison-repair combined diagnostic Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P9-01D implementation-summary diagnostic harness repair
+
+- Post-formal-Datetime diagnostic SHA
+  `f5d95e28aa64750e8cca9274af55bec9320a5015` passes exact-SHA ordinary
+  `33610959690`: frontend `100185723389`, repository `100185723582`, visual
+  `100185723600` and secret scan `100185723729` all succeed. Its sole
+  controlled continuation `33612235309` passes preflight `100189846726`;
+  runtime `100189930769` proves close and exact revision-4 closed truth pass,
+  then returns only `P901_CHANGE_SUMMARY_HTTP / RuntimeError /
+  trace-41530fdeb7fd581d89d9a43c98fadb5c`. Restricted response, status, business
+  values, identities, messages, child output and stacks remain unread.
+- Static same-family preflight proves the requester is the retained enabled
+  internal `NPI API User`, both summary support DocTypes grant that role
+  create/write, the exact Project/change Links and required fields are present,
+  and the request uses the accepted closed predecessor. The outer label still
+  spans route/auth/field validation, repository hydration, serialization,
+  request/Outbox inserts, audit, commit and enqueue, so it cannot authorize a
+  guessed product repair.
+- Keep the same independent cycle at diagnostic `1/1`, harness repair `1/1`,
+  product repair `0/1`, final `0/1`. Add only twenty-nine fixed summary API and
+  repository stages to the existing first-wins recorder; the exact allowlist
+  becomes 173 with 94 server stages. Exact summary and summary-replay requests
+  may carry the fixed scope and deterministic trace only when the new-only
+  activation, disposable runtime marker, exact POST/form/route, empty query and
+  exact diagnostic path all match.
+- The recorder still emits only code, exception type and trace through the
+  existing `O_EXCL` `0600` file and strict reader. No HTTP status, response,
+  Project/change identity, payload, actor, hash, message, stack or failed child
+  output can be recorded. API, persistence, permissions, transactions,
+  ownership, replay, queue, adapter, target, UI, CI and production behavior are
+  unchanged.
+- Level 1 passes focused runtime/core/integration `52/52`, full Python/formal
+  repository `2833/2833`, compilation and diff hygiene. The existing exact task
+  manifest already contains every changed path; no product or CI scope is
+  added.
+- Controller marker: `P9-01D summary diagnostic harness repair Level 1 PASS; exact-SHA ordinary CI pending`.

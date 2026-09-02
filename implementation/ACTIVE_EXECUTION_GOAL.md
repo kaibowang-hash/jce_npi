@@ -5,6 +5,17 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- Post-formal-Datetime diagnostic exact SHA
+  `f5d95e28aa64750e8cca9274af55bec9320a5015` passes ordinary CI
+  `33610959690` in all four lanes. Its controlled continuation `33612235309`
+  passes preflight and proves the lifecycle reaches the first implementation-
+  summary HTTP request after a successful exact revision-4 close, then returns
+  only `P901_CHANGE_SUMMARY_HTTP / RuntimeError /
+  trace-41530fdeb7fd581d89d9a43c98fadb5c`. The outer label is nonunique, so no
+  product repair is authorized. The active action is one product-neutral
+  summary diagnostic harness repair with twenty-nine fixed inner stages,
+  followed by exact-SHA ordinary CI and one bounded continuation. No production
+  ERP target/profile is active or contacted.
 - P9-01D governance exact SHA
   `0e46d2d294176571fe620d6760151fb4df56fd13` passes ordinary CI
   `33364478666`: repository `99402193443`, visual `99402193567`, secret

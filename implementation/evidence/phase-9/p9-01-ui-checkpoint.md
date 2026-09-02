@@ -574,6 +574,14 @@ i18n (`8774` literal English sources with `100%` zh/zh-TW coverage),
 compilation, shell syntax, exact-14 and projected union-60 manifests,
 unauthorized-15 rejection, all 21 diagnostics off, security and diff hygiene.
 No UI or visual baseline changed.
+
+## Implementation-summary diagnostic harness UI boundary
+
+Ordinary `33610959690` passes frontend and governed visual lanes. Controlled
+`33612235309` fails only at the backend implementation-summary HTTP boundary
+after close succeeds. The bounded twenty-nine-stage harness repair changes no
+route, UI source, translation, accessibility behavior, fixture response or
+visual baseline; existing P9-01D UI evidence remains authoritative.
 Exact-SHA ordinary PASS must precede the sole Level 2 diagnostic.
 
 ## Disposable runtime marker repair

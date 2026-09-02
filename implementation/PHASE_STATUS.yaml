@@ -3099,7 +3099,15 @@ p9_01:
   p9_01d_local_nonvisual_e2e: 2_PASS
   p9_01d_local_linux_visual: 3_PASS_CREATE_AND_VERIFY
   p9_01d_local_i18n: 8774_SOURCES_100_PERCENT_ZH_ZH_TW
-  p9_01d_next_gate: EXACT_SHA_ORDINARY_THEN_SOLE_LEVEL_3
+  p9_01d_post_formal_datetime_diagnostic_checkpoint: f5d95e28aa64750e8cca9274af55bec9320a5015
+  p9_01d_post_formal_datetime_diagnostic_ordinary: 33610959690
+  p9_01d_post_formal_datetime_diagnostic_jobs: {frontend: 100185723389, repository: 100185723582, visual: 100185723600, secret_scan: 100185723729}
+  p9_01d_post_formal_datetime_controlled: 33612235309
+  p9_01d_post_formal_datetime_preflight: 100189846726
+  p9_01d_post_formal_datetime_runtime: 100189930769
+  p9_01d_post_formal_datetime_tuple: P901_CHANGE_SUMMARY_HTTP_RUNTIMEERROR_TRACE_41530FDE
+  p9_01d_summary_diagnostic_harness: LEVEL_1_PASS_EXACT_173_CODE_94_SERVER_STAGE
+  p9_01d_next_gate: SUMMARY_DIAGNOSTIC_HARNESS_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_CONTINUATION
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -54,6 +54,15 @@ ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_SCOPE = (
 ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_TRACE_HEADER = (
     "X-NPI-P901-Change-Inbound-Diagnostic-Trace"
 )
+ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_HEADER = (
+    "X-NPI-P901-Change-Summary-Diagnostic"
+)
+ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_SCOPE = (
+    "p9-01-engineering-change-summary-server-v1"
+)
+ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_TRACE_HEADER = (
+    "X-NPI-P901-Change-Summary-Diagnostic-Trace"
+)
 _INBOUND_DIAGNOSTIC_ACTIVE: ContextVar[bool] = ContextVar(
     "p901_engineering_change_inbound_diagnostic_active", default=False
 )
@@ -236,51 +245,135 @@ def request_change_implementation_summary(
     expectedRevisionSnapshotHash: Any = None,
     **request_fields: Any,
 ) -> dict[str, Any] | None:
+    request = getattr(frappe.local, "request", None)
+    trace_id = (
+        request.headers.get(ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_TRACE_HEADER)
+        if request is not None and hasattr(request, "headers")
+        else None
+    )
+    with engineering_change_inbound_diagnostics(
+        trace_id,
+        active=_engineering_change_summary_diagnostic_active(trace_id),
+    ):
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_CALL"):
+            return _request_change_implementation_summary(
+                expectedRevision=expectedRevision,
+                expectedRevisionGlobalId=expectedRevisionGlobalId,
+                expectedRevisionSnapshotHash=expectedRevisionSnapshotHash,
+                **request_fields,
+            )
+
+
+def _request_change_implementation_summary(
+    expectedRevision: Any = None,
+    expectedRevisionGlobalId: Any = None,
+    expectedRevisionSnapshotHash: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
     headers = {"X-Request-ID": response_request_id(), "Idempotency-Replayed": "false"}
     replayed = False
 
     def handle() -> dict[str, Any]:
         nonlocal replayed
-        actor = authenticated_user()
-        require_csrf_token()
-        principal = authenticated_principal(actor)
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_USER"):
+            actor = authenticated_user()
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_CSRF"):
+            require_csrf_token()
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_PRINCIPAL"):
+            principal = authenticated_principal(actor)
         request_id = headers["X-Request-ID"]
-        project_id = _route_uuid("project_id")
-        change_id = _route_uuid("change_id")
-        repository = _repository(principal, request_id, current_trace_id.get())
-        if not repository.authorize_scope(project_id):
-            raise EngineeringChangeIntegrationUnavailable()
-        reject_unexpected_request_fields(_SUMMARY_FIELDS, request_fields)
-        require_request_fields(_SUMMARY_FIELDS, request_fields)
-        outcome = repository.create_summary_request(
-            project_id, change_id,
-            expected_revision=_positive(expectedRevision, "expectedRevision"),
-            expected_revision_global_id=_uuid(expectedRevisionGlobalId, "expectedRevisionGlobalId"),
-            expected_revision_snapshot_hash=_hash(expectedRevisionSnapshotHash, "expectedRevisionSnapshotHash"),
-            idempotency_key_hash=actor_idempotency_key_hash(actor, _idempotency_key()),
-        )
-        if outcome is None:
-            raise EngineeringChangeIntegrationUnavailable()
-        frappe.db.commit()
-        if outcome.should_enqueue and outcome.queue_id is not None:
-            try:
-                _enqueue_summary(outcome.queue_id)
-            except Exception as error:
-                record_safe_diagnostic(
-                    code="CHANGE_SUMMARY_ENQUEUE_FAILED",
-                    title="Engineering Change summary enqueue failed",
-                    exception_type=type(error).__name__,
-                    trace_id=current_trace_id.get(),
-                )
-        replayed = outcome.replayed
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(replayed).lower()
-        return outcome.response
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_ROUTES"):
+            project_id = _route_uuid("project_id")
+            change_id = _route_uuid("change_id")
+        with engineering_change_inbound_step(
+            "P901_CHANGE_SUMMARY_API_REPOSITORY_INIT"
+        ):
+            repository = _repository(principal, request_id, current_trace_id.get())
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_SCOPE"):
+            if not repository.authorize_scope(project_id):
+                raise EngineeringChangeIntegrationUnavailable()
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_FIELDS"):
+            reject_unexpected_request_fields(_SUMMARY_FIELDS, request_fields)
+            require_request_fields(_SUMMARY_FIELDS, request_fields)
+        with engineering_change_inbound_step(
+            "P901_CHANGE_SUMMARY_API_REPOSITORY_CALL"
+        ):
+            outcome = repository.create_summary_request(
+                project_id, change_id,
+                expected_revision=_positive(expectedRevision, "expectedRevision"),
+                expected_revision_global_id=_uuid(expectedRevisionGlobalId, "expectedRevisionGlobalId"),
+                expected_revision_snapshot_hash=_hash(expectedRevisionSnapshotHash, "expectedRevisionSnapshotHash"),
+                idempotency_key_hash=actor_idempotency_key_hash(actor, _idempotency_key()),
+            )
+            if outcome is None:
+                raise EngineeringChangeIntegrationUnavailable()
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_COMMIT"):
+            frappe.db.commit()
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_ENQUEUE"):
+            if outcome.should_enqueue and outcome.queue_id is not None:
+                try:
+                    _enqueue_summary(outcome.queue_id)
+                except Exception as error:
+                    record_safe_diagnostic(
+                        code="CHANGE_SUMMARY_ENQUEUE_FAILED",
+                        title="Engineering Change summary enqueue failed",
+                        exception_type=type(error).__name__,
+                        trace_id=current_trace_id.get(),
+                    )
+        with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_OUTCOME"):
+            replayed = outcome.replayed
+            headers["X-Request-ID"] = request_id
+            headers["Idempotency-Replayed"] = str(replayed).lower()
+            return outcome.response
 
-    result = frappe_domain_call(handle, cache_control="private, no-store", success_status=202, response_headers=headers)
-    if replayed and frappe.local.response.http_status_code == 202:
-        frappe.local.response.http_status_code = 200
-    return result
+    with engineering_change_inbound_step("P901_CHANGE_SUMMARY_API_RESPONSE"):
+        result = frappe_domain_call(
+            handle,
+            cache_control="private, no-store",
+            success_status=202,
+            response_headers=headers,
+        )
+        if replayed and frappe.local.response.http_status_code == 202:
+            frappe.local.response.http_status_code = 200
+        return result
+
+
+def _engineering_change_summary_diagnostic_active(trace_id: object) -> bool:
+    try:
+        request = getattr(frappe.local, "request", None)
+        arguments = getattr(request, "args", None)
+        headers = getattr(request, "headers", None)
+        route = getattr(frappe.flags, "npi_route_params", None)
+        form = getattr(frappe.local, "form_dict", None)
+        diagnostic_path = os.environ.get("NPI_P9_01_RUNTIME_DIAGNOSTIC_PATH")
+        return (
+            ENGINEERING_CHANGE_POST_FORMAL_DATETIME_COMPARISON_REPAIR_DIAGNOSTICS_ENABLED
+            and os.environ.get("NPI_P9_01C_RUNTIME_ENABLED") == "1"
+            and isinstance(diagnostic_path, str)
+            and os.path.isabs(diagnostic_path)
+            and os.path.basename(diagnostic_path) == _DIAGNOSTIC_PATH_NAME
+            and request is not None
+            and getattr(request, "method", None) == "POST"
+            and arguments is not None
+            and list(arguments.keys()) == []
+            and headers is not None
+            and headers.get(ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_HEADER)
+            == ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_SCOPE
+            and headers.get(
+                ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_TRACE_HEADER
+            )
+            == trace_id
+            and isinstance(trace_id, str)
+            and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+            and isinstance(route, dict)
+            and set(route) == {"project_id", "change_id"}
+            and isinstance(form, dict)
+            and set(form) == _SUMMARY_FIELDS | {"cmd"}
+            and form.get("cmd")
+            == "npi_integration.engineering_change_api.request_change_implementation_summary"
+        )
+    except Exception:
+        return False
 
 
 def _repository(principal: Principal, request_id: str, trace_id: str):

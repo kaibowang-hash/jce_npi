@@ -219,6 +219,31 @@ runtime/core/integration recorder chain. Signed facts, ownership, contracts,
 permissions, queues, replay, reconciliation, CI and production behavior remain
 unchanged.
 
+### Implementation-summary diagnostic harness repair
+
+The exact-144 diagnostic checkpoint
+`f5d95e28aa64750e8cca9274af55bec9320a5015` passes ordinary
+`33610959690`. Its controlled continuation `33612235309` passes preflight and
+the close boundary, then returns only `P901_CHANGE_SUMMARY_HTTP /
+RuntimeError / trace-41530fdeb7fd581d89d9a43c98fadb5c`. No restricted
+response, status, business value, identifier, message, stack or failed child
+output was read.
+
+Requester role, support-DocType permissions, predecessor state, required
+fields and exact Link targets pass static same-family preflight. The remaining
+outer label is still nonunique across the summary API/repository transaction,
+so no product fix is inferred. One bounded harness repair adds twenty-nine
+fixed summary API/repository stages and exact initial/replay header admission
+under the existing new-only activation. The safe set is exact 173 with 94
+server stages; the writer remains exact-name, `O_EXCL`, mode `0600` and
+code/type/trace-only.
+
+Focused runtime/core/integration tests pass `52/52` and complete Python/formal
+repository tests pass `2833/2833`. No event, API response, schema, permission,
+transaction, ownership, worker, adapter, retry/replay, UI, CI or production
+behavior changes. Exact-SHA ordinary PASS must precede the one bounded
+controlled continuation.
+
 Level 1 passes focused `38/38`, full repository `2828/2828`, current/
 reconciliation `40/40`, complete i18n, security and diff checks. Exact-12/
 union-63 remain bounded and unauthorized-13 is rejected.

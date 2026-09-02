@@ -250,106 +250,203 @@ class FrappeEngineeringChangeIntegrationRepository(FrappeDocumentRepository):
         expected_revision_snapshot_hash: str,
         idempotency_key_hash: str,
     ) -> CommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
-        if project is None:
-            return None
-        profile = self._profile(str(project.tenant_id), project_id)
-        if profile is None or profile.target_mode is TargetMode.DISABLED or not profile.permits(self.actor):
-            raise EngineeringChangeIntegrationUnavailable()
-        existing_names = frappe.get_all(
-            "NPI Engineering Change Summary Request",
-            filters={"tenant_id": str(project.tenant_id), "project_global_id": str(project_id), "actor_user_id": self.actor, "idempotency_key_hash": idempotency_key_hash},
-            pluck="name", limit_page_length=2,
-        )
-        if len(existing_names) > 1:
-            raise RuntimeError("Summary request idempotency scope is ambiguous.")
-        if existing_names:
-            existing = frappe.get_doc("NPI Engineering Change Summary Request", str(existing_names[0]))
-            if str(existing.change_global_id) != str(change_id) or int(existing.revision_number) != expected_revision or str(existing.revision_global_id) != str(expected_revision_global_id) or str(existing.revision_snapshot_hash) != expected_revision_snapshot_hash:
-                raise EngineeringChangeIntegrationConflict()
-            return CommandOutcome(_summary_response(existing), replayed=True)
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_PROJECT_LOCK"
+        ):
+            project = self._locked_authorized_project(project_id)
+            if project is None:
+                return None
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_PROFILE"
+        ):
+            profile = self._profile(str(project.tenant_id), project_id)
+            if (
+                profile is None
+                or profile.target_mode is TargetMode.DISABLED
+                or not profile.permits(self.actor)
+            ):
+                raise EngineeringChangeIntegrationUnavailable()
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_REPLAY_LOOKUP"
+        ):
+            existing_names = frappe.get_all(
+                "NPI Engineering Change Summary Request",
+                filters={
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project_id),
+                    "actor_user_id": self.actor,
+                    "idempotency_key_hash": idempotency_key_hash,
+                },
+                pluck="name",
+                limit_page_length=2,
+            )
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_REPLAY"
+        ):
+            if len(existing_names) > 1:
+                raise RuntimeError("Summary request idempotency scope is ambiguous.")
+            if existing_names:
+                existing = frappe.get_doc(
+                    "NPI Engineering Change Summary Request", str(existing_names[0])
+                )
+                if (
+                    str(existing.change_global_id) != str(change_id)
+                    or int(existing.revision_number) != expected_revision
+                    or str(existing.revision_global_id)
+                    != str(expected_revision_global_id)
+                    or str(existing.revision_snapshot_hash)
+                    != expected_revision_snapshot_hash
+                ):
+                    raise EngineeringChangeIntegrationConflict()
+                return CommandOutcome(_summary_response(existing), replayed=True)
 
         from npi_core.change_control.frappe_repository import FrappeChangeControlRepository
 
-        detail = FrappeChangeControlRepository(principal=self.principal, request_id=self.request_id, trace_id=self.trace_id).get_change(project_id, change_id)
-        if detail is None:
-            return None
-        detail = validate_change_detail_response(
-            detail,
-            project_global_id=str(project_id),
-            change_global_id=str(change_id),
-        )
-        current = detail["currentRevision"]
-        if (
-            current["revision"] != expected_revision
-            or current["globalId"] != str(expected_revision_global_id)
-            or current["snapshotHash"] != expected_revision_snapshot_hash
-            or current["state"] != "closed"
-            or current["formalChange"] is None
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_DETAIL"
         ):
-            raise EngineeringChangeIntegrationConflict()
-        formal = current["formalChange"]
-        summary = ChangeImplementationSummary(
-            tenant_id=str(project.tenant_id), project_global_id=project_id, change_global_id=change_id,
-            revision_global_id=expected_revision_global_id, revision_number=expected_revision,
-            revision_snapshot_hash=expected_revision_snapshot_hash,
-            formal_change=FormalChangeObservation(
-                doctype=formal["doctype"], document_name=formal["documentName"], raw_status=formal["rawStatus"],
-                source_version=formal["sourceVersion"], source_modified_at=_datetime(formal["sourceModifiedAt"]),
-                source_hash=formal["sourceHash"], observed_at=_datetime(formal["observedAt"]),
-            ),
-            affected_versions_hash=canonical_hash(current["affectedObjects"]),
-            effectivity_hash=canonical_hash(current["effectivityRules"]),
-            disposition_hash=canonical_hash(current["dispositions"]),
-            revalidation_hash=canonical_hash(current["revalidationRequirements"]),
-            closure_evidence_hash=canonical_hash(current["closureEvidence"]),
-        )
-        now = datetime.now(UTC)
-        request_value = SummaryRequest(
-            global_id=uuid4(), summary=summary, profile=profile.reference, actor_user_id=self.actor,
-            service_actor_user_id=profile.service_actor_user_id, request_id=UUID(self.request_id),
-            trace_id=self.trace_id, idempotency_key_hash=idempotency_key_hash, created_at=now,
-        )
-        event_id = uuid4()
-        response = {
-            "schemaVersion": 1, "requestGlobalId": str(request_value.global_id),
-            "changeGlobalId": str(change_id), "revisionGlobalId": str(expected_revision_global_id),
-            "revisionNumber": expected_revision, "sourceHash": summary.source_hash,
-            "state": "queued", "outboxEventId": str(event_id),
-        }
-        with summary_request_write(self.actor):
-            request_row = frappe.get_doc({
-                "doctype": "NPI Engineering Change Summary Request", "global_id": str(request_value.global_id),
-                "tenant_id": str(project.tenant_id), "project_global_id": str(project_id), "change_global_id": str(change_id),
-                "revision_global_id": str(expected_revision_global_id), "revision_number": expected_revision,
-                "revision_snapshot_hash": expected_revision_snapshot_hash, "source_snapshot": _json(summary.payload()),
-                "source_hash": summary.source_hash, "profile_id": profile.profile_id, "profile_version": profile.profile_version,
-                "profile_snapshot_hash": profile.reference.snapshot_hash, "actor_user_id": self.actor,
-                "service_actor_user_id": profile.service_actor_user_id, "request_id": self.request_id,
-                "trace_id": self.trace_id, "idempotency_key_hash": idempotency_key_hash,
-                "state": "queued", "outbox_event_id": str(event_id),
-                "created_at": _database_datetime(now),
-                "updated_at": _database_datetime(now),
-            })
-            request_row.insert()
-            payload = request_value.event_payload()
-            frappe.get_doc({
-                "doctype": "NPI Engineering Change Summary Outbox", "event_id": str(event_id),
-                "schema_version": SCHEMA_VERSION, "event_type": SUMMARY_EVENT_TYPE,
-                "request_global_id": str(request_value.global_id), "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project_id), "change_global_id": str(change_id),
-                "revision_global_id": str(expected_revision_global_id), "source_hash": summary.source_hash,
-                "payload": _json(payload), "payload_hash": canonical_hash(payload),
-                "profile_snapshot_hash": profile.reference.snapshot_hash,
-                "service_actor_user_id": profile.service_actor_user_id, "trace_id": self.trace_id,
-                "target_idempotency_key_hash": idempotency_key_hash, "state": "pending", "attempt_count": 0,
-            }).insert()
-            self._append_audit(
-                operation="engineering_change.summary.request",
-                global_id=request_value.global_id, object_version=1, result="queued",
-                summary={"changeGlobalId": str(change_id), "revisionGlobalId": str(expected_revision_global_id), "sourceHash": summary.source_hash, "outboxEventId": str(event_id)},
+            detail = FrappeChangeControlRepository(
+                principal=self.principal,
+                request_id=self.request_id,
+                trace_id=self.trace_id,
+            ).get_change(project_id, change_id)
+            if detail is None:
+                return None
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_DETAIL_VALIDATE"
+        ):
+            detail = validate_change_detail_response(
+                detail,
+                project_global_id=str(project_id),
+                change_global_id=str(change_id),
             )
-        return CommandOutcome(response, should_enqueue=True, queue_id=event_id)
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_CURRENT"
+        ):
+            current = detail["currentRevision"]
+            if (
+                current["revision"] != expected_revision
+                or current["globalId"] != str(expected_revision_global_id)
+                or current["snapshotHash"] != expected_revision_snapshot_hash
+                or current["state"] != "closed"
+                or current["formalChange"] is None
+            ):
+                raise EngineeringChangeIntegrationConflict()
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_SUMMARY"
+        ):
+            formal = current["formalChange"]
+            summary = ChangeImplementationSummary(
+                tenant_id=str(project.tenant_id),
+                project_global_id=project_id,
+                change_global_id=change_id,
+                revision_global_id=expected_revision_global_id,
+                revision_number=expected_revision,
+                revision_snapshot_hash=expected_revision_snapshot_hash,
+                formal_change=FormalChangeObservation(
+                    doctype=formal["doctype"],
+                    document_name=formal["documentName"],
+                    raw_status=formal["rawStatus"],
+                    source_version=formal["sourceVersion"],
+                    source_modified_at=_datetime(formal["sourceModifiedAt"]),
+                    source_hash=formal["sourceHash"],
+                    observed_at=_datetime(formal["observedAt"]),
+                ),
+                affected_versions_hash=canonical_hash(current["affectedObjects"]),
+                effectivity_hash=canonical_hash(current["effectivityRules"]),
+                disposition_hash=canonical_hash(current["dispositions"]),
+                revalidation_hash=canonical_hash(
+                    current["revalidationRequirements"]
+                ),
+                closure_evidence_hash=canonical_hash(current["closureEvidence"]),
+            )
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_REQUEST_VALUE"
+        ):
+            now = datetime.now(UTC)
+            request_value = SummaryRequest(
+                global_id=uuid4(),
+                summary=summary,
+                profile=profile.reference,
+                actor_user_id=self.actor,
+                service_actor_user_id=profile.service_actor_user_id,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+                idempotency_key_hash=idempotency_key_hash,
+                created_at=now,
+            )
+            event_id = uuid4()
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_RESPONSE"
+        ):
+            response = {
+                "schemaVersion": 1,
+                "requestGlobalId": str(request_value.global_id),
+                "changeGlobalId": str(change_id),
+                "revisionGlobalId": str(expected_revision_global_id),
+                "revisionNumber": expected_revision,
+                "sourceHash": summary.source_hash,
+                "state": "queued",
+                "outboxEventId": str(event_id),
+            }
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_WRITE_SCOPE"
+        ):
+            with summary_request_write(self.actor):
+                with engineering_change_inbound_repository_step(
+                    "P901_CHANGE_SUMMARY_REPOSITORY_REQUEST_INSERT"
+                ):
+                    request_row = frappe.get_doc({
+                        "doctype": "NPI Engineering Change Summary Request", "global_id": str(request_value.global_id),
+                        "tenant_id": str(project.tenant_id), "project_global_id": str(project_id), "change_global_id": str(change_id),
+                        "revision_global_id": str(expected_revision_global_id), "revision_number": expected_revision,
+                        "revision_snapshot_hash": expected_revision_snapshot_hash, "source_snapshot": _json(summary.payload()),
+                        "source_hash": summary.source_hash, "profile_id": profile.profile_id, "profile_version": profile.profile_version,
+                        "profile_snapshot_hash": profile.reference.snapshot_hash, "actor_user_id": self.actor,
+                        "service_actor_user_id": profile.service_actor_user_id, "request_id": self.request_id,
+                        "trace_id": self.trace_id, "idempotency_key_hash": idempotency_key_hash,
+                        "state": "queued", "outbox_event_id": str(event_id),
+                        "created_at": _database_datetime(now),
+                        "updated_at": _database_datetime(now),
+                    })
+                    request_row.insert()
+                with engineering_change_inbound_repository_step(
+                    "P901_CHANGE_SUMMARY_REPOSITORY_OUTBOX_PAYLOAD"
+                ):
+                    payload = request_value.event_payload()
+                with engineering_change_inbound_repository_step(
+                    "P901_CHANGE_SUMMARY_REPOSITORY_OUTBOX_INSERT"
+                ):
+                    frappe.get_doc({
+                        "doctype": "NPI Engineering Change Summary Outbox", "event_id": str(event_id),
+                        "schema_version": SCHEMA_VERSION, "event_type": SUMMARY_EVENT_TYPE,
+                        "request_global_id": str(request_value.global_id), "tenant_id": str(project.tenant_id),
+                        "project_global_id": str(project_id), "change_global_id": str(change_id),
+                        "revision_global_id": str(expected_revision_global_id), "source_hash": summary.source_hash,
+                        "payload": _json(payload), "payload_hash": canonical_hash(payload),
+                        "profile_snapshot_hash": profile.reference.snapshot_hash,
+                        "service_actor_user_id": profile.service_actor_user_id, "trace_id": self.trace_id,
+                        "target_idempotency_key_hash": idempotency_key_hash, "state": "pending", "attempt_count": 0,
+                    }).insert()
+                with engineering_change_inbound_repository_step(
+                    "P901_CHANGE_SUMMARY_REPOSITORY_AUDIT"
+                ):
+                    self._append_audit(
+                        operation="engineering_change.summary.request",
+                        global_id=request_value.global_id,
+                        object_version=1,
+                        result="queued",
+                        summary={
+                            "changeGlobalId": str(change_id),
+                            "revisionGlobalId": str(expected_revision_global_id),
+                            "sourceHash": summary.source_hash,
+                            "outboxEventId": str(event_id),
+                        },
+                    )
+        with engineering_change_inbound_repository_step(
+            "P901_CHANGE_SUMMARY_REPOSITORY_OUTCOME"
+        ):
+            return CommandOutcome(response, should_enqueue=True, queue_id=event_id)
 
     def _profile(self, tenant_id: str, project_id: UUID) -> IntegrationProfile | None:
         if not callable(self.profile_resolver):

@@ -5,6 +5,19 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+Post-formal-Datetime diagnostic SHA
+`f5d95e28aa64750e8cca9274af55bec9320a5015` passes ordinary CI
+`33610959690`. Controlled `33612235309` passes preflight and the full change
+lifecycle through exact revision-4 close, then returns only
+`P901_CHANGE_SUMMARY_HTTP / RuntimeError /
+trace-41530fdeb7fd581d89d9a43c98fadb5c`. The safe outer label does not identify
+which summary API/repository stage failed, so no product repair is authorized.
+The sole next action is the current product-neutral summary diagnostic harness
+checkpoint: exact twenty-nine fixed inner stages, code/type/trace only, then
+its exact-SHA ordinary PASS and one bounded controlled continuation. Do not
+read restricted output, rerun a full Gate, contact production ERPNext or stage
+user-owned files.
+
 P9-01D governance exact SHA
 `0e46d2d294176571fe620d6760151fb4df56fd13` passes ordinary CI
 `33364478666` in all four lanes. The exact manifest implementation is locally

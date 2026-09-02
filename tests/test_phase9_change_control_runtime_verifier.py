@@ -272,11 +272,15 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             ),
             1,
         )
-        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 144)
+        self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 173)
         server_codes = set(
             self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_CODES
-        ) | set(self.verifier.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_CODES)
-        self.assertEqual(len(server_codes), 65)
+        ) | set(
+            self.verifier.ENGINEERING_CHANGE_INBOUND_SERVER_DIAGNOSTIC_CODES
+        ) | set(
+            self.verifier.ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_CODES
+        )
+        self.assertEqual(len(server_codes), 94)
         self.assertTrue(
             all(
                 literals.count(code) == 1
@@ -794,6 +798,69 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertNotIn(
             self.verifier.ENGINEERING_CHANGE_REVISE_SERVER_DIAGNOSTIC_HEADER,
+            captured[1],
+        )
+
+    def test_post_formal_datetime_diagnostic_binds_summary_server_header_only_in_scope(
+        self,
+    ) -> None:
+        trace = self.verifier.engineering_change_runtime_diagnostic_trace()
+        captured: list[dict[str, str]] = []
+        expected = self.verifier._request_headers(
+            "summary", csrf_token="csrf", idempotency_key="key"
+        )
+        result = self.verifier.HttpResult(
+            202,
+            {
+                "X-Request-ID": expected["X-Request-ID"],
+                "Cache-Control": "private, no-store",
+                "Idempotency-Replayed": "false",
+            },
+            {"state": "queued"},
+        )
+
+        def fake_request(*_args, **kwargs):
+            captured.append(dict(kwargs["request_headers"]))
+            return result
+
+        with patch.object(self.verifier, "request", side_effect=fake_request):
+            with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                self.verifier._command(
+                    object(),
+                    self.verifier.RUNTIME_BASE_URL,
+                    "/bounded",
+                    {},
+                    csrf_token="csrf",
+                    idempotency_key="key",
+                    label="summary",
+                    expected_status=202,
+                    replayed=False,
+                )
+            self.verifier._command(
+                object(),
+                self.verifier.RUNTIME_BASE_URL,
+                "/bounded",
+                {},
+                csrf_token="csrf",
+                idempotency_key="key",
+                label="summary",
+                expected_status=202,
+                replayed=False,
+            )
+        self.assertEqual(
+            captured[0][
+                self.verifier.ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_HEADER
+            ],
+            self.verifier.ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(
+            captured[0][
+                self.verifier.ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_TRACE_HEADER
+            ],
+            trace,
+        )
+        self.assertNotIn(
+            self.verifier.ENGINEERING_CHANGE_SUMMARY_SERVER_DIAGNOSTIC_HEADER,
             captured[1],
         )
 

@@ -279,6 +279,33 @@ class Phase9ChangeIntegrationRepositoryTest(unittest.TestCase):
         positions = [receive_source.index(code) for code in codes]
         self.assertEqual(positions, sorted(positions))
 
+    def test_summary_diagnostic_stages_follow_transaction_order(self) -> None:
+        source = (
+            ROOT
+            / "apps/npi_integration/npi_integration/engineering_change/frappe_repository.py"
+        ).read_text(encoding="utf-8")
+        codes = (
+            "P901_CHANGE_SUMMARY_REPOSITORY_PROJECT_LOCK",
+            "P901_CHANGE_SUMMARY_REPOSITORY_PROFILE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_REPLAY_LOOKUP",
+            "P901_CHANGE_SUMMARY_REPOSITORY_REPLAY",
+            "P901_CHANGE_SUMMARY_REPOSITORY_DETAIL",
+            "P901_CHANGE_SUMMARY_REPOSITORY_DETAIL_VALIDATE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_CURRENT",
+            "P901_CHANGE_SUMMARY_REPOSITORY_SUMMARY",
+            "P901_CHANGE_SUMMARY_REPOSITORY_REQUEST_VALUE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_RESPONSE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_WRITE_SCOPE",
+            "P901_CHANGE_SUMMARY_REPOSITORY_REQUEST_INSERT",
+            "P901_CHANGE_SUMMARY_REPOSITORY_OUTBOX_PAYLOAD",
+            "P901_CHANGE_SUMMARY_REPOSITORY_OUTBOX_INSERT",
+            "P901_CHANGE_SUMMARY_REPOSITORY_AUDIT",
+            "P901_CHANGE_SUMMARY_REPOSITORY_OUTCOME",
+        )
+        summary_source = source[source.index("    def create_summary_request") :]
+        positions = [summary_source.index(code) for code in codes]
+        self.assertEqual(positions, sorted(positions))
+
     def test_inbox_insert_database_diagnostic_maps_only_fixed_safe_classes(self) -> None:
         expected = {
             1048: "P901_CHANGE_INBOUND_REPOSITORY_INBOX_SQL_NULL",
