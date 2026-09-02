@@ -123,6 +123,15 @@ typecheck, `1,115/1,115` units, 80.01% statements and `10/10` affected
 functional/accessibility E2E pass. No CI workflow, threshold, existing visual
 baseline, contract or ownership rule changes.
 
+Repair SHA `6fdf8cba91d7c552f60d99b11b5b845be57ef592` ordinary CI
+`33678023797` then passed repository, secret, frontend verification and E2E
+shard 1. Its remaining 19 visual failures were all the same Portfolio inactive
+colour assertion, while E2E shard 2 retained the pre-P9-02 six-command count
+and old Project index. The complete final batch normalizes Portfolio's inactive
+legacy colour and updates that existing keyboard test for the approved nine
+commands and current Project index. No visual baseline or product behavior is
+rewritten.
+
 ## Test and evidence plan
 
 - Pure domain and contract tests for filters, cursors, KPI calculation,

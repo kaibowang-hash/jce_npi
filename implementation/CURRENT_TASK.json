@@ -125,6 +125,7 @@
     "frontend/tests/unit/project-workspace.test.tsx",
     "frontend/tests/unit/router.test.tsx",
     "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts",
+    "frontend/tests/e2e/r1-03-shell.spec.ts",
     "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts-snapshots/p9-02-portfolio-en-1366x768-100-darwin.png",
     "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts-snapshots/p9-02-portfolio-zh-1440x900-125-darwin.png",
     "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts-snapshots/p9-02-portfolio-zh-TW-1920x1080-150-darwin.png",

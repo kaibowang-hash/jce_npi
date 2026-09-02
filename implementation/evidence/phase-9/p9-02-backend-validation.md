@@ -115,3 +115,18 @@ Local batch proof:
 Production ERPNext was not contacted. The next action is one exact-SHA
 ordinary CI for this complete repair batch, followed automatically by P9-02D
 disposable runtime, Level 2 and the sole final Level 3.
+
+Repair SHA `6fdf8cba91d7c552f60d99b11b5b845be57ef592` ordinary CI
+`33678023797` passed repository, secret, frontend verification and E2E shard
+1, then identified the two remaining frontend compatibility assertions in the
+same batch. All 19 visual failures were the newly live Portfolio entry retaining
+enabled inactive colour in legacy Shell scenarios; E2E shard 2 was the legacy
+command-palette assertion still fixing the complete command count at six and
+selecting the former Project index after P9-02 added three approved commands.
+
+The final batch applies the inactive legacy colour to Portfolio in every
+non-active context and updates the existing Shell keyboard test to assert all
+nine commands and navigate explicitly to the current Project at its new fixed
+index. The regression test path is added to the exact P9-02 manifest. No
+snapshot, visual tolerance, command behavior, product contract or CI workflow
+is changed.

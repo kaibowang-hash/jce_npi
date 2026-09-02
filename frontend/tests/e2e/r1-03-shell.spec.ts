@@ -442,7 +442,7 @@ test.describe("R1-03 application Shell behavior", () => {
     ).toHaveAttribute("aria-disabled", "false");
 
     const commandButtons = dialog.getByRole("button");
-    await expect(commandButtons).toHaveCount(6);
+    await expect(commandButtons).toHaveCount(9);
     await search.press("ArrowDown");
     await expect(commandButtons.first()).toBeFocused();
     await commandButtons.first().press("ArrowUp");
@@ -452,9 +452,11 @@ test.describe("R1-03 application Shell behavior", () => {
     await commandButtons.first().press("End");
     await expect(commandButtons.last()).toBeFocused();
     await commandButtons.last().press("Home");
-    await commandButtons.first().press("ArrowDown");
-    await expect(commandButtons.nth(1)).toBeFocused();
-    await commandButtons.nth(1).press("Enter");
+    for (let index = 0; index < 4; index += 1) {
+      await page.keyboard.press("ArrowDown");
+    }
+    await expect(commandButtons.nth(4)).toBeFocused();
+    await commandButtons.nth(4).press("Enter");
     await expect(dialog).toHaveCount(0);
     await expect
       .poll(() => new URL(page.url()).pathname)

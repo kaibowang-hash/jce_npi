@@ -787,7 +787,7 @@ export function AppShell({
                 !active &&
                 (item.id === "analytics" ||
                   item.id === "administration" ||
-                  (item.id === "portfolio" && !prototypeNavigationAllowed));
+                  item.id === "portfolio");
               const tooltipId = `navigation-${item.id}-tooltip`;
               return (
                 <li key={item.id}>
