@@ -3063,7 +3063,7 @@ p9_01:
   p9_01a_final_ordinary: 33353974303
   p9_01a_final_jobs: {repository: 99372498566, frontend: 99372498667, visual: 99372498683, secret_scan: 99372498705}
   p9_01a_result: PASS_IMMUTABLE_AGGREGATE_METADATA_TRANSLATIONS_SECURITY
-  active_checkpoint: P8_03_MIGRATED_LEGACY_CLOSED_PROBLEM_CODE_CLASSIFIER
+  active_checkpoint: P8_03_POST_MIGRATION_LEGACY_PROBE_ISOLATION_REPAIR
   p9_01b_governance_checkpoint: 07b869bcd88fa7406548e10edc42b07c6dadc8ed
   p9_01b_governance_ordinary: 33354760251
   p9_01b_governance_jobs: {secret_scan: 99374683091, visual: 99374683231, frontend: 99374683273, repository: 99374683338}
@@ -3159,7 +3159,16 @@ p9_01:
   p8_03_post_p809_legacy_tuple: P803_LEGACY_RECONCILIATION_BODY_CODE_RUNTIMEERROR_TRACE_FDCF4300
   p8_03_legacy_problem_classifier: EXACT_FIVE_KNOWN_PREDECESSOR_CODES_UNKNOWN_CLOSED_ALLOWLIST_72_LEVEL_1_PASS
   p8_03_legacy_problem_classifier_tests: {focused: 61_PASS, full_repository: 2836_PASS}
-  p9_01d_next_gate: P8_03_CLOSED_PROBLEM_CLASSIFIER_EXACT_SHA_ORDINARY_THEN_ONE_CONTROLLED_LEVEL_2
+  p8_03_legacy_problem_classifier_checkpoint: 749c00963a7887ce06cab2d4cb0696336e8d4e86
+  p8_03_legacy_problem_classifier_ordinary: 33634947509
+  p8_03_legacy_problem_classifier_jobs: {visual: 100263359556, secret_scan: 100263359893, repository: 100263359970, frontend: 100263360016}
+  p8_03_legacy_problem_classifier_controlled: 33636463842
+  p8_03_legacy_problem_classifier_preflight: 100268471117
+  p8_03_legacy_problem_classifier_runtime: 100268571501
+  p8_03_legacy_problem_classifier_tuple: P803_LEGACY_RECONCILIATION_CODE_EFFECT_RETAINED_RUNTIMEERROR_TRACE_151A7D42
+  p8_03_post_migration_probe_repair: EXACT_DISPOSABLE_GUARD_ONLY_MIGRATED_ROW_RETAINED_ALL_DIAGNOSTICS_FALSE_LEVEL_1_PASS
+  p8_03_post_migration_probe_repair_tests: {affected_p8_p9: 165_PASS, full_repository: 2836_PASS, current_task: PASS, reconciliation: PASS, generated_sources: PASS, i18n: PASS, compile: PASS, shell_syntax: PASS, diff_hygiene: PASS}
+  p9_01d_next_gate: P8_03_POST_MIGRATION_PROBE_REPAIR_EXACT_SHA_ORDINARY_THEN_ONE_FINAL_DIAGNOSTICS_OFF_LEVEL_3
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

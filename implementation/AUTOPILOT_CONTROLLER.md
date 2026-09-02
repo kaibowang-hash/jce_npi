@@ -11185,3 +11185,36 @@ P9-01 Level 3.
   `61/61` and the full repository set `2836/2836`, including current-task,
   reconciliation, compilation, shell syntax and diff hygiene.
 - Controller marker: `P8-03 migrated-legacy closed problem-code classifier Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P8-03 post-migration legacy probe isolation repair
+
+- Classifier exact SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
+  passes ordinary `33634947509`: visual `100263359556`, secret
+  `100263359893`, repository `100263359970` and frontend `100263360016` pass.
+  Its sole controlled `33636463842` passes preflight `100268471117`; runtime
+  `100268571501` returns exactly
+  `P803_LEGACY_RECONCILIATION_CODE_EFFECT_RETAINED / RuntimeError /
+  trace-151a7d425ce95a23b36a2d8c5dcc86b9`. One safe tuple and one fixed outer
+  label are present; raw and restricted output remain unread.
+- Static product proof is unique: `ItemPublishEffectRetained` can be returned
+  only when the persisted stream Guard has a retained terminal state whose
+  target idempotency hash equals the new request. Item product code has not
+  changed since the last P8-09 PASS, and the P9 verifier writes no Item rows.
+  The cumulative test therefore reused a derived current Guard and tested
+  retained-effect precedence instead of the intended migrated-legacy
+  reconstruction boundary.
+- Minimal repair is fixture-only. After both required migrations, a
+  marker/site/project/source/request-bound fixture first proves the migrated
+  8dd request still has all post-8dd bindings null, then deletes at most the
+  one exact disposable derived Guard. It leaves every Request, Outbox, Result,
+  product contract and product repository unchanged. The following HTTP
+  command must make `_locked_stream_guard` rebuild from historical requests
+  and return `ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED`; inspection still
+  proves zero worker route, zero adapter call and bounded cleanup.
+- All nine temporary diagnostic toggles are default false. Local compile,
+  shell syntax, diff hygiene, current-task/reconciliation, affected P8/P9
+  tests `165/165`, full repository tests `2836/2836`, generated-source checks
+  and i18n audit all pass.
+  Require exact-SHA ordinary PASS and one final diagnostics-off Level 3; no
+  further diagnostic run is authorized.
+- Controller marker: `P8-03 post-migration legacy probe repair Level 1 PASS; exact-SHA ordinary CI pending`.

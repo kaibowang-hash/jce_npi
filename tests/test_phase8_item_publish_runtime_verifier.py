@@ -29,7 +29,12 @@ FIXTURE = (
 )
 
 
-_LEGACY_SQL_FUNCTIONS = {"seed_legacy", "inspect_legacy", "cleanup_legacy"}
+_LEGACY_SQL_FUNCTIONS = {
+    "seed_legacy",
+    "prepare_legacy_probe",
+    "inspect_legacy",
+    "cleanup_legacy",
+}
 _LEGACY_TABLES = {
     "NPI Item Publish Request",
     "NPI Outbox Message",
@@ -369,7 +374,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(len(assignments), 9)
         self.assertEqual(
             {name for name, value in assignments.items() if value is True},
-            {"LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED"},
+            set(),
         )
         with patch.object(
             module,
@@ -1393,6 +1398,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         shell = SHELL.read_text(encoding="utf-8")
         for marker in (
             "def seed_legacy(",
+            "def prepare_legacy_probe(",
             "def inspect_legacy(",
             "def cleanup_legacy(",
             '"preMigrationShape": "8dd"',
@@ -1415,6 +1421,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         ):
             self.assertIn(marker, verifier)
         self.assertIn("seed_item_publish_runtime_legacy", shell)
+        self.assertIn("prepare_item_publish_runtime_legacy_probe", shell)
         self.assertIn("bench --site \"${site_name}\" migrate", shell)
         self.assertIn("run_item_publish_runtime_verifier legacy-only", shell)
         self.assertLess(
@@ -1423,6 +1430,14 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertLess(
             shell.rindex("seed_item_publish_runtime_legacy"),
+            shell.rindex("prepare_item_publish_runtime_legacy_probe"),
+        )
+        self.assertLess(
+            shell.rindex("bench --site \"${site_name}\" migrate"),
+            shell.rindex("prepare_item_publish_runtime_legacy_probe"),
+        )
+        self.assertLess(
+            shell.rindex("prepare_item_publish_runtime_legacy_probe"),
             shell.rindex("run_item_publish_runtime_verifier legacy-only"),
         )
 

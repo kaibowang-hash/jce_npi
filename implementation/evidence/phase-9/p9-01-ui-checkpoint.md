@@ -673,3 +673,9 @@ Ordinary `33631552203` passes frontend and governed visual again. Controlled
 `33632861952` isolates a backend P8-03 problem-code predicate. The one-batch
 closed classifier changes no UI source, route, translation, accessibility
 behavior, fixture response or visual baseline.
+
+Ordinary `33634947509` passes frontend and governed visual. Controlled
+`33636463842` proves the remaining failure is an Item backend fixture-isolation
+boundary. The repair changes no UI source, translation, route, accessibility
+behavior, fixture response shape or visual baseline; all temporary runtime
+diagnostics are disabled.

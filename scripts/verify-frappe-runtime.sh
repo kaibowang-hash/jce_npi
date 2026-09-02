@@ -3149,6 +3149,40 @@ for key in ("legacyOutboxId", "legacyRequestId", "selectedPublishNodeGlobalId", 
 print(json.dumps({key: value[key] for key in ("legacyOutboxId", "legacyRequestId", "selectedPublishNodeGlobalId", "sourceStreamKeyHash", "preMigrationDuplicateAttemptCount")}, separators=(",", ":"), sort_keys=True))' <<<"${captured}"
 }
 
+prepare_item_publish_runtime_legacy_probe() {
+  local captured
+  captured="$({
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    export NPI_P8_03_RUNTIME_ENABLED=1
+    export NPI_P8_03_RUNTIME_MARKER=npi-one-item-publish-disposable-v1
+    export NPI_P8_03_RUNTIME_PROJECT_ID="${item_publish_runtime_project_id}"
+    export NPI_P8_03_RUNTIME_REQUESTER="${item_publish_runtime_actor}"
+    export NPI_P8_03_RUNTIME_WORKER="${inbound_project_runtime_actor}"
+    cd "${bench_path}/sites"
+    exec "${bench_path}/env/bin/python" \
+      "${repo_root}/scripts/verify_item_publish_runtime.py" \
+      --bench-fixture prepare_legacy_probe \
+      --fixture-kwargs "{\"fixture_run_id\":\"${document_runtime_run_id}\",\"project_id\":\"${item_publish_runtime_project_id}\",\"legacy_request_id\":\"${item_publish_runtime_legacy_request_id}\",\"source_stream_key_hash\":\"${item_publish_runtime_legacy_stream_hash}\"}"
+  })"
+  "${bench_path}/env/bin/python" -c \
+    'import json, sys
+lines = [line for line in sys.stdin.read().splitlines() if line.strip()]
+value = json.loads(lines[-1]) if lines else {}
+if set(value) != {"guardRowsRemoved", "legacyRowRetained"}:
+    raise SystemExit(1)
+if value["guardRowsRemoved"] not in {0, 1} or value["legacyRowRetained"] is not True:
+    raise SystemExit(1)' <<<"${captured}"
+}
+
 export_item_publish_runtime_environment() {
   export NPI_P8_03_RUNTIME_ENABLED=1
   export NPI_P8_03_RUNTIME_MARKER=npi-one-item-publish-disposable-v1
@@ -4747,6 +4781,10 @@ if [[ "${verification_mode}" == "all" ||
       bench --site "${site_name}" migrate
     )
   done
+  if ! prepare_item_publish_runtime_legacy_probe; then
+    echo "P8-03 post-migration legacy stream probe isolation failed." >&2
+    exit 1
+  fi
   export NPI_P8_03_RUNTIME_LEGACY_REQUEST_ID="${item_publish_runtime_legacy_request_id}"
   export NPI_P8_03_RUNTIME_LEGACY_OUTBOX_ID="${item_publish_runtime_legacy_outbox_id}"
   export NPI_P8_03_RUNTIME_LEGACY_NODE_ID="${item_publish_runtime_legacy_node_id}"

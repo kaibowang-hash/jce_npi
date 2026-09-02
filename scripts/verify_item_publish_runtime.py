@@ -47,7 +47,7 @@ LEGACY_POST_P807_COMBINED_DIAGNOSTICS_ENABLED = False
 LEGACY_POST_P807_FULL_BOUNDARY_DIAGNOSTICS_ENABLED = False
 LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED = False
 LEGACY_POST_P808_RECONCILIATION_RESPONSE_DIAGNOSTICS_ENABLED = False
-LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED = True
+LEGACY_POST_P809_FINAL_GATE_DIAGNOSTICS_ENABLED = False
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p803-item-create-v1"
 _LEGACY_QUERY_DIAGNOSTIC_SCOPE = "p803-legacy-query-v1"
@@ -1976,6 +1976,66 @@ def seed_legacy(
     }
 
 
+def prepare_legacy_probe(
+    fixture_run_id: str,
+    project_id: str,
+    legacy_request_id: str,
+    source_stream_key_hash: str,
+) -> dict[str, object]:
+    """Remove only the disposable post-migration guard before the legacy probe.
+
+    Earlier controlled runtime modes can leave a retained current guard for
+    the same source effect.  The legacy probe must start without that derived
+    guard so the product repository rebuilds it from the still-present
+    historical request and proves the reconciliation block itself.
+    """
+
+    import frappe
+
+    _require_disposable_legacy_fixture(fixture_run_id, project_id)
+    legacy = frappe.get_doc("NPI Item Publish Request", legacy_request_id)
+    require(
+        str(legacy.global_id) == legacy_request_id
+        and str(legacy.project_global_id) == project_id
+        and str(legacy.source_stream_key_hash) == source_stream_key_hash
+        and not legacy.target_idempotency_key_hash
+        and not legacy.service_actor_user_id
+        and not legacy.semantic_source_effect_hash
+        and not legacy.semantic_effect_hash,
+        "P8-03 post-migration legacy probe identity drifted",
+    )
+    filters = {
+        "source_stream_key_hash": source_stream_key_hash,
+        "project_global_id": project_id,
+    }
+    guards = _rows(
+        "NPI Item Publish Stream Guard",
+        filters,
+        ["name"],
+    )
+    require(
+        len(guards) <= 1,
+        "P8-03 post-migration legacy probe guard cardinality drifted",
+    )
+    frappe.db.sql(
+        "DELETE FROM `tabNPI Item Publish Stream Guard` "
+        "WHERE source_stream_key_hash = %s AND project_global_id = %s",
+        (source_stream_key_hash, project_id),
+    )
+    require(
+        not _rows(
+            "NPI Item Publish Stream Guard",
+            filters,
+            ["name"],
+        ),
+        "P8-03 post-migration legacy probe guard was not isolated",
+    )
+    return {
+        "guardRowsRemoved": len(guards),
+        "legacyRowRetained": True,
+    }
+
+
 def inspect_legacy(
     fixture_run_id: str,
     project_id: str,
@@ -2776,6 +2836,7 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
         "exercise_worker": exercise_worker,
         "replay_terminal": replay_terminal,
         "seed_legacy": seed_legacy,
+        "prepare_legacy_probe": prepare_legacy_probe,
         "inspect_legacy": inspect_legacy,
         "cleanup_legacy": cleanup_legacy,
     }

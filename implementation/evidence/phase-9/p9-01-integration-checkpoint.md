@@ -663,3 +663,24 @@ no response value, product behavior or production state is exposed or changed.
 Focused governance/P8-03/P9 runtime verification passes `61/61`; full
 repository verification passes `2836/2836` with current-task, reconciliation,
 compilation, shell syntax and diff hygiene green.
+
+## Post-migration legacy probe isolation repair
+
+Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
+passes ordinary `33634947509`. Controlled `33636463842` returns one safe
+`P803_LEGACY_RECONCILIATION_CODE_EFFECT_RETAINED / RuntimeError /
+trace-151a7d425ce95a23b36a2d8c5dcc86b9` tuple. The product branch can return
+that code only for the same target hash on a retained terminal Guard; P9 has
+no Item product write. The cumulative fixture therefore carried a derived
+current Guard into the migrated-legacy probe.
+
+The minimal test-only repair runs after both migrations. It validates the
+exact legacy Request/project/source identity and all four post-8dd bindings as
+null, removes at most the one exact disposable derived Guard, and retains all
+Request/Outbox/Result rows. The unchanged repository must then rebuild the
+Guard from historical rows and return reconciliation-required before the
+existing zero-route/zero-adapter inspection and bounded cleanup. All temporary
+diagnostics are default false; focused runtime/security verification passes
+`34/34`, and the complete affected P8/P9 task set passes `165/165` with
+current-task/reconciliation, generated sources and i18n green. Full repository
+verification passes `2836/2836`.

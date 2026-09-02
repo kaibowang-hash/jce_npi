@@ -5,6 +5,17 @@ Status:
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 
+Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
+passes ordinary `33634947509`. Controlled `33636463842` uniquely proves the
+same-effect retained Guard pre-empted the migrated-legacy reconstruction
+probe. The active fixture-only repair validates the migrated null-bound 8dd
+row after both migrations, removes only its exact disposable derived Guard,
+then requires the unchanged product repository to reconstruct the historical
+stream block. All diagnostics are disabled. The sole next action is exact-SHA
+ordinary CI followed by one final diagnostics-off Level 3. Do not add another
+diagnostic, change product behavior/CI, contact production ERPNext or stage
+user-owned files.
+
 P8-03 diagnostic exact SHA `7e9e0f242a01465b3cf12eb5dadd6356b671f97b`
 passes ordinary `33631552203`. Controlled `33632861952` passes preflight and
 returns only `P803_LEGACY_RECONCILIATION_BODY_CODE / RuntimeError /

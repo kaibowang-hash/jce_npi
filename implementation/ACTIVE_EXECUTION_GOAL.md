@@ -5,6 +5,16 @@ Updated: `2026-08-31T00:00:00+07:00`
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
 - Mode: `IN_PROGRESS_P9_01D_IMPLEMENTATION_GATE — P9-01`
+- Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
+  passes ordinary `33634947509`. Its sole controlled run `33636463842`
+  returns the unique fixed tuple
+  `P803_LEGACY_RECONCILIATION_CODE_EFFECT_RETAINED / RuntimeError /
+  trace-151a7d425ce95a23b36a2d8c5dcc86b9`. Static branch proof shows the
+  cumulative fixture retained the same-effect terminal Guard ahead of the
+  migrated-legacy probe. The active repair isolates only that disposable
+  derived Guard after both migrations, retains and validates the migrated
+  legacy row, and leaves the product repository to reconstruct the required
+  reconciliation block. All temporary diagnostics are disabled.
 - P8-03 diagnostic exact SHA `7e9e0f242a01465b3cf12eb5dadd6356b671f97b`
   passes ordinary `33631552203`. Its only controlled run `33632861952`
   returns the strict `P803_LEGACY_RECONCILIATION_BODY_CODE / RuntimeError /
