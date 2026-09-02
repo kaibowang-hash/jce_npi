@@ -1252,6 +1252,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(output["task_id"], "P9-04")
         self.assertEqual(output["operation"], "P9_SECURITY_AUTHORIZATION_METADATA")
         self.assertTrue(output["result"]["settings"]["self_signup_disabled"])
+        self.assertEqual(output["result"]["settings"]["storage_shape"], "INTEGER")
         self.assertEqual(output["result"]["counts"]["system_users_enabled"], 8)
         self.assertEqual(
             output["result"]["role_profiles"][0]["roles"],
@@ -1261,6 +1262,31 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertNotIn("site-one", rendered)
         self.assertTrue(all(command[0] == "bench" for _, command in calls))
         self.assertFalse(any("console" in " ".join(command).lower() for _, command in calls))
+
+    def test_p9_security_settings_normalize_only_known_frappe_check_shapes(self) -> None:
+        cases = (
+            (None, False, "UNSET"),
+            (False, False, "BOOLEAN"),
+            (True, True, "BOOLEAN"),
+            (0, False, "INTEGER"),
+            (1, True, "INTEGER"),
+            ("0", False, "DIGIT_STRING"),
+            ("1", True, "DIGIT_STRING"),
+        )
+        for raw_value, expected, shape in cases:
+            with self.subTest(raw_value=raw_value):
+                parsed = collector._parse_security_settings(
+                    json.dumps({"disable_signup": raw_value}).encode()
+                )
+                self.assertEqual(parsed["self_signup_disabled"], expected)
+                self.assertEqual(parsed["storage_shape"], shape)
+        for invalid in (2, -1, "yes", [], {}):
+            with self.subTest(invalid=invalid), self.assertRaises(
+                collector.FactCollectionError
+            ):
+                collector._parse_security_settings(
+                    json.dumps({"disable_signup": invalid}).encode()
+                )
 
     def test_p9_security_count_accepts_only_successful_empty_stdout_as_zero(self) -> None:
         for operation in collector.P9_SECURITY_COUNT_SPECS:

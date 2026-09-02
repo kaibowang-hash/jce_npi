@@ -2015,7 +2015,7 @@ def _parse_role_profile_document(raw: bytes, profile_name: str) -> dict[str, Any
     }
 
 
-def _parse_security_settings(raw: bytes) -> dict[str, bool]:
+def _parse_security_settings(raw: bytes) -> dict[str, bool | str]:
     require(len(raw) <= MAX_RUNTIME_BYTES, "website settings output exceeded the bounded limit")
     try:
         value = json.loads(raw.decode("utf-8"))
@@ -2023,8 +2023,24 @@ def _parse_security_settings(raw: bytes) -> dict[str, bool]:
         raise FactCollectionError("website settings output is not exact JSON") from exc
     require(type(value) is dict and set(value) == {"disable_signup"}, "website settings shape drifted")
     disabled = value["disable_signup"]
-    require(type(disabled) in {bool, int} and disabled in {0, 1, False, True}, "self-signup flag shape drifted")
-    return {"self_signup_disabled": bool(disabled)}
+    if disabled is None:
+        storage_shape = "UNSET"
+        normalized = False
+    elif type(disabled) is bool:
+        storage_shape = "BOOLEAN"
+        normalized = disabled
+    elif type(disabled) is int and disabled in {0, 1}:
+        storage_shape = "INTEGER"
+        normalized = bool(disabled)
+    elif type(disabled) is str and disabled in {"0", "1"}:
+        storage_shape = "DIGIT_STRING"
+        normalized = disabled == "1"
+    else:
+        raise FactCollectionError("self-signup flag shape drifted")
+    return {
+        "self_signup_disabled": normalized,
+        "storage_shape": storage_shape,
+    }
 
 
 def _p9_security_metadata_operation(

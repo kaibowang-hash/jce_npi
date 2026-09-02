@@ -72,6 +72,13 @@ zero. The collector accepts exact empty stdout as zero only in that fixed count
 parser and only after SSH exit zero plus empty stderr; empty output remains
 invalid for every list, document and settings operation.
 
+The final fixed settings read returned a Frappe Check storage representation
+outside the initial boolean/integer parser. The complete known Check-field set
+is now frozen as null, boolean, integer `0/1` or digit string `"0"/"1"`; output
+records the exact storage-shape class and normalized boolean. Null and zero are
+false and therefore cannot satisfy the required self-signup-disabled control.
+Every other representation remains fail-closed.
+
 ## Current LaunchFlow audit
 
 The existing request boundary rejects Guest users and preserves Frappe roles,

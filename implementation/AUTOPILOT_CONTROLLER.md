@@ -11548,3 +11548,16 @@ P9-01 Level 3.
   the allowlisted count parser. All other empty or malformed output remains
   fail-closed. Require a new exact-SHA ordinary PASS before retrying the one
   complete `security-metadata` operation.
+
+### P9-04 fixed self-signup Check-field shape repair
+
+- The retried batch reached the final `Website Settings.disable_signup` read
+  after every earlier fixed family succeeded, then stopped because the Check
+  storage representation was outside the initial boolean/integer parser. No
+  partial result was accepted and production remained unchanged.
+- Preflight confirms there are no later remote operations. Freeze the complete
+  known Frappe Check representation set: null, boolean, integer `0/1` and digit
+  string `"0"/"1"`. Emit its storage-shape class plus normalized boolean; null
+  and zero remain false and cannot be treated as the required disabled control.
+  All other settings values and output shapes remain fail-closed. Require one
+  new exact-SHA ordinary PASS before the complete operation is retried.
