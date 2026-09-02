@@ -10885,3 +10885,38 @@ repeat or rewrite it merely to restore context. See
   shell syntax and diff hygiene. Exact-10/union-63 are accepted and the
   unauthorized eleventh path is rejected.
 - Controller marker: `P9-01D close diagnostic harness repair Level 1 PASS; exact-SHA ordinary CI pending`.
+
+## 2026-09-02 P9-01D formal observation Datetime comparison repair
+
+- Close diagnostic harness SHA `e7ec25df51a0c0e20734a0241eb8469a65001575`
+  passes ordinary `33473366675`: visual `99747463558`, secret scan
+  `99747463714`, repository `99747463750` and frontend `99747463831` are all
+  successful. Its bounded controlled continuation `33604786538` passes
+  preflight `100166203654`; runtime `100166287249` returns only the trusted
+  tuple `P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE / PermissionError /
+  trace-4e8170524143592caf9721192a5e6312`. Restricted response, business value,
+  identity, message, child output and stack remain unread.
+- Source order proves the close transaction has already inserted its immutable
+  revision/event and applied the new closed root values before the first failure
+  at root save. The root controller compared ERP formal-observation Datetime
+  fields without canonicalizing representation: Frappe's previous document
+  supplies a `datetime`, while the repository applies the same instant as its
+  database string. That equal instant was falsely classified as a formal-field
+  mutation and demanded observation-write scope from the otherwise valid close
+  command.
+- Normalize only the two formal-observation Datetime values at the permission
+  comparison boundary through the existing UTC validator. Empty and non-time
+  fields retain their prior behavior; storage, contracts, ownership, lifecycle,
+  permissions, API shapes and write order do not change. Exact regression
+  coverage binds object/string equality and keeps genuine observation mutation
+  protected.
+- Freeze this diagnostic cycle at diagnostic `1/1`, harness repair `1/1`,
+  product repair `1/1`, final `0/1`. Disable all 39 Engineering Change
+  diagnostic declarations. After exact-SHA ordinary PASS, dispatch only the
+  sole diagnostics-off Level 3; no further Level 2 is authorized.
+- Level 1 passes focused metadata/API/runtime `49/49`, full Python and formal
+  repository verification `2828/2828`, current/reconciliation `40/40`, frontend
+  generation and i18n (`8774`, 100% `zh`/`zh-TW`), compilation, shell syntax,
+  security and diff hygiene. Exact-14 and projected union-63 remain bounded;
+  unauthorized-15 is rejected.
+- Controller marker: `P9-01D formal observation datetime comparison repair Level 1 PASS; exact-SHA ordinary CI pending`.

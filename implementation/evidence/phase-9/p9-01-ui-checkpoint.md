@@ -438,6 +438,16 @@ The close diagnostic harness repair changes only a synthetic server-recorder
 header and exact activation predicate. It changes no route, response, visible
 copy, translation, accessibility behavior or visual baseline.
 
+The resulting controlled run `33604786538` identifies a backend-only root-save
+permission comparison mismatch. Canonicalizing the two equal Datetime
+representations changes no UI state, route, response contract, visible copy,
+translation, permission affordance, fixture or visual baseline. All diagnostics
+are off; existing accepted English, Simplified Chinese and Traditional Chinese
+evidence remains authoritative. Level 1 passes focused `49/49`, full repository
+`2828/2828`, current/reconciliation `40/40`, frontend generation and complete
+`8774`-source i18n, security and diff checks. After exact-SHA ordinary PASS,
+the next and only remote gate is the diagnostics-off P9-01 Level 3.
+
 ## Inbox replay identity repair UI boundary
 
 Ordinary `33462460736` passes frontend and governed visual evidence. The

@@ -738,6 +738,36 @@ Level 1 passes focused `45/45`, full Python/formal repository `2828/2828`,
 current/reconciliation `40/40`, generation/i18n, compile, shell and diff
 checks. Exact-10/union-63 are accepted and unauthorized-11 is rejected.
 
+### Formal observation Datetime comparison repair
+
+Harness repair SHA `e7ec25df51a0c0e20734a0241eb8469a65001575` passes
+ordinary `33473366675`. Its bounded controlled continuation `33604786538`
+passes preflight `100166203654`; runtime `100166287249` returns only
+`P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE / PermissionError /
+trace-4e8170524143592caf9721192a5e6312`. No restricted response, identity,
+business value, message, child output or stack was read.
+
+The transaction had already passed current/predecessor/state/transform/event
+checks and applied its closed root before the first failing root save. The root
+controller compared the previous Frappe `datetime` with the repository's equal
+database Datetime string and falsely treated the representation change as an
+ERP formal-observation mutation. The close command correctly has command-write,
+not observation-write, scope.
+
+The minimal product repair canonicalizes only the two formal observation
+Datetime fields at the existing permission comparison boundary with the
+existing UTC validator. It does not change persisted truth, API/event schemas,
+ownership, workflow, permissions, operation order or integration behavior.
+Exact regression coverage proves equal object/string instants are unchanged;
+all 39 diagnostics are off. The cycle is diagnostic `1/1`, harness repair
+`1/1`, product repair `1/1`, final `0/1`; after exact-SHA ordinary PASS, only
+the sole diagnostics-off Level 3 may run.
+
+Level 1 passes focused metadata/API/runtime `49/49`, full Python/formal
+repository `2828/2828`, current/reconciliation `40/40`, frontend generation
+and i18n (`8774`, 100% `zh`/`zh-TW`), compile, shell, security and diff checks.
+Exact-14/projected union-63 remain bounded and unauthorized-15 is rejected.
+
 ## P9-01D Inbox event replay identity repair
 
 Diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4` passes

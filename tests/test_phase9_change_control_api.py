@@ -304,7 +304,7 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
         self.assertFalse(
             self.api.ENGINEERING_CHANGE_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.api.ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
         )
         trace = "trace-" + "c" * 32
@@ -360,7 +360,11 @@ class Phase9ChangeControlApiTest(unittest.TestCase):
                 "cmd": "npi_core.change_control_api.close_engineering_change",
             }
         )
-        with patch.dict(
+        with patch.object(
+            self.api,
+            "ENGINEERING_CHANGE_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED",
+            True,
+        ), patch.dict(
             os.environ,
             {
                 "NPI_P9_01C_RUNTIME_ENABLED": "1",

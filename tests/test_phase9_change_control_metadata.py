@@ -6,6 +6,7 @@ import json
 import sys
 import types
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -81,26 +82,51 @@ class Phase9ChangeControlMetadataTest(unittest.TestCase):
         path = DOCTYPE_ROOT / "npi_engineering_change/npi_engineering_change.py"
         source = path.read_text(encoding="utf-8")
         tree = ast.parse(source)
-        function = next(
+        selected = [
             node
             for node in tree.body
-            if isinstance(node, ast.FunctionDef) and node.name == "_optional_value"
-        )
-        namespace: dict[str, object] = {}
+            if (
+                isinstance(node, ast.Assign)
+                and any(
+                    isinstance(target, ast.Name)
+                    and target.id == "_FORMAL_DATETIME_FIELDS"
+                    for target in node.targets
+                )
+            )
+            or (
+                isinstance(node, ast.FunctionDef)
+                and node.name in {"_optional_value", "_formal_comparison_value"}
+            )
+        ]
+        guard, _flags, _error_type = self._load_guard_module()
+        namespace: dict[str, object] = {
+            "_": lambda value: value,
+            "utc_datetime_text": guard.utc_datetime_text,
+        }
         exec(
             compile(
-                ast.Module(body=[function], type_ignores=[]),
+                ast.Module(body=selected, type_ignores=[]),
                 str(path),
                 "exec",
             ),
             namespace,
         )
         normalize = namespace["_optional_value"]
+        compare = namespace["_formal_comparison_value"]
         self.assertIsNone(normalize(None))
         self.assertIsNone(normalize(""))
         self.assertEqual(normalize("Engineering Change Request"), "Engineering Change Request")
+        observed = datetime(2026, 9, 1, 12, 30, tzinfo=UTC)
+        self.assertEqual(
+            compare("formal_change_source_modified_at", observed),
+            compare("formal_change_source_modified_at", "2026-09-01 12:30:00"),
+        )
+        self.assertEqual(
+            compare("formal_change_raw_status", "Open"),
+            "Open",
+        )
         self.assertIn(
-            "_optional_value(getattr(previous, name, None))",
+            "_formal_comparison_value(name, getattr(previous, name, None))",
             source,
         )
 

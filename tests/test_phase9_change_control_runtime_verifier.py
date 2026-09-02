@@ -240,7 +240,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_REPLAY_IDENTITY_REPAIR_DIAGNOSTICS_ENABLED
         )
-        self.assertTrue(
+        self.assertFalse(
             self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED
         )
         self.assertEqual(
@@ -266,7 +266,7 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
                     self.verifier.ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED,
                 )
             ),
-            1,
+            0,
         )
         self.assertEqual(len(self.verifier.ENGINEERING_CHANGE_RUNTIME_DIAGNOSTIC_CODES), 144)
         server_codes = set(
@@ -744,18 +744,23 @@ class Phase9ChangeControlRuntimeVerifierTest(unittest.TestCase):
             return result
 
         with patch.object(self.verifier, "request", side_effect=fake_request):
-            with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
-                self.verifier._command(
-                    object(),
-                    self.verifier.RUNTIME_BASE_URL,
-                    "/bounded",
-                    {},
-                    csrf_token="csrf",
-                    idempotency_key="key",
-                    label="close",
-                    expected_status=200,
-                    replayed=False,
-                )
+            with patch.object(
+                self.verifier,
+                "ENGINEERING_CHANGE_RUNTIME_POST_SUMMARY_ORDERING_REPAIR_DIAGNOSTICS_ENABLED",
+                True,
+            ):
+                with self.verifier.engineering_change_runtime_diagnostic_scope(trace):
+                    self.verifier._command(
+                        object(),
+                        self.verifier.RUNTIME_BASE_URL,
+                        "/bounded",
+                        {},
+                        csrf_token="csrf",
+                        idempotency_key="key",
+                        label="close",
+                        expected_status=200,
+                        replayed=False,
+                    )
             self.verifier._command(
                 object(),
                 self.verifier.RUNTIME_BASE_URL,

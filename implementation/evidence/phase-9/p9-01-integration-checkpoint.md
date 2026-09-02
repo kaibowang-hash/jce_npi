@@ -179,6 +179,30 @@ Level 1 passes focused `45/45`, full Python/formal repository `2828/2828`,
 current/reconciliation `40/40`, generation/i18n, compile, shell and diff
 checks. Exact-10/union-63 remain bounded and unauthorized-11 is rejected.
 
+### Close root-save compatibility repair
+
+Close diagnostic harness SHA `e7ec25df51a0c0e20734a0241eb8469a65001575`
+passes ordinary `33473366675`. Its bounded controlled continuation
+`33604786538` passes preflight `100166203654`; runtime `100166287249` returns
+only `P901_CHANGE_REVISE_REPOSITORY_ROOT_SAVE / PermissionError /
+trace-4e8170524143592caf9721192a5e6312`. Restricted integration output remains
+unread.
+
+The integration transaction and formal observation were already valid. The
+failure was a local root-controller comparison mismatch between Frappe's
+previous `datetime` object and the equal database string applied by the close
+repository. Canonicalizing those two Datetime values only for the permission
+comparison preserves ERP ownership, signed inbound facts, Inbox/Outbox,
+idempotency, replay, summary projection, contracts and operation ordering.
+There is no ERPNext or production change.
+
+All 39 diagnostic declarations are off. The cycle is diagnostic `1/1`, harness
+repair `1/1`, product repair `1/1`, final `0/1`; exact-SHA ordinary must pass
+before the sole diagnostics-off Level 3. Level 1 passes focused `49/49`, full
+repository `2828/2828`, current/reconciliation `40/40`, complete i18n and
+security/diff checks. Exact-14/union-63 remain bounded and unauthorized-15 is
+rejected.
+
 ## P9-01D Inbox replay identity repair
 
 Post-datetime diagnostic SHA `dfea79d20844cbccbada9de342e7623624ab24c4`

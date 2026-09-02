@@ -28,10 +28,25 @@ _FORMAL_FIELDS = (
     "formal_change_source_hash",
     "formal_change_observed_at",
 )
+_FORMAL_DATETIME_FIELDS = frozenset(
+    {"formal_change_source_modified_at", "formal_change_observed_at"}
+)
 
 
 def _optional_value(value: object) -> object | None:
     return None if value in (None, "") else value
+
+
+def _formal_comparison_value(fieldname: str, value: object) -> object | None:
+    value = _optional_value(value)
+    if value is None or fieldname not in _FORMAL_DATETIME_FIELDS:
+        return value
+    label = (
+        _("Formal Change Source Modified At")
+        if fieldname == "formal_change_source_modified_at"
+        else _("Formal Change Observed At")
+    )
+    return utc_datetime_text(value, label)
 
 
 class NPIEngineeringChange(Document):
@@ -75,8 +90,8 @@ class NPIEngineeringChange(Document):
         if self.optimistic_version != int(previous.optimistic_version) + 1 or self.current_revision_number != int(previous.current_revision_number) + 1:
             frappe.throw(_("The engineering change version must advance by exactly one."), frappe.ValidationError)
         if any(
-            _optional_value(getattr(self, name, None))
-            != _optional_value(getattr(previous, name, None))
+            _formal_comparison_value(name, getattr(self, name, None))
+            != _formal_comparison_value(name, getattr(previous, name, None))
             for name in _FORMAL_FIELDS
         ):
             require_change_observation_write()
