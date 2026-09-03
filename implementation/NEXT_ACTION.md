@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_06_AUDIT_AND_PLAN — P9-06`
+`IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-06`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -22,17 +22,17 @@ passes exact-SHA ordinary CI `33712753404` and diagnostics-off Level 3
 `33713119419`, including cumulative disposable runtime `100517575541` with
 `productionContact=false`; release-gate is PASS.
 
-Complete the P9-06 audit/plan transition for `FR-RP-010` and `NFR-COM-001`,
-push one governance checkpoint and require exact-SHA ordinary PASS. Then
-implement the frozen batch without waiting: a fixed Data Exchange capability
-catalog, two server-owned report datasets, operation-specific published export
-profiles, private immutable deterministic CSV/XLSX/PDF artifacts, explicit
-published retention-policy versions and append-only read-only archive records.
-Keep P6-07, P6-08, P5-06 and P9-05 independent. Do not add a generic writer,
-arbitrary query surface, production profile/policy, automatic deletion,
-browser/device print claim, production ERP/LaunchFlow contact or stage any
-user-owned dirty file. P9-06 marker: `P9-05 Level 3 PASS; P9-06 data exchange
-audit and plan active`.
+P9-06 governance SHA `ff34547d9cb4ffd441b3203cf92d37571230bb44`
+passes exact-SHA ordinary CI `33714911502` on attempt 2. The single product
+batch is implemented and local Level 2 passes `2970` repository tests and
+`1140` frontend tests, including fixed catalog, deterministic private package,
+published policy, append-only archive, three-language UI and runtime-verifier
+contracts. Push one candidate commit, require one exact-SHA ordinary CI PASS,
+then run one diagnostics-off Level 3 at the same SHA. P9-07 remains gated until
+both pass. Do not add another product batch, contact production ERP/LaunchFlow,
+activate a production profile/policy, delete history or stage any user-owned
+dirty file. P9-06 marker: `P9-06 implementation candidate; exact-SHA ordinary
+and Level 3 required`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

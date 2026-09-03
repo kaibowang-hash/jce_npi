@@ -7349,3 +7349,66 @@ textarea::placeholder {
     max-height: none;
   }
 }
+
+.data-exchange__grid {
+  display: grid;
+  gap: var(--npi-space-3);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.data-exchange__form {
+  align-items: end;
+  display: grid;
+  gap: var(--npi-space-2);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin-block: var(--npi-space-2);
+}
+
+/* The workspace follows the shell's intentionally stronger, earlier label rules. */
+/* stylelint-disable-next-line no-descending-specificity */
+.data-exchange__form label {
+  color: var(--npi-color-text-secondary);
+  display: grid;
+  font-size: var(--npi-typography-size-sm);
+  gap: var(--npi-space-1);
+}
+
+.data-exchange__form select {
+  background: var(--npi-color-surface-default);
+  border: var(--npi-border-default) solid var(--npi-color-border-strong);
+  border-radius: 0;
+  color: var(--npi-color-text-primary);
+  min-height: 2rem;
+  padding-inline: var(--npi-space-2);
+}
+
+.data-exchange__records {
+  border-block-start: var(--npi-border-default) solid
+    var(--npi-color-border-default);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The workspace follows the shell's intentionally stronger, earlier tree rules. */
+/* stylelint-disable-next-line no-descending-specificity */
+.data-exchange__records li {
+  align-items: center;
+  border-block-end: var(--npi-border-default) solid
+    var(--npi-color-border-default);
+  display: grid;
+  gap: var(--npi-space-2);
+  grid-template-columns: minmax(8rem, 0.8fr) minmax(12rem, 1fr) minmax(
+      8rem,
+      0.5fr
+    );
+  min-height: 2.25rem;
+  padding: var(--npi-space-1) var(--npi-space-2);
+}
+
+@media (width <= 760px) {
+  .data-exchange__records li {
+    align-items: start;
+    grid-template-columns: 1fr;
+  }
+}

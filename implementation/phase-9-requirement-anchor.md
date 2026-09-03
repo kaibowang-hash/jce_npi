@@ -199,3 +199,14 @@ LaunchFlow. The transition changes governance/evidence only. Product code is
 held until the transition passes exact-SHA ordinary CI, after which the frozen
 slice is delivered as one batch, one Level 2 and one final diagnostics-off
 Level 3.
+
+Governance SHA `ff34547d9cb4ffd441b3203cf92d37571230bb44` passes exact-SHA
+ordinary CI `33714911502` on attempt 2; its first attempt was only an existing
+P6-08 loading-state browser race and no product code changed. The authorized
+single batch now implements the fixed catalog, two report adapters, immutable
+five-member package, explicit policy versions and append-only archive records.
+Local Level 2 passes `2970` repository tests and `1140` frontend tests with
+`9322` English sources at complete direct `zh`/`zh-TW` coverage. The candidate
+remains incomplete until one exact-SHA ordinary CI and one diagnostics-off
+Level 3 pass at the same commit. P9-07 remains gated, and production ERPNext
+and LaunchFlow remain untouched.

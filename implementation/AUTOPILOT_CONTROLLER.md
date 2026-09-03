@@ -11713,3 +11713,26 @@ P9-01 Level 3.
   as one batch, one Level 2 and one final diagnostics-off Level 3 without
   per-family micro-commits or approval pauses.
 - Controller marker: `P9-05 Level 3 PASS; P9-06 data exchange audit and plan active`.
+
+## 2026-09-03 P9-06 implementation candidate; exact-SHA ordinary and Level 3 required
+
+- P9-06 governance SHA `ff34547d9cb4ffd441b3203cf92d37571230bb44`
+  passes exact-SHA ordinary CI `33714911502` on attempt 2. Attempt 1 exposed
+  only an existing P6-08 loading-state E2E race; no product change was made.
+- Deliver the frozen product in this single batch: a fixed catalog, only
+  `project_portfolio.v1` and `kpi_trends.v1`, published immutable profiles,
+  one deterministic bounded five-member private report package, explicit
+  published retention-policy versions and append-only exact-source archives.
+- Preserve P6-07, P6-08, P5-06, P9-02 and P9-05 as independent contracts.
+  Routes remain default-disabled; no profile/policy is seeded; automatic
+  deletion, purge, disposition and legal-hold precedence remain absent.
+- Local Level 2 passes `2970` repository tests and `1140` frontend tests.
+  Three-language P9-06 E2E passes `3/3`; `9322` literal English sources have
+  complete direct `zh`/`zh-TW` coverage. Runtime contract tests are PASS; the
+  governed Linux Level 3 must perform the actual cumulative Site migration and
+  P9-06 replay/stale/archive proof with `productionContact=false`.
+- Push one exact candidate. Require one ordinary CI PASS and then one
+  diagnostics-off Level 3 PASS at that same SHA. P9-07 remains gated until both
+  pass. Do not make a follow-on product batch, contact production ERPNext or
+  LaunchFlow, stage user-owned files, or weaken the existing gates.
+- Controller marker: `P9-06 implementation candidate; exact-SHA ordinary and Level 3 required`.

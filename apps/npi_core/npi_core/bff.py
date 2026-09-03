@@ -101,6 +101,21 @@ _ROUTES = {
     ("POST", "/api/npi/v1/administration/historical-migration-rehearsals"): (
         "npi_core.historical_migration_api.create_historical_migration_preview"
     ),
+    ("GET", "/api/npi/v1/administration/data-exchange"): (
+        "npi_core.data_exchange_api.get_data_exchange_workspace"
+    ),
+    ("POST", "/api/npi/v1/administration/data-exchange/profiles"): (
+        "npi_core.data_exchange_api.publish_data_exchange_profile"
+    ),
+    ("POST", "/api/npi/v1/administration/data-exchange/exports"): (
+        "npi_core.data_exchange_api.create_data_exchange_export"
+    ),
+    ("POST", "/api/npi/v1/administration/data-exchange/retention-policies"): (
+        "npi_core.data_exchange_api.publish_retention_policy"
+    ),
+    ("POST", "/api/npi/v1/administration/data-exchange/archive-records"): (
+        "npi_core.data_exchange_api.create_retention_archive"
+    ),
     ("GET", "/api/npi/v1/notifications"): (
         "npi_core.collaboration_api.get_notifications"
     ),
@@ -581,6 +596,10 @@ _HISTORICAL_MIGRATION_ROLLBACK_ROUTE = re.compile(
     r"^/api/npi/v1/administration/historical-migration-jobs/"
     r"(?P<job_id>[^/:]+):rollback$"
 )
+_DATA_EXCHANGE_EXPORT_CONTENT_ROUTE = re.compile(
+    r"^/api/npi/v1/administration/data-exchange/exports/"
+    r"(?P<export_id>[^/:]+):content$"
+)
 _PROJECT_TOOLING_LIST_PREFERENCE_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-list/preferences/"
     r"(?P<view_id>[^/:]+)$"
@@ -978,6 +997,11 @@ def route_request() -> None:
                 command = candidate
                 route_params = match.groupdict()
                 break
+    if command is None and request.method == "POST":
+        match = _DATA_EXCHANGE_EXPORT_CONTENT_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.data_exchange_api.download_data_exchange_export"
+            route_params = match.groupdict()
     if command is None and request.method == "GET":
         match = _PROJECT_ERP_PROJECTIONS_ROUTE.fullmatch(path)
         if match is not None:
@@ -2565,6 +2589,11 @@ def _normalize_pre_handler_problem(response, request) -> bool:
 
 
 def _requires_project_request_id(method: str, path: str) -> bool:
+    if method in {"GET", "POST"} and (
+        path == "/api/npi/v1/administration/data-exchange"
+        or path.startswith("/api/npi/v1/administration/data-exchange/")
+    ):
+        return True
     if method in {"GET", "POST"} and (
         path == "/api/npi/v1/administration/historical-migration-rehearsals"
         or _HISTORICAL_MIGRATION_EXECUTE_ROUTE.fullmatch(path) is not None

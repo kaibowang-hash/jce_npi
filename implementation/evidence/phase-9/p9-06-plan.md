@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `AUDIT COMPLETE — PRODUCT HELD UNTIL EXACT-SHA ORDINARY PASS`
+Status: `IMPLEMENTATION CANDIDATE — FINAL EXACT-SHA ORDINARY AND LEVEL 3 REQUIRED`
 
 Requirements: `FR-RP-010`, `NFR-COM-001`
 
@@ -151,3 +151,20 @@ Rollback disables the routes and reverts only the independent P9-06 code and
 schema paths. Every published policy, export artifact, archive record, receipt
 and audit row is retained as invalidated history; repair is a successor profile,
 policy or forward correction, never destructive deletion.
+
+## Implemented candidate
+
+The governance transition at exact SHA
+`ff34547d9cb4ffd441b3203cf92d37571230bb44` passed ordinary CI
+`33714911502` on attempt 2. The first attempt exposed only an existing P6-08
+loading-state E2E race; the exact-SHA rerun passed without a product change.
+That PASS authorized the single P9-06 product batch now recorded in
+`p9-06-validation.md`.
+
+The candidate implements the frozen slice without changing the audited
+specialized flows. Its independent routes remain disabled unless the Site
+configuration contains the exact value `npi_p9_06_routes_disabled=false`. No
+profile or retention policy is seeded, no automatic disposition exists, and no
+production LaunchFlow or ERPNext connection was made. Final completion remains
+strictly external: one exact-SHA ordinary CI PASS followed by one diagnostics-off
+Level 3 PASS at the same candidate SHA.

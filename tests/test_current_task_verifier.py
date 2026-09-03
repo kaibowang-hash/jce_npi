@@ -36,7 +36,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-06")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_06_AUDIT_AND_PLAN")
+        self.assertEqual(
+            value["status"],
+            "IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED",
+        )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-07")
         self.assertEqual(
@@ -59,7 +62,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-06",
                 "active_goal_marker": "P9-06",
                 "next_action_marker": "P9-06",
-                "controller_marker": "P9-05 Level 3 PASS; P9-06 data exchange audit and plan active",
+                "controller_marker": "P9-06 implementation candidate; exact-SHA ordinary and Level 3 required",
             },
         )
         for invariant in (

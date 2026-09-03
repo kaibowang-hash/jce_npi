@@ -7756,6 +7756,183 @@ paths:
         "500": { $ref: "#/components/responses/InternalError" }
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
 
+  /administration/data-exchange:
+    get:
+      tags: [Administration]
+      operationId: getDataExchangeWorkspace
+      description: Returns the bounded System Manager capability catalog, published profiles and policies, immutable exports and append-only archive truth. No generic writer or automatic disposition exists.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Closed Data Exchange workspace
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataExchangeWorkspace" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/data-exchange/profiles:
+    post:
+      tags: [Administration]
+      operationId: publishDataExchangeProfile
+      description: Publishes one immutable operation-specific profile for exactly one server-owned reporting dataset and its allowlisted columns.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: data-exchange-profile-publish
+      x-audit-operation: data_exchange.profile.publish
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PublishDataExchangeProfile" }
+      responses:
+        "201":
+          description: Published immutable profile or actor-bound idempotent replay
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataExchangeProfile" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/data-exchange/exports:
+    post:
+      tags: [Administration]
+      operationId: createDataExchangeReportExport
+      description: Generates one private immutable deterministic report package from the exact published profile and permission-filtered reporting snapshot.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: data-exchange-report-export
+      x-audit-operation: data_exchange.export.create
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateDataExchangeExport" }
+      responses:
+        "201":
+          description: Durable export truth or actor-bound idempotent replay
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataExchangeExport" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/data-exchange/exports/{exportId}:content:
+    post:
+      tags: [Administration]
+      operationId: downloadDataExchangeReportExport
+      description: Downloads only the exact private snapshot-bound package as an attachment after package-hash validation.
+      x-required-roles: [System Manager]
+      parameters:
+        - name: exportId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DownloadDataExchangeExport" }
+      responses:
+        "200":
+          description: Exact private ZIP attachment
+          content:
+            application/zip:
+              schema: { type: string, format: binary }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/data-exchange/retention-policies:
+    post:
+      tags: [Administration]
+      operationId: publishRetentionPolicyVersion
+      description: Publishes one explicit immutable scope/effectivity policy with a retention duration for every controlled category; no default or precedence is inferred.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: retention-policy-publish
+      x-audit-operation: data_exchange.retention_policy.publish
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PublishRetentionPolicy" }
+      responses:
+        "201":
+          description: Published immutable policy version
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RetentionPolicyVersion" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/data-exchange/archive-records:
+    post:
+      tags: [Administration]
+      operationId: createRetentionArchiveRecord
+      description: Appends a read-only archive record binding an allowlisted exact immutable source to one explicitly selected effective policy version. It never changes or disposes the source.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: retention-archive-append
+      x-audit-operation: data_exchange.archive.create
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateRetentionArchiveRecord" }
+      responses:
+        "201":
+          description: Append-only archive record or actor-bound idempotent replay
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RetentionArchiveRecord" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -24666,6 +24843,242 @@ components:
           maxItems: 3
           uniqueItems: true
           items: { type: string, enum: [due_reminder, overdue_escalation, gate_attention] }
+    PublishDataExchangeProfile:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, datasetId, columns, language, redactionProfile, query, maxRows, maxBytes]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        datasetId: { type: string, enum: [project_portfolio.v1, kpi_trends.v1] }
+        columns:
+          type: array
+          minItems: 1
+          maxItems: 10
+          uniqueItems: true
+          items: { type: string, maxLength: 64 }
+        language: { type: string, enum: [en, zh, zh-TW] }
+        redactionProfile: { type: string, enum: [internal_report.v1, minimum_disclosure.v1] }
+        query:
+          type: object
+          additionalProperties: false
+          properties:
+            customerReferenceKey: { type: [string, "null"], maxLength: 128 }
+            ownerUserId: { type: [string, "null"], maxLength: 128 }
+            projectType: { type: [string, "null"], maxLength: 128 }
+            factoryReferenceKey: { type: [string, "null"], maxLength: 128 }
+            sopMonth: { type: [string, "null"], maxLength: 7 }
+            lifecycleState: { type: [string, "null"], maxLength: 128 }
+            fromMonth: { type: [string, "null"], maxLength: 7 }
+            toMonth: { type: [string, "null"], maxLength: 7 }
+        maxRows: { type: integer, minimum: 1, maximum: 5000 }
+        maxBytes: { type: integer, minimum: 10000, maximum: 8000000 }
+    DataExchangeProfile:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, version, datasetId, columns, language, redactionProfile, query, outputs, maxRows, maxBytes, publishedByUserId, publishedAt, definitionHash]
+      properties:
+        schemaVersion: { type: string, const: data-exchange-export-profile.v1 }
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        datasetId: { type: string, enum: [project_portfolio.v1, kpi_trends.v1] }
+        columns:
+          type: array
+          minItems: 1
+          maxItems: 10
+          uniqueItems: true
+          items: { type: string, maxLength: 64 }
+        language: { type: string, enum: [en, zh, zh-TW] }
+        redactionProfile: { type: string, enum: [internal_report.v1, minimum_disclosure.v1] }
+        query:
+          type: object
+          additionalProperties: false
+          properties:
+            customerReferenceKey: { type: [string, "null"], maxLength: 128 }
+            ownerUserId: { type: [string, "null"], maxLength: 128 }
+            projectType: { type: [string, "null"], maxLength: 128 }
+            factoryReferenceKey: { type: [string, "null"], maxLength: 128 }
+            sopMonth: { type: [string, "null"], maxLength: 7 }
+            lifecycleState: { type: [string, "null"], maxLength: 128 }
+            fromMonth: { type: [string, "null"], maxLength: 7 }
+            toMonth: { type: [string, "null"], maxLength: 7 }
+        outputs:
+          type: array
+          prefixItems:
+            - { const: csv }
+            - { const: xlsx }
+            - { const: pdf }
+            - { const: readme }
+          minItems: 4
+          maxItems: 4
+        maxRows: { type: integer, minimum: 1, maximum: 5000 }
+        maxBytes: { type: integer, minimum: 10000, maximum: 8000000 }
+        publishedByUserId: { type: string, maxLength: 254 }
+        publishedAt: { type: string, format: date-time }
+        definitionHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    CreateDataExchangeExport:
+      type: object
+      additionalProperties: false
+      required: [profileId, profileVersion, profileHash]
+      properties:
+        profileId: { type: string, format: uuid }
+        profileVersion: { type: integer, minimum: 1 }
+        profileHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    DownloadDataExchangeExport:
+      type: object
+      additionalProperties: false
+      required: [expectedPackageHash]
+      properties:
+        expectedPackageHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    DataExchangeExport:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, tenantId, datasetId, profileGlobalId, profileVersion, profileHash, sourceHash, dataHash, rowCount, artifact, createdByUserId, createdAt, requestId, traceId, privateFileBound, recordHash]
+      properties:
+        schemaVersion: { type: string, const: data-exchange-export.v1 }
+        globalId: { type: string, format: uuid }
+        tenantId: { type: string }
+        datasetId: { type: string, enum: [project_portfolio.v1, kpi_trends.v1] }
+        profileGlobalId: { type: string, format: uuid }
+        profileVersion: { type: integer, minimum: 1 }
+        profileHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        dataHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        rowCount: { type: integer, minimum: 0, maximum: 5000 }
+        artifact:
+          type: object
+          additionalProperties: false
+          required: [fileName, mimeType, sizeBytes, sha256, manifestSha256]
+          properties:
+            fileName: { type: string }
+            mimeType: { type: string, const: application/zip }
+            sizeBytes: { type: integer, minimum: 1, maximum: 8000000 }
+            sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+            manifestSha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        createdByUserId: { type: string }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string }
+        privateFileBound: { type: boolean, const: true }
+        recordHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    PublishRetentionPolicy:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, scope, effectiveFrom, retentionYears]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        scope: { type: string, enum: [tenant, customer_reference, regulation_reference] }
+        scopeReference: { type: [string, "null"], maxLength: 128 }
+        effectiveFrom: { type: string, format: date }
+        effectiveUntil: { type: [string, "null"], format: date }
+        retentionYears:
+          type: object
+          additionalProperties: false
+          required: [project, quality, change, file, data_exchange_export, controlled_print]
+          properties:
+            project: { type: integer, minimum: 1, maximum: 100 }
+            quality: { type: integer, minimum: 1, maximum: 100 }
+            change: { type: integer, minimum: 1, maximum: 100 }
+            file: { type: integer, minimum: 1, maximum: 100 }
+            data_exchange_export: { type: integer, minimum: 1, maximum: 100 }
+            controlled_print: { type: integer, minimum: 1, maximum: 100 }
+    RetentionPolicyVersion:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, version, scope, scopeReference, effectiveFrom, effectiveUntil, retentionYears, publishedByUserId, publishedAt, definitionHash]
+      properties:
+        schemaVersion: { type: string, const: retention-policy.v1 }
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        scope: { type: string, enum: [tenant, customer_reference, regulation_reference] }
+        scopeReference: { type: [string, "null"], maxLength: 128 }
+        effectiveFrom: { type: string, format: date }
+        effectiveUntil: { type: [string, "null"], format: date }
+        retentionYears:
+          type: object
+          additionalProperties: false
+          required: [project, quality, change, file, data_exchange_export, controlled_print]
+          properties:
+            project: { type: integer, minimum: 1, maximum: 100 }
+            quality: { type: integer, minimum: 1, maximum: 100 }
+            change: { type: integer, minimum: 1, maximum: 100 }
+            file: { type: integer, minimum: 1, maximum: 100 }
+            data_exchange_export: { type: integer, minimum: 1, maximum: 100 }
+            controlled_print: { type: integer, minimum: 1, maximum: 100 }
+        publishedByUserId: { type: string }
+        publishedAt: { type: string, format: date-time }
+        definitionHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    CreateRetentionArchiveRecord:
+      type: object
+      additionalProperties: false
+      required: [globalId, sourceKind, sourceId, sourceVersion, sourceHash, policyId, policyVersion, policyHash, scope]
+      properties:
+        globalId: { type: string, format: uuid }
+        sourceKind: { type: string, enum: [project, quality_revision, change_revision, file_revision, data_exchange_export, controlled_print] }
+        sourceId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        policyId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        scope: { type: string, enum: [tenant, customer_reference, regulation_reference] }
+        scopeReference: { type: [string, "null"], maxLength: 128 }
+    RetentionArchiveRecord:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, tenantId, sourceKind, category, sourceId, sourceVersion, sourceHash, sourceDate, sourceSnapshot, policyId, policyVersion, policyHash, retainUntil, createdByUserId, createdAt, requestId, traceId, recordHash]
+      properties:
+        schemaVersion: { type: string, const: retention-archive-record.v1 }
+        globalId: { type: string, format: uuid }
+        tenantId: { type: string }
+        sourceKind: { type: string, enum: [project, quality_revision, change_revision, file_revision, data_exchange_export, controlled_print] }
+        category: { type: string, enum: [project, quality, change, file, data_exchange_export, controlled_print] }
+        sourceId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sourceDate: { type: string, format: date }
+        sourceSnapshot: { type: object }
+        policyId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        retainUntil: { type: string, format: date }
+        createdByUserId: { type: string }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string }
+        recordHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    DataExchangeWorkspace:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, mode, routesEnabled, productionContact, genericWriterAvailable, automaticDispositionAvailable, capabilities, profiles, exports, retentionPolicies, archiveRecords]
+      properties:
+        schemaVersion: { type: string, const: data-exchange.v1 }
+        mode: { type: string, const: closed_operation_specific }
+        routesEnabled: { type: boolean }
+        productionContact: { type: boolean, const: false }
+        genericWriterAvailable: { type: boolean, const: false }
+        automaticDispositionAvailable: { type: boolean, const: false }
+        capabilities:
+          type: array
+          maxItems: 6
+          items: { type: object }
+        profiles:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/DataExchangeProfile" }
+        exports:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/DataExchangeExport" }
+        retentionPolicies:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/RetentionPolicyVersion" }
+        archiveRecords:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/RetentionArchiveRecord" }
     ProblemDetails:
       type: object
       additionalProperties: false

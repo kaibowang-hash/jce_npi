@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T14:55:00+07:00'
+updated_at: '2026-09-03T12:16:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-06
-current_task_status: IN_PROGRESS_P9_06_AUDIT_AND_PLAN
-current_task_completed_stage: P9_05_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
-current_task_next_stage: P9_06_AUDIT_PLAN_EXACT_SHA_ORDINARY
-current_task_next_stage_status: IN_PROGRESS_GOVERNANCE_TRANSITION
+current_task_status: IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
+current_task_completed_stage: P9_06_LOCAL_LEVEL_2_PASS
+current_task_next_stage: P9_06_EXACT_SHA_ORDINARY_THEN_LEVEL_3
+current_task_next_stage_status: PENDING_CANDIDATE_PUSH
 resumed_product_task: P9-06
-resumed_product_task_status: AUDIT_AND_PLAN_PRODUCT_HELD
+resumed_product_task_status: IMPLEMENTATION_CANDIDATE_GATED
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -3356,19 +3356,33 @@ p9_05:
   next_gate: COMPLETE
 p9_06:
   task: P9-06
-  status: IN_PROGRESS_AUDIT_AND_PLAN
+  status: IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
   predecessor_product_checkpoint: 22cc20294f37a21a64b00d6d6f2975e2988880f8
+  governance_checkpoint: ff34547d9cb4ffd441b3203cf92d37571230bb44
+  governance_ordinary: 33714911502
+  governance_ordinary_result: PASS_ATTEMPT_2_NO_PRODUCT_CHANGE_AFTER_EXISTING_P6_08_E2E_RACE
   plan: implementation/evidence/phase-9/p9-06-plan.md
   validation: implementation/evidence/phase-9/p9-06-validation.md
   requirements: [FR-RP-010, NFR-COM-001]
   existing_specialized_flows: [P6_07_TOOLING_IMPORT, P6_08_TOOLING_EXPORT, P5_06_CONTROLLED_PRINT, P9_02_REPORTING, P9_05_HISTORICAL_REHEARSAL]
   compatibility_decision: DIRECT_MATCH_EXISTING_FLOWS_PLUS_MINIMAL_ADDITIVE_DATA_EXCHANGE_AND_RETENTION_FOUNDATION
-  product_code_authorized: false
+  product_code_authorized: true
+  route_switch: npi_p9_06_routes_disabled
+  route_switch_default: disabled
+  report_datasets: [project_portfolio.v1, kpi_trends.v1]
+  package_schema: data-exchange-report-package.v1
+  retention_policy_schema: retention-policy.v1
+  archive_record_schema: retention-archive-record.v1
+  repository_level_2: 2970_PASS
+  frontend_level_2: 1140_PASS
+  frontend_coverage: {statements: 80.06, branches: 79.49, functions: 82.09, lines: 82.64}
+  localization: 9322_LITERAL_SOURCES_100_PERCENT_ZH_ZH_TW
+  implementation_candidate: PENDING_COMMIT
   production_profile_authorized: false
   production_retention_policy_authorized: false
   automatic_disposition_authorized: false
   production_erp_contact: false
-  next_gate: AUDIT_PLAN_EXACT_SHA_ORDINARY
+  next_gate: FINAL_EXACT_SHA_ORDINARY_THEN_LEVEL_3
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3396,4 +3410,4 @@ phases:
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05], current_task: P9-06}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05], current_task: P9-06, current_task_status: IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED}

@@ -40,6 +40,7 @@ const PortfolioPage = lazy(() => import("../pages/portfolio-page"));
 const HistoricalMigrationRoute = lazy(
   () => import("./historical-migration-route"),
 );
+const DataExchangeRoute = lazy(() => import("./data-exchange-route"));
 const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
 const liveReportingDataSource = new LiveReportingDataSource();
 const liveCollaborationDataSource = new LiveCollaborationDataSource();
@@ -198,15 +199,20 @@ export function App(): React.JSX.Element {
       <ExecutionPrototypePage scenario={route.scenario} />
     ) : route.screen === "portfolio" && route.reportingView === "migration" ? (
       <HistoricalMigrationRoute />
+    ) : route.screen === "portfolio" &&
+      route.reportingView === "data_exchange" ? (
+      <DataExchangeRoute />
     ) : route.screen === "portfolio" ? (
       <PortfolioPage
         dataSource={liveReportingDataSource}
         key={route.reportingView}
         navigate={guardedNavigate}
         view={
-          route.reportingView === "migration"
-            ? "configuration"
-            : (route.reportingView ?? "portfolio")
+          route.reportingView === "kpis"
+            ? "kpis"
+            : route.reportingView === "configuration"
+              ? "configuration"
+              : "portfolio"
         }
       />
     ) : route.workMode === "demo" ? (

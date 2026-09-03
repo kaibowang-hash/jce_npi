@@ -38,6 +38,7 @@ const approvedPathPatterns = [
   /^\/reports\/?$/u,
   /^\/administration\/?$/u,
   /^\/administration\/migration-rehearsal\/?$/u,
+  /^\/administration\/data-exchange\/?$/u,
   /^\/demo\/work\/?$/u,
   new RegExp(`^/demo/projects/${fixtureRouteSegment}/?$`, "u"),
   new RegExp(
@@ -76,7 +77,13 @@ export interface AppRoute {
   toolingMode: "live" | "demo" | null;
   toolingWorkspace: "cockpit" | "import";
   trialMode: "live" | "demo" | null;
-  reportingView: "portfolio" | "kpis" | "configuration" | "migration" | null;
+  reportingView:
+    | "portfolio"
+    | "kpis"
+    | "configuration"
+    | "migration"
+    | "data_exchange"
+    | null;
 }
 
 function parseScenario(value: string | null): Scenario {
@@ -167,7 +174,9 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
         ? "configuration"
         : /^\/administration\/migration-rehearsal\/?$/u.test(pathname)
           ? "migration"
-          : null;
+          : /^\/administration\/data-exchange\/?$/u.test(pathname)
+            ? "data_exchange"
+            : null;
   const screen: ScreenId = reportingView
     ? "portfolio"
     : liveIntegrationOperationsMatch

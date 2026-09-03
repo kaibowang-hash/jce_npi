@@ -9182,3 +9182,141 @@ Source Row Hash,來源資料列雜湊
 Created By Historical Migration Job,由歷史遷移作業建立
 Binding State,綁定狀態
 forward_correction_required,需要向前更正
+NPI Data Exchange Profile,NPI 資料交換設定
+NPI Data Exchange Export,NPI 資料交換匯出
+NPI Retention Policy Version,NPI 保留政策版本
+NPI Retention Archive Record,NPI 保留封存記錄
+Data Exchange Profile,資料交換設定
+Dataset,資料集
+Profile Version,設定版本
+Redaction Profile,遮蔽設定
+Maximum Rows,最大資料列數
+Maximum Bytes,最大位元組數
+Profile Definition,設定定義
+Profile Hash,設定雜湊
+Artifact File,產出檔案
+Data Hash,資料雜湊
+Row Count,資料列數
+Execution Key Hash,執行鍵雜湊
+Export Snapshot,匯出快照
+Policy Definition,政策定義
+Policy Hash,政策雜湊
+Scope Reference,範圍參照
+Effective Until,生效截止日期
+Source Kind,來源類型
+Retention Category,保留類別
+Source Date,來源日期
+Retention Policy Version,保留政策版本
+Retain Until,保留截止日期
+Archive Snapshot,封存快照
+project_portfolio.v1,專案組合 v1
+kpi_trends.v1,關鍵指標趨勢 v1
+internal_report.v1,內部報告 v1
+minimum_disclosure.v1,最小揭露 v1
+tenant,租戶
+customer_reference,客戶參照
+regulation_reference,法規參照
+quality,品質
+change,變更
+file,檔案
+data_exchange_export,資料交換匯出
+controlled_print,受控列印
+quality_revision,品質修訂
+change_revision,變更修訂
+"The Data Exchange definition or source changed after it was reviewed.",資料交換定義或來源在審查後發生變更。
+Reload the exact version and try the operation again.,重新載入精確版本後重試此操作。
+The requested Data Exchange record is unavailable.,要求的資料交換記錄無法使用。
+Data Exchange is temporarily unavailable.,資料交換暫時無法使用。
+The Data Exchange routes are disabled by Site configuration.,資料交換路由已由站台設定停用。
+Select a supported export profile value.,請選擇支援的匯出設定值。
+Select unique allowed columns for the dataset.,請選擇此資料集允許且不重複的欄位。
+The export query contains unsupported fields.,匯出查詢包含不支援的欄位。
+The export query fields must be unique.,匯出查詢欄位不得重複。
+KPI exports require an exact month range.,關鍵指標匯出需要精確的月份範圍。
+The export query contains unsupported values.,匯出查詢包含不支援的值。
+Enter a positive profile version.,請輸入正數設定版本。
+Enter an export row limit from 1 to 5000.,請輸入 1 到 5000 的匯出資料列上限。
+Enter an export byte limit from 10000 to 8000000.,請輸入 10000 到 8000000 的匯出位元組上限。
+The export profile hash does not match.,匯出設定雜湊不相符。
+Select a supported retention scope.,請選擇支援的保留範圍。
+A tenant policy cannot include a scope reference.,租戶政策不能包含範圍參照。
+Enter the exact policy scope reference.,請輸入精確的政策範圍參照。
+Enter a valid policy start date.,請輸入有效的政策開始日期。
+Enter an end date after the policy start date.,請輸入晚於政策開始日期的結束日期。
+Enter retention years for every controlled category.,請為每個受控類別輸入保留年數。
+Enter retention years from 1 to 100.,請輸入 1 到 100 的保留年數。
+Enter a positive policy version.,請輸入正數政策版本。
+The retention policy hash does not match.,保留政策雜湊不相符。
+Enter an exact immutable archive source.,請輸入精確且不可變的封存來源。
+Data Exchange records can only change through the governed commands.,資料交換記錄只能透過受治理的命令變更。
+Data Exchange history cannot be deleted.,資料交換歷史不能刪除。
+Select at least one supported column.,請至少選擇一個支援的欄位。
+Owner user ID,負責人使用者識別碼
+Current health status,目前健康狀態
+Open work count,未結工作數
+Current gate,目前階段門
+ERP availability,企業資源規劃可用性
+Metric key,指標鍵
+Month,月份
+Data Exchange report package,資料交換報告包
+Generated from a permission-filtered report snapshot.,由經過權限篩選的報告快照產生。
+Dataset: {dataset_id},資料集：{dataset_id}
+Profile: {profile_id} version {profile_version},設定：{profile_id} 版本 {profile_version}
+"The package contains CSV, XLSX and controlled PDF renderings.",此報告包包含逗號分隔值、試算表和受控可攜式文件格式呈現。
+All spreadsheet text is protected from formula execution.,所有試算表文字均已防止公式執行。
+Open Data Exchange,開啟資料交換
+Open governed report export and retention administration.,開啟受治理的報告匯出與保留管理。
+Retention,保留
+Publishing export profile,正在發佈匯出設定
+Creating report package,正在建立報告包
+Downloading report package,正在下載報告包
+Publishing retention policy,正在發佈保留政策
+Creating archive record,正在建立封存記錄
+Data Exchange,資料交換
+"Publish bounded report profiles and retention policies, then inspect immutable export and archive truth.",發佈有界報告設定和保留政策，然後檢查不可變的匯出與封存事實。
+Routes enabled,路由已啟用
+Routes disabled,路由已停用
+Loading Data Exchange workspace,正在載入資料交換工作區
+Data Exchange workspace unavailable,資料交換工作區無法使用
+Capability catalog,能力目錄
+Existing specialized exchanges remain independent. Only the two reporting datasets can be exported here.,現有專用交換保持獨立。此處只能匯出兩個報告資料集。
+Exportable here,可在此匯出
+Report export profile,報告匯出設定
+Independent specialized operation,獨立專用操作
+Published export profiles,已發佈的匯出設定
+Maximum rows,最大資料列數
+From month,起始月份
+To month,結束月份
+Publish profile,發佈設定
+No export profiles are published.,尚未發佈匯出設定。
+Published at,發佈時間
+Create package,建立報告包
+The newest selected profile is hash-bound and immutable.,最新選定設定已綁定雜湊且不可變。
+Immutable exports,不可變匯出
+No report packages have been created.,尚未建立報告包。
+Rows,資料列數
+Published retention policies,已發佈的保留政策
+No default policy or precedence is inferred. Every archive binds one exact policy version.,不推斷預設政策或優先順序。每個封存都綁定一個精確的政策版本。
+Tenant,租戶
+Regulation reference,法規參照
+Scope reference,範圍參照
+Retention years,保留年數
+Publish policy,發佈政策
+No retention policies are published.,尚未發佈保留政策。
+Append-only archive records,僅附加封存記錄
+"Creating an archive record never changes, deletes or disposes the source.",建立封存記錄絕不會變更、刪除或處置來源。
+Source ID,來源識別碼
+Create archive record,建立封存記錄
+No archive records have been created.,尚未建立封存記錄。
+Retain until,保留截止日期
+The Data Exchange export snapshot is invalid.,資料交換匯出快照無效。
+Data Exchange exports are immutable.,資料交換匯出不可變。
+The Data Exchange profile definition is invalid.,資料交換設定定義無效。
+Published Data Exchange profiles are immutable.,已發佈的資料交換設定不可變。
+The retention archive snapshot is invalid.,保留封存快照無效。
+Retention archive records are immutable.,保留封存記錄不可變。
+The retention policy definition is invalid.,保留政策定義無效。
+Published retention policies are immutable.,已發佈的保留政策不可變。
+Project portfolio dataset,專案組合資料集
+KPI trends dataset,關鍵指標趨勢資料集
+KPI exports require a range of no more than 24 months.,關鍵指標匯出要求月份範圍不超過 24 個月。

@@ -340,7 +340,9 @@ export function AppShell({
       screen: "portfolio",
       active:
         route.screen === "portfolio" &&
-        ["configuration", "migration"].includes(route.reportingView ?? ""),
+        ["configuration", "migration", "data_exchange"].includes(
+          route.reportingView ?? "",
+        ),
     },
   ];
   const commands = useMemo<readonly ShellCommand[]>(
@@ -386,6 +388,16 @@ export function AppShell({
         icon: "history",
         keywords: [t("Administration"), t("Migration"), t("Rehearsal")],
         target: "/administration/migration-rehearsal",
+      },
+      {
+        id: "data-exchange",
+        label: t("Open Data Exchange"),
+        description: t(
+          "Open governed report export and retention administration.",
+        ),
+        icon: "document",
+        keywords: [t("Administration"), t("Export"), t("Retention")],
+        target: "/administration/data-exchange",
       },
       {
         id: "project",
