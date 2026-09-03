@@ -39,6 +39,14 @@ and the Frappe Datetime controller shape. Repository verification covers the
 full Python suite, OpenAPI/ownership contracts, symmetric `zh`/`zh-TW`
 catalogs, current-task scope and reconciliation.
 
+The first exact-SHA ordinary candidate run `33701715690` was not accepted:
+all independent repository, secret, visual and E2E lanes passed, while the
+frontend lane correctly rejected stale generated React catalogs after the
+new Frappe CSV messages were added. The single repair batch regenerates only
+the three affected React catalog artifacts, records them in task scope and
+adds the catalog freshness check to Level 1. A later exact-SHA ordinary run
+must replace, not reinterpret, this failed candidate.
+
 The cumulative disposable local Frappe v15 `--projection-only` gate passes
 after a fresh guarded Site rebuild. It proves all retained P5 through P9-03
 predecessor migrations, route-disable/recovery and cross-process replay paths,

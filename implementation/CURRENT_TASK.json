@@ -69,6 +69,9 @@
     "contracts/npi-api.openapi.yaml",
     "docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md",
     "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
+    "frontend/src/generated/catalog-version.ts",
+    "frontend/src/generated/catalog-zh-TW.ts",
+    "frontend/src/generated/catalog-zh.ts",
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/evidence/phase-9/p9-03-plan.md",
     "implementation/evidence/phase-9/p9-03-validation.md",
@@ -93,6 +96,7 @@
     "level_1": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_phase9_authorization_projection_api", "tests.test_phase9_authorization_projection_domain", "tests.test_phase9_authorization_projection_metadata", "tests.test_phase9_authorization_projection_repository", "tests.test_phase9_authorization_projection_runtime_verifier", "tests.test_phase9_authorization_projection_security", "-v"],
+      ["npm", "--prefix", "frontend", "run", "generate:check"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
