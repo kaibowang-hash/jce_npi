@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T13:23:09+07:00`
+Updated: `2026-09-03T14:26:50+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_07_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-07`
+- Mode: `IN_PROGRESS_P9_07_CUMULATIVE_P803_DIAGNOSTIC_EXACT_SHA_GATES_REQUIRED — P9-07`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -50,9 +50,14 @@ Updated: `2026-09-03T13:23:09+07:00`
   a generic deploy/restore tool and does not contact production ERPNext,
   `jce.1`, production LaunchFlow or an external target. Production schedule,
   storage, key custody, RPO/RTO and sign-off remain IT/business owned. The
-  candidate now requires one exact-SHA ordinary CI and the sole diagnostics-off
-  Level 3. Controller marker: `P9-07 implementation candidate; exact-SHA
-  ordinary and Level 3 required`.
+  candidate exact SHA `3bc42d9f6cb5bdf684507d366970b8b6b0e0bcdd`
+  passes ordinary CI `33724852712`. Its replacement Level 3 runs
+  `33725286182` and `33726821321` both pass every static/frontend/preflight
+  lane, then stop at the same historical P8-03 migrated-legacy problem-code
+  assertion before P9-07 executes. Enable only the existing value-free closed
+  classifier, require one exact-SHA ordinary PASS and one diagnostic-only Site,
+  then batch the uniquely proved minimal repair or no-change closure. Controller
+  marker: `P9-07 cumulative P8-03 migrated-legacy classifier active; exact-SHA ordinary and one diagnostic-only controlled Site required`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

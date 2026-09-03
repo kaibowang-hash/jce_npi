@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_07_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-07`
+`IN_PROGRESS_P9_07_CUMULATIVE_P803_DIAGNOSTIC_EXACT_SHA_GATES_REQUIRED — P9-07`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -27,19 +27,19 @@ passes exact-SHA ordinary CI `33719574371` and the sole diagnostics-off Level 3
 `33719982252`. Cumulative disposable runtime `100538152787`, cleanup and
 `productionContact=false` pass; release-gate is PASS.
 
-P9-07 governance SHA `6c3c30a25138dfdc4e26b0ea20056314b670882a`
-passes exact-SHA ordinary CI `33721621988`. The one-batch fixed disposable-Site
-rehearsal and operator runbook are implemented. Focused tests pass `11/11` and
-repository Level 2 passes `2981/2981`; no production or external target was
-contacted. Commit and push this exact candidate, require one exact-SHA ordinary
-CI PASS, then dispatch the sole diagnostics-off Level 3. Accept P9-07 only when
-the cumulative runtime proves real full backup, meaningful database/public/
-private restore, two migrations, exact forward-fix identity, cleanup and
-`productionContact=false`. Keep production schedule, storage, encryption
-custody, RPO/RTO and execution held. Do not change CI, add a generic executor,
-contact `jce.1`/production LaunchFlow or stage user-owned dirty files. P9-07
-marker: `P9-07 implementation candidate; exact-SHA ordinary and Level 3
-required`.
+P9-07 candidate SHA `3bc42d9f6cb5bdf684507d366970b8b6b0e0bcdd`
+passes ordinary CI `33724852712`. Level 3 `33725286182` and same-SHA rerun
+`33726821321` both pass all static, frontend, E2E, visual, secret and preflight
+lanes, then stop at the same historical P8-03 migrated-legacy problem-code
+assertion before P9-07 runs. Commit only the existing fixed value-free P8-03
+classifier activation plus governance truth, push, require exact-SHA ordinary
+PASS and run one `diagnostic_only` controlled Site reusing that ordinary run.
+Use its single allowlisted code/type/trace tuple for one batched minimal repair,
+or close without product change if the failure does not reproduce. Then close
+the classifier and reserve one final diagnostics-off Level 3. Do not inspect
+raw response data, change CI, contact production or stage user-owned files.
+P9-07 marker: `P9-07 cumulative P8-03 migrated-legacy classifier active;
+exact-SHA ordinary and one diagnostic-only controlled Site required`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

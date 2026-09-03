@@ -11811,3 +11811,26 @@ P9-01 Level 3.
   sole diagnostics-off Level 3 at that SHA. Do not fragment the task, change
   CI, stage user-owned files or activate P9-08 until both gates pass.
 - Controller marker: `P9-07 implementation candidate; exact-SHA ordinary and Level 3 required`.
+
+## 2026-09-03 P9-07 cumulative P8-03 migrated-legacy classifier active
+
+- P9-07 fix SHA `3bc42d9f6cb5bdf684507d366970b8b6b0e0bcdd`
+  passes exact-SHA ordinary CI `33724852712`. Replacement Level 3
+  `33725286182` and same-SHA rerun `33726821321` pass repository, secret,
+  frontend verification, both E2E shards, aggregate, visual and controlled
+  preflight, then their fresh disposable runtimes stop at the same historical
+  P8-03 migrated-legacy problem-code assertion after two migrations. P9-07 has
+  not yet executed and cannot be accepted.
+- The first Level 3 `33723648823` had separately proved the P9-07 helper cwd
+  defect, which the exact fix SHA closes. The repeated later stop is confined
+  to the old cumulative probe; response data and child logs remain withheld.
+- Enable only the existing P8-03 post-P8-09 fixed classifier. It may emit one
+  allowlisted problem-branch code, exception type and deterministic trace; it
+  exposes no response value, business value, identity, message or stack and
+  changes no product, contract, schema, workflow, permission or CI behavior.
+- Require one exact-SHA ordinary PASS and one diagnostic-only controlled Site.
+  Batch only the uniquely proved fixture repair, or close with no product
+  change on nonreproduction. Then disable every diagnostic and require the
+  final diagnostics-off Level 3 before P9-08 activation. Production ERPNext,
+  `jce.1`, production LaunchFlow and user-owned dirty files remain untouched.
+- Controller marker: `P9-07 cumulative P8-03 migrated-legacy classifier active; exact-SHA ordinary and one diagnostic-only controlled Site required`.

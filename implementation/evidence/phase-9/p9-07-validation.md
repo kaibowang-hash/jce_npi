@@ -64,6 +64,32 @@ implementation SHA.
 
 P9-07 and P9-08 activation remain blocked until these exact-SHA slots pass.
 
+## Level 3 runtime stops and bounded cumulative diagnostic
+
+Implementation SHA `0d3891afdc88082845b43f20ac0d2d6d77f55e26`
+passes ordinary CI `33723202891`. Its first Level 3 `33723648823` passes all
+static/frontend/preflight lanes and exposes only that the new P9-07 Python
+helper inherited a repository working directory incompatible with Frappe's
+relative log path. Fix SHA `3bc42d9f6cb5bdf684507d366970b8b6b0e0bcdd`
+anchors every helper to the fixed Bench `sites` directory; focused tests pass
+`12/12` and ordinary CI `33724852712` passes every lane.
+
+Replacement Level 3 `33725286182` and its same-SHA rerun `33726821321` both
+pass repository, secret, frontend verification, both E2E shards, aggregate,
+visual and controlled preflight. Their fresh disposable-Site runtime then
+stops at the same historical P8-03 migrated-legacy 409 problem-code assertion
+after both migrations and before the P9-07 rehearsal is reached. Cleanup
+passes. The response body, business values and child log output remain
+withheld; no P9-07 or product incompatibility is inferred.
+
+Activate only the existing P8-03 post-P8-09 value-free classifier. It can emit
+one allowlisted problem branch, `RuntimeError` and an exact deterministic trace,
+never the actual response, message, identity or business value. Require one
+exact-SHA ordinary PASS and one diagnostic-only controlled Site. A unique tuple
+permits one batched fixture-only repair; a successful nonreproduction permits
+only classifier closure and no product change. P9-08 and production contact
+remain closed.
+
 ## Honest holds
 
 This evidence proves only deterministic engineering recovery on a fresh local

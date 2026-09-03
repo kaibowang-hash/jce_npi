@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P9_07_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED",
+            "IN_PROGRESS_P9_07_CUMULATIVE_P803_DIAGNOSTIC_EXACT_SHA_GATES_REQUIRED",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-08")
@@ -62,7 +62,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-07",
                 "active_goal_marker": "P9-07",
                 "next_action_marker": "P9-07",
-                "controller_marker": "P9-07 implementation candidate; exact-SHA ordinary and Level 3 required",
+                "controller_marker": "P9-07 cumulative P8-03 migrated-legacy classifier active; exact-SHA ordinary and one diagnostic-only controlled Site required",
             },
         )
         for invariant in (
@@ -85,6 +85,8 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "docs/GO_LIVE_AND_RECOVERY_RUNBOOK.md",
                 "scripts/run_go_live_rehearsal.sh",
                 "scripts/verify_go_live_rehearsal.py",
+                "scripts/verify_item_publish_runtime.py",
+                "tests/test_phase8_item_publish_runtime_verifier.py",
             }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
