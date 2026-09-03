@@ -88,3 +88,22 @@ The candidate exact SHA is the Git commit containing this document. Completion
 requires one exact-SHA ordinary CI PASS and one diagnostics-off Level 3 PASS at
 that same SHA. Until both pass, P9-06 remains incomplete and P9-07 product work
 is not authorized. No production LaunchFlow or ERPNext contact occurred.
+
+## First exact-SHA ordinary result and batched test adaptation
+
+Candidate SHA `4341dd6b700ac415a7198356231158f69d813ad7` reached ordinary
+CI `33718667941`. Repository, secret, visual and E2E shard 1 passed. The run
+failed only because the new governed Data Exchange command was not reflected
+in two test contracts: the P9-06 workspace test used lint-prohibited non-null
+fixture assertions and an empty mock body, while the existing Shell navigation
+test still expected ten commands and selected the former sixth command by its
+old index. E2E shard 2 otherwise passed `233/234` tests.
+
+One behavior-neutral batch now validates required fixtures explicitly, gives
+the anchor mock an explicit return, and updates the complete Shell command
+contract to eleven entries while retaining the same current-Project navigation
+assertion. ESLint passes; the complete frontend unit/coverage suite passes
+`1140/1140`; and the affected Shell plus P9-06 browser suite passes `13/13`.
+The replacement exact-SHA ordinary CI and diagnostics-off Level 3 remain the
+only outstanding gates. No product behavior, CI workflow, production system or
+user-owned file changed.

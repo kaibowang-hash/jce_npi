@@ -1,14 +1,14 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T12:16:00+07:00'
+updated_at: '2026-09-03T12:35:29+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-06
 current_task_status: IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
-current_task_completed_stage: P9_06_LOCAL_LEVEL_2_PASS
-current_task_next_stage: P9_06_EXACT_SHA_ORDINARY_THEN_LEVEL_3
-current_task_next_stage_status: PENDING_CANDIDATE_PUSH
+current_task_completed_stage: P9_06_FIRST_EXACT_SHA_ORDINARY_FAILED_TEST_ADAPTATION_REPAIRED_LOCAL
+current_task_next_stage: P9_06_REPLACEMENT_EXACT_SHA_ORDINARY_THEN_LEVEL_3
+current_task_next_stage_status: PENDING_REPAIR_CANDIDATE_PUSH
 resumed_product_task: P9-06
 resumed_product_task_status: IMPLEMENTATION_CANDIDATE_GATED
 scope_decisions:

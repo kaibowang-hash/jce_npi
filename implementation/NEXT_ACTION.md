@@ -22,17 +22,17 @@ passes exact-SHA ordinary CI `33712753404` and diagnostics-off Level 3
 `33713119419`, including cumulative disposable runtime `100517575541` with
 `productionContact=false`; release-gate is PASS.
 
-P9-06 governance SHA `ff34547d9cb4ffd441b3203cf92d37571230bb44`
-passes exact-SHA ordinary CI `33714911502` on attempt 2. The single product
-batch is implemented and local Level 2 passes `2970` repository tests and
-`1140` frontend tests, including fixed catalog, deterministic private package,
-published policy, append-only archive, three-language UI and runtime-verifier
-contracts. Push one candidate commit, require one exact-SHA ordinary CI PASS,
-then run one diagnostics-off Level 3 at the same SHA. P9-07 remains gated until
-both pass. Do not add another product batch, contact production ERP/LaunchFlow,
-activate a production profile/policy, delete history or stage any user-owned
-dirty file. P9-06 marker: `P9-06 implementation candidate; exact-SHA ordinary
-and Level 3 required`.
+P9-06 candidate SHA `4341dd6b700ac415a7198356231158f69d813ad7`
+ordinary CI `33718667941` passes repository, secret, visual and E2E shard 1,
+then exposes only a batched test-contract adaptation: lint-prohibited fixture
+assertions and the pre-P9-06 Shell command count/index. The behavior-neutral
+repair passes ESLint, `1140/1140` frontend tests and the affected `13/13`
+Shell/P9-06 browser suite. Push one replacement exact candidate, require its
+ordinary CI PASS, then run one diagnostics-off Level 3 at the same SHA. P9-07
+remains gated until both pass. Do not add another product batch, contact
+production ERP/LaunchFlow, activate a production profile/policy, delete
+history or stage any user-owned dirty file. P9-06 marker: `P9-06 implementation
+candidate; exact-SHA ordinary and Level 3 required`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

@@ -11736,3 +11736,20 @@ P9-01 Level 3.
   pass. Do not make a follow-on product batch, contact production ERPNext or
   LaunchFlow, stage user-owned files, or weaken the existing gates.
 - Controller marker: `P9-06 implementation candidate; exact-SHA ordinary and Level 3 required`.
+
+## 2026-09-03 P9-06 first ordinary CI test adaptation batched
+
+- Candidate SHA `4341dd6b700ac415a7198356231158f69d813ad7` ordinary CI
+  `33718667941` passes repository, secret, visual and E2E shard 1. It fails only
+  in frontend lint for five test-only style violations and E2E shard 2 because
+  the Shell command-count/index contract still described the pre-P9-06 list;
+  shard 2 otherwise passes `233/234` tests.
+- Apply one behavior-neutral test batch: fail explicitly when required fixture
+  members are absent, return explicitly from the anchor mock, and include the
+  new governed Data Exchange command in the eleven-command keyboard contract.
+  Do not change product behavior, CI workflow, gates or production state.
+- Local ESLint, `1140/1140` frontend coverage tests and the `13/13` affected
+  Shell/P9-06 browser suite pass. Push one replacement exact candidate and
+  require its ordinary CI PASS followed by the sole diagnostics-off Level 3.
+  P9-07 remains gated and no production ERPNext or LaunchFlow contact occurs.
+- Controller marker: `P9-06 implementation candidate; exact-SHA ordinary and Level 3 required`.

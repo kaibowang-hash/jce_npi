@@ -8,6 +8,14 @@ import DataExchangeWorkspace from "../../src/pages/data-exchange-workspace";
 import { renderWithLocale } from "../support/render";
 import { workspace } from "./data-exchange-data-source.test";
 
+function firstFixture<T>(values: readonly T[], label: string): T {
+  const value = values[0];
+  if (value === undefined) {
+    throw new Error(`The data exchange fixture requires ${label}.`);
+  }
+  return value;
+}
+
 function source(): DataExchangeDataSource {
   return {
     load: () =>
@@ -154,15 +162,21 @@ describe("Data Exchange workspace", () => {
 
   it("executes only the fixed profile, package, policy and archive commands", async () => {
     enableCommandSession();
-    const publishProfile = vi.fn(() => Promise.resolve(workspace.profiles[0]!));
-    const createExport = vi.fn(() => Promise.resolve(workspace.exports[0]!));
+    const profile = firstFixture(workspace.profiles, "a profile");
+    const exportRecord = firstFixture(workspace.exports, "an export");
+    const retentionPolicy = firstFixture(
+      workspace.retentionPolicies,
+      "a retention policy",
+    );
+    const archiveRecord = firstFixture(
+      workspace.archiveRecords,
+      "an archive record",
+    );
+    const publishProfile = vi.fn(() => Promise.resolve(profile));
+    const createExport = vi.fn(() => Promise.resolve(exportRecord));
     const downloadExport = vi.fn(() => Promise.resolve(new Blob(["zip"])));
-    const publishPolicy = vi.fn(() =>
-      Promise.resolve(workspace.retentionPolicies[0]!),
-    );
-    const createArchive = vi.fn(() =>
-      Promise.resolve(workspace.archiveRecords[0]!),
-    );
+    const publishPolicy = vi.fn(() => Promise.resolve(retentionPolicy));
+    const createArchive = vi.fn(() => Promise.resolve(archiveRecord));
     const load = vi.fn(() => Promise.resolve(workspace));
     const user = userEvent.setup();
 
@@ -187,7 +201,9 @@ describe("Data Exchange workspace", () => {
       },
       revokeObjectURL: { configurable: true, value: vi.fn() },
     });
-    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
+      () => undefined,
+    );
 
     const publishProfileButton = await screen.findByRole("button", {
       name: "Publish profile",

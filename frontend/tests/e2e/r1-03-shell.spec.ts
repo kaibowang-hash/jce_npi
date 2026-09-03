@@ -446,9 +446,12 @@ test.describe("R1-03 application Shell behavior", () => {
         translate("en", "Open Historical migration rehearsal"),
       ),
     ).toHaveAttribute("aria-disabled", "false");
+    await expect(
+      commandButton(dialog, translate("en", "Open Data Exchange")),
+    ).toHaveAttribute("aria-disabled", "false");
 
     const commandButtons = dialog.getByRole("button");
-    await expect(commandButtons).toHaveCount(10);
+    await expect(commandButtons).toHaveCount(11);
     await search.press("ArrowDown");
     await expect(commandButtons.first()).toBeFocused();
     await commandButtons.first().press("ArrowUp");
@@ -458,11 +461,11 @@ test.describe("R1-03 application Shell behavior", () => {
     await commandButtons.first().press("End");
     await expect(commandButtons.last()).toBeFocused();
     await commandButtons.last().press("Home");
-    for (let index = 0; index < 5; index += 1) {
+    for (let index = 0; index < 6; index += 1) {
       await page.keyboard.press("ArrowDown");
     }
-    await expect(commandButtons.nth(5)).toBeFocused();
-    await commandButtons.nth(5).press("Enter");
+    await expect(commandButtons.nth(6)).toBeFocused();
+    await commandButtons.nth(6).press("Enter");
     await expect(dialog).toHaveCount(0);
     await expect
       .poll(() => new URL(page.url()).pathname)
