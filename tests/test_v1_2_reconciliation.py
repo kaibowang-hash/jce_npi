@@ -63,6 +63,29 @@ class V12ReconciliationTests(unittest.TestCase):
     def test_trace_sets_are_complete_and_consistent(self) -> None:
         self.verifier.verify_trace_sets()
 
+    def test_phase9_completed_traces_are_bound_to_final_evidence(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        for requirement_id, expected_truth in (
+            self.verifier.EXPECTED_P9_COMPLETED_TRACES.items()
+        ):
+            row = by_id[requirement_id]
+            self.assertEqual((row["phase"], row["status"]), expected_truth)
+            evidence = {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            }
+            expected_evidence = self.verifier.EXPECTED_P9_COMPLETION_EVIDENCE[
+                requirement_id
+            ]
+            self.assertTrue(expected_evidence.issubset(evidence), requirement_id)
+            for evidence_path in expected_evidence:
+                self.assertTrue(
+                    (self.verifier.ROOT / evidence_path).is_file(),
+                    evidence_path,
+                )
+
     def test_erp_customization_requirements_and_exact_hold_evidence(self) -> None:
         self.verifier.verify_erp_customization_requirements_document()
         self.verifier.verify_p8_07f_fact_documents()
@@ -819,6 +842,10 @@ class V12ReconciliationTests(unittest.TestCase):
             "evidence_class: CONTROLLED_NON_PRODUCTION_TECHNICAL_UAT",
             phase_status,
         )
+        self.assertIn("overall_status: IMPLEMENTATION_COMPLETE", phase_status)
+        self.assertIn("final_level_3: 33742476664_PASS", phase_status)
+        self.assertIn("final_release_gate: PASS", phase_status)
+        self.assertIn("production_ready: false", phase_status)
         self.assertIn("status: PASS_LEVEL_3", phase_status)
         self.assertIn("final_level_3: 33660141866", phase_status)
         self.assertIn("p9_01d_final_result: PASS_ALL_DIAGNOSTICS_OFF_COMPLETE_CUMULATIVE_RUNTIME", phase_status)

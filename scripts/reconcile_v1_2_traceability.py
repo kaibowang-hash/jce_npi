@@ -64,7 +64,7 @@ ADDENDUM_REQUIREMENTS = (
 UX_REMEDIATION_ALLOCATION = {
     "UX-003": (
         "9",
-        "TECHNICAL_VERIFIED_CONTROLLED_NON_PRODUCTION_UAT_FINAL_GATES_PENDING",
+        "TECHNICAL_VERIFIED_CONTROLLED_NON_PRODUCTION_UAT",
     ),
     "UX-004": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
@@ -366,6 +366,15 @@ P7_UX_ANCHOR_EVIDENCE = {
         "implementation/phase-7-gate.md",
     ),
 }
+P9_UX_COMPLETION_EVIDENCE = {
+    "UX-003": (
+        "implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv",
+        "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+        "implementation/evidence/phase-9/p9-08-validation.md",
+        "implementation/evidence/phase-9/p9-08-final-erpnext-reconciliation.md",
+        "implementation/phase-9-gate.md",
+    ),
+}
 P7_ADDENDUM_ANCHOR_EVIDENCE = {
     "FR-PRN-002": P5_06_PLAN_EVIDENCE["FR-PRN-002"]
     + (
@@ -560,18 +569,24 @@ P8_CARRIED_FOUNDATIONS = {
     "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
 }
 P8_SCOPED_HOLDS = {
-    "INT-008": ("9", "HELD_PHASE_9_CHANGE_DOMAIN"),
+    "INT-008": (
+        "9",
+        "TECHNICAL_VERIFIED_DEFAULT_DISABLED_PRODUCTION_ACTIVATION_HELD",
+    ),
     "INT-009": ("8", "SCOPED_HOLD_EXTERNAL_FILE_CONSUMER_MAPPING"),
     "INT-011": ("8", "SCOPED_HOLD_TARGET_SUMMARY_FIELD_MAPPING"),
     "INT-012": (
         "8",
-        "SCOPED_HOLD_EXTERNAL_IDENTITY_TOPOLOGY_AND_SCOPES",
+        "TECHNICAL_VERIFIED_DEFAULT_DISABLED_AUTHORIZATION_PROJECTION_PRODUCTION_SCOPE_MAPPINGS_HELD",
     ),
     "INT-013": (
         "8",
         "SCOPED_HOLD_OPTIONAL_PROVIDER_AND_OWNERSHIP_DECISION",
     ),
-    "INT-014": ("9", "HELD_PHASE_9_REPORTING_BI_BOUNDARY"),
+    "INT-014": (
+        "9",
+        "TECHNICAL_VERIFIED_READ_ONLY_BI_CONTRACT_PRODUCTION_EXTRACTION_HELD",
+    ),
 }
 P6_01_COMPLETED_EVIDENCE = {
     "FR-TX-001": (
@@ -882,6 +897,8 @@ def _expanded_rows(
             evidence = "; ".join(P6_UX_ANCHOR_EVIDENCE[requirement_id])
         if requirement_id in P7_UX_ANCHOR_EVIDENCE:
             evidence = "; ".join(P7_UX_ANCHOR_EVIDENCE[requirement_id])
+        if requirement_id in P9_UX_COMPLETION_EVIDENCE:
+            evidence = "; ".join(P9_UX_COMPLETION_EVIDENCE[requirement_id])
         if requirement_id in P6_01_COMPLETED_EVIDENCE:
             evidence = "; ".join(P6_01_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_02_COMPLETED_EVIDENCE:

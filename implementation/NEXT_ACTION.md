@@ -1,7 +1,16 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE — P9-08`
+`IMPLEMENTATION_COMPLETE — P9-08 AND PHASE 9 PASS`
+
+No automatic product task remains in V1.2. Final product/evidence SHA
+`67290c57c6fde24883f6b069e06ae45a6af7bcb5` passes exact-SHA ordinary CI
+`33741955643` and diagnostics-off Level 3 `33742476664`, including cumulative
+runtime `100608924712`, cleanup and `productionContact=false`; release-gate is
+PASS. The only permitted follow-up is a separately approved production
+activation/readiness task after its currently held owner inputs exist. Do not
+interpret technical completion as production-ready, a real pilot or real-user
+adoption. P9-08 marker: `P9-08 Level 3 and release-gate PASS; IMPLEMENTATION_COMPLETE`.
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -32,43 +41,11 @@ passes ordinary CI `33730217862` and diagnostics-off Level 3 `33730710124`.
 Controlled runtime `100571300835` completes backup, restore, forward-fix and
 cleanup with `productionContact=false`; release-gate is PASS.
 
-P9-08 governance SHA `4ee5d301997215526d245c27f4dbc0497b5003cf`
-passes exact-SHA ordinary CI `33732955637`. The one evidence-only batch is
-locally complete: both AT-01 and AT-02 pass `9/10`, overall controlled workflow
-coverage is `18/20 = 90%`, manifest checks pass `7/7`, consolidated route checks
-pass `2/2`, repository Level 2 passes `2990/2990`, and frontend coverage passes
-`1140/1140` with types/lint/i18n/build/budget/audit green. No product behavior
-changed. Commit and push this batch, require exact-SHA ordinary CI, then perform
-the mandatory full production ERPNext-to-LaunchFlow compatibility refresh only
-through the approved fixed read-only inventory/delta boundary. Do not run real
-pilots, claim real-user adoption, change product/CI or stage user-owned files.
-P9-08 marker: `P9-08 controlled UAT implementation candidate; exact-SHA ordinary and final reconciliation gates required`.
-
-P9-08 implementation SHA
-`1761323f934e762b706405e74e059071d26e9564` passes ordinary CI
-`33734762911` in every required lane. The active next action is one zero-contact
-collector transition: lock the exact P9-08 task/status, fixed Bench/Site,
-application source signatures, every accepted runtime metadata family, locale/
-File aggregates, P9-01 change scope, P9-04 security scope, output bounds,
-redaction and exact cleanup. Pass ordinary CI at that exact transition SHA;
-then run the fixed read once, record only sanitized checksums and compatibility
-classifications, clean the private temporary result, and proceed directly to
-the final evidence ordinary CI and sole diagnostics-off Level 3. No production
-write, product change, CI change or user-owned file staging is allowed.
-
-Collector transition `1323db574b147f2b43c69502ecdf5b2f25d9976b`
-passes ordinary CI `33736062145`; bounded Frappe-v15 empty-list repair
-`194733fc72df6fc045727074991eb70acf0aab8f` passes ordinary CI
-`33736966780`. The one fixed production read-only reconciliation completed
-268 operations over twenty apps and nineteen runtime families with
-`production_write=false`; canonical result checksum
-`sha256:466520fe71fdd9cb6de4acf5a8cb2eaefbb58df19b6f564e62474c091ca69ddb`
-matched independent calculation and the mode-0600 result was removed. All
-actual V1.2 ERP dependencies are compatible; assessed production drift is
-closed with `NO_CHANGE`. Commit the final sanitized evidence/state, require
-one exact-SHA ordinary CI, then dispatch the sole diagnostics-off Level 3 and
-perform the release-gate review. Do not reconnect production or stage any
-user-owned path.
+P9-08 controlled evidence remains AT-01 `9/10`, AT-02 `9/10` and combined
+`18/20 = 90%`. The final production compatibility operation remains the
+accepted 268-operation, `production_write=false` read with checksum
+`sha256:466520fe71fdd9cb6de4acf5a8cb2eaefbb58df19b6f564e62474c091ca69ddb`;
+the private result was removed and no further production contact is needed.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

@@ -70,7 +70,7 @@ EXPECTED_POST_V1_2_DEFERRED_PORTAL_EVIDENCE = {
 EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-003": (
         "9",
-        "TECHNICAL_VERIFIED_CONTROLLED_NON_PRODUCTION_UAT_FINAL_GATES_PENDING",
+        "TECHNICAL_VERIFIED_CONTROLLED_NON_PRODUCTION_UAT",
     ),
     "UX-004": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
@@ -84,6 +84,89 @@ EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-030": ("5", "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD"),
     "UX-035": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
     "UX-036": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
+}
+EXPECTED_P9_01_COMPLETED_IDS = {f"FR-CH-{index:03d}" for index in range(1, 11)}
+EXPECTED_P9_02_COMPLETED_IDS = {
+    "FR-SG-008",
+    "FR-SG-009",
+    "FR-CO-005",
+    "FR-CO-007",
+    *(f"FR-RP-{index:03d}" for index in range(1, 8)),
+}
+EXPECTED_P9_COMPLETED_TRACES = {
+    **{
+        requirement_id: ("9", "TECHNICAL_VERIFIED")
+        for requirement_id in EXPECTED_P9_01_COMPLETED_IDS
+    },
+    **{
+        requirement_id: ("9", "TECHNICAL_VERIFIED")
+        for requirement_id in EXPECTED_P9_02_COMPLETED_IDS
+        if requirement_id not in {"FR-CO-005", "FR-CO-007", "FR-RP-006", "FR-RP-007"}
+    },
+    "FR-CO-005": ("9", "TECHNICAL_VERIFIED_INTERNAL_COLLABORATION"),
+    "FR-CO-007": ("9", "TECHNICAL_VERIFIED_INTERNAL_MEETING_WORK_ITEMS"),
+    "FR-RP-006": ("9", "TECHNICAL_VERIFIED_GOVERNED_KPI_DATASET"),
+    "FR-RP-007": ("9", "TECHNICAL_VERIFIED_READ_ONLY_CONFIGURATION_CATALOG"),
+    "FR-RP-010": ("9", "TECHNICAL_VERIFIED_CONTROLLED_DATA_EXCHANGE"),
+    "INT-008": ("9", "TECHNICAL_VERIFIED_DEFAULT_DISABLED_PRODUCTION_ACTIVATION_HELD"),
+    "INT-012": ("8", "TECHNICAL_VERIFIED_DEFAULT_DISABLED_AUTHORIZATION_PROJECTION_PRODUCTION_SCOPE_MAPPINGS_HELD"),
+    "INT-014": ("9", "TECHNICAL_VERIFIED_READ_ONLY_BI_CONTRACT_PRODUCTION_EXTRACTION_HELD"),
+    "NFR-BCP-001": ("9", "TECHNICAL_VERIFIED_NON_PRODUCTION_RECOVERY_REHEARSAL_PRODUCTION_RPO_RTO_HELD"),
+    "NFR-COM-001": ("9", "TECHNICAL_VERIFIED_RETENTION_FOUNDATION_PHYSICAL_DISPOSITION_HELD"),
+    "NFR-MNT-001": ("9", "TECHNICAL_VERIFIED_RELEASE_MANIFEST_AND_UPGRADE_RECOVERY_PRODUCTION_OPERATIONS_HELD"),
+}
+EXPECTED_P9_01_COMPLETION_EVIDENCE = {
+    "implementation/evidence/phase-9/p9-01-plan.md",
+    "implementation/evidence/phase-9/p9-01-command-query-checkpoint.md",
+    "implementation/evidence/phase-9/p9-01-integration-checkpoint.md",
+    "implementation/evidence/phase-9/p9-01-ui-checkpoint.md",
+    "implementation/phase-9-gate.md",
+}
+EXPECTED_P9_02_COMPLETION_EVIDENCE = {
+    "implementation/evidence/phase-9/p9-02-plan.md",
+    "implementation/evidence/phase-9/p9-02-backend-validation.md",
+    "implementation/phase-9-gate.md",
+}
+EXPECTED_P9_COMPLETION_EVIDENCE = {
+    **{
+        requirement_id: EXPECTED_P9_01_COMPLETION_EVIDENCE
+        for requirement_id in EXPECTED_P9_01_COMPLETED_IDS
+    },
+    **{
+        requirement_id: EXPECTED_P9_02_COMPLETION_EVIDENCE
+        for requirement_id in EXPECTED_P9_02_COMPLETED_IDS
+    },
+    "INT-008": {
+        "implementation/evidence/phase-9/p9-01-integration-checkpoint.md",
+        "implementation/evidence/phase-9/p9-08-final-erpnext-reconciliation.md",
+        "implementation/phase-9-gate.md",
+    },
+    "INT-012": {
+        "implementation/evidence/phase-9/p9-04-validation.md",
+        "implementation/evidence/phase-9/p9-08-final-erpnext-reconciliation.md",
+        "implementation/phase-9-gate.md",
+    },
+    "INT-014": EXPECTED_P9_02_COMPLETION_EVIDENCE,
+    "FR-RP-010": {
+        "implementation/evidence/phase-9/p9-06-plan.md",
+        "implementation/evidence/phase-9/p9-06-validation.md",
+        "implementation/phase-9-gate.md",
+    },
+    "NFR-COM-001": {
+        "implementation/evidence/phase-9/p9-06-plan.md",
+        "implementation/evidence/phase-9/p9-06-validation.md",
+        "implementation/phase-9-gate.md",
+    },
+    "NFR-BCP-001": {
+        "implementation/evidence/phase-9/p9-07-plan.md",
+        "implementation/evidence/phase-9/p9-07-validation.md",
+        "implementation/phase-9-gate.md",
+    },
+    "NFR-MNT-001": {
+        "implementation/evidence/phase-9/p9-07-plan.md",
+        "implementation/evidence/phase-9/p9-07-validation.md",
+        "implementation/phase-9-gate.md",
+    },
 }
 EXPECTED_P7_ANCHOR_ALLOCATION = {
     "P7-01": {"FR-TR-001"},
@@ -483,18 +566,24 @@ EXPECTED_P8_CARRIED_FOUNDATIONS = {
     "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
 }
 EXPECTED_P8_SCOPED_HOLDS = {
-    "INT-008": ("9", "HELD_PHASE_9_CHANGE_DOMAIN"),
+    "INT-008": (
+        "9",
+        "TECHNICAL_VERIFIED_DEFAULT_DISABLED_PRODUCTION_ACTIVATION_HELD",
+    ),
     "INT-009": ("8", "SCOPED_HOLD_EXTERNAL_FILE_CONSUMER_MAPPING"),
     "INT-011": ("8", "SCOPED_HOLD_TARGET_SUMMARY_FIELD_MAPPING"),
     "INT-012": (
         "8",
-        "SCOPED_HOLD_EXTERNAL_IDENTITY_TOPOLOGY_AND_SCOPES",
+        "TECHNICAL_VERIFIED_DEFAULT_DISABLED_AUTHORIZATION_PROJECTION_PRODUCTION_SCOPE_MAPPINGS_HELD",
     ),
     "INT-013": (
         "8",
         "SCOPED_HOLD_OPTIONAL_PROVIDER_AND_OWNERSHIP_DECISION",
     ),
-    "INT-014": ("9", "HELD_PHASE_9_REPORTING_BI_BOUNDARY"),
+    "INT-014": (
+        "9",
+        "TECHNICAL_VERIFIED_READ_ONLY_BI_CONTRACT_PRODUCTION_EXTRACTION_HELD",
+    ),
 }
 EXPECTED_R1_03_TRACE = {
     "FR-UX-039": (
@@ -2678,6 +2767,39 @@ def verify_trace_sets() -> None:
         ):
             raise ReconciliationVerificationError(
                 f"{requirement_id} has stale remediation allocation"
+            )
+
+    for requirement_id, (
+        expected_phase,
+        expected_status,
+    ) in EXPECTED_P9_COMPLETED_TRACES.items():
+        row = by_id[requirement_id]
+        if (row["phase"], row["status"]) != (
+            expected_phase,
+            expected_status,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} has stale Phase 9 completion truth"
+            )
+        evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        required_evidence = EXPECTED_P9_COMPLETION_EVIDENCE[requirement_id]
+        if not required_evidence.issubset(evidence):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} lacks final Phase 9 completion evidence"
+            )
+        missing_evidence = sorted(
+            path
+            for path in required_evidence
+            if "/" in path and not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing Phase 9 evidence files: "
+                f"{missing_evidence}"
             )
 
     for task_id, requirement_ids in EXPECTED_P7_ANCHOR_ALLOCATION.items():

@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE",
+            "IMPLEMENTATION_COMPLETE",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
@@ -62,7 +62,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-08",
                 "active_goal_marker": "P9-08",
                 "next_action_marker": "P9-08",
-                "controller_marker": "P9-08 final ERPNext reconciliation PASS; final evidence exact-SHA ordinary and Level 3 pending",
+                "controller_marker": "P9-08 Level 3 and release-gate PASS; IMPLEMENTATION_COMPLETE",
             },
         )
         for invariant in (
@@ -72,6 +72,8 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "UX_003_RATIO_MEASURES_CONTROLLED_WORKFLOW_COVERAGE_NOT_REAL_USER_ADOPTION",
             "NO_PRODUCT_CHANGE_WITHOUT_ONE_CONCRETE_REPRODUCIBLE_UAT_GAP",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REQUIRED_BEFORE_COMPLETION",
+            "P9_08_FINAL_SHA_67290C57_ORDINARY_33741955643_AND_LEVEL3_33742476664_PASS",
+            "P9_08_RUNTIME_100608924712_ARTIFACT_9888803374_PRODUCTION_CONTACT_FALSE_AND_CLEANUP_PASS",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
@@ -121,6 +123,16 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             with self.subTest(key=key):
                 changed = {**self.manifest, key: value}
                 with self.assertRaises(CurrentTaskError):
+                    validate_current_task(self.write_manifest(changed), check_git=False)
+
+    def test_terminal_status_requires_level_3_and_complete_next_task(self) -> None:
+        for key, value in (
+            ("completion_gate", "LEVEL_2"),
+            ("authorized_next_task", "P9-09"),
+        ):
+            with self.subTest(key=key):
+                changed = {**self.manifest, key: value}
+                with self.assertRaisesRegex(CurrentTaskError, "IMPLEMENTATION_COMPLETE"):
                     validate_current_task(self.write_manifest(changed), check_git=False)
 
     def test_allowed_paths_reject_escape_and_out_of_scope_change(self) -> None:

@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T16:25:00+07:00`
+Updated: `2026-09-03T17:23:20+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE — P9-08`
+- Mode: `IMPLEMENTATION_COMPLETE — P9-08 AND PHASE 9 PASS`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -80,6 +80,15 @@ Updated: `2026-09-03T16:25:00+07:00`
   all actual V1.2 dependencies are compatible. Assessed anonymous-app,
   additive runtime, file-volume and ECR-Workflow production drift requires no
   LaunchFlow change. Controller marker: `P9-08 final ERPNext reconciliation PASS; final evidence exact-SHA ordinary and Level 3 pending`.
+- P9-08 final product/evidence SHA
+  `67290c57c6fde24883f6b069e06ae45a6af7bcb5` passes ordinary CI
+  `33741955643` and diagnostics-off Level 3 `33742476664`. Every required lane,
+  controlled preflight, cumulative disposable-Site runtime and cleanup passes;
+  runtime `100608924712` reports `productionContact=false`. Release-gate is
+  PASS, P9-08 and Phase 9 are complete, and the controller is
+  `IMPLEMENTATION_COMPLETE`. Production readiness, named business UAT,
+  production service/mapping activation, accepted RPO/RTO and M9-04/M9-05 real
+  pilots remain held. Controller marker: `P9-08 Level 3 and release-gate PASS; IMPLEMENTATION_COMPLETE`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

@@ -213,9 +213,11 @@ def validate_current_task(
         type(manifest["phase"]) is int and 0 <= manifest["phase"] <= 9,
         "phase must be an integer from 0 through 9",
     )
+    terminal = manifest["status"] == "IMPLEMENTATION_COMPLETE"
     require(
-        type(manifest["status"]) is str and manifest["status"].startswith("IN_PROGRESS"),
-        "active task status must be IN_PROGRESS",
+        type(manifest["status"]) is str
+        and (manifest["status"].startswith("IN_PROGRESS") or terminal),
+        "task status must be IN_PROGRESS or IMPLEMENTATION_COMPLETE",
     )
     require(
         manifest["completion_gate"] in {"LEVEL_2", "LEVEL_3"},
@@ -226,6 +228,12 @@ def validate_current_task(
         and TASK_ID.fullmatch(manifest["authorized_next_task"]) is not None,
         "authorized_next_task is invalid",
     )
+    if terminal:
+        require(
+            manifest["completion_gate"] == "LEVEL_3"
+            and manifest["authorized_next_task"] == "COMPLETE",
+            "IMPLEMENTATION_COMPLETE requires LEVEL_3 and COMPLETE",
+        )
     if manifest["task_kind"] == "delivery_infrastructure":
         require(
             manifest["completion_gate"] == "LEVEL_3",
@@ -288,6 +296,11 @@ def validate_current_task(
         phase_state.get("current_task_status") == manifest["status"],
         "Phase status current_task_status disagrees with the task manifest",
     )
+    if terminal:
+        require(
+            phase_state.get("overall_status") == "IMPLEMENTATION_COMPLETE",
+            "terminal task requires terminal overall Phase status",
+        )
     require(
         phase_state.get("execution_hold")
         == expected_state["phase_status_execution_hold"],

@@ -193,7 +193,18 @@ operation and proves configuration alone cannot satisfy the approved contract.
   production drift has explicit evidence, owner, impact and forward action;
   there is no unresolved `UNVERIFIED`, `LAUNCHFLOW_DRIFT` or `BOTH_DRIFTED`
   dependency.
-- P9-08 may proceed to its final exact-SHA ordinary CI and sole diagnostics-off
-  Level 3/release-gate. Passing those gates permits technical
-  `IMPLEMENTATION_COMPLETE`; it does not claim a real pilot, real-user adoption
+- This evidence was the accepted input to P9-08's final exact-SHA ordinary CI
+  and diagnostics-off Level 3/release-gate. Those gates permit technical
+  `IMPLEMENTATION_COMPLETE`; they do not claim a real pilot, real-user adoption
   or production adapter activation.
+
+## Final gate binding
+
+Final product/evidence SHA
+`67290c57c6fde24883f6b069e06ae45a6af7bcb5` passes exact-SHA ordinary CI
+`33741955643` and diagnostics-off Level 3 `33742476664`. Controlled runtime
+`100608924712` and cleanup pass with `productionContact=false`; release-gate is
+PASS. The compatibility verdict above therefore closes the mandatory V1.2
+implementation reconciliation without a LaunchFlow or ERPNext product change.
+Production adapter activation and every listed hardening/owner input remain
+separately held.

@@ -3,7 +3,7 @@
   "task_id": "P9-08",
   "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE",
+  "status": "IMPLEMENTATION_COMPLETE",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "COMPLETE",
   "base_checkpoint": "d911c2bcecb228cee0f4830c868e0d0fdf35d3e2",
@@ -19,7 +19,9 @@
     "Require explicit traceability for project, ownership and intake, controlled documents and baselines, EBOM and MBOM, Tooling, Trial and quality, gates and readiness, ERP projections and execution requests, integration operations, change control, reporting, collaboration, security, data exchange and recovery.",
     "Before Phase 9 or release closeout, perform the mandatory full production ERPNext to LaunchFlow compatibility reconciliation under the already approved fixed read-only JCE-Core boundary, reusing the accepted inventory and reading only a bounded version, mtime, hash or missing-fact delta.",
     "Deliver governance first; after its exact-SHA ordinary CI passes, implement the fixed UAT evidence batch, run Level 2, bind one exact-SHA ordinary CI, perform the final bounded production read-only reconciliation, and require one final diagnostics-off Level 3 and release-gate PASS before completion.",
-    "Repair the recurring P8-03 migrated-legacy disposable runtime fixture by moving its already-approved exact Guard isolation immediately before the HTTP reconciliation command and proving committed zero-Guard visibility from a second fixture process; keep all diagnostics off and leave product behavior unchanged."
+    "Repair the recurring P8-03 migrated-legacy disposable runtime fixture by moving its already-approved exact Guard isolation immediately before the HTTP reconciliation command and proving committed zero-Guard visibility from a second fixture process; keep all diagnostics off and leave product behavior unchanged.",
+    "Accept final product/evidence SHA 67290c57c6fde24883f6b069e06ae45a6af7bcb5 with exact-SHA ordinary CI 33741955643 and diagnostics-off Level 3 33742476664 fully passing, including controlled runtime 100608924712, cleanup and productionContact=false.",
+    "Close P9-08, Phase 9 and the V1.2 technical implementation with release-gate PASS while retaining every production activation, business UAT, real-pilot, RPO/RTO and owner-approval hold without a production-ready claim."
   ],
   "non_scope": [
     "M9-04 customer-owned real pilot, M9-05 new-tooling real pilot, production user activity, production adoption measurement or any claim that 80 percent of real users use the product.",
@@ -43,7 +45,10 @@
     "P803_MIGRATED_LEGACY_PROBE_REQUIRES_IMMEDIATE_CROSS_PROCESS_ZERO_GUARD_VISIBILITY_BEFORE_HTTP",
     "PRODUCTION_RECONCILIATION_REUSES_ACCEPTED_INVENTORY_AND_FIXED_JCE_CORE_READ_ONLY_ALLOWLIST",
     "NO_ERPNEXT_FRAPPE_CORE_CHANGE_BROWSER_DIRECT_ERP_CROSS_DATABASE_WRITE_GENERIC_DOCTYPE_WRITER_OR_DUAL_MASTER",
-    "LEVEL_1_2_3_PASS_CRITERIA"
+    "LEVEL_1_2_3_PASS_CRITERIA",
+    "P9_08_FINAL_SHA_67290C57_ORDINARY_33741955643_AND_LEVEL3_33742476664_PASS",
+    "P9_08_RUNTIME_100608924712_ARTIFACT_9888803374_PRODUCTION_CONTACT_FALSE_AND_CLEANUP_PASS",
+    "IMPLEMENTATION_COMPLETE_IS_TECHNICAL_AND_DOES_NOT_MEAN_PRODUCTION_READY_REAL_PILOT_REAL_USER_ADOPTION_OR_PRODUCTION_ADAPTER_ACTIVATION"
   ],
   "allowed_paths": [
     "implementation/ACTIVE_EXECUTION_GOAL.md",
@@ -52,6 +57,7 @@
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
     "implementation/REQUIREMENT_TRACEABILITY.csv",
+    "implementation/phase-9-gate.md",
     "implementation/phase-9-requirement-anchor.md",
     "implementation/evidence/phase-9/p9-07-validation.md",
     "implementation/evidence/phase-9/p9-08-plan.md",
@@ -60,6 +66,7 @@
     "implementation/uat/p9-08-controlled-uat.json",
     "scripts/collect_erpnext_production_facts.py",
     "scripts/reconcile_v1_2_traceability.py",
+    "scripts/verify_current_task.py",
     "scripts/verify-frappe-runtime.sh",
     "scripts/verify_item_publish_runtime.py",
     "scripts/verify_phase9_controlled_uat.py",
@@ -105,7 +112,7 @@
     "phase_status_resumed_product_task": "P9-08",
     "active_goal_marker": "P9-08",
     "next_action_marker": "P9-08",
-    "controller_marker": "P9-08 final ERPNext reconciliation PASS; final evidence exact-SHA ordinary and Level 3 pending"
+    "controller_marker": "P9-08 Level 3 and release-gate PASS; IMPLEMENTATION_COMPLETE"
   },
   "rollback": {
     "before_product_resume": "Restore exact accepted P9-07 checkpoint d911c2bcecb228cee0f4830c868e0d0fdf35d3e2. The P9-08 governance transition changes no product, database, Site, ERPNext or external state.",

@@ -1,12 +1,13 @@
 # Phase 9 Requirement Anchor
 
-Status: `P9-05 PASS — P9-06 DATA EXCHANGE AUDIT AND PLAN ACTIVE`
+Status: `P9-08 AND PHASE 9 PASS — V1.2 TECHNICAL IMPLEMENTATION COMPLETE`
 
-This anchor is the product-code authorization boundary for Phase 9. It closes no
-Phase 9 requirement by itself. P9-00 exact SHA
-`065803ae484d885001259de8238ef01d0ad311e4` passes ordinary CI
-`33345162833`; only the P9-01 audit/plan boundary is active. Phase 9 product
-code remains unauthorized until the applicable atomic plan passes its own Gate.
+This anchor records the product-code authorization boundary and completed atomic
+allocation for Phase 9. P9-00 exact SHA
+`065803ae484d885001259de8238ef01d0ad311e4` passed ordinary CI
+`33345162833`; every later atomic task was separately authorized and gated. The
+final P9-08 and Phase 9 evidence below now closes the technical implementation
+without granting production activation or readiness.
 
 ## Authority and fixed boundaries
 
@@ -315,5 +316,16 @@ and nineteen runtime families with no production write. Result checksum
 `sha256:466520fe71fdd9cb6de4acf5a8cb2eaefbb58df19b6f564e62474c091ca69ddb`
 is independently verified and the private result is removed. All actual V1.2
 ERP dependencies are compatible; assessed production drift has no unresolved
-contract or ownership impact and requires no product change. Only the final
-evidence exact-SHA ordinary CI and diagnostics-off Level 3/release-gate remain.
+contract or ownership impact and requires no product change. At that evidence
+checkpoint, only the final exact-SHA ordinary CI and diagnostics-off Level
+3/release-gate remained; the final binding below records their PASS.
+
+Final product/evidence SHA
+`67290c57c6fde24883f6b069e06ae45a6af7bcb5` passes ordinary CI
+`33741955643` and diagnostics-off Level 3 `33742476664`. Every required lane,
+controlled preflight, cumulative disposable-Site runtime and cleanup passes;
+runtime job `100608924712` reports `productionContact=false`. Release-gate is
+PASS, P9-08 and Phase 9 are complete, and `UX-003` is technically verified by
+controlled non-production UAT. This does not close named business UAT, real
+pilots, production activation, service/mapping approval or production RPO/RTO
+holds and does not constitute production readiness.
