@@ -3619,6 +3619,26 @@ run_quality_link_runtime_verifier() {
   )
 }
 
+run_authorization_projection_runtime_verifier() {
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
+      NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
+      NPI_PROJECT_WORK_RUNTIME_RUN_ID \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    exec python "${repo_root}/scripts/verify_authorization_projection_runtime.py"
+  )
+}
+
 read_quality_link_runtime_diagnostic() {
   local diagnostic_path="${RUNNER_TEMP:-/tmp}/p8-06-quality-link-runtime-diagnostic.json"
   local expected_trace
@@ -4647,6 +4667,11 @@ if [[ "${verification_mode}" == "all" ||
     fi
     echo "Local Frappe formal quality link runtime verification failed." >&2
     report_projection_runtime_failure
+    exit 1
+  fi
+
+  if ! run_authorization_projection_runtime_verifier >/dev/null 2>/dev/null; then
+    echo "Local Frappe authorization projection runtime verification failed." >&2
     exit 1
   fi
 

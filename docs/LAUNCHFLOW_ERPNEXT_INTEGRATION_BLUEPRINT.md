@@ -86,6 +86,23 @@ approved ERP configuration/custom-app task and version-equivalent Sandbox Gate
 prove the exact event, command, actor, idempotency, timeout-after-commit and
 reconciliation contracts.
 
+## P9-04 authorization compatibility reconciliation
+
+| Capability / Requirement | LaunchFlow approved baseline | Production ERPNext fact | Compatibility decision | Minimal work, tests and rollback |
+|---|---|---|---|---|
+| Entra authentication and Frappe session / `NFR-SEC-001`, `INT-012` | Microsoft Entra owns authentication/MFA; supported Frappe OIDC/social login establishes the NPI Site session; NPI implements no password or second MFA | Office 365 Social Login is enabled and self signup is disabled | `DIRECT_MATCH`, `NO_CHANGE` | Configure tenant/provider secrets outside Git. Test Entra login/MFA/session expiry/unknown user in non-production; rollback disables provider/profile without creating local password fallback |
+| ERP internal-user enabled truth / `INT-012` | ERPNext is the editable authority; NPI consumes a read-only full replacement and fails closed for unknown, disabled, revoked, stale or unmapped users | 28 aggregate System Users, 21 enabled and 7 disabled; identities intentionally excluded | `MINOR_LAUNCHFLOW_ADJUSTMENT` | Add only `PUT /integration/erpnext/user-authorization`, schema v1, target mapping, source version, validity window, exact event/payload/projection hashes and immutable audit. Store source subject only as a hash. Route and central enforcement are separately default-disabled. Test create/replace/disable, exact replay, stale/conflict, tamper, timeout/rollback and disabled target. Rollback disables route/enforcement and reverts the additive DocType while retaining evidence |
+| Roles and Role Profiles / `NFR-SEC-003`, `INT-012` | NPI domain APIs retain server-side role checks; ERPNext owns the editable NPI role assignment | Six existing profiles cover Accounts, HR, Inventory, Manufacturing, Purchase and Sales; no NPI-specific Role Profile was found | `CONFIG_OR_MAPPING_ONLY`; `MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT` only if configuration cannot express the approved NPI roles | Configure an explicit sorted NPI role allowlist and approved profile/mapping. No default role, local permission editor or System Manager fallback. Any new ERP role/profile or sender is a separate task. Test role allowlist, removal, escalation denial and exact replacement |
+| Project and organization scopes / `NFR-SEC-003` | Existing Project/tenant/object/file/export/operation checks remain authoritative in NPI; projected scope only supplies exact grants | 14 User Permissions: Company 7; Project 0; Customer 0; Supplier 0 | `CONFIG_OR_MAPPING_ONLY` for Company; `BUSINESS_DECISION_REQUIRED` for the absent Project/Customer/Supplier source mapping | Projection contract accepts only Project access plus Company/Customer/Supplier reference keys; every unknown kind/reference fails closed. Do not activate those dimensions until the security owner approves exact ERP source fields and mapping. No dual master. Test cross-Project/cross-organization denial and scope removal |
+| Delivery, replay and reconciliation / `INT-012`, `NFR-SEC-003` | One operation-specific authenticated service call replaces the complete projection; NPI records event/version/hash/trace and exact replay | No existing NPI-specific production sender/API or least-privilege NPI service profile is proved | `MINOR_ERPNEXT_CUSTOM_APP_ADJUSTMENT` in a later atomic task | Prefer one independent ERP custom-app hook/outbox and operation-specific sender; never generic DocType writer or credential sync. Retry only the same event/hash, reconcile by read-only comparison, and disable on revocation. Sandbox proves lost/reordered/duplicate event, timeout-after-commit, partial outage and forward-fix before production activation |
+
+The P9-04 LaunchFlow change is therefore local, additive and reversible. It
+does not modify Frappe User roles, ERPNext permissions or production state;
+the projected principal replaces local effective grants only after an exact
+Site switch is deliberately enabled. Until the identity key, role/scope map,
+service actor and delivery behavior pass owner review and Sandbox/UAT, both
+the ingress route and projection enforcement remain disabled.
+
 ## Common interface and operating boundary
 
 - Browser → NPI BFF only. NPI → ERP uses fixed operation-specific adapters;

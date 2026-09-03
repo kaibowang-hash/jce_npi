@@ -87,6 +87,44 @@ x-integration-operation-actions:
       "503": { $ref: "#/components/responses/ServiceUnavailable" }
       default: { $ref: "#/components/responses/ProjectError" }
 paths:
+  /integration/erpnext/user-authorization:
+    put:
+      tags: [Integration]
+      operationId: replaceErpnextUserAuthorization
+      description: >-
+        Replaces one ERPNext-owned internal-user authorization projection.
+        The service actor is authenticated by the NPI Site, the complete
+        projection is versioned and hash-bound, and exact replay is safe.
+        Passwords, MFA factors, provider secrets and session cookies are not
+        accepted or stored.
+      x-required-transport-role: NPI API User
+      x-transaction-boundary: authorization-projection
+      x-audit-operation: replace_user_authorization_projection
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthorizationProjectionEvent" }
+      responses:
+        "200":
+          description: Projection created, replaced, disabled or exactly replayed
+          headers:
+            Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+            X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128 } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthorizationProjectionResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
   /integration/erpnext/engineering-change-events:
     post:
       tags: [Integration, Change Control]
@@ -9165,6 +9203,64 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/DocumentFileCapabilityResult" }
   schemas:
+    AuthorizationProjectionEvent:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, operation, sourceSystem, targetSystem, objectType, eventId, sourceSubjectId, targetUserId, sourceVersion, enabled, roles, projectAccess, organizationScopes, issuedAt, expiresAt, traceId, payloadHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        operation: { type: string, const: replace_user_authorization }
+        sourceSystem: { type: string, const: ERPNEXT }
+        targetSystem: { type: string, const: NPI_ONE }
+        objectType: { type: string, const: UserAuthorizationProjection }
+        eventId: { type: string, format: uuid }
+        sourceSubjectId: { type: string, minLength: 1, maxLength: 255 }
+        targetUserId: { type: string, minLength: 1, maxLength: 255 }
+        sourceVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+        enabled: { type: boolean }
+        roles:
+          type: array
+          maxItems: 32
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 128 }
+        projectAccess:
+          type: array
+          maxItems: 256
+          uniqueItems: true
+          items:
+            type: object
+            additionalProperties: false
+            required: [projectId, access]
+            properties:
+              projectId: { type: string, format: uuid }
+              access: { type: string, enum: [view, contribute, approve, administer] }
+        organizationScopes:
+          type: array
+          maxItems: 256
+          uniqueItems: true
+          items:
+            type: object
+            additionalProperties: false
+            required: [kind, referenceKey]
+            properties:
+              kind: { type: string, enum: [Company, Customer, Supplier] }
+              referenceKey: { type: string, minLength: 1, maxLength: 255 }
+        issuedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    AuthorizationProjectionResult:
+      type: object
+      additionalProperties: false
+      required: [projectionId, sourceVersion, state, projectionHash, exactReplay, requestId, traceId]
+      properties:
+        projectionId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        state: { type: string, enum: [enabled, disabled] }
+        projectionHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        exactReplay: { type: boolean }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
     EngineeringChangeInboundEvent:
       type: object
       additionalProperties: false

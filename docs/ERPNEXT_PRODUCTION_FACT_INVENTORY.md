@@ -269,6 +269,34 @@ approval. It proves no need to redesign LaunchFlow, rename current contracts,
 make ERP and NPI dual masters or add a generic ERP writer. Status-option text
 and operation-principal approval remain explicit Sandbox/owner inputs.
 
+## P9-04 authorization compatibility delta
+
+The fixed `security-metadata` operation completed at
+`2026-09-03T07:07:46+07:00` after exact-SHA ordinary CI `33697388327`
+passed on collector SHA `76d40c2aed74716943eeefabb1b4162e8ba994f9` (the single
+historical P6-08 loading-state flake passed when its failed job was rerun at
+the same SHA; no source or test changed). The aggregate sanitized result
+checksum is
+`sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8`.
+No identity, email, permission value, provider client identifier, endpoint,
+secret, business row or production write was collected.
+
+| Fact area | Sanitized accepted fact | Checksum / provenance | Compatibility consequence |
+|---|---|---|---|
+| Internal-user availability | 28 System Users: 21 enabled and 7 disabled | Aggregate counts in the accepted result envelope | ERPNext can own enabled/disabled internal-user truth. Stable Entra-to-Frappe identity matching remains an activation input because identities were intentionally excluded |
+| Role Profiles | Six profiles cover Accounts, HR, Inventory, Manufacturing, Purchase and Sales role groups; no NPI-specific Role Profile was present | Bound by aggregate result checksum; family checksum prefix `9272abca` is retained only as a correlation hint, not an independent checksum claim | `CONFIG_OR_MAPPING_ONLY` for NPI role/profile creation if existing roles suffice; otherwise a separate minimal additive ERP custom-app/config task. LaunchFlow must not invent a default role |
+| User Permissions | 14 aggregate rows: Company 7; Project 0; Customer 0; Supplier 0 | Aggregate-only fixed operations in the accepted envelope | Company scope has a reusable source family. Project/Customer/Supplier scope sources are not established, so production activation stays held until an owner-approved mapping or minimal additive source field exists |
+| Federated login | Office 365 and Wework Social Login providers are enabled | Bound by aggregate result checksum; family checksum prefix `fa7410ea` is a correlation hint; non-secret provider metadata only | Office 365 is a `DIRECT_MATCH` for the approved Entra/Frappe session design. Provider-secret and tenant configuration remain outside Git and outside this read |
+| Self signup | Disabled; source storage shape is `DIGIT_STRING` | Bound by aggregate result checksum; family checksum prefix `0764eea` is a correlation hint | `DIRECT_MATCH`, `NO_CHANGE`; unknown/unprovisioned users still require fail-closed local authorization projection enforcement |
+| Operation-specific authorization projection | No accepted P8-07F source or P9-04 metadata fact proves an existing NPI-specific sender/API or least-privilege NPI Role Profile | P8-07F custom-app/runtime inventory plus this delta | Concrete smallest gap: LaunchFlow adds one default-disabled, versioned full-replacement projection ingress; ERP sender/role/scope configuration remains a separate minimal task and no production change is authorized here |
+
+The abbreviated family prefixes above are correlation hints only; the exact
+aggregate checksum binds the complete sanitized result. The production service actor,
+identity match key, NPI role names, Project/Customer/Supplier source mapping,
+delivery SLA and revocation/reconciliation schedule remain explicit
+Sandbox/owner/activation inputs. They are not guessed and do not justify a
+security-model redesign.
+
 ## Freshness and delta policy
 
 The accepted Bench/Site checksums, HEAD/status table and tracked-path checksums

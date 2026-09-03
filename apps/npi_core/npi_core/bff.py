@@ -68,6 +68,9 @@ _ROUTES = {
         "npi_core.localization_api.set_current_user_navigation_preference"
     ),
     ("POST", "/api/npi/v1/projects"): "npi_core.project_api.create_project",
+    ("PUT", "/api/npi/v1/integration/erpnext/user-authorization"): (
+        "npi_integration.authorization_projection_api.replace_user_authorization"
+    ),
     ("GET", "/api/npi/v1/me/work"): "npi_core.my_work_api.get_my_work",
     ("GET", "/api/npi/v1/me/preferences/my-work-grid"): (
         "npi_core.grid_personalization_api.get_my_work_grid_preferences"
@@ -2498,6 +2501,11 @@ def _normalize_pre_handler_problem(response, request) -> bool:
 
 
 def _requires_project_request_id(method: str, path: str) -> bool:
+    if (
+        method == "PUT"
+        and path == "/api/npi/v1/integration/erpnext/user-authorization"
+    ):
+        return True
     if method == "POST" and path == "/api/npi/v1/projects":
         return True
     if _is_p7_06_request(method, path):

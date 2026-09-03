@@ -271,6 +271,16 @@ objects:
       payload_source_and_projection_head_expectation_hashes: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: SAME_KEY_DIFFERENT_PAYLOAD_CONFLICT}
       exact_link_revision_and_sealed_response: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [NPI_ONE_QUALITY_LINK_SERVICE], direction: NONE, conflict: ONE_WAY_SEAL_EXACT_REPLAY}
 
+  UserAuthorizationProjection:
+    owner_system: ERPNEXT
+    npi_view: minimum_read_only_authorization_projection
+    fields:
+      enabled_internal_user_roles_and_approved_scopes: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: COMPLETE_NEWER_SOURCE_VERSION_REPLACES}
+      target_npi_user_mapping: {owner: APPROVED_IDENTITY_MAPPING, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_ONE_TO_ONE_OR_REJECT}
+      tenant_project_company_customer_and_supplier_scope_interpretation: {owner: APPROVED_VERSIONED_AUTHORIZATION_MAPPING, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNKNOWN_OR_STALE_FAILS_CLOSED}
+      source_subject_and_projection_hashes_event_version_trace_and_audit: {owner: NPI_ONE_AUTHORIZATION_PROJECTION_SERVICE, editable_in: [NPI_ONE_AUTHORIZATION_PROJECTION_SERVICE], direction: DERIVED_READ_ONLY, conflict: IMMUTABLE_EVENT_AND_EXACT_REPLAY}
+      passwords_mfa_factors_provider_secrets_session_cookies_and_raw_tokens: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
   ERPProjectSourceEvent:
     owner_system: ERPNEXT
     npi_view: authenticated_append_only_receipt

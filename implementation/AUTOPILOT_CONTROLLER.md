@@ -11561,3 +11561,31 @@ P9-01 Level 3.
   and zero remain false and cannot be treated as the required disabled control.
   All other settings values and output shapes remain fail-closed. Require one
   new exact-SHA ordinary PASS before the complete operation is retried.
+
+## 2026-09-03 P9-04 security fact accepted; minimal product batch active
+
+- Collector SHA `76d40c2aed74716943eeefabb1b4162e8ba994f9` passes exact-SHA
+  ordinary CI `33697388327`. Its first attempt had one historical P6-08
+  loading-state flake; rerunning only that failed job at the exact same SHA
+  passed, with no source, test or threshold change.
+- The sole fixed `security-metadata` read completed at
+  `2026-09-03T07:07:46+07:00`; aggregate sanitized checksum is
+  `sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8`.
+  Production remained unchanged and the output contains no identity,
+  permission value, secret, endpoint or business row.
+- Office 365 federation and disabled self signup are direct matches. Standard
+  Role Profiles contain no NPI-specific profile; Company User Permissions are
+  present while Project, Customer and Supplier counts are zero; no accepted
+  source proves an NPI authorization sender. The evidence therefore authorizes
+  only one additive, operation-specific, complete-replacement projection whose
+  route and central enforcement are independently default-disabled.
+- Existing role, tenant, Project, object, file, export and operation checks
+  remain server enforced. No Frappe User role mutation, local permission UI,
+  default grant, generic DocType writer, ERPNext change or production contact
+  is allowed in this product batch. Exact source mappings, ERP sender/service
+  scope, Sandbox/UAT and activation remain held.
+- Complete affected checks as one batch, run Level 2, push one product commit,
+  require one exact-SHA ordinary PASS, then run the sole diagnostics-off Level
+  3 including cumulative disposable projection runtime. Common-root failures
+  are repaired together; no metadata-family micro-commits.
+- Controller marker: `P9-04 production compatibility adjustment active`.

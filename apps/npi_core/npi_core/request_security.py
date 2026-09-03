@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import secrets
 import re
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -28,7 +29,7 @@ from .foundation.errors import (
     ToolingRevisionRoutesDisabled,
     ToolingSetRoutesDisabled,
 )
-from .foundation.security import Principal
+from .foundation.security import Principal, ProjectAccess
 
 TRANSPORT_FIELDS = frozenset({"cmd"})
 TENANT_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
@@ -424,11 +425,117 @@ def authenticated_principal(user_id: str | None = None) -> Principal:
     user_type = frappe.db.get_value("User", actor, "user_type")
     if user_type not in {"System User", "Website User"}:
         raise AuthenticationRequired()
+    if authorization_projection_enforcement_enabled():
+        enabled = frappe.db.get_value("User", actor, "enabled")
+        if enabled != 1:
+            raise AuthenticationRequired()
+        return _projected_principal(actor, tenant_id, user_type)
     return Principal(
         user_id=actor,
         roles=frozenset(frappe.get_roles(actor)),
         is_external=user_type != "System User",
         tenant_id=tenant_id,
+    )
+
+
+def authorization_projection_enforcement_enabled() -> bool:
+    """Activate ERP-owned interactive authorization only by explicit Site policy."""
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p9_04_authorization_projection_enforced")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is True
+
+
+def _projected_principal(
+    actor: str,
+    tenant_id: str,
+    user_type: str,
+) -> Principal:
+    import frappe
+
+    hooks = frappe.get_hooks("npi_authorization_projection_resolver")
+    values = [hooks] if isinstance(hooks, str) else list(hooks or ())
+    if len(values) != 1 or not isinstance(values[0], str):
+        raise AuthenticationRequired()
+    resolver = frappe.get_attr(values[0])
+    if not callable(resolver):
+        raise AuthenticationRequired()
+    now = datetime.now(UTC)
+    try:
+        projection = resolver(actor, tenant_id, now)
+    except Exception as error:
+        raise AuthenticationRequired() from error
+    if not isinstance(projection, dict) or set(projection) != {
+        "user_id",
+        "tenant_id",
+        "enabled",
+        "expires_at",
+        "roles",
+        "project_access",
+        "organization_scopes",
+        "projection_hash",
+    }:
+        raise AuthenticationRequired()
+    expires_at = projection["expires_at"]
+    roles = projection["roles"]
+    access = projection["project_access"]
+    organizations = projection["organization_scopes"]
+    projection_hash = projection["projection_hash"]
+    if (
+        projection["user_id"] != actor
+        or projection["tenant_id"] != tenant_id
+        or projection["enabled"] is not True
+        or not isinstance(expires_at, datetime)
+        or expires_at.tzinfo is None
+        or expires_at.astimezone(UTC) <= now
+        or not isinstance(roles, (tuple, list))
+        or any(not isinstance(role, str) or not role for role in roles)
+        or tuple(sorted(set(roles))) != tuple(roles)
+        or not isinstance(access, dict)
+        or not isinstance(organizations, dict)
+        or not isinstance(projection_hash, str)
+        or re.fullmatch(r"[a-f0-9]{64}", projection_hash) is None
+    ):
+        raise AuthenticationRequired()
+    try:
+        project_access = {
+            str(UUID(str(project_id))): ProjectAccess(value)
+            for project_id, value in access.items()
+        }
+        organization_scopes = {
+            str(kind): frozenset(str(reference) for reference in references)
+            for kind, references in organizations.items()
+        }
+    except (TypeError, ValueError):
+        raise AuthenticationRequired() from None
+    if (
+        any(not project_id for project_id in project_access)
+        or any(
+            not isinstance(project_id, str)
+            or str(UUID(project_id)) != project_id.casefold()
+            for project_id in access
+        )
+        or set(organization_scopes) != {"Company", "Customer", "Supplier"}
+        or any(
+            not isinstance(references, (tuple, list))
+            or any(not isinstance(reference, str) or not reference for reference in references)
+            or len(set(references)) != len(references)
+            for references in organizations.values()
+        )
+    ):
+        raise AuthenticationRequired()
+    return Principal(
+        user_id=actor,
+        roles=frozenset(roles),
+        project_access=project_access,
+        is_external=user_type != "System User",
+        tenant_id=tenant_id,
+        organization_scopes=organization_scopes,
     )
 
 

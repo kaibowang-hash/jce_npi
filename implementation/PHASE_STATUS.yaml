@@ -5,7 +5,7 @@ updated_at: '2026-09-03T15:30:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-04
-current_task_status: IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR
+current_task_status: IN_PROGRESS_P9_04_PRODUCT
 current_task_completed_stage: P9_03_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
 current_task_next_stage: P9_04_TRANSITION_EXACT_SHA_ORDINARY_THEN_ONE_SECURITY_METADATA_READ
 current_task_next_stage_status: IN_PROGRESS_ZERO_CONTACT_GOVERNANCE
@@ -3295,14 +3295,19 @@ p9_03:
   next_gate: COMPLETE
 p9_04:
   task: P9-04
-  status: IN_PROGRESS_FACT_DELTA_COLLECTOR
+  status: IN_PROGRESS_PRODUCT
   predecessor_product_checkpoint: 957d307d26bc93fedb08b03fae25f15d0241e1d7
   plan: implementation/evidence/phase-9/p9-04-plan.md
   production_fact_inventory_reused: true
   transition_production_contact: false
   production_delta_operation: P9_SECURITY_AUTHORIZATION_METADATA
-  product_code_authorized: false
-  next_gate: TRANSITION_EXACT_SHA_ORDINARY_THEN_ONE_FIXED_READ
+  production_delta_result: ACCEPTED_SANITIZED
+  production_delta_completed_at: 2026-09-03T07:07:46+07:00
+  production_delta_checksum: sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8
+  product_code_authorized: true
+  production_erp_contact: false
+  compatibility_decision: MINOR_LAUNCHFLOW_ADJUSTMENT_DEFAULT_DISABLED_PROJECTION
+  next_gate: PRODUCT_LEVEL_2_THEN_EXACT_SHA_ORDINARY_AND_LEVEL_3
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

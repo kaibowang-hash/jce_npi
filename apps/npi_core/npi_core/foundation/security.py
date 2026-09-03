@@ -28,6 +28,7 @@ class Principal:
     project_access: dict[str, ProjectAccess] = field(default_factory=dict)
     is_external: bool = False
     tenant_id: str | None = None
+    organization_scopes: dict[str, frozenset[str]] = field(default_factory=dict)
 
 
 def authorize_project(
@@ -52,6 +53,22 @@ def authorize_tenant(principal: Principal | None, tenant_id: str) -> None:
     _require_authenticated(principal)
     assert principal is not None
     if not tenant_id or principal.tenant_id != tenant_id:
+        raise PermissionDenied()
+
+
+def authorize_organization(
+    principal: Principal | None,
+    kind: str,
+    reference: str,
+) -> None:
+    """Require one exact ERP-owned Company, Customer, or Supplier grant."""
+    _require_authenticated(principal)
+    assert principal is not None
+    if (
+        kind not in {"Company", "Customer", "Supplier"}
+        or not reference
+        or reference not in principal.organization_scopes.get(kind, frozenset())
+    ):
         raise PermissionDenied()
 
 

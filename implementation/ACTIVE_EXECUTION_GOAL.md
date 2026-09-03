@@ -4,7 +4,7 @@ Updated: `2026-09-03T15:30:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR — P9-04`
+- Mode: `IN_PROGRESS_P9_04_PRODUCT — P9-04`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -25,12 +25,14 @@ Updated: `2026-09-03T15:30:00+07:00`
   passes exact-SHA ordinary CI `33693636192` and diagnostics-off Level 3
   `33694055699`, including cumulative disposable runtime `100460350172` in
   `9m25s`; its release-gate result is PASS and P9-03 is complete.
-- P9-04 is active only as a zero-contact governance and fixed fact-delta
-  collector checkpoint. It reuses accepted P8-07F version/app/source/DocType/
-  DocPerm facts and freezes one non-secret Role Profile, Social Login, aggregate
-  User/User Permission and self-signup read. Product code and production contact
-  remain held until this transition's exact-SHA ordinary CI passes. Controller
-  marker: `P9-03 Level 3 PASS; P9-04 security fact delta active`.
+- P9-04 accepted its one fixed production read-only security delta at
+  `2026-09-03T07:07:46+07:00`, checksum
+  `sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8`.
+  The active product batch is only a default-disabled full-replacement
+  authorization projection, operation-specific ingress and fail-closed
+  resolver. ERPNext customization, identity/scope guesses, local permission
+  administration and production writes remain excluded. Controller marker:
+  `P9-04 production compatibility adjustment active`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

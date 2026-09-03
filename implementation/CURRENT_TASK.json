@@ -3,7 +3,7 @@
   "task_id": "P9-04",
   "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR",
+  "status": "IN_PROGRESS_P9_04_PRODUCT",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P9-05",
   "base_checkpoint": "957d307d26bc93fedb08b03fae25f15d0241e1d7",
@@ -18,7 +18,8 @@
     "Apply the approved Microsoft Entra authentication and MFA, NPI Frappe session, and ERPNext internal-user role and access-scope authority split without replacing existing server-side authorization.",
     "Freeze one exact-SHA-gated fixed security-metadata production delta for Role Profiles, non-secret Social Login metadata, aggregate System User and User Permission facts, and the self-signup flag.",
     "Reuse all accepted P8-07F version, app, source, DocType, DocPerm and runtime metadata facts; collect no repeated or unrelated production facts.",
-    "After accepted facts, authorize only an evidence-backed minimal local projection, operation-specific adapter and fail-closed authorization adjustment as one later product batch."
+    "Accept the one sanitized production delta completed at 2026-09-03T07:07:46+07:00 with aggregate checksum sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8.",
+    "Implement only the evidence-backed default-disabled full-replacement authorization projection, operation-specific ingress and fail-closed principal resolver as one product batch."
   ],
   "non_scope": [
     "Any production write, sudo, SQL, console, migration, update, restart, reload, cache clear, scheduler action, DocType mutation, webhook or job execution, replay, reconciliation action or permission change.",
@@ -39,7 +40,8 @@
     "NO_IDENTITY_SECRET_ENDPOINT_PERMISSION_VALUE_BUSINESS_ROW_OR_SCRIPT_BODY_MAY_ENTER_STDOUT_GIT_OR_EVIDENCE",
     "SUCCESSFUL_EMPTY_STDOUT_MEANS_ZERO_ONLY_FOR_FIXED_GET_COUNT_OPERATIONS_AFTER_EXIT_ZERO_AND_EMPTY_STDERR",
     "SELF_SIGNUP_CHECK_ACCEPTS_ONLY_NULL_BOOLEAN_INTEGER_ZERO_ONE_OR_DIGIT_ZERO_ONE_AND_PRESERVES_STORAGE_SHAPE",
-    "NO_PRODUCTION_MUTATION_AND_NO_LAUNCHFLOW_PRODUCT_CHANGE_IN_THE_FACT_COLLECTION_CHECKPOINT",
+    "P9_04_PRODUCTION_FACT_DELTA_ACCEPTED_WITHOUT_IDENTITY_SECRET_ENDPOINT_PERMISSION_VALUE_BUSINESS_ROW_OR_WRITE",
+    "P9_04_PRODUCT_CHANGE_IS_ONE_DEFAULT_DISABLED_OPERATION_SPECIFIC_FULL_REPLACEMENT_PROJECTION_WITH_NO_FRAPPE_USER_ROLE_MUTATION",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT"
   ],
   "allowed_paths": [
@@ -49,19 +51,48 @@
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
     "implementation/phase-9-requirement-anchor.md",
+    "apps/npi_core/npi_core/bff.py",
+    "apps/npi_core/npi_core/foundation/security.py",
+    "apps/npi_core/npi_core/request_security.py",
+    "apps/npi_core/npi_core/translations/zh.csv",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "apps/npi_integration/npi_integration/authorization_projection/__init__.py",
+    "apps/npi_integration/npi_integration/authorization_projection/domain.py",
+    "apps/npi_integration/npi_integration/authorization_projection/frappe_repository.py",
+    "apps/npi_integration/npi_integration/authorization_projection/frappe_validation.py",
+    "apps/npi_integration/npi_integration/authorization_projection_api.py",
+    "apps/npi_integration/npi_integration/hooks.py",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_authorization_projection/__init__.py",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_authorization_projection/npi_authorization_projection.json",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_authorization_projection/npi_authorization_projection.py",
+    "contracts/data-ownership.yaml",
+    "contracts/npi-api.openapi.yaml",
+    "docs/ERPNEXT_PRODUCTION_FACT_INVENTORY.md",
+    "docs/LAUNCHFLOW_ERPNEXT_INTEGRATION_BLUEPRINT.md",
+    "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/evidence/phase-9/p9-03-plan.md",
     "implementation/evidence/phase-9/p9-03-validation.md",
     "implementation/evidence/phase-9/p9-04-plan.md",
+    "implementation/evidence/phase-9/p9-04-production-security-fact-delta.md",
+    "implementation/evidence/phase-9/p9-04-validation.md",
     "scripts/collect_erpnext_production_facts.py",
+    "scripts/verify-frappe-runtime.sh",
+    "scripts/verify_authorization_projection_runtime.py",
     "tests/test_current_task_verifier.py",
     "tests/test_erpnext_production_fact_collector.py",
+    "tests/test_phase8_item_publish_security.py",
+    "tests/test_phase9_authorization_projection_api.py",
+    "tests/test_phase9_authorization_projection_domain.py",
+    "tests/test_phase9_authorization_projection_metadata.py",
+    "tests/test_phase9_authorization_projection_repository.py",
+    "tests/test_phase9_authorization_projection_runtime_verifier.py",
+    "tests/test_phase9_authorization_projection_security.py",
     "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {
     "level_1": [
       ["python", "scripts/verify_current_task.py"],
-      ["python", "scripts/collect_erpnext_production_facts.py", "self-check"],
-      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_erpnext_production_fact_collector", "tests.test_v1_2_reconciliation", "-v"],
+      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_phase9_authorization_projection_api", "tests.test_phase9_authorization_projection_domain", "tests.test_phase9_authorization_projection_metadata", "tests.test_phase9_authorization_projection_repository", "tests.test_phase9_authorization_projection_runtime_verifier", "tests.test_phase9_authorization_projection_security", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
@@ -69,7 +100,7 @@
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
-      ["python", "scripts/collect_erpnext_production_facts.py", "self-check"],
+      ["python", "-m", "unittest", "tests.test_phase9_authorization_projection_runtime_verifier", "-v"],
       ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],
     "level_3": [
@@ -84,7 +115,7 @@
     "phase_status_resumed_product_task": "P9-04",
     "active_goal_marker": "P9-04",
     "next_action_marker": "P9-04",
-    "controller_marker": "P9-03 Level 3 PASS; P9-04 security fact delta active"
+    "controller_marker": "P9-04 production compatibility adjustment active"
   },
   "rollback": {
     "before_product_resume": "Restore exact P9-03 product checkpoint 957d307d26bc93fedb08b03fae25f15d0241e1d7. This transition creates no production or other external state.",

@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR — P9-04`
+`IN_PROGRESS_P9_04_PRODUCT — P9-04`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -12,16 +12,15 @@ passes exact-SHA ordinary CI `33687630510` and the sole final Level 3
 `33688112727`, including complete frontend/E2E/visual lanes and fresh
 disposable-Site runtime `100442085873`. Its release-gate result is PASS.
 
-P9-03 product checkpoint `957d307d26bc93fedb08b03fae25f15d0241e1d7`
-passes ordinary CI `33693636192` and final Level 3 `33694055699`; P9-03 is
-complete. P9-04 now freezes one zero-contact governance and fixed security fact
-delta. Commit and push this transition as one batch, require its exact-SHA
-ordinary CI PASS, then execute exactly one `security-metadata` production
-read-only invocation through `JCE-Core` and `frappe-bench`. Reuse all prior
-inventory. Never emit identities, permission values, secrets, endpoints or
-business rows. After accepting the sanitized result, decide and implement only
-the evidenced minimum local change as one product batch. P9-04 marker:
-`P9-03 Level 3 PASS; P9-04 security fact delta active`.
+P9-03 is complete. P9-04 accepted the sole fixed security delta at
+`2026-09-03T07:07:46+07:00` with checksum
+`sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8`.
+Finish the single default-disabled authorization-projection product batch,
+run affected checks and Level 2, then create one product commit and require one
+exact-SHA ordinary PASS followed by one diagnostics-off Level 3. Do not contact
+production again, implement the separate ERP sender, guess identity/scope
+mappings, alter Frappe User roles or stage user-owned dirty files. P9-04 marker:
+`P9-04 production compatibility adjustment active`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

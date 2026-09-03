@@ -12,6 +12,13 @@ npi_erp_projection_reader_factory = (
     "npi_integration.projections.frappe_repository.projection_reader_factory"
 )
 
+# P9-04 interactive authorization remains inert until its Site policy is
+# explicitly enabled. The resolver reads only the local ERP-owned projection.
+npi_authorization_projection_resolver = (
+    "npi_integration.authorization_projection.frappe_repository."
+    "resolve_authorization_projection"
+)
+
 # P8-02 recovery is deliberately operation-specific and bounded. It only
 # requeues pending receipts or processing receipts whose claim lease expired.
 scheduler_events = {

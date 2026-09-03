@@ -8980,3 +8980,27 @@ Project administration permission is required.,需要專案管理權限。
 The meeting minute cannot be edited or deleted after creation.,會議紀錄建立後無法編輯或刪除。
 A failed transaction creates neither the minute nor linked work items. Retry uses a new command identity.,交易失敗時不會建立會議紀錄或關聯工作項。重試將使用新的命令識別碼。
 "The actor, Project version, template, content hash and linked work are audited.",操作者、專案版本、範本、內容雜湊與關聯工作均會被稽核。
+NPI Authorization Projection,NPI 授權投影
+Projection Key Hash,投影鍵雜湊
+Source Subject Hash,來源主體雜湊
+Target User,目標使用者
+Project Access,專案存取權限
+Organization Scopes,組織範圍
+Source Event ID,來源事件識別碼
+Source Event Hash,來源事件雜湊
+Projection Hash,投影雜湊
+Issued At,簽發時間
+Applied At,套用時間
+Source Trace ID,來源追蹤識別碼
+Authorization projections can only be changed by the controlled integration service.,授權投影只能由受控整合服務變更。
+Authorization projection history cannot be deleted.,授權投影歷史不可刪除。
+Authorization projection is temporarily unavailable.,授權投影暫時無法使用。
+Enter a valid authorization projection.,請輸入有效的授權投影。
+Select a supported authorization projection state.,請選擇支援的授權投影狀態。
+A disabled authorization projection cannot retain access.,已停用的授權投影不能保留存取權限。
+Authorization projection expiry is invalid.,授權投影的到期時間無效。
+The authorization projection is invalid.,授權投影無效。
+Enter a current authorization window.,請輸入目前有效的授權時間窗。
+Enter an allowed authorization window.,請輸入允許的授權時間窗。
+enabled,已啟用
+disabled,已停用

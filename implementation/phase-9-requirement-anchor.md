@@ -1,6 +1,6 @@
 # Phase 9 Requirement Anchor
 
-Status: `P9-03 PASS — P9-04 SECURITY FACT-DELTA GOVERNANCE ACTIVE`
+Status: `P9-03 PASS — P9-04 MINIMAL AUTHORIZATION PROJECTION ACTIVE`
 
 This anchor is the product-code authorization boundary for Phase 9. It closes no
 Phase 9 requirement by itself. P9-00 exact SHA
@@ -110,3 +110,14 @@ counts, and the self-signup flag. It excludes identities, permission values,
 secrets, endpoints and business records. The fact checkpoint makes no product
 change and no production mutation. Only a concrete compatibility difference
 may authorize a later minimal local adjustment.
+
+The fixed delta completed at `2026-09-03T07:07:46+07:00` with aggregate
+checksum `sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8`.
+Office 365 login and disabled self signup directly match the approved design.
+Six standard Role Profiles contain no NPI-specific profile, and the 14 User
+Permissions include seven Company rows but zero Project, Customer or Supplier
+rows. No accepted source proves an operation-specific NPI authorization
+sender. This concrete delta authorizes only one default-disabled, complete,
+versioned and hash-bound local projection ingress plus fail-closed principal
+resolution. It does not authorize ERPNext mutation, local role administration,
+Frappe User role writes or any architecture redesign.

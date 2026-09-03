@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `FACT-DELTA COLLECTOR — EXACT-SHA ORDINARY CI REQUIRED`
+Status: `FACT DELTA ACCEPTED — MINIMAL DEFAULT-DISABLED PRODUCT BATCH ACTIVE`
 
 ## Outcome and fixed authority
 
@@ -99,6 +99,15 @@ No product fix is authorized by this transition. After the sanitized result is
 accepted, P9-04 may implement only the smallest local projection/adapter and
 fail-closed checks proven necessary. Any ERPNext endpoint or additive custom-app
 change remains a separate task; no production ERPNext mutation is permitted.
+
+The fixed read completed at `2026-09-03T07:07:46+07:00` with aggregate
+checksum `sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8`.
+It proves Office 365 login enabled, self signup disabled, six standard Role
+Profiles with no NPI-specific profile, 28 aggregate System Users (21 enabled,
+seven disabled), and 14 User Permissions (Company seven; Project, Customer and
+Supplier zero). No operation-specific NPI authorization sender is proved.
+Therefore the only authorized product change is the default-disabled local
+full-replacement projection and resolver recorded in the fact-delta evidence.
 
 ## Test, Gate and rollback
 

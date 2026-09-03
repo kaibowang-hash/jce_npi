@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-04")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_04_FACT_DELTA_COLLECTOR")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_04_PRODUCT")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-05")
         self.assertEqual(
@@ -59,7 +59,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-04",
                 "active_goal_marker": "P9-04",
                 "next_action_marker": "P9-04",
-                "controller_marker": "P9-03 Level 3 PASS; P9-04 security fact delta active",
+                "controller_marker": "P9-04 production compatibility adjustment active",
             },
         )
         for invariant in (
@@ -71,7 +71,8 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "PRODUCTION_DELTA_REUSES_ACCEPTED_INVENTORY_AND_READS_ONLY_FIXED_ROLE_PROFILE_LOGIN_COUNT_AND_SIGNUP_FACTS",
             "PRODUCTION_CONTACT_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_PASS_AND_PRIVATE_SITE_CONFIGURATION",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
-            "NO_PRODUCTION_MUTATION_AND_NO_LAUNCHFLOW_PRODUCT_CHANGE_IN_THE_FACT_COLLECTION_CHECKPOINT",
+            "P9_04_PRODUCTION_FACT_DELTA_ACCEPTED_WITHOUT_IDENTITY_SECRET_ENDPOINT_PERMISSION_VALUE_BUSINESS_ROW_OR_WRITE",
+            "P9_04_PRODUCT_CHANGE_IS_ONE_DEFAULT_DISABLED_OPERATION_SPECIFIC_FULL_REPLACEMENT_PROJECTION_WITH_NO_FRAPPE_USER_ROLE_MUTATION",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
@@ -79,6 +80,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/evidence/phase-9/p9-04-plan.md",
                 "scripts/collect_erpnext_production_facts.py",
                 "tests/test_erpnext_production_fact_collector.py",
+                "apps/npi_integration/npi_integration/authorization_projection_api.py",
+                "scripts/verify_authorization_projection_runtime.py",
+                "tests/test_phase9_authorization_projection_security.py",
             }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
