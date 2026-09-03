@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T12:35:29+07:00'
+updated_at: '2026-09-03T12:59:44+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P9-06
-current_task_status: IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
-current_task_completed_stage: P9_06_FIRST_EXACT_SHA_ORDINARY_FAILED_TEST_ADAPTATION_REPAIRED_LOCAL
-current_task_next_stage: P9_06_REPLACEMENT_EXACT_SHA_ORDINARY_THEN_LEVEL_3
-current_task_next_stage_status: PENDING_REPAIR_CANDIDATE_PUSH
-resumed_product_task: P9-06
-resumed_product_task_status: IMPLEMENTATION_CANDIDATE_GATED
+current_task: P9-07
+current_task_status: IN_PROGRESS_P9_07_AUDIT_AND_PLAN
+current_task_completed_stage: P9_06_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
+current_task_next_stage: P9_07_AUDIT_PLAN_EXACT_SHA_ORDINARY
+current_task_next_stage_status: IN_PROGRESS_GOVERNANCE_TRANSITION
+resumed_product_task: P9-07
+resumed_product_task_status: AUDIT_AND_PLAN_PRODUCT_HELD
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -18,7 +18,7 @@ scope_decisions:
     current_task_may_connect: false
     connection_effective_condition: CURRENT_TASK_HAS_A_FRESHNESS_OR_DELTA_DEPENDENCY_AND_FIXED_ALLOWLIST
     documentation_authorized_after_transition_ordinary: true
-    current_rule: P9_06_REUSES_ACCEPTED_INVENTORY_AND_REQUIRES_NO_PRODUCTION_READ
+    current_rule: P9_07_REUSES_ACCEPTED_INVENTORY_AND_REQUIRES_NO_PRODUCTION_READ
     future_activation_trigger: TASK_SCOPED_FRESHNESS_OR_DELTA_NEED_UNDER_STANDING_BOUNDARY
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
@@ -3356,7 +3356,7 @@ p9_05:
   next_gate: COMPLETE
 p9_06:
   task: P9-06
-  status: IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
+  status: PASS
   predecessor_product_checkpoint: 22cc20294f37a21a64b00d6d6f2975e2988880f8
   governance_checkpoint: ff34547d9cb4ffd441b3203cf92d37571230bb44
   governance_ordinary: 33714911502
@@ -3377,12 +3377,41 @@ p9_06:
   frontend_level_2: 1140_PASS
   frontend_coverage: {statements: 80.06, branches: 79.49, functions: 82.09, lines: 82.64}
   localization: 9322_LITERAL_SOURCES_100_PERCENT_ZH_ZH_TW
-  implementation_candidate: PENDING_COMMIT
+  first_implementation_candidate: 4341dd6b700ac415a7198356231158f69d813ad7
+  first_ordinary: 33718667941
+  first_ordinary_result: FAILED_TEST_CONTRACT_ADAPTATION_ONLY
+  final_checkpoint: 8f5c2292dab6aa48f82c8aade37f3938b023699d
+  final_ordinary: 33719574371
+  final_ordinary_jobs: {repository: 100535764378, frontend_e2e_shard_1: 100535764579, secret_scan: 100535764586, frontend_e2e_shard_2: 100535764617, frontend_verify: 100535764638, visual: 100535764675, frontend_aggregate: 100536847175}
+  final_level_3: 33719982252
+  final_level_3_jobs: {frontend_verify: 100536955688, frontend_e2e_shard_1: 100536955818, frontend_e2e_shard_2: 100536955861, secret_scan: 100536955916, visual: 100536955957, repository: 100536955972, frontend_aggregate: 100538085630, controlled_preflight: 100538100719, controlled_runtime: 100538152787}
+  controlled_runtime_artifact: 9880193608
+  controlled_runtime_artifact_digest: sha256:5c08a1de96d5f38779b472cbcf9600c6724a3f6b290703351541b42bd5482161
+  controlled_runtime_result_checksum: sha256:7a6f896158ec53fa8e3ae45fd53852765d17ac8aaa4451c03794b4fcfe6ee42c
+  controlled_runtime_production_contact: false
+  final_release_gate: PASS
   production_profile_authorized: false
   production_retention_policy_authorized: false
   automatic_disposition_authorized: false
   production_erp_contact: false
-  next_gate: FINAL_EXACT_SHA_ORDINARY_THEN_LEVEL_3
+  next_gate: COMPLETE
+p9_07:
+  task: P9-07
+  status: IN_PROGRESS_P9_07_AUDIT_AND_PLAN
+  predecessor_product_checkpoint: 8f5c2292dab6aa48f82c8aade37f3938b023699d
+  plan: implementation/evidence/phase-9/p9-07-plan.md
+  validation: implementation/evidence/phase-9/p9-07-validation.md
+  requirements: [NFR-BCP-001, NFR-MNT-001]
+  rehearsal_site: npi.localhost
+  rehearsal_database: npi_one_runtime
+  rehearsal_marker: npi-one-local-runtime-disposable-v1
+  release_manifest_schema: go-live-rehearsal-manifest.v1
+  result_schema: go-live-recovery-result.v1
+  product_code_authorized: false
+  production_rpo_rto_accepted: false
+  production_backup_schedule_verified: false
+  production_erp_contact: false
+  next_gate: AUDIT_PLAN_EXACT_SHA_ORDINARY
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3410,4 +3439,4 @@ phases:
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05], current_task: P9-06, current_task_status: IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05, P9-06], current_task: P9-07, current_task_status: IN_PROGRESS_P9_07_AUDIT_AND_PLAN}

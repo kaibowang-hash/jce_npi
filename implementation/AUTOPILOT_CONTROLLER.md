@@ -11753,3 +11753,35 @@ P9-01 Level 3.
   require its ordinary CI PASS followed by the sole diagnostics-off Level 3.
   P9-07 remains gated and no production ERPNext or LaunchFlow contact occurs.
 - Controller marker: `P9-06 implementation candidate; exact-SHA ordinary and Level 3 required`.
+
+## 2026-09-03 P9-06 Level 3 PASS; P9-07 go-live recovery audit and plan active
+
+- Final P9-06 SHA `8f5c2292dab6aa48f82c8aade37f3938b023699d`
+  passes exact-SHA ordinary CI `33719574371` and the sole diagnostics-off Level
+  3 `33719982252`. Every repository, secret, frontend, E2E, visual, aggregate,
+  controlled-preflight and fresh cumulative disposable-Site lane passes.
+  Runtime job `100538152787` completes P9-06 and cleanup with
+  `productionContact=false`; artifact `9880193608` retains the accepted digest
+  and result checksum. P9-06 `release-gate` is PASS.
+- Automatically activate P9-07 for `NFR-BCP-001` and `NFR-MNT-001`. Reuse only
+  the fixed repository Bench, guarded `npi.localhost` Site,
+  `npi_one_runtime` database, disposable marker, independent apps, pinned
+  source, migrations, cumulative runtime and cleanup.
+- Freeze one non-production rehearsal: a value-free exact release manifest,
+  synthetic database/public/private file canaries, a full checksummed backup
+  in temporary `0700` storage, meaningful same-Site restore, post-restore
+  migrations, cumulative forward-fix validation, bounded timings and cleanup.
+  Add one operator runbook separating technical evidence from production
+  ownership.
+- No generic deploy/backup/restore executor, caller-selected Site/database/path/
+  command/app/DocType/target, CI workflow change, downgrade, production backup
+  data, production mutation or external connection is authorized. Production
+  schedule, storage, retention, encryption/key custody, RPO/RTO, SLA and
+  sign-off remain IT/business held.
+- P9-07 requires no fresh ERP fact and must not contact `jce.1`, production
+  ERPNext or production LaunchFlow. This transition changes governance and
+  evidence only. Product code remains held until its exact-SHA ordinary CI
+  passes; then deliver one implementation batch, one Level 2, one final
+  exact-SHA ordinary CI and one diagnostics-off Level 3 without approval pauses
+  or per-check micro-commits.
+- Controller marker: `P9-06 Level 3 PASS; P9-07 go-live recovery audit and plan active`.

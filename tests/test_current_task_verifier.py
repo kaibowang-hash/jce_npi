@@ -34,58 +34,57 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-06")
+        self.assertEqual(value["task_id"], "P9-07")
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED",
+            "IN_PROGRESS_P9_07_AUDIT_AND_PLAN",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P9-07")
+        self.assertEqual(value["authorized_next_task"], "P9-08")
         self.assertEqual(
             value["requirement_ids"],
-            ["FR-RP-010", "NFR-COM-001"],
+            ["NFR-BCP-001", "NFR-MNT-001"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "22cc20294f37a21a64b00d6d6f2975e2988880f8",
+            "8f5c2292dab6aa48f82c8aade37f3938b023699d",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "22cc20294f37a21a64b00d6d6f2975e2988880f8",
+            "8f5c2292dab6aa48f82c8aade37f3938b023699d",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "P9-06",
+                "phase_status_current_task": "P9-07",
                 "phase_status_execution_hold": "NONE",
-                "phase_status_resumed_product_task": "P9-06",
-                "active_goal_marker": "P9-06",
-                "next_action_marker": "P9-06",
-                "controller_marker": "P9-06 implementation candidate; exact-SHA ordinary and Level 3 required",
+                "phase_status_resumed_product_task": "P9-07",
+                "active_goal_marker": "P9-07",
+                "next_action_marker": "P9-07",
+                "controller_marker": "P9-06 Level 3 PASS; P9-07 go-live recovery audit and plan active",
             },
         )
         for invariant in (
-            "P9_05_EXACT_SHA_22CC2029_ORDINARY_33712753404_AND_LEVEL3_33713119419_PASS",
-            "P9_05_RUNTIME_JOB_100517575541_ARTIFACT_9877867328_PRODUCTION_CONTACT_FALSE",
-            "DATA_EXCHANGE_IS_A_FIXED_CAPABILITY_CATALOG_NOT_A_GENERIC_IMPORT_EXPORT_OR_DOCTYPE_WRITER",
-            "REPORT_DATASETS_ARE_SERVER_OWNED_VERSIONED_PERMISSION_FILTERED_AND_LIMITED_TO_PROJECT_PORTFOLIO_V1_AND_KPI_TRENDS_V1",
-            "EXPORT_PROFILES_ARE_PUBLISHED_VERSIONED_OPERATION_SPECIFIC_AND_ALLOWLIST_DATASET_COLUMNS_REDACTION_FORMAT_AND_BOUNDS",
-            "EXPORT_ARTIFACTS_ARE_PRIVATE_IMMUTABLE_HASHED_AUDITED_FORMULA_NEUTRALIZED_ACTOR_BOUND_AND_IDEMPOTENT",
-            "RETENTION_POLICIES_ARE_EXPLICIT_PUBLISHED_VERSIONS_WITH_CLOSED_SCOPE_EFFECTIVITY_CATEGORY_YEARS_AND_HASH",
-            "ARCHIVE_RECORDS_ARE_APPEND_ONLY_READ_ONLY_REFERENCES_TO_EXACT_SOURCE_VERSION_HASH_AND_POLICY_VERSION",
-            "NO_PRODUCTION_ERPNEXT_OR_LAUNCHFLOW_CONTACT_AND_NO_NEW_ERP_FACT_DEPENDENCY_FOR_P9_06",
+            "P9_06_EXACT_SHA_8F5C2292_ORDINARY_33719574371_AND_LEVEL3_33719982252_PASS",
+            "P9_06_RUNTIME_JOB_100538152787_ARTIFACT_9880193608_PRODUCTION_CONTACT_FALSE",
+            "FIXED_REPOSITORY_BENCH_NPI_LOCALHOST_NPI_ONE_RUNTIME_AND_DISPOSABLE_MARKER_ONLY",
+            "RELEASE_MANIFEST_BINDS_EXACT_GIT_FRAPPE_APP_SCHEMA_AND_CONFIG_KEY_FINGERPRINTS_WITHOUT_VALUES_OR_SECRETS",
+            "BACKUP_USES_ONLY_SYNTHETIC_DATABASE_PUBLIC_AND_PRIVATE_FILE_CANARIES_AND_TEMPORARY_0700_STORAGE",
+            "RESTORE_REQUIRES_PRE_BACKUP_CANARIES_PRESENT_AND_POST_BACKUP_CANARIES_ABSENT",
+            "FORWARD_FIX_RERUNS_MIGRATIONS_AND_CUMULATIVE_RUNTIME_AFTER_RESTORE",
+            "NO_PRODUCTION_ERPNEXT_LAUNCHFLOW_OR_EXTERNAL_CONTACT_AND_NO_NEW_ERP_FACT_DEPENDENCY_FOR_P9_07",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "implementation/evidence/phase-9/p9-05-validation.md",
-                "implementation/evidence/phase-9/p9-06-plan.md",
+                "implementation/evidence/phase-9/p9-06-validation.md",
+                "implementation/evidence/phase-9/p9-07-plan.md",
                 "implementation/phase-9-requirement-anchor.md",
-                "apps/npi_core/npi_core/data_exchange/frappe_repository.py",
-                "frontend/src/pages/data-exchange-workspace.tsx",
-                "scripts/verify_data_exchange_runtime.py",
+                "docs/GO_LIVE_AND_RECOVERY_RUNBOOK.md",
+                "scripts/run_go_live_rehearsal.sh",
+                "scripts/verify_go_live_rehearsal.py",
             }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))

@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `IMPLEMENTATION CANDIDATE — FINAL EXACT-SHA GATES PENDING`
+Status: `PASS — EXACT-SHA ORDINARY AND LEVEL 3`
 
 Requirements: `FR-RP-010`, `NFR-COM-001`
 
@@ -82,12 +82,29 @@ created inside the transaction. Rollback disables routes and reverts only P9-06
 code/schema while retaining already accepted immutable history for reviewed
 forward correction.
 
-## Final evidence slots
+## Final exact-SHA evidence
 
-The candidate exact SHA is the Git commit containing this document. Completion
-requires one exact-SHA ordinary CI PASS and one diagnostics-off Level 3 PASS at
-that same SHA. Until both pass, P9-06 remains incomplete and P9-07 product work
-is not authorized. No production LaunchFlow or ERPNext contact occurred.
+Final exact SHA `8f5c2292dab6aa48f82c8aade37f3938b023699d` passes ordinary
+CI `33719574371` in repository `100535764378`, E2E shard 1
+`100535764579`, secret scan `100535764586`, E2E shard 2 `100535764617`,
+frontend verify `100535764638`, visual `100535764675` and frontend aggregate
+`100536847175`.
+
+The sole diagnostics-off Level 3 at the same SHA is `33719982252`. Repository
+`100536955972`, both E2E shards `100536955818`/`100536955861`, secret scan
+`100536955916`, frontend verify `100536955688`, visual `100536955957`,
+frontend aggregate `100538085630`, controlled preflight `100538100719` and
+fresh cumulative disposable-Site runtime `100538152787` all pass. Runtime
+artifact `9880193608` has GitHub digest
+`sha256:5c08a1de96d5f38779b472cbcf9600c6724a3f6b290703351541b42bd5482161`;
+its extracted result checksum is
+`sha256:7a6f896158ec53fa8e3ae45fd53852765d17ac8aaa4451c03794b4fcfe6ee42c`.
+The result binds the exact SHA, run, diagnostics-off `level_3`, fixed Site and
+database, pinned Frappe commit and cumulative command. The successful shell
+invokes the P9-06 runtime verifier before completion and cleanup. Its static
+and runtime contract proves `productionContact=false`; no production
+LaunchFlow or ERPNext contact occurred. `release-gate` is PASS and P9-06 is
+complete.
 
 ## First exact-SHA ordinary result and batched test adaptation
 
@@ -104,6 +121,6 @@ the anchor mock an explicit return, and updates the complete Shell command
 contract to eleven entries while retaining the same current-Project navigation
 assertion. ESLint passes; the complete frontend unit/coverage suite passes
 `1140/1140`; and the affected Shell plus P9-06 browser suite passes `13/13`.
-The replacement exact-SHA ordinary CI and diagnostics-off Level 3 remain the
-only outstanding gates. No product behavior, CI workflow, production system or
-user-owned file changed.
+The replacement exact-SHA ordinary CI and sole diagnostics-off Level 3 are the
+passing runs above. No product behavior, CI workflow, production system or
+user-owned file changed in the repair.

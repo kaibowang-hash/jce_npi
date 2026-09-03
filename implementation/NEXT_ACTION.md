@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-06`
+`IN_PROGRESS_P9_07_AUDIT_AND_PLAN — P9-07`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -22,17 +22,23 @@ passes exact-SHA ordinary CI `33712753404` and diagnostics-off Level 3
 `33713119419`, including cumulative disposable runtime `100517575541` with
 `productionContact=false`; release-gate is PASS.
 
-P9-06 candidate SHA `4341dd6b700ac415a7198356231158f69d813ad7`
-ordinary CI `33718667941` passes repository, secret, visual and E2E shard 1,
-then exposes only a batched test-contract adaptation: lint-prohibited fixture
-assertions and the pre-P9-06 Shell command count/index. The behavior-neutral
-repair passes ESLint, `1140/1140` frontend tests and the affected `13/13`
-Shell/P9-06 browser suite. Push one replacement exact candidate, require its
-ordinary CI PASS, then run one diagnostics-off Level 3 at the same SHA. P9-07
-remains gated until both pass. Do not add another product batch, contact
-production ERP/LaunchFlow, activate a production profile/policy, delete
-history or stage any user-owned dirty file. P9-06 marker: `P9-06 implementation
-candidate; exact-SHA ordinary and Level 3 required`.
+P9-06 final SHA `8f5c2292dab6aa48f82c8aade37f3938b023699d`
+passes exact-SHA ordinary CI `33719574371` and the sole diagnostics-off Level 3
+`33719982252`. Cumulative disposable runtime `100538152787`, cleanup and
+`productionContact=false` pass; release-gate is PASS.
+
+P9-07 now audits `NFR-BCP-001` and `NFR-MNT-001`. Commit the governance-only
+transition and require its exact-SHA ordinary PASS. Then, without another
+approval pause, implement one fixed non-production `npi.localhost` go-live and
+recovery rehearsal: value-free release manifest, synthetic database plus
+public/private file canaries, full checksummed backup, meaningful restore,
+post-restore migrations, cumulative forward-fix validation, bounded timing and
+cleanup. Add the operator runbook and keep production schedule, storage,
+encryption custody, RPO/RTO and production execution explicitly held. Do not
+contact `jce.1`, production ERPNext/LaunchFlow or external storage; do not add
+a generic deploy/restore executor, modify CI workflow, claim a real pilot or
+stage user-owned dirty files. P9-07 marker: `P9-06 Level 3 PASS; P9-07 go-live
+recovery audit and plan active`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

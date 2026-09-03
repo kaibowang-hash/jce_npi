@@ -210,3 +210,42 @@ Local Level 2 passes `2970` repository tests and `1140` frontend tests with
 remains incomplete until one exact-SHA ordinary CI and one diagnostics-off
 Level 3 pass at the same commit. P9-07 remains gated, and production ERPNext
 and LaunchFlow remain untouched.
+
+Final P9-06 SHA `8f5c2292dab6aa48f82c8aade37f3938b023699d`
+passes ordinary CI `33719574371` and diagnostics-off Level 3 `33719982252`.
+Every repository, frontend, E2E, visual, secret, controlled-preflight and fresh
+cumulative disposable-Site lane passes. Runtime job `100538152787` proves the
+P9-06 verifier, cleanup and `productionContact=false`; `release-gate` is PASS.
+P9-06 is complete.
+
+## P9-07 go-live and recovery rehearsal boundary
+
+P9-07 covers `NFR-BCP-001` and `NFR-MNT-001` only. The repository already has
+independent Frappe apps, pinned source, version control, exact-SHA automated
+gates, strict fixed local Bench/Site/database guards, repeatable migrations,
+cumulative synthetic runtime and cleanup. The remaining technical gap is one
+complete non-production proof that a full database plus public/private file
+backup can be checksummed, restored meaningfully and followed by current-code
+migration and cumulative forward-fix verification.
+
+The minimal slice reuses only the repository Bench and guarded
+`npi.localhost`/`npi_one_runtime` disposable identity. It records a value-free
+exact release manifest, creates synthetic database/public/private file canaries,
+takes a full backup into temporary `0700` storage, creates distinguishable
+post-backup canaries, restores the backup, proves pre-backup state returned and
+post-backup state disappeared, reruns migration and cumulative runtime, records
+bounded timings/checksums and cleans up. It accepts no caller-selected Site,
+database, path, command, app, DocType or target and is not a generic deploy,
+backup or restore service.
+
+This evidence does not contact production ERPNext, `jce.1`, production
+LaunchFlow, external storage or a remote backup target. It does not establish
+the production schedule, retention, encryption/key custody, data-volume
+performance, RPO, RTO, SLA or approval. Those remain IT/business-owned release
+inputs. Suggested `RPO <= 24h` and `RTO <= 8h` are targets pending final
+acceptance, not technical PASS claims.
+
+The transition changes governance and evidence only. Product code remains held
+until its exact-SHA ordinary CI passes. Then P9-07 is delivered as one batch,
+one Level 2 and one final diagnostics-off Level 3, without production mutation,
+CI workflow changes or per-check micro-commits.

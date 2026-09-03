@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T12:16:00+07:00`
+Updated: `2026-09-03T12:59:44+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_06_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-06`
+- Mode: `IN_PROGRESS_P9_07_AUDIT_AND_PLAN — P9-07`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -35,20 +35,22 @@ Updated: `2026-09-03T12:16:00+07:00`
   and diagnostics-off Level 3 `33713119419` pass every lane, including fresh
   cumulative disposable-Site runtime `100517575541` with
   `productionContact=false`; `release-gate` is PASS.
-- P9-06 is active for `FR-RP-010` and `NFR-COM-001`. Governance SHA
-  `ff34547d9cb4ffd441b3203cf92d37571230bb44` passes ordinary CI
-  `33714911502` on exact-SHA attempt 2; attempt 1 exposed only a pre-existing
-  P6-08 loading-state E2E race and required no product change. The implemented
-  candidate preserves the
-  specialized P6-07 import, P6-08 Tooling export, P5-06 controlled print,
-  P9-02 reporting and P9-05 migration contracts. It freezes fixed report
-  datasets, operation-specific export profiles, deterministic private report
-  packages and explicit versioned retention/archive truth only. Local Level 2
-  passes `2970` repository and `1140` frontend tests; direct `zh`/`zh-TW`
-  coverage is complete. No generic writer, production policy, automatic
-  deletion or production ERP/LaunchFlow contact is authorized. Controller
-  marker: `P9-06 implementation candidate; exact-SHA ordinary and Level 3
-  required`.
+- P9-06 is complete at exact SHA
+  `8f5c2292dab6aa48f82c8aade37f3938b023699d`. Ordinary CI `33719574371`
+  and the sole diagnostics-off Level 3 `33719982252` pass every lane, including
+  cumulative disposable-Site runtime `100538152787`, cleanup and
+  `productionContact=false`; `release-gate` is PASS.
+- P9-07 is active for `NFR-BCP-001` and `NFR-MNT-001`. It freezes one fixed
+  non-production rehearsal on the guarded `npi.localhost` disposable Site:
+  exact value-free release manifest, synthetic database/public/private file
+  canaries, full checksummed backup, meaningful restore, migrations,
+  cumulative forward-fix verification, bounded timing and cleanup. It is not
+  a generic deploy/restore tool and does not contact production ERPNext,
+  `jce.1`, production LaunchFlow or an external target. Product work remains
+  held until this audit/plan transition passes exact-SHA ordinary CI.
+  Production schedule, storage, key custody, RPO/RTO and sign-off remain IT/
+  business owned. Controller marker: `P9-06 Level 3 PASS; P9-07 go-live
+  recovery audit and plan active`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple
