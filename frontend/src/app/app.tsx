@@ -37,6 +37,9 @@ const ExecutionPrototypePage = lazy(
   () => import("../pages/execution-prototype-page"),
 );
 const PortfolioPage = lazy(() => import("../pages/portfolio-page"));
+const HistoricalMigrationRoute = lazy(
+  () => import("./historical-migration-route"),
+);
 const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
 const liveReportingDataSource = new LiveReportingDataSource();
 const liveCollaborationDataSource = new LiveCollaborationDataSource();
@@ -193,12 +196,18 @@ export function App(): React.JSX.Element {
       <LiveExecutionRoute projectId={route.projectGlobalId} />
     ) : route.screen === "execution" ? (
       <ExecutionPrototypePage scenario={route.scenario} />
+    ) : route.screen === "portfolio" && route.reportingView === "migration" ? (
+      <HistoricalMigrationRoute />
     ) : route.screen === "portfolio" ? (
       <PortfolioPage
         dataSource={liveReportingDataSource}
         key={route.reportingView}
         navigate={guardedNavigate}
-        view={route.reportingView ?? "portfolio"}
+        view={
+          route.reportingView === "migration"
+            ? "configuration"
+            : (route.reportingView ?? "portfolio")
+        }
       />
     ) : route.workMode === "demo" ? (
       <WorkPage navigate={guardedNavigate} />

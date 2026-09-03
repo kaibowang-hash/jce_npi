@@ -179,9 +179,11 @@ export function AppShell({
   const reportingContext =
     route.reportingView === "kpis"
       ? t("KPI reporting")
-      : route.reportingView === "configuration"
-        ? t("Administration capabilities")
-        : t("Project Portfolio");
+      : route.reportingView === "migration"
+        ? t("Historical migration rehearsal")
+        : route.reportingView === "configuration"
+          ? t("Administration capabilities")
+          : t("Project Portfolio");
   const routeContext = denied
     ? { exempt: false, value: t("Protected object") }
     : route.screen === "work"
@@ -337,7 +339,8 @@ export function AppShell({
       path: "/administration",
       screen: "portfolio",
       active:
-        route.screen === "portfolio" && route.reportingView === "configuration",
+        route.screen === "portfolio" &&
+        ["configuration", "migration"].includes(route.reportingView ?? ""),
     },
   ];
   const commands = useMemo<readonly ShellCommand[]>(
@@ -373,6 +376,16 @@ export function AppShell({
         icon: "user",
         keywords: [t("Administration"), t("Configuration")],
         target: "/administration",
+      },
+      {
+        id: "historical-migration-rehearsal",
+        label: t("Open Historical migration rehearsal"),
+        description: t(
+          "Open the controlled non-production historical migration workspace.",
+        ),
+        icon: "history",
+        keywords: [t("Administration"), t("Migration"), t("Rehearsal")],
+        target: "/administration/migration-rehearsal",
       },
       {
         id: "project",

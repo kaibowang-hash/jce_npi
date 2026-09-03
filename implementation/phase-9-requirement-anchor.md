@@ -1,6 +1,6 @@
 # Phase 9 Requirement Anchor
 
-Status: `P9-04 PASS — P9-05 HISTORICAL MIGRATION AUDIT AND PLAN ACTIVE`
+Status: `P9-04 PASS — P9-05 HISTORICAL MIGRATION FINAL GATE ACTIVE`
 
 This anchor is the product-code authorization boundary for Phase 9. It closes no
 Phase 9 requirement by itself. P9-00 exact SHA
@@ -144,3 +144,19 @@ No new production ERPNext fact is needed. Production ERPNext and LaunchFlow
 must not be contacted by this transition or its controlled evidence. The
 M9-04/M9-05 real-project pilots remain post-V1.2; synthetic non-production UAT
 must never be described as real-project or real-user adoption.
+
+P9-05 governance SHA `4d54fbef67cb9111618ded2ae2abd0cc47942167`
+passes exact-SHA ordinary CI `33704386277`. The authorized implementation keeps
+the audited direction unchanged: one closed five-member ZIP bundle, immutable
+preview and hashes, operation-specific System Manager BFF commands, durable
+partial results, private correction artifacts, reconciliation and logical
+binding rollback. Execution is independently default-disabled and limited to an
+explicitly enabled non-production Site. The worker reauthorizes the exact actor,
+File Revision, bytes, preview and manifest before processing. No target object is
+deleted by rollback, and no production or ERP connection is used.
+
+The candidate has focused domain, archive, metadata, API, security, React and
+three-language tests plus one cumulative disposable-Site verifier. P9-05 remains
+open until one candidate exact-SHA ordinary CI and the sole diagnostics-off
+Level 3 pass; neither controlled synthetic evidence nor completion may be called
+a real-project pilot.

@@ -9004,3 +9004,181 @@ Enter a current authorization window.,请输入当前有效的授权时间窗。
 Enter an allowed authorization window.,请输入允许的授权时间窗。
 enabled,已启用
 disabled,已禁用
+Historical migration rehearsal,历史迁移演练
+Open Historical migration rehearsal,打开历史迁移演练
+Open the controlled non-production historical migration workspace.,打开受控的非生产历史迁移工作区。
+Migration,迁移
+Rehearsal,演练
+Reconciled,已对账
+Link,关联
+Creating preview,正在创建预览
+Queueing rehearsal,正在将演练加入队列
+Validate and rehearse one exact historical bundle on an explicitly enabled non-production Site.,在明确启用的非生产站点验证并演练一个精确的历史数据包。
+Execution enabled,已启用执行
+Preview only,仅预览
+Loading migration workspace,正在加载迁移工作区
+Migration workspace unavailable,迁移工作区不可用
+Previews,预览
+Jobs,作业
+Production contact,生产连接
+Mode,模式
+Non-production rehearsal,非生产演练
+Source File Revision,来源文件修订
+File Revision global ID,文件修订全局标识
+File Revision version,文件修订版本
+Bundle SHA-256,数据包 SHA-256
+Create immutable preview,创建不可变预览
+Only one clean private File Revision with the frozen ZIP schema is accepted. No production system is contacted.,仅接受一个符合冻结压缩包结构且扫描为安全的私有文件修订。不会连接生产系统。
+Rehearsal history,演练历史
+Identity,标识
+Job,作业
+No migration rehearsals have been created.,尚未创建迁移演练。
+Immutable preview,不可变预览
+Execute rehearsal,执行演练
+Family,类别
+Source key,来源键
+Findings,发现项
+Durable job,持久作业
+Reconciling,正在对账
+Reconcile,对账
+Creating correction artifact,正在创建更正产物
+Create correction artifact,创建更正产物
+Downloading correction artifact,正在下载更正产物
+Download correction artifact,下载更正产物
+Tooling mapping,模具映射
+File index,文件索引
+NPI reference,NPI 引用
+Linked,已关联
+Only a completed rehearsal job can be reconciled.,只能对已完成的演练作业进行对账。
+Only a completed rehearsal job can be evaluated for rollback.,只能对已完成的演练作业评估回滚。
+Evaluate logical rollback,评估逻辑回滚
+Targets are never deleted by this operation. Unsafe cases require forward correction.,此操作绝不删除目标。不安全的情况必须前向更正。
+Migration command failed,迁移命令失败
+Execute historical migration rehearsal,执行历史迁移演练
+Queue exact preview,将精确预览加入队列
+Record rollback decision,记录回滚决定
+Creates or links only the rows frozen in this preview on the enabled non-production Site.,仅在已启用的非生产站点创建或关联此预览中冻结的行。
+Retains every target and changes only exact migration bindings when safe.,保留所有目标，仅在安全时更改精确的迁移绑定。
+System Manager permission is required.,需要系统管理员权限。
+Created or referenced targets are never silently deleted.,已创建或引用的目标绝不会被静默删除。
+Partial and uncertain outcomes remain visible for correction and reconciliation.,部分完成和不确定结果会保持可见，以便更正和对账。
+"Actor, exact version, hashes, request and trace are recorded.",操作人、精确版本、哈希、请求和追踪均会被记录。
+Evaluating rollback,正在评估回滚
+Select a bounded migration bundle.,请选择大小受限的迁移数据包。
+The migration bundle hash does not match the File Revision.,迁移数据包哈希与文件修订不匹配。
+Select a valid migration ZIP bundle.,请选择有效的迁移压缩数据包。
+The migration bundle must contain only the approved members.,迁移数据包只能包含已批准的成员。
+A migration bundle member is unsafe.,迁移数据包成员不安全。
+The migration bundle expands beyond its limit.,迁移数据包解压后超过限制。
+A migration bundle member cannot be read.,无法读取迁移数据包成员。
+A migration bundle member exceeds its limit.,迁移数据包成员超过限制。
+The migration manifest must be valid UTF-8 JSON.,迁移清单必须是有效的 UTF-8 结构化数据。
+The migration manifest shape or version is unsupported.,不支持迁移清单的结构或版本。
+The migration member manifest is invalid.,迁移成员清单无效。
+The migration member name is invalid.,迁移成员名称无效。
+Enter a bounded positive row count.,请输入受限的正行数。
+The migration member manifest is incomplete.,迁移成员清单不完整。
+The migration member does not match its manifest.,迁移成员与其清单不匹配。
+Migration CSV members must use UTF-8.,迁移表格成员必须使用 UTF-8。
+The migration CSV member contains an invalid character.,迁移表格成员包含无效字符。
+The migration CSV header is unsupported.,不支持迁移表格表头。
+The migration CSV row limit was exceeded.,迁移表格超过行数限制。
+A migration CSV row has an unsupported shape.,迁移表格行的结构不受支持。
+A migration CSV value exceeds its limit.,迁移表格值超过限制。
+Migration CSV formulas are not allowed.,不允许迁移表格公式。
+Enter a valid source key.,请输入有效的来源键。
+Source keys must be unique.,来源键必须唯一。
+The migration CSV member is malformed.,迁移表格成员格式错误。
+Each migration CSV member requires at least one row.,每个迁移表格成员至少需要一行。
+Enter a valid business code.,请输入有效的业务编码。
+Enter a valid Project owner.,请输入有效的项目负责人。
+Select a supported reference type.,请选择受支持的引用类型。
+Select a supported source system.,请选择受支持的来源系统。
+The referenced Project source key is not present in the bundle.,数据包中不存在被引用的项目来源键。
+Enter a supported source system.,请输入受支持的来源系统。
+Select a legacy source system that is not an active system of record.,请选择不是当前权威记录系统的旧来源系统。
+The historical migration rehearsal changed after it was reviewed.,历史迁移演练在审核后发生了变化。
+Reload the exact preview and try the operation again.,请重新加载精确预览后重试此操作。
+The historical migration rehearsal is unavailable.,历史迁移演练不可用。
+Historical migration rehearsal is temporarily unavailable.,历史迁移演练暂时不可用。
+The non-production rehearsal routes are disabled by Site configuration.,站点配置已禁用非生产演练路由。
+Historical migration execution is not allowed on a production Site.,不允许在生产站点执行历史迁移。
+A migration difference is invalid.,迁移差异无效。
+Select a supported migration family.,请选择受支持的迁移类别。
+Enter a valid source row number.,请输入有效的来源行号。
+The migration row shape is invalid.,迁移行结构无效。
+The migration findings are invalid.,迁移发现项无效。
+The migration row hash does not match.,迁移行哈希不匹配。
+The migration bundle has no supported rows.,迁移数据包没有受支持的行。
+Migration source keys must be unique in each family.,每个类别中的迁移来源键必须唯一。
+Select a supported migration action.,请选择受支持的迁移动作。
+Enter a complete migration target.,请输入完整的迁移目标。
+Enter a positive target version.,请输入正数目标版本。
+The migration action requires an exact target.,此迁移动作需要精确目标。
+A create action cannot claim an existing target.,创建动作不能声明已有目标。
+A blocked migration row requires a finding.,被阻止的迁移行必须包含发现项。
+Enter a positive File Revision version.,请输入正数文件修订版本。
+Enter a positive preview version.,请输入正数预览版本。
+The migration preview is invalid.,迁移预览无效。
+The migration preview hash does not match.,迁移预览哈希不匹配。
+Enter a supported code.,请输入受支持的编码。
+The source key is already bound to different source content.,来源键已绑定到不同的来源内容。
+The job has no failed rows to correct.,此作业没有需要更正的失败行。
+The Project owner is unavailable.,项目负责人不可用。
+The exact Project Template version is unavailable.,精确的项目模板版本不可用。
+The Project is missing a reference required by its template.,项目缺少模板要求的引用。
+The existing Project differs from the historical source.,现有项目与历史来源不同。
+The exact migration target is unavailable.,精确迁移目标不可用。
+The exact migration target version or hash changed.,精确迁移目标的版本或哈希已变化。
+This ERP-owned reference type cannot be migrated as editable data.,此企业资源计划系统主责引用类型不能作为可编辑数据迁移。
+The accepted ERPNext projection is unavailable.,已接受的 ERPNext 投影不可用。
+This NPI reference type is not supported by the closed migration bundle.,封闭迁移数据包不支持此 NPI 引用类型。
+The exact NPI reference is unavailable.,精确的 NPI 引用不可用。
+Select the exact clean private File Revision.,请选择精确且扫描为安全的私有文件修订。
+Historical migration records can only change through the governed commands.,历史迁移记录只能通过受治理的命令更改。
+Historical migration evidence cannot be deleted.,历史迁移证据不能删除。
+The historical migration bundle version is unsupported.,不支持此历史迁移数据包版本。
+The historical migration batch hash is invalid.,历史迁移批次哈希无效。
+The historical migration batch snapshot is invalid.,历史迁移批次快照无效。
+Historical migration batches are immutable.,历史迁移批次不可变。
+Select a supported historical migration job state.,请选择受支持的历史迁移作业状态。
+The historical migration job snapshot is invalid.,历史迁移作业快照无效。
+Historical migration job identity is immutable.,历史迁移作业标识不可变。
+The historical migration preview snapshot is invalid.,历史迁移预览快照无效。
+Historical migration previews are immutable.,历史迁移预览不可变。
+The historical migration binding hash is invalid.,历史迁移绑定哈希无效。
+Select a supported historical migration binding state.,请选择受支持的历史迁移绑定状态。
+Historical migration target bindings are immutable.,历史迁移目标绑定不可变。
+The historical migration binding state cannot move backward.,历史迁移绑定状态不能回退。
+NPI Historical Migration Batch,NPI 历史迁移批次
+Bundle Schema Version,数据包结构版本
+Legacy Source System,旧来源系统
+Source File Optimistic Version,来源文件乐观锁版本
+Manifest Hash,清单哈希
+Predecessor Manifest Hash,前序清单哈希
+Historical Migration Batch Snapshot,历史迁移批次快照
+NPI Historical Migration Job,NPI 历史迁移作业
+Historical Migration Batch,历史迁移批次
+Historical Migration Preview,历史迁移预览
+NPI Historical Migration Preview,NPI 历史迁移预览
+Execution Idempotency Hash,执行幂等哈希
+Historical Migration Job State,历史迁移作业状态
+reconciled,已对账
+Historical Migration Job Snapshot,历史迁移作业快照
+Private Correction File,私有更正文件
+Create Count,创建数
+Link Count,关联数
+Skip Count,跳过数
+Blocked Count,阻止数
+Historical Migration Preview Snapshot,历史迁移预览快照
+NPI Historical Migration Target Binding,NPI 历史迁移目标绑定
+Binding Key Hash,绑定键哈希
+Migration Family,迁移类别
+tooling_mapping,模具映射
+file_index,文件索引
+npi_reference,NPI 引用
+Legacy Source Key,旧来源键
+Source Row Hash,来源行哈希
+Created By Historical Migration Job,由历史迁移作业创建
+Binding State,绑定状态
+forward_correction_required,需要前向更正

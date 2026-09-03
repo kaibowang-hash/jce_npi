@@ -19,6 +19,7 @@ describe("application routing", () => {
     ["/portfolio", "portfolio"],
     ["/reports", "portfolio"],
     ["/administration", "portfolio"],
+    ["/administration/migration-rehearsal", "portfolio"],
     ["/demo/work", "work"],
     ["/demo/projects/PJ-26018", "project"],
     ["/projects/11111111-1111-4111-8111-111111111111", "project"],
@@ -58,6 +59,9 @@ describe("application routing", () => {
       reportingView: "configuration",
       screen: "portfolio",
     });
+    expect(
+      parseRoute(locationFor("/administration/migration-rehearsal")),
+    ).toMatchObject({ reportingView: "migration", screen: "portfolio" });
     expect(parseRoute(locationFor("/demo/work?scenario=error"))).toMatchObject({
       scenario: "error",
       workMode: "demo",
@@ -218,6 +222,7 @@ describe("application routing", () => {
       "/portfolio",
       "/reports",
       "/administration",
+      "/administration/migration-rehearsal",
       "/demo/work?scenario=partial",
       "/demo/projects/PJ-26018",
       "/demo/projects/PJ-26018/gates/G5",

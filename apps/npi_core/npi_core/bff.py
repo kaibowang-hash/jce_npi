@@ -95,6 +95,12 @@ _ROUTES = {
     ("GET", "/api/npi/v1/administration/capabilities"): (
         "npi_core.reporting_api.get_configuration_catalog"
     ),
+    ("GET", "/api/npi/v1/administration/historical-migration-rehearsals"): (
+        "npi_core.historical_migration_api.get_historical_migration_workspace"
+    ),
+    ("POST", "/api/npi/v1/administration/historical-migration-rehearsals"): (
+        "npi_core.historical_migration_api.create_historical_migration_preview"
+    ),
     ("GET", "/api/npi/v1/notifications"): (
         "npi_core.collaboration_api.get_notifications"
     ),
@@ -551,6 +557,30 @@ _PROJECT_TOOLING_IMPORT_ROLLBACK_ROUTE = re.compile(
 _PROJECT_TOOLING_LIST_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-list$"
 )
+_HISTORICAL_MIGRATION_EXECUTE_ROUTE = re.compile(
+    r"^/api/npi/v1/administration/historical-migration-rehearsals/"
+    r"(?P<preview_id>[^/:]+):execute$"
+)
+_HISTORICAL_MIGRATION_JOB_ROUTE = re.compile(
+    r"^/api/npi/v1/administration/historical-migration-jobs/"
+    r"(?P<job_id>[^/:]+)$"
+)
+_HISTORICAL_MIGRATION_CORRECTION_ROUTE = re.compile(
+    r"^/api/npi/v1/administration/historical-migration-jobs/"
+    r"(?P<job_id>[^/:]+)/correction-artifacts$"
+)
+_HISTORICAL_MIGRATION_CORRECTION_CONTENT_ROUTE = re.compile(
+    r"^/api/npi/v1/administration/historical-migration-jobs/"
+    r"(?P<job_id>[^/:]+)/correction-artifact:content$"
+)
+_HISTORICAL_MIGRATION_RECONCILE_ROUTE = re.compile(
+    r"^/api/npi/v1/administration/historical-migration-jobs/"
+    r"(?P<job_id>[^/:]+):reconcile$"
+)
+_HISTORICAL_MIGRATION_ROLLBACK_ROUTE = re.compile(
+    r"^/api/npi/v1/administration/historical-migration-jobs/"
+    r"(?P<job_id>[^/:]+):rollback$"
+)
 _PROJECT_TOOLING_LIST_PREFERENCE_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-list/preferences/"
     r"(?P<view_id>[^/:]+)$"
@@ -914,6 +944,40 @@ def route_request() -> None:
 
     command = _ROUTES.get((request.method, path))
     route_params: dict[str, str] = {}
+    if command is None and request.method == "GET":
+        match = _HISTORICAL_MIGRATION_JOB_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.historical_migration_api.get_historical_migration_job"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        historical_migration_commands = (
+            (
+                _HISTORICAL_MIGRATION_EXECUTE_ROUTE,
+                "npi_core.historical_migration_api.execute_historical_migration_preview",
+            ),
+            (
+                _HISTORICAL_MIGRATION_CORRECTION_ROUTE,
+                "npi_core.historical_migration_api.create_historical_migration_correction",
+            ),
+            (
+                _HISTORICAL_MIGRATION_CORRECTION_CONTENT_ROUTE,
+                "npi_core.historical_migration_api.download_historical_migration_correction",
+            ),
+            (
+                _HISTORICAL_MIGRATION_RECONCILE_ROUTE,
+                "npi_core.historical_migration_api.reconcile_historical_migration_job",
+            ),
+            (
+                _HISTORICAL_MIGRATION_ROLLBACK_ROUTE,
+                "npi_core.historical_migration_api.rollback_historical_migration_job",
+            ),
+        )
+        for route, candidate in historical_migration_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "GET":
         match = _PROJECT_ERP_PROJECTIONS_ROUTE.fullmatch(path)
         if match is not None:
@@ -2501,6 +2565,16 @@ def _normalize_pre_handler_problem(response, request) -> bool:
 
 
 def _requires_project_request_id(method: str, path: str) -> bool:
+    if method in {"GET", "POST"} and (
+        path == "/api/npi/v1/administration/historical-migration-rehearsals"
+        or _HISTORICAL_MIGRATION_EXECUTE_ROUTE.fullmatch(path) is not None
+        or _HISTORICAL_MIGRATION_JOB_ROUTE.fullmatch(path) is not None
+        or _HISTORICAL_MIGRATION_CORRECTION_ROUTE.fullmatch(path) is not None
+        or _HISTORICAL_MIGRATION_CORRECTION_CONTENT_ROUTE.fullmatch(path) is not None
+        or _HISTORICAL_MIGRATION_RECONCILE_ROUTE.fullmatch(path) is not None
+        or _HISTORICAL_MIGRATION_ROLLBACK_ROUTE.fullmatch(path) is not None
+    ):
+        return True
     if (
         method == "PUT"
         and path == "/api/npi/v1/integration/erpnext/user-authorization"

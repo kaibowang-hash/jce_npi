@@ -2,10 +2,14 @@
 
 Recorded: `2026-09-03`
 
-Status: `AUDIT AND PLAN — PRODUCT CODE HELD PENDING EXACT-SHA ORDINARY CI`
+Status: `IMPLEMENTED CANDIDATE — FINAL EXACT-SHA ORDINARY CI AND LEVEL 3 PENDING`
 
 Base checkpoint:
 `fa82f3e3dcc7a9474ea51a1356130d5cbc02adee`
+
+Governance transition:
+`4d54fbef67cb9111618ded2ae2abd0cc47942167` with exact-SHA ordinary CI
+`33704386277` PASS. This pass authorized the frozen product batch below.
 
 ## Outcome and boundaries
 
@@ -33,8 +37,8 @@ production LaunchFlow are not contacted.
 | Tooling mappings | Tooling Master/Revision/Applicability and external identities are distinct; P6-07 proves immutable mapping, preview, partial result, correction, reconciliation and guarded rollback mechanics. | P6-07 is a customer Tooling List workflow scoped to one Project and 43 reviewed columns; overloading it would corrupt its contract and cannot cover cross-Project historical mappings. | Add an independent historical mapping row that calls existing Tooling operations and records exact target identity/version. Reuse P6-07 safety patterns and shared primitives only; do not rename or broaden its routes, states or mapping catalog. |
 | File index | File and Document APIs preserve Project containment, confidentiality, hash, revision and release truth. | There is no batch operation that validates a historical file index without ingesting arbitrary paths or pretending missing bytes are present. | Accept metadata references only to already registered exact File Revisions. Preview missing, mismatched, forbidden or duplicate entries as blocked; never read a filesystem path, fetch an endpoint or create a fake File. |
 | Reference data | Project references and ERP projections already keep source system/object identity and declared ownership. | No closed allowlist defines which historical reference rows may be linked versus which ERP-owned rows must remain unavailable. | Allow only NPI-owned reference/link kinds frozen in the bundle schema. ERP Customer/Supplier/Item/MBOM/cost/quality/Asset facts remain reference-only and must resolve to accepted projections or block. |
-| Data quality and correction | Domain validators, canonical hashes, typed Problem Details, idempotency, audit and P6-07 correction artifacts exist. | No cross-file required/unique/enum/reference/version validation or complete difference report exists for historical data. | Produce one immutable preview revision with row/field findings and deterministic summary; create a private allowlisted correction CSV for failed rows; retry only a successor artifact bound to the original manifest and preview. |
-| Apply, reconciliation and rollback | Existing repositories use transactions, after-commit jobs, immutable results, reconciliation and exact rollback guards. | No non-production historical rehearsal job proves partial truth, replay, timeout-after-commit, conflict and rollback/forward-fix outcomes. | Add one default-disabled durable rehearsal job. Reauthorize actor/source/preview before apply; keep successful, failed-retryable and failed-final rows explicit; reconcile exact target hashes; remove only unchanged unreferenced batch-created objects and require forward correction otherwise. |
+| Data quality and correction | Domain validators, canonical hashes, typed Problem Details, idempotency, audit and P6-07 correction artifacts exist. | No cross-file required/unique/enum/reference/version validation or complete difference report exists for historical data. | Produce one immutable preview revision with row/field findings and deterministic summary; create a private allowlisted correction CSV for failed rows; require any corrected successor bundle to enter the complete preview boundary again. |
+| Apply, reconciliation and rollback | Existing repositories use transactions, after-commit jobs, immutable results, reconciliation and exact rollback guards. | No non-production historical rehearsal job proves partial truth, replay, timeout-after-commit, conflict and rollback/forward-fix outcomes. | Add one default-disabled durable rehearsal job. Reauthorize actor/source/preview before apply; keep successful, failed-retryable and failed-final rows explicit; reconcile exact target hashes; logically roll back only exact unchanged non-Project bindings, retain every target and require forward correction otherwise. |
 | Administration UX | The independent SPA has an Administration capability surface, shared worklists, tables, inspectors, downloads, errors and trilingual Frappe catalogs. | There is no operator flow for source, validation, preview, difference, apply, correction and rollback evidence. | Add one dense Administration workspace using the BFF only, with a single primary action per state, explicit non-production label, row/field difference table, private correction download, trace IDs and complete English/`zh`/`zh-TW` states. |
 
 ## Frozen bundle and execution boundary
@@ -57,10 +61,11 @@ switch are mandatory for execution.
 Apply uses existing operation-specific Project, Tooling and File boundaries.
 It never writes an arbitrary DocType or ERP-owned field. Partial work remains
 partial. A timeout after commit is resolved by receipt/reconciliation, never
-blind redispatch. Correction creates a successor source artifact and retries
-only eligible failed rows. Rollback is allowed only for an exact unchanged,
-unreferenced object created solely by the rehearsal batch; otherwise the
-durable result requires forward correction.
+blind redispatch. Correction creates a failure-only artifact; any corrected
+successor is a new controlled File Revision that must pass the complete preview
+boundary. Rollback is allowed only for an exact unchanged non-Project binding;
+every target is retained and every Project creation or target drift requires
+forward correction.
 
 ## Single implementation batch after governance PASS
 
@@ -86,7 +91,7 @@ as one product batch:
 Final evidence must bind exact commit and CI/Gate IDs; source and manifest
 hashes; schema/policy versions and limits; sanitized family/row/finding counts;
 preview and difference hashes; actor/idempotency/trace identities; per-row
-apply truth; correction/retry lineage; reconciliation results; rollback or
+apply truth; correction/successor lineage; reconciliation results; rollback or
 forward-correction decisions; two migrations; route recovery; cleanup and
 `productionContact=false`. No real business values, credentials, endpoints or
 production records may enter Git or ordinary logs.
@@ -100,7 +105,7 @@ production records may enter Git or ordinary logs.
   exact source/preview binding, idempotent replay/conflict, transaction order,
   partial results, private correction download and rollback denial.
 - Frontend unit/E2E/visual tests cover empty/loading/valid/blocked/partial/
-  stale/conflict/retry/rollback states, three languages, keyboard access and
+  stale/conflict/correction/rollback states, three languages, keyboard access and
   industrial table/inspector behavior.
 - Disposable Frappe runtime uses synthetic non-production data only and proves
   apply/replay/reconciliation/rollback with zero ERP or production traffic.
@@ -114,5 +119,5 @@ Before product resume, restore exact P9-04 checkpoint
 only. After implementation, disable the rehearsal route first, revert only
 the independent P9-05 metadata/domain/API/UI/verifier paths, retain immutable
 evidence as invalidated history, and use forward correction for any object
-that is changed or referenced. Never obtain rollback by deleting history,
+that is changed, created or referenced. Never obtain rollback by deleting history,
 relaxing authorization or enabling a generic writer.

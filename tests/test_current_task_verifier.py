@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "P9-05")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_05_AUDIT_AND_PLAN")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_05_FINAL_GATE")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-06")
         self.assertEqual(
@@ -59,17 +59,18 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-05",
                 "active_goal_marker": "P9-05",
                 "next_action_marker": "P9-05",
-                "controller_marker": "P9-04 Level 3 PASS; P9-05 historical migration audit and plan active",
+                "controller_marker": "P9-05 historical migration implementation candidate; exact-SHA ordinary and Level 3 required",
             },
         )
         for invariant in (
             "P9_04_EXACT_SHA_FA82F3E3_ORDINARY_33702330209_AND_LEVEL3_33702723201_PASS",
-            "P9_05_PRODUCT_CODE_HELD_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_PASS",
+            "P9_05_GOVERNANCE_SHA_4D54FBEF_ORDINARY_33704386277_PASS_PRODUCT_CODE_AUTHORIZED",
             "HISTORICAL_MIGRATION_IS_OPERATION_SPECIFIC_NON_PRODUCTION_REHEARSAL_NOT_A_GENERIC_WRITER",
             "SOURCE_IS_ONE_AUTHORIZED_CLEAN_PRIVATE_FILE_REVISION_WITH_EXACT_BYTES_HASH_SCHEMA_VERSION_AND_MANIFEST_HASH",
             "REQUIRED_UNIQUE_ENUM_REFERENCE_VERSION_AND_OWNERSHIP_VALIDATION_PRECEDES_ANY_MUTATION",
             "PREVIEW_IS_IMMUTABLE_NON_MUTATING_AND_REPORTS_CREATE_LINK_SKIP_BLOCKED_AND_EXACT_DIFFERENCES",
-            "ROLLBACK_ONLY_REMOVES_EXACT_UNCHANGED_UNREFERENCED_BATCH_CREATED_OBJECTS_OTHERWISE_FORWARD_CORRECTION",
+            "PARTIAL_ROWS_REMAIN_PARTIAL_CORRECTION_IS_FAILURE_ONLY_AND_ANY_SUCCESSOR_REENTERS_FULL_PREVIEW_VALIDATION",
+            "ROLLBACK_ONLY_CHANGES_EXACT_UNCHANGED_NON_PROJECT_BINDINGS_ALL_TARGETS_RETAINED_OTHERWISE_FORWARD_CORRECTION",
             "ERP_OWNED_TRUTH_REMAINS_REFERENCE_ONLY_AND_NO_PRODUCTION_ERP_FACT_DELTA_IS_NEEDED_FOR_P9_05",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
@@ -78,7 +79,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             {
                 "implementation/evidence/phase-9/p9-04-validation.md",
                 "implementation/evidence/phase-9/p9-05-plan.md",
+                "implementation/evidence/phase-9/p9-05-validation.md",
                 "implementation/phase-9-requirement-anchor.md",
+                "apps/npi_core/npi_core/historical_migration/frappe_repository.py",
+                "frontend/src/pages/historical-migration-workspace.tsx",
+                "scripts/verify_historical_migration_runtime.py",
             }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))

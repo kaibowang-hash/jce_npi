@@ -7502,6 +7502,260 @@ paths:
         "500": { $ref: "#/components/responses/InternalError" }
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
 
+  /administration/historical-migration-rehearsals:
+    get:
+      tags: [Administration]
+      operationId: getHistoricalMigrationRehearsalWorkspace
+      description: Returns the bounded System Manager workspace for the operation-specific non-production historical migration rehearsal. It never contacts production or exposes source row values.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Bounded rehearsal workspace
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HistoricalMigrationWorkspace" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    post:
+      tags: [Administration]
+      operationId: createHistoricalMigrationRehearsalPreview
+      description: Validates one exact clean private File Revision and persists an immutable non-mutating preview for the four approved migration families.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: historical-migration-preview
+      x-audit-operation: historical_migration.preview.create
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateHistoricalMigrationPreview" }
+      responses:
+        "201":
+          description: Immutable preview or actor-bound idempotent replay
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HistoricalMigrationPreview" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/historical-migration-rehearsals/{previewId}:execute:
+    post:
+      tags: [Administration]
+      operationId: executeHistoricalMigrationRehearsalPreview
+      description: Queues the exact immutable preview for the explicitly enabled non-production Site; blocked rows remain failed and partial completion remains visible.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: historical-migration-execution
+      x-audit-operation: historical_migration.execute.queue
+      parameters:
+        - name: previewId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HistoricalMigrationVersionCommand" }
+      responses:
+        "202":
+          description: Durable queued job or actor-bound idempotent replay
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HistoricalMigrationJob" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/historical-migration-jobs/{jobId}:
+    get:
+      tags: [Administration]
+      operationId: getHistoricalMigrationRehearsalJob
+      description: Returns one exact durable rehearsal job with explicit partial, failure, reconciliation and rollback truth.
+      x-required-roles: [System Manager]
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Exact durable rehearsal job
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HistoricalMigrationJob" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/historical-migration-jobs/{jobId}/correction-artifacts:
+    post:
+      tags: [Administration]
+      operationId: createHistoricalMigrationCorrectionArtifact
+      description: Creates one private bounded CSV containing only the failed-row source identities and finding codes for controlled correction.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: historical-migration-correction
+      x-audit-operation: historical_migration.correction.create
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HistoricalMigrationEmptyCommand" }
+      responses:
+        "201":
+          description: Private correction artifact metadata
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HistoricalMigrationCorrectionArtifact" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/historical-migration-jobs/{jobId}/correction-artifact:content:
+    post:
+      tags: [Administration]
+      operationId: downloadHistoricalMigrationCorrectionArtifact
+      description: Downloads only the exact private correction artifact after snapshot-hash validation; browser rendering is prohibited.
+      x-required-roles: [System Manager]
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HistoricalMigrationDownloadCommand" }
+      responses:
+        "200":
+          description: Exact private correction CSV
+          headers:
+            X-Content-Type-Options: { required: true, schema: { type: string, const: nosniff } }
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/historical-migration-jobs/{jobId}:reconcile:
+    post:
+      tags: [Administration]
+      operationId: reconcileHistoricalMigrationRehearsalJob
+      description: Observes exact target hashes and records mismatch truth without repairing or replaying any row.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: historical-migration-reconciliation
+      x-audit-operation: historical_migration.reconcile
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HistoricalMigrationVersionCommand" }
+      responses:
+        "200":
+          description: Job with immutable reconciliation truth
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HistoricalMigrationJob" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /administration/historical-migration-jobs/{jobId}:rollback:
+    post:
+      tags: [Administration]
+      operationId: rollbackHistoricalMigrationRehearsalJob
+      description: Performs guarded logical binding rollback only; all target objects are retained and changed or created Projects require forward correction.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: historical-migration-logical-rollback
+      x-audit-operation: historical_migration.rollback
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HistoricalMigrationVersionCommand" }
+      responses:
+        "200":
+          description: Job with explicit rollback or forward-correction decision
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HistoricalMigrationJob" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -9203,6 +9457,228 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/DocumentFileCapabilityResult" }
   schemas:
+    CreateHistoricalMigrationPreview:
+      type: object
+      additionalProperties: false
+      required: [tenantId, fileRevisionGlobalId, fileOptimisticVersion, sha256]
+      properties:
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileOptimisticVersion: { type: integer, minimum: 1 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+    HistoricalMigrationVersionCommand:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion, expectedSnapshotHash]
+      properties:
+        expectedVersion: { type: integer, minimum: 1 }
+        expectedSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    HistoricalMigrationDownloadCommand:
+      type: object
+      additionalProperties: false
+      required: [expectedSnapshotHash]
+      properties:
+        expectedSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    HistoricalMigrationEmptyCommand:
+      type: object
+      additionalProperties: false
+      maxProperties: 0
+    HistoricalMigrationFinding:
+      type: object
+      additionalProperties: false
+      required: [code, field, message]
+      properties:
+        code: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,127}$" }
+        field: { type: string, minLength: 1, maxLength: 128 }
+        message: { type: string, minLength: 1, maxLength: 500 }
+    HistoricalMigrationDifference:
+      type: object
+      additionalProperties: false
+      required: [field, sourceValue, targetValue]
+      properties:
+        field: { type: string, minLength: 1, maxLength: 128 }
+        sourceValue: { type: [string, "null"], maxLength: 1000, writeOnly: true }
+        targetValue: { type: [string, "null"], maxLength: 1000, writeOnly: true }
+    HistoricalMigrationPreviewRow:
+      type: object
+      additionalProperties: false
+      required: [family, ordinal, sourceKey, sourceHash, action, targetGlobalId, targetVersion, targetSnapshotHash, differences, findings]
+      properties:
+        family: { type: string, enum: [project, tooling_mapping, file_index, npi_reference] }
+        ordinal: { type: integer, minimum: 2, maximum: 2001 }
+        sourceKey: { type: string, minLength: 1, maxLength: 128 }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        action: { type: string, enum: [create, link, skip, blocked] }
+        targetGlobalId: { type: [string, "null"], format: uuid }
+        targetVersion: { type: [integer, "null"], minimum: 1 }
+        targetSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        differences:
+          type: array
+          maxItems: 12
+          items: { $ref: "#/components/schemas/HistoricalMigrationDifference" }
+        findings:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/HistoricalMigrationFinding" }
+    HistoricalMigrationSummary:
+      type: object
+      additionalProperties: false
+      required: [create, link, skip, blocked]
+      properties:
+        create: { type: integer, minimum: 0 }
+        link: { type: integer, minimum: 0 }
+        skip: { type: integer, minimum: 0 }
+        blocked: { type: integer, minimum: 0 }
+    HistoricalMigrationPreview:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, bundleId, manifestHash, sourceSha256, sourceFileRevisionGlobalId, sourceFileOptimisticVersion, tenantId, version, summary, rows, createdByUserId, createdAt, requestId, traceId, snapshotHash]
+      properties:
+        schemaVersion: { type: string, const: historical-migration-preview.v1 }
+        globalId: { type: string, format: uuid }
+        bundleId: { type: string, format: uuid }
+        manifestHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sourceSha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sourceFileRevisionGlobalId: { type: string, format: uuid }
+        sourceFileOptimisticVersion: { type: integer, minimum: 1 }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        version: { type: integer, minimum: 1 }
+        summary: { $ref: "#/components/schemas/HistoricalMigrationSummary" }
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 8000
+          items: { $ref: "#/components/schemas/HistoricalMigrationPreviewRow" }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+    HistoricalMigrationRowResult:
+      type: object
+      additionalProperties: false
+      required: [family, sourceKey, state]
+      properties:
+        family: { type: string, enum: [project, tooling_mapping, file_index, npi_reference, job] }
+        sourceKey: { type: string, minLength: 1, maxLength: 128 }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        action: { type: string, enum: [create, link, skip, blocked] }
+        state: { type: string, enum: [created, linked, skipped, failed_retryable, failed_final, rolled_back, rollback_denied] }
+        targetDoctype: { type: string, minLength: 1, maxLength: 140 }
+        targetGlobalId: { type: string, format: uuid }
+        targetVersion: { type: integer, minimum: 1 }
+        targetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        findingCodes:
+          type: array
+          maxItems: 50
+          items: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,127}$" }
+    HistoricalMigrationJob:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, batchGlobalId, previewGlobalId, previewSnapshotHash, state, optimisticVersion, results, queuedAt, updatedAt, actorUserId, requestId, traceId, productionContact, snapshotHash]
+      properties:
+        schemaVersion: { type: string, const: historical-migration-job.v1 }
+        globalId: { type: string, format: uuid }
+        batchGlobalId: { type: string, format: uuid }
+        previewGlobalId: { type: string, format: uuid }
+        previewSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        state: { type: string, enum: [queued, processing, partially_succeeded, succeeded, failed_retryable, failed_final, reconciled, rolled_back, rollback_denied] }
+        optimisticVersion: { type: integer, minimum: 1 }
+        results:
+          type: array
+          maxItems: 8000
+          items: { $ref: "#/components/schemas/HistoricalMigrationRowResult" }
+        queuedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        productionContact: { type: boolean, const: false }
+        correction: { $ref: "#/components/schemas/HistoricalMigrationCorrectionArtifact" }
+        reconciliation: { $ref: "#/components/schemas/HistoricalMigrationReconciliation" }
+        rollback: { $ref: "#/components/schemas/HistoricalMigrationRollback" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+    HistoricalMigrationReconciliationItem:
+      type: object
+      additionalProperties: false
+      required: [family, sourceKey, targetGlobalId, expectedSnapshotHash, observedSnapshotHash, state]
+      properties:
+        family: { type: string, enum: [project, tooling_mapping, file_index, npi_reference] }
+        sourceKey: { type: string, minLength: 1, maxLength: 128 }
+        targetGlobalId: { type: string, format: uuid }
+        expectedSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        observedSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        state: { type: string, enum: [matched, changed] }
+    HistoricalMigrationReconciliation:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, jobGlobalId, jobSnapshotHash, observationCount, mismatchCount, items, executionKeyHash, createdAt]
+      properties:
+        schemaVersion: { type: string, const: historical-migration-reconciliation.v1 }
+        jobGlobalId: { type: string, format: uuid }
+        jobSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        observationCount: { type: integer, minimum: 0, maximum: 8000 }
+        mismatchCount: { type: integer, minimum: 0, maximum: 8000 }
+        items:
+          type: array
+          maxItems: 8000
+          items: { $ref: "#/components/schemas/HistoricalMigrationReconciliationItem" }
+        executionKeyHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+        createdAt: { type: string, format: date-time }
+    HistoricalMigrationRollbackItem:
+      type: object
+      additionalProperties: false
+      required: [family, sourceKey, targetGlobalId, decision, targetRetained]
+      properties:
+        family: { type: string, enum: [project, tooling_mapping, file_index, npi_reference] }
+        sourceKey: { type: string, minLength: 1, maxLength: 128 }
+        targetGlobalId: { type: string, format: uuid }
+        decision: { type: string, enum: [logical_binding_rolled_back, forward_correction_required] }
+        targetRetained: { type: boolean, const: true }
+    HistoricalMigrationRollback:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, jobGlobalId, decision, items, executionKeyHash, createdAt]
+      properties:
+        schemaVersion: { type: string, const: historical-migration-rollback.v1 }
+        jobGlobalId: { type: string, format: uuid }
+        decision: { type: string, enum: [allowed, denied] }
+        items:
+          type: array
+          maxItems: 2000
+          items: { $ref: "#/components/schemas/HistoricalMigrationRollbackItem" }
+        executionKeyHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+        createdAt: { type: string, format: date-time }
+    HistoricalMigrationCorrectionArtifact:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, jobGlobalId, fileName, sizeBytes, sha256, failedRowCount, private]
+      properties:
+        schemaVersion: { type: string, const: historical-migration-correction.v1 }
+        jobGlobalId: { type: string, format: uuid }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 1, maximum: 20000000 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        failedRowCount: { type: integer, minimum: 1, maximum: 8000 }
+        executionKeyHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+        private: { type: boolean, const: true }
+    HistoricalMigrationWorkspace:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, mode, executionEnabled, productionContact, previews, jobs]
+      properties:
+        schemaVersion: { type: string, const: historical-migration-rehearsal.v1 }
+        mode: { type: string, const: non_production_rehearsal }
+        executionEnabled: { type: boolean }
+        productionContact: { type: boolean, const: false }
+        previews:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/HistoricalMigrationPreview" }
+        jobs:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/HistoricalMigrationJob" }
     AuthorizationProjectionEvent:
       type: object
       additionalProperties: false

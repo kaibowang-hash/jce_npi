@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_05_AUDIT_AND_PLAN — P9-05`
+`IN_PROGRESS_P9_05_FINAL_GATE — P9-05`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -17,15 +17,17 @@ passes exact-SHA ordinary CI `33702330209` and the sole diagnostics-off Level
 3 `33702723201`, including fresh cumulative disposable runtime
 `100486353074`; its `release-gate` result is PASS.
 
-P9-05 audit and plan are active for `FR-RP-008` and `NFR-DAT-001`. Commit and
-push this governance-only transition, require exact-SHA ordinary PASS, then
-implement the single frozen historical migration rehearsal batch. Use one
-authorized clean private File Revision and a closed versioned bundle; preserve
-immutable preview/difference, correction, reconciliation and guarded rollback
-truth. Do not run a production migration, contact production ERPNext or
-LaunchFlow, create a generic DocType writer, duplicate ERP-owned masters,
-overload P6-07 or stage user-owned dirty files. P9-05 marker:
-`P9-04 Level 3 PASS; P9-05 historical migration audit and plan active`.
+P9-05 governance SHA `4d54fbef67cb9111618ded2ae2abd0cc47942167`
+passes exact-SHA ordinary CI `33704386277`. Finish the single implemented
+historical migration candidate with Level 2, one exact-SHA ordinary CI and one
+diagnostics-off Level 3. The batch remains a default-disabled non-production
+rehearsal over one exact clean private File Revision and a closed versioned
+bundle, with immutable preview/differences, partial truth, private correction,
+reconciliation and logical rollback. Do not run a production migration, contact
+production ERPNext or LaunchFlow, create a generic writer, duplicate ERP-owned
+masters, overload P6-07 or stage user-owned dirty files. P9-05 marker:
+`P9-05 historical migration implementation candidate; exact-SHA ordinary and
+Level 3 required`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

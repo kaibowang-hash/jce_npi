@@ -11620,3 +11620,34 @@ P9-01 Level 3.
   cannot be represented as a real-project pilot or real-user adoption result.
   Preserve all user-owned dirty files.
 - Controller marker: `P9-04 Level 3 PASS; P9-05 historical migration audit and plan active`.
+
+## 2026-09-03 P9-05 historical migration implementation candidate
+
+- Governance SHA `4d54fbef67cb9111618ded2ae2abd0cc47942167` passes
+  exact-SHA ordinary CI `33704386277`, authorizing the frozen P9-05 product
+  batch for `FR-RP-008` and `NFR-DAT-001`.
+- The candidate accepts one exact clean private File Revision containing only
+  `manifest.json`, `projects.csv`, `tooling_mappings.csv`, `file_index.csv` and
+  `npi_references.csv`. Size, expansion, member, row, field, formula, encoding,
+  hash, enum, reference, version and ownership bounds fail closed before any
+  rehearsal mutation.
+- The preview is immutable and non-mutating. Execution requires System Manager,
+  CSRF, actor-bound idempotency, exact version/hash and two explicit Site
+  switches. The worker reauthorizes actor, source bytes, preview and manifest;
+  partial rows remain explicit and timeout-after-commit uses replay and
+  reconciliation rather than blind redispatch.
+- Private correction CSVs contain only failed source identities and finding
+  codes. Reconciliation observes allowlisted target hashes. Rollback changes
+  only unchanged non-Project bindings, retains every target and records forward
+  correction when unsafe. No generic DocType writer, direct SQL, production
+  migration, production LaunchFlow/ERPNext contact or ERP-owned second master is
+  introduced.
+- The Administration SPA uses only the BFF and supplies dense preview/job truth,
+  automatic active-job refresh, private correction download, explicit
+  non-production identity, confirmation, trace/hash visibility and complete
+  English/`zh`/`zh-TW` catalogs. M9-04/M9-05 real pilots remain post-V1.2.
+- Complete affected Level 2 once, then push one exact candidate and require one
+  ordinary CI PASS followed by the sole diagnostics-off Level 3. The cumulative
+  disposable runtime includes the synthetic P9-05 partial/replay/stale/
+  correction/reconciliation/logical-rollback proof and `productionContact=false`.
+- Controller marker: `P9-05 historical migration implementation candidate; exact-SHA ordinary and Level 3 required`.
