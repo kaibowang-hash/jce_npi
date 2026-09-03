@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T15:21:00+07:00'
+updated_at: '2026-09-03T15:41:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-08
-current_task_status: IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE
-current_task_completed_stage: P9_07_PASS_LEVEL_3
-current_task_next_stage: P9_08_GOVERNANCE_EXACT_SHA_ORDINARY_THEN_CONTROLLED_UAT_IMPLEMENTATION
-current_task_next_stage_status: GOVERNANCE_CHECKPOINT_PENDING_COMMIT
+current_task_status: IN_PROGRESS_P9_08_CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
+current_task_completed_stage: P9_08_LOCAL_LEVEL_2_PASS_WITH_CLEAN_CHECKOUT_BRAND_PROOF_DEFERRED_TO_EXACT_CI
+current_task_next_stage: P9_08_IMPLEMENTATION_EXACT_SHA_ORDINARY_THEN_FINAL_PRODUCTION_READ_ONLY_RECONCILIATION
+current_task_next_stage_status: IMPLEMENTATION_CHECKPOINT_PENDING_COMMIT
 resumed_product_task: P9-08
-resumed_product_task_status: CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE
+resumed_product_task_status: CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -3446,7 +3446,7 @@ p9_07:
   next_gate: COMPLETE
 p9_08:
   task: P9-08
-  status: IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE
+  status: IN_PROGRESS_P9_08_CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
   predecessor_product_checkpoint: d911c2bcecb228cee0f4830c868e0d0fdf35d3e2
   plan: implementation/evidence/phase-9/p9-08-plan.md
   validation: implementation/evidence/phase-9/p9-08-validation.md
@@ -3458,12 +3458,22 @@ p9_08:
   real_user_adoption_claim_authorized: false
   ux_003_ratio_threshold: 0.80
   ux_003_ratio_definition: QUALIFYING_MY_WORK_OR_SAME_PROJECT_CONTEXT_ACTIVITIES_DIVIDED_BY_IN_SCOPE_FREQUENT_USER_INITIATED_DEVELOPMENT_ACTIVITIES
-  governance_checkpoint: PENDING
-  governance_ordinary: PENDING
-  product_code_authorized: false
+  governance_checkpoint: 4ee5d301997215526d245c27f4dbc0497b5003cf
+  governance_ordinary: 33732955637_PASS
+  governance_ordinary_jobs: {frontend_verify: 100576877339, secret_scan: 100576877474, frontend_e2e_shard_2: 100576877502, repository: 100576877546, frontend_e2e_shard_1: 100576877594, visual: 100576877621, frontend_aggregate: 100578369221}
+  product_code_authorized: true
+  implementation_kind: EVIDENCE_AND_TEST_ONLY_NO_PRODUCT_CHANGE
+  manifest_schema: p9-08-controlled-uat.v1
+  manifest_checksum: sha256:a9866b40ff467b82096be1cd9696cfc7cda1b5de283cf9ffc4faefe94594c411
+  controlled_activity_results: {at_01: 9_OF_10, at_02: 9_OF_10, overall: 18_OF_20_90_PERCENT}
+  fail_closed_manifest_tests: 7_PASS
+  consolidated_route_tests: 2_PASS
+  repository_level_2: 2990_PASS
+  frontend_level_2: 1140_PASS_TYPES_LINT_I18N_BUILD_BUDGET_AUDIT_PASS_LOCAL_FINAL_BRAND_SCAN_BLOCKED_ONLY_BY_USER_UNTRACKED_PUBLIC_ASSET
+  clean_checkout_frontend_proof: REQUIRED_AT_EXACT_SHA_ORDINARY
   final_full_production_erpnext_read_only_reconciliation_required: true
   production_write_authorized: false
-  next_gate: GOVERNANCE_EXACT_SHA_ORDINARY_THEN_ONE_UAT_EVIDENCE_BATCH
+  next_gate: IMPLEMENTATION_EXACT_SHA_ORDINARY_THEN_FINAL_PRODUCTION_READ_ONLY_RECONCILIATION_AND_LEVEL_3
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3491,4 +3501,4 @@ phases:
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05, P9-06, P9-07], current_task: P9-08, current_task_status: IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05, P9-06, P9-07], current_task: P9-08, current_task_status: IN_PROGRESS_P9_08_CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED}

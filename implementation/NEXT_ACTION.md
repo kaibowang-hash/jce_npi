@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE — P9-08`
+`IN_PROGRESS_P9_08_CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-08`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -32,16 +32,17 @@ passes ordinary CI `33730217862` and diagnostics-off Level 3 `33730710124`.
 Controlled runtime `100571300835` completes backup, restore, forward-fix and
 cleanup with `productionContact=false`; release-gate is PASS.
 
-The first incomplete task is P9-08. Commit the governance-only controlled-UAT
-plan, pass its exact-SHA ordinary CI, then automatically add one fixed
-machine-readable AT-01/AT-02 manifest, one fail-closed verifier and the smallest
-consolidated browser proof. Measure controlled workflow coverage from My Work
-or within one Project context; never call it real-user adoption. Do not run the
-deferred M9-04/M9-05 real pilots, redesign product behavior or stage user-owned
-files. Before final Phase 9 closeout, perform the mandatory production
-ERPNext-to-LaunchFlow compatibility refresh using only the already approved
-fixed read-only inventory/delta boundary.
-P9-08 marker: `P9-07 Level 3 PASS; P9-08 controlled full-product UAT governance active`.
+P9-08 governance SHA `4ee5d301997215526d245c27f4dbc0497b5003cf`
+passes exact-SHA ordinary CI `33732955637`. The one evidence-only batch is
+locally complete: both AT-01 and AT-02 pass `9/10`, overall controlled workflow
+coverage is `18/20 = 90%`, manifest checks pass `7/7`, consolidated route checks
+pass `2/2`, repository Level 2 passes `2990/2990`, and frontend coverage passes
+`1140/1140` with types/lint/i18n/build/budget/audit green. No product behavior
+changed. Commit and push this batch, require exact-SHA ordinary CI, then perform
+the mandatory full production ERPNext-to-LaunchFlow compatibility refresh only
+through the approved fixed read-only inventory/delta boundary. Do not run real
+pilots, claim real-user adoption, change product/CI or stage user-owned files.
+P9-08 marker: `P9-08 controlled UAT implementation candidate; exact-SHA ordinary and final reconciliation gates required`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

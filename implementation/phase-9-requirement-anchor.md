@@ -295,3 +295,12 @@ reuses the accepted inventory and fixed `JCE-Core` read-only allowlist, prefers
 version/mtime/hash/delta checks, records only sanitized facts and checksums, and
 makes no production write. Any unresolved drift or unverified actual dependency
 blocks Phase 9 PASS, `IMPLEMENTATION_COMPLETE` and production-ready.
+
+P9-08 governance SHA `4ee5d301997215526d245c27f4dbc0497b5003cf`
+passes exact-SHA ordinary CI `33732955637`. The evidence-only candidate binds
+twenty activities and seventeen accepted evidence families without changing
+product behavior. AT-01 and AT-02 each qualify `9/10`; combined controlled
+workflow coverage is `18/20 = 90%`. Seven fail-closed manifest tests, two
+consolidated route-context tests and repository Level 2 `2990/2990` pass. The
+candidate still requires exact-SHA ordinary CI, final production ERPNext
+read-only reconciliation, diagnostics-off Level 3 and release-gate PASS.

@@ -11884,3 +11884,33 @@ P9-01 Level 3.
   standing fixed read-only inventory/delta allowlist. Zero production writes
   are authorized. Finish with one diagnostics-off Level 3 and release-gate.
 - Controller marker: `P9-07 Level 3 PASS; P9-08 controlled full-product UAT governance active`.
+
+## 2026-09-03 P9-08 controlled-UAT implementation candidate
+
+- Governance SHA `4ee5d301997215526d245c27f4dbc0497b5003cf`
+  passes exact-SHA ordinary CI `33732955637` in frontend verification, both E2E
+  shards, visual, repository, secret and aggregate lanes. The frozen evidence
+  batch is authorized.
+- The batch changes no product behavior. It adds one strict
+  `p9-08-controlled-uat.v1` manifest, one fail-closed verifier, seven negative
+  and positive contract tests, and two consolidated route-context tests that
+  consume the same manifest. Every activity binds an accepted test selector;
+  all seventeen mandatory product/evidence families are covered.
+- AT-01 and AT-02 each qualify `9/10` frequent activities from My Work or the
+  same Project context; combined controlled workflow coverage is
+  `18/20 = 90%`. Reporting is deliberately counted but remains outside the
+  numerator. Claims stay false for a real pilot, real project and real-user
+  adoption; the environment is representative non-production only.
+- Manifest tests pass `7/7`, consolidated route tests `2/2`, repository Level 2
+  `2990/2990`, frontend coverage `1140/1140`, and type, lint, direct zh/zh-TW
+  coverage, industrial UI audit, build, bundle budget and dependency audit.
+  The host's final brand scan detects only the user's pre-existing untracked
+  public asset; the exact clean-checkout ordinary CI must provide that proof.
+  No baseline, threshold or user file is changed to bypass it.
+- Commit this single evidence batch and require exact-SHA ordinary PASS. Then
+  execute the final full production ERPNext-to-LaunchFlow reconciliation only
+  through the standing fixed read-only `JCE-Core` inventory/delta boundary.
+  Any unverified dependency or drift blocks closeout; zero production writes
+  are authorized. Only after sanitized reconciliation evidence may the sole
+  final diagnostics-off Level 3 and release-gate run.
+- Controller marker: `P9-08 controlled UAT implementation candidate; exact-SHA ordinary and final reconciliation gates required`.

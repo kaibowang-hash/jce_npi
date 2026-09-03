@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T15:21:00+07:00`
+Updated: `2026-09-03T15:41:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE — P9-08`
+- Mode: `IN_PROGRESS_P9_08_CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-08`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -47,15 +47,18 @@ Updated: `2026-09-03T15:21:00+07:00`
   cleanup in `9m51s` with `productionContact=false`; artifact `9884231883`
   and its bounded result checksum are retained. The release-gate result is
   PASS.
-- P9-08 is active for `UX-003` and Phase 9 exit. It freezes representative
-  non-production AT-01 customer-owned-mold and AT-02 new-tooling golden/fault
-  paths. The 80-percent result measures controlled workflow coverage from My
-  Work or within one Project context; it is not real-user adoption. M9-04 and
-  M9-05 real pilots remain post-V1.2. Governance changes no product or
-  production state and must pass exact-SHA ordinary CI before the fixed UAT
-  evidence batch begins. Final completion also requires the already mandated
-  production ERPNext-to-LaunchFlow reconciliation under the fixed read-only
-  boundary. Controller marker: `P9-07 Level 3 PASS; P9-08 controlled full-product UAT governance active`.
+- P9-08 governance SHA `4ee5d301997215526d245c27f4dbc0497b5003cf`
+  passes ordinary CI `33732955637` in every required lane. The fixed evidence
+  batch adds no product behavior: a strict AT-01/AT-02 manifest, fail-closed
+  verifier and consolidated route-context proof. Each scenario passes `9/10`;
+  the combined controlled workflow result is `18/20 = 90%`, not real-user
+  adoption. Manifest tests pass `7/7`, route tests `2/2`, repository Level 2
+  `2990/2990` and frontend unit coverage `1140/1140`; types, lint, i18n, build,
+  budget and audit pass. The final local brand scan sees only the user's
+  pre-existing untracked public asset, so its clean-checkout proof is reserved
+  for the implementation exact-SHA ordinary CI. Final completion still
+  requires the production ERPNext-to-LaunchFlow reconciliation under the fixed
+  read-only boundary. Controller marker: `P9-08 controlled UAT implementation candidate; exact-SHA ordinary and final reconciliation gates required`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple
