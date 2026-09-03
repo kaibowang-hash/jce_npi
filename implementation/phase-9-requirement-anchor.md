@@ -258,3 +258,40 @@ identity check, bounded result and operator runbook. Focused tests pass `11/11`
 and repository Level 2 passes `2981/2981`. No UI, product contract, production
 ERPNext, production LaunchFlow or external target changed. Final exact-SHA
 ordinary CI and the sole diagnostics-off Level 3 remain required.
+
+Final P9-07 SHA `d911c2bcecb228cee0f4830c868e0d0fdf35d3e2`
+passes exact-SHA ordinary CI `33730217862` and diagnostics-off Level 3
+`33730710124`. Controlled runtime `100571300835` completes backup, restore,
+forward-fix and cleanup with `productionContact=false`; release-gate is PASS.
+P9-07 is complete.
+
+## P9-08 controlled full-product UAT boundary
+
+P9-08 covers `UX-003` and technical Phase 9 exit using representative,
+non-production AT-01 customer-owned-mold and AT-02 new-tooling golden/fault
+paths. It does not execute M9-04 or M9-05 real pilots, observe production users
+or support an 80-percent real-user adoption claim. Those pilots remain the
+user-approved post-V1.2 scope.
+
+The fixed 80-percent measure is controlled workflow coverage. Its denominator
+is every in-scope frequent user-initiated development activity in both scenario
+manifests. Its numerator is each such activity that starts from My Work or
+executes inside the same Project and a governed child workspace. Background,
+administrator and ERP-owned execution are outside both numerator and
+denominator; they cannot be used to hide a missing LaunchFlow activity. Each
+scenario and the combined set must meet or exceed `0.80`.
+
+The evidence batch must bind every activity to a stable requirement/task
+anchor, accepted evidence and executable selector; cover both golden and fault
+truth; preserve permissions, audit, trace, versions, idempotency, three-language
+copy and industrial UX; and fail closed on a missing evidence family or false
+production/pilot claim. Existing architecture, ownership, contracts and
+accepted P9-01 through P9-07 code remain the default-correct baseline. No
+product change is permitted without one fixed reproducible UAT gap.
+
+Final Phase 9 closeout additionally requires the complete production
+ERPNext-to-LaunchFlow compatibility refresh already mandated by P8-07F. It
+reuses the accepted inventory and fixed `JCE-Core` read-only allowlist, prefers
+version/mtime/hash/delta checks, records only sanitized facts and checksums, and
+makes no production write. Any unresolved drift or unverified actual dependency
+blocks Phase 9 PASS, `IMPLEMENTATION_COMPLETE` and production-ready.

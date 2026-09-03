@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `IMPLEMENTATION CANDIDATE — EXACT-SHA ORDINARY AND LEVEL 3 PENDING`
+Status: `PASS_LEVEL_3`
 
 Requirements: `NFR-BCP-001`, `NFR-MNT-001`
 
@@ -54,15 +54,32 @@ different runtime. Governance ordinary CI already passes its exact frontend
 lane; the final candidate ordinary CI must pass that lane again at the exact
 implementation SHA.
 
-## Final exact-SHA evidence slots
+## Final exact-SHA evidence
 
-- Implementation SHA: `PENDING`
-- Ordinary CI: `PENDING`
-- Diagnostics-off Level 3: `PENDING`
-- Controlled runtime job/artifact/checksum: `PENDING`
-- Release-gate review: `PENDING`
+- Implementation SHA: `d911c2bcecb228cee0f4830c868e0d0fdf35d3e2`
+- Ordinary CI: `33730217862` — PASS
+- Ordinary jobs: secret `100568187027`; visual `100568187187`; E2E shard 1
+  `100568187192`; repository `100568187234`; frontend verify `100568187279`;
+  E2E shard 2 `100568187376`; frontend aggregate `100569594776`.
+- Diagnostics-off Level 3: `33730710124` — PASS
+- Level 3 jobs: frontend verify `100569742499`; secret `100569742677`; E2E
+  shard 2 `100569742708`; repository `100569742720`; visual `100569742798`;
+  E2E shard 1 `100569742893`; frontend aggregate `100571202183`; controlled
+  preflight `100571230546`; controlled runtime `100571300835`.
+- Controlled runtime: PASS in `9m51s`; backup `3s`, restore `5s`, forward-fix
+  `9s`; restore and forward-fix verified; cleanup PASS;
+  `productionContact=false`.
+- Artifact: `9884231883`, name `p8-integration-runtime-33730710124`, GitHub
+  digest
+  `sha256:2d4fdb0d1f5293a20d0c4feecf663011712da857f168088a15abe731a25c1ef2`.
+- Bounded `result.txt` checksum:
+  `sha256:9c6b501e20ceeec9abd728f8165b02b05682ebb34e86e4dda010245515bffb93`.
+- Result evidence checksum:
+  `sha256:54483fd8a5c75d23e3f6307ddfa9b6d800364495f76a291d5d8a3ea799701541`.
+- Release-gate review: `PASS`.
 
-P9-07 and P9-08 activation remain blocked until these exact-SHA slots pass.
+All temporary diagnostic switches are off. P9-07 is complete and P9-08 may
+activate automatically.
 
 ## Level 3 runtime stops and bounded cumulative diagnostic
 

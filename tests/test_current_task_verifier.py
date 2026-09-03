@@ -34,59 +34,54 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-07")
+        self.assertEqual(value["task_id"], "P9-08")
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED",
+            "IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P9-08")
+        self.assertEqual(value["authorized_next_task"], "COMPLETE")
         self.assertEqual(
             value["requirement_ids"],
-            ["NFR-BCP-001", "NFR-MNT-001"],
+            ["UX-003"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "8f5c2292dab6aa48f82c8aade37f3938b023699d",
+            "d911c2bcecb228cee0f4830c868e0d0fdf35d3e2",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "8f5c2292dab6aa48f82c8aade37f3938b023699d",
+            "d911c2bcecb228cee0f4830c868e0d0fdf35d3e2",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "P9-07",
+                "phase_status_current_task": "P9-08",
                 "phase_status_execution_hold": "NONE",
-                "phase_status_resumed_product_task": "P9-07",
-                "active_goal_marker": "P9-07",
-                "next_action_marker": "P9-07",
-                "controller_marker": "P9-07 release manifest appNames JSON array repair; diagnostics off exact-SHA ordinary and final Level 3 required",
+                "phase_status_resumed_product_task": "P9-08",
+                "active_goal_marker": "P9-08",
+                "next_action_marker": "P9-08",
+                "controller_marker": "P9-07 Level 3 PASS; P9-08 controlled full-product UAT governance active",
             },
         )
         for invariant in (
-            "P9_06_EXACT_SHA_8F5C2292_ORDINARY_33719574371_AND_LEVEL3_33719982252_PASS",
-            "P9_06_RUNTIME_JOB_100538152787_ARTIFACT_9880193608_PRODUCTION_CONTACT_FALSE",
-            "FIXED_REPOSITORY_BENCH_NPI_LOCALHOST_NPI_ONE_RUNTIME_AND_DISPOSABLE_MARKER_ONLY",
-            "RELEASE_MANIFEST_BINDS_EXACT_GIT_FRAPPE_APP_SCHEMA_AND_CONFIG_KEY_FINGERPRINTS_WITHOUT_VALUES_OR_SECRETS",
-            "BACKUP_USES_ONLY_SYNTHETIC_DATABASE_PUBLIC_AND_PRIVATE_FILE_CANARIES_AND_TEMPORARY_0700_STORAGE",
-            "RESTORE_REQUIRES_PRE_BACKUP_CANARIES_PRESENT_AND_POST_BACKUP_CANARIES_ABSENT",
-            "FORWARD_FIX_RERUNS_MIGRATIONS_AND_COMPLETES_CUMULATIVE_GATE_AFTER_RESTORE",
-            "NO_PRODUCTION_ERPNEXT_LAUNCHFLOW_OR_EXTERNAL_CONTACT_AND_NO_NEW_ERP_FACT_DEPENDENCY_FOR_P9_07",
-            "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
+            "P9_07_EXACT_SHA_D911C2BC_ORDINARY_33730217862_AND_LEVEL3_33730710124_PASS",
+            "P9_07_RUNTIME_JOB_100571300835_ARTIFACT_9884231883_PRODUCTION_CONTACT_FALSE",
+            "CONTROLLED_UAT_AT_01_AND_AT_02_REPRESENTATIVE_NON_PRODUCTION_ONLY",
+            "UX_003_RATIO_MEASURES_CONTROLLED_WORKFLOW_COVERAGE_NOT_REAL_USER_ADOPTION",
+            "NO_PRODUCT_CHANGE_WITHOUT_ONE_CONCRETE_REPRODUCIBLE_UAT_GAP",
+            "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REQUIRED_BEFORE_COMPLETION",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "implementation/evidence/phase-9/p9-06-validation.md",
-                "implementation/evidence/phase-9/p9-07-plan.md",
+                "implementation/evidence/phase-9/p9-07-validation.md",
+                "implementation/evidence/phase-9/p9-08-plan.md",
                 "implementation/phase-9-requirement-anchor.md",
-                "docs/GO_LIVE_AND_RECOVERY_RUNBOOK.md",
-                "scripts/run_go_live_rehearsal.sh",
-                "scripts/verify_go_live_rehearsal.py",
-                "scripts/verify_item_publish_runtime.py",
-                "tests/test_phase8_item_publish_runtime_verifier.py",
+                "implementation/uat/p9-08-controlled-uat.json",
+                "scripts/verify_phase9_controlled_uat.py",
+                "frontend/tests/e2e/p9-08-controlled-uat.spec.ts",
             }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))

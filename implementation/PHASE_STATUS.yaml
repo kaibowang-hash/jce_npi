@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T16:05:00+07:00'
+updated_at: '2026-09-03T15:21:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P9-07
-current_task_status: IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED
-current_task_completed_stage: P9_07_JSON_ARRAY_REPAIR_LEVEL_2_PASS
-current_task_next_stage: P9_07_RELEASE_MANIFEST_CANONICALIZATION_EXACT_SHA_ORDINARY_THEN_FINAL_LEVEL_3
-current_task_next_stage_status: REPAIR_CHECKPOINT_PENDING_COMMIT
-resumed_product_task: P9-07
-resumed_product_task_status: RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED
+current_task: P9-08
+current_task_status: IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE
+current_task_completed_stage: P9_07_PASS_LEVEL_3
+current_task_next_stage: P9_08_GOVERNANCE_EXACT_SHA_ORDINARY_THEN_CONTROLLED_UAT_IMPLEMENTATION
+current_task_next_stage_status: GOVERNANCE_CHECKPOINT_PENDING_COMMIT
+resumed_product_task: P9-08
+resumed_product_task_status: CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -3397,7 +3397,7 @@ p9_06:
   next_gate: COMPLETE
 p9_07:
   task: P9-07
-  status: IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED
+  status: PASS_LEVEL_3
   predecessor_product_checkpoint: 8f5c2292dab6aa48f82c8aade37f3938b023699d
   plan: implementation/evidence/phase-9/p9-07-plan.md
   validation: implementation/evidence/phase-9/p9-07-validation.md
@@ -3427,12 +3427,43 @@ p9_07:
   repair: CANONICAL_JSON_ARRAY_APP_NAMES_DIAGNOSTICS_OFF
   repair_affected_tests: 83_PASS
   repair_repository_level_2: 2983_PASS
-  final_ordinary: PENDING_REPAIR_EXACT_SHA
-  final_level_3: PENDING_REPAIR_EXACT_SHA
+  final_checkpoint: d911c2bcecb228cee0f4830c868e0d0fdf35d3e2
+  final_ordinary: 33730217862_PASS
+  final_ordinary_jobs: {secret_scan: 100568187027, visual: 100568187187, frontend_e2e_shard_1: 100568187192, repository: 100568187234, frontend_verify: 100568187279, frontend_e2e_shard_2: 100568187376, frontend_aggregate: 100569594776}
+  final_level_3: 33730710124_PASS
+  final_level_3_jobs: {frontend_verify: 100569742499, secret_scan: 100569742677, frontend_e2e_shard_2: 100569742708, repository: 100569742720, visual: 100569742798, frontend_e2e_shard_1: 100569742893, frontend_aggregate: 100571202183, controlled_preflight: 100571230546, controlled_runtime: 100571300835}
+  controlled_runtime_seconds: 591
+  controlled_runtime_result: PASS_RESTORE_FORWARD_FIX_AND_CLEANUP
+  controlled_runtime_artifact_id: 9884231883
+  controlled_runtime_artifact_name: p8-integration-runtime-33730710124
+  controlled_runtime_artifact_digest: sha256:2d4fdb0d1f5293a20d0c4feecf663011712da857f168088a15abe731a25c1ef2
+  controlled_runtime_result_checksum: sha256:9c6b501e20ceeec9abd728f8165b02b05682ebb34e86e4dda010245515bffb93
+  controlled_runtime_evidence_checksum: sha256:54483fd8a5c75d23e3f6307ddfa9b6d800364495f76a291d5d8a3ea799701541
+  final_release_gate: PASS
   production_rpo_rto_accepted: false
   production_backup_schedule_verified: false
   production_erp_contact: false
-  next_gate: REPAIR_EXACT_SHA_ORDINARY_THEN_FINAL_DIAGNOSTICS_OFF_LEVEL_3
+  next_gate: COMPLETE
+p9_08:
+  task: P9-08
+  status: IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE
+  predecessor_product_checkpoint: d911c2bcecb228cee0f4830c868e0d0fdf35d3e2
+  plan: implementation/evidence/phase-9/p9-08-plan.md
+  validation: implementation/evidence/phase-9/p9-08-validation.md
+  final_erpnext_reconciliation: implementation/evidence/phase-9/p9-08-final-erpnext-reconciliation.md
+  requirements: [UX-003]
+  scenarios: [AT-01_CUSTOMER_OWNED_MOLD, AT-02_NEW_TOOLING]
+  evidence_class: CONTROLLED_NON_PRODUCTION_TECHNICAL_UAT
+  real_pilot_claim_authorized: false
+  real_user_adoption_claim_authorized: false
+  ux_003_ratio_threshold: 0.80
+  ux_003_ratio_definition: QUALIFYING_MY_WORK_OR_SAME_PROJECT_CONTEXT_ACTIVITIES_DIVIDED_BY_IN_SCOPE_FREQUENT_USER_INITIATED_DEVELOPMENT_ACTIVITIES
+  governance_checkpoint: PENDING
+  governance_ordinary: PENDING
+  product_code_authorized: false
+  final_full_production_erpnext_read_only_reconciliation_required: true
+  production_write_authorized: false
+  next_gate: GOVERNANCE_EXACT_SHA_ORDINARY_THEN_ONE_UAT_EVIDENCE_BATCH
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3460,4 +3491,4 @@ phases:
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05, P9-06], current_task: P9-07, current_task_status: IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05, P9-06, P9-07], current_task: P9-08, current_task_status: IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE}

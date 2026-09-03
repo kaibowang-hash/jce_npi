@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED — P9-07`
+`IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE — P9-08`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -27,19 +27,21 @@ passes exact-SHA ordinary CI `33719574371` and the sole diagnostics-off Level 3
 `33719982252`. Cumulative disposable runtime `100538152787`, cleanup and
 `productionContact=false` pass; release-gate is PASS.
 
-P9-07 diagnostic SHA `7578272417cbaecfacfbefb6a2d7d1c3bf6731dc`
-passes ordinary CI `33728309450`. Its sole diagnostic-only run `33728821857`
-passes repository, secret and preflight, crosses the historical P8-03 check
-with no diagnostic tuple, and fails only at P9-07 post-restore release identity.
-Static proof identifies a deterministic serialization defect: `appNames` was
-created as a tuple, persisted to JSON as an array and read back as a list, so
-exact equality failed although content was unchanged. Canonicalize `appNames`
-as a JSON array/list, add the round-trip regression, disable the temporary
-P8-03 classifier, and push one repair checkpoint. Affected tests pass `83/83`
-and complete repository Level 2 passes `2983/2983`. Require its exact-SHA
-ordinary PASS and one final diagnostics-off Level 3. Do not inspect config
-values, change CI, contact production or stage user-owned files.
-P9-07 marker: `P9-07 release manifest appNames JSON array repair; diagnostics off exact-SHA ordinary and final Level 3 required`.
+P9-07 final SHA `d911c2bcecb228cee0f4830c868e0d0fdf35d3e2`
+passes ordinary CI `33730217862` and diagnostics-off Level 3 `33730710124`.
+Controlled runtime `100571300835` completes backup, restore, forward-fix and
+cleanup with `productionContact=false`; release-gate is PASS.
+
+The first incomplete task is P9-08. Commit the governance-only controlled-UAT
+plan, pass its exact-SHA ordinary CI, then automatically add one fixed
+machine-readable AT-01/AT-02 manifest, one fail-closed verifier and the smallest
+consolidated browser proof. Measure controlled workflow coverage from My Work
+or within one Project context; never call it real-user adoption. Do not run the
+deferred M9-04/M9-05 real pilots, redesign product behavior or stage user-owned
+files. Before final Phase 9 closeout, perform the mandatory production
+ERPNext-to-LaunchFlow compatibility refresh using only the already approved
+fixed read-only inventory/delta boundary.
+P9-08 marker: `P9-07 Level 3 PASS; P9-08 controlled full-product UAT governance active`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

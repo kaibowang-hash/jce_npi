@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T16:05:00+07:00`
+Updated: `2026-09-03T15:21:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED — P9-07`
+- Mode: `IN_PROGRESS_P9_08_CONTROLLED_FULL_PRODUCT_UAT_GOVERNANCE — P9-08`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -40,27 +40,22 @@ Updated: `2026-09-03T16:05:00+07:00`
   and the sole diagnostics-off Level 3 `33719982252` pass every lane, including
   cumulative disposable-Site runtime `100538152787`, cleanup and
   `productionContact=false`; `release-gate` is PASS.
-- P9-07 governance SHA `6c3c30a25138dfdc4e26b0ea20056314b670882a`
-  passes exact-SHA ordinary CI `33721621988`. The fixed non-production
-  rehearsal is implemented on the guarded `npi.localhost` disposable Site:
-  value-free exact release manifest, synthetic database/public/private file
-  canaries, checksummed full backup, meaningful same-Site restore, two
-  migrations, forward-fix identity verification, bounded timings and cleanup.
-  Focused tests pass `11/11`; repository Level 2 passes `2981/2981`. It is not
-  a generic deploy/restore tool and does not contact production ERPNext,
-  `jce.1`, production LaunchFlow or an external target. Production schedule,
-  storage, key custody, RPO/RTO and sign-off remain IT/business owned. The
-  candidate exact SHA `3bc42d9f6cb5bdf684507d366970b8b6b0e0bcdd`
-  passes ordinary CI `33724852712`. Its replacement Level 3 runs
-  `33725286182` and `33726821321` both pass every static/frontend/preflight
-  lane, then stop at the same historical P8-03 migrated-legacy problem-code
-  assertion before P9-07 executes. Diagnostic checkpoint `7578272417cbaecfacfbefb6a2d7d1c3bf6731dc`
-  passes ordinary `33728309450`; its sole diagnostic-only run `33728821857`
-  crosses P8-03 with no tuple and fails only at P9-07 post-restore release
-  identity. Static proof isolates the mismatch: in-memory `appNames` was a
-  tuple, while its JSON round trip is necessarily an array/list. Canonicalize
-  this one field, disable the temporary classifier and require one exact-SHA
-  ordinary plus one final Level 3. Controller marker: `P9-07 release manifest appNames JSON array repair; diagnostics off exact-SHA ordinary and final Level 3 required`.
+- P9-07 is complete at exact SHA
+  `d911c2bcecb228cee0f4830c868e0d0fdf35d3e2`. Ordinary CI `33730217862`
+  and diagnostics-off Level 3 `33730710124` pass every lane. Controlled
+  recovery runtime `100571300835` completes backup, restore, forward-fix and
+  cleanup in `9m51s` with `productionContact=false`; artifact `9884231883`
+  and its bounded result checksum are retained. The release-gate result is
+  PASS.
+- P9-08 is active for `UX-003` and Phase 9 exit. It freezes representative
+  non-production AT-01 customer-owned-mold and AT-02 new-tooling golden/fault
+  paths. The 80-percent result measures controlled workflow coverage from My
+  Work or within one Project context; it is not real-user adoption. M9-04 and
+  M9-05 real pilots remain post-V1.2. Governance changes no product or
+  production state and must pass exact-SHA ordinary CI before the fixed UAT
+  evidence batch begins. Final completion also requires the already mandated
+  production ERPNext-to-LaunchFlow reconciliation under the fixed read-only
+  boundary. Controller marker: `P9-07 Level 3 PASS; P9-08 controlled full-product UAT governance active`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

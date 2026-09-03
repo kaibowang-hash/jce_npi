@@ -11854,3 +11854,33 @@ P9-01 Level 3.
   Gate passes. Production ERPNext, `jce.1`, production LaunchFlow and all
   user-owned dirty/untracked files remain untouched.
 - Controller marker: `P9-07 release manifest appNames JSON array repair; diagnostics off exact-SHA ordinary and final Level 3 required`.
+
+## 2026-09-03 P9-07 Level 3 PASS; P9-08 controlled full-product UAT governance active
+
+- P9-07 final SHA `d911c2bcecb228cee0f4830c868e0d0fdf35d3e2`
+  passes ordinary CI `33730217862` and diagnostics-off Level 3 `33730710124`
+  in every repository, secret, frontend, E2E, visual, aggregate and controlled
+  runtime lane. Runtime `100571300835` completes the fixed backup, restore,
+  forward-fix and cleanup in `9m51s` with `productionContact=false`; artifact
+  `9884231883` retains the bounded checksummed result. Release-gate is PASS.
+- Automatically activate P9-08 for `UX-003` and Phase 9 exit. Freeze one
+  machine-readable controlled-UAT manifest for representative AT-01
+  customer-owned-mold and AT-02 new-tooling golden/fault paths, one fail-closed
+  verifier and the smallest consolidated browser proof. Reuse accepted
+  feature, permission, API, i18n and visual suites instead of rebuilding them.
+- The 80-percent value is a controlled workflow coverage ratio, not production
+  telemetry or adoption: qualifying frequent development activities start
+  from My Work or remain in the same Project and governed child workspaces.
+  M9-04 and M9-05 real pilots remain `USER_APPROVED_POST_V1_2_DEFERRED`.
+- Existing architecture, ownership, OpenAPI/event contracts and P9-01 through
+  P9-07 code are the default-correct baseline. No product change is authorized
+  without a fixed reproducible UAT gap, and any proved repair must be local,
+  minimal and reversible. No redesign, refactor, rename, workflow replacement,
+  generic abstraction or CI change is in scope.
+- This governance checkpoint makes no Site, database, production, ERPNext or
+  external contact. After its exact-SHA ordinary PASS, implement one UAT
+  evidence batch, run Level 2 and exact-SHA ordinary, then perform the mandatory
+  final production ERPNext-to-LaunchFlow compatibility refresh under the
+  standing fixed read-only inventory/delta allowlist. Zero production writes
+  are authorized. Finish with one diagnostics-off Level 3 and release-gate.
+- Controller marker: `P9-07 Level 3 PASS; P9-08 controlled full-product UAT governance active`.
