@@ -3,6 +3,7 @@ import { NpiHttpClient } from "./http";
 
 export interface SessionBootstrap {
   userId: string;
+  isSystemManager?: boolean;
   language: Locale;
   allowedLanguages: readonly Locale[];
   csrfToken: string;

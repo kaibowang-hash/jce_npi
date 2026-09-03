@@ -564,6 +564,7 @@ describe("Frappe-backed React localization", () => {
     ],
     ["short CSRF token", { csrfToken: "short" }],
     ["empty user identity", { userId: "" }],
+    ["invalid administration capability", { isSystemManager: "yes" }],
   ])(
     "rejects a malformed successful bootstrap with %s",
     async (_name, change) => {

@@ -98,6 +98,7 @@ function sessionBootstrap(
   language: Locale,
   csrfToken: string,
   navigationCollapsed = false,
+  isSystemManager = false,
 ): Readonly<Record<string, unknown>> {
   return {
     allowedLanguages: ["en", "zh", "zh-TW"],
@@ -107,6 +108,7 @@ function sessionBootstrap(
       version: "a".repeat(64),
     },
     csrfToken,
+    isSystemManager,
     language,
     preferences: { navigationCollapsed },
     userId: "phase3@example.invalid",
@@ -745,6 +747,42 @@ describe("application shell behavior", () => {
       await screen.findByText("No authorized object matches this query."),
     ).toBeVisible();
   });
+
+  it.each([
+    ["en", "Open Frappe administration"],
+    ["zh", "打开 Frappe 管理后台"],
+    ["zh-TW", "開啟 Frappe 管理後台"],
+  ] as const)(
+    "offers the Frappe administration Desk only to a System Manager in %s",
+    async (language, accessibleName) => {
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn<typeof globalThis.fetch>()
+          .mockResolvedValue(
+            response(sessionBootstrap(language, "a".repeat(32), false, true)),
+          ),
+      );
+      const user = userEvent.setup();
+      renderWithLocale(
+        <AppShell navigate={vi.fn()} route={route("work", "/work")}>
+          <p>Live My Work workspace</p>
+        </AppShell>,
+        language,
+        "/work",
+      );
+
+      const administration = await screen.findByRole("button", {
+        name: accessibleName,
+      });
+      const assign = vi.fn();
+      vi.stubGlobal("location", { assign });
+      await user.click(administration);
+
+      expect(assign).toHaveBeenCalledOnce();
+      expect(assign).toHaveBeenCalledWith("/app");
+    },
+  );
 
   it("keeps integration operations in exact live Project context", async () => {
     const projectGlobalId = "11111111-1111-4111-8111-111111111111";

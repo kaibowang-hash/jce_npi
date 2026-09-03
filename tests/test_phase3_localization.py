@@ -204,6 +204,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             },
         }
         self.current_language = "zh-TW"
+        self.roles = ["NPI API User"]
 
         self.frappe = types.ModuleType("frappe")
         self.frappe.PermissionError = self.StubPermissionError
@@ -226,6 +227,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             else ""
         )
         self.frappe.get_doc = self._get_doc
+        self.frappe.get_roles = lambda _user: list(self.roles)
         self.frappe.clear_cache = lambda user: self.clear_cache_calls.append(user)
         self.frappe.log_error = lambda **values: self.logged_errors.append(values)
         self.frappe.logger = lambda _name: self.logger
@@ -323,6 +325,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             set(result),
             {
                 "userId",
+                "isSystemManager",
                 "language",
                 "allowedLanguages",
                 "csrfToken",
@@ -331,6 +334,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             },
         )
         self.assertEqual(result["language"], "zh-TW")
+        self.assertIs(result["isSystemManager"], False)
         self.assertEqual(result["allowedLanguages"], ["en", "zh", "zh-TW"])
         self.assertEqual(result["csrfToken"], self.csrf_token)
         self.assertEqual(
@@ -359,6 +363,15 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             self.frappe.flags.npi_response_headers["Cache-Control"],
             "private, no-store",
         )
+
+    def test_bootstrap_reports_only_the_current_frappe_system_manager_role(
+        self,
+    ) -> None:
+        self.roles.append("System Manager")
+
+        result = self.adapter.get_session_bootstrap()
+
+        self.assertIs(result["isSystemManager"], True)
 
     def test_guest_is_rejected_inside_adapter(self) -> None:
         self.frappe.session.user = "Guest"
@@ -906,7 +919,7 @@ class LocalizationContractTest(unittest.TestCase):
         self.assertIn("name: X-Frappe-CSRF-Token", contract)
         self.assertIn(
             (
-                "required: [userId, language, allowedLanguages, "
+                "required: [userId, isSystemManager, language, allowedLanguages, "
                 "csrfToken, catalog, preferences]"
             ),
             contract,

@@ -4679,6 +4679,7 @@ const messages: Readonly<Record<string, string>> = {
   "Open ended": "無結束日期",
   "Open Execution prototype": "開啟執行原型",
   "Open field mapping": "開啟欄位對應",
+  "Open Frappe administration": "開啟 Frappe 管理後台",
   "Open Gate blockers": "未解決的階段門阻斷項",
   "Open Gate review": "開啟階段門評審",
   "Open governed monthly KPI trends.": "開啟受控的每月關鍵績效指標趨勢。",

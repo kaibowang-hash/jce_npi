@@ -21,6 +21,7 @@ export type TranslationValues = Readonly<Record<string, string | number>>;
 export interface SessionCommandContext {
   readonly userId: string;
   readonly csrfToken: string;
+  readonly isSystemManager?: true;
 }
 
 export interface I18nContextValue {
@@ -169,14 +170,23 @@ function isConsistentBootstrap(
     supportedLocales.every((language) => allowedLanguages.includes(language)) &&
     new Set(allowedLanguages).size === supportedLocales.length;
   return (
-    hasExactKeys(candidate, [
+    (hasExactKeys(candidate, [
       "userId",
       "language",
       "allowedLanguages",
       "csrfToken",
       "preferences",
       "catalog",
-    ]) &&
+    ]) ||
+      hasExactKeys(candidate, [
+        "userId",
+        "isSystemManager",
+        "language",
+        "allowedLanguages",
+        "csrfToken",
+        "preferences",
+        "catalog",
+      ])) &&
     hasExactKeys(preferenceRecord, ["navigationCollapsed"]) &&
     typeof preferenceRecord.navigationCollapsed === "boolean" &&
     hasExactKeys(catalogRecord, ["language", "version", "messages"]) &&
@@ -192,6 +202,8 @@ function isConsistentBootstrap(
     ) &&
     typeof candidate.userId === "string" &&
     candidate.userId.trim().length > 0 &&
+    (candidate.isSystemManager === undefined ||
+      typeof candidate.isSystemManager === "boolean") &&
     typeof candidate.csrfToken === "string" &&
     candidate.csrfToken.length >= 32 &&
     candidate.csrfToken.length <= 128
@@ -299,6 +311,7 @@ export function I18nProvider({
           Object.freeze({
             userId: bootstrap.userId,
             csrfToken: bootstrap.csrfToken,
+            ...(bootstrap.isSystemManager ? { isSystemManager: true } : {}),
           }),
         );
         setPrototypeFallback(false);

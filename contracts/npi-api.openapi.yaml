@@ -10765,9 +10765,12 @@ components:
     SessionBootstrap:
       type: object
       additionalProperties: false
-      required: [userId, language, allowedLanguages, csrfToken, catalog, preferences]
+      required: [userId, isSystemManager, language, allowedLanguages, csrfToken, catalog, preferences]
       properties:
         userId: { type: string }
+        isSystemManager:
+          type: boolean
+          description: Current Frappe session has the System Manager role and may open the Frappe administration Desk
         language:
           $ref: "#/components/schemas/LanguageCode"
         allowedLanguages:

@@ -89,6 +89,7 @@ def _session_bootstrap(
     )
     return {
         "userId": user_id,
+        "isSystemManager": "System Manager" in frappe.get_roles(user_id),
         "language": resolved_language,
         "allowedLanguages": list(ALLOWED_LANGUAGE_CODES),
         "csrfToken": get_csrf_token(),

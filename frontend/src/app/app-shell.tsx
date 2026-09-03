@@ -714,6 +714,18 @@ export function AppShell({
         >
           {t("Help")}
         </Button>
+        {sessionCommandContext?.isSystemManager ? (
+          <Button
+            aria-label={t("Open Frappe administration")}
+            icon="apps"
+            onClick={() => {
+              globalThis.location.assign("/app");
+            }}
+            visual="ghost"
+          >
+            {t("Administration")}
+          </Button>
+        ) : null}
         <Button
           aria-label={t("Current user")}
           icon="user"
