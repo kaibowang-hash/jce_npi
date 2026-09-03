@@ -116,6 +116,15 @@ describe("reporting data source", () => {
         items: [null],
       }),
     ).toBe(false);
+    expect(
+      isConfigurationCapabilityCatalog({
+        ...configurationFixture(),
+        activation: {
+          ...configurationFixture().activation,
+          erpBusinessAdaptersState: "ready",
+        },
+      }),
+    ).toBe(false);
   });
 
   it("accepts every frozen filter and rejects each non-allowlisted value", async () => {

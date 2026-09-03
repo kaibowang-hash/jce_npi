@@ -33,6 +33,10 @@ retain_terms:
     zh_cn: Frappe
     zh_tw: Frappe
     category: product
+  - source: Microsoft Entra
+    zh_cn: Microsoft Entra
+    zh_tw: Microsoft Entra
+    category: product
   - source: NPI
     zh_cn: NPI
     zh_tw: NPI

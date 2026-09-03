@@ -67,6 +67,27 @@ describe("Portfolio reporting workspace", () => {
       ),
     ).toBeVisible();
     expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "Production activation readiness",
+      }),
+    ).toBeVisible();
+    const readiness = screen.getAllByRole("table")[0];
+    if (!readiness)
+      throw new Error("The activation readiness table is missing.");
+    expect(within(readiness).getByText("Sign-in and MFA")).toBeVisible();
+    expect(
+      within(readiness).getByText("User, role and scope management"),
+    ).toBeVisible();
+    expect(
+      within(readiness).getAllByText("Implementation required"),
+    ).toHaveLength(2);
+    expect(
+      within(readiness).getByRole("link", {
+        name: "Open Frappe administration",
+      }),
+    ).toHaveAttribute("href", "/app");
+    expect(
       screen.getByText("Available through its governed command workspace"),
     ).toBeVisible();
     expect(

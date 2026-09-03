@@ -289,6 +289,7 @@ class FrappeReportingRepository:
             "schemaVersion": 1,
             "mode": "read_only_catalog",
             "genericWriterAvailable": False,
+            "activation": _production_activation_status(),
             "items": [dict(value) for value in CONFIGURATION_CAPABILITIES],
         }
 
@@ -652,6 +653,92 @@ class FrappeReportingRepository:
 
     def _is_internal_system_manager(self) -> bool:
         return not self.principal.is_external and "System Manager" in self.principal.roles
+
+
+def _production_activation_status() -> dict[str, object]:
+    configuration = getattr(frappe, "conf", None)
+    providers = frappe.get_all(
+        "Social Login Key",
+        filters={"enable_social_login": 1},
+        fields=["social_login_provider", "sign_ups"],
+        order_by="social_login_provider asc",
+        limit_page_length=51,
+    )
+    provider_scope_is_bounded = len(providers) <= 50
+    office_365_count = sum(
+        1
+        for provider in providers
+        if str(_value(provider, "social_login_provider", "")) == "Office 365"
+    )
+    global_signup_disabled = frappe.get_website_settings("disable_signup") in {
+        1,
+        True,
+        "1",
+    }
+    provider_signup_is_denied = all(
+        str(_value(provider, "sign_ups", "")) != "Allow"
+        for provider in providers
+    )
+    roles = _configuration_value(
+        configuration, "npi_p9_04_authorization_role_allowlist"
+    )
+    ttl_seconds = _configuration_value(
+        configuration, "npi_p9_04_authorization_max_ttl_seconds"
+    )
+    policy_is_configured = (
+        isinstance(roles, (list, tuple))
+        and bool(roles)
+        and all(isinstance(role, str) and bool(role) for role in roles)
+        and tuple(sorted(set(roles))) == tuple(roles)
+        and type(ttl_seconds) is int
+        and 300 <= ttl_seconds <= 86_400
+    )
+    return {
+        "identityAuthority": "MICROSOFT_ENTRA",
+        "sessionAuthority": "FRAPPE",
+        "authorizationAuthority": "ERPNEXT",
+        "entraLoginState": (
+            "ready"
+            if provider_scope_is_bounded and office_365_count == 1
+            else "action_required"
+        ),
+        "selfSignupState": (
+            "disabled"
+            if provider_scope_is_bounded
+            and global_signup_disabled
+            and provider_signup_is_denied
+            else "action_required"
+        ),
+        "authorizationIngressState": (
+            "enabled"
+            if _configuration_value(
+                configuration,
+                "npi_p9_04_authorization_projection_routes_disabled",
+            )
+            is False
+            else "disabled"
+        ),
+        "authorizationEnforcementState": (
+            "enabled"
+            if _configuration_value(
+                configuration,
+                "npi_p9_04_authorization_projection_enforced",
+            )
+            is True
+            else "disabled"
+        ),
+        "authorizationPolicyState": (
+            "configured" if policy_is_configured else "not_configured"
+        ),
+        "localUserProvisioningState": "implementation_required",
+        "erpAuthorizationSenderState": "external_verification_required",
+        "erpBusinessAdaptersState": "implementation_required",
+        "supportAdministrationPath": "/app",
+    }
+
+
+def _configuration_value(configuration: object, key: str) -> object | None:
+    return configuration.get(key) if hasattr(configuration, "get") else None
 
 
 def _value(record: Any, field: str, default: Any = ...):

@@ -159,6 +159,48 @@ function configurationLabel(
   }
 }
 
+type ActivationState =
+  | "ready"
+  | "action_required"
+  | "disabled"
+  | "enabled"
+  | "configured"
+  | "not_configured"
+  | "external_verification_required"
+  | "implementation_required";
+
+function activationStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: ActivationState,
+): string {
+  switch (state) {
+    case "ready":
+      return t("Ready");
+    case "action_required":
+      return t("Action required");
+    case "disabled":
+      return t("Disabled");
+    case "enabled":
+      return t("Enabled");
+    case "configured":
+      return t("Configured");
+    case "not_configured":
+      return t("Not configured");
+    case "external_verification_required":
+      return t("External verification required");
+    case "implementation_required":
+      return t("Implementation required");
+  }
+}
+
+function activationStateTone(
+  state: ActivationState,
+): "success" | "warning" | "neutral" {
+  if (state === "ready" || state === "configured") return "success";
+  if (state === "enabled" || state === "disabled") return "neutral";
+  return "warning";
+}
+
 function previousMonth(month: string, offset: number): string {
   const [yearValue, monthValue] = month.split("-").map(Number);
   const date = new Date(
@@ -551,7 +593,118 @@ function ConfigurationTable({
 }: {
   response: ConfigurationCapabilityCatalog;
 }): React.JSX.Element {
-  const { t } = useI18n();
+  const { sessionCommandContext, t } = useI18n();
+  const deploymentEnvironment = sessionCommandContext?.deploymentEnvironment;
+  const activation = response.activation;
+  const activationRows: readonly {
+    key: string;
+    capability: string;
+    authority: string;
+    state: ActivationState;
+    action: React.ReactNode;
+  }[] = [
+    {
+      key: "entra-login",
+      capability: t("Sign-in and MFA"),
+      authority: t("Microsoft Entra"),
+      state: activation.entraLoginState,
+      action:
+        activation.entraLoginState === "ready"
+          ? t("No change")
+          : t("Configure Microsoft Entra sign-in on this LaunchFlow Site."),
+    },
+    {
+      key: "self-signup",
+      capability: t("Self signup"),
+      authority: t("Frappe"),
+      state: activation.selfSignupState,
+      action:
+        activation.selfSignupState === "disabled"
+          ? t("No change")
+          : t("Disable self signup for every enabled login provider."),
+    },
+    {
+      key: "user-authority",
+      capability: t("User, role and scope management"),
+      authority: t("JCE Core"),
+      state: "external_verification_required",
+      action: t(
+        "Manage enabled users, NPI roles and approved scopes in JCE Core.",
+      ),
+    },
+    {
+      key: "authorization-ingress",
+      capability: t("Authorization projection ingress"),
+      authority: t("LaunchFlow"),
+      state: activation.authorizationIngressState,
+      action:
+        activation.authorizationIngressState === "disabled"
+          ? t("Keep disabled until the ERPNext sender and Sandbox tests pass.")
+          : t(
+              "Verify ERPNext sender and Sandbox evidence before production use.",
+            ),
+    },
+    {
+      key: "authorization-enforcement",
+      capability: t("Authorization projection enforcement"),
+      authority: t("LaunchFlow"),
+      state: activation.authorizationEnforcementState,
+      action:
+        activation.authorizationEnforcementState === "disabled"
+          ? t("Keep disabled until the ERPNext sender and Sandbox tests pass.")
+          : t(
+              "Verify ERPNext sender and Sandbox evidence before production use.",
+            ),
+    },
+    {
+      key: "authorization-policy",
+      capability: t("Authorization projection policy"),
+      authority: t("LaunchFlow"),
+      state: activation.authorizationPolicyState,
+      action:
+        activation.authorizationPolicyState === "configured"
+          ? t("No change")
+          : t(
+              "Configure the exact role allowlist and projection validity window.",
+            ),
+    },
+    {
+      key: "erp-authorization-sender",
+      capability: t("ERPNext authorization sender"),
+      authority: t("JCE Core"),
+      state: activation.erpAuthorizationSenderState,
+      action: t("Implement and verify the operation-specific ERPNext sender."),
+    },
+    {
+      key: "local-user-provisioning",
+      capability: t("LaunchFlow user provisioning"),
+      authority: t("JCE Core"),
+      state: activation.localUserProvisioningState,
+      action: t(
+        "Implement idempotent internal-user provisioning before enabling sign-in.",
+      ),
+    },
+    {
+      key: "erp-business-adapters",
+      capability: t("ERPNext business adapters"),
+      authority: t("LaunchFlow"),
+      state: activation.erpBusinessAdaptersState,
+      action: t(
+        "Implement and verify each operation-specific ERPNext business adapter.",
+      ),
+    },
+    {
+      key: "support-administration",
+      capability: t("Local support administration"),
+      authority: t("Frappe"),
+      state: "ready",
+      action: (
+        <a className="table-link" href={activation.supportAdministrationPath}>
+          {t("Open Frappe administration")}
+        </a>
+      ),
+    },
+  ];
   return (
     <>
       <div className="scenario-banner scenario-banner--read_only" role="status">
@@ -562,6 +715,71 @@ function ConfigurationTable({
           )}
         </span>
       </div>
+      <section aria-labelledby="production-activation-readiness-title">
+        <h2 id="production-activation-readiness-title">
+          {t("Production activation readiness")}
+        </h2>
+        <p>
+          {t(
+            "Only server-observed, non-secret configuration is shown. User and permission ownership is not duplicated in LaunchFlow.",
+          )}
+        </p>
+        <div className="engineering-table reporting-table">
+          <table className="data-table data-table--compact">
+            <thead>
+              <tr>
+                <th>{t("Capability")}</th>
+                <th>{t("System of authority")}</th>
+                <th>{t("Current state")}</th>
+                <th>{t("Required action")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{t("LaunchFlow Site environment")}</td>
+                <td>{t("LaunchFlow")}</td>
+                <td>
+                  <SemanticStatus
+                    label={
+                      deploymentEnvironment === "production"
+                        ? t("Production environment")
+                        : deploymentEnvironment === "sandbox"
+                          ? t("Sandbox environment")
+                          : t("Deployment environment not confirmed")
+                    }
+                    tone={
+                      deploymentEnvironment === "production"
+                        ? "success"
+                        : "warning"
+                    }
+                  />
+                </td>
+                <td>
+                  {deploymentEnvironment === "production"
+                    ? t("No change")
+                    : t(
+                        "Set the exact LaunchFlow Site environment before go-live.",
+                      )}
+                </td>
+              </tr>
+              {activationRows.map((item) => (
+                <tr key={item.key}>
+                  <td>{item.capability}</td>
+                  <td>{item.authority}</td>
+                  <td>
+                    <SemanticStatus
+                      label={activationStateLabel(t, item.state)}
+                      tone={activationStateTone(item.state)}
+                    />
+                  </td>
+                  <td>{item.action}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <h2>{t("Controlled configuration")}</h2>
       <div className="engineering-table reporting-table">
         <table className="data-table data-table--compact">
           <thead>

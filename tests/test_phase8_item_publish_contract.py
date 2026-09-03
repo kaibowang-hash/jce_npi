@@ -264,7 +264,7 @@ class Phase8ItemPublishContractTest(unittest.TestCase):
             self.assertIn(f"    {name}:\n", schemas)
         item = schemas[
             schemas.index("    ItemPublishSha256:\n") : schemas.index(
-                "    ProblemDetails:\n"
+                "    MbomPublishSha256:\n"
             )
         ].casefold()
         for forbidden in (

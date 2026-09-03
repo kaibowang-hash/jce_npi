@@ -155,6 +155,20 @@ export interface ConfigurationCapabilityCatalog {
   schemaVersion: 1;
   mode: "read_only_catalog";
   genericWriterAvailable: false;
+  activation: {
+    identityAuthority: "MICROSOFT_ENTRA";
+    sessionAuthority: "FRAPPE";
+    authorizationAuthority: "ERPNEXT";
+    entraLoginState: "ready" | "action_required";
+    selfSignupState: "disabled" | "action_required";
+    authorizationIngressState: "enabled" | "disabled";
+    authorizationEnforcementState: "enabled" | "disabled";
+    authorizationPolicyState: "configured" | "not_configured";
+    localUserProvisioningState: "implementation_required";
+    erpAuthorizationSenderState: "external_verification_required";
+    erpBusinessAdaptersState: "implementation_required";
+    supportAdministrationPath: "/app";
+  };
   items: readonly {
     key: string;
     labelSource: string;
@@ -612,11 +626,45 @@ export function isConfigurationCapabilityCatalog(
       "schemaVersion",
       "mode",
       "genericWriterAvailable",
+      "activation",
       "items",
     ]) &&
     value.schemaVersion === 1 &&
     value.mode === "read_only_catalog" &&
     value.genericWriterAvailable === false &&
+    object(value.activation) &&
+    exact(value.activation, [
+      "identityAuthority",
+      "sessionAuthority",
+      "authorizationAuthority",
+      "entraLoginState",
+      "selfSignupState",
+      "authorizationIngressState",
+      "authorizationEnforcementState",
+      "authorizationPolicyState",
+      "localUserProvisioningState",
+      "erpAuthorizationSenderState",
+      "erpBusinessAdaptersState",
+      "supportAdministrationPath",
+    ]) &&
+    value.activation.identityAuthority === "MICROSOFT_ENTRA" &&
+    value.activation.sessionAuthority === "FRAPPE" &&
+    value.activation.authorizationAuthority === "ERPNEXT" &&
+    (value.activation.entraLoginState === "ready" ||
+      value.activation.entraLoginState === "action_required") &&
+    (value.activation.selfSignupState === "disabled" ||
+      value.activation.selfSignupState === "action_required") &&
+    (value.activation.authorizationIngressState === "enabled" ||
+      value.activation.authorizationIngressState === "disabled") &&
+    (value.activation.authorizationEnforcementState === "enabled" ||
+      value.activation.authorizationEnforcementState === "disabled") &&
+    (value.activation.authorizationPolicyState === "configured" ||
+      value.activation.authorizationPolicyState === "not_configured") &&
+    value.activation.localUserProvisioningState === "implementation_required" &&
+    value.activation.erpAuthorizationSenderState ===
+      "external_verification_required" &&
+    value.activation.erpBusinessAdaptersState === "implementation_required" &&
+    value.activation.supportAdministrationPath === "/app" &&
     Array.isArray(value.items) &&
     value.items.length >= 1 &&
     value.items.length <= 50 &&

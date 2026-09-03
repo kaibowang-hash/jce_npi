@@ -69,6 +69,8 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
         }
         self.query_calls: list[tuple[str, dict[str, Any]]] = []
         self.get_doc_calls = 0
+        self.social_login_rows: list[Row] = []
+        self.disable_signup: object = 1
         frappe = types.ModuleType("frappe")
         frappe._ = lambda source: source
         frappe.local = types.SimpleNamespace(
@@ -78,6 +80,9 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
         frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         frappe.get_all = self.get_all
         frappe.get_doc = self.get_doc
+        frappe.get_website_settings = lambda key: (
+            self.disable_signup if key == "disable_signup" else None
+        )
         sys.modules["frappe"] = frappe
         self.module = importlib.import_module("npi_core.reporting.frappe_repository")
 
@@ -106,6 +111,8 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
 
     def get_all(self, doctype: str, **kwargs):
         self.query_calls.append((doctype, kwargs))
+        if doctype == "Social Login Key":
+            return list(self.social_login_rows)
         if doctype == "NPI Engineering Project":
             return list(self.projects.values())
         if doctype == "NPI Project Member":
@@ -255,6 +262,68 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
         result = self.repository(roles=frozenset({"System Manager"})).configuration_catalog()
         self.assertFalse(result["genericWriterAvailable"])
         self.assertEqual(result["mode"], "read_only_catalog")
+        self.assertEqual(result["activation"]["entraLoginState"], "action_required")
+        self.assertEqual(result["activation"]["authorizationIngressState"], "disabled")
+        self.assertEqual(
+            result["activation"]["erpBusinessAdaptersState"],
+            "implementation_required",
+        )
+        self.assertEqual(
+            result["activation"]["localUserProvisioningState"],
+            "implementation_required",
+        )
+
+    def test_activation_status_reads_only_non_secret_exact_configuration(self) -> None:
+        self.social_login_rows = [
+            Row(social_login_provider="Office 365", sign_ups="Deny")
+        ]
+        sys.modules["frappe"].conf.update(
+            {
+                "npi_p9_04_authorization_projection_routes_disabled": False,
+                "npi_p9_04_authorization_projection_enforced": True,
+                "npi_p9_04_authorization_role_allowlist": [
+                    "NPI Engineer",
+                    "NPI Reviewer",
+                ],
+                "npi_p9_04_authorization_max_ttl_seconds": 7200,
+            }
+        )
+        result = self.repository(
+            roles=frozenset({"System Manager"})
+        ).configuration_catalog()
+        activation = result["activation"]
+        self.assertEqual(activation["entraLoginState"], "ready")
+        self.assertEqual(activation["selfSignupState"], "disabled")
+        self.assertEqual(activation["authorizationIngressState"], "enabled")
+        self.assertEqual(activation["authorizationEnforcementState"], "enabled")
+        self.assertEqual(activation["authorizationPolicyState"], "configured")
+        provider_call = next(
+            arguments
+            for doctype, arguments in self.query_calls
+            if doctype == "Social Login Key"
+        )
+        self.assertEqual(
+            provider_call["fields"], ["social_login_provider", "sign_ups"]
+        )
+        self.assertNotIn("client_id", str(provider_call))
+        self.assertNotIn("client_secret", str(provider_call))
+
+    def test_provider_signup_override_and_malformed_policy_require_action(self) -> None:
+        self.social_login_rows = [
+            Row(social_login_provider="Office 365", sign_ups="Allow")
+        ]
+        sys.modules["frappe"].conf.update(
+            {
+                "npi_p9_04_authorization_role_allowlist": ["NPI Reviewer", "NPI Engineer"],
+                "npi_p9_04_authorization_max_ttl_seconds": 7200,
+            }
+        )
+        activation = self.repository(
+            roles=frozenset({"System Manager"})
+        ).configuration_catalog()["activation"]
+        self.assertEqual(activation["entraLoginState"], "ready")
+        self.assertEqual(activation["selfSignupState"], "action_required")
+        self.assertEqual(activation["authorizationPolicyState"], "not_configured")
 
     def test_repository_has_no_write_sql_external_or_permission_bypass(self) -> None:
         source = inspect.getsource(self.module)

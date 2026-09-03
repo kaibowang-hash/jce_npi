@@ -9331,3 +9331,35 @@ Published retention policies are immutable.,已发布的保留策略不可变。
 Project portfolio dataset,项目组合数据集
 KPI trends dataset,关键指标趋势数据集
 KPI exports require a range of no more than 24 months.,关键指标导出要求月份范围不超过 24 个月。
+Microsoft Entra,Microsoft Entra
+Frappe,Frappe
+Action required,需要操作
+Configured,已配置
+External verification required,需要外部核验
+Implementation required,需要实施
+Sign-in and MFA,登录和多重身份验证
+Self signup,自助注册
+"User, role and scope management","用户、角色和范围管理"
+Configure Microsoft Entra sign-in on this LaunchFlow Site.,在此 LaunchFlow 站点配置 Microsoft Entra 登录。
+Disable self signup for every enabled login provider.,为所有已启用的登录提供方禁用自助注册。
+"Manage enabled users, NPI roles and approved scopes in JCE Core.","在 JCE Core 中管理已启用用户、NPI 角色和已批准范围。"
+Authorization projection ingress,权限投影入口
+Keep disabled until the ERPNext sender and Sandbox tests pass.,在 ERPNext 发送器和沙箱测试通过前保持禁用。
+Verify ERPNext sender and Sandbox evidence before production use.,生产使用前核验 ERPNext 发送器和沙箱证据。
+Authorization projection enforcement,权限投影强制执行
+Authorization projection policy,权限投影策略
+No change,无需更改
+Configure the exact role allowlist and projection validity window.,配置精确的角色白名单和投影有效期。
+LaunchFlow user provisioning,LaunchFlow 用户预配
+Implement idempotent internal-user provisioning before enabling sign-in.,启用登录前实施幂等的内部用户预配。
+ERPNext authorization sender,ERPNext 权限发送器
+Implement and verify the operation-specific ERPNext sender.,实施并验证操作专用 ERPNext 发送器。
+ERPNext business adapters,ERPNext 业务适配器
+Implement and verify each operation-specific ERPNext business adapter.,逐项实施并验证操作专用 ERPNext 业务适配器。
+Local support administration,本地支持管理
+Production activation readiness,生产启用就绪状态
+"Only server-observed, non-secret configuration is shown. User and permission ownership is not duplicated in LaunchFlow.","仅显示服务器观测到的非敏感配置。LaunchFlow 不重复承担用户和权限主责。"
+System of authority,主责系统
+Required action,所需操作
+LaunchFlow Site environment,LaunchFlow 站点环境
+Set the exact LaunchFlow Site environment before go-live.,上线前设置准确的 LaunchFlow 站点环境。

@@ -105,6 +105,62 @@ or process recycle through the approved deployment mechanism, an authenticated
 `deploymentEnvironment` value expected for that Site. Do not infer Production
 from the hostname, build mode, browser profile or an operator's laptop config.
 
+## Administration, users and access activation
+
+An authenticated internal System Manager opens `/administration` to inspect the
+non-secret production-activation status. The page reads the current LaunchFlow
+Site only; it does not infer readiness from a deployment profile on an
+operator's computer. **Open Frappe administration** goes to the same Site's
+standard `/app` support Desk. That Desk remains for Site support and identity
+setup, not for ordinary LaunchFlow work or a second editable permission master.
+
+The approved ownership is fixed:
+
+- Microsoft Entra owns sign-in and MFA. Configure the supported Office 365
+  Social Login Key on the LaunchFlow Site through Frappe's standard
+  administration and keep provider secrets outside Git, commands and evidence.
+- Frappe owns the authenticated LaunchFlow session. Global self signup and any
+  provider-level signup override must be disabled; unknown users receive no
+  default access.
+- JCE Core owns whether an internal user is enabled plus the approved NPI roles
+  and Project/Company/Customer/Supplier scopes. LaunchFlow displays this as an
+  external authority and does not provide a permission editor.
+- LaunchFlow stores and enforces only the complete, versioned read-only
+  authorization projection received through the operation-specific service
+  route.
+
+The current V1.2 code requires the target Frappe System User to exist before an
+authorization projection is accepted. Automated, idempotent internal-user
+provisioning and the ERPNext sender are therefore shown as incomplete and both
+authorization switches must remain disabled. Do not use self signup or manual
+role duplication as a workaround.
+
+After a separately reviewed provisioning/sender task and version-equivalent
+Sandbox tests pass, configure the exact approved non-secret policy before
+activation:
+
+```text
+bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_role_allowlist '<approved-sorted-json-role-array>'
+bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_max_ttl_seconds '<approved-integer-300-to-86400>'
+```
+
+The two activation switches are intentionally independent. Enable ingress
+first, backfill and reconcile every approved active user, prove disable/
+revocation, stale/conflict and timeout-after-commit behavior, then enable
+enforcement last:
+
+```text
+bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_projection_routes_disabled false
+bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_projection_enforced true
+```
+
+Rollback sets enforcement to `false` first and closes ingress by setting
+`npi_p9_04_authorization_projection_routes_disabled` to `true`. It does not
+create local fallback roles, enable signup or delete projection/audit history.
+ERPNext business projections and commands remain separately operation-specific;
+their production adapters cannot be activated merely because user authorization
+is ready.
+
 ## Rollout order
 
 1. Freeze the exact SHA and verify ordinary CI plus Level 3 at that SHA.

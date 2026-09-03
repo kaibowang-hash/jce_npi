@@ -134,6 +134,20 @@ export function configurationFixture(): ConfigurationCapabilityCatalog {
     schemaVersion: 1,
     mode: "read_only_catalog",
     genericWriterAvailable: false,
+    activation: {
+      identityAuthority: "MICROSOFT_ENTRA",
+      sessionAuthority: "FRAPPE",
+      authorizationAuthority: "ERPNEXT",
+      entraLoginState: "ready",
+      selfSignupState: "disabled",
+      authorizationIngressState: "disabled",
+      authorizationEnforcementState: "disabled",
+      authorizationPolicyState: "not_configured",
+      localUserProvisioningState: "implementation_required",
+      erpAuthorizationSenderState: "external_verification_required",
+      erpBusinessAdaptersState: "implementation_required",
+      supportAdministrationPath: "/app",
+    },
     items: [
       {
         key: "project_templates",

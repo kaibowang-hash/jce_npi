@@ -72,8 +72,19 @@ class Phase9ReportingContractTest(unittest.TestCase):
 
     def test_configuration_is_catalog_only_and_factory_is_an_additive_typed_reference(self) -> None:
         catalog = schema("ConfigurationCapabilityCatalog")
+        activation = schema("ProductionActivationStatus")
         self.assertIn("const: read_only_catalog", catalog)
         self.assertIn("const: false", catalog)
+        self.assertIn("$ref: \"#/components/schemas/ProductionActivationStatus\"", catalog)
+        for boundary in ("MICROSOFT_ENTRA", "FRAPPE", "ERPNEXT"):
+            self.assertIn(f"const: {boundary}", activation)
+        for safe_state in (
+            "external_verification_required",
+            "implementation_required",
+        ):
+            self.assertIn(safe_state, activation)
+        for forbidden in ("client_id", "client_secret", "password", "token"):
+            self.assertNotIn(forbidden, activation.casefold())
         self.assertIn("enum: [customer, factory, product, part, tooling, order]", OPENAPI)
         ownership = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
         self.assertIn("factory_reference: {owner: NPI_ONE_PROJECT_COMMAND", ownership)
