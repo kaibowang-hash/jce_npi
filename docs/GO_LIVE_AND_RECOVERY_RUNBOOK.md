@@ -145,6 +145,12 @@ custom-app task and version-equivalent Sandbox proof. Both authorization
 switches must remain disabled until that external sender evidence passes. Do not
 use self signup or manual role duplication as a workaround.
 
+The default-disabled sender implementation and its two-Site activation order
+are documented in `docs/ERPNEXT_AUTHORIZATION_SENDER_RUNBOOK.md`. Code
+availability is not deployment evidence: the readiness row remains externally
+unverified until that app, its exact mappings, service actor and Sandbox/UAT
+evidence are accepted.
+
 After the separately reviewed sender task and version-equivalent Sandbox tests
 pass, configure the exact approved non-secret policy before activation:
 

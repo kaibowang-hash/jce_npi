@@ -38,7 +38,7 @@ if [[ "${verify_repository}" == true ]]; then
   python -m json.tool contracts/integration-event.schema.json >/dev/null
   python -m json.tool design/design-tokens.json >/dev/null
   find apps -name '*.json' -print0 | xargs -0 -r -n1 python -m json.tool >/dev/null
-  python -m compileall -q apps/npi_core apps/npi_integration scripts tests
+  python -m compileall -q apps/npi_core apps/npi_integration apps/npi_erpnext_connector scripts tests
   python -m unittest tests.test_phase8_item_publish_security -v
   python -m unittest discover -s tests -v
   python scripts/verify_prototype_approvals.py
