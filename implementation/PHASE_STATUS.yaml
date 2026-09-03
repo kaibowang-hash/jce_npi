@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T15:41:00+07:00'
+updated_at: '2026-09-03T16:25:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P9-08
-current_task_status: IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR
-current_task_completed_stage: P9_08_IMPLEMENTATION_ORDINARY_33734762911_PASS
-current_task_next_stage: P9_08_FINAL_RECONCILIATION_COLLECTOR_EXACT_SHA_ORDINARY
-current_task_next_stage_status: COLLECTOR_TRANSITION_PENDING_COMMIT
+current_task_status: IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE
+current_task_completed_stage: P9_08_FINAL_PRODUCTION_ERPNEXT_READ_ONLY_RECONCILIATION_PASS
+current_task_next_stage: P9_08_FINAL_EVIDENCE_EXACT_SHA_ORDINARY_THEN_LEVEL_3
+current_task_next_stage_status: FINAL_EVIDENCE_PENDING_COMMIT
 resumed_product_task: P9-08
-resumed_product_task_status: CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED
+resumed_product_task_status: FINAL_EVIDENCE_CANDIDATE_EXACT_SHA_GATES_REQUIRED
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
@@ -18,7 +18,7 @@ scope_decisions:
     current_task_may_connect: false
     connection_effective_condition: CURRENT_TASK_HAS_A_FRESHNESS_OR_DELTA_DEPENDENCY_AND_FIXED_ALLOWLIST
     documentation_authorized_after_transition_ordinary: true
-    current_rule: P9_07_REUSES_ACCEPTED_INVENTORY_AND_REQUIRES_NO_PRODUCTION_READ
+    current_rule: P9_08_FINAL_READ_COMPLETE_PRIVATE_RESULT_REMOVED_NO_FURTHER_CONTACT_REQUIRED
     future_activation_trigger: TASK_SCOPED_FRESHNESS_OR_DELTA_NEED_UNDER_STANDING_BOUNDARY
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
@@ -3446,7 +3446,7 @@ p9_07:
   next_gate: COMPLETE
 p9_08:
   task: P9-08
-  status: IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR
+  status: IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE
   predecessor_product_checkpoint: d911c2bcecb228cee0f4830c868e0d0fdf35d3e2
   plan: implementation/evidence/phase-9/p9-08-plan.md
   validation: implementation/evidence/phase-9/p9-08-validation.md
@@ -3473,12 +3473,26 @@ p9_08:
   clean_checkout_frontend_proof: 33734762911_PASS
   implementation_candidate: 1761323f934e762b706405e74e059071d26e9564
   implementation_ordinary: 33734762911_PASS
-  final_reconciliation_collector_transition: ACTIVE_ZERO_PRODUCTION_CONTACT_EXACT_SHA_ORDINARY_REQUIRED
+  final_reconciliation_collector_transition: 1323db574b147f2b43c69502ecdf5b2f25d9976b_ORDINARY_33736062145_PASS
+  final_reconciliation_empty_list_repair: 194733fc72df6fc045727074991eb70acf0aab8f_ORDINARY_33736966780_PASS
   final_reconciliation_operation: P9_FINAL_COMPATIBILITY_RECONCILIATION
   final_reconciliation_private_result_mode: "0600"
+  final_reconciliation_timestamp_local: '2026-09-03T16:16:57.085930+07:00'
+  final_reconciliation_timestamp_utc: '2026-09-03T09:16:57.085930Z'
+  final_reconciliation_remote_operation_count: 268
+  final_reconciliation_application_count: 20
+  final_reconciliation_runtime_family_count: 19
+  final_reconciliation_result_checksum: sha256:466520fe71fdd9cb6de4acf5a8cb2eaefbb58df19b6f564e62474c091ca69ddb
+  final_reconciliation_production_write: false
+  final_reconciliation_private_result_removed: true
+  final_reconciliation_actual_dependency_unverified_count: 0
+  final_reconciliation_launchflow_drift_count: 0
+  final_reconciliation_both_drifted_count: 0
+  final_reconciliation_assessed_production_drift: [ANONYMOUS_CUSTOM_APP_CURRENT_SOURCE_SIGNATURES, ADDITIVE_RUNTIME_METADATA, FILE_URL_AGGREGATE_VOLUME, ECR_WORKFLOW_REVISION]
+  final_reconciliation_result: PASS_ALL_ACTUAL_V1_2_DEPENDENCIES_COMPATIBLE_NO_PRODUCT_CHANGE
   final_full_production_erpnext_read_only_reconciliation_required: true
   production_write_authorized: false
-  next_gate: FINAL_RECONCILIATION_COLLECTOR_EXACT_SHA_ORDINARY_THEN_ONE_FIXED_READ_AND_FINAL_LEVEL_3
+  next_gate: FINAL_EVIDENCE_EXACT_SHA_ORDINARY_THEN_ONE_DIAGNOSTICS_OFF_LEVEL_3
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3506,4 +3520,4 @@ phases:
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05, P9-06, P9-07], current_task: P9-08, current_task_status: IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04, P9-05, P9-06, P9-07], current_task: P9-08, current_task_status: IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE}

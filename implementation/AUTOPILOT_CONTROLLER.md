@@ -11940,3 +11940,32 @@ P9-01 Level 3.
   private result, then require one final ordinary CI and the sole diagnostics-
   off Level 3/release-gate. No product or production write is authorized.
 - Controller marker: `P9-08 final ERPNext compatibility reconciliation collector; exact-SHA ordinary required before read`.
+
+## 2026-09-03 P9-08 final ERPNext reconciliation PASS; final evidence candidate
+
+- Collector transition
+  `1323db574b147f2b43c69502ecdf5b2f25d9976b` passes exact-SHA ordinary
+  CI `33736062145`. Its first authorized operation failed closed on Frappe
+  v15's exact empty stdout for an empty fixed `get_list` result and deleted the
+  private state. Bounded parser repair
+  `194733fc72df6fc045727074991eb70acf0aab8f` passes exact-SHA ordinary
+  CI `33736966780`; exact empty stdout now means only an empty list after exit
+  zero and empty stderr. Whitespace, non-JSON and every other shape still fail.
+- The repeated fixed final operation completed 268 bounded reads over twenty
+  applications, nineteen runtime metadata families, locale/File aggregates,
+  P9-01 change facts and P9-04 security facts. It reports
+  `production_write=false`; canonical checksum
+  `sha256:466520fe71fdd9cb6de4acf5a8cb2eaefbb58df19b6f564e62474c091ca69ddb`
+  matches independent calculation. Exact cleanup removed the mode-0600 result.
+- Platform/Site, required DocType/DocField/DocPerm, locale and P9-04 security
+  facts still match. Anonymous custom-app current-source signatures, additive
+  runtime configuration, File aggregate volume and the ECR Workflow changed
+  in production; each drift is evidence-bound and compatible with the current
+  default-disabled operation-specific adapters. No LaunchFlow contract,
+  ownership or product change is justified. No actual V1.2 dependency remains
+  `UNVERIFIED`, `LAUNCHFLOW_DRIFT` or `BOTH_DRIFTED`.
+- Commit only final sanitized P9-08 evidence/state and require one exact-SHA
+  ordinary CI. Then dispatch the sole diagnostics-off Level 3 and perform the
+  release-gate review. No further production contact, product/CI change,
+  real-pilot/adoption claim or user-owned path staging is authorized.
+- Controller marker: `P9-08 final ERPNext reconciliation PASS; final evidence exact-SHA ordinary and Level 3 pending`.

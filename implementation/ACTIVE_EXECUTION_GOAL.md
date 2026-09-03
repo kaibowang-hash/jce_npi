@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T15:41:00+07:00`
+Updated: `2026-09-03T16:25:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR — P9-08`
+- Mode: `IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE — P9-08`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -67,6 +67,19 @@ Updated: `2026-09-03T15:41:00+07:00`
   detailed sanitized facts only in a mode-0600 temporary file, and must pass
   exact-SHA ordinary CI before any production read. Controller marker:
   `P9-08 final ERPNext compatibility reconciliation collector; exact-SHA ordinary required before read`.
+- P9-08 collector transition
+  `1323db574b147f2b43c69502ecdf5b2f25d9976b` passes ordinary CI
+  `33736062145`. Its first fixed read failed closed on Frappe v15's exact empty
+  stdout representation for an empty list and left no result. The bounded
+  parser repair `194733fc72df6fc045727074991eb70acf0aab8f` passes ordinary
+  CI `33736966780`; the repeated fixed operation then completed 268 read-only
+  operations across twenty apps and nineteen runtime families with
+  `production_write=false`. Canonical result checksum
+  `sha256:466520fe71fdd9cb6de4acf5a8cb2eaefbb58df19b6f564e62474c091ca69ddb`
+  was independently verified, the private mode-0600 result was removed, and
+  all actual V1.2 dependencies are compatible. Assessed anonymous-app,
+  additive runtime, file-volume and ECR-Workflow production drift requires no
+  LaunchFlow change. Controller marker: `P9-08 final ERPNext reconciliation PASS; final evidence exact-SHA ordinary and Level 3 pending`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

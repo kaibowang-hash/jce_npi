@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR — P9-08`
+`IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE — P9-08`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -55,6 +55,20 @@ then run the fixed read once, record only sanitized checksums and compatibility
 classifications, clean the private temporary result, and proceed directly to
 the final evidence ordinary CI and sole diagnostics-off Level 3. No production
 write, product change, CI change or user-owned file staging is allowed.
+
+Collector transition `1323db574b147f2b43c69502ecdf5b2f25d9976b`
+passes ordinary CI `33736062145`; bounded Frappe-v15 empty-list repair
+`194733fc72df6fc045727074991eb70acf0aab8f` passes ordinary CI
+`33736966780`. The one fixed production read-only reconciliation completed
+268 operations over twenty apps and nineteen runtime families with
+`production_write=false`; canonical result checksum
+`sha256:466520fe71fdd9cb6de4acf5a8cb2eaefbb58df19b6f564e62474c091ca69ddb`
+matched independent calculation and the mode-0600 result was removed. All
+actual V1.2 ERP dependencies are compatible; assessed production drift is
+closed with `NO_CHANGE`. Commit the final sanitized evidence/state, require
+one exact-SHA ordinary CI, then dispatch the sole diagnostics-off Level 3 and
+perform the release-gate review. Do not reconnect production or stage any
+user-owned path.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

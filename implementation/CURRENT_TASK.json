@@ -3,7 +3,7 @@
   "task_id": "P9-08",
   "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR",
+  "status": "IN_PROGRESS_P9_08_FINAL_EVIDENCE_CANDIDATE",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "COMPLETE",
   "base_checkpoint": "d911c2bcecb228cee0f4830c868e0d0fdf35d3e2",
@@ -57,7 +57,9 @@
     "implementation/evidence/phase-9/p9-08-final-erpnext-reconciliation.md",
     "implementation/uat/p9-08-controlled-uat.json",
     "scripts/collect_erpnext_production_facts.py",
+    "scripts/reconcile_v1_2_traceability.py",
     "scripts/verify_phase9_controlled_uat.py",
+    "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
     "tests/test_erpnext_production_fact_collector.py",
     "tests/test_phase9_controlled_uat.py",
@@ -97,7 +99,7 @@
     "phase_status_resumed_product_task": "P9-08",
     "active_goal_marker": "P9-08",
     "next_action_marker": "P9-08",
-    "controller_marker": "P9-08 final ERPNext compatibility reconciliation collector; exact-SHA ordinary required before read"
+    "controller_marker": "P9-08 final ERPNext reconciliation PASS; final evidence exact-SHA ordinary and Level 3 pending"
   },
   "rollback": {
     "before_product_resume": "Restore exact accepted P9-07 checkpoint d911c2bcecb228cee0f4830c868e0d0fdf35d3e2. The P9-08 governance transition changes no product, database, Site, ERPNext or external state.",

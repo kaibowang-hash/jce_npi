@@ -304,3 +304,16 @@ workflow coverage is `18/20 = 90%`. Seven fail-closed manifest tests, two
 consolidated route-context tests and repository Level 2 `2990/2990` pass. The
 candidate still requires exact-SHA ordinary CI, final production ERPNext
 read-only reconciliation, diagnostics-off Level 3 and release-gate PASS.
+
+Implementation candidate `1761323f934e762b706405e74e059071d26e9564`
+passes ordinary CI `33734762911`. Final collector transition
+`1323db574b147f2b43c69502ecdf5b2f25d9976b` passes ordinary CI
+`33736062145`; Frappe-v15 exact-empty-list repair
+`194733fc72df6fc045727074991eb70acf0aab8f` passes ordinary CI
+`33736966780`. The fixed final read completes 268 operations over twenty apps
+and nineteen runtime families with no production write. Result checksum
+`sha256:466520fe71fdd9cb6de4acf5a8cb2eaefbb58df19b6f564e62474c091ca69ddb`
+is independently verified and the private result is removed. All actual V1.2
+ERP dependencies are compatible; assessed production drift has no unresolved
+contract or ownership impact and requires no product change. Only the final
+evidence exact-SHA ordinary CI and diagnostics-off Level 3/release-gate remain.
