@@ -81,6 +81,22 @@ LaunchFlow nor production ERPNext.
 - Controlled runtime job/artifact/checksum: `PENDING`
 - Release-gate result: `PENDING`
 
+## First final-gate runtime result and bounded diagnostic
+
+Exact-SHA ordinary CI `33710107059` passes at
+`6e6668b68dbf7b87ebdffe97d6687d2fd17833db`. The first diagnostics-off Level
+3 run `33710473687` passes repository, secret, frontend verification, both E2E
+shards, frontend aggregation, visual and controlled preflight. Its disposable
+Site initializes and passes the cumulative runtime through P9-03, then fails
+only at the existing P8-03 migrated-legacy 409 problem-code assertion after
+the second migration. P9-05 is therefore not complete.
+
+The response body and child output remain withheld. No product change is
+inferred. One existing value-free classifier is enabled for exactly the five
+known predecessor 409 codes plus the unknown-shape fallback. It may emit only
+a fixed code, exception type and deterministic trace from one diagnostic-only
+controlled Site. The classifier must be closed before any final Level 3.
+
 These slots intentionally remain pending inside the candidate commit. The CI
 and Level 3 runs are bound externally to that immutable exact SHA; no follow-up
 documentation commit may be used to reinterpret a failing candidate.

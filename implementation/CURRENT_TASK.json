@@ -17,7 +17,8 @@
     "Accept the P9-05 audit and plan transition at exact SHA 4d54fbef67cb9111618ded2ae2abd0cc47942167 with ordinary CI 33704386277 fully passing.",
     "Freeze one operation-specific non-production historical migration rehearsal for Projects, Tooling mappings, file indexes and approved NPI-owned reference data with immutable provenance, complete preview and difference reporting.",
     "Require closed bundle schema and version, bounded parsing, required/unique/enum/reference/version validation, deterministic create-or-link plans, correction artifacts, exact replay and guarded rollback or forward-correction truth.",
-    "Deliver the frozen P9-05 product batch, complete Level 2, then bind one exact-SHA ordinary CI and one final diagnostics-off Level 3 before P9-06 activation."
+    "Deliver the frozen P9-05 product batch, complete Level 2, then bind one exact-SHA ordinary CI and one final diagnostics-off Level 3 before P9-06 activation.",
+    "After exact-SHA Level 3 run 33710473687 passed every static, frontend, E2E, visual and preflight lane but failed at the existing P8-03 migrated-legacy problem-code assertion, enable exactly one existing value-free closed classifier for all five known predecessor 409 codes and unknown shape; use one diagnostic-only controlled Site before any statically proven fixture-only repair."
   ],
   "non_scope": [
     "Any production migration, production business record read or write, production ERPNext or LaunchFlow connection, database copy, direct SQL, console, credential, endpoint or real-project pilot evidence.",
@@ -95,6 +96,7 @@
     "implementation/evidence/phase-9/p9-05-validation.md",
     "scripts/verify-frappe-runtime.sh",
     "scripts/verify_historical_migration_runtime.py",
+    "scripts/verify_item_publish_runtime.py",
     "tests/test_current_task_verifier.py",
     "tests/test_phase9_historical_migration_api.py",
     "tests/test_phase9_historical_migration_bundle.py",
@@ -103,6 +105,7 @@
     "tests/test_phase9_historical_migration_metadata.py",
     "tests/test_phase9_historical_migration_runtime_verifier.py",
     "tests/test_phase9_historical_migration_security.py",
+    "tests/test_phase8_item_publish_runtime_verifier.py",
     "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {

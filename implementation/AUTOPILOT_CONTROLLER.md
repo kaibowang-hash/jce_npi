@@ -11651,3 +11651,24 @@ P9-01 Level 3.
   disposable runtime includes the synthetic P9-05 partial/replay/stale/
   correction/reconciliation/logical-rollback proof and `productionContact=false`.
 - Controller marker: `P9-05 historical migration implementation candidate; exact-SHA ordinary and Level 3 required`.
+
+## 2026-09-03 P9-05 first Level 3 migrated-legacy classifier active
+
+- P9-05 candidate SHA `6e6668b68dbf7b87ebdffe97d6687d2fd17833db`
+  passes exact-SHA ordinary CI `33710107059`. Its first diagnostics-off Level
+  3 `33710473687` passes repository, secret, frontend verification, both E2E
+  shards, aggregate frontend, visual and controlled preflight.
+- The disposable runtime initializes the pinned Bench and Site and passes the
+  cumulative boundary through P9-03. It then fails only at the existing P8-03
+  migrated-legacy 409 problem-code assertion after both migrations. Restricted
+  response values and child output remain withheld; P9-05 is not complete.
+- Enable exactly the existing P8-03 value-free final-gate classifier. It covers
+  all five known predecessor 409 codes and the unknown-shape fallback and may
+  emit only fixed code, exception type and deterministic trace. Product code,
+  contracts, CI, Site schema, production systems and user-owned files do not
+  change.
+- Require one exact-SHA ordinary PASS followed by one diagnostic-only
+  controlled Site. Statically prove the unique result before a single batched
+  fixture-only repair or no-change decision, close the classifier, then run a
+  replacement exact-SHA ordinary CI and diagnostics-off Level 3.
+- Controller marker: `P9-05 historical migration implementation candidate; exact-SHA ordinary and Level 3 required`.
