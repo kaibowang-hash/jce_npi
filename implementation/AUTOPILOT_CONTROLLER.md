@@ -11672,3 +11672,18 @@ P9-01 Level 3.
   fixture-only repair or no-change decision, close the classifier, then run a
   replacement exact-SHA ordinary CI and diagnostics-off Level 3.
 - Controller marker: `P9-05 historical migration implementation candidate; exact-SHA ordinary and Level 3 required`.
+
+## 2026-09-03 P9-05 migrated-legacy diagnostic closed without product change
+
+- Classifier SHA `6992bef2a3c36db5e3b97be0b4d2ced8687aca68` passes
+  exact-SHA ordinary CI `33711593738`. Its single diagnostic-only Level 3
+  `33711929184` passes the complete fresh cumulative disposable-Site runtime
+  job `100513376228` without emitting any diagnostic tuple.
+- The preceding P8-03 migrated-legacy assertion did not reproduce, so there is
+  no unique evidence for a product or fixture defect. Make no speculative
+  repair. Close every runtime diagnostic toggle and retain the existing
+  product, contract, migration and fixture boundaries unchanged.
+- Require one replacement exact-SHA ordinary CI and then one diagnostics-off
+  Level 3 at the same final SHA. P9-05 and P9-06 remain gated until both pass;
+  production LaunchFlow and ERPNext remain untouched.
+- Controller marker: `P9-05 historical migration implementation candidate; exact-SHA ordinary and Level 3 required`.

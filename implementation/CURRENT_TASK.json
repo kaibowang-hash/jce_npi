@@ -18,7 +18,7 @@
     "Freeze one operation-specific non-production historical migration rehearsal for Projects, Tooling mappings, file indexes and approved NPI-owned reference data with immutable provenance, complete preview and difference reporting.",
     "Require closed bundle schema and version, bounded parsing, required/unique/enum/reference/version validation, deterministic create-or-link plans, correction artifacts, exact replay and guarded rollback or forward-correction truth.",
     "Deliver the frozen P9-05 product batch, complete Level 2, then bind one exact-SHA ordinary CI and one final diagnostics-off Level 3 before P9-06 activation.",
-    "After exact-SHA Level 3 run 33710473687 passed every static, frontend, E2E, visual and preflight lane but failed at the existing P8-03 migrated-legacy problem-code assertion, enable exactly one existing value-free closed classifier for all five known predecessor 409 codes and unknown shape; use one diagnostic-only controlled Site before any statically proven fixture-only repair."
+    "After exact-SHA Level 3 run 33710473687 failed only at the existing P8-03 migrated-legacy problem-code assertion, diagnostic-only run 33711929184 passed the complete cumulative disposable runtime without emitting a classified failure. Close every diagnostic toggle, make no unproven product or fixture change, and require one replacement exact-SHA ordinary CI plus one diagnostics-off Level 3."
   ],
   "non_scope": [
     "Any production migration, production business record read or write, production ERPNext or LaunchFlow connection, database copy, direct SQL, console, credential, endpoint or real-project pilot evidence.",

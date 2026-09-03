@@ -97,6 +97,15 @@ known predecessor 409 codes plus the unknown-shape fallback. It may emit only
 a fixed code, exception type and deterministic trace from one diagnostic-only
 controlled Site. The classifier must be closed before any final Level 3.
 
+Exact-SHA ordinary CI `33711593738` passes at
+`6992bef2a3c36db5e3b97be0b4d2ced8687aca68`. Its sole diagnostic-only run
+`33711929184` also passes, including the complete fresh cumulative disposable
+Site runtime job `100513376228`. No diagnostic tuple was emitted and the prior
+migrated-legacy assertion did not reproduce. The accepted conclusion is
+therefore no proven product or fixture incompatibility: no speculative repair
+is made, every diagnostic toggle is closed, and one replacement ordinary CI
+and one diagnostics-off Level 3 remain required at the final candidate SHA.
+
 These slots intentionally remain pending inside the candidate commit. The CI
 and Level 3 runs are bound externally to that immutable exact SHA; no follow-up
 documentation commit may be used to reinterpret a failing candidate.
