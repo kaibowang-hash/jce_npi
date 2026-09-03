@@ -175,6 +175,7 @@ describe("Frappe-backed React localization", () => {
         version: "a".repeat(64),
       },
       csrfToken: "bootstrap-csrf-token-fixture-123456",
+      deploymentEnvironment: "production" as const,
       language: "en" as const,
       preferences: { navigationCollapsed: false },
       userId: "phase3@example.invalid",
@@ -208,6 +209,7 @@ describe("Frappe-backed React localization", () => {
     await waitFor(() => {
       expect(result.current.sessionCommandContext).toEqual({
         csrfToken: bootstrap.csrfToken,
+        deploymentEnvironment: "production",
         userId: bootstrap.userId,
       });
     });
@@ -220,6 +222,7 @@ describe("Frappe-backed React localization", () => {
     await waitFor(() => {
       expect(result.current.sessionCommandContext).toEqual({
         csrfToken: languageRefresh.csrfToken,
+        deploymentEnvironment: "production",
         userId: languageRefresh.userId,
       });
     });
@@ -565,6 +568,7 @@ describe("Frappe-backed React localization", () => {
     ["short CSRF token", { csrfToken: "short" }],
     ["empty user identity", { userId: "" }],
     ["invalid administration capability", { isSystemManager: "yes" }],
+    ["invalid deployment environment", { deploymentEnvironment: "test" }],
   ])(
     "rejects a malformed successful bootstrap with %s",
     async (_name, change) => {

@@ -67,6 +67,8 @@ values are sensitive:
 - approved exact application SHA, Frappe version and compatible migration set;
 - environment-specific Site/database identity and confirmed independent-app
   installation, without changing Frappe or ERPNext core;
+- exact non-secret LaunchFlow Site classification: `production` for the live
+  user-facing Site or `sandbox` for a controlled non-production Site;
 - backup schedule, last successful database/files/config backup, encrypted
   storage location, retention, access control and key-custody/recovery owners;
 - measured production-like backup and restore duration at representative data
@@ -81,12 +83,35 @@ Missing or stale evidence blocks production-ready. No credential, endpoint,
 host, user, token, key, cookie, raw backup, business record or sensitive config
 value belongs in Git, CI logs or the release manifest.
 
+## Deployment environment identity
+
+LaunchFlow reads its displayed environment only from the Frappe Site key
+`npi_deployment_environment`. The only accepted values are `production` and
+`sandbox`; the browser cannot choose or override the value. A missing, mixed-
+case or different value makes session bootstrap fail closed with
+`DEPLOYMENT_ENVIRONMENT_UNAVAILABLE` instead of showing a misleading label.
+
+During an approved LaunchFlow Site change, the operator sets the non-secret
+classification on the exact target Site before the new application version
+receives traffic:
+
+```text
+bench --site <launchflow-site> set-config npi_deployment_environment production
+```
+
+Use `sandbox` only on an actual controlled non-production Site. After restart
+or process recycle through the approved deployment mechanism, an authenticated
+`GET /api/npi/v1/session/bootstrap` smoke check must return the exact
+`deploymentEnvironment` value expected for that Site. Do not infer Production
+from the hostname, build mode, browser profile or an operator's laptop config.
+
 ## Rollout order
 
 1. Freeze the exact SHA and verify ordinary CI plus Level 3 at that SHA.
 2. Verify the environment backup and restore plan, storage capacity, key access,
    monitoring and rollback authority before the change window.
-3. Deploy the independent apps with existing feature/route switches retaining
+3. Set and verify the exact Site `npi_deployment_environment` classification,
+   then deploy the independent apps with existing feature/route switches retaining
    their reviewed default states; do not patch Frappe/ERPNext core.
 4. Run migrations through the approved environment procedure and verify app/
    schema/config-key fingerprints.

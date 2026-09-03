@@ -211,6 +211,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         self.frappe.PermissionError = self.StubPermissionError
         self.frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         self.frappe._ = lambda source: source
+        self.frappe.conf = {"npi_deployment_environment": "production"}
         self.frappe.db = self.database
         self.frappe.flags = types.SimpleNamespace(npi_bff_request=False)
         self.frappe.session = types.SimpleNamespace(user="engineer@example.invalid")
@@ -331,6 +332,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             {
                 "userId",
                 "isSystemManager",
+                "deploymentEnvironment",
                 "language",
                 "allowedLanguages",
                 "csrfToken",
@@ -340,6 +342,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         )
         self.assertEqual(result["language"], "zh-TW")
         self.assertIs(result["isSystemManager"], False)
+        self.assertEqual(result["deploymentEnvironment"], "production")
         self.assertEqual(result["allowedLanguages"], ["en", "zh", "zh-TW"])
         self.assertEqual(result["csrfToken"], self.csrf_token)
         self.assertEqual(
@@ -377,6 +380,29 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         result = self.adapter.get_session_bootstrap()
 
         self.assertIs(result["isSystemManager"], True)
+
+    def test_bootstrap_requires_an_exact_deployment_environment(self) -> None:
+        for value in (None, "", "test", "Production", True):
+            with self.subTest(value=value):
+                if value is None:
+                    self.frappe.conf.pop("npi_deployment_environment", None)
+                else:
+                    self.frappe.conf["npi_deployment_environment"] = value
+
+                result = self.adapter.get_session_bootstrap()
+
+                self.assert_problem(
+                    result,
+                    503,
+                    "DEPLOYMENT_ENVIRONMENT_UNAVAILABLE",
+                )
+                if isinstance(value, str) and value:
+                    self.assertNotIn(value, str(result))
+                self.frappe.conf["npi_deployment_environment"] = "production"
+
+        self.frappe.conf["npi_deployment_environment"] = "sandbox"
+        result = self.adapter.get_session_bootstrap()
+        self.assertEqual(result["deploymentEnvironment"], "sandbox")
 
     def test_logout_ends_only_the_authenticated_csrf_bound_session(self) -> None:
         result = self.adapter.logout_current_session()
@@ -970,11 +996,12 @@ class LocalizationContractTest(unittest.TestCase):
         self.assertIn("name: X-Frappe-CSRF-Token", contract)
         self.assertIn(
             (
-                "required: [userId, isSystemManager, language, allowedLanguages, "
-                "csrfToken, catalog, preferences]"
+                "required: [userId, isSystemManager, deploymentEnvironment, "
+                "language, allowedLanguages, csrfToken, catalog, preferences]"
             ),
             contract,
         )
+        self.assertIn("enum: [production, sandbox]", contract)
         self.assertIn("required: [navigationCollapsed]", contract)
         self.assertIn("required: [collapsed]", contract)
         self.assertIn("additionalProperties: false", contract)

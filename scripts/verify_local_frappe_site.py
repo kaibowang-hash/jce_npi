@@ -146,6 +146,10 @@ def parse_controlled_database(
             "Controlled local Frappe runtime safety configuration drifted",
         )
         require(
+            site_config.get("npi_deployment_environment") == "sandbox",
+            "Controlled local deployment environment drifted",
+        )
+        require(
             has_canonical_encryption_key(site_config.get("encryption_key")),
             "Controlled local Frappe Site encryption key is unavailable",
         )

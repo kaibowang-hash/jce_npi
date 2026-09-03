@@ -11,7 +11,11 @@ import {
 
 import { catalogVersion } from "../generated/catalog-version";
 import { bootstrapCatalogs } from "../generated/catalog-bootstrap";
-import { SessionClient, type SessionBootstrap } from "../api/session";
+import {
+  SessionClient,
+  type DeploymentEnvironment,
+  type SessionBootstrap,
+} from "../api/session";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 
 export const supportedLocales = ["en", "zh", "zh-TW"] as const;
@@ -22,6 +26,7 @@ export interface SessionCommandContext {
   readonly userId: string;
   readonly csrfToken: string;
   readonly isSystemManager?: true;
+  readonly deploymentEnvironment?: DeploymentEnvironment;
 }
 
 export interface I18nContextValue {
@@ -144,6 +149,12 @@ function hasExactKeys(
   );
 }
 
+function isDeploymentEnvironment(
+  value: unknown,
+): value is DeploymentEnvironment {
+  return value === "production" || value === "sandbox";
+}
+
 function isConsistentBootstrap(
   bootstrap: unknown,
   expectedLocale?: Locale,
@@ -177,24 +188,20 @@ function isConsistentBootstrap(
     ) &&
     supportedLocales.every((language) => allowedLanguages.includes(language)) &&
     new Set(allowedLanguages).size === supportedLocales.length;
+  const expectedBootstrapKeys = [
+    "userId",
+    "language",
+    "allowedLanguages",
+    "csrfToken",
+    "preferences",
+    "catalog",
+    ...(candidate.isSystemManager === undefined ? [] : ["isSystemManager"]),
+    ...(candidate.deploymentEnvironment === undefined
+      ? []
+      : ["deploymentEnvironment"]),
+  ];
   return (
-    (hasExactKeys(candidate, [
-      "userId",
-      "language",
-      "allowedLanguages",
-      "csrfToken",
-      "preferences",
-      "catalog",
-    ]) ||
-      hasExactKeys(candidate, [
-        "userId",
-        "isSystemManager",
-        "language",
-        "allowedLanguages",
-        "csrfToken",
-        "preferences",
-        "catalog",
-      ])) &&
+    hasExactKeys(candidate, expectedBootstrapKeys) &&
     hasExactKeys(preferenceRecord, ["navigationCollapsed"]) &&
     typeof preferenceRecord.navigationCollapsed === "boolean" &&
     hasExactKeys(catalogRecord, ["language", "version", "messages"]) &&
@@ -212,6 +219,8 @@ function isConsistentBootstrap(
     candidate.userId.trim().length > 0 &&
     (candidate.isSystemManager === undefined ||
       typeof candidate.isSystemManager === "boolean") &&
+    (candidate.deploymentEnvironment === undefined ||
+      isDeploymentEnvironment(candidate.deploymentEnvironment)) &&
     typeof candidate.csrfToken === "string" &&
     candidate.csrfToken.length >= 32 &&
     candidate.csrfToken.length <= 128
@@ -323,6 +332,9 @@ export function I18nProvider({
             userId: bootstrap.userId,
             csrfToken: bootstrap.csrfToken,
             ...(bootstrap.isSystemManager ? { isSystemManager: true } : {}),
+            ...(bootstrap.deploymentEnvironment
+              ? { deploymentEnvironment: bootstrap.deploymentEnvironment }
+              : {}),
           }),
         );
         setPrototypeFallback(false);
@@ -487,6 +499,9 @@ export function I18nProvider({
             userId: bootstrap.userId,
             csrfToken: bootstrap.csrfToken,
             ...(bootstrap.isSystemManager ? { isSystemManager: true } : {}),
+            ...(bootstrap.deploymentEnvironment
+              ? { deploymentEnvironment: bootstrap.deploymentEnvironment }
+              : {}),
           }),
         );
         setPrototypeFallback(false);

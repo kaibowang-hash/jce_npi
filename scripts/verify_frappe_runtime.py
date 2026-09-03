@@ -23,6 +23,7 @@ INSPECTOR_DISPOSABLE_USER = "npi-runtime-inspector@example.invalid"
 EXPECTED_KEYS = {
     "userId",
     "isSystemManager",
+    "deploymentEnvironment",
     "language",
     "allowedLanguages",
     "csrfToken",
@@ -205,6 +206,10 @@ def validate_bootstrap(
         result.body.get("isSystemManager")
         is (expected_user == ADMINISTRATOR_USER),
         "Session administration capability drifted",
+    )
+    require(
+        result.body.get("deploymentEnvironment") == "sandbox",
+        "Deployment environment classification drifted",
     )
     require(
         result.body.get("language") == language, "Bootstrap language did not persist"

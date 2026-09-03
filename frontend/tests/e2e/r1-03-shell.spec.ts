@@ -58,6 +58,7 @@ function sessionBootstrap(
       version: "f".repeat(64),
     },
     csrfToken,
+    deploymentEnvironment: "production",
     language: locale,
     preferences: { navigationCollapsed },
     userId: "manager@example.invalid",
@@ -353,7 +354,7 @@ test.describe("R1-03 application Shell behavior", () => {
     await expect(
       page
         .locator(".environment-marker")
-        .getByText(translate("en", "Test environment"), { exact: true }),
+        .getByText(translate("en", "Production environment"), { exact: true }),
     ).toBeVisible();
 
     const tooltip = page.getByRole("tooltip", {

@@ -10798,12 +10798,16 @@ components:
     SessionBootstrap:
       type: object
       additionalProperties: false
-      required: [userId, isSystemManager, language, allowedLanguages, csrfToken, catalog, preferences]
+      required: [userId, isSystemManager, deploymentEnvironment, language, allowedLanguages, csrfToken, catalog, preferences]
       properties:
         userId: { type: string }
         isSystemManager:
           type: boolean
           description: Current Frappe session has the System Manager role and may open the Frappe administration Desk
+        deploymentEnvironment:
+          type: string
+          enum: [production, sandbox]
+          description: Exact non-secret LaunchFlow Site environment classification
         language:
           $ref: "#/components/schemas/LanguageCode"
         allowedLanguages:

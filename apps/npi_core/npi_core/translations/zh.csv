@@ -366,6 +366,10 @@ Target SOP,目标 SOP
 Task,任务
 Template value,模板值
 Test environment,测试环境
+Production environment,生产环境
+Sandbox environment,沙箱环境
+Deployment environment not confirmed,部署环境未确认
+The deployment environment is not configured.,部署环境尚未配置。
 The command failed validation.,命令验证失败。
 The decision will lock five evidence versions and affect the next two Gates.,该决策将锁定五个证据版本，并影响后续两个阶段门。
 The dimensional report is not approved and two major defects remain open.,尺寸报告未批准，且仍有两个主要缺陷未关闭。

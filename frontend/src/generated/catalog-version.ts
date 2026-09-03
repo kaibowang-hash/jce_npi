@@ -1,2 +1,2 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'a231ccc80cd59544';
+export const catalogVersion = 'e257826faa3d58b4';

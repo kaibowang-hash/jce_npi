@@ -26,6 +26,7 @@ def controlled_site_config() -> dict[str, object]:
         "db_type": "mariadb",
         "developer_mode": 1,
         "encryption_key": base64.urlsafe_b64encode(b"k" * 32).decode("ascii"),
+        "npi_deployment_environment": "sandbox",
         "npi_runtime_disposable_marker": "npi-one-local-runtime-disposable-v1",
         "npi_tenant_id": "runtime-tenant",
     }
@@ -76,6 +77,7 @@ class LocalFrappeRuntimeSafetyTest(unittest.TestCase):
 
         for field, value in (
             ("developer_mode", 0),
+            ("npi_deployment_environment", "production"),
             ("npi_runtime_disposable_marker", "another-marker"),
             ("npi_tenant_id", "another-tenant"),
         ):
@@ -191,6 +193,9 @@ class LocalFrappeRuntimeSafetyTest(unittest.TestCase):
         self.assertLess(
             initializer.index("run_site_guard database"),
             initializer.index('set-config npi_tenant_id "${tenant_id}"'),
+        )
+        self.assertIn(
+            'set-config npi_deployment_environment sandbox', initializer
         )
         for marker in (
             "base64.urlsafe_b64encode(secrets.token_bytes(32))",

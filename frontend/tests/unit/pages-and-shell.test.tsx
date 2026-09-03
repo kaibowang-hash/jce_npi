@@ -99,6 +99,7 @@ function sessionBootstrap(
   csrfToken: string,
   navigationCollapsed = false,
   isSystemManager = false,
+  deploymentEnvironment: "production" | "sandbox" = "production",
 ): Readonly<Record<string, unknown>> {
   return {
     allowedLanguages: ["en", "zh", "zh-TW"],
@@ -108,6 +109,7 @@ function sessionBootstrap(
       version: "a".repeat(64),
     },
     csrfToken,
+    deploymentEnvironment,
     isSystemManager,
     language,
     preferences: { navigationCollapsed },
@@ -122,6 +124,77 @@ function response(body: unknown, status = 200, traceId?: string): Response {
 }
 
 describe("application shell behavior", () => {
+  it.each([
+    ["production", "Production environment"],
+    ["sandbox", "Sandbox environment"],
+  ] as const)(
+    "renders the server-owned %s environment in the live shell",
+    async (deploymentEnvironment, expectedLabel) => {
+      vi.stubEnv("DEV", false);
+      vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockResolvedValue(
+            response(
+              sessionBootstrap(
+                "en",
+                "a".repeat(32),
+                false,
+                false,
+                deploymentEnvironment,
+              ),
+            ),
+          ),
+      );
+
+      renderWithLocale(
+        <AppShell navigate={vi.fn()} route={route("work", "/work")}>
+          <p>Live My Work workspace</p>
+        </AppShell>,
+        "en",
+        "/work",
+      );
+
+      expect(
+        await screen.findAllByText(expectedLabel, { exact: true }),
+      ).toHaveLength(2);
+      expect(screen.queryByText("Test environment")).not.toBeInTheDocument();
+    },
+  );
+
+  it("does not guess an environment during a rolling legacy bootstrap", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
+    const legacyBootstrap: Record<string, unknown> = {
+      ...sessionBootstrap("en", "a".repeat(32)),
+    };
+    delete legacyBootstrap.deploymentEnvironment;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(response(legacyBootstrap)),
+    );
+
+    renderWithLocale(
+      <AppShell navigate={vi.fn()} route={route("work", "/work")}>
+        <p>Live My Work workspace</p>
+      </AppShell>,
+      "en",
+      "/work",
+    );
+
+    expect(
+      await screen.findAllByText("Deployment environment not confirmed", {
+        exact: true,
+      }),
+    ).toHaveLength(2);
+    expect(screen.queryByText("Test environment")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Production environment"),
+    ).not.toBeInTheDocument();
+  });
+
   it("keeps the legacy execution route backed by the explicit prototype", async () => {
     const user = userEvent.setup();
     renderWithLocale(

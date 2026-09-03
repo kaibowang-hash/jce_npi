@@ -1,9 +1,12 @@
 import type { Locale } from "../i18n/runtime";
 import { NpiHttpClient } from "./http";
 
+export type DeploymentEnvironment = "production" | "sandbox";
+
 export interface SessionBootstrap {
   userId: string;
   isSystemManager?: boolean;
+  deploymentEnvironment?: DeploymentEnvironment;
   language: Locale;
   allowedLanguages: readonly Locale[];
   csrfToken: string;

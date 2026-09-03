@@ -218,6 +218,7 @@ link_application npi_integration
 
 run_bench --site "${site_name}" set-config npi_tenant_id "${tenant_id}"
 run_bench --site "${site_name}" set-config npi_runtime_disposable_marker "${runtime_marker}"
+run_bench --site "${site_name}" set-config npi_deployment_environment sandbox
 run_bench --site "${site_name}" set-config --parse developer_mode 1
 run_site_guard live
 

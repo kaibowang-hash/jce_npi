@@ -11,6 +11,7 @@ from frappe.translate import get_all_translations, get_user_lang
 
 from .api import frappe_domain_call, record_safe_diagnostic
 from .foundation.errors import (
+    DeploymentEnvironmentUnavailable,
     LocalizationUnavailable,
     PermissionDenied,
     RequestValidationFailed,
@@ -32,6 +33,8 @@ from .request_security import (
 APP_SHELL_NAVIGATION_COLLAPSED_DEFAULT_KEY = (
     "npi_one_app_shell_navigation_collapsed"
 )
+DEPLOYMENT_ENVIRONMENT_SITE_CONFIG_KEY = "npi_deployment_environment"
+ALLOWED_DEPLOYMENT_ENVIRONMENTS = frozenset({"production", "sandbox"})
 _STORED_BOOLEAN_VALUES = {True: "true", False: "false"}
 
 
@@ -75,6 +78,23 @@ def _navigation_collapsed_preference(user_id: str) -> bool:
     return False
 
 
+def _deployment_environment() -> str:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get(DEPLOYMENT_ENVIRONMENT_SITE_CONFIG_KEY)
+        if hasattr(configuration, "get")
+        else None
+    )
+    if value not in ALLOWED_DEPLOYMENT_ENVIRONMENTS:
+        record_safe_diagnostic(
+            code="DEPLOYMENT_ENVIRONMENT_CONFIGURATION_ERROR",
+            title="NPI deployment environment configuration error",
+            exception_type="MissingOrInvalidSiteConfiguration",
+        )
+        raise DeploymentEnvironmentUnavailable()
+    return value
+
+
 def _session_bootstrap(
     user_id: str,
     language: str | None = None,
@@ -90,6 +110,7 @@ def _session_bootstrap(
     return {
         "userId": user_id,
         "isSystemManager": "System Manager" in frappe.get_roles(user_id),
+        "deploymentEnvironment": _deployment_environment(),
         "language": resolved_language,
         "allowedLanguages": list(ALLOWED_LANGUAGE_CODES),
         "csrfToken": get_csrf_token(),

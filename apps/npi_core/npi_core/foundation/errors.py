@@ -137,6 +137,15 @@ class LocalizationUnavailable(NpiProblem):
         )
 
 
+class DeploymentEnvironmentUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "DEPLOYMENT_ENVIRONMENT_UNAVAILABLE",
+            _("The deployment environment is not configured."),
+        )
+
+
 class TenantScopeUnavailable(NpiProblem):
     def __init__(self) -> None:
         super().__init__(

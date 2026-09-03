@@ -169,6 +169,13 @@ export function AppShell({
     isLiveExecution;
   const isLiveDataContext =
     isLiveWork || isLiveProjectContext || isLivePortfolio;
+  const deploymentEnvironmentLabel = isPrototypeFallback
+    ? t("Test environment")
+    : sessionCommandContext?.deploymentEnvironment === "production"
+      ? t("Production environment")
+      : sessionCommandContext?.deploymentEnvironment === "sandbox"
+        ? t("Sandbox environment")
+        : t("Deployment environment not confirmed");
   const prototypeNavigationAllowed = !isLiveDataContext;
   const liveProjectPath =
     route.projectGlobalId === null
@@ -975,7 +982,7 @@ export function AppShell({
           </span>
         </button>
         <div className="environment-marker">
-          <strong>{t("Test environment")}</strong>
+          <strong>{deploymentEnvironmentLabel}</strong>
           <span className="environment-marker__detail">
             {isLiveWork
               ? t("Live My Work data")
@@ -1285,7 +1292,7 @@ export function AppShell({
               accessibleName={t("Company ownership mark")}
             />
           </div>
-          <span>{t("Test environment")}</span>
+          <span>{deploymentEnvironmentLabel}</span>
           <span className="status-bar__catalog">
             {t("Catalog")}:{" "}
             <code data-language-exempt="identifier">{catalogVersion}</code>
