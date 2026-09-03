@@ -61,6 +61,9 @@ _ROUTES = {
     ("GET", "/api/npi/v1/session/bootstrap"): (
         "npi_core.localization_api.get_session_bootstrap"
     ),
+    ("POST", "/api/npi/v1/session/logout"): (
+        "npi_core.localization_api.logout_current_session"
+    ),
     ("PUT", "/api/npi/v1/session/language"): (
         "npi_core.localization_api.set_current_user_language"
     ),

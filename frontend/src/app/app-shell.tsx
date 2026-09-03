@@ -126,6 +126,9 @@ export function AppShell({
     isLocalizationUnavailable,
     isLocalizationPending,
     localizationFailure,
+    isSessionExitPending,
+    sessionExitFailure,
+    reconcileSessionExit,
     retryLocalization,
     catalogVersion,
     navigationCollapsed,
@@ -133,6 +136,7 @@ export function AppShell({
     navigationPreferenceFailure,
     retryNavigationPreference,
     sessionCommandContext,
+    signOut,
     setNavigationCollapsed,
   } = useI18n();
   const [utilityMessage, setUtilityMessage] = useState<string | null>(null);
@@ -729,21 +733,42 @@ export function AppShell({
         <Button
           aria-label={t("Current user")}
           icon="user"
+          disabled={isSessionExitPending || Boolean(sessionExitFailure)}
           onClick={() => {
             setUtilityMessage(
-              isLiveDataContext
-                ? t("The current identity is managed by the Frappe session.")
-                : t("Signed in for the test environment with prototype data."),
+              isLiveDataContext && sessionCommandContext
+                ? t("Signed in as {{userId}}.", {
+                    userId: sessionCommandContext.userId,
+                  })
+                : isLiveDataContext
+                  ? t("The current identity is managed by the Frappe session.")
+                  : t(
+                      "Signed in for the test environment with prototype data.",
+                    ),
             );
           }}
           visual="ghost"
         >
-          {isLiveDataContext ? (
+          {isLiveDataContext && sessionCommandContext ? (
+            <span data-language-exempt="business-data">
+              {sessionCommandContext.userId}
+            </span>
+          ) : isLiveDataContext ? (
             t("Signed-in user")
           ) : (
             <span data-language-exempt="business-data">Alex Chen</span>
           )}
         </Button>
+        {(sessionCommandContext || isSessionExitPending) &&
+        !isPrototypeFallback ? (
+          <Button
+            disabled={isSessionExitPending}
+            onClick={signOut}
+            visual="ghost"
+          >
+            {isSessionExitPending ? t("Signing out") : t("Sign out")}
+          </Button>
+        ) : null}
       </header>
       <aside className="domain-navigation">
         {isLiveProjectContext && route.projectGlobalId ? (
@@ -1166,6 +1191,29 @@ export function AppShell({
               </div>
             </div>
           ) : null}
+          {sessionExitFailure ? (
+            <div className="navigation-preference-failure" role="alert">
+              <Icon name="warning" />
+              <div>
+                <strong>{t("The session exit could not be confirmed.")}</strong>
+                <p>
+                  {t(
+                    "No further command is allowed until the current Frappe session is checked.",
+                  )}
+                </p>
+                <RequestFailurePanel
+                  failure={sessionExitFailure.requestFailure}
+                />
+                <Button
+                  disabled={isSessionExitPending}
+                  icon="refresh"
+                  onClick={reconcileSessionExit}
+                >
+                  {t("Check session")}
+                </Button>
+              </div>
+            </div>
+          ) : null}
           <div
             className={`prototype-banner${isLocalizationUnavailable ? " prototype-banner--error" : ""}`}
             aria-busy={isLocalizationPending}
@@ -1254,7 +1302,9 @@ export function AppShell({
                 isLocalizationUnavailable ||
                 isLocalizationPending ||
                 isNavigationPreferencePending ||
-                Boolean(navigationPreferenceFailure)
+                Boolean(navigationPreferenceFailure) ||
+                isSessionExitPending ||
+                Boolean(sessionExitFailure)
               }
               onChange={(event) => {
                 setLocale(event.currentTarget.value as Locale);

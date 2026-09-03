@@ -21,7 +21,17 @@ export type SessionBootstrapValidator = (
   value: unknown,
 ) => value is SessionBootstrap;
 
+interface SessionLogout {
+  signedOut: true;
+}
+
 export const sessionBootstrapTimeoutMilliseconds = 15_000;
+
+function isSessionLogout(value: unknown): value is SessionLogout {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const candidate = value as Record<string, unknown>;
+  return Object.keys(candidate).length === 1 && candidate.signedOut === true;
+}
 
 function abortError(signal: AbortSignal): Error {
   return signal.reason instanceof Error
@@ -143,6 +153,28 @@ export class SessionClient {
     );
     this.csrfToken = bootstrap.csrfToken;
     return bootstrap;
+  }
+
+  async signOut(): Promise<void> {
+    try {
+      await this.http.request<SessionLogout>(
+        "/session/logout",
+        {
+          body: JSON.stringify({}),
+          method: "POST",
+          signal: AbortSignal.timeout(this.bootstrapTimeoutMilliseconds),
+        },
+        {
+          csrfToken: this.csrfToken ?? undefined,
+          requirePrivateNoStore: true,
+          validate: isSessionLogout,
+        },
+      );
+    } finally {
+      // Any lost response can be timeout-after-commit. Require a fresh
+      // bootstrap before this client is allowed to issue another command.
+      this.clearSession();
+    }
   }
 
   async refreshAndSetLanguage(

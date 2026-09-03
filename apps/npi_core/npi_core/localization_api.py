@@ -171,6 +171,20 @@ def get_session_bootstrap(**request_fields: Any) -> dict[str, Any] | None:
     return frappe_domain_call(handle, cache_control="private, no-store")
 
 
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def logout_current_session(**request_fields: Any) -> dict[str, Any] | None:
+    """End only the authenticated Frappe session behind the LaunchFlow BFF."""
+
+    def handle() -> dict[str, Any]:
+        authenticated_user()
+        require_csrf_token()
+        reject_unexpected_request_fields(frozenset(), request_fields)
+        frappe.local.login_manager.logout()
+        return {"signedOut": True}
+
+    return frappe_domain_call(handle, cache_control="private, no-store")
+
+
 @frappe.whitelist(allow_guest=True, methods=["PUT"])
 def set_current_user_navigation_preference(
     collapsed: Any = None, **request_fields: Any

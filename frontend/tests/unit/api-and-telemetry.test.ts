@@ -554,7 +554,13 @@ describe("NPI BFF client boundary", () => {
     await client.getBootstrap(acceptBootstrapFixture);
     await client.setLanguage("zh-TW", acceptBootstrapFixture);
     await client.setNavigationCollapsed(true, acceptBootstrapFixture);
+    await client.signOut();
+    await client.setLanguage("zh", acceptBootstrapFixture);
+    const logoutRequest = request.mock.calls[3]?.[1];
+    const logoutControl = request.mock.calls[3]?.[2];
     expect(request.mock.calls[0]?.[1]?.signal?.aborted).toBe(false);
+    expect(logoutRequest?.signal).toBeInstanceOf(AbortSignal);
+    expect(typeof logoutControl?.validate).toBe("function");
     expect(request).toHaveBeenNthCalledWith(
       1,
       "/session/bootstrap",
@@ -579,6 +585,64 @@ describe("NPI BFF client boundary", () => {
       },
       { csrfToken: "csrf-v1", validate: acceptBootstrapFixture },
     );
+    expect(request).toHaveBeenNthCalledWith(
+      4,
+      "/session/logout",
+      {
+        body: JSON.stringify({}),
+        method: "POST",
+        signal: logoutRequest?.signal,
+      },
+      {
+        csrfToken: "csrf-v1",
+        requirePrivateNoStore: true,
+        validate: logoutControl?.validate,
+      },
+    );
+    expect(request).toHaveBeenNthCalledWith(
+      5,
+      "/session/language",
+      expect.objectContaining({ method: "PUT" }),
+      { csrfToken: undefined, validate: acceptBootstrapFixture },
+    );
+  });
+
+  it("rejects an unconfirmed session exit response", async () => {
+    const bootstrap = {
+      allowedLanguages: ["en"] as const,
+      catalog: { language: "en" as const, messages: {}, version: "v1" },
+      csrfToken: "csrf-v1",
+      language: "en" as const,
+      preferences: { navigationCollapsed: false },
+      userId: "phase3@example.invalid",
+    };
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(bootstrap), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ signedOut: false }), {
+          headers: { "Cache-Control": "private, no-store" },
+          status: 200,
+        }),
+      );
+    vi.stubGlobal("fetch", fetch);
+    const client = new SessionClient(new NpiHttpClient());
+
+    await client.getBootstrap(acceptBootstrapFixture);
+    const failure = await client.signOut().catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(NpiTransportError);
+    expect((failure as NpiTransportError).kind).toBe("invalid_response");
+    const unsafeFollowUp = await client
+      .setLanguage("zh", acceptBootstrapFixture)
+      .catch((error: unknown) => error);
+    expect(unsafeFollowUp).toBeInstanceOf(NpiTransportError);
+    expect((unsafeFollowUp as NpiTransportError).kind).toBe(
+      "request_not_ready",
+    );
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 
   it("removes the in-memory CSRF token when the session is cleared", async () => {

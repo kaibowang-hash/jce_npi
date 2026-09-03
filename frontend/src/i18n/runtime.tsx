@@ -36,8 +36,12 @@ export interface I18nContextValue {
   isLocalizationUnavailable: boolean;
   isLocalizationPending: boolean;
   localizationFailure: LocalizationFailure | null;
+  isSessionExitPending: boolean;
+  sessionExitFailure: SessionExitFailure | null;
+  reconcileSessionExit: () => void;
   retryNavigationPreference: () => void;
   retryLocalization: () => void;
+  signOut: () => void;
   setNavigationCollapsed: (collapsed: boolean) => void;
   setLocale: (locale: Locale) => void;
   t: (source: string, values?: TranslationValues, context?: string) => string;
@@ -52,6 +56,10 @@ export interface LocalizationFailure {
 export interface NavigationPreferenceFailure {
   requestFailure: RequestFailure;
   requestedCollapsed: boolean;
+}
+
+export interface SessionExitFailure {
+  requestFailure: RequestFailure;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -264,6 +272,9 @@ export function I18nProvider({
   >("bootstrap");
   const [localizationFailure, setLocalizationFailure] =
     useState<LocalizationFailure | null>(null);
+  const [isSessionExitPending, setSessionExitPending] = useState(false);
+  const [sessionExitFailure, setSessionExitFailure] =
+    useState<SessionExitFailure | null>(null);
 
   const executeLocalizationRequest = useCallback(
     async (
@@ -318,6 +329,7 @@ export function I18nProvider({
         setLocalizationUnavailable(false);
         setLocalizationFailure(null);
         setNavigationPreferenceFailure(null);
+        setSessionExitFailure(null);
       } catch (error) {
         const prototypeAllowed = prototypeFallbackIsAllowed();
         const requestFailure = toRequestFailure(error);
@@ -413,7 +425,9 @@ export function I18nProvider({
       if (
         pendingOperation ||
         isNavigationPreferencePending ||
-        navigationPreferenceFailure
+        navigationPreferenceFailure ||
+        isSessionExitPending ||
+        sessionExitFailure
       ) {
         return;
       }
@@ -421,9 +435,11 @@ export function I18nProvider({
     },
     [
       isNavigationPreferencePending,
+      isSessionExitPending,
       launchLocalizationRequest,
       navigationPreferenceFailure,
       pendingOperation,
+      sessionExitFailure,
     ],
   );
 
@@ -470,12 +486,14 @@ export function I18nProvider({
           Object.freeze({
             userId: bootstrap.userId,
             csrfToken: bootstrap.csrfToken,
+            ...(bootstrap.isSystemManager ? { isSystemManager: true } : {}),
           }),
         );
         setPrototypeFallback(false);
         setLocalizationUnavailable(false);
         setLocalizationFailure(null);
         setNavigationPreferenceFailure(null);
+        setSessionExitFailure(null);
       } catch (error) {
         if (!providerActive.current) return;
         sessionClient.clearSession();
@@ -496,7 +514,9 @@ export function I18nProvider({
       if (
         pendingOperation ||
         isNavigationPreferencePending ||
-        navigationPreferenceFailure
+        navigationPreferenceFailure ||
+        isSessionExitPending ||
+        sessionExitFailure
       ) {
         return;
       }
@@ -510,8 +530,10 @@ export function I18nProvider({
       executeNavigationPreferenceRequest,
       isNavigationPreferencePending,
       isPrototypeFallback,
+      isSessionExitPending,
       navigationPreferenceFailure,
       pendingOperation,
+      sessionExitFailure,
     ],
   );
 
@@ -536,6 +558,46 @@ export function I18nProvider({
     );
   }, [launchLocalizationRequest, localizationFailure, pendingOperation]);
 
+  const signOut = useCallback((): void => {
+    if (
+      !sessionCommandContext ||
+      pendingOperation ||
+      isNavigationPreferencePending ||
+      isSessionExitPending ||
+      sessionExitFailure
+    ) {
+      return;
+    }
+    setSessionExitPending(true);
+    setSessionCommandContext(null);
+    void sessionClient
+      .signOut()
+      .then(() => {
+        if (!providerActive.current) return;
+        globalThis.location.assign("/login");
+      })
+      .catch((error: unknown) => {
+        if (!providerActive.current) return;
+        sessionClient.clearSession();
+        setSessionExitFailure({ requestFailure: toRequestFailure(error) });
+      })
+      .finally(() => {
+        if (providerActive.current) setSessionExitPending(false);
+      });
+  }, [
+    isNavigationPreferencePending,
+    isSessionExitPending,
+    pendingOperation,
+    sessionClient,
+    sessionCommandContext,
+    sessionExitFailure,
+  ]);
+
+  const reconcileSessionExit = useCallback((): void => {
+    if (!sessionExitFailure || isSessionExitPending) return;
+    globalThis.location.reload();
+  }, [isSessionExitPending, sessionExitFailure]);
+
   const value = useMemo<I18nContextValue>(
     () => ({
       locale,
@@ -549,8 +611,12 @@ export function I18nProvider({
       isLocalizationUnavailable,
       isLocalizationPending: pendingOperation !== null,
       localizationFailure,
+      isSessionExitPending,
+      sessionExitFailure,
+      reconcileSessionExit,
       retryNavigationPreference,
       retryLocalization,
+      signOut,
       setNavigationCollapsed,
       setLocale,
       t: (source, values, context) =>
@@ -567,6 +633,7 @@ export function I18nProvider({
       isLocalizationUnavailable,
       isNavigationPreferencePending,
       isPrototypeFallback,
+      isSessionExitPending,
       locale,
       localizationFailure,
       navigationCollapsed,
@@ -575,10 +642,13 @@ export function I18nProvider({
       prototypeMessages,
       retryNavigationPreference,
       retryLocalization,
+      reconcileSessionExit,
       runtimeCatalog,
       sessionCommandContext,
+      sessionExitFailure,
       setNavigationCollapsed,
       setLocale,
+      signOut,
     ],
   );
 

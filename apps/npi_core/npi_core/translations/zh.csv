@@ -451,6 +451,9 @@ Cross-object work queue,跨对象工作队列
 Cross-system operations,跨系统操作
 "Select an object to see its source, sync state, and next safe action.",选择对象以查看其数据源、同步状态和下一个安全操作。
 Current user,当前用户
+Sign out,退出登录
+Signing out,正在退出登录
+Check session,检查会话
 Signed in for the test environment with prototype data.,已登录使用原型数据的测试环境。
 Worklist filters and column controls are focused.,工作清单筛选器和列控件已获得焦点。
 This workspace has no configurable table columns.,此工程工作区没有可配置的表格列。
@@ -516,6 +519,9 @@ The language change could not be confirmed.,无法确认语言更改。
 "This screen kept its previous language and catalog. Retry to reconcile with the session, or share the reference ID with support.",此页面保留了先前的语言和目录。请重试以核对会话状态，或将参考编号提供给支持人员。
 The current identity is managed by the Frappe session.,当前身份由 Frappe 会话管理。
 Signed-in user,已登录用户
+Signed in as {{userId}}.,已以 {{userId}} 身份登录。
+The session exit could not be confirmed.,无法确认会话是否已退出。
+No further command is allowed until the current Frappe session is checked.,确认当前 Frappe 会话状态前不允许继续执行命令。
 Live project data,实时项目数据
 The live project request is being refreshed.,正在刷新实时项目请求。
 Live project data. No production ERPNext system is connected.,实时项目数据。未连接任何生产 ERPNext 系统。

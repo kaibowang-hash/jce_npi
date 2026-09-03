@@ -226,6 +226,39 @@ paths:
         default:
           $ref: "#/components/responses/Error"
 
+  /session/logout:
+    post:
+      tags: [Session]
+      operationId: logoutCurrentSession
+      description: Ends only the current authenticated Frappe session and clears its session cookies
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              maxProperties: 0
+      responses:
+        "200":
+          description: Current Frappe session ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionLogout"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+
   /session/language:
     put:
       tags: [Session]
@@ -10789,6 +10822,12 @@ components:
           $ref: "#/components/schemas/TranslationCatalog"
         preferences:
           $ref: "#/components/schemas/SessionPreferences"
+    SessionLogout:
+      type: object
+      additionalProperties: false
+      required: [signedOut]
+      properties:
+        signedOut: { type: boolean, const: true }
     SessionPreferences:
       type: object
       additionalProperties: false

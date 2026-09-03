@@ -784,6 +784,83 @@ describe("application shell behavior", () => {
     },
   );
 
+  it.each([
+    ["en", "Sign out"],
+    ["zh", "退出登录"],
+    ["zh-TW", "登出"],
+  ] as const)(
+    "ends the current Frappe session through the BFF in %s",
+    async (language, signOutLabel) => {
+      const fetch = vi
+        .fn<typeof globalThis.fetch>()
+        .mockResolvedValueOnce(
+          response(sessionBootstrap(language, "a".repeat(32))),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ signedOut: true }), {
+            headers: { "Cache-Control": "private, no-store" },
+            status: 200,
+          }),
+        );
+      vi.stubGlobal("fetch", fetch);
+      const user = userEvent.setup();
+      renderWithLocale(
+        <AppShell navigate={vi.fn()} route={route("work", "/work")}>
+          <p>Live My Work workspace</p>
+        </AppShell>,
+        language,
+        "/work",
+      );
+
+      expect(await screen.findByText("phase3@example.invalid")).toBeVisible();
+      const signOut = screen.getByRole("button", { name: signOutLabel });
+      const assign = vi.fn();
+      vi.stubGlobal("location", { assign });
+      await user.click(signOut);
+
+      await waitFor(() => {
+        expect(assign).toHaveBeenCalledWith("/login");
+      });
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(fetch.mock.calls[1]?.[0]).toBe("/api/npi/v1/session/logout");
+      const request = fetch.mock.calls[1]?.[1];
+      expect(request?.method).toBe("POST");
+      expect(request?.body).toBe(JSON.stringify({}));
+      expect(new Headers(request?.headers).get("X-Frappe-CSRF-Token")).toBe(
+        "a".repeat(32),
+      );
+    },
+  );
+
+  it("freezes session commands when the exit result cannot be confirmed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn<typeof globalThis.fetch>()
+        .mockResolvedValueOnce(response(sessionBootstrap("en", "a".repeat(32))))
+        .mockRejectedValueOnce(new TypeError("connection ended")),
+    );
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell navigate={vi.fn()} route={route("work", "/work")}>
+        <p>Live My Work workspace</p>
+      </AppShell>,
+      "en",
+      "/work",
+    );
+
+    await user.click(await screen.findByRole("button", { name: "Sign out" }));
+
+    expect(
+      await screen.findByText("The session exit could not be confirmed."),
+    ).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Sign out" })).toBeNull();
+    const reload = vi.fn();
+    vi.stubGlobal("location", { reload });
+    await user.click(screen.getByRole("button", { name: "Check session" }));
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
   it("keeps integration operations in exact live Project context", async () => {
     const projectGlobalId = "11111111-1111-4111-8111-111111111111";
     const path = `/projects/${projectGlobalId}/integration-operations`;

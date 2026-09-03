@@ -184,6 +184,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         self.preference_write_calls: list[tuple[str, object, str]] = []
         self.preference_read_error: Exception | None = None
         self.preference_write_error: Exception | None = None
+        self.logout_calls = 0
         self.csrf_token = "csrf-token-" + ("a" * 48)
         self.request_headers = {
             "X-Frappe-CSRF-Token": self.csrf_token,
@@ -219,6 +220,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             response=self.StubResponse(),
             request=types.SimpleNamespace(path="/", method="GET"),
             form_dict=self.StubFormDict(),
+            login_manager=types.SimpleNamespace(logout=self._logout),
         )
         self.frappe.get_request_header = lambda name: self.request_headers.get(name)
         self.frappe.get_app_path = (
@@ -307,6 +309,9 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             raise self.preference_write_error
         self.user_defaults.setdefault(resolved_user, {})[key] = value
 
+    def _logout(self) -> None:
+        self.logout_calls += 1
+
     def assert_problem(
         self, result: dict[str, object], status: int, code: str
     ) -> None:
@@ -372,6 +377,36 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         result = self.adapter.get_session_bootstrap()
 
         self.assertIs(result["isSystemManager"], True)
+
+    def test_logout_ends_only_the_authenticated_csrf_bound_session(self) -> None:
+        result = self.adapter.logout_current_session()
+
+        self.assertEqual(result, {"signedOut": True})
+        self.assertEqual(self.logout_calls, 1)
+        self.assertEqual(
+            self.frappe.flags.npi_response_headers["Cache-Control"],
+            "private, no-store",
+        )
+        self.assertEqual(
+            self.adapter.logout_current_session.allowed_methods,
+            ("POST",),
+        )
+        self.assertTrue(self.adapter.logout_current_session.allow_guest)
+
+    def test_logout_rejects_guest_missing_csrf_and_unexpected_fields(self) -> None:
+        self.frappe.session.user = "Guest"
+        guest = self.adapter.logout_current_session()
+        self.assert_problem(guest, 401, "AUTHENTICATION_REQUIRED")
+
+        self.frappe.session.user = "engineer@example.invalid"
+        self.request_headers.pop("X-Frappe-CSRF-Token")
+        no_csrf = self.adapter.logout_current_session()
+        self.assert_problem(no_csrf, 403, "CSRF_TOKEN_INVALID")
+
+        self.request_headers["X-Frappe-CSRF-Token"] = self.csrf_token
+        unexpected = self.adapter.logout_current_session(returnTo="/work")
+        self.assert_problem(unexpected, 422, "VALIDATION_FAILED")
+        self.assertEqual(self.logout_calls, 0)
 
     def test_guest_is_rejected_inside_adapter(self) -> None:
         self.frappe.session.user = "Guest"
@@ -745,6 +780,20 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         )
         self.assertTrue(self.frappe.flags.npi_bff_request)
 
+    def test_fixed_bff_route_maps_logout_only_to_its_handler(self) -> None:
+        self.frappe.local.request = types.SimpleNamespace(
+            path="/api/npi/v1/session/logout", method="POST"
+        )
+        router = importlib.import_module("npi_core.bff")
+
+        router.route_request()
+
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.localization_api.logout_current_session",
+        )
+        self.assertTrue(self.frappe.flags.npi_bff_request)
+
     def test_fixed_bff_route_maps_navigation_preference_only_to_its_handler(
         self,
     ) -> None:
@@ -909,10 +958,12 @@ class LocalizationContractTest(unittest.TestCase):
         contract = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
         self.assertIn("  version: 1.2.0", contract)
         self.assertIn("  /session/bootstrap:", contract)
+        self.assertIn("  /session/logout:", contract)
         self.assertIn("  /session/language:", contract)
         self.assertIn("  /session/preferences/navigation:", contract)
         self.assertIn("enum: [en, zh, zh-TW]", contract)
         self.assertIn("SessionBootstrap:", contract)
+        self.assertIn("SessionLogout:", contract)
         self.assertIn("SessionPreferences:", contract)
         self.assertIn("SetSessionNavigationPreference:", contract)
         self.assertIn("TranslationCatalog:", contract)

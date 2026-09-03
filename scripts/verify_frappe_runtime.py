@@ -22,6 +22,7 @@ DISPOSABLE_USER = "npi-runtime-user@example.invalid"
 INSPECTOR_DISPOSABLE_USER = "npi-runtime-inspector@example.invalid"
 EXPECTED_KEYS = {
     "userId",
+    "isSystemManager",
     "language",
     "allowedLanguages",
     "csrfToken",
@@ -53,6 +54,7 @@ GRID_VIEW_IDS = (
 INSPECTOR_PREFERENCE_PATH = (
     "/api/npi/v1/me/preferences/my-work-inspector"
 )
+SESSION_LOGOUT_PATH = "/api/npi/v1/session/logout"
 INSPECTOR_PREFERENCE_KEY = "npi_one_my_work_inspector_layout_v1"
 _TRACE_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
 INSPECTOR_PREFERENCE_KEYS = {
@@ -199,6 +201,11 @@ def validate_bootstrap(
     )
     require(set(result.body) == EXPECTED_KEYS, "Bootstrap response keys drifted")
     require(result.body.get("userId") == expected_user, "Unexpected bootstrap user")
+    require(
+        result.body.get("isSystemManager")
+        is (expected_user == ADMINISTRATOR_USER),
+        "Session administration capability drifted",
+    )
     require(
         result.body.get("language") == language, "Bootstrap language did not persist"
     )
@@ -1670,6 +1677,64 @@ def main() -> None:
                 )
                 inspector_fixture_deleted = True
 
+    logout_opener = login(
+        base_url,
+        ADMINISTRATOR_USER,
+        administrator_password,
+    )
+    logout_bootstrap = request(
+        logout_opener,
+        base_url,
+        "/api/npi/v1/session/bootstrap",
+    )
+    validate_bootstrap(
+        logout_bootstrap,
+        ADMINISTRATOR_USER,
+        administrator_language,
+        expected_count,
+        administrator_navigation_collapsed,
+    )
+    logout_csrf = str(logout_bootstrap.body["csrfToken"])
+    logout_without_csrf = request(
+        logout_opener,
+        base_url,
+        SESSION_LOGOUT_PATH,
+        method="POST",
+        payload={},
+    )
+    validate_problem(logout_without_csrf, 403, "CSRF_TOKEN_INVALID")
+    logout_with_extra_field = request(
+        logout_opener,
+        base_url,
+        SESSION_LOGOUT_PATH,
+        method="POST",
+        payload={"returnTo": "/work"},
+        request_headers={"X-Frappe-CSRF-Token": logout_csrf},
+    )
+    validate_problem(logout_with_extra_field, 422, "VALIDATION_FAILED")
+    logout_result = request(
+        logout_opener,
+        base_url,
+        SESSION_LOGOUT_PATH,
+        method="POST",
+        payload={},
+        request_headers={"X-Frappe-CSRF-Token": logout_csrf},
+    )
+    require(logout_result.status == 200, "Session logout did not return HTTP 200")
+    require(
+        logout_result.body == {"signedOut": True},
+        "Session logout response shape drifted",
+    )
+    require(
+        logout_result.headers.get("Cache-Control") == "private, no-store",
+        "Session logout cache control drifted",
+    )
+    validate_problem(
+        request(logout_opener, base_url, "/api/npi/v1/session/bootstrap"),
+        401,
+        "AUTHENTICATION_REQUIRED",
+    )
+
     print(
         json.dumps(
             {
@@ -1706,6 +1771,11 @@ def main() -> None:
                 "navigationPersistence": True,
                 "navigationUserIsolation": True,
                 "navigationWrongTypes": 422,
+                "sessionAdministrationCapability": True,
+                "sessionLogout": 200,
+                "sessionLogoutCsrfMissing": 403,
+                "sessionLogoutExtraField": 422,
+                "sessionLogoutReconciledGuest": 401,
                 "unknownRoute": 404,
                 "wrongTypeLanguage": 422,
                 **grid_preference_evidence,
