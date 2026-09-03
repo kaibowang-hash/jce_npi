@@ -11589,3 +11589,34 @@ P9-01 Level 3.
   3 including cumulative disposable projection runtime. Common-root failures
   are repaired together; no metadata-family micro-commits.
 - Controller marker: `P9-04 production compatibility adjustment active`.
+
+## 2026-09-03 P9-04 Level 3 PASS; P9-05 historical migration audit active
+
+- Final P9-04 SHA `fa82f3e3dcc7a9474ea51a1356130d5cbc02adee`
+  passes exact-SHA ordinary CI `33702330209` and the sole diagnostics-off
+  Level 3 `33702723201`. Repository, secret, frontend verification, both E2E
+  shards, governed visual, frontend aggregate, controlled preflight and fresh
+  cumulative disposable-Site runtime `100486353074` all pass. Runtime result
+  artifact `9874392617` has ZIP checksum
+  `sha256:3b22a366728849a8d62b280504440d1d2edc4c2c10873db8852aeb4ae40426de`.
+  `release-gate` is PASS.
+- Automatically activate P9-05 for `FR-RP-008` and `NFR-DAT-001`. The audit
+  proves the controlled File Revision, Project, Tooling, external-identity,
+  specialized P6-07 preview/correction/reconciliation/rollback and BFF
+  Administration foundations are reusable. No current boundary imports a
+  closed cross-Project historical bundle or produces its complete difference
+  report.
+- Freeze one independent `historical-migration-rehearsal.v1` source bundle,
+  immutable validation/difference preview, private correction artifact and
+  default-disabled non-production apply/reconciliation/rollback job. Reuse
+  existing operation-specific repositories; do not rename or broaden P6-07,
+  accept arbitrary DocTypes/fields or introduce a generic importer.
+- This governance transition performs no Site, database, production
+  LaunchFlow or production ERPNext contact. ERP-owned truth remains
+  reference-only. Product code is held until the transition passes exact-SHA
+  ordinary CI; after PASS, deliver the frozen implementation as one batch,
+  one Level 2 and one final Level 3.
+- M9-04/M9-05 real-project pilots remain post-V1.2. Controlled synthetic UAT
+  cannot be represented as a real-project pilot or real-user adoption result.
+  Preserve all user-owned dirty files.
+- Controller marker: `P9-04 Level 3 PASS; P9-05 historical migration audit and plan active`.

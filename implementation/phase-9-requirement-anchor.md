@@ -1,6 +1,6 @@
 # Phase 9 Requirement Anchor
 
-Status: `P9-03 PASS — P9-04 MINIMAL AUTHORIZATION PROJECTION ACTIVE`
+Status: `P9-04 PASS — P9-05 HISTORICAL MIGRATION AUDIT AND PLAN ACTIVE`
 
 This anchor is the product-code authorization boundary for Phase 9. It closes no
 Phase 9 requirement by itself. P9-00 exact SHA
@@ -121,3 +121,26 @@ sender. This concrete delta authorizes only one default-disabled, complete,
 versioned and hash-bound local projection ingress plus fail-closed principal
 resolution. It does not authorize ERPNext mutation, local role administration,
 Frappe User role writes or any architecture redesign.
+
+## P9-05 historical migration rehearsal boundary
+
+P9-04 final checkpoint `fa82f3e3dcc7a9474ea51a1356130d5cbc02adee`
+passes ordinary CI `33702330209` and diagnostics-off Level 3 `33702723201`;
+its `release-gate` result is PASS. P9-05 now audits `FR-RP-008` and
+`NFR-DAT-001` only. Product code remains held until the audit/plan transition
+passes exact-SHA ordinary CI.
+
+The approved implementation direction is one closed, operation-specific,
+non-production historical migration rehearsal. It reuses controlled File
+Revision custody, existing Project/Tooling/File operation boundaries and the
+proven P6-07 preview/correction/reconciliation/rollback patterns without
+renaming or widening P6-07. It may add a separate versioned bundle, immutable
+difference preview, private correction artifact and default-disabled durable
+rehearsal job. It must not accept arbitrary DocTypes or fields, copy a database,
+create a generic importer, import ERP-owned truth as a second master or run a
+production migration.
+
+No new production ERPNext fact is needed. Production ERPNext and LaunchFlow
+must not be contacted by this transition or its controlled evidence. The
+M9-04/M9-05 real-project pilots remain post-V1.2; synthetic non-production UAT
+must never be described as real-project or real-user adoption.

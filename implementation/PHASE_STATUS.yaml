@@ -1,24 +1,24 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 9
-updated_at: '2026-09-03T15:30:00+07:00'
+updated_at: '2026-09-03T08:29:02+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P9-04
-current_task_status: IN_PROGRESS_P9_04_PRODUCT
-current_task_completed_stage: P9_03_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
-current_task_next_stage: P9_04_TRANSITION_EXACT_SHA_ORDINARY_THEN_ONE_SECURITY_METADATA_READ
-current_task_next_stage_status: IN_PROGRESS_ZERO_CONTACT_GOVERNANCE
-resumed_product_task: P9-04
-resumed_product_task_status: FACT_DELTA_PRODUCT_HELD
+current_task: P9-05
+current_task_status: IN_PROGRESS_P9_05_AUDIT_AND_PLAN
+current_task_completed_stage: P9_04_EXACT_SHA_ORDINARY_AND_LEVEL_3_PASS
+current_task_next_stage: P9_05_AUDIT_PLAN_EXACT_SHA_ORDINARY
+current_task_next_stage_status: IN_PROGRESS_GOVERNANCE_PRODUCT_HELD
+resumed_product_task: P9-05
+resumed_product_task_status: PRODUCT_HELD_PENDING_GOVERNANCE_ORDINARY
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA
-    connection_authorized: P9_04_TRANSITION_EXACT_SHA_ORDINARY_PENDING
+    connection_authorized: STANDING_READ_ONLY_TASK_SCOPED_WHEN_NEEDED
     current_task_may_connect: false
-    connection_effective_condition: P9_04_TRANSITION_EXACT_SHA_ORDINARY_PASS
+    connection_effective_condition: CURRENT_TASK_HAS_A_FRESHNESS_OR_DELTA_DEPENDENCY_AND_FIXED_ALLOWLIST
     documentation_authorized_after_transition_ordinary: true
-    current_rule: ONE_FIXED_P9_SECURITY_METADATA_READ_ONLY_AFTER_EXACT_SHA_ORDINARY_PASS
+    current_rule: P9_05_REUSES_ACCEPTED_INVENTORY_AND_REQUIRES_NO_PRODUCTION_READ
     future_activation_trigger: TASK_SCOPED_FRESHNESS_OR_DELTA_NEED_UNDER_STANDING_BOUNDARY
     persistent_read_only_after_activation: true
     fresh_inventory_or_delta_first: true
@@ -3295,7 +3295,7 @@ p9_03:
   next_gate: COMPLETE
 p9_04:
   task: P9-04
-  status: IN_PROGRESS_PRODUCT
+  status: PASS_LEVEL_3
   predecessor_product_checkpoint: 957d307d26bc93fedb08b03fae25f15d0241e1d7
   plan: implementation/evidence/phase-9/p9-04-plan.md
   production_fact_inventory_reused: true
@@ -3307,7 +3307,30 @@ p9_04:
   product_code_authorized: true
   production_erp_contact: false
   compatibility_decision: MINOR_LAUNCHFLOW_ADJUSTMENT_DEFAULT_DISABLED_PROJECTION
-  next_gate: PRODUCT_LEVEL_2_THEN_EXACT_SHA_ORDINARY_AND_LEVEL_3
+  first_product_checkpoint: a804f2120d9906d9d6f47ed3d64f33bb8c3e79f7
+  first_product_ordinary: 33701715690
+  first_product_ordinary_result: FAILED_SINGLE_ROOT_STALE_GENERATED_REACT_CATALOGS
+  final_checkpoint: fa82f3e3dcc7a9474ea51a1356130d5cbc02adee
+  final_ordinary: 33702330209
+  final_ordinary_jobs: {frontend_e2e_shard_1: 100484065654, repository: 100484065915, frontend_e2e_shard_2: 100484065948, visual: 100484065984, secret_scan: 100484066082, frontend_verify: 100484066090, frontend_aggregate: 100485164549}
+  final_level_3: 33702723201
+  final_level_3_jobs: {secret_scan: 100485269960, frontend_verify: 100485270093, frontend_e2e_shard_1: 100485270110, visual: 100485270188, repository: 100485270198, frontend_e2e_shard_2: 100485270334, frontend_aggregate: 100486290601, controlled_preflight: 100486308273, controlled_runtime: 100486353074}
+  controlled_runtime_artifact: 9874392617
+  controlled_runtime_artifact_zip_checksum: sha256:3b22a366728849a8d62b280504440d1d2edc4c2c10873db8852aeb4ae40426de
+  final_release_gate: PASS
+  next_gate: COMPLETE
+p9_05:
+  task: P9-05
+  status: IN_PROGRESS_AUDIT_AND_PLAN
+  predecessor_product_checkpoint: fa82f3e3dcc7a9474ea51a1356130d5cbc02adee
+  plan: implementation/evidence/phase-9/p9-05-plan.md
+  requirements: [FR-RP-008, NFR-DAT-001]
+  product_code_authorized: false
+  production_migration_authorized: false
+  production_erp_contact: false
+  source_boundary: ONE_AUTHORIZED_CLEAN_PRIVATE_FILE_REVISION_AND_CLOSED_VERSIONED_BUNDLE
+  execution_boundary: DEFAULT_DISABLED_NON_PRODUCTION_REHEARSAL_ONLY
+  next_gate: AUDIT_PLAN_EXACT_SHA_ORDINARY
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -3335,4 +3358,4 @@ phases:
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: PASS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02, P8-03, P8-04, P8-05, P8-06, P8-07, P8-07F-GOVERNANCE, P8-07F-CURRENT-RUNTIME-GOVERNANCE, P8-07F-FACTS, P8-08, P8-09], current_task: COMPLETE, gate: implementation/phase-8-gate.md}
-  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03], current_task: P9-04}
+  - {id: 9, name: Change Portfolio Reporting and Hardening, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P9-00, P9-01, CI-OPT-02, P9-02, P9-03, P9-04], current_task: P9-05}

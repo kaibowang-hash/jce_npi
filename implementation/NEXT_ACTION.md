@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_04_PRODUCT — P9-04`
+`IN_PROGRESS_P9_05_AUDIT_AND_PLAN — P9-05`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -12,15 +12,20 @@ passes exact-SHA ordinary CI `33687630510` and the sole final Level 3
 `33688112727`, including complete frontend/E2E/visual lanes and fresh
 disposable-Site runtime `100442085873`. Its release-gate result is PASS.
 
-P9-03 is complete. P9-04 accepted the sole fixed security delta at
-`2026-09-03T07:07:46+07:00` with checksum
-`sha256:0919d57016166b07899a3a0648ef975755413027e6e2d29606720308df84afb8`.
-Finish the single default-disabled authorization-projection product batch,
-run affected checks and Level 2, then create one product commit and require one
-exact-SHA ordinary PASS followed by one diagnostics-off Level 3. Do not contact
-production again, implement the separate ERP sender, guess identity/scope
-mappings, alter Frappe User roles or stage user-owned dirty files. P9-04 marker:
-`P9-04 production compatibility adjustment active`.
+P9-04 final SHA `fa82f3e3dcc7a9474ea51a1356130d5cbc02adee`
+passes exact-SHA ordinary CI `33702330209` and the sole diagnostics-off Level
+3 `33702723201`, including fresh cumulative disposable runtime
+`100486353074`; its `release-gate` result is PASS.
+
+P9-05 audit and plan are active for `FR-RP-008` and `NFR-DAT-001`. Commit and
+push this governance-only transition, require exact-SHA ordinary PASS, then
+implement the single frozen historical migration rehearsal batch. Use one
+authorized clean private File Revision and a closed versioned bundle; preserve
+immutable preview/difference, correction, reconciliation and guarded rollback
+truth. Do not run a production migration, contact production ERPNext or
+LaunchFlow, create a generic DocType writer, duplicate ERP-owned masters,
+overload P6-07 or stage user-owned dirty files. P9-05 marker:
+`P9-04 Level 3 PASS; P9-05 historical migration audit and plan active`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

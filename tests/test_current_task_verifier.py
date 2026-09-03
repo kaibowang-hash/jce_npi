@@ -34,55 +34,51 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-04")
+        self.assertEqual(value["task_id"], "P9-05")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_04_PRODUCT")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_05_AUDIT_AND_PLAN")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P9-05")
+        self.assertEqual(value["authorized_next_task"], "P9-06")
         self.assertEqual(
             value["requirement_ids"],
-            ["NFR-SEC-001", "NFR-SEC-003", "INT-012"],
+            ["FR-RP-008", "NFR-DAT-001"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "957d307d26bc93fedb08b03fae25f15d0241e1d7",
+            "fa82f3e3dcc7a9474ea51a1356130d5cbc02adee",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "957d307d26bc93fedb08b03fae25f15d0241e1d7",
+            "fa82f3e3dcc7a9474ea51a1356130d5cbc02adee",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "P9-04",
+                "phase_status_current_task": "P9-05",
                 "phase_status_execution_hold": "NONE",
-                "phase_status_resumed_product_task": "P9-04",
-                "active_goal_marker": "P9-04",
-                "next_action_marker": "P9-04",
-                "controller_marker": "P9-04 production compatibility adjustment active",
+                "phase_status_resumed_product_task": "P9-05",
+                "active_goal_marker": "P9-05",
+                "next_action_marker": "P9-05",
+                "controller_marker": "P9-04 Level 3 PASS; P9-05 historical migration audit and plan active",
             },
         )
         for invariant in (
-            "P9_03_EXACT_SHA_957D307D_ORDINARY_33693636192_AND_LEVEL3_33694055699_PASS",
-            "MICROSOFT_ENTRA_OWNS_AUTHENTICATION_AND_MFA_FRAPPE_OWNS_SESSION_ERP_OWNS_ENABLED_INTERNAL_USERS_ROLES_AND_APPROVED_SCOPES",
-            "EVERY_NPI_DOMAIN_API_RETAINS_SERVER_SIDE_ROLE_TENANT_PROJECT_OBJECT_FILE_EXPORT_AND_OPERATION_AUTHORIZATION",
-            "UNKNOWN_DISABLED_REVOKED_STALE_OR_UNMAPPED_PRINCIPALS_FAIL_CLOSED_WITHOUT_DEFAULT_ROLE",
-            "CURRENT_LAUNCHFLOW_ARCHITECTURE_OWNERSHIP_CONTRACTS_AND_P8_01_THROUGH_P8_09_ARE_DEFAULT_CORRECT",
-            "PRODUCTION_DELTA_REUSES_ACCEPTED_INVENTORY_AND_READS_ONLY_FIXED_ROLE_PROFILE_LOGIN_COUNT_AND_SIGNUP_FACTS",
-            "PRODUCTION_CONTACT_REQUIRES_THIS_TRANSITION_EXACT_SHA_ORDINARY_PASS_AND_PRIVATE_SITE_CONFIGURATION",
+            "P9_04_EXACT_SHA_FA82F3E3_ORDINARY_33702330209_AND_LEVEL3_33702723201_PASS",
+            "P9_05_PRODUCT_CODE_HELD_UNTIL_AUDIT_PLAN_EXACT_SHA_ORDINARY_PASS",
+            "HISTORICAL_MIGRATION_IS_OPERATION_SPECIFIC_NON_PRODUCTION_REHEARSAL_NOT_A_GENERIC_WRITER",
+            "SOURCE_IS_ONE_AUTHORIZED_CLEAN_PRIVATE_FILE_REVISION_WITH_EXACT_BYTES_HASH_SCHEMA_VERSION_AND_MANIFEST_HASH",
+            "REQUIRED_UNIQUE_ENUM_REFERENCE_VERSION_AND_OWNERSHIP_VALIDATION_PRECEDES_ANY_MUTATION",
+            "PREVIEW_IS_IMMUTABLE_NON_MUTATING_AND_REPORTS_CREATE_LINK_SKIP_BLOCKED_AND_EXACT_DIFFERENCES",
+            "ROLLBACK_ONLY_REMOVES_EXACT_UNCHANGED_UNREFERENCED_BATCH_CREATED_OBJECTS_OTHERWISE_FORWARD_CORRECTION",
+            "ERP_OWNED_TRUTH_REMAINS_REFERENCE_ONLY_AND_NO_PRODUCTION_ERP_FACT_DELTA_IS_NEEDED_FOR_P9_05",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
-            "P9_04_PRODUCTION_FACT_DELTA_ACCEPTED_WITHOUT_IDENTITY_SECRET_ENDPOINT_PERMISSION_VALUE_BUSINESS_ROW_OR_WRITE",
-            "P9_04_PRODUCT_CHANGE_IS_ONE_DEFAULT_DISABLED_OPERATION_SPECIFIC_FULL_REPLACEMENT_PROJECTION_WITH_NO_FRAPPE_USER_ROLE_MUTATION",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "implementation/evidence/phase-9/p9-04-plan.md",
-                "scripts/collect_erpnext_production_facts.py",
-                "tests/test_erpnext_production_fact_collector.py",
-                "apps/npi_integration/npi_integration/authorization_projection_api.py",
-                "scripts/verify_authorization_projection_runtime.py",
-                "tests/test_phase9_authorization_projection_security.py",
+                "implementation/evidence/phase-9/p9-04-validation.md",
+                "implementation/evidence/phase-9/p9-05-plan.md",
+                "implementation/phase-9-requirement-anchor.md",
             }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))

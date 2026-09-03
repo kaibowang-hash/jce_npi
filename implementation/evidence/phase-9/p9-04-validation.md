@@ -56,10 +56,16 @@ rollback. The P9-04 evidence checksum is
 `78b360450bbada55d31853f765f0f15f565165a23ce4a379b1c69cb3721f89c1` and the
 runtime reports `productionContact=false`.
 
-This candidate record deliberately does not claim an exact-SHA CI or Level 3
-result before those external gates run. The first successor controller
-transition must bind the immutable P9-04 product SHA, ordinary run and sole
-diagnostics-off Level 3 run before activating P9-05.
+Final P9-04 checkpoint `fa82f3e3dcc7a9474ea51a1356130d5cbc02adee`
+passes exact-SHA ordinary CI `33702330209` and the sole diagnostics-off Level
+3 `33702723201`. Both runs pass repository, secret, frontend verification,
+both complete E2E shards, governed visual and frontend aggregation. Level 3
+also passes controlled preflight and cumulative disposable-Site runtime job
+`100486353074`; its result artifact is `9874392617` with uploaded ZIP checksum
+`sha256:3b22a366728849a8d62b280504440d1d2edc4c2c10873db8852aeb4ae40426de`.
+The runtime proves migrations, default-disabled routes, create, exact replay,
+stale rejection, full disable/revocation, fail-closed projected principal,
+immutable audit and cleanup. `release-gate` review is `PASS`.
 
 ## Activation holds
 
