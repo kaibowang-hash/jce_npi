@@ -904,11 +904,17 @@ class ProductionFactCollectorTest(unittest.TestCase):
         )
         self.assertEqual(rows, [])
         self.assertEqual(names, [])
+        runtime_rows, runtime_names = collector._parse_runtime_page(
+            b"",
+            "CUSTOM_FIELDS",
+        )
+        self.assertEqual(runtime_rows, [])
+        self.assertEqual(runtime_names, [])
         with self.assertRaisesRegex(
             collector.FactCollectionError,
             "not exact JSON",
         ):
-            collector._parse_runtime_page(b"", "CUSTOM_FIELDS")
+            collector._parse_runtime_page(b"\n", "CUSTOM_FIELDS")
 
     def test_p9_change_metadata_operation_hashes_sensitive_values_and_stays_scoped(self) -> None:
         args = argparse.Namespace(expected_sha="d" * 40, ordinary_run_id="101")

@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `IMPLEMENTATION ORDINARY PASS — FINAL ERP READ-ONLY COLLECTOR TRANSITION, RECONCILIATION AND LEVEL 3 PENDING`
+Status: `IMPLEMENTATION ORDINARY PASS — FINAL ERP READ-ONLY RECONCILIATION AND LEVEL 3 PENDING`
 
 Requirement: `UX-003`
 
@@ -102,9 +102,18 @@ no caller-selected remote scope. Detailed sanitized output remains in a local
 mode-0600 temporary result and is deleted after evidence promotion. No SSH or
 Site contact occurs until this transition passes exact-SHA ordinary CI.
 
+Collector transition `1323db574b147f2b43c69502ecdf5b2f25d9976b`
+passes exact-SHA ordinary CI `33736062145`. Its first authorized read attempt
+failed closed at runtime metadata parsing because Frappe v15 represents a
+successful empty `frappe.client.get_list` result as exact empty stdout. No
+result file survived. The bounded parser correction gives exact empty stdout
+the same empty-list meaning already proven for the P9-01 and P9-04 fixed
+collectors; whitespace, non-JSON, non-list and non-zero/stderr responses remain
+rejected. The correction requires a new exact-SHA ordinary PASS before retry.
+
 ## Remaining gates
 
-1. Commit and push the zero-contact final collector transition; require
+1. Commit and push the bounded Frappe-v15 empty-list parser correction; require
    ordinary CI PASS at that exact SHA.
 2. Refresh the complete production ERPNext-to-LaunchFlow compatibility
    reconciliation under the already approved fixed read-only `JCE-Core`

@@ -1359,11 +1359,16 @@ def _parse_metadata_page(
 def _parse_runtime_page(raw: bytes, family: str) -> tuple[list[dict[str, Any]], list[str]]:
     require(family in RUNTIME_METADATA_SPECS, "runtime metadata family is not allowlisted")
     page_size = RUNTIME_PAGE_SIZE_OVERRIDES.get(family, RUNTIME_PAGE_SIZE)
+    # Frappe v15's successful `bench execute` emits no stdout when the fixed
+    # `frappe.client.get_list` result is an empty list.  `_run_ssh` has already
+    # proved exit zero and empty stderr, so exact empty stdout has the same
+    # bounded meaning used by the P9 change/security metadata collectors.
     return _parse_metadata_page(
         raw,
         family,
         RUNTIME_METADATA_SPECS,
         page_size=page_size,
+        empty_stdout_is_empty_list=True,
     )
 
 
