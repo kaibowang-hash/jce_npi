@@ -11,6 +11,7 @@ port="8003"
 base_url="http://127.0.0.1:${port}"
 runtime_administrator_password="${NPI_ADMINISTRATOR_PASSWORD:-dev-only-admin}"
 runtime_fixture_password="${NPI_RUNTIME_FIXTURE_PASSWORD:-DevOnly_Runtime_2026!}"
+runtime_database_root_password="${NPI_DATABASE_ROOT_PASSWORD:-dev-only-root}"
 site_guard="${repo_root}/scripts/verify_local_frappe_site.py"
 verification_mode="${1:-all}"
 
@@ -5103,4 +5104,12 @@ if [[ "${verification_mode}" == "all" ||
     report_integration_operations_runtime_failure
     exit 1
   fi
+fi
+
+if [[ "${verification_mode}" == "--projection-only" ]]; then
+  stop_runtime_server
+  NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}" \
+    NPI_P9_07_DATABASE_ROOT_PASSWORD="${runtime_database_root_password}" \
+    bash "${repo_root}/scripts/run_go_live_rehearsal.sh"
+  runtime_database_root_password=""
 fi

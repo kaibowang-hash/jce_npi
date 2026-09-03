@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_07_AUDIT_AND_PLAN — P9-07`
+`IN_PROGRESS_P9_07_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-07`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -27,18 +27,19 @@ passes exact-SHA ordinary CI `33719574371` and the sole diagnostics-off Level 3
 `33719982252`. Cumulative disposable runtime `100538152787`, cleanup and
 `productionContact=false` pass; release-gate is PASS.
 
-P9-07 now audits `NFR-BCP-001` and `NFR-MNT-001`. Commit the governance-only
-transition and require its exact-SHA ordinary PASS. Then, without another
-approval pause, implement one fixed non-production `npi.localhost` go-live and
-recovery rehearsal: value-free release manifest, synthetic database plus
-public/private file canaries, full checksummed backup, meaningful restore,
-post-restore migrations, cumulative forward-fix validation, bounded timing and
-cleanup. Add the operator runbook and keep production schedule, storage,
-encryption custody, RPO/RTO and production execution explicitly held. Do not
-contact `jce.1`, production ERPNext/LaunchFlow or external storage; do not add
-a generic deploy/restore executor, modify CI workflow, claim a real pilot or
-stage user-owned dirty files. P9-07 marker: `P9-06 Level 3 PASS; P9-07 go-live
-recovery audit and plan active`.
+P9-07 governance SHA `6c3c30a25138dfdc4e26b0ea20056314b670882a`
+passes exact-SHA ordinary CI `33721621988`. The one-batch fixed disposable-Site
+rehearsal and operator runbook are implemented. Focused tests pass `11/11` and
+repository Level 2 passes `2981/2981`; no production or external target was
+contacted. Commit and push this exact candidate, require one exact-SHA ordinary
+CI PASS, then dispatch the sole diagnostics-off Level 3. Accept P9-07 only when
+the cumulative runtime proves real full backup, meaningful database/public/
+private restore, two migrations, exact forward-fix identity, cleanup and
+`productionContact=false`. Keep production schedule, storage, encryption
+custody, RPO/RTO and execution held. Do not change CI, add a generic executor,
+contact `jce.1`/production LaunchFlow or stage user-owned dirty files. P9-07
+marker: `P9-07 implementation candidate; exact-SHA ordinary and Level 3
+required`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

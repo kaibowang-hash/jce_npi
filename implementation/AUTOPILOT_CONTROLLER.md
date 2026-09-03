@@ -11785,3 +11785,29 @@ P9-01 Level 3.
   exact-SHA ordinary CI and one diagnostics-off Level 3 without approval pauses
   or per-check micro-commits.
 - Controller marker: `P9-06 Level 3 PASS; P9-07 go-live recovery audit and plan active`.
+
+## 2026-09-03 P9-07 implementation candidate; exact-SHA ordinary and Level 3 required
+
+- P9-07 governance SHA `6c3c30a25138dfdc4e26b0ea20056314b670882a`
+  passes exact-SHA ordinary CI `33721621988` in repository, frontend, both E2E
+  shards, visual, secret and aggregate lanes. The frozen product slice is now
+  authorized.
+- Deliver one fixed, no-argument runner on the guarded `npi.localhost`/
+  `npi_one_runtime` disposable Site. It records a value-free exact release
+  manifest, creates synthetic database/public/private canaries, performs a
+  real full checksummed backup and meaningful same-Site restore, runs migration
+  twice, revalidates exact forward-fix identity and cleans every temporary
+  canary and backup byte.
+- Focused verifier/runtime tests pass `11/11`; current-task and reconciliation
+  checks pass; repository Level 2 passes `2981/2981`. Frontend files are
+  unchanged and the governance exact-SHA ordinary run already proves the
+  frontend lane; the final candidate ordinary CI must prove it again at the
+  implementation SHA.
+- This is non-production engineering evidence only. It does not prove or set a
+  production backup schedule, storage, encryption/key custody, retention, RPO,
+  RTO, SLA, approval or execution procedure. It contacts neither production
+  ERPNext/`jce.1` nor production LaunchFlow and introduces no generic executor.
+- Push one exact candidate, require one ordinary CI PASS, then dispatch the
+  sole diagnostics-off Level 3 at that SHA. Do not fragment the task, change
+  CI, stage user-owned files or activate P9-08 until both gates pass.
+- Controller marker: `P9-07 implementation candidate; exact-SHA ordinary and Level 3 required`.

@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T12:59:44+07:00`
+Updated: `2026-09-03T13:23:09+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_07_AUDIT_AND_PLAN — P9-07`
+- Mode: `IN_PROGRESS_P9_07_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-07`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -40,17 +40,19 @@ Updated: `2026-09-03T12:59:44+07:00`
   and the sole diagnostics-off Level 3 `33719982252` pass every lane, including
   cumulative disposable-Site runtime `100538152787`, cleanup and
   `productionContact=false`; `release-gate` is PASS.
-- P9-07 is active for `NFR-BCP-001` and `NFR-MNT-001`. It freezes one fixed
-  non-production rehearsal on the guarded `npi.localhost` disposable Site:
-  exact value-free release manifest, synthetic database/public/private file
-  canaries, full checksummed backup, meaningful restore, migrations,
-  cumulative forward-fix verification, bounded timing and cleanup. It is not
+- P9-07 governance SHA `6c3c30a25138dfdc4e26b0ea20056314b670882a`
+  passes exact-SHA ordinary CI `33721621988`. The fixed non-production
+  rehearsal is implemented on the guarded `npi.localhost` disposable Site:
+  value-free exact release manifest, synthetic database/public/private file
+  canaries, checksummed full backup, meaningful same-Site restore, two
+  migrations, forward-fix identity verification, bounded timings and cleanup.
+  Focused tests pass `11/11`; repository Level 2 passes `2981/2981`. It is not
   a generic deploy/restore tool and does not contact production ERPNext,
-  `jce.1`, production LaunchFlow or an external target. Product work remains
-  held until this audit/plan transition passes exact-SHA ordinary CI.
-  Production schedule, storage, key custody, RPO/RTO and sign-off remain IT/
-  business owned. Controller marker: `P9-06 Level 3 PASS; P9-07 go-live
-  recovery audit and plan active`.
+  `jce.1`, production LaunchFlow or an external target. Production schedule,
+  storage, key custody, RPO/RTO and sign-off remain IT/business owned. The
+  candidate now requires one exact-SHA ordinary CI and the sole diagnostics-off
+  Level 3. Controller marker: `P9-07 implementation candidate; exact-SHA
+  ordinary and Level 3 required`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

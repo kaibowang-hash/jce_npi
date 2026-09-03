@@ -249,3 +249,12 @@ The transition changes governance and evidence only. Product code remains held
 until its exact-SHA ordinary CI passes. Then P9-07 is delivered as one batch,
 one Level 2 and one final diagnostics-off Level 3, without production mutation,
 CI workflow changes or per-check micro-commits.
+
+Governance SHA `6c3c30a25138dfdc4e26b0ea20056314b670882a` passes exact-SHA
+ordinary CI `33721621988`. The authorized one-batch implementation adds the
+fixed runner, value-free release verifier, real disposable database/public/
+private file backup and restore, two post-restore migrations, exact forward-fix
+identity check, bounded result and operator runbook. Focused tests pass `11/11`
+and repository Level 2 passes `2981/2981`. No UI, product contract, production
+ERPNext, production LaunchFlow or external target changed. Final exact-SHA
+ordinary CI and the sole diagnostics-off Level 3 remain required.

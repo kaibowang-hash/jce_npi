@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `AUDIT AND PLAN — PRODUCT HELD UNTIL TRANSITION ORDINARY PASS`
+Status: `IMPLEMENTATION CANDIDATE — EXACT-SHA ORDINARY AND LEVEL 3 REQUIRED`
 
 Requirements: `NFR-BCP-001`, `NFR-MNT-001`
 
@@ -48,13 +48,14 @@ It must:
    full database/files backup into a mode-`0700` temporary directory, and bind
    file sizes plus SHA-256 checksums without retaining or uploading backup
    bytes;
-4. run the existing cumulative verifier and migrations, then add distinct
-   post-backup canaries to prove the restore is meaningful;
+4. add distinct post-backup canaries to prove the restore is meaningful, then
+   quarantine the disposable public/private file trees;
 5. restore the database and both file sets into that same disposable Site,
    require the pre-backup canaries, require the post-backup canaries to be
    absent, and verify the release/schema/config-key fingerprints again;
-6. run migration and the cumulative runtime a second time as the forward-fix
-   path, proving idempotency and current-code compatibility after restore;
+6. run migration twice and repeat the exact release/schema/config-key verifier
+   as the forward-fix path; the enclosing cumulative runtime Gate completes
+   only after these post-restore checks pass;
 7. emit only bounded timings, versions, hashes, counts, PASS/FAIL and
    `productionContact=false`, then always remove canaries and temporary backup
    material through the controlled cleanup path.
@@ -125,5 +126,10 @@ execution. Business and IT must accept final RPO/RTO before production-ready
 can be claimed. P9-07 completion therefore means the technical non-production
 rehearsal is proven and the production facts/decisions remain explicitly held.
 
-This transition changes governance and evidence only. Product code is held
-until its own exact-SHA ordinary CI passes.
+Governance SHA `6c3c30a25138dfdc4e26b0ea20056314b670882a` passes exact-SHA
+ordinary CI `33721621988`; product work is authorized. The frozen implementation
+is delivered as one candidate batch. Focused manifest/runtime contract tests
+pass `11/11`, current-task and reconciliation verification pass, and repository
+Level 2 passes `2981/2981`. The candidate remains incomplete until one final
+exact-SHA ordinary CI and the sole diagnostics-off Level 3 pass at the same
+commit. No production or external target was contacted.

@@ -3,7 +3,7 @@
   "task_id": "P9-07",
   "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_P9_07_AUDIT_AND_PLAN",
+  "status": "IN_PROGRESS_P9_07_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P9-08",
   "base_checkpoint": "8f5c2292dab6aa48f82c8aade37f3938b023699d",
@@ -34,7 +34,7 @@
     "RELEASE_MANIFEST_BINDS_EXACT_GIT_FRAPPE_APP_SCHEMA_AND_CONFIG_KEY_FINGERPRINTS_WITHOUT_VALUES_OR_SECRETS",
     "BACKUP_USES_ONLY_SYNTHETIC_DATABASE_PUBLIC_AND_PRIVATE_FILE_CANARIES_AND_TEMPORARY_0700_STORAGE",
     "RESTORE_REQUIRES_PRE_BACKUP_CANARIES_PRESENT_AND_POST_BACKUP_CANARIES_ABSENT",
-    "FORWARD_FIX_RERUNS_MIGRATIONS_AND_CUMULATIVE_RUNTIME_AFTER_RESTORE",
+    "FORWARD_FIX_RERUNS_MIGRATIONS_AND_COMPLETES_CUMULATIVE_GATE_AFTER_RESTORE",
     "BACKUP_BYTES_AND_SECRET_OR_BUSINESS_VALUES_ARE_NEVER_COMMITTED_UPLOADED_OR_LOGGED",
     "LOCAL_REHEARSAL_TIMINGS_DO_NOT_PROVE_PRODUCTION_RPO_RTO_SLA_SCHEDULE_RETENTION_OR_APPROVAL",
     "FAILURE_IN_BACKUP_CHECKSUM_RESTORE_CANARY_MIGRATION_RUNTIME_OR_CLEANUP_FAILS_CLOSED",
@@ -94,7 +94,7 @@
     "phase_status_resumed_product_task": "P9-07",
     "active_goal_marker": "P9-07",
     "next_action_marker": "P9-07",
-    "controller_marker": "P9-06 Level 3 PASS; P9-07 go-live recovery audit and plan active"
+    "controller_marker": "P9-07 implementation candidate; exact-SHA ordinary and Level 3 required"
   },
   "rollback": {
     "before_product_resume": "Restore exact accepted P9-06 checkpoint 8f5c2292dab6aa48f82c8aade37f3938b023699d. The P9-07 audit transition changes no product, database, Site, ERPNext or external state.",

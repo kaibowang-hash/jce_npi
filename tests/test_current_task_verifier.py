@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P9_07_AUDIT_AND_PLAN",
+            "IN_PROGRESS_P9_07_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-08")
@@ -62,7 +62,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-07",
                 "active_goal_marker": "P9-07",
                 "next_action_marker": "P9-07",
-                "controller_marker": "P9-06 Level 3 PASS; P9-07 go-live recovery audit and plan active",
+                "controller_marker": "P9-07 implementation candidate; exact-SHA ordinary and Level 3 required",
             },
         )
         for invariant in (
@@ -72,7 +72,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "RELEASE_MANIFEST_BINDS_EXACT_GIT_FRAPPE_APP_SCHEMA_AND_CONFIG_KEY_FINGERPRINTS_WITHOUT_VALUES_OR_SECRETS",
             "BACKUP_USES_ONLY_SYNTHETIC_DATABASE_PUBLIC_AND_PRIVATE_FILE_CANARIES_AND_TEMPORARY_0700_STORAGE",
             "RESTORE_REQUIRES_PRE_BACKUP_CANARIES_PRESENT_AND_POST_BACKUP_CANARIES_ABSENT",
-            "FORWARD_FIX_RERUNS_MIGRATIONS_AND_CUMULATIVE_RUNTIME_AFTER_RESTORE",
+            "FORWARD_FIX_RERUNS_MIGRATIONS_AND_COMPLETES_CUMULATIVE_GATE_AFTER_RESTORE",
             "NO_PRODUCTION_ERPNEXT_LAUNCHFLOW_OR_EXTERNAL_CONTACT_AND_NO_NEW_ERP_FACT_DEPENDENCY_FOR_P9_07",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
