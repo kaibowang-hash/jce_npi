@@ -3,6 +3,7 @@ import type { JSX, PropsWithChildren } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  buildFrappeLoginUrl,
   I18nProvider,
   supportedLocales,
   useI18n,
@@ -14,6 +15,69 @@ import { buildLocalizedOperationalSurfaces } from "../../src/i18n/surfaces";
 describe("Frappe-backed React localization", () => {
   it("supports only the verified language codes", () => {
     expect(supportedLocales).toEqual(["en", "zh", "zh-TW"]);
+  });
+
+  it("builds a same-site Frappe login return URL", () => {
+    expect(
+      buildFrappeLoginUrl({
+        hash: "#review",
+        pathname: "/projects/PJ-26018",
+        search: "?tab=gates",
+      }),
+    ).toBe("/login?redirect-to=%2Fprojects%2FPJ-26018%3Ftab%3Dgates%23review");
+    expect(
+      buildFrappeLoginUrl({
+        hash: "",
+        pathname: "//untrusted.example",
+        search: "",
+      }),
+    ).toBe("/login?redirect-to=%2F");
+  });
+
+  it("redirects an unauthenticated production bootstrap to Frappe login", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
+    globalThis.history.replaceState({}, "", "/projects/PJ-26018?tab=gates");
+    const assign = vi.fn();
+    vi.stubGlobal("location", {
+      assign,
+      hash: "",
+      pathname: "/projects/PJ-26018",
+      search: "?tab=gates",
+    });
+    const problem = {
+      code: "AUTHENTICATION_REQUIRED",
+      retryable: false,
+      status: 401,
+      title: "Authentication required",
+      traceId: "trace-login-26018",
+      type: "/problems/authentication-required",
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify(problem), {
+            headers: { "X-Trace-ID": problem.traceId },
+            status: 401,
+          }),
+        ),
+      ),
+    );
+    const wrapper = ({ children }: PropsWithChildren): JSX.Element => (
+      <I18nProvider>{children}</I18nProvider>
+    );
+    const { result } = renderHook(() => useI18n(), { wrapper });
+
+    await waitFor(() => {
+      expect(assign).toHaveBeenCalledOnce();
+    });
+    expect(assign).toHaveBeenCalledWith(
+      "/login?redirect-to=%2Fprojects%2FPJ-26018%3Ftab%3Dgates",
+    );
+    expect(result.current.sessionCommandContext).toBeNull();
+    expect(result.current.isLocalizationUnavailable).toBe(false);
+    expect(result.current.localizationFailure).toBeNull();
   });
 
   it("translates both Chinese catalogs and substitutes named placeholders", () => {

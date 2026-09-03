@@ -98,6 +98,33 @@ function prototypeFallbackIsAllowed(): boolean {
   return import.meta.env.DEV || import.meta.env.VITE_NPI_PROTOTYPE === "true";
 }
 
+type LoginReturnLocation = Pick<Location, "hash" | "pathname" | "search">;
+
+export function buildFrappeLoginUrl(location: LoginReturnLocation): string {
+  const pathname =
+    location.pathname.startsWith("/") && !location.pathname.startsWith("//")
+      ? location.pathname
+      : "/";
+  const redirectTo = `${pathname}${location.search}${location.hash}`;
+  return `/login?${new URLSearchParams({ "redirect-to": redirectTo })}`;
+}
+
+function redirectUnauthenticatedBootstrap(
+  operation: LocalizationFailure["operation"],
+  failure: RequestFailure,
+): boolean {
+  if (
+    operation !== "bootstrap" ||
+    failure.kind !== "problem" ||
+    failure.problem?.status !== 401 ||
+    globalThis.location.pathname === "/login"
+  ) {
+    return false;
+  }
+  globalThis.location.assign(buildFrappeLoginUrl(globalThis.location));
+  return true;
+}
+
 function hasExactKeys(
   value: Record<string, unknown>,
   keys: readonly string[],
@@ -280,6 +307,7 @@ export function I18nProvider({
         setNavigationPreferenceFailure(null);
       } catch (error) {
         const prototypeAllowed = prototypeFallbackIsAllowed();
+        const requestFailure = toRequestFailure(error);
         const fallbackLocale = requestedLocale ?? localeRef.current;
         const fallbackMessages = prototypeAllowed
           ? await loadPrototypeMessages(fallbackLocale)
@@ -287,6 +315,12 @@ export function I18nProvider({
         if (!providerActive.current) return;
         sessionClient.clearSession();
         setSessionCommandContext(null);
+        if (
+          !prototypeAllowed &&
+          redirectUnauthenticatedBootstrap(operation, requestFailure)
+        ) {
+          return;
+        }
         if (prototypeAllowed && fallbackMessages) {
           if (operation === "set_language") {
             globalThis.localStorage.setItem(
@@ -306,7 +340,7 @@ export function I18nProvider({
           setLocalizationUnavailable(true);
           setLocalizationFailure({
             operation,
-            requestFailure: toRequestFailure(error),
+            requestFailure,
             requestedLocale,
           });
         }
