@@ -11914,3 +11914,29 @@ P9-01 Level 3.
   are authorized. Only after sanitized reconciliation evidence may the sole
   final diagnostics-off Level 3 and release-gate run.
 - Controller marker: `P9-08 controlled UAT implementation candidate; exact-SHA ordinary and final reconciliation gates required`.
+
+## 2026-09-03 P9-08 implementation ordinary PASS; final read-only collector transition active
+
+- Implementation candidate
+  `1761323f934e762b706405e74e059071d26e9564` passes exact-SHA ordinary
+  CI `33734762911` in repository, secret, frontend verification, both E2E
+  shards, visual and aggregate lanes. The clean checkout closes the local
+  user-owned untracked-asset brand-scan ambiguity without changing that file.
+- The accepted collector exposes only P8-07F, P9-01 and P9-04 task identities,
+  so direct reuse under P9-08 would fail closed. Add one zero-contact narrow
+  transition with fixed `final-reconciliation` and `final-cleanup` entries.
+  It accepts no caller-selected app, DocType, field, filter, method, family or
+  remote command.
+- The final operation fixes `frappe-bench`, the private Site environment
+  parameter, every application HEAD/status/tracked-path/current-diff hash,
+  all accepted runtime metadata families, system locale/File URL aggregates,
+  the P9-01 change scope and P9-04 security scope. Raw source and metadata are
+  never committed; detailed sanitized results remain only in an OS temporary
+  mode-0600 file and stdout is aggregate-only. Failure deletes the temporary
+  file and stops.
+- This transition makes zero SSH, Site, ERPNext, LaunchFlow or external
+  contact. It must pass exact-SHA ordinary CI before the one fixed production
+  read. After the read, write one sanitized final checkpoint, remove the
+  private result, then require one final ordinary CI and the sole diagnostics-
+  off Level 3/release-gate. No product or production write is authorized.
+- Controller marker: `P9-08 final ERPNext compatibility reconciliation collector; exact-SHA ordinary required before read`.

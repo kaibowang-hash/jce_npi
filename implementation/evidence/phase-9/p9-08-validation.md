@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `IMPLEMENTATION CANDIDATE — EXACT-SHA ORDINARY, FINAL ERP READ-ONLY RECONCILIATION AND LEVEL 3 PENDING`
+Status: `IMPLEMENTATION ORDINARY PASS — FINAL ERP READ-ONLY COLLECTOR TRANSITION, RECONCILIATION AND LEVEL 3 PENDING`
 
 Requirement: `UX-003`
 
@@ -86,10 +86,26 @@ not move, delete, stage or allowlist that file. The candidate's clean-checkout
 exact-SHA ordinary CI must pass the unchanged brand guard and full frontend
 lane.
 
+Implementation candidate
+`1761323f934e762b706405e74e059071d26e9564` passes exact-SHA ordinary CI
+`33734762911` in repository `100582623939`, secret `100582624107`, frontend
+verification `100582624172`, E2E shard 1 `100582624283`, E2E shard 2
+`100582624021`, visual `100582624087` and frontend aggregate `100583921017`.
+The clean checkout passes the unchanged brand guard; the user-owned local asset
+remains untouched.
+
+The established collector has no P9-08 task identity. A zero-contact narrow
+transition therefore adds only one fixed full-refresh operation plus exact
+cleanup. It binds every app source signature, accepted runtime metadata family,
+locale/File aggregate, P9-01 change scope and P9-04 security scope. It accepts
+no caller-selected remote scope. Detailed sanitized output remains in a local
+mode-0600 temporary result and is deleted after evidence promotion. No SSH or
+Site contact occurs until this transition passes exact-SHA ordinary CI.
+
 ## Remaining gates
 
-1. Commit and push the exact implementation candidate; require ordinary CI
-   PASS at that SHA.
+1. Commit and push the zero-contact final collector transition; require
+   ordinary CI PASS at that exact SHA.
 2. Refresh the complete production ERPNext-to-LaunchFlow compatibility
    reconciliation under the already approved fixed read-only `JCE-Core`
    allowlist, reusing accepted inventory and collecting only bounded deltas.

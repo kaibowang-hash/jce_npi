@@ -98,6 +98,24 @@ class ProductionFactCollectorTest(unittest.TestCase):
         )
         self.assertEqual(
             collector._remote_command(
+                "APP_WORKTREE_SNAPSHOT",
+                root="apps/custom_one",
+            ),
+            (
+                "git",
+                "-C",
+                "apps/custom_one",
+                "diff",
+                "--no-ext-diff",
+                "--no-renames",
+                "--no-color",
+                "--binary",
+                "HEAD",
+                "--",
+            ),
+        )
+        self.assertEqual(
+            collector._remote_command(
                 "APP_FILE_READ",
                 root="apps/custom_one",
                 path="custom_one/hooks.py",
@@ -1340,6 +1358,217 @@ class ProductionFactCollectorTest(unittest.TestCase):
         ):
             collector._p9_security_preflight("e" * 40)
 
+    def test_p9_final_preflight_requires_exact_activation_and_paths(self) -> None:
+        manifest = {
+            "task_id": "P9-08",
+            "status": collector.P9_FINAL_STATUS,
+            "allowed_paths": [
+                "implementation/evidence/phase-9/p9-08-final-erpnext-reconciliation.md",
+                "scripts/collect_erpnext_production_facts.py",
+                "tests/test_erpnext_production_fact_collector.py",
+            ],
+        }
+        path = self.write_manifest(manifest)
+
+        def git(*args: str) -> str:
+            return "f" * 40 if args == ("rev-parse", "HEAD") else ""
+
+        with patch.object(collector, "MANIFEST", path), patch.object(
+            collector,
+            "_git",
+            side_effect=git,
+        ):
+            self.assertEqual(collector._p9_final_preflight("f" * 40), manifest)
+
+        for key, bad_value in (
+            ("task_id", "P9-07"),
+            ("status", "IN_PROGRESS_P9_08_PRODUCT"),
+            ("allowed_paths", ["scripts/collect_erpnext_production_facts.py"]),
+        ):
+            invalid = {**manifest, key: bad_value}
+            with self.subTest(key=key), patch.object(
+                collector,
+                "MANIFEST",
+                self.write_manifest(invalid),
+            ), patch.object(collector, "_git", side_effect=git), self.assertRaises(
+                collector.FactCollectionError
+            ):
+                collector._p9_final_preflight("f" * 40)
+
+    def test_p9_final_operation_is_fixed_sanitized_and_cleanup_is_exact(self) -> None:
+        state_path = self.state_path()
+        args = argparse.Namespace(
+            expected_sha="f" * 40,
+            ordinary_run_id="303",
+            state=str(state_path),
+        )
+
+        def discover(args, runner, *, preflight, emitter):
+            preflight(args.expected_sha)
+            collector._write_new_state(
+                Path(args.state),
+                {
+                    "schema_version": 1,
+                    "task_id": collector.TASK_ID,
+                    "exact_sha": args.expected_sha,
+                    "ordinary_run_id": args.ordinary_run_id,
+                    "apps": [
+                        {
+                            "label": "CUSTOM_APP_01",
+                            "name": "private_app_name",
+                            "root": "apps/private_app_name",
+                            "version": "1.0.0",
+                            "branch": "main",
+                        }
+                    ],
+                    "tracked_paths": {},
+                    "operation_records": [],
+                },
+            )
+            emitter(
+                {
+                    "apps": [
+                        {
+                            "label": "CUSTOM_APP_01",
+                            "version": "1.0.0",
+                            "branch": "main",
+                        }
+                    ],
+                    "bench_inventory_checksum": "sha256:bench",
+                    "site_inventory_status": "VERIFIED",
+                    "site_inventory_checksum": "sha256:site",
+                }
+            )
+
+        def app_operation(args, runner, *, preflight, emitter):
+            preflight(args.expected_sha)
+            if args.operation == "APP_HEAD":
+                emitter(
+                    {
+                        "source_checksum": "sha256:head",
+                        "result": {"head": "a" * 40},
+                    }
+                )
+            elif args.operation == "APP_STATUS":
+                emitter(
+                    {
+                        "source_checksum": "sha256:status",
+                        "result": {
+                            "tracked_drift_count": 1,
+                            "tracked_drift": [
+                                {"status": " M", "path_checksum": "sha256:path"}
+                            ],
+                        },
+                    }
+                )
+            else:
+                private = collector._load_state(
+                    Path(args.state),
+                    args.expected_sha,
+                    args.ordinary_run_id,
+                )
+                private["tracked_paths"][args.label] = ["private_app_name/hooks.py"]
+                collector._replace_state(Path(args.state), private)
+                emitter(
+                    {
+                        "source_checksum": "sha256:paths",
+                        "result": {"total": 1},
+                    }
+                )
+
+        def runtime_operation(args, runner, *, preflight, emitter):
+            preflight(args.expected_sha)
+            emitter(
+                {
+                    "row_count": 0,
+                    "result_checksum": f"sha256:{args.family.lower()}",
+                    "rows": [],
+                }
+            )
+
+        def site_operation(args, runner, *, preflight, emitter):
+            preflight(args.expected_sha)
+            emitter(
+                {
+                    "result_checksum": f"sha256:{args.family.lower()}",
+                    "result": {},
+                }
+            )
+
+        def fixed_operation(args, runner, *, preflight, emitter):
+            preflight(args.expected_sha)
+            emitter({"result_checksum": "sha256:fixed", "result": {}})
+
+        calls: list[str] = []
+
+        def runner(operation: str, command: tuple[str, ...], limit: int) -> bytes:
+            calls.append(operation)
+            self.assertEqual(command[0], "git")
+            self.assertEqual(limit, collector.MAX_WORKTREE_SNAPSHOT_BYTES)
+            return b"fixed tracked diff"
+
+        with patch.object(collector, "_p9_final_preflight"), patch.object(
+            collector,
+            "_discover",
+            side_effect=discover,
+        ), patch.object(
+            collector,
+            "_app_operation",
+            side_effect=app_operation,
+        ), patch.object(
+            collector,
+            "_runtime_operation",
+            side_effect=runtime_operation,
+        ), patch.object(
+            collector,
+            "_parent_metadata_operation",
+            side_effect=runtime_operation,
+        ), patch.object(
+            collector,
+            "_site_fact_operation",
+            side_effect=site_operation,
+        ), patch.object(
+            collector,
+            "_p9_change_metadata_operation",
+            side_effect=fixed_operation,
+        ), patch.object(
+            collector,
+            "_p9_security_metadata_operation",
+            side_effect=fixed_operation,
+        ), patch.dict(
+            os.environ,
+            {"NPI_P8_07F_SITE": "site-one"},
+            clear=True,
+        ), patch.object(collector, "_emit") as emit:
+            collector._p9_final_reconciliation_operation(args, runner)
+
+        self.assertEqual(calls, ["APP_WORKTREE_SNAPSHOT"])
+        self.assertEqual(stat.S_IMODE(state_path.stat().st_mode), 0o600)
+        private = json.loads(state_path.read_text(encoding="utf-8"))
+        rendered = json.dumps(private)
+        self.assertEqual(private["task_id"], "P9-08")
+        self.assertEqual(private["remote_operation_count"], 1)
+        self.assertNotIn("private_app_name", rendered)
+        self.assertEqual(
+            private["result"]["applications"][0]["worktree_snapshot_checksum"],
+            collector._checksum(b"fixed tracked diff"),
+        )
+        summary = emit.call_args.args[0]
+        self.assertFalse(summary["production_write"])
+        self.assertEqual(summary["application_count"], 1)
+        self.assertEqual(
+            summary["runtime_family_count"],
+            len(collector.RUNTIME_METADATA_SPECS),
+        )
+
+        with patch.object(collector, "_p9_final_preflight"), patch.object(
+            collector,
+            "_emit",
+        ) as cleanup_emit:
+            collector._p9_final_cleanup(args)
+        self.assertFalse(state_path.exists())
+        self.assertTrue(cleanup_emit.call_args.args[0]["state_removed"])
+
     def test_status_rejects_untracked_and_paths_reject_nondeterminism(self) -> None:
         with self.assertRaises(collector.FactCollectionError):
             collector._parse_status(b"?? unknown.txt\n")
@@ -1365,7 +1594,7 @@ class ProductionFactCollectorTest(unittest.TestCase):
         run.assert_not_called()
         self.assertFalse(emit.call_args.args[0]["remote_contact"])
         self.assertEqual(emit.call_args.args[0]["bench_root"], "frappe-bench")
-        self.assertEqual(len(emit.call_args.args[0]["allowlisted_operations"]), 11)
+        self.assertEqual(len(emit.call_args.args[0]["allowlisted_operations"]), 12)
         self.assertEqual(
             emit.call_args.args[0]["runtime_metadata_families"],
             list(collector.RUNTIME_METADATA_SPECS),
@@ -1387,6 +1616,11 @@ class ProductionFactCollectorTest(unittest.TestCase):
         self.assertEqual(
             emit.call_args.args[0]["p9_security_count_operations"],
             list(collector.P9_SECURITY_COUNT_SPECS),
+        )
+        self.assertEqual(emit.call_args.args[0]["p9_final_task_id"], "P9-08")
+        self.assertEqual(
+            emit.call_args.args[0]["p9_final_status"],
+            collector.P9_FINAL_STATUS,
         )
 
 

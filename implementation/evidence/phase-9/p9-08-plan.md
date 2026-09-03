@@ -112,8 +112,10 @@ read-only evidence Gate, not a production pilot or modification task. It must:
 1. reuse `ERPNEXT_PRODUCTION_FACT_INVENTORY` and the accepted P8-07F facts;
 2. use SSH alias `JCE-Core` only under the standing fixed BatchMode,
    strict-host-key, no-TTY/no-forwarding, bounded-output operation allowlist;
-3. prefer version, installed-app, tracked-worktree mtime/hash and exact missing
-   metadata deltas; never repeat a full read without evidence of drift;
+3. prefer version, installed-app, tracked-worktree hash and exact metadata
+   deltas, while the final closeout operation must refresh every accepted
+   dependency family once so that unchanged facts are evidence rather than an
+   assumption;
 4. compare all ERP-related P8-01 through P8-09 and later Phase 9 dependencies;
 5. classify each dependency as still matching, production drift,
    LaunchFlow drift, both drift or unverified, with sanitized provenance,
@@ -126,6 +128,21 @@ An unresolved or unverified actual ERP dependency blocks Phase 9 PASS,
 `IMPLEMENTATION_COMPLETE` and production-ready. A proved conflict creates a
 separate minimal decision or adjustment task; it is not silently repaired in
 this UAT task.
+
+Implementation candidate
+`1761323f934e762b706405e74e059071d26e9564` passes exact-SHA ordinary CI
+`33734762911`. The previously approved collector has fixed task identities for
+P8-07F, P9-01 and P9-04 only, so it cannot safely execute the P9-08 closeout
+read. A zero-contact governance transition therefore adds exactly one
+`final-reconciliation` entry and one exact cleanup entry. The read accepts no
+caller-selected app, DocType, field, filter, method, family or remote command.
+It fixes the Bench root, Site environment parameter, all application
+HEAD/status/tracked-path/current-diff hashes, all accepted runtime metadata
+families, locale/File URL aggregates, the P9-01 change scope and P9-04 security
+scope. Detailed sanitized output is held only in a mode-0600 operating-system
+temporary file; stdout contains aggregate counts and checksums. Any failure
+removes the temporary file and stops. The transition itself makes zero SSH or
+Site contact and must pass exact-SHA ordinary CI before this fixed read runs.
 
 ## Validation and rollout
 

@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_08_CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-08`
+`IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR — P9-08`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -43,6 +43,18 @@ the mandatory full production ERPNext-to-LaunchFlow compatibility refresh only
 through the approved fixed read-only inventory/delta boundary. Do not run real
 pilots, claim real-user adoption, change product/CI or stage user-owned files.
 P9-08 marker: `P9-08 controlled UAT implementation candidate; exact-SHA ordinary and final reconciliation gates required`.
+
+P9-08 implementation SHA
+`1761323f934e762b706405e74e059071d26e9564` passes ordinary CI
+`33734762911` in every required lane. The active next action is one zero-contact
+collector transition: lock the exact P9-08 task/status, fixed Bench/Site,
+application source signatures, every accepted runtime metadata family, locale/
+File aggregates, P9-01 change scope, P9-04 security scope, output bounds,
+redaction and exact cleanup. Pass ordinary CI at that exact transition SHA;
+then run the fixed read once, record only sanitized checksums and compatibility
+classifications, clean the private temporary result, and proceed directly to
+the final evidence ordinary CI and sole diagnostics-off Level 3. No production
+write, product change, CI change or user-owned file staging is allowed.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

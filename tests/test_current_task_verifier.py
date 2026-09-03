@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P9_08_CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED",
+            "IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
@@ -62,7 +62,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-08",
                 "active_goal_marker": "P9-08",
                 "next_action_marker": "P9-08",
-                "controller_marker": "P9-08 controlled UAT implementation candidate; exact-SHA ordinary and final reconciliation gates required",
+                "controller_marker": "P9-08 final ERPNext compatibility reconciliation collector; exact-SHA ordinary required before read",
             },
         )
         for invariant in (

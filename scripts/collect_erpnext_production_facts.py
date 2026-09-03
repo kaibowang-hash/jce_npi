@@ -33,6 +33,8 @@ MANIFEST = ROOT / "implementation" / "CURRENT_TASK.json"
 TASK_ID = "P8-07F-FACTS"
 P9_CHANGE_TASK_ID = "P9-01"
 P9_SECURITY_TASK_ID = "P9-04"
+P9_FINAL_TASK_ID = "P9-08"
+P9_FINAL_STATUS = "IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR"
 SSH_ALIAS = "JCE-Core"
 REMOTE_BENCH_ROOT = "frappe-bench"
 LOCAL_TIMEZONE = ZoneInfo("Asia/Bangkok")
@@ -49,6 +51,7 @@ MAX_STATUS_BYTES = 128 * 1024
 MAX_PATH_BYTES = 2 * 1024 * 1024
 MAX_FILE_BYTES = 256 * 1024
 MAX_DIFF_BYTES = 512 * 1024
+MAX_WORKTREE_SNAPSHOT_BYTES = 8 * 1024 * 1024
 MAX_RUNTIME_BYTES = 512 * 1024
 DEFAULT_PAGE_SIZE = 200
 MAX_PAGE_SIZE = 500
@@ -502,6 +505,40 @@ def _p9_security_preflight(expected_sha: str) -> dict[str, Any]:
     return manifest
 
 
+def _p9_final_preflight(expected_sha: str) -> dict[str, Any]:
+    require(HEX_SHA.fullmatch(expected_sha) is not None, "expected SHA is invalid")
+    require(_git("rev-parse", "HEAD") == expected_sha, "local HEAD differs from expected SHA")
+    for path in (
+        "implementation/CURRENT_TASK.json",
+        "implementation/evidence/phase-9/p9-08-plan.md",
+        "scripts/collect_erpnext_production_facts.py",
+    ):
+        require(
+            not _git("status", "--short", "--untracked-files=no", "--", path),
+            f"governed final reconciliation path is dirty: {path}",
+        )
+    try:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError("cannot load the current task manifest") from exc
+    require(manifest.get("task_id") == P9_FINAL_TASK_ID, "P9-08 task is not active")
+    require(
+        manifest.get("status") == P9_FINAL_STATUS,
+        "P9-08 final reconciliation collector is not active",
+    )
+    required_paths = {
+        "implementation/evidence/phase-9/p9-08-final-erpnext-reconciliation.md",
+        "scripts/collect_erpnext_production_facts.py",
+        "tests/test_erpnext_production_fact_collector.py",
+    }
+    allowed_paths = manifest.get("allowed_paths")
+    require(
+        type(allowed_paths) is list and required_paths.issubset(set(allowed_paths)),
+        "P9-08 final reconciliation collector paths are not authorized",
+    )
+    return manifest
+
+
 def _state_path(raw: str, *, must_exist: bool) -> Path:
     path = Path(raw)
     require(path.is_absolute(), "state path must be absolute")
@@ -568,6 +605,11 @@ def _remote_command(operation: str, *, site: str | None = None, root: str | None
             command = ("git", "-C", root, "status", "--short", "-uno")
         elif operation == "APP_TRACKED_PATHS":
             command = ("git", "-C", root, "ls-files", "-z")
+        elif operation == "APP_WORKTREE_SNAPSHOT":
+            command = (
+                "git", "-C", root, "diff", "--no-ext-diff", "--no-renames",
+                "--no-color", "--binary", "HEAD", "--",
+            )
         elif operation in {"APP_FILE_HASH", "APP_FILE_READ", "APP_FILE_MODE", "APP_HEAD_FILE_HASH", "APP_WORKTREE_DIFF"}:
             require(path is not None and _safe_relative_path(path), "tracked file path is invalid")
             if operation == "APP_FILE_HASH":
@@ -1358,9 +1400,17 @@ def _parse_parent_metadata_document(
     return sanitized
 
 
-def _discover(args: argparse.Namespace, runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh) -> None:
+def _discover(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+    *,
+    preflight: Callable[[str], dict[str, Any]] | None = None,
+    emitter: Callable[[object], None] | None = None,
+) -> None:
+    preflight = preflight or _preflight
+    emitter = emitter or _emit
     _validate_ordinary_run_id(args.ordinary_run_id)
-    _preflight(args.expected_sha)
+    preflight(args.expected_sha)
     path = _state_path(args.state, must_exist=False)
     version_command = _remote_command("ERP_VERSION")
     version_raw = runner("ERP_VERSION", version_command, MAX_VERSION_BYTES)
@@ -1402,7 +1452,7 @@ def _discover(args: argparse.Namespace, runner: Callable[[str, Sequence[str], in
             }
         )
     _write_new_state(path, state)
-    _emit(
+    emitter(
         {
             "task_id": TASK_ID,
             "operation": "DISCOVER",
@@ -1416,9 +1466,17 @@ def _discover(args: argparse.Namespace, runner: Callable[[str, Sequence[str], in
     )
 
 
-def _app_operation(args: argparse.Namespace, runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh) -> None:
+def _app_operation(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+    *,
+    preflight: Callable[[str], dict[str, Any]] | None = None,
+    emitter: Callable[[object], None] | None = None,
+) -> None:
+    preflight = preflight or _preflight
+    emitter = emitter or _emit
     _validate_ordinary_run_id(args.ordinary_run_id)
-    _preflight(args.expected_sha)
+    preflight(args.expected_sha)
     path = _state_path(args.state, must_exist=True)
     state = _load_state(path, args.expected_sha, args.ordinary_run_id)
     app = _app_for_label(state, args.label)
@@ -1466,7 +1524,7 @@ def _app_operation(args: argparse.Namespace, runner: Callable[[str, Sequence[str
             ],
             "remote_called": remote_called,
         }
-    _emit(
+    emitter(
         {
             "task_id": TASK_ID,
             "operation": operation,
@@ -1586,9 +1644,14 @@ def _current_file_operation(
 def _runtime_operation(
     args: argparse.Namespace,
     runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+    *,
+    preflight: Callable[[str], dict[str, Any]] | None = None,
+    emitter: Callable[[object], None] | None = None,
 ) -> None:
+    preflight = preflight or _preflight
+    emitter = emitter or _emit
     _validate_ordinary_run_id(args.ordinary_run_id)
-    _preflight(args.expected_sha)
+    preflight(args.expected_sha)
     state_path = _state_path(args.state, must_exist=True)
     state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
     family = args.family
@@ -1632,7 +1695,7 @@ def _runtime_operation(
     require(type(runtime_names) is dict, "private runtime-name cache is malformed")
     runtime_names[family] = names
     _replace_state(state_path, state)
-    _emit(
+    emitter(
         {
             "task_id": TASK_ID,
             "operation": f"RUNTIME_{family}",
@@ -1650,9 +1713,14 @@ def _runtime_operation(
 def _parent_metadata_operation(
     args: argparse.Namespace,
     runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+    *,
+    preflight: Callable[[str], dict[str, Any]] | None = None,
+    emitter: Callable[[object], None] | None = None,
 ) -> None:
+    preflight = preflight or _preflight
+    emitter = emitter or _emit
     _validate_ordinary_run_id(args.ordinary_run_id)
-    _preflight(args.expected_sha)
+    preflight(args.expected_sha)
     state_path = _state_path(args.state, must_exist=True)
     state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
     family = args.family
@@ -1717,7 +1785,7 @@ def _parent_metadata_operation(
         }
     )
     _replace_state(state_path, state)
-    _emit(
+    emitter(
         {
             "task_id": TASK_ID,
             "operation": f"RUNTIME_{family}",
@@ -1771,9 +1839,14 @@ def _parse_site_fact_output(family: str, raw_outputs: dict[str, bytes]) -> dict[
 def _site_fact_operation(
     args: argparse.Namespace,
     runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+    *,
+    preflight: Callable[[str], dict[str, Any]] | None = None,
+    emitter: Callable[[object], None] | None = None,
 ) -> None:
+    preflight = preflight or _preflight
+    emitter = emitter or _emit
     _validate_ordinary_run_id(args.ordinary_run_id)
-    _preflight(args.expected_sha)
+    preflight(args.expected_sha)
     state_path = _state_path(args.state, must_exist=True)
     state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
     family = args.family
@@ -1799,7 +1872,7 @@ def _site_fact_operation(
         }
     )
     _replace_state(state_path, state)
-    _emit(
+    emitter(
         {
             "task_id": TASK_ID,
             "operation": f"SITE_FACT_{family}",
@@ -1815,9 +1888,14 @@ def _site_fact_operation(
 def _p9_change_metadata_operation(
     args: argparse.Namespace,
     runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+    *,
+    preflight: Callable[[str], dict[str, Any]] | None = None,
+    emitter: Callable[[object], None] | None = None,
 ) -> None:
+    preflight = preflight or _p9_change_preflight
+    emitter = emitter or _emit
     _validate_ordinary_run_id(args.ordinary_run_id)
-    _p9_change_preflight(args.expected_sha)
+    preflight(args.expected_sha)
     site = os.environ.get("NPI_P8_07F_SITE")
     require(
         site is not None and APP_TOKEN.fullmatch(site) is not None,
@@ -1959,7 +2037,7 @@ def _p9_change_metadata_operation(
         "families": family_results,
         "workflow_documents": workflow_documents,
     }
-    _emit(
+    emitter(
         {
             "task_id": P9_CHANGE_TASK_ID,
             "operation": "P9_CHANGE_DECLARATIVE_METADATA",
@@ -2046,9 +2124,14 @@ def _parse_security_settings(raw: bytes) -> dict[str, bool | str]:
 def _p9_security_metadata_operation(
     args: argparse.Namespace,
     runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+    *,
+    preflight: Callable[[str], dict[str, Any]] | None = None,
+    emitter: Callable[[object], None] | None = None,
 ) -> None:
+    preflight = preflight or _p9_security_preflight
+    emitter = emitter or _emit
     _validate_ordinary_run_id(args.ordinary_run_id)
-    _p9_security_preflight(args.expected_sha)
+    preflight(args.expected_sha)
     site = os.environ.get("NPI_P8_07F_SITE")
     require(
         site is not None and APP_TOKEN.fullmatch(site) is not None,
@@ -2150,7 +2233,7 @@ def _p9_security_metadata_operation(
             "User Permission.for_value",
         ],
     }
-    _emit(
+    emitter(
         {
             "task_id": P9_SECURITY_TASK_ID,
             "operation": "P9_SECURITY_AUTHORIZATION_METADATA",
@@ -2158,6 +2241,257 @@ def _p9_security_metadata_operation(
             "source": "JCE_CORE_PRODUCTION_REDACTED",
             "result_checksum": _checksum(_json_bytes(result)),
             "result": result,
+        }
+    )
+
+
+def _p9_final_reconciliation_operation(
+    args: argparse.Namespace,
+    runner: Callable[[str, Sequence[str], int], bytes] = _run_ssh,
+) -> None:
+    """Collect one fixed, sanitized final compatibility snapshot.
+
+    The detailed result remains in a mode-0600 local temporary file.  Standard
+    output contains only aggregate checksums and counts.  No caller-selected
+    remote command, app, DocType, field, filter or metadata family is accepted.
+    """
+
+    _validate_ordinary_run_id(args.ordinary_run_id)
+    _p9_final_preflight(args.expected_sha)
+    state_path = _state_path(args.state, must_exist=False)
+    site = os.environ.get("NPI_P8_07F_SITE")
+    require(
+        site is not None and APP_TOKEN.fullmatch(site) is not None,
+        "runtime site parameter is missing or invalid",
+    )
+
+    captured: list[object] = []
+    remote_operation_count = 0
+
+    def counted_runner(operation: str, command: Sequence[str], limit: int) -> bytes:
+        nonlocal remote_operation_count
+        remote_operation_count += 1
+        return runner(operation, command, limit)
+
+    def accept_one(invoke: Callable[[], None]) -> dict[str, Any]:
+        start = len(captured)
+        invoke()
+        require(len(captured) == start + 1, "internal final reconciliation result shape drifted")
+        result = captured.pop()
+        require(type(result) is dict, "internal final reconciliation result is not an object")
+        return result
+
+    no_preflight = lambda unused_sha: {}
+    try:
+        discovery = accept_one(
+            lambda: _discover(
+                args,
+                counted_runner,
+                preflight=no_preflight,
+                emitter=captured.append,
+            )
+        )
+        private_state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
+        app_results: list[dict[str, Any]] = []
+        for app in private_state["apps"]:
+            label = app["label"]
+            operations: dict[str, dict[str, Any]] = {}
+            for operation in ("APP_HEAD", "APP_STATUS", "APP_TRACKED_PATHS"):
+                app_args = argparse.Namespace(
+                    expected_sha=args.expected_sha,
+                    ordinary_run_id=args.ordinary_run_id,
+                    state=args.state,
+                    label=label,
+                    operation=operation,
+                    page=1,
+                    page_size=1,
+                )
+                output = accept_one(
+                    lambda app_args=app_args: _app_operation(
+                        app_args,
+                        counted_runner,
+                        preflight=no_preflight,
+                        emitter=captured.append,
+                    )
+                )
+                operations[operation] = output
+
+            snapshot_raw = counted_runner(
+                "APP_WORKTREE_SNAPSHOT",
+                _remote_command("APP_WORKTREE_SNAPSHOT", root=app["root"]),
+                MAX_WORKTREE_SNAPSHOT_BYTES,
+            )
+            require(b"\x00" not in snapshot_raw, "worktree snapshot returned binary output")
+            try:
+                snapshot_raw.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise FactCollectionError("worktree snapshot is not UTF-8") from exc
+
+            private_state = _load_state(state_path, args.expected_sha, args.ordinary_run_id)
+            paths = private_state["tracked_paths"].get(label)
+            require(
+                type(paths) is list and all(type(item) is str for item in paths),
+                "final tracked path cache is malformed",
+            )
+            category_counts: dict[str, int] = {}
+            for tracked_path in paths:
+                category = _path_category(tracked_path)
+                category_counts[category] = category_counts.get(category, 0) + 1
+            app_results.append(
+                {
+                    **_public_app_row(app),
+                    "head": operations["APP_HEAD"]["result"]["head"],
+                    "tracked_drift_count": operations["APP_STATUS"]["result"]["tracked_drift_count"],
+                    "tracked_status": operations["APP_STATUS"]["result"]["tracked_drift"],
+                    "tracked_status_checksum": operations["APP_STATUS"]["source_checksum"],
+                    "tracked_path_count": len(paths),
+                    "tracked_path_checksum": operations["APP_TRACKED_PATHS"]["source_checksum"],
+                    "tracked_path_category_counts": dict(sorted(category_counts.items())),
+                    "worktree_snapshot_byte_count": len(snapshot_raw),
+                    "worktree_snapshot_checksum": _checksum(snapshot_raw),
+                }
+            )
+
+        runtime_results: dict[str, dict[str, Any]] = {}
+        for family in RUNTIME_METADATA_SPECS:
+            runtime_args = argparse.Namespace(
+                expected_sha=args.expected_sha,
+                ordinary_run_id=args.ordinary_run_id,
+                state=args.state,
+                family=family,
+            )
+            operation = _parent_metadata_operation if family in PARENT_METADATA_FAMILIES else _runtime_operation
+            runtime_results[family] = accept_one(
+                lambda operation=operation, runtime_args=runtime_args: operation(
+                    runtime_args,
+                    counted_runner,
+                    preflight=no_preflight,
+                    emitter=captured.append,
+                )
+            )
+
+        site_results: dict[str, dict[str, Any]] = {}
+        for family in SITE_FACT_FAMILIES:
+            site_args = argparse.Namespace(
+                expected_sha=args.expected_sha,
+                ordinary_run_id=args.ordinary_run_id,
+                state=args.state,
+                family=family,
+            )
+            site_results[family] = accept_one(
+                lambda site_args=site_args: _site_fact_operation(
+                    site_args,
+                    counted_runner,
+                    preflight=no_preflight,
+                    emitter=captured.append,
+                )
+            )
+
+        fixed_args = argparse.Namespace(
+            expected_sha=args.expected_sha,
+            ordinary_run_id=args.ordinary_run_id,
+        )
+        change_output = accept_one(
+            lambda: _p9_change_metadata_operation(
+                fixed_args,
+                counted_runner,
+                preflight=no_preflight,
+                emitter=captured.append,
+            )
+        )
+        security_output = accept_one(
+            lambda: _p9_security_metadata_operation(
+                fixed_args,
+                counted_runner,
+                preflight=no_preflight,
+                emitter=captured.append,
+            )
+        )
+
+        result = {
+            "bench_inventory": {
+                "apps": discovery["apps"],
+                "checksum": discovery["bench_inventory_checksum"],
+            },
+            "site_inventory": {
+                "status": discovery["site_inventory_status"],
+                "checksum": discovery["site_inventory_checksum"],
+            },
+            "applications": app_results,
+            "runtime_metadata": runtime_results,
+            "site_facts": site_results,
+            "change_metadata": change_output["result"],
+            "change_metadata_checksum": change_output["result_checksum"],
+            "security_metadata": security_output["result"],
+            "security_metadata_checksum": security_output["result_checksum"],
+        }
+        result_checksum = _checksum(_json_bytes(result))
+        timestamp = _timestamp()
+        final_state = {
+            "schema_version": 1,
+            "task_id": P9_FINAL_TASK_ID,
+            "exact_sha": args.expected_sha,
+            "ordinary_run_id": args.ordinary_run_id,
+            "created_at": timestamp,
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "remote_operation_count": remote_operation_count,
+            "result_checksum": result_checksum,
+            "result": result,
+        }
+        _replace_state(state_path, final_state)
+    except Exception:
+        state_path.unlink(missing_ok=True)
+        state_path.with_name(state_path.name + ".next").unlink(missing_ok=True)
+        raise
+
+    _emit(
+        {
+            "task_id": P9_FINAL_TASK_ID,
+            "operation": "P9_FINAL_COMPATIBILITY_RECONCILIATION",
+            "timestamp": timestamp,
+            "source": "JCE_CORE_PRODUCTION_REDACTED",
+            "remote_operation_count": remote_operation_count,
+            "application_count": len(app_results),
+            "runtime_family_count": len(runtime_results),
+            "runtime_family_checksums": {
+                family: output["result_checksum"]
+                for family, output in runtime_results.items()
+            },
+            "site_fact_checksums": {
+                family: output["result_checksum"]
+                for family, output in site_results.items()
+            },
+            "change_metadata_checksum": change_output["result_checksum"],
+            "security_metadata_checksum": security_output["result_checksum"],
+            "result_checksum": result_checksum,
+            "private_result_mode": "0600",
+            "production_write": False,
+        }
+    )
+
+
+def _p9_final_cleanup(args: argparse.Namespace) -> None:
+    _validate_ordinary_run_id(args.ordinary_run_id)
+    _p9_final_preflight(args.expected_sha)
+    path = _state_path(args.state, must_exist=True)
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise FactCollectionError("private final reconciliation result is malformed") from exc
+    require(type(value) is dict, "private final reconciliation result must be an object")
+    require(value.get("schema_version") == 1, "private final reconciliation schema drifted")
+    require(value.get("task_id") == P9_FINAL_TASK_ID, "private final reconciliation task drifted")
+    require(value.get("exact_sha") == args.expected_sha, "private final reconciliation SHA drifted")
+    require(
+        value.get("ordinary_run_id") == args.ordinary_run_id,
+        "private final reconciliation ordinary evidence drifted",
+    )
+    path.unlink()
+    _emit(
+        {
+            "task_id": P9_FINAL_TASK_ID,
+            "operation": "P9_FINAL_CLEANUP",
+            "state_removed": True,
         }
     )
 
@@ -2209,6 +2543,14 @@ def _parser() -> argparse.ArgumentParser:
     security_metadata_parser = subparsers.add_parser("security-metadata")
     security_metadata_parser.add_argument("--expected-sha", required=True)
     security_metadata_parser.add_argument("--ordinary-run-id", required=True)
+    final_parser = subparsers.add_parser("final-reconciliation")
+    final_parser.add_argument("--expected-sha", required=True)
+    final_parser.add_argument("--ordinary-run-id", required=True)
+    final_parser.add_argument("--state", required=True)
+    final_cleanup_parser = subparsers.add_parser("final-cleanup")
+    final_cleanup_parser.add_argument("--expected-sha", required=True)
+    final_cleanup_parser.add_argument("--ordinary-run-id", required=True)
+    final_cleanup_parser.add_argument("--state", required=True)
     governed("cleanup")
     return parser
 
@@ -2233,6 +2575,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "APP_FILE_MODE",
                         "APP_HEAD_FILE_HASH",
                         "APP_WORKTREE_DIFF",
+                        "APP_WORKTREE_SNAPSHOT",
                         "APP_CURRENT_FILE_READ",
                     ],
                     "runtime_metadata_families": list(RUNTIME_METADATA_SPECS),
@@ -2245,6 +2588,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "p9_security_operation": "P9_SECURITY_AUTHORIZATION_METADATA",
                     "p9_security_metadata_families": list(P9_SECURITY_METADATA_SPECS),
                     "p9_security_count_operations": list(P9_SECURITY_COUNT_SPECS),
+                    "p9_final_task_id": P9_FINAL_TASK_ID,
+                    "p9_final_status": P9_FINAL_STATUS,
+                    "p9_final_operation": "P9_FINAL_COMPATIBILITY_RECONCILIATION",
                     "remote_contact": False,
                 }
             )
@@ -2267,6 +2613,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             _p9_change_metadata_operation(args)
         elif args.command == "security-metadata":
             _p9_security_metadata_operation(args)
+        elif args.command == "final-reconciliation":
+            _p9_final_reconciliation_operation(args)
+        elif args.command == "final-cleanup":
+            _p9_final_cleanup(args)
         elif args.command == "cleanup":
             _cleanup(args)
         else:

@@ -4,7 +4,7 @@ Updated: `2026-09-03T15:41:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_08_CONTROLLED_UAT_IMPLEMENTATION_CANDIDATE_EXACT_SHA_GATES_REQUIRED — P9-08`
+- Mode: `IN_PROGRESS_P9_08_FINAL_ERP_RECONCILIATION_COLLECTOR — P9-08`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -59,6 +59,14 @@ Updated: `2026-09-03T15:41:00+07:00`
   for the implementation exact-SHA ordinary CI. Final completion still
   requires the production ERPNext-to-LaunchFlow reconciliation under the fixed
   read-only boundary. Controller marker: `P9-08 controlled UAT implementation candidate; exact-SHA ordinary and final reconciliation gates required`.
+- P9-08 implementation candidate
+  `1761323f934e762b706405e74e059071d26e9564` passes ordinary CI
+  `33734762911`. A zero-contact narrow transition now adds only the fixed
+  P9-08 final compatibility refresh and exact cleanup entry to the already
+  accepted collector. It accepts no caller-selected remote scope, stores
+  detailed sanitized facts only in a mode-0600 temporary file, and must pass
+  exact-SHA ordinary CI before any production read. Controller marker:
+  `P9-08 final ERPNext compatibility reconciliation collector; exact-SHA ordinary required before read`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple
