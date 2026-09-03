@@ -11969,3 +11969,23 @@ P9-01 Level 3.
   release-gate review. No further production contact, product/CI change,
   real-pilot/adoption claim or user-owned path staging is authorized.
 - Controller marker: `P9-08 final ERPNext reconciliation PASS; final evidence exact-SHA ordinary and Level 3 pending`.
+
+## 2026-09-03 P9-08 final Level 3 historical fixture repair
+
+- Final evidence candidate `1b277bae5cb1337e82b5287aa5d29ae38c901210`
+  passes ordinary CI `33739258581`. Level 3 `33739791065` passes every base
+  and preflight lane, then controlled runtime `100600373402` fails closed at
+  the historical P8-03 migrated-legacy exact problem-code assertion; cleanup
+  succeeds and `productionContact=false`.
+- Full same-family preflight retains the exact expected
+  `ITEM_PUBLISH_STREAM_RECONCILIATION_REQUIRED` contract. The fixture-only
+  fault window is that the exact disposable Guard was removed before Web
+  startup, leaving startup/login/context/read work between isolation and POST.
+- Move the existing marker-gated exact Guard isolation immediately before the
+  POST and prove its commit from a second fixture process before sending the
+  command. Product repositories, contracts and behavior remain unchanged;
+  alternate problem codes are not accepted and all diagnostics remain off.
+- Commit the single batch, require exact-SHA ordinary CI, then execute one
+  replacement diagnostics-off Level 3. Do not reconnect production, modify CI
+  or stage user-owned paths.
+- Controller marker: `P9-08 P8-03 migrated-legacy fixture repair; exact-SHA ordinary and replacement Level 3 required`.

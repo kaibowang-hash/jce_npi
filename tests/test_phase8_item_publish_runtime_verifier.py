@@ -395,7 +395,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             )
             self.assertEqual(
                 len(module._active_legacy_full_diagnostic_codes()),
-                72,
+                73,
             )
         run_legacy = source.split("def run_legacy(", 1)[1].split("\ndef ", 1)[0]
         self.assertIn(
@@ -1399,6 +1399,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         for marker in (
             "def seed_legacy(",
             "def prepare_legacy_probe(",
+            "def verify_legacy_probe_ready(",
             "def inspect_legacy(",
             "def cleanup_legacy(",
             '"preMigrationShape": "8dd"',
@@ -1421,24 +1422,47 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         ):
             self.assertIn(marker, verifier)
         self.assertIn("seed_item_publish_runtime_legacy", shell)
-        self.assertIn("prepare_item_publish_runtime_legacy_probe", shell)
+        self.assertNotIn("prepare_item_publish_runtime_legacy_probe", shell)
         self.assertIn("bench --site \"${site_name}\" migrate", shell)
         self.assertIn("run_item_publish_runtime_verifier legacy-only", shell)
         self.assertLess(
             shell.rindex("run_item_publish_runtime_verifier replay-only"),
             shell.rindex("seed_item_publish_runtime_legacy"),
         )
+        run_legacy = _function_nodes(
+            ast.parse(SCRIPT.read_text(encoding="utf-8"))
+        )["run_legacy"]
+        calls = [
+            (node.args[0].value, node.lineno)
+            for node in ast.walk(run_legacy)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "run_bench_fixture"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ]
+        positions = {name: line for name, line in calls}
         self.assertLess(
-            shell.rindex("seed_item_publish_runtime_legacy"),
-            shell.rindex("prepare_item_publish_runtime_legacy_probe"),
+            positions["prepare_legacy_probe"],
+            positions["verify_legacy_probe_ready"],
+        )
+        reconciliation_request = next(
+            node.lineno
+            for node in ast.walk(run_legacy)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "item_publish_request"
+            and any(
+                keyword.arg == "method"
+                and isinstance(keyword.value, ast.Constant)
+                and keyword.value.value == "POST"
+                for keyword in node.keywords
+            )
         )
         self.assertLess(
-            shell.rindex("bench --site \"${site_name}\" migrate"),
-            shell.rindex("prepare_item_publish_runtime_legacy_probe"),
-        )
-        self.assertLess(
-            shell.rindex("prepare_item_publish_runtime_legacy_probe"),
-            shell.rindex("run_item_publish_runtime_verifier legacy-only"),
+            positions["verify_legacy_probe_ready"],
+            reconciliation_request,
         )
 
     def test_legacy_fixture_sql_is_exactly_guarded_and_8dd_shaped(self) -> None:
@@ -1601,6 +1625,20 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             and isinstance(node.args[0].value, str)
         }
         self.assertLess(calls["inspect_legacy"], calls["cleanup_legacy"])
+
+    def test_legacy_probe_commit_visibility_is_verified_before_post(self) -> None:
+        tree = ast.parse(SCRIPT.read_text(encoding="utf-8"))
+        functions = _function_nodes(tree)
+        verifier = ast.unparse(functions["verify_legacy_probe_ready"])
+        self.assertIn("_require_disposable_legacy_fixture", verifier)
+        self.assertIn("NPI Item Publish Stream Guard", verifier)
+        self.assertIn("not guards", verifier)
+        fixture_runner = ast.unparse(functions["run_local_bench_fixture"])
+        self.assertIn(
+            "'verify_legacy_probe_ready': verify_legacy_probe_ready",
+            fixture_runner,
+        )
+        self.assertIn("frappe.db.commit()", fixture_runner)
 
     def test_legacy_fixture_sql_negative_variants_fail_closed(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8")

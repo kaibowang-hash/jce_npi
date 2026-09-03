@@ -18,7 +18,8 @@
     "Reuse existing live API, permission, idempotency, fault-truth, three-language and governed visual suites; add only one machine-readable scenario manifest, one fail-closed verifier and the smallest consolidated browser proof needed to close an evidenced gap.",
     "Require explicit traceability for project, ownership and intake, controlled documents and baselines, EBOM and MBOM, Tooling, Trial and quality, gates and readiness, ERP projections and execution requests, integration operations, change control, reporting, collaboration, security, data exchange and recovery.",
     "Before Phase 9 or release closeout, perform the mandatory full production ERPNext to LaunchFlow compatibility reconciliation under the already approved fixed read-only JCE-Core boundary, reusing the accepted inventory and reading only a bounded version, mtime, hash or missing-fact delta.",
-    "Deliver governance first; after its exact-SHA ordinary CI passes, implement the fixed UAT evidence batch, run Level 2, bind one exact-SHA ordinary CI, perform the final bounded production read-only reconciliation, and require one final diagnostics-off Level 3 and release-gate PASS before completion."
+    "Deliver governance first; after its exact-SHA ordinary CI passes, implement the fixed UAT evidence batch, run Level 2, bind one exact-SHA ordinary CI, perform the final bounded production read-only reconciliation, and require one final diagnostics-off Level 3 and release-gate PASS before completion.",
+    "Repair the recurring P8-03 migrated-legacy disposable runtime fixture by moving its already-approved exact Guard isolation immediately before the HTTP reconciliation command and proving committed zero-Guard visibility from a second fixture process; keep all diagnostics off and leave product behavior unchanged."
   ],
   "non_scope": [
     "M9-04 customer-owned real pilot, M9-05 new-tooling real pilot, production user activity, production adoption measurement or any claim that 80 percent of real users use the product.",
@@ -39,6 +40,7 @@
     "THREE_LANGUAGE_PERMISSION_AUDIT_TRACE_VERSION_IDEMPOTENCY_AND_FAULT_TRUTH_REMAIN_REQUIRED",
     "M9_04_M9_05_REAL_PILOTS_USER_APPROVED_POST_V1_2_DEFERRED",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REQUIRED_BEFORE_COMPLETION",
+    "P803_MIGRATED_LEGACY_PROBE_REQUIRES_IMMEDIATE_CROSS_PROCESS_ZERO_GUARD_VISIBILITY_BEFORE_HTTP",
     "PRODUCTION_RECONCILIATION_REUSES_ACCEPTED_INVENTORY_AND_FIXED_JCE_CORE_READ_ONLY_ALLOWLIST",
     "NO_ERPNEXT_FRAPPE_CORE_CHANGE_BROWSER_DIRECT_ERP_CROSS_DATABASE_WRITE_GENERIC_DOCTYPE_WRITER_OR_DUAL_MASTER",
     "LEVEL_1_2_3_PASS_CRITERIA"
@@ -58,10 +60,13 @@
     "implementation/uat/p9-08-controlled-uat.json",
     "scripts/collect_erpnext_production_facts.py",
     "scripts/reconcile_v1_2_traceability.py",
+    "scripts/verify-frappe-runtime.sh",
+    "scripts/verify_item_publish_runtime.py",
     "scripts/verify_phase9_controlled_uat.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
     "tests/test_erpnext_production_fact_collector.py",
+    "tests/test_phase8_item_publish_runtime_verifier.py",
     "tests/test_phase9_controlled_uat.py",
     "tests/test_v1_2_reconciliation.py",
     "frontend/tests/e2e/p9-08-controlled-uat.spec.ts"
@@ -73,6 +78,7 @@
       ["python", "scripts/collect_erpnext_production_facts.py", "self-check"],
       ["python", "-m", "unittest", "tests.test_erpnext_production_fact_collector", "-v"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_phase9_controlled_uat", "tests.test_v1_2_reconciliation", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase8_item_publish_runtime_verifier", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [

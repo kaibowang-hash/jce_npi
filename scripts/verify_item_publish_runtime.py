@@ -178,6 +178,7 @@ _LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES = (
     "P803_LEGACY_FULL_DETAIL_CONTRACT",
     "P803_LEGACY_FULL_REDACTION",
     "P803_LEGACY_FULL_BINDINGS",
+    "P803_LEGACY_FULL_PROBE_ISOLATION",
     "P803_LEGACY_FULL_RECONCILIATION_HTTP",
     "P803_LEGACY_FULL_RECONCILIATION_CONTRACT",
     "P803_LEGACY_FULL_INSPECT",
@@ -1203,6 +1204,28 @@ def run_legacy(
             ),
             "P8-03 legacy runtime binding is incomplete",
         )
+    # Isolate the disposable guard immediately before the command under test.
+    # A second fixture process proves the commit is visible across DB
+    # connections before HTTP reconstructs the reconciliation-only guard from
+    # the retained historical request.
+    with legacy_full_boundary_diagnostic_step(
+        "P803_LEGACY_FULL_PROBE_ISOLATION"
+    ):
+        probe_kwargs = {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "legacy_request_id": legacy_request_id,
+            "source_stream_key_hash": legacy_stream_hash,
+        }
+        isolated = run_bench_fixture("prepare_legacy_probe", probe_kwargs)
+        visible = run_bench_fixture("verify_legacy_probe_ready", probe_kwargs)
+        require(
+            isolated.get("guardRowsRemoved") in {0, 1}
+            and isolated.get("legacyRowRetained") is True
+            and visible
+            == {"guardRows": 0, "legacyRowRetained": True},
+            "P8-03 migrated legacy reconciliation probe was not isolated",
+        )
     with legacy_full_boundary_diagnostic_step(
         "P803_LEGACY_FULL_RECONCILIATION_HTTP"
     ):
@@ -2036,6 +2059,47 @@ def prepare_legacy_probe(
     }
 
 
+def verify_legacy_probe_ready(
+    fixture_run_id: str,
+    project_id: str,
+    legacy_request_id: str,
+    source_stream_key_hash: str,
+) -> dict[str, object]:
+    """Prove the committed legacy probe state from a second DB connection."""
+
+    import frappe
+
+    _require_disposable_legacy_fixture(fixture_run_id, project_id)
+    legacy = frappe.get_doc("NPI Item Publish Request", legacy_request_id)
+    filters = {
+        "source_stream_key_hash": source_stream_key_hash,
+        "project_global_id": project_id,
+    }
+    guards = _rows(
+        "NPI Item Publish Stream Guard",
+        filters,
+        ["name"],
+    )
+    require(
+        str(legacy.global_id) == legacy_request_id
+        and str(legacy.project_global_id) == project_id
+        and str(legacy.source_stream_key_hash) == source_stream_key_hash
+        and not legacy.target_idempotency_key_hash
+        and not legacy.service_actor_user_id
+        and not legacy.semantic_source_effect_hash
+        and not legacy.semantic_effect_hash,
+        "P8-03 committed legacy probe identity drifted",
+    )
+    require(
+        not guards,
+        "P8-03 committed legacy probe guard isolation is not visible",
+    )
+    return {
+        "guardRows": 0,
+        "legacyRowRetained": True,
+    }
+
+
 def inspect_legacy(
     fixture_run_id: str,
     project_id: str,
@@ -2837,6 +2901,7 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
         "replay_terminal": replay_terminal,
         "seed_legacy": seed_legacy,
         "prepare_legacy_probe": prepare_legacy_probe,
+        "verify_legacy_probe_ready": verify_legacy_probe_ready,
         "inspect_legacy": inspect_legacy,
         "cleanup_legacy": cleanup_legacy,
     }

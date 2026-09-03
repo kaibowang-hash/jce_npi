@@ -135,3 +135,29 @@ No production write, SQL, console, migration, service action, permission
 change, replay/reconciliation action, credential collection or core change is
 authorized. Rollback removes only the manifest, verifier, tests and P9-08
 evidence.
+
+## Final Level 3 fixture repair
+
+Final evidence candidate `1b277bae5cb1337e82b5287aa5d29ae38c901210`
+passes exact-SHA ordinary CI `33739258581` in every ordinary lane. Its
+diagnostics-off Level 3 `33739791065` passed repository, secret, frontend,
+both E2E shards, visual, aggregate and controlled preflight. The cumulative
+disposable runtime job `100600373402` then stopped at the historical P8-03
+migrated-legacy problem-code assertion; cleanup passed. No production system
+was contacted.
+
+The same family had previously been uniquely classified as a retained
+same-effect Guard. Static preflight of every remaining migrated-legacy call
+showed one avoidable interval: the fixture removed its exact disposable Guard
+before starting the Web process, then performed startup, login, context and
+read probes before the reconciliation POST. The product Guard precedence and
+expected problem contract remain correct.
+
+The product-zero repair moves the existing marker-gated exact Guard isolation
+inside `legacy-only`, immediately before the POST, and requires a second
+fixture process to observe the committed legacy row with zero Guard rows. It
+does not accept an alternate problem code, change product repositories, enable
+diagnostics, alter CI or contact production. Focused static/unit preflight is
+`31/31` PASS, Python compilation, shell syntax and diff hygiene pass. The
+single batched repair requires exact-SHA ordinary CI, followed by one
+replacement diagnostics-off Level 3.

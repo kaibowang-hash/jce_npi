@@ -81,6 +81,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "implementation/phase-9-requirement-anchor.md",
                 "implementation/uat/p9-08-controlled-uat.json",
                 "scripts/verify_phase9_controlled_uat.py",
+                "scripts/verify-frappe-runtime.sh",
+                "scripts/verify_item_publish_runtime.py",
+                "tests/test_phase8_item_publish_runtime_verifier.py",
                 "frontend/tests/e2e/p9-08-controlled-uat.spec.ts",
             }.issubset(set(value["allowed_paths"]))
         )
