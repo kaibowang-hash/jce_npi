@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_05_FINAL_GATE — P9-05`
+`IN_PROGRESS_P9_06_AUDIT_AND_PLAN — P9-06`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -17,17 +17,22 @@ passes exact-SHA ordinary CI `33702330209` and the sole diagnostics-off Level
 3 `33702723201`, including fresh cumulative disposable runtime
 `100486353074`; its `release-gate` result is PASS.
 
-P9-05 governance SHA `4d54fbef67cb9111618ded2ae2abd0cc47942167`
-passes exact-SHA ordinary CI `33704386277`. Finish the single implemented
-historical migration candidate with Level 2, one exact-SHA ordinary CI and one
-diagnostics-off Level 3. The batch remains a default-disabled non-production
-rehearsal over one exact clean private File Revision and a closed versioned
-bundle, with immutable preview/differences, partial truth, private correction,
-reconciliation and logical rollback. Do not run a production migration, contact
-production ERPNext or LaunchFlow, create a generic writer, duplicate ERP-owned
-masters, overload P6-07 or stage user-owned dirty files. P9-05 marker:
-`P9-05 historical migration implementation candidate; exact-SHA ordinary and
-Level 3 required`.
+P9-05 final SHA `22cc20294f37a21a64b00d6d6f2975e2988880f8`
+passes exact-SHA ordinary CI `33712753404` and diagnostics-off Level 3
+`33713119419`, including cumulative disposable runtime `100517575541` with
+`productionContact=false`; release-gate is PASS.
+
+Complete the P9-06 audit/plan transition for `FR-RP-010` and `NFR-COM-001`,
+push one governance checkpoint and require exact-SHA ordinary PASS. Then
+implement the frozen batch without waiting: a fixed Data Exchange capability
+catalog, two server-owned report datasets, operation-specific published export
+profiles, private immutable deterministic CSV/XLSX/PDF artifacts, explicit
+published retention-policy versions and append-only read-only archive records.
+Keep P6-07, P6-08, P5-06 and P9-05 independent. Do not add a generic writer,
+arbitrary query surface, production profile/policy, automatic deletion,
+browser/device print claim, production ERP/LaunchFlow contact or stage any
+user-owned dirty file. P9-06 marker: `P9-05 Level 3 PASS; P9-06 data exchange
+audit and plan active`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

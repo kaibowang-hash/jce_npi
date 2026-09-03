@@ -2,7 +2,7 @@
 
 Recorded: `2026-09-03`
 
-Status: `IMPLEMENTATION CANDIDATE — FINAL EXACT-SHA ORDINARY CI AND LEVEL 3 PENDING`
+Status: `PASS — EXACT-SHA ORDINARY CI AND DIAGNOSTICS-OFF LEVEL 3`
 
 ## Authorized baseline
 
@@ -73,13 +73,26 @@ LaunchFlow nor production ERPNext.
   migrations and runs the synthetic P9-05 partial/replay/stale/correction/
   reconciliation/logical-rollback verifier with `productionContact=false`.
 
-## Final evidence slots
+## Final evidence
 
-- Candidate commit: `PENDING_EXACT_SHA`
-- Exact-SHA ordinary CI: `PENDING`
-- Diagnostics-off Level 3: `PENDING`
-- Controlled runtime job/artifact/checksum: `PENDING`
-- Release-gate result: `PENDING`
+- Final candidate commit: `22cc20294f37a21a64b00d6d6f2975e2988880f8`
+- Exact-SHA ordinary CI: `33712753404` — PASS.
+- Diagnostics-off Level 3: `33713119419` — PASS.
+- Level 3 jobs: repository `100516625016`, secret `100516625106`, frontend
+  verify `100516624919`, E2E shards `100516625056` and `100516624936`, visual
+  `100516624986`, aggregate `100517507883`, controlled preflight
+  `100517526707`, and fresh cumulative disposable-Site runtime
+  `100517575541`.
+- Runtime artifact: `9877867328`; GitHub artifact digest
+  `sha256:049879854cec8da19a1949a9362f0b23e1c45b60345b45c584245820c1284d15`;
+  extracted result checksum
+  `sha256:ca42cacd916b35bad291d9d5947ecd905019b1e0f11813ebbcf2f43e5da21666`.
+- The runtime shell invokes the P9-05 verifier after authorization projection.
+  Successful completion proves the historical-migration verifier returned zero
+  and its required `productionContact=false` assertion passed. The artifact's
+  legacy scope label is descriptive drift only and does not remove that invoked
+  verifier from the fixed shell.
+- Release-gate result: `PASS`.
 
 ## First final-gate runtime result and bounded diagnostic
 

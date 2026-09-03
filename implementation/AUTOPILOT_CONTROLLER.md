@@ -11687,3 +11687,29 @@ P9-01 Level 3.
   Level 3 at the same final SHA. P9-05 and P9-06 remain gated until both pass;
   production LaunchFlow and ERPNext remain untouched.
 - Controller marker: `P9-05 historical migration implementation candidate; exact-SHA ordinary and Level 3 required`.
+
+## 2026-09-03 P9-05 Level 3 PASS; P9-06 data exchange audit and plan active
+
+- Final P9-05 SHA `22cc20294f37a21a64b00d6d6f2975e2988880f8` passes
+  exact-SHA ordinary CI `33712753404` and diagnostics-off Level 3
+  `33713119419`. Every repository, secret, frontend, E2E, visual, aggregate,
+  controlled-preflight and cumulative disposable-Site lane passes. Runtime job
+  `100517575541` proves the historical-migration verifier and
+  `productionContact=false`; artifact `9877867328` retains the accepted digest.
+  P9-05 release-gate is PASS.
+- Automatically activate P9-06 for `FR-RP-010` and `NFR-COM-001`. Preserve the
+  specialized P6-07 Tooling import, P6-08 Tooling export, P5-06 controlled
+  print, P9-02 reporting and P9-05 historical rehearsal as separate contracts.
+- Freeze only one read-only capability catalog, the existing two fixed
+  server-owned report datasets, operation-specific published export profiles,
+  deterministic bounded private CSV/XLSX/controlled-PDF artifacts, published
+  retention-policy versions and append-only read-only archive records.
+- No generic DocType/report/SQL/method/field/template dispatcher, production
+  profile or policy, automatic purge/disposition, production form/copy claim,
+  production ERPNext/LaunchFlow connection or ERP fact delta is authorized.
+  DR-REC-003 and DR-REC-004 remain held.
+- This transition changes governance and evidence only. Product code remains
+  held until its exact-SHA ordinary CI passes. Then deliver the frozen product
+  as one batch, one Level 2 and one final diagnostics-off Level 3 without
+  per-family micro-commits or approval pauses.
+- Controller marker: `P9-05 Level 3 PASS; P9-06 data exchange audit and plan active`.

@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T09:32:53+07:00`
+Updated: `2026-09-03T14:55:00+07:00`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_P9_05_FINAL_GATE — P9-05`
+- Mode: `IN_PROGRESS_P9_06_AUDIT_AND_PLAN — P9-06`
 - P9-01 exact product SHA `a439043f96976c562edb8d4af69d51c709390043`
   passes ordinary CI `33638920721` and diagnostics-off Level 3
   `33640546810`, including cumulative controlled runtime `100286234711`.
@@ -30,15 +30,20 @@ Updated: `2026-09-03T09:32:53+07:00`
   and the sole diagnostics-off Level 3 `33702723201` pass repository, secret,
   frontend, both E2E shards, governed visual, controlled preflight and fresh
   cumulative disposable runtime `100486353074`; `release-gate` is PASS.
-- P9-05 governance SHA `4d54fbef67cb9111618ded2ae2abd0cc47942167`
-  passes exact-SHA ordinary CI `33704386277`. The single frozen product batch
-  now implements the closed, default-disabled non-production rehearsal with an
-  exact private File Revision, bounded bundle, immutable preview/differences,
-  durable partial truth, private correction, reconciliation and logical
-  rollback. It contacts no production LaunchFlow or ERPNext system and creates
-  no generic writer or ERP-owned second master. Level 2, one exact-SHA ordinary
-  CI and the sole final Level 3 remain. Controller marker: `P9-05 historical
-  migration implementation candidate; exact-SHA ordinary and Level 3 required`.
+- P9-05 is complete at exact SHA
+  `22cc20294f37a21a64b00d6d6f2975e2988880f8`. Ordinary CI `33712753404`
+  and diagnostics-off Level 3 `33713119419` pass every lane, including fresh
+  cumulative disposable-Site runtime `100517575541` with
+  `productionContact=false`; `release-gate` is PASS.
+- P9-06 is active for `FR-RP-010` and `NFR-COM-001`. The audit preserves the
+  specialized P6-07 import, P6-08 Tooling export, P5-06 controlled print,
+  P9-02 reporting and P9-05 migration contracts. It freezes fixed report
+  datasets, operation-specific export profiles and explicit versioned
+  retention/archive truth only. No generic writer, production policy,
+  automatic deletion or production ERP/LaunchFlow contact is authorized.
+  Product code remains held until this transition passes exact-SHA ordinary
+  CI. Controller marker: `P9-05 Level 3 PASS; P9-06 data exchange audit and
+  plan active`.
 - Classifier SHA `749c00963a7887ce06cab2d4cb0696336e8d4e86`
   passes ordinary `33634947509`. Its sole controlled run `33636463842`
   returns the unique fixed tuple

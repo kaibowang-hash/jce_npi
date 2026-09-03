@@ -1,6 +1,6 @@
 # Phase 9 Requirement Anchor
 
-Status: `P9-04 PASS — P9-05 HISTORICAL MIGRATION FINAL GATE ACTIVE`
+Status: `P9-05 PASS — P9-06 DATA EXCHANGE AUDIT AND PLAN ACTIVE`
 
 This anchor is the product-code authorization boundary for Phase 9. It closes no
 Phase 9 requirement by itself. P9-00 exact SHA
@@ -155,8 +155,47 @@ explicitly enabled non-production Site. The worker reauthorizes the exact actor,
 File Revision, bytes, preview and manifest before processing. No target object is
 deleted by rollback, and no production or ERP connection is used.
 
-The candidate has focused domain, archive, metadata, API, security, React and
-three-language tests plus one cumulative disposable-Site verifier. P9-05 remains
-open until one candidate exact-SHA ordinary CI and the sole diagnostics-off
-Level 3 pass; neither controlled synthetic evidence nor completion may be called
-a real-project pilot.
+The final candidate at exact SHA
+`22cc20294f37a21a64b00d6d6f2975e2988880f8` passes ordinary CI
+`33712753404` and diagnostics-off Level 3 `33713119419`, including cumulative
+disposable-Site runtime `100517575541` with `productionContact=false`.
+`release-gate` is PASS and P9-05 is complete. Neither its controlled synthetic
+evidence nor completion is a real-project pilot.
+
+## P9-06 Data Exchange, export, print and retention boundary
+
+P9-06 covers `FR-RP-010` and `NFR-COM-001` only. The audited baseline already
+contains five correct specialized capabilities: P6-07 controlled Tooling XLSX
+import, P6-08 Tooling List export, P5-06 controlled print, P9-02 fixed portfolio
+and KPI reporting, and P9-05 historical rehearsal. They remain independent and
+must not be renamed, widened or routed through a generic importer, exporter,
+DocType writer, query dispatcher or print engine.
+
+The minimal additive slice is one fixed Data Exchange capability catalog and
+two server-owned versioned report datasets, `project_portfolio.v1` and
+`kpi_trends.v1`. Published operation-specific profiles allowlist dataset,
+columns, language, structural redaction and a closed CSV/XLSX/controlled-PDF
+package. Creation requires server-side permission, CSRF, exact profile version
+and hash, actor-bound idempotency and bounded deterministic generation. Every
+artifact is private, immutable, hashed and audited. Spreadsheet cells are
+formula-neutralized. The PDF is controlled report output only; browser/device
+print, numbered copies, production forms and signers remain held by
+`DR-REC-003` and `DR-REC-004`.
+
+The retention foundation is explicit rather than inferred. A published policy
+version declares one closed tenant-default, exact-customer-reference or
+exact-regulation-reference scope, effectivity interval, category years for
+project, quality, change, file, Data Exchange export and controlled print, and
+an exact hash. No production default or policy precedence is seeded. An
+append-only archive record binds one exact selected policy version to one
+allowlisted source kind, identifier, optimistic version, source hash and
+immutable snapshot/reference. It never deletes, rewrites, purges or
+automatically disposes source truth; legal-hold precedence and physical
+disposition require a future approved policy decision.
+
+This audit uses repository and already accepted P8-07F facts only. P9-06 has no
+fresh production ERP dependency and must not contact production ERPNext or
+LaunchFlow. The transition changes governance/evidence only. Product code is
+held until the transition passes exact-SHA ordinary CI, after which the frozen
+slice is delivered as one batch, one Level 2 and one final diagnostics-off
+Level 3.

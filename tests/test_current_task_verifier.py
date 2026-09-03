@@ -34,56 +34,55 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-05")
+        self.assertEqual(value["task_id"], "P9-06")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_P9_05_FINAL_GATE")
+        self.assertEqual(value["status"], "IN_PROGRESS_P9_06_AUDIT_AND_PLAN")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P9-06")
+        self.assertEqual(value["authorized_next_task"], "P9-07")
         self.assertEqual(
             value["requirement_ids"],
-            ["FR-RP-008", "NFR-DAT-001"],
+            ["FR-RP-010", "NFR-COM-001"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "fa82f3e3dcc7a9474ea51a1356130d5cbc02adee",
+            "22cc20294f37a21a64b00d6d6f2975e2988880f8",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "fa82f3e3dcc7a9474ea51a1356130d5cbc02adee",
+            "22cc20294f37a21a64b00d6d6f2975e2988880f8",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "P9-05",
+                "phase_status_current_task": "P9-06",
                 "phase_status_execution_hold": "NONE",
-                "phase_status_resumed_product_task": "P9-05",
-                "active_goal_marker": "P9-05",
-                "next_action_marker": "P9-05",
-                "controller_marker": "P9-05 historical migration implementation candidate; exact-SHA ordinary and Level 3 required",
+                "phase_status_resumed_product_task": "P9-06",
+                "active_goal_marker": "P9-06",
+                "next_action_marker": "P9-06",
+                "controller_marker": "P9-05 Level 3 PASS; P9-06 data exchange audit and plan active",
             },
         )
         for invariant in (
-            "P9_04_EXACT_SHA_FA82F3E3_ORDINARY_33702330209_AND_LEVEL3_33702723201_PASS",
-            "P9_05_GOVERNANCE_SHA_4D54FBEF_ORDINARY_33704386277_PASS_PRODUCT_CODE_AUTHORIZED",
-            "HISTORICAL_MIGRATION_IS_OPERATION_SPECIFIC_NON_PRODUCTION_REHEARSAL_NOT_A_GENERIC_WRITER",
-            "SOURCE_IS_ONE_AUTHORIZED_CLEAN_PRIVATE_FILE_REVISION_WITH_EXACT_BYTES_HASH_SCHEMA_VERSION_AND_MANIFEST_HASH",
-            "REQUIRED_UNIQUE_ENUM_REFERENCE_VERSION_AND_OWNERSHIP_VALIDATION_PRECEDES_ANY_MUTATION",
-            "PREVIEW_IS_IMMUTABLE_NON_MUTATING_AND_REPORTS_CREATE_LINK_SKIP_BLOCKED_AND_EXACT_DIFFERENCES",
-            "PARTIAL_ROWS_REMAIN_PARTIAL_CORRECTION_IS_FAILURE_ONLY_AND_ANY_SUCCESSOR_REENTERS_FULL_PREVIEW_VALIDATION",
-            "ROLLBACK_ONLY_CHANGES_EXACT_UNCHANGED_NON_PROJECT_BINDINGS_ALL_TARGETS_RETAINED_OTHERWISE_FORWARD_CORRECTION",
-            "ERP_OWNED_TRUTH_REMAINS_REFERENCE_ONLY_AND_NO_PRODUCTION_ERP_FACT_DELTA_IS_NEEDED_FOR_P9_05",
+            "P9_05_EXACT_SHA_22CC2029_ORDINARY_33712753404_AND_LEVEL3_33713119419_PASS",
+            "P9_05_RUNTIME_JOB_100517575541_ARTIFACT_9877867328_PRODUCTION_CONTACT_FALSE",
+            "DATA_EXCHANGE_IS_A_FIXED_CAPABILITY_CATALOG_NOT_A_GENERIC_IMPORT_EXPORT_OR_DOCTYPE_WRITER",
+            "REPORT_DATASETS_ARE_SERVER_OWNED_VERSIONED_PERMISSION_FILTERED_AND_LIMITED_TO_PROJECT_PORTFOLIO_V1_AND_KPI_TRENDS_V1",
+            "EXPORT_PROFILES_ARE_PUBLISHED_VERSIONED_OPERATION_SPECIFIC_AND_ALLOWLIST_DATASET_COLUMNS_REDACTION_FORMAT_AND_BOUNDS",
+            "EXPORT_ARTIFACTS_ARE_PRIVATE_IMMUTABLE_HASHED_AUDITED_FORMULA_NEUTRALIZED_ACTOR_BOUND_AND_IDEMPOTENT",
+            "RETENTION_POLICIES_ARE_EXPLICIT_PUBLISHED_VERSIONS_WITH_CLOSED_SCOPE_EFFECTIVITY_CATEGORY_YEARS_AND_HASH",
+            "ARCHIVE_RECORDS_ARE_APPEND_ONLY_READ_ONLY_REFERENCES_TO_EXACT_SOURCE_VERSION_HASH_AND_POLICY_VERSION",
+            "NO_PRODUCTION_ERPNEXT_OR_LAUNCHFLOW_CONTACT_AND_NO_NEW_ERP_FACT_DEPENDENCY_FOR_P9_06",
             "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_RELEASE_CLOSEOUT",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "implementation/evidence/phase-9/p9-04-validation.md",
-                "implementation/evidence/phase-9/p9-05-plan.md",
                 "implementation/evidence/phase-9/p9-05-validation.md",
+                "implementation/evidence/phase-9/p9-06-plan.md",
                 "implementation/phase-9-requirement-anchor.md",
-                "apps/npi_core/npi_core/historical_migration/frappe_repository.py",
-                "frontend/src/pages/historical-migration-workspace.tsx",
-                "scripts/verify_historical_migration_runtime.py",
+                "apps/npi_core/npi_core/data_exchange/frappe_repository.py",
+                "frontend/src/pages/data-exchange-workspace.tsx",
+                "scripts/verify_data_exchange_runtime.py",
             }.issubset(set(value["allowed_paths"]))
         )
         self.assertFalse(any("*" in path for path in value["allowed_paths"]))
