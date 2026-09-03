@@ -680,9 +680,7 @@ function ConfigurationTable({
       capability: t("LaunchFlow user provisioning"),
       authority: t("JCE Core"),
       state: activation.localUserProvisioningState,
-      action: t(
-        "Implement idempotent internal-user provisioning before enabling sign-in.",
-      ),
+      action: t("No change"),
     },
     {
       key: "erp-business-adapters",

@@ -126,6 +126,18 @@ EXPECTED_PERMISSION_CALLS = Counter(
             "document",
             "insert",
         ): 1,
+        (
+            str(AUTHORIZATION_PROJECTION_ROOT / "frappe_validation.py"),
+            "insert_provisioned_user",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(AUTHORIZATION_PROJECTION_ROOT / "frappe_validation.py"),
+            "save_provisioned_user",
+            "document",
+            "save",
+        ): 1,
     }
 )
 
@@ -198,7 +210,7 @@ def _scan_permission_paths(paths: list[Path] | tuple[Path, ...]):
 
 
 class Phase8ItemPublishSecurityTest(unittest.TestCase):
-    def test_ignore_permissions_is_exactly_seventeen_controlled_calls(self) -> None:
+    def test_ignore_permissions_is_exactly_nineteen_controlled_calls(self) -> None:
         calls, violations = _scan_permission_paths(tuple(APP_ROOT.rglob("*.py")))
         self.assertEqual(violations, [])
         self.assertEqual(Counter(calls), EXPECTED_PERMISSION_CALLS)

@@ -130,6 +130,8 @@ def replace_user_authorization(
             "state": outcome.state,
             "projectionHash": outcome.projection_hash,
             "exactReplay": outcome.exact_replay,
+            "localUserState": outcome.local_user_state,
+            "localUserDisposition": outcome.local_user_disposition,
             "requestId": str(request_id),
             "traceId": event.trace_id,
         }

@@ -81,7 +81,12 @@ describe("Portfolio reporting workspace", () => {
     ).toBeVisible();
     expect(
       within(readiness).getAllByText("Implementation required"),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
+    const provisioning = within(readiness).getByRole("row", {
+      name: /LaunchFlow user provisioning/u,
+    });
+    expect(within(provisioning).getByText("Ready")).toBeVisible();
+    expect(within(provisioning).getByText("No change")).toBeVisible();
     expect(
       within(readiness).getByRole("link", {
         name: "Open Frappe administration",

@@ -80,7 +80,7 @@ def event_mapping(
     }
 
 
-def ensure_user(user_id: str, roles: tuple[str, ...]) -> None:
+def ensure_service_user(user_id: str) -> None:
     import frappe
 
     require(not frappe.db.exists("User", user_id), "P9-04 runtime user already exists")
@@ -92,7 +92,10 @@ def ensure_user(user_id: str, roles: tuple[str, ...]) -> None:
             "first_name": "P9 Authorization",
             "last_name": "Runtime Fixture",
             "language": "en",
-            "roles": [{"role": role} for role in roles],
+            "roles": [
+                {"role": "Desk User"},
+                {"role": "NPI API User"},
+            ],
             "send_welcome_email": 0,
             "user_type": "System User",
         }
@@ -120,8 +123,11 @@ def verify_runtime_projection(fixture_run_id: str) -> dict[str, object]:
     )
     service_user = f"p9-04-service-{fixture_run_id}@example.invalid"
     target_user = f"p9-04-member-{fixture_run_id}@example.invalid"
-    ensure_user(service_user, ("Desk User", "NPI API User"))
-    ensure_user(target_user, ("Desk User",))
+    ensure_service_user(service_user)
+    require(
+        not frappe.db.exists("User", target_user),
+        "P9-04 target User must be absent before governed provisioning",
+    )
     now = datetime.now(UTC).replace(microsecond=0)
     frappe.conf["npi_p9_04_authorization_role_allowlist"] = ["NPI API User"]
     frappe.conf["npi_p9_04_authorization_max_ttl_seconds"] = 7200
@@ -145,10 +151,26 @@ def verify_runtime_projection(fixture_run_id: str) -> dict[str, object]:
     )
     first = repository.apply(first_event)
     replay = repository.apply(first_event)
+    local_user = frappe.db.get_value(
+        "User",
+        target_user,
+        ["enabled", "user_type", "send_welcome_email"],
+        as_dict=True,
+    )
+    local_roles = set(frappe.get_roles(target_user) or ())
     resolved = resolve_authorization_projection(target_user, TENANT_ID, now)
     require(
         first.state == "enabled"
+        and first.local_user_state == "enabled"
+        and first.local_user_disposition == "created"
         and replay.exact_replay is True
+        and replay.local_user_disposition == "exact_replay"
+        and local_user
+        and int(local_user.get("enabled") or 0) == 1
+        and local_user.get("user_type") == "System User"
+        and int(local_user.get("send_welcome_email") or 0) == 0
+        and "Desk User" in local_roles
+        and "System Manager" not in local_roles
         and isinstance(resolved, dict)
         and resolved.get("roles") == ("NPI API User",)
         and resolved.get("project_access")
@@ -200,6 +222,12 @@ def verify_runtime_projection(fixture_run_id: str) -> dict[str, object]:
             )
         )
     )
+    disabled_user = frappe.db.get_value(
+        "User",
+        target_user,
+        ["enabled", "user_type"],
+        as_dict=True,
+    )
     frappe.set_user(target_user)
     try:
         authenticated_principal()
@@ -218,6 +246,11 @@ def verify_runtime_projection(fixture_run_id: str) -> dict[str, object]:
     require(
         stale_rejected
         and disabled.state == "disabled"
+        and disabled.local_user_state == "disabled"
+        and disabled.local_user_disposition == "disabled"
+        and disabled_user
+        and int(disabled_user.get("enabled") or 0) == 0
+        and disabled_user.get("user_type") == "System User"
         and disabled_rejected
         and projection_count == 1
         and audit_count == 2,
@@ -227,6 +260,8 @@ def verify_runtime_projection(fixture_run_id: str) -> dict[str, object]:
         "auditCount": audit_count,
         "disabledFailsClosed": disabled_rejected,
         "exactReplay": replay.exact_replay,
+        "localUserCreated": first.local_user_disposition == "created",
+        "localUserDisabled": int(disabled_user.get("enabled") or 0) == 0,
         "projectionCount": projection_count,
         "staleRejected": stale_rejected,
     }
@@ -273,12 +308,16 @@ def run_bench_fixture() -> dict[str, Any]:
             "disabledFailsClosed",
             "evidenceChecksum",
             "exactReplay",
+            "localUserCreated",
+            "localUserDisabled",
             "projectionCount",
             "staleRejected",
         }
         and result.get("auditCount") == 2
         and result.get("disabledFailsClosed") is True
         and result.get("exactReplay") is True
+        and result.get("localUserCreated") is True
+        and result.get("localUserDisabled") is True
         and result.get("projectionCount") == 1
         and result.get("staleRejected") is True
         and re.fullmatch(r"[a-f0-9]{64}", str(result.get("evidenceChecksum"))),

@@ -3159,7 +3159,6 @@ const messages: Readonly<Record<string, string>> = {
   "Impact: the server freezes this released source, current profile and mapping expectation, then commits an auditable request before any worker may cross an adapter boundary.": "影響：伺服器會凍結此已發佈來源、目前設定檔和映射預期，並在任何工作器跨越適配器邊界前提交可稽核請求。",
   "Implement and verify each operation-specific ERPNext business adapter.": "逐項實施並驗證操作專用 ERPNext 業務配接器。",
   "Implement and verify the operation-specific ERPNext sender.": "實施並驗證操作專用 ERPNext 發送器。",
-  "Implement idempotent internal-user provisioning before enabling sign-in.": "啟用登入前實施冪等的內部使用者預先佈建。",
   "Implementation required": "需要實施",
   "Implementation summary request state": "實施摘要請求狀態",
   "Implementation Task Snapshot": "實施任務快照",

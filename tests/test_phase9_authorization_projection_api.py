@@ -138,6 +138,8 @@ class AuthorizationProjectionApiTest(unittest.TestCase):
                     state="enabled",
                     projection_hash=event.projection_hash,
                     exact_replay=True,
+                    local_user_state="enabled",
+                    local_user_disposition="exact_replay",
                 )
 
         self.module.FrappeAuthorizationProjectionRepository = Repository
@@ -147,6 +149,8 @@ class AuthorizationProjectionApiTest(unittest.TestCase):
         self.assertEqual(result["projectionId"], str(UUID(int=942)))
         self.assertEqual(result["sourceVersion"], 4)
         self.assertTrue(result["exactReplay"])
+        self.assertEqual(result["localUserState"], "enabled")
+        self.assertEqual(result["localUserDisposition"], "exact_replay")
         self.assertEqual(result["requestId"], REQUEST_ID)
         self.assertEqual(self.frappe.local.response.http_status_code, 200)
         self.assertEqual(

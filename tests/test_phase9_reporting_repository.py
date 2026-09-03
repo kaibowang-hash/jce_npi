@@ -270,7 +270,7 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
         )
         self.assertEqual(
             result["activation"]["localUserProvisioningState"],
-            "implementation_required",
+            "ready",
         )
 
     def test_activation_status_reads_only_non_secret_exact_configuration(self) -> None:

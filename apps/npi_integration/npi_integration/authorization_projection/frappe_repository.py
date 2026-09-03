@@ -20,9 +20,12 @@ from npi_integration.authorization_projection.domain import (
     utc_text,
 )
 from npi_integration.authorization_projection.frappe_validation import (
+    AuthorizationProjectionWriteCapability,
     authorization_projection_write,
+    insert_provisioned_user,
     insert_projection_audit,
     insert_projection_document,
+    save_provisioned_user,
     save_projection_document,
 )
 
@@ -34,6 +37,14 @@ class ApplyOutcome:
     state: str
     projection_hash: str
     exact_replay: bool
+    local_user_state: str
+    local_user_disposition: str
+
+
+@dataclass(frozen=True, slots=True)
+class LocalUserOutcome:
+    state: str
+    disposition: str
 
 
 class FrappeAuthorizationProjectionRepository:
@@ -58,13 +69,20 @@ class FrappeAuthorizationProjectionRepository:
             allowed_roles=allowed_roles,
             max_ttl=max_ttl,
         )
-        _require_target_user(event)
         projection_id = event.projection_id(self.tenant_id)
         existing = _locked_projection(projection_id)
         if existing is not None:
-            replay = _classify_existing(existing, event)
-            if replay is not None:
-                return replay
+            if _classify_existing(existing, event):
+                local_user = _require_replay_local_user(event, actor=self.actor)
+                return ApplyOutcome(
+                    projection_id=UUID(str(existing.global_id)),
+                    source_version=int(existing.source_version),
+                    state=str(existing.state),
+                    projection_hash=str(existing.projection_hash),
+                    exact_replay=True,
+                    local_user_state=local_user.state,
+                    local_user_disposition="exact_replay",
+                )
         state = "enabled" if event.enabled else "disabled"
         values = {
             "global_id": str(projection_id),
@@ -91,7 +109,15 @@ class FrappeAuthorizationProjectionRepository:
             "request_id": str(self.request_id),
         }
         prior_hash = str(getattr(existing, "projection_hash", "")) or None
-        with authorization_projection_write(self.actor) as capability:
+        with authorization_projection_write(
+            self.actor,
+            event.target_user_id,
+        ) as capability:
+            local_user = _synchronize_local_user(
+                event,
+                actor=self.actor,
+                capability=capability,
+            )
             if existing is None:
                 projection = frappe.get_doc(
                     {"doctype": "NPI Authorization Projection", **values}
@@ -120,6 +146,8 @@ class FrappeAuthorizationProjectionRepository:
                         "roleCount": len(event.roles),
                         "projectScopeCount": len(event.project_scopes),
                         "organizationScopeCount": len(event.organization_scopes),
+                        "localUserState": local_user.state,
+                        "localUserDisposition": local_user.disposition,
                     },
                 }
             )
@@ -130,6 +158,8 @@ class FrappeAuthorizationProjectionRepository:
             state=state,
             projection_hash=event.projection_hash,
             exact_replay=False,
+            local_user_state=local_user.state,
+            local_user_disposition=local_user.disposition,
         )
 
 
@@ -225,19 +255,20 @@ def resolve_authorization_projection(
 def _classify_existing(
     existing: Any,
     event: AuthorizationProjectionEvent,
-) -> ApplyOutcome | None:
+) -> bool:
     existing_event_id = str(getattr(existing, "source_event_id", ""))
     existing_event_hash = str(getattr(existing, "source_event_hash", ""))
     if existing_event_id == str(event.event_id):
-        if existing_event_hash != event.event_hash:
+        if (
+            existing_event_hash != event.event_hash
+            or int(getattr(existing, "source_version", 0)) != event.source_version
+            or str(getattr(existing, "state", ""))
+            != ("enabled" if event.enabled else "disabled")
+            or str(getattr(existing, "projection_hash", ""))
+            != event.projection_hash
+        ):
             raise VersionConflict()
-        return ApplyOutcome(
-            projection_id=UUID(str(existing.global_id)),
-            source_version=int(existing.source_version),
-            state=str(existing.state),
-            projection_hash=str(existing.projection_hash),
-            exact_replay=True,
-        )
+        return True
     if (
         str(getattr(existing, "source_subject_hash", ""))
         != event.source_subject_hash
@@ -246,7 +277,7 @@ def _classify_existing(
         or event.issued_at < _stored_utc(getattr(existing, "issued_at", None))
     ):
         raise VersionConflict()
-    return None
+    return False
 
 
 def _validate_event_policy(
@@ -303,21 +334,94 @@ def _projection_policy() -> tuple[frozenset[str], timedelta]:
     return frozenset(roles), timedelta(seconds=ttl)
 
 
-def _require_target_user(event: AuthorizationProjectionEvent) -> None:
-    record = frappe.db.get_value(
-        "User",
-        event.target_user_id,
-        ["enabled", "user_type"],
-        as_dict=True,
+def _synchronize_local_user(
+    event: AuthorizationProjectionEvent,
+    *,
+    actor: str,
+    capability: AuthorizationProjectionWriteCapability,
+) -> LocalUserOutcome:
+    if event.target_user_id == actor or event.target_user_id in {
+        "Administrator",
+        "Guest",
+    }:
+        raise PermissionDenied()
+    user = _locked_local_user(event.target_user_id)
+    if user is None:
+        if not event.enabled:
+            return LocalUserOutcome("absent_disabled", "absent_disabled")
+        first_name = event.target_user_id.split("@", 1)[0]
+        user = frappe.get_doc(
+            {
+                "doctype": "User",
+                "email": event.target_user_id,
+                "enabled": 1,
+                "first_name": first_name,
+                "roles": [{"role": "Desk User"}],
+                "send_welcome_email": 0,
+                "user_type": "System User",
+            }
+        )
+        user.flags.no_welcome_mail = True
+        insert_provisioned_user(user, capability=capability)
+        return LocalUserOutcome("enabled", "created")
+    _require_managed_local_user(user, event.target_user_id)
+    desired = 1 if event.enabled else 0
+    current = int(getattr(user, "enabled", 0) or 0)
+    if current == desired:
+        return LocalUserOutcome(
+            "enabled" if desired else "disabled",
+            "retained",
+        )
+    user.enabled = desired
+    user.send_welcome_email = 0
+    user.flags.no_welcome_mail = True
+    save_provisioned_user(user, capability=capability)
+    return LocalUserOutcome(
+        "enabled" if desired else "disabled",
+        "enabled" if desired else "disabled",
     )
-    enabled = record.get("enabled") if hasattr(record, "get") else None
-    user_type = record.get("user_type") if hasattr(record, "get") else None
+
+
+def _require_replay_local_user(
+    event: AuthorizationProjectionEvent,
+    *,
+    actor: str,
+) -> LocalUserOutcome:
+    if event.target_user_id == actor or event.target_user_id in {
+        "Administrator",
+        "Guest",
+    }:
+        raise PermissionDenied()
+    user = _locked_local_user(event.target_user_id)
+    if user is None:
+        if event.enabled:
+            raise VersionConflict()
+        return LocalUserOutcome("absent_disabled", "exact_replay")
+    _require_managed_local_user(user, event.target_user_id)
+    expected = 1 if event.enabled else 0
+    if int(getattr(user, "enabled", 0) or 0) != expected:
+        raise VersionConflict()
+    return LocalUserOutcome(
+        "enabled" if expected else "disabled",
+        "exact_replay",
+    )
+
+
+def _require_managed_local_user(user: Any, target_user_id: str) -> None:
     if (
-        not record
-        or user_type != "System User"
-        or (event.enabled and int(enabled or 0) != 1)
+        str(getattr(user, "name", "")) != target_user_id
+        or str(getattr(user, "email", "")) != target_user_id
+        or str(getattr(user, "user_type", "")) != "System User"
+        or "System Manager" in set(frappe.get_roles(target_user_id) or ())
     ):
         raise PermissionDenied()
+
+
+def _locked_local_user(target_user_id: str) -> Any | None:
+    try:
+        return frappe.get_doc("User", target_user_id, for_update=True)
+    except frappe.DoesNotExistError:
+        return None
 
 
 def _locked_projection(projection_id: UUID) -> Any | None:

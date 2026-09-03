@@ -9351,7 +9351,6 @@ Authorization projection policy,授權投影政策
 No change,無需變更
 Configure the exact role allowlist and projection validity window.,設定精確的角色允許清單和投影有效期。
 LaunchFlow user provisioning,LaunchFlow 使用者預先佈建
-Implement idempotent internal-user provisioning before enabling sign-in.,啟用登入前實施冪等的內部使用者預先佈建。
 ERPNext authorization sender,ERPNext 授權發送器
 Implement and verify the operation-specific ERPNext sender.,實施並驗證操作專用 ERPNext 發送器。
 ERPNext business adapters,ERPNext 業務配接器

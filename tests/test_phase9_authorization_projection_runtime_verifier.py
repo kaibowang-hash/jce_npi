@@ -57,12 +57,16 @@ class AuthorizationProjectionRuntimeVerifierTest(unittest.TestCase):
             '"exactReplay"',
             '"staleRejected"',
             '"disabledFailsClosed"',
+            '"localUserCreated"',
+            '"localUserDisabled"',
+            '"send_welcome_email"',
             'frappe.db.rollback()',
             '"productionContact": False',
             "authenticated_principal()",
         ):
             self.assertIn(literal, self.source)
         self.assertNotIn("frappe.db" + ".sql", self.source)
+        self.assertEqual(self.source.count("ensure_service_user("), 2)
 
     def test_bench_child_output_is_unread_on_failure(self) -> None:
         function = self.source[

@@ -730,7 +730,7 @@ def _production_activation_status() -> dict[str, object]:
         "authorizationPolicyState": (
             "configured" if policy_is_configured else "not_configured"
         ),
-        "localUserProvisioningState": "implementation_required",
+        "localUserProvisioningState": "ready",
         "erpAuthorizationSenderState": "external_verification_required",
         "erpBusinessAdaptersState": "implementation_required",
         "supportAdministrationPath": "/app",

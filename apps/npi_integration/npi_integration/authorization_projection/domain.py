@@ -20,6 +20,11 @@ MAX_PROJECT_SCOPES = 256
 MAX_ORGANIZATION_SCOPES = 256
 PROJECTION_NAMESPACE = UUID("e9f58a77-e1cf-4c72-9d3d-b8d871c56255")
 _IDENTIFIER = re.compile(r"^[^\s\x00-\x1f\x7f]{1,255}$")
+_EMAIL = re.compile(
+    r"^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
+    r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?"
+    r"(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$"
+)
 _ROLE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 _./:&()-]{0,127}$")
 _TENANT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
 _TRACE = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
@@ -155,7 +160,7 @@ class AuthorizationProjectionEvent:
             source_subject_id=_identifier(
                 source["sourceSubjectId"], "sourceSubjectId"
             ),
-            target_user_id=_identifier(source["targetUserId"], "targetUserId"),
+            target_user_id=_email(source["targetUserId"]),
             source_version=_positive(source["sourceVersion"], "sourceVersion"),
             enabled=enabled,
             roles=roles,
@@ -247,6 +252,17 @@ def canonical_json(value: object) -> str:
 
 def canonical_hash(value: object) -> str:
     return hashlib.sha256(canonical_json(value).encode()).hexdigest()
+
+
+def _email(value: object) -> str:
+    candidate = _identifier(value, "targetUserId")
+    if (
+        len(candidate) > 254
+        or candidate != candidate.casefold()
+        or _EMAIL.fullmatch(candidate) is None
+    ):
+        raise AuthorizationProjectionError("targetUserId is invalid.")
+    return candidate
 
 
 def projection_id_for(tenant_id: str, user_id: str) -> UUID:

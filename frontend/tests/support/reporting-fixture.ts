@@ -143,7 +143,7 @@ export function configurationFixture(): ConfigurationCapabilityCatalog {
       authorizationIngressState: "disabled",
       authorizationEnforcementState: "disabled",
       authorizationPolicyState: "not_configured",
-      localUserProvisioningState: "implementation_required",
+      localUserProvisioningState: "ready",
       erpAuthorizationSenderState: "external_verification_required",
       erpBusinessAdaptersState: "implementation_required",
       supportAdministrationPath: "/app",

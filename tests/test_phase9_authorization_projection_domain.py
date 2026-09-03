@@ -119,6 +119,20 @@ class Phase9AuthorizationProjectionDomainTest(unittest.TestCase):
         with self.assertRaises(AuthorizationProjectionError):
             AuthorizationProjectionEvent.from_mapping(event_mapping(enabled=1))
 
+    def test_target_user_is_one_canonical_email_identity(self) -> None:
+        for target_user_id in (
+            "Member@example.invalid",
+            "member",
+            "member@example",
+            " member@example.invalid",
+            "member@example.invalid ",
+        ):
+            with self.subTest(target_user_id=target_user_id):
+                with self.assertRaises(AuthorizationProjectionError):
+                    AuthorizationProjectionEvent.from_mapping(
+                        event_mapping(targetUserId=target_user_id)
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -129,15 +129,24 @@ The approved ownership is fixed:
   authorization projection received through the operation-specific service
   route.
 
-The current V1.2 code requires the target Frappe System User to exist before an
-authorization projection is accepted. Automated, idempotent internal-user
-provisioning and the ERPNext sender are therefore shown as incomplete and both
-authorization switches must remain disabled. Do not use self signup or manual
-role duplication as a workaround.
+The authorization projection now provisions a missing target as a local Frappe
+System User when the canonical lowercase email identity is enabled. The local
+record receives only the technical `Desk User` role required by Frappe, derives
+its initial display label from the email local part, suppresses welcome mail and
+never accepts or sets a password, MFA factor, provider secret or NPI business
+role. A later full replacement enables or disables that same local User in the
+same database transaction as the projection and audit. Existing Website Users,
+System Managers, standard users and the service actor itself are never promoted
+or taken over.
 
-After a separately reviewed provisioning/sender task and version-equivalent
-Sandbox tests pass, configure the exact approved non-secret policy before
-activation:
+The local provisioning boundary is therefore available, but the ERPNext sender
+and its exact identity/role/scope mapping still require a separately reviewed
+custom-app task and version-equivalent Sandbox proof. Both authorization
+switches must remain disabled until that external sender evidence passes. Do not
+use self signup or manual role duplication as a workaround.
+
+After the separately reviewed sender task and version-equivalent Sandbox tests
+pass, configure the exact approved non-secret policy before activation:
 
 ```text
 bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_role_allowlist '<approved-sorted-json-role-array>'

@@ -164,7 +164,7 @@ export interface ConfigurationCapabilityCatalog {
     authorizationIngressState: "enabled" | "disabled";
     authorizationEnforcementState: "enabled" | "disabled";
     authorizationPolicyState: "configured" | "not_configured";
-    localUserProvisioningState: "implementation_required";
+    localUserProvisioningState: "ready";
     erpAuthorizationSenderState: "external_verification_required";
     erpBusinessAdaptersState: "implementation_required";
     supportAdministrationPath: "/app";
@@ -660,7 +660,7 @@ export function isConfigurationCapabilityCatalog(
       value.activation.authorizationEnforcementState === "disabled") &&
     (value.activation.authorizationPolicyState === "configured" ||
       value.activation.authorizationPolicyState === "not_configured") &&
-    value.activation.localUserProvisioningState === "implementation_required" &&
+    value.activation.localUserProvisioningState === "ready" &&
     value.activation.erpAuthorizationSenderState ===
       "external_verification_required" &&
     value.activation.erpBusinessAdaptersState === "implementation_required" &&

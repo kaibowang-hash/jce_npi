@@ -97,7 +97,12 @@ test("shows server-observed access and ERPNext activation truth", async ({
   await expect(
     readiness.getByText("LaunchFlow user provisioning"),
   ).toBeVisible();
-  await expect(readiness.getByText("Implementation required")).toHaveCount(2);
+  await expect(readiness.getByText("Implementation required")).toHaveCount(1);
+  const provisioning = readiness.getByRole("row", {
+    name: /LaunchFlow user provisioning/u,
+  });
+  await expect(provisioning.getByText("Ready")).toBeVisible();
+  await expect(provisioning.getByText("No change")).toBeVisible();
   await expect(
     readiness.getByRole("link", { name: "Open Frappe administration" }),
   ).toHaveAttribute("href", "/app");

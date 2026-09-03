@@ -59,14 +59,20 @@ def event_mapping(**changes: object) -> dict[str, object]:
 
 
 class AttrDict(dict):
-    __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
+
+    def __getattr__(self, name: str):
+        try:
+            return self[name]
+        except KeyError as error:
+            raise AttributeError(name) from error
 
 
 class FakeDocument(AttrDict):
     def __init__(self, owner: "ProjectionRepositoryTest", values: dict[str, object]):
         super().__init__(values)
         self.owner = owner
+        self.flags = types.SimpleNamespace()
 
     def insert(self, *, ignore_permissions: bool = False):
         if not ignore_permissions:
@@ -78,14 +84,31 @@ class FakeDocument(AttrDict):
             self.owner.projections[self.name] = self
         elif self.doctype == "NPI Audit Event":
             self.owner.audits.append(self)
+        elif self.doctype == "User":
+            self.name = self.email
+            if self.name in self.owner.users:
+                raise self.owner.frappe.DuplicateEntryError()
+            self.user_type = (
+                "System User"
+                if [role.get("role") for role in self.roles] == ["Desk User"]
+                else "Website User"
+            )
+            self.owner.users[self.name] = self
+            self.owner.user_writes.append((self.name, "created", int(self.enabled)))
         else:
             raise AssertionError(self.doctype)
         return self
 
     def save(self, *, ignore_permissions: bool = False):
-        if not ignore_permissions or self.doctype != "NPI Authorization Projection":
-            raise AssertionError("Controlled projection save expected.")
-        self.owner.projections[self.name] = self
+        if not ignore_permissions:
+            raise AssertionError("Controlled save expected.")
+        if self.doctype == "NPI Authorization Projection":
+            self.owner.projections[self.name] = self
+        elif self.doctype == "User":
+            self.owner.users[self.name] = self
+            self.owner.user_writes.append((self.name, "saved", int(self.enabled)))
+        else:
+            raise AssertionError("Controlled projection or User save expected.")
         return self
 
     def update(self, values: dict[str, object]) -> None:
@@ -125,9 +148,24 @@ class ProjectionRepositoryTest(unittest.TestCase):
             sys.modules.pop(name, None)
         self.projections: dict[str, FakeDocument] = {}
         self.audits: list[FakeDocument] = []
+        self.user_writes: list[tuple[str, str, int]] = []
         self.users = {
-            ACTOR: {"enabled": 1, "user_type": "System User"},
-            TARGET: {"enabled": 1, "user_type": "System User"},
+            ACTOR: {
+                "doctype": "User",
+                "name": ACTOR,
+                "email": ACTOR,
+                "enabled": 1,
+                "user_type": "System User",
+                "roles": [{"role": "NPI API User"}],
+            },
+            TARGET: {
+                "doctype": "User",
+                "name": TARGET,
+                "email": TARGET,
+                "enabled": 1,
+                "user_type": "System User",
+                "roles": [{"role": "Desk User"}],
+            },
         }
         frappe = types.ModuleType("frappe")
         frappe._ = lambda source: source
@@ -137,7 +175,10 @@ class ProjectionRepositoryTest(unittest.TestCase):
             "npi_p9_04_authorization_role_allowlist": ["NPI Engineer", "NPI Reviewer"],
             "npi_p9_04_authorization_max_ttl_seconds": 7200,
         }
-        frappe.get_roles = lambda user: ["NPI API User"] if user == ACTOR else []
+        frappe.get_roles = lambda user: [
+            str(role["role"])
+            for role in self.users.get(user, {}).get("roles", [])
+        ]
         frappe.PermissionError = type("PermissionError", (Exception,), {})
         frappe.ValidationError = type("ValidationError", (Exception,), {})
         frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
@@ -150,7 +191,17 @@ class ProjectionRepositoryTest(unittest.TestCase):
             if len(args) == 1 and isinstance(args[0], dict):
                 return FakeDocument(self, dict(args[0]))
             if len(args) == 2 and kwargs == {"for_update": True}:
-                document = self.projections.get(str(args[1]))
+                if args[0] == "NPI Authorization Projection":
+                    document = self.projections.get(str(args[1]))
+                elif args[0] == "User":
+                    values = self.users.get(str(args[1]))
+                    document = (
+                        values
+                        if isinstance(values, FakeDocument)
+                        else FakeDocument(self, dict(values)) if values else None
+                    )
+                else:
+                    raise AssertionError((args, kwargs))
                 if document is None:
                     raise frappe.DoesNotExistError()
                 return document
@@ -205,11 +256,14 @@ class ProjectionRepositoryTest(unittest.TestCase):
         self.assertTrue(replayed.exact_replay)
         self.assertEqual(replaced.source_version, 2)
         self.assertEqual(disabled.state, "disabled")
+        self.assertEqual(disabled.local_user_state, "disabled")
+        self.assertEqual(disabled.local_user_disposition, "disabled")
+        self.assertEqual(int(self.users[TARGET]["enabled"]), 0)
         self.assertEqual(len(self.projections), 1)
         self.assertEqual(len(self.audits), 3)
         self.assertEqual([audit.result for audit in self.audits], ["created", "replaced", "disabled"])
 
-    def test_stale_conflict_unapproved_role_and_disabled_target_fail_closed(self) -> None:
+    def test_stale_conflict_unapproved_role_and_website_target_fail_closed(self) -> None:
         first = AuthorizationProjectionEvent.from_mapping(event_mapping())
         self.repository().apply(first)
         with self.assertRaises(VersionConflict):
@@ -228,7 +282,7 @@ class ProjectionRepositoryTest(unittest.TestCase):
                     )
                 )
             )
-        self.users[TARGET]["enabled"] = 0
+        self.users[TARGET]["user_type"] = "Website User"
         with self.assertRaises(PermissionDenied):
             self.repository().apply(
                 AuthorizationProjectionEvent.from_mapping(
@@ -238,6 +292,100 @@ class ProjectionRepositoryTest(unittest.TestCase):
                     )
                 )
             )
+
+    def test_missing_user_is_passwordless_provisioned_replayed_disabled_and_enabled(self) -> None:
+        self.users.pop(TARGET)
+        first_event = AuthorizationProjectionEvent.from_mapping(event_mapping())
+        first = self.repository().apply(first_event)
+        replay = self.repository().apply(first_event)
+        user = self.users[TARGET]
+
+        self.assertEqual(first.local_user_state, "enabled")
+        self.assertEqual(first.local_user_disposition, "created")
+        self.assertEqual(replay.local_user_disposition, "exact_replay")
+        self.assertEqual(user["first_name"], "member")
+        self.assertEqual(user["roles"], [{"role": "Desk User"}])
+        self.assertEqual(user["send_welcome_email"], 0)
+        self.assertNotIn("new_password", user)
+
+        disabled = self.repository().apply(
+            AuthorizationProjectionEvent.from_mapping(
+                event_mapping(
+                    eventId=str(UUID(int=920)),
+                    sourceVersion=2,
+                    enabled=False,
+                    roles=[],
+                    projectAccess=[],
+                    organizationScopes=[],
+                )
+            )
+        )
+        enabled = self.repository().apply(
+            AuthorizationProjectionEvent.from_mapping(
+                event_mapping(
+                    eventId=str(UUID(int=921)),
+                    sourceVersion=3,
+                )
+            )
+        )
+        self.assertEqual(disabled.local_user_disposition, "disabled")
+        self.assertEqual(enabled.local_user_disposition, "enabled")
+        self.assertEqual(int(self.users[TARGET]["enabled"]), 1)
+        self.assertEqual(
+            self.user_writes,
+            [
+                (TARGET, "created", 1),
+                (TARGET, "saved", 0),
+                (TARGET, "saved", 1),
+            ],
+        )
+
+    def test_disabled_absent_user_and_privileged_target_are_safe(self) -> None:
+        self.users.pop(TARGET)
+        disabled = self.repository().apply(
+            AuthorizationProjectionEvent.from_mapping(
+                event_mapping(
+                    enabled=False,
+                    roles=[],
+                    projectAccess=[],
+                    organizationScopes=[],
+                )
+            )
+        )
+        self.assertEqual(disabled.local_user_state, "absent_disabled")
+        self.assertNotIn(TARGET, self.users)
+
+        privileged = "manager@example.invalid"
+        self.users[privileged] = {
+            "doctype": "User",
+            "name": privileged,
+            "email": privileged,
+            "enabled": 1,
+            "user_type": "System User",
+            "roles": [{"role": "System Manager"}],
+        }
+        with self.assertRaises(PermissionDenied):
+            self.repository().apply(
+                AuthorizationProjectionEvent.from_mapping(
+                    event_mapping(
+                        eventId=str(UUID(int=922)),
+                        targetUserId=privileged,
+                    )
+                )
+            )
+
+    def test_exact_replay_rejects_projection_or_local_user_drift(self) -> None:
+        event = AuthorizationProjectionEvent.from_mapping(event_mapping())
+        self.repository().apply(event)
+        projection = next(iter(self.projections.values()))
+        projection.projection_hash = "0" * 64
+        with self.assertRaises(VersionConflict):
+            self.repository().apply(event)
+
+        projection.projection_hash = event.projection_hash
+        self.users[TARGET]["enabled"] = 0
+        with self.assertRaises(VersionConflict):
+            self.repository().apply(event)
 
     def test_resolver_returns_only_current_hash_valid_projection(self) -> None:
         event = AuthorizationProjectionEvent.from_mapping(event_mapping())

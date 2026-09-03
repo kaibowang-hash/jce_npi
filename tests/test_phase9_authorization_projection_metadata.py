@@ -81,13 +81,19 @@ class AuthorizationProjectionMetadataTest(unittest.TestCase):
             self.assertIn(marker, controller)
         for marker in (
             'PROJECTION_WRITE_FLAG = "npi_authorization_projection_write"',
+            'LOCAL_USER_WRITE_FLAG = "npi_authorization_local_user_write"',
             "authorization_projection_write(",
+            "insert_provisioned_user(",
+            "save_provisioned_user(",
             'actor.casefold() in {"guest", "administrator"}',
             '"NPI API User" not in set(frappe.get_roles(actor)',
         ):
             self.assertIn(marker, guard)
         self.assertIn("for_update=True", repository)
         self.assertNotIn("frappe.db" + ".sql", repository)
+        self.assertIn('"send_welcome_email": 0', repository)
+        self.assertIn('user.flags.no_welcome_mail = True', repository)
+        self.assertNotIn('"new_password"', repository)
         self.assertIn('npi_p9_04_authorization_projection_enforced', security)
         self.assertIn("raise AuthenticationRequired()", security)
         for source in (controller, guard, repository, security):
@@ -110,6 +116,11 @@ class AuthorizationProjectionMetadataTest(unittest.TestCase):
         self.assertIn("UserAuthorizationProjection:", ownership)
         self.assertIn("owner_system: ERPNEXT", ownership)
         self.assertIn("passwords_mfa_factors_provider_secrets_session_cookies", ownership)
+        self.assertIn(
+            "targetUserId: { type: string, format: email, minLength: 3, maxLength: 254 }",
+            openapi,
+        )
+        self.assertIn("localUserDisposition", openapi)
         for forbidden in (
             "generic_doc" + "type_writer",
             "frappe.client." + "save",

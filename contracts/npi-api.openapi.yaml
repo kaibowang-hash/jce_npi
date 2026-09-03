@@ -9901,7 +9901,7 @@ components:
         objectType: { type: string, const: UserAuthorizationProjection }
         eventId: { type: string, format: uuid }
         sourceSubjectId: { type: string, minLength: 1, maxLength: 255 }
-        targetUserId: { type: string, minLength: 1, maxLength: 255 }
+        targetUserId: { type: string, format: email, minLength: 3, maxLength: 254 }
         sourceVersion: { type: integer, minimum: 1, maximum: 2147483647 }
         enabled: { type: boolean }
         roles:
@@ -9938,13 +9938,15 @@ components:
     AuthorizationProjectionResult:
       type: object
       additionalProperties: false
-      required: [projectionId, sourceVersion, state, projectionHash, exactReplay, requestId, traceId]
+      required: [projectionId, sourceVersion, state, projectionHash, exactReplay, localUserState, localUserDisposition, requestId, traceId]
       properties:
         projectionId: { type: string, format: uuid }
         sourceVersion: { type: integer, minimum: 1 }
         state: { type: string, enum: [enabled, disabled] }
         projectionHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         exactReplay: { type: boolean }
+        localUserState: { type: string, enum: [enabled, disabled, absent_disabled] }
+        localUserDisposition: { type: string, enum: [created, enabled, retained, disabled, absent_disabled, exact_replay] }
         requestId: { type: string, format: uuid }
         traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
     EngineeringChangeInboundEvent:
@@ -24711,7 +24713,7 @@ components:
         authorizationIngressState: { type: string, enum: [enabled, disabled] }
         authorizationEnforcementState: { type: string, enum: [enabled, disabled] }
         authorizationPolicyState: { type: string, enum: [configured, not_configured] }
-        localUserProvisioningState: { type: string, const: implementation_required }
+        localUserProvisioningState: { type: string, const: ready }
         erpAuthorizationSenderState: { type: string, const: external_verification_required }
         erpBusinessAdaptersState: { type: string, const: implementation_required }
         supportAdministrationPath: { type: string, const: /app }

@@ -11,11 +11,13 @@ from frappe import _
 
 PROJECTION_WRITE_FLAG = "npi_authorization_projection_write"
 AUDIT_APPEND_FLAG = "npi_audit_append"
+LOCAL_USER_WRITE_FLAG = "npi_authorization_local_user_write"
 
 
 @dataclass(frozen=True, slots=True)
 class AuthorizationProjectionWriteCapability:
     actor: str
+    target_user_id: str
 
 
 _CURRENT: ContextVar[AuthorizationProjectionWriteCapability | None] = ContextVar(
@@ -44,11 +46,19 @@ def deny_authorization_projection_delete() -> None:
 @contextmanager
 def authorization_projection_write(
     actor: str,
+    target_user_id: str,
 ) -> Iterator[AuthorizationProjectionWriteCapability]:
     require_service_actor(actor)
-    capability = AuthorizationProjectionWriteCapability(actor=actor)
+    capability = AuthorizationProjectionWriteCapability(
+        actor=actor,
+        target_user_id=target_user_id,
+    )
     token = _CURRENT.set(capability)
-    with _flag_scope(PROJECTION_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
+    with (
+        _flag_scope(PROJECTION_WRITE_FLAG),
+        _flag_scope(AUDIT_APPEND_FLAG),
+        _flag_scope(LOCAL_USER_WRITE_FLAG),
+    ):
         try:
             yield capability
         finally:
@@ -89,6 +99,31 @@ def insert_projection_audit(
     return document.insert(ignore_permissions=True)
 
 
+def insert_provisioned_user(
+    document: Any,
+    *,
+    capability: AuthorizationProjectionWriteCapability,
+) -> Any:
+    _authorize_local_user(document, capability, creating=True)
+    result = document.insert(ignore_permissions=True)
+    if (
+        str(getattr(result, "name", "")) != capability.target_user_id
+        or str(getattr(result, "user_type", "")) != "System User"
+        or int(getattr(result, "enabled", 0) or 0) != 1
+    ):
+        raise RuntimeError("Provisioned local User state is invalid.")
+    return result
+
+
+def save_provisioned_user(
+    document: Any,
+    *,
+    capability: AuthorizationProjectionWriteCapability,
+) -> Any:
+    _authorize_local_user(document, capability, creating=False)
+    return document.save(ignore_permissions=True)
+
+
 def _authorize(
     document: Any,
     capability: AuthorizationProjectionWriteCapability,
@@ -102,6 +137,39 @@ def _authorize(
         or not getattr(frappe.flags, PROJECTION_WRITE_FLAG, False)
     ):
         raise RuntimeError("Authorization projection write capability is invalid.")
+
+
+def _authorize_local_user(
+    document: Any,
+    capability: AuthorizationProjectionWriteCapability,
+    *,
+    creating: bool,
+) -> None:
+    name = str(getattr(document, "name", "") or "")
+    email = str(getattr(document, "email", "") or "")
+    if (
+        _CURRENT.get() is not capability
+        or getattr(getattr(frappe, "session", None), "user", None)
+        != capability.actor
+        or not getattr(frappe.flags, LOCAL_USER_WRITE_FLAG, False)
+        or str(getattr(document, "doctype", "")) != "User"
+        or email != capability.target_user_id
+        or name not in {"", capability.target_user_id}
+        or str(getattr(document, "new_password", "") or "")
+    ):
+        raise RuntimeError("Authorization local User capability is invalid.")
+    if creating:
+        roles = tuple(
+            str(getattr(role, "role", None) or role.get("role", ""))
+            for role in (getattr(document, "roles", None) or ())
+        )
+        if (
+            int(getattr(document, "enabled", 0) or 0) != 1
+            or int(getattr(document, "send_welcome_email", 1) or 0) != 0
+            or str(getattr(document, "user_type", "")) != "System User"
+            or roles != ("Desk User",)
+        ):
+            raise RuntimeError("Authorization local User creation is invalid.")
 
 
 def require_service_actor(actor: str) -> None:
