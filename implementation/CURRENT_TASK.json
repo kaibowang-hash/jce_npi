@@ -81,6 +81,7 @@
     "frontend/tests/unit/historical-migration-data-source.test.ts",
     "frontend/tests/unit/historical-migration-workspace.test.tsx",
     "frontend/tests/unit/router.test.tsx",
+    "frontend/tests/e2e/r1-03-shell.spec.ts",
     "frontend/tests/e2e/p9-05-historical-migration-live.spec.ts",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
