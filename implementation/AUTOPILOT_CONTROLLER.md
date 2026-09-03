@@ -11834,3 +11834,23 @@ P9-01 Level 3.
   final diagnostics-off Level 3 before P9-08 activation. Production ERPNext,
   `jce.1`, production LaunchFlow and user-owned dirty files remain untouched.
 - Controller marker: `P9-07 cumulative P8-03 migrated-legacy classifier active; exact-SHA ordinary and one diagnostic-only controlled Site required`.
+
+## 2026-09-03 P9-07 release manifest JSON array repair; diagnostics off
+
+- Diagnostic checkpoint `7578272417cbaecfacfbefb6a2d7d1c3bf6731dc`
+  passes exact-SHA ordinary CI `33728309450`. Its sole diagnostic-only run
+  `33728821857` passes repository, secret and controlled preflight, crosses
+  P8-03 with success-zero classifier output, and fails only at the P9-07
+  post-restore release-identity comparison.
+- Static proof isolates one verifier-only serialization mismatch: in-memory
+  `appNames` was a tuple, while the persisted JSON manifest is necessarily an
+  array/list. Canonicalize that field as a JSON array on both sides, reject the
+  non-JSON tuple shape, add a round-trip regression and disable the temporary
+  P8-03 classifier. Affected tests pass `83/83` and complete repository Level
+  2 passes `2983/2983`. Do not inspect site configuration values or change backup,
+  restore, migration, product, schema, contract, CI or production behavior.
+- Commit this single batched repair, require exact-SHA ordinary CI PASS, then
+  execute one final diagnostics-off Level 3. P9-08 stays inactive until that
+  Gate passes. Production ERPNext, `jce.1`, production LaunchFlow and all
+  user-owned dirty/untracked files remain untouched.
+- Controller marker: `P9-07 release manifest appNames JSON array repair; diagnostics off exact-SHA ordinary and final Level 3 required`.

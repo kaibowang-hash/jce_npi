@@ -108,15 +108,13 @@ def release_manifest() -> dict[str, object]:
     frappe_sha = _run_git("rev-parse", "HEAD", cwd=BENCH_PATH / "apps" / "frappe")
     require(re.fullmatch(r"[a-f0-9]{40}", git_sha) is not None, "P9-07 Git SHA drifted")
     require(re.fullmatch(r"[a-f0-9]{40}", frappe_sha) is not None, "P9-07 Frappe SHA drifted")
-    app_names = tuple(
-        sorted(
-            line.strip()
-            for line in (BENCH_PATH / "sites" / "apps.txt").read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        )
+    app_names = sorted(
+        line.strip()
+        for line in (BENCH_PATH / "sites" / "apps.txt").read_text(encoding="utf-8").splitlines()
+        if line.strip()
     )
     require(
-        app_names == ("frappe", "npi_core", "npi_integration"),
+        app_names == ["frappe", "npi_core", "npi_integration"],
         "P9-07 installed application boundary drifted",
     )
     site_config = _read_json_object(
@@ -178,8 +176,7 @@ def validate_release_manifest(value: object) -> None:
         "P9-07 release manifest target drifted",
     )
     require(
-        value.get("appNames") == ("frappe", "npi_core", "npi_integration")
-        or value.get("appNames") == ["frappe", "npi_core", "npi_integration"],
+        value.get("appNames") == ["frappe", "npi_core", "npi_integration"],
         "P9-07 release manifest applications drifted",
     )
     app_hashes = value.get("appTreeSha256")

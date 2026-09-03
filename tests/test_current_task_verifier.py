@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_P9_07_CUMULATIVE_P803_DIAGNOSTIC_EXACT_SHA_GATES_REQUIRED",
+            "IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "P9-08")
@@ -62,7 +62,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "P9-07",
                 "active_goal_marker": "P9-07",
                 "next_action_marker": "P9-07",
-                "controller_marker": "P9-07 cumulative P8-03 migrated-legacy classifier active; exact-SHA ordinary and one diagnostic-only controlled Site required",
+                "controller_marker": "P9-07 release manifest appNames JSON array repair; diagnostics off exact-SHA ordinary and final Level 3 required",
             },
         )
         for invariant in (

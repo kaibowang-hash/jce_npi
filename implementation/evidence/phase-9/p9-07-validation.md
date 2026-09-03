@@ -90,6 +90,33 @@ permits one batched fixture-only repair; a successful nonreproduction permits
 only classifier closure and no product change. P9-08 and production contact
 remain closed.
 
+## Diagnostic result and canonical manifest repair
+
+Diagnostic checkpoint `7578272417cbaecfacfbefb6a2d7d1c3bf6731dc`
+passes exact-SHA ordinary CI `33728309450`. Its sole diagnostic-only workflow
+`33728821857` passes repository job `100563932258`, secret job `100563932281`
+and controlled preflight `100564251382`. Controlled runtime `100564321162`
+crosses the historical P8-03 boundary with success-zero classifier output and
+then fails only at the P9-07 post-restore release-identity comparison.
+
+Static inspection proves one deterministic local verifier defect without
+reading configuration values: `release_manifest()` constructed `appNames` as
+a Python tuple; JSON persistence necessarily loads it as a list; the
+post-restore exact dictionary comparison therefore failed even when all three
+application names were identical. The minimal repair emits and validates only
+the canonical JSON array/list form, adds an exact round-trip regression, and
+turns the temporary P8-03 classifier off. It changes no backup, restore,
+migration, product, schema, configuration, production or external behavior.
+
+The repair's affected suite passes `83/83`; complete repository Level 2 passes
+`2983/2983`; current-task, V1.2 reconciliation, Python compilation, shell
+syntax and diff hygiene checks pass. The host exposes only `python3`, so the
+repository script was run with a private temporary `python` shim pointing to
+that same interpreter; the shim was removed immediately after the check.
+
+The repair checkpoint requires its own exact-SHA ordinary CI PASS and one final
+diagnostics-off Level 3 before P9-07 can pass or P9-08 can activate.
+
 ## Honest holds
 
 This evidence proves only deterministic engineering recovery on a fresh local

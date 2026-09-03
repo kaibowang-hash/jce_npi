@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_P9_07_CUMULATIVE_P803_DIAGNOSTIC_EXACT_SHA_GATES_REQUIRED — P9-07`
+`IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED — P9-07`
 
 CI-OPT-02 exact SHA `ea6112fa04e08cee6920407df426efc685cea98b`
 passes ordinary CI `33659491378` and final Level 3 `33660141866`, including
@@ -27,19 +27,19 @@ passes exact-SHA ordinary CI `33719574371` and the sole diagnostics-off Level 3
 `33719982252`. Cumulative disposable runtime `100538152787`, cleanup and
 `productionContact=false` pass; release-gate is PASS.
 
-P9-07 candidate SHA `3bc42d9f6cb5bdf684507d366970b8b6b0e0bcdd`
-passes ordinary CI `33724852712`. Level 3 `33725286182` and same-SHA rerun
-`33726821321` both pass all static, frontend, E2E, visual, secret and preflight
-lanes, then stop at the same historical P8-03 migrated-legacy problem-code
-assertion before P9-07 runs. Commit only the existing fixed value-free P8-03
-classifier activation plus governance truth, push, require exact-SHA ordinary
-PASS and run one `diagnostic_only` controlled Site reusing that ordinary run.
-Use its single allowlisted code/type/trace tuple for one batched minimal repair,
-or close without product change if the failure does not reproduce. Then close
-the classifier and reserve one final diagnostics-off Level 3. Do not inspect
-raw response data, change CI, contact production or stage user-owned files.
-P9-07 marker: `P9-07 cumulative P8-03 migrated-legacy classifier active;
-exact-SHA ordinary and one diagnostic-only controlled Site required`.
+P9-07 diagnostic SHA `7578272417cbaecfacfbefb6a2d7d1c3bf6731dc`
+passes ordinary CI `33728309450`. Its sole diagnostic-only run `33728821857`
+passes repository, secret and preflight, crosses the historical P8-03 check
+with no diagnostic tuple, and fails only at P9-07 post-restore release identity.
+Static proof identifies a deterministic serialization defect: `appNames` was
+created as a tuple, persisted to JSON as an array and read back as a list, so
+exact equality failed although content was unchanged. Canonicalize `appNames`
+as a JSON array/list, add the round-trip regression, disable the temporary
+P8-03 classifier, and push one repair checkpoint. Affected tests pass `83/83`
+and complete repository Level 2 passes `2983/2983`. Require its exact-SHA
+ordinary PASS and one final diagnostics-off Level 3. Do not inspect config
+values, change CI, contact production or stage user-owned files.
+P9-07 marker: `P9-07 release manifest appNames JSON array repair; diagnostics off exact-SHA ordinary and final Level 3 required`.
 
 Recovery time: `2026-08-31T00:00:00+07:00`
 

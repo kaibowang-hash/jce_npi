@@ -65,10 +65,22 @@ class GoLiveRehearsalTest(unittest.TestCase):
             {**manifest, "productionContact": True},
             {**manifest, "site": "jce.1"},
             {**manifest, "extra": "forbidden"},
+            {**manifest, "appNames": tuple(manifest["appNames"])},
             {**manifest, "appTreeSha256": {"npi_core": "a" * 64}},
         ):
             with self.subTest(mutation=mutation), self.assertRaises(RuntimeError):
                 self.verifier.validate_release_manifest(mutation)
+
+    def test_forward_fix_compares_the_json_canonical_manifest_shape(self) -> None:
+        manifest = self.manifest()
+        with tempfile.TemporaryDirectory() as root_name:
+            path = Path(root_name) / "release-manifest.json"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            with patch.object(self.verifier, "release_manifest", return_value=manifest.copy()):
+                result = self.verifier.validate_forward_fix(path)
+        self.assertFalse(result["productionContact"])
+        self.assertRegex(result["manifestSha256"], r"^[a-f0-9]{64}$")
+        self.assertRegex(result["evidenceChecksum"], r"^[a-f0-9]{64}$")
 
     def test_rehearsal_directory_is_fixed_private_and_non_symlinked(self) -> None:
         with tempfile.TemporaryDirectory() as root_name:

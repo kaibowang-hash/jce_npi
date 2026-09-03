@@ -3,7 +3,7 @@
   "task_id": "P9-07",
   "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_P9_07_CUMULATIVE_P803_DIAGNOSTIC_EXACT_SHA_GATES_REQUIRED",
+  "status": "IN_PROGRESS_P9_07_RELEASE_MANIFEST_CANONICALIZATION_REPAIR_EXACT_SHA_GATES_REQUIRED",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P9-08",
   "base_checkpoint": "8f5c2292dab6aa48f82c8aade37f3938b023699d",
@@ -18,7 +18,9 @@
     "Freeze one non-production go-live and recovery rehearsal with an exact value-free release manifest, synthetic database and public/private file canaries, full backup checksums, meaningful same-Site restore, post-restore migrations, cumulative forward-fix verification, bounded timings and cleanup.",
     "Add one operator runbook that separates proven repository engineering evidence from production backup schedule, storage, encryption custody, RPO, RTO, approval and execution ownership.",
     "Deliver the frozen P9-07 implementation in one batch after this transition passes exact-SHA ordinary CI, complete Level 2, then bind one final exact-SHA ordinary CI and one diagnostics-off Level 3 before P9-08 activation.",
-    "After two same-SHA diagnostics-off Level 3 runs stop at the historical P8-03 migrated-legacy problem-code assertion before P9-07 executes, enable only the existing fixed value-free P8-03 final-gate classifier for one exact-SHA ordinary PASS and one diagnostic-only controlled Site."
+    "After two same-SHA diagnostics-off Level 3 runs stop at the historical P8-03 migrated-legacy problem-code assertion before P9-07 executes, enable only the existing fixed value-free P8-03 final-gate classifier for one exact-SHA ordinary PASS and one diagnostic-only controlled Site.",
+    "Accept diagnostic checkpoint 7578272417cbaecfacfbefb6a2d7d1c3bf6731dc with ordinary CI 33728309450 PASS and its sole diagnostic-only run 33728821857 proving success-zero for P8-03 before failing only at P9-07 post-restore release identity.",
+    "Repair only the proven JSON shape mismatch by emitting appNames as a canonical JSON array before and after persistence; close every P8-03 diagnostic and require one replacement exact-SHA ordinary CI plus one final diagnostics-off Level 3."
   ],
   "non_scope": [
     "Any production ERPNext, jce.1, production LaunchFlow, remote backup destination, object storage or other external connection or mutation; P9-07 has no new ERP fact dependency.",
@@ -97,7 +99,7 @@
     "phase_status_resumed_product_task": "P9-07",
     "active_goal_marker": "P9-07",
     "next_action_marker": "P9-07",
-    "controller_marker": "P9-07 cumulative P8-03 migrated-legacy classifier active; exact-SHA ordinary and one diagnostic-only controlled Site required"
+    "controller_marker": "P9-07 release manifest appNames JSON array repair; diagnostics off exact-SHA ordinary and final Level 3 required"
   },
   "rollback": {
     "before_product_resume": "Restore exact accepted P9-06 checkpoint 8f5c2292dab6aa48f82c8aade37f3938b023699d. The P9-07 audit transition changes no product, database, Site, ERPNext or external state.",
