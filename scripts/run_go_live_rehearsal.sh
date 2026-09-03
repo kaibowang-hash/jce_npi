@@ -48,6 +48,7 @@ run_verifier() {
   local mode="$1"
   shift
   (
+    cd "${bench_path}/sites"
     unset \
       FRAPPE_DB_HOST \
       FRAPPE_DB_PORT \

@@ -40,6 +40,12 @@ class GoLiveRehearsalRuntimeContractTest(unittest.TestCase):
         for prohibited in ("JCE-Core", "ssh ", "http://", "https://", "curl "):
             self.assertNotIn(prohibited, self.runner)
 
+    def test_rehearsal_helpers_run_from_the_fixed_bench(self) -> None:
+        self.assertIn(
+            'run_verifier() {\n  local mode="$1"\n  shift\n  (\n    cd "${bench_path}/sites"',
+            self.runner,
+        )
+
     def test_real_backup_restore_and_forward_fix_are_ordered(self) -> None:
         markers = (
             "run_verifier prepare",
