@@ -834,7 +834,8 @@ class V12ReconciliationTests(unittest.TestCase):
             "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3",
             phase_status,
         )
-        self.assertIn("current_task: PA-08-DEPLOYMENT", phase_status)
+        self.assertIn("current_task: PA-09-DESK-BOOT-HOTFIX", phase_status)
+        self.assertIn("task_id: PA-08-DEPLOYMENT", phase_status)
         self.assertIn("p9_07:", phase_status)
         self.assertIn("final_level_3: 33730710124_PASS", phase_status)
         self.assertIn("p9_08:", phase_status)
@@ -842,7 +843,8 @@ class V12ReconciliationTests(unittest.TestCase):
             "evidence_class: CONTROLLED_NON_PRODUCTION_TECHNICAL_UAT",
             phase_status,
         )
-        self.assertIn("overall_status: IMPLEMENTATION_COMPLETE", phase_status)
+        self.assertIn("overall_status: IN_PROGRESS_PRODUCTION_HOTFIX", phase_status)
+        self.assertIn("technical_implementation_complete: true", phase_status)
         self.assertIn("final_level_3: 33742476664_PASS", phase_status)
         self.assertIn("final_release_gate: PASS", phase_status)
         self.assertIn("production_ready: false", phase_status)

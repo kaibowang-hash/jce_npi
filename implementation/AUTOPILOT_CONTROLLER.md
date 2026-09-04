@@ -12093,3 +12093,25 @@ P9-01 Level 3.
   remain a separate controlled production-integration task; no automatic task
   or production mutation is authorized by this closeout.
 - Controller marker: `PA-08 exact AWS deployment, Level 3 and release-gate PASS; COMPLETE`.
+
+## 2026-09-04 PA-09 production Frappe Desk boot hotfix active
+
+- The user reports the authenticated Frappe Desk and first-run Setup Wizard
+  remain on the splash logo. Read-only production diagnosis proves all ten
+  services healthy and both routes returning HTTP 200, while Chrome reports an
+  inline-script syntax error before `frappe.boot` is created.
+- The first malformed boot entry is the NPI SPA-only
+  `Parameter {{index}} category` message. Frappe's server-rendered Desk boot
+  interprets the double-curly placeholder, emits an illegal multiline string
+  and causes only secondary failures in Desk/list/form/report modules.
+- Apply one supported `extend_bootinfo` filter that removes only source or
+  translation values containing double-curly markers from Desk's `__messages`.
+  The React BFF catalog, direct zh/zh-TW files, user-visible text and placeholder
+  behavior remain unchanged. Do not patch Frappe core or change schema,
+  permissions, authentication, product architecture or ERP integration.
+- Require the focused regression, repository and direct i18n checks, then one
+  exact-SHA ordinary CI before any production mutation. Deployment must take a
+  fresh encrypted backup, preserve every named volume and rollback image, switch
+  the exact image pair, verify authenticated Desk/Setup Wizard without reading
+  cookies or secrets, and finish one Level 3 release gate.
+- Controller marker: `PA-09 production Frappe Desk boot hotfix active; exact-SHA ordinary CI required before deployment`.

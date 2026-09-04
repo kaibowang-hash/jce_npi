@@ -1,16 +1,16 @@
 version: '1.2'
-overall_status: IMPLEMENTATION_COMPLETE
+overall_status: IN_PROGRESS_PRODUCTION_HOTFIX
 technical_implementation_complete: true
 production_ready: false
 current_phase: 9
 updated_at: '2026-09-04T21:33:13+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: PA-08-DEPLOYMENT
-current_task_status: IMPLEMENTATION_COMPLETE
-current_task_completed_stage: EXACT_SHA_AWS_DEPLOYMENT_LEVEL_3_RELEASE_GATE_PASS
-current_task_next_stage: COMPLETE
-current_task_next_stage_status: PASS
+current_task: PA-09-DESK-BOOT-HOTFIX
+current_task_status: IN_PROGRESS
+current_task_completed_stage: PRODUCTION_DESK_BOOT_DEFECT_REPRODUCED
+current_task_next_stage: LOCAL_REPAIR_AND_EXACT_SHA_ORDINARY_CI
+current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: COMPLETE
 resumed_product_task_status: COMPLETE
 production_activation:
@@ -44,6 +44,18 @@ production_activation:
   final_online_health_utc: '2026-09-04T14:33:13Z'
   final_release_gate: PASS
   deployment_task_status: COMPLETE
+production_hotfix:
+  task_id: PA-09-DESK-BOOT-HOTFIX
+  incident_utc: '2026-09-04T15:02:24Z'
+  symptom: AUTHENTICATED_FRAPPE_DESK_STUCK_ON_SPLASH_LOGO
+  server_health: PASS_10_OF_10
+  desk_http_status: PASS_200
+  browser_root: INLINE_BOOT_JAVASCRIPT_SYNTAX_ERROR
+  first_malformed_source: PARAMETER_DOUBLE_CURLY_INDEX_CATEGORY
+  root_cause: SPA_DOUBLE_CURLY_PLACEHOLDER_INTERPRETED_IN_SERVER_RENDERED_DESK_BOOT
+  repair: EXTEND_BOOTINFO_FILTER_DOUBLE_CURLY_MESSAGES_ONLY
+  production_state_changed: false
+  status: IN_PROGRESS_LOCAL_REPAIR
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA

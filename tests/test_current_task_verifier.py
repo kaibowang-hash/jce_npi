@@ -34,62 +34,50 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "PA-08-DEPLOYMENT")
-        self.assertEqual(value["task_kind"], "delivery_infrastructure")
-        self.assertEqual(
-            value["status"],
-            "IMPLEMENTATION_COMPLETE",
-        )
+        self.assertEqual(value["task_id"], "PA-09-DESK-BOOT-HOTFIX")
+        self.assertEqual(value["task_kind"], "product")
+        self.assertEqual(value["status"], "IN_PROGRESS")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
-        self.assertEqual(value["requirement_ids"], [])
+        self.assertEqual(value["requirement_ids"], ["NFR-MNT-001"])
         self.assertEqual(
             value["base_checkpoint"],
-            "6b274f05be58fc52839b6f14a055b662d607787e",
+            "238d72413bfd80c3fa0fdbfb058a8e54dd25e5af",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "6b274f05be58fc52839b6f14a055b662d607787e",
+            "003597014d18cc35d74caf695e8f201e52f1306a",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "PA-08-DEPLOYMENT",
+                "phase_status_current_task": "PA-09-DESK-BOOT-HOTFIX",
                 "phase_status_execution_hold": "NONE",
                 "phase_status_resumed_product_task": "COMPLETE",
-                "active_goal_marker": "PA-08-DEPLOYMENT",
-                "next_action_marker": "PA-08-DEPLOYMENT",
-                "controller_marker": "PA-08 exact AWS deployment, Level 3 and release-gate PASS; COMPLETE",
+                "active_goal_marker": "PA-09-DESK-BOOT-HOTFIX",
+                "next_action_marker": "PA-09-DESK-BOOT-HOTFIX",
+                "controller_marker": "PA-09 production Frappe Desk boot hotfix active; exact-SHA ordinary CI required before deployment",
             },
         )
         for invariant in (
-            "P9_08_AND_PHASE_9_TECHNICAL_IMPLEMENTATION_REMAIN_COMPLETE",
-            "PRODUCTION_DEPLOYMENT_IS_INCREMENTAL_WITH_NAMED_VOLUMES_PRESERVED",
-            "ENCRYPTED_FULL_BACKUP_VERIFIED_BEFORE_MIGRATION_OR_IMAGE_SWITCH",
-            "EXACT_SHA_BACKEND_AND_SPA_IMAGES_SWITCH_TOGETHER",
-            "NPI_ERPNEXT_CONNECTOR_NEVER_INSTALLED_ON_LAUNCHFLOW",
-            "PRODUCTION_ENVIRONMENT_MARKER_AND_PUBLIC_SELF_SIGNUP_DISABLED",
-            "ERP_AUTHORIZATION_INGRESS_AND_REAL_ERP_ADAPTERS_REMAIN_DISABLED",
-            "EXACT_SHA_ORDINARY_CI_AND_LEVEL_3_RELEASE_GATE_REQUIRED",
+            "FRAPPE_DESK_REMAINS_ADMINISTRATION_AND_SUPPORT_ONLY",
+            "NPI_REACT_BFF_TRANSLATION_CATALOGS_AND_PLACEHOLDERS_REMAIN_UNCHANGED",
+            "SUPPORTED_EXTEND_BOOTINFO_HOOK_ONLY_NO_FRAPPE_CORE_PATCH",
+            "FILTER_ONLY_DOUBLE_CURLY_MESSAGES_FROM_DESK_BOOT",
+            "NO_SCHEMA_PERMISSION_AUTHENTICATION_OR_ERP_INTEGRATION_CHANGE",
+            "PRODUCTION_DEPLOYMENT_REMAINS_INCREMENTAL_AND_BACKED_UP",
+            "EXACT_SHA_ORDINARY_CI_BEFORE_DEPLOYMENT_AND_LEVEL_3_RELEASE_GATE_REQUIRED",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                ".dockerignore",
-                "apps/npi_core/npi_core/production_setup.py",
-                "deploy/production/**",
-                "implementation/evidence/production-activation/pa-08-aws-deployment.md",
-                "tests/test_production_deployment.py",
+                "apps/npi_core/npi_core/hooks.py",
+                "implementation/evidence/production-activation/pa-09-frappe-desk-boot-hotfix.md",
+                "tests/test_frappe_desk_boot.py",
                 "tests/test_current_task_verifier.py",
             }.issubset(set(value["allowed_paths"]))
         )
-        self.assertEqual(
-            [path for path in value["allowed_paths"] if "*" in path],
-            [
-                "deploy/production/**",
-                "frontend/tests/e2e/*-snapshots/*-linux.png",
-            ],
-        )
+        self.assertFalse([path for path in value["allowed_paths"] if "*" in path])
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
         source = MANIFEST.read_text(encoding="utf-8")

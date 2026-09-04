@@ -16,6 +16,25 @@ fixtures = [
 before_request = ["npi_core.bff.route_request"]
 after_request = ["npi_core.bff.attach_response_headers"]
 
+extend_bootinfo = ["npi_core.hooks.strip_desk_boot_jinja_messages"]
+
+
+def strip_desk_boot_jinja_messages(*, bootinfo):
+    """Keep SPA-only placeholders out of Frappe's server-rendered Desk boot."""
+    messages = bootinfo.get("__messages")
+    if not isinstance(messages, dict):
+        return
+    bootinfo["__messages"] = {
+        source: translation
+        for source, translation in messages.items()
+        if not any(
+            marker in value
+            for value in (source, translation)
+            if isinstance(value, str)
+            for marker in ("{{", "}}")
+        )
+    }
+
 scheduler_events = {
     "hourly": ["npi_core.collaboration.frappe_repository.refresh_due_notifications"]
 }

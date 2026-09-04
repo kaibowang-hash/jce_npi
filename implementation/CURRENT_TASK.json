@@ -1,95 +1,83 @@
 {
   "schema_version": 1,
-  "task_id": "PA-08-DEPLOYMENT",
-  "task_kind": "delivery_infrastructure",
+  "task_id": "PA-09-DESK-BOOT-HOTFIX",
+  "task_kind": "product",
   "phase": 9,
-  "status": "IMPLEMENTATION_COMPLETE",
+  "status": "IN_PROGRESS",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "COMPLETE",
-  "base_checkpoint": "6b274f05be58fc52839b6f14a055b662d607787e",
-  "predecessor_product_checkpoint": "6b274f05be58fc52839b6f14a055b662d607787e",
-  "requirement_ids": [],
+  "base_checkpoint": "238d72413bfd80c3fa0fdbfb058a8e54dd25e5af",
+  "predecessor_product_checkpoint": "003597014d18cc35d74caf695e8f201e52f1306a",
+  "requirement_ids": [
+    "NFR-MNT-001"
+  ],
   "scope": [
-    "Accept the user's 2026-09-04 authorization to install the current LaunchFlow release on the existing AWS LaunchFlow host through SSH alias LaunchFlow.",
-    "Package the previously proven independent Frappe v15 production stack with only npi_core and npi_integration installed on the LaunchFlow Site; npi_erpnext_connector remains an ERPNext-side app and is excluded.",
-    "Preserve the existing named MariaDB, Site, Redis and log volumes, take and verify one encrypted full backup, build exact-SHA backend and SPA images, run the guarded Site initializer and migrate, then require HTTPS, guest-login, API, scheduler and service health checks.",
-    "Keep the old exact-SHA images available for code rollback and never perform a schema downgrade; if startup, migration or health fails, restore the prior image pair or remain in maintenance for reviewed forward recovery.",
-    "Require exact-SHA ordinary CI before any production state change. The failed run 33858955369 changed no production state and proved only that this deployment task had not yet been registered in the current-task manifest.",
-    "Treat the fresh same-day zero-vulnerability audit bound to package-lock checksum ead6cb76517681a2699d3dccbbbfb32d551713be27015d5ac98645af1b1449 as retained evidence while the npm audit POST endpoint is timing out; the immutable production image build still runs the unchanged npm audit and fails closed if no definitive result is available.",
-    "Record that exact-SHA ordinary CI 33866659603 attempt 4 passed, the encrypted full backup and source archive were independently checksummed, release 003597014d18cc35d74caf695e8f201e52f1306a was built and activated incrementally, and all post-deployment HTTPS, login, API, scheduler, application, production-marker, image-label and ten-service checks passed.",
-    "Record that evidence SHA d140cfa15e6aab5eb1597c6e688f0752383c82ff passed ordinary CI 33874407786 and Level 3 33874936730, including controlled runtime job 101031261706 with productionContact false, and close PA-08 with release-gate PASS."
+    "Repair the reproduced production Frappe Desk boot failure that leaves authenticated administrators on the splash logo and blocks the first-run Setup Wizard.",
+    "Keep the approved React translation catalogs unchanged and remove only double-curly SPA placeholder messages from Frappe's server-rendered Desk boot dictionary through the supported extend_bootinfo hook.",
+    "Prove the filter with a focused regression, repository and direct i18n checks, exact-SHA ordinary CI, an encrypted pre-deploy backup, exact-SHA incremental deployment, authenticated Desk/Setup Wizard browser evidence and a final Level 3 release gate.",
+    "Preserve all existing Site data, named volumes, disabled ERP adapters, disabled ERP authorization ingress and the retained rollback image pair."
   ],
   "non_scope": [
-    "No production ERPNext or JCE-Core mutation, connector installation, role mapping, adapter activation, replay, reconciliation or business-data synchronization.",
-    "No deletion or recreation of the existing LaunchFlow database or Site, and no destructive volume removal; a rebuild would require separate proof that the Site is disposable.",
-    "No Frappe or ERPNext core change, cross-database write, generic DocType writer, browser-direct ERP access, dual-master field or Mock/HTTP fake success.",
-    "No secret, endpoint, host, user, key, token, password or production configuration value is committed or printed; server-only values remain in root-owned files.",
-    "No adoption of the server's uncommitted not-ready UI and governance experiment. Preserve it in a server-side rollback archive, but deploy only the clean exact Git release.",
-    "No staging, rollback or overwrite of the user's unrelated local documentation, deferred-pilot decisions, evidence, screenshots, prerequisites, public assets or editor files."
+    "No Frappe or ERPNext core patch, translation-key migration, user-visible copy change, architecture redesign, schema change, permission change or ERP activation.",
+    "No production ERPNext or JCE-Core contact, business-data mutation, generic DocType writer, cross-database access, browser-direct ERP access or dual-master field.",
+    "No deletion or recreation of the LaunchFlow Site, database or named volumes and no staging, rollback or overwrite of user-owned local files.",
+    "No password, token, cookie, endpoint configuration or other secret may be printed, committed or included in evidence."
   ],
   "frozen_invariants": [
-    "P9_08_AND_PHASE_9_TECHNICAL_IMPLEMENTATION_REMAIN_COMPLETE",
+    "FRAPPE_DESK_REMAINS_ADMINISTRATION_AND_SUPPORT_ONLY",
+    "NPI_REACT_BFF_TRANSLATION_CATALOGS_AND_PLACEHOLDERS_REMAIN_UNCHANGED",
+    "SUPPORTED_EXTEND_BOOTINFO_HOOK_ONLY_NO_FRAPPE_CORE_PATCH",
+    "FILTER_ONLY_DOUBLE_CURLY_MESSAGES_FROM_DESK_BOOT",
+    "NO_SCHEMA_PERMISSION_AUTHENTICATION_OR_ERP_INTEGRATION_CHANGE",
     "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_ACCEPTED_NO_NEW_ERP_DEPENDENCY",
-    "PRODUCTION_DEPLOYMENT_IS_INCREMENTAL_WITH_NAMED_VOLUMES_PRESERVED",
-    "ENCRYPTED_FULL_BACKUP_VERIFIED_BEFORE_MIGRATION_OR_IMAGE_SWITCH",
-    "EXACT_SHA_BACKEND_AND_SPA_IMAGES_SWITCH_TOGETHER",
-    "NPI_CORE_THEN_NPI_INTEGRATION_ONLY_ON_LAUNCHFLOW_SITE",
-    "NPI_ERPNEXT_CONNECTOR_NEVER_INSTALLED_ON_LAUNCHFLOW",
-    "PRODUCTION_ENVIRONMENT_MARKER_AND_PUBLIC_SELF_SIGNUP_DISABLED",
-    "ERP_AUTHORIZATION_INGRESS_AND_REAL_ERP_ADAPTERS_REMAIN_DISABLED",
-    "NO_SCHEMA_DOWNGRADE_ROLLBACK_FORWARD_FIX_WHEN_SCHEMA_COMPATIBILITY_IS_UNCERTAIN",
-    "EXACT_SHA_ORDINARY_CI_AND_LEVEL_3_RELEASE_GATE_REQUIRED",
-    "USER_OWNED_LOCAL_AND_REMOTE_NOT_READY_WORKTREE_CHANGES_PRESERVED_OUTSIDE_RELEASE"
+    "PRODUCTION_DEPLOYMENT_REMAINS_INCREMENTAL_AND_BACKED_UP",
+    "EXACT_SHA_ORDINARY_CI_BEFORE_DEPLOYMENT_AND_LEVEL_3_RELEASE_GATE_REQUIRED",
+    "USER_OWNED_DIRTY_AND_UNTRACKED_FILES_REMAIN_UNSTAGED"
   ],
   "allowed_paths": [
-    ".dockerignore",
-    "apps/npi_core/npi_core/production_setup.py",
-    "deploy/production/**",
-    "frontend/tests/e2e/*-snapshots/*-linux.png",
-    "frontend/tests/e2e/p7-06-production-transition-live.spec.ts",
+    "apps/npi_core/npi_core/hooks.py",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/CURRENT_TASK.json",
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
-    "implementation/evidence/production-activation/pa-08-aws-deployment.md",
+    "implementation/evidence/production-activation/pa-09-frappe-desk-boot-hotfix.md",
     "tests/test_current_task_verifier.py",
-    "tests/test_production_deployment.py",
+    "tests/test_frappe_desk_boot.py",
     "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {
     "level_1": [
+      ["python", "-m", "unittest", "tests.test_frappe_desk_boot", "-v"],
       ["python", "scripts/verify_current_task.py"],
-      ["python", "-m", "unittest", "tests.test_production_deployment", "tests.test_v1_2_reconciliation", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
       ["bash", "scripts/verify.sh", "--repository"],
-      ["npm", "--prefix", "frontend", "run", "verify"],
-      ["python", "-m", "unittest", "tests.test_production_deployment", "-v"]
+      ["npm", "--prefix", "frontend", "run", "lint:i18n"],
+      ["python", "-m", "unittest", "tests.test_frappe_desk_boot", "tests.test_phase3_localization", "-v"]
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
-      ["python", "-m", "unittest", "tests.test_production_deployment", "-v"],
-      ["bash", "-n", "deploy/production/scripts/init-site.sh"]
+      ["python", "-m", "unittest", "tests.test_frappe_desk_boot", "-v"]
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
       ["npm", "--prefix", "frontend", "run", "test:e2e"],
       ["npm", "--prefix", "frontend", "run", "test:visual"],
-      ["python", "-m", "unittest", "tests.test_production_deployment", "-v"]
+      ["python", "-m", "unittest", "tests.test_frappe_desk_boot", "tests.test_phase3_localization", "-v"]
     ]
   },
   "expected_state": {
-    "phase_status_current_task": "PA-08-DEPLOYMENT",
+    "phase_status_current_task": "PA-09-DESK-BOOT-HOTFIX",
     "phase_status_execution_hold": "NONE",
     "phase_status_resumed_product_task": "COMPLETE",
-    "active_goal_marker": "PA-08-DEPLOYMENT",
-    "next_action_marker": "PA-08-DEPLOYMENT",
-    "controller_marker": "PA-08 exact AWS deployment, Level 3 and release-gate PASS; COMPLETE"
+    "active_goal_marker": "PA-09-DESK-BOOT-HOTFIX",
+    "next_action_marker": "PA-09-DESK-BOOT-HOTFIX",
+    "controller_marker": "PA-09 production Frappe Desk boot hotfix active; exact-SHA ordinary CI required before deployment"
   },
   "rollback": {
-    "before_product_resume": "Before production change, abandon only the PA-08 deployment package and retain the existing AWS image pair, named volumes, Site and server worktree archive. No database or Site rollback is needed.",
-    "after_product_resume": "After production change, take another safety backup if required, switch both backend and SPA to the retained prior exact-SHA images, clear cache and run health without schema downgrade. If schema compatibility is uncertain, keep maintenance mode and apply a reviewed forward fix or approved restore."
+    "before_product_resume": "Discard only the PA-09 scoped files and restore the completed PA-08 controller state; production remains on the current image and needs no rollback.",
+    "after_product_resume": "Take a fresh encrypted safety backup before switching images. If Desk verification fails, switch both backend and SPA to the retained PA-08 image pair without schema downgrade and run the production health gate; use a reviewed forward fix if image rollback is unsafe."
   }
 }

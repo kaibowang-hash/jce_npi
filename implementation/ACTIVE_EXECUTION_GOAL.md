@@ -1,6 +1,20 @@
 # Active Execution Goal
 
-Updated: `2026-09-04T21:33:13+07:00`
+Updated: `2026-09-04T22:09:28+07:00`
+
+- Active production hotfix: `PA-09-DESK-BOOT-HOTFIX`.
+- Authenticated `/app` and `/app/setup-wizard` return HTTP 200 while every
+  service remains healthy, but Chrome proves the first inline Desk boot script
+  has a syntax error before `frappe.boot` is created. The first malformed
+  source is the SPA-only `Parameter {{index}} category` translation.
+- Apply only the supported `extend_bootinfo` filter that omits double-curly
+  SPA placeholder messages from Frappe Desk boot. LaunchFlow's BFF catalog,
+  user-visible translations, Frappe core, schema, permissions and ERP seams do
+  not change.
+- Require focused tests, repository/i18n verification and exact-SHA ordinary
+  CI before an encrypted-backup incremental production deployment. Then prove
+  authenticated Desk and Setup Wizard and finish one Level 3 release gate.
+- Controller marker: `PA-09-DESK-BOOT-HOTFIX`.
 
 - Active delivery task: `PA-08-DEPLOYMENT`.
 - User-authorized outcome: incrementally install the clean exact LaunchFlow
