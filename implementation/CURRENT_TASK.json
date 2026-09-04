@@ -3,7 +3,7 @@
   "task_id": "PA-08-DEPLOYMENT",
   "task_kind": "delivery_infrastructure",
   "phase": 9,
-  "status": "IN_PROGRESS_DEPLOYED_FINAL_GATES_PENDING",
+  "status": "IMPLEMENTATION_COMPLETE",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "COMPLETE",
   "base_checkpoint": "6b274f05be58fc52839b6f14a055b662d607787e",
@@ -17,7 +17,7 @@
     "Require exact-SHA ordinary CI before any production state change. The failed run 33858955369 changed no production state and proved only that this deployment task had not yet been registered in the current-task manifest.",
     "Treat the fresh same-day zero-vulnerability audit bound to package-lock checksum ead6cb76517681a2699d3dccbbbfb32d551713be27015d5ac98645af1b1449 as retained evidence while the npm audit POST endpoint is timing out; the immutable production image build still runs the unchanged npm audit and fails closed if no definitive result is available.",
     "Record that exact-SHA ordinary CI 33866659603 attempt 4 passed, the encrypted full backup and source archive were independently checksummed, release 003597014d18cc35d74caf695e8f201e52f1306a was built and activated incrementally, and all post-deployment HTTPS, login, API, scheduler, application, production-marker, image-label and ten-service checks passed.",
-    "Require one evidence exact-SHA ordinary CI and the PA-08 Level 3 release gate before closing the delivery task; these final evidence gates make no second production deployment."
+    "Record that evidence SHA d140cfa15e6aab5eb1597c6e688f0752383c82ff passed ordinary CI 33874407786 and Level 3 33874936730, including controlled runtime job 101031261706 with productionContact false, and close PA-08 with release-gate PASS."
   ],
   "non_scope": [
     "No production ERPNext or JCE-Core mutation, connector installation, role mapping, adapter activation, replay, reconciliation or business-data synchronization.",
@@ -82,11 +82,11 @@
   },
   "expected_state": {
     "phase_status_current_task": "PA-08-DEPLOYMENT",
-    "phase_status_execution_hold": "FINAL_EXACT_SHA_ORDINARY_AND_LEVEL_3_REQUIRED_AFTER_DEPLOYMENT",
+    "phase_status_execution_hold": "NONE",
     "phase_status_resumed_product_task": "COMPLETE",
     "active_goal_marker": "PA-08-DEPLOYMENT",
     "next_action_marker": "PA-08-DEPLOYMENT",
-    "controller_marker": "PA-08 exact release deployed and healthy; final evidence ordinary CI and Level 3 required"
+    "controller_marker": "PA-08 exact AWS deployment, Level 3 and release-gate PASS; COMPLETE"
   },
   "rollback": {
     "before_product_resume": "Before production change, abandon only the PA-08 deployment package and retain the existing AWS image pair, named volumes, Site and server worktree archive. No database or Site rollback is needed.",

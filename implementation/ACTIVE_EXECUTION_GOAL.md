@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-09-04T19:39:30+07:00`
+Updated: `2026-09-04T21:33:13+07:00`
 
 - Active delivery task: `PA-08-DEPLOYMENT`.
 - User-authorized outcome: incrementally install the clean exact LaunchFlow
@@ -16,9 +16,12 @@ Updated: `2026-09-04T19:39:30+07:00`
   retained, and HTTPS root/login, unauthenticated API, scheduler, production
   markers, exact app inventory and all ten services pass. Real ERP adapters and
   ERP authorization ingress remain disabled.
-- The sole next action is this sanitized checkpoint's exact-SHA ordinary CI,
-  followed by the PA-08 Level 3 release gate. Neither step redeploys production.
-- Controller marker: `PA-08 exact release deployed and healthy; final evidence ordinary CI and Level 3 required`.
+- Evidence SHA `d140cfa15e6aab5eb1597c6e688f0752383c82ff` passes ordinary CI
+  `33874407786` and Level 3 `33874936730`. Controlled runtime job
+  `101031261706` passes backup/restore/forward-fix/cleanup with
+  `productionContact=false`; artifact `9937976023` is retained. Release-gate
+  is PASS and PA-08 is complete. No automatic delivery task remains.
+- Controller marker: `PA-08 exact AWS deployment, Level 3 and release-gate PASS; COMPLETE`.
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`

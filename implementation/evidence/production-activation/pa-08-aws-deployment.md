@@ -1,6 +1,6 @@
 # PA-08 AWS Deployment
 
-Status: **DEPLOYED — FINAL ORDINARY CI AND LEVEL 3 PENDING**
+Status: **PASS — DEPLOYED AND RELEASE-GATE COMPLETE**
 
 Date: 2026-09-04 (Asia/Bangkok)
 
@@ -94,10 +94,25 @@ The real ERP adapter and P9-04 authorization projection ingress remain
 disabled. No ERPNext connection, ERPNext app installation, business-data
 synchronization, credential disclosure or production volume deletion occurred.
 
-## Remaining release evidence and rollback
+## Final release evidence
 
-Commit this sanitized checkpoint, require one exact-SHA ordinary CI PASS, then
-run the PA-08 Level 3 release gate. Those evidence-only checks do not trigger a
-second production deployment. Rollback switches both images together and never
-attempts a schema downgrade; use a forward fix or approved backup restore when
-schema compatibility is uncertain.
+- Sanitized evidence SHA
+  `d140cfa15e6aab5eb1597c6e688f0752383c82ff` passes exact-SHA ordinary CI
+  `33874407786` in every repository, secret, frontend, two-shard E2E, visual
+  and aggregate lane.
+- Level 3 `33874936730` passes the same full matrix, controlled preflight and
+  cumulative disposable-Site runtime job `101031261706`. Its recovery result
+  reports `productionContact=false`, backup/restore/forward-fix verification
+  true and evidence checksum
+  `sha256:940dc13f79cf5247c12d0f2d1f0c38abbe410c9bbd913f5de2a31c43996e0611`.
+- Controlled runtime artifact `9937976023` has digest
+  `sha256:0250b47fb30b8c7c51684796e171a311e195378aa46764c10715be01b9ef638d`.
+- A final independent production health read at `2026-09-04T14:33:13Z`
+  reconfirmed the exact deployed SHA and all ten services.
+- Release-gate result: **PASS**. No unresolved P0/P1/P2 issue exists in the
+  authorized PA-08 scope.
+
+PA-08 is complete. Rollback switches both images together and never attempts a
+schema downgrade; use a forward fix or approved backup restore when schema
+compatibility is uncertain. ERP role mapping, credentials and real adapter
+activation remain a separate controlled production-integration task.

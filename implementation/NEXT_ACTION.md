@@ -1,17 +1,19 @@
 # Next Action
 
 Status:
-`PA-08-DEPLOYMENT — DEPLOYED; FINAL ORDINARY CI AND LEVEL 3 REQUIRED`
+`PA-08-DEPLOYMENT — LEVEL 3 AND RELEASE-GATE PASS; COMPLETE`
 
 Exact release `003597014d18cc35d74caf695e8f201e52f1306a` is active on the
 authorized AWS host. The encrypted full backup was independently verified,
 all named volumes and the previous image pair remain available, and HTTPS,
 root/login, unauthenticated API, scheduler, production markers, app inventory
-and all ten services pass. Commit only this sanitized checkpoint and require
-one exact-SHA ordinary CI PASS followed by the PA-08 Level 3 release gate. Do
-not redeploy, delete the Site/database, install `npi_erpnext_connector` on
-LaunchFlow, activate ERP adapters, or expose secrets. Marker:
-`PA-08-DEPLOYMENT`.
+and all ten services pass. Evidence SHA
+`d140cfa15e6aab5eb1597c6e688f0752383c82ff` passes ordinary CI
+`33874407786` and Level 3 `33874936730`, including cumulative disposable-Site
+runtime with `productionContact=false`; release-gate is PASS. PA-08 is
+complete and no automatic task remains. Do not redeploy, delete the
+Site/database, install `npi_erpnext_connector` on LaunchFlow, activate ERP
+adapters, or expose secrets. Marker: `PA-08-DEPLOYMENT`.
 
 Status:
 `IMPLEMENTATION_COMPLETE — P9-08 AND PHASE 9 PASS`

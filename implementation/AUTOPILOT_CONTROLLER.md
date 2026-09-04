@@ -12074,3 +12074,22 @@ P9-01 Level 3.
   ordinary CI and then the PA-08 Level 3 release gate. These evidence gates do
   not authorize or trigger a second production deployment.
 - Controller marker: `PA-08 exact release deployed and healthy; final evidence ordinary CI and Level 3 required`.
+
+## 2026-09-04 PA-08 Level 3 and release-gate PASS; complete
+
+- Sanitized deployment evidence SHA
+  `d140cfa15e6aab5eb1597c6e688f0752383c82ff` passes exact-SHA ordinary CI
+  `33874407786` in every repository, secret, frontend, two-shard E2E, visual
+  and aggregate lane.
+- Level 3 `33874936730` passes the complete matrix, controlled preflight and
+  cumulative disposable-Site runtime job `101031261706`. Recovery verifies
+  backup, restore and forward fix, cleanup completes, and
+  `productionContact=false`. Artifact `9937976023` has digest
+  `sha256:0250b47fb30b8c7c51684796e171a311e195378aa46764c10715be01b9ef638d`.
+- A final independent AWS health read reconfirms exact deployment SHA
+  `003597014d18cc35d74caf695e8f201e52f1306a` and all ten services. Release-gate
+  is PASS with no unresolved P0/P1/P2 issue in the authorized PA-08 scope.
+- Close PA-08. Real ERP credentials, service/role mapping and adapter activation
+  remain a separate controlled production-integration task; no automatic task
+  or production mutation is authorized by this closeout.
+- Controller marker: `PA-08 exact AWS deployment, Level 3 and release-gate PASS; COMPLETE`.
