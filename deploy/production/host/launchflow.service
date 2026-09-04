@@ -1,0 +1,19 @@
+[Unit]
+Description=LaunchFlow NPI One production stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/launchflow/current
+EnvironmentFile=/etc/launchflow/production.env
+ExecStart=/usr/bin/docker compose --env-file /etc/launchflow/production.env -f deploy/production/compose.yml up --detach --remove-orphans
+ExecReload=/usr/bin/docker compose --env-file /etc/launchflow/production.env -f deploy/production/compose.yml up --detach --remove-orphans
+ExecStop=/usr/bin/docker compose --env-file /etc/launchflow/production.env -f deploy/production/compose.yml stop
+TimeoutStartSec=300
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target

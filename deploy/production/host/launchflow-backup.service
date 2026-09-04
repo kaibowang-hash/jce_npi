@@ -1,0 +1,12 @@
+[Unit]
+Description=Create an encrypted LaunchFlow NPI One full backup
+After=launchflow.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/launchflow/current
+ExecStart=/opt/launchflow/current/deploy/production/scripts/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
