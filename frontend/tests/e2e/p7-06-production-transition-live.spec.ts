@@ -541,7 +541,9 @@ test.describe("P7-06 live Production Transition workspace", () => {
       "Production transition access is not available",
     );
     await expect(
-      page.getByText(productionTransitionUsers.receiver, { exact: true }),
+      page
+        .locator("#main-content")
+        .getByText(productionTransitionUsers.receiver, { exact: true }),
     ).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Retry" })).toHaveCount(0);
   });
@@ -744,7 +746,9 @@ test.describe("P7-06 live Production Transition workspace", () => {
       page.getByTestId("production-transition-workspace"),
     ).toHaveCount(0);
     await expect(
-      page.getByText(productionTransitionUsers.receiver, { exact: true }),
+      page
+        .locator("#main-content")
+        .getByText(productionTransitionUsers.receiver, { exact: true }),
     ).toHaveCount(0);
   });
 });

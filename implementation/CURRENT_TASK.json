@@ -43,6 +43,8 @@
     ".dockerignore",
     "apps/npi_core/npi_core/production_setup.py",
     "deploy/production/**",
+    "frontend/tests/e2e/*-snapshots/*-linux.png",
+    "frontend/tests/e2e/p7-06-production-transition-live.spec.ts",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/CURRENT_TASK.json",

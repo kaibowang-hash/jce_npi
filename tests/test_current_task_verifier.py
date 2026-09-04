@@ -85,7 +85,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         )
         self.assertEqual(
             [path for path in value["allowed_paths"] if "*" in path],
-            ["deploy/production/**"],
+            [
+                "deploy/production/**",
+                "frontend/tests/e2e/*-snapshots/*-linux.png",
+            ],
         )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
