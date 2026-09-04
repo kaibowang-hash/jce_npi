@@ -1,6 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-09-03T17:23:20+07:00`
+Updated: `2026-09-04T16:36:00+07:00`
+
+- Active delivery task: `PA-08-DEPLOYMENT`.
+- User-authorized outcome: incrementally install the clean exact LaunchFlow
+  release on the existing AWS host while preserving the named Site/database
+  volumes and the server's not-ready worktree in a rollback archive.
+- Release package SHA `537b8e64e03cf2ed20f9e9df3e54d0a858f63eee`
+  passes local repository `3026/3026`, frontend `1155/1155`, i18n `9364`
+  source strings at 100% zh/zh-TW, production build/budget/brand and deployment
+  tests `8/8`. The same-day accepted audit reports zero vulnerabilities for
+  unchanged lock checksum
+  `ead6cb76517681a2699d3dccbbbfb32d551713be27015d5ac98645af1b1449`;
+  fresh local and AWS npm audit POSTs timed out with no result.
+- Ordinary CI `33858955369` failed only because this post-V1.2 deployment task
+  was not yet registered; production remains unchanged. The next action is one
+  corrected exact-SHA ordinary CI. Only after PASS may backup, build, migration,
+  image switch and health verification execute.
+- Controller marker: `PA-08 production deployment package awaits exact-SHA ordinary CI; production unchanged`.
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`

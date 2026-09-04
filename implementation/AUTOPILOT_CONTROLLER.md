@@ -12019,3 +12019,31 @@ P9-01 Level 3.
   user-approved post-V1.2 M9-04/M9-05 real pilots remain held and separately
   owned. No automatic V1.2 product task remains.
 - Controller marker: `P9-08 Level 3 and release-gate PASS; IMPLEMENTATION_COMPLETE`.
+
+## 2026-09-04 PA-08 LaunchFlow AWS deployment package registered
+
+- The user authorizes installation through SSH alias `LaunchFlow` and permits
+  replacement of the not-ready deployment. Discovery proved an existing Docker
+  production skeleton at old image revision `d23d564d`, persistent named Site,
+  MariaDB, Redis and log volumes, and a separate dirty server worktree.
+- Use a non-destructive incremental release. Preserve that worktree in a
+  server-side archive, create and verify a full encrypted Site backup, retain
+  the old exact-SHA images, and never remove the Site/database volumes.
+- Release package `537b8e64e03cf2ed20f9e9df3e54d0a858f63eee`
+  combines the accepted PA-01 through PA-07 product with the independent
+  production stack. LaunchFlow installs only `npi_core` then `npi_integration`;
+  `npi_erpnext_connector` remains ERPNext-side and is excluded.
+- The initializer disables developer mode and public signup, sets the explicit
+  production environment marker, leaves ERP authorization ingress and real ERP
+  adapters disabled, migrates, enables the scheduler and exits maintenance only
+  after success.
+- Local Level 3 checks pass repository `3026/3026`, frontend `1155/1155`,
+  direct i18n `9364` at 100% zh/zh-TW, build/budget/brand and deployment `8/8`.
+  Fresh npm audit POSTs timed out on local and AWS networks; the same-day zero-
+  vulnerability result remains bound to the unchanged exact lock checksum and
+  the immutable image build still runs the unchanged audit fail closed.
+- Ordinary CI `33858955369` failed before secret scanning only because the
+  completed P9-08 manifest did not allow `.dockerignore`; it changed no
+  production state. Register this independent delivery-infrastructure task and
+  require one corrected exact-SHA ordinary PASS before any backup/build/switch.
+- Controller marker: `PA-08 production deployment package awaits exact-SHA ordinary CI; production unchanged`.

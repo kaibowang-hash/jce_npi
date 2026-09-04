@@ -1,6 +1,19 @@
 # Next Action
 
 Status:
+`PA-08-DEPLOYMENT — EXACT-SHA ORDINARY CI REQUIRED BEFORE PRODUCTION CHANGE`
+
+The user's 2026-09-04 SSH deployment authorization activates only the
+incremental LaunchFlow AWS release task. Commit the registered PA-08 manifest
+and require one exact-SHA ordinary CI PASS. Then archive the server's dirty
+not-ready worktree, verify an encrypted full Site backup, build immutable
+backend/SPA images, run the guarded initializer/migration, switch the pair and
+prove HTTPS, login redirect, API authentication, scheduler and service health.
+Keep the current image pair and every named volume. Do not delete the Site or
+database, install `npi_erpnext_connector` on LaunchFlow, activate ERP adapters,
+or expose secrets. Marker: `PA-08-DEPLOYMENT`.
+
+Status:
 `IMPLEMENTATION_COMPLETE — P9-08 AND PHASE 9 PASS`
 
 No automatic product task remains in V1.2. Final product/evidence SHA

@@ -834,7 +834,7 @@ class V12ReconciliationTests(unittest.TestCase):
             "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3",
             phase_status,
         )
-        self.assertIn("current_task: P9-08", phase_status)
+        self.assertIn("current_task: PA-08-DEPLOYMENT", phase_status)
         self.assertIn("p9_07:", phase_status)
         self.assertIn("final_level_3: 33730710124_PASS", phase_status)
         self.assertIn("p9_08:", phase_status)
