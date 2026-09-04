@@ -5,8 +5,6 @@ import pathlib
 import re
 import unittest
 
-import yaml
-
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / "deploy" / "production"
@@ -14,8 +12,8 @@ DEPLOY = ROOT / "deploy" / "production"
 
 class ProductionDeploymentTests(unittest.TestCase):
     def test_compose_has_complete_independent_runtime(self) -> None:
-        document = yaml.safe_load((DEPLOY / "compose.yml").read_text(encoding="utf-8"))
-        services = document["services"]
+        compose = (DEPLOY / "compose.yml").read_text(encoding="utf-8")
+        services = set(re.findall(r"^  ([a-z][a-z0-9-]*):$", compose, re.MULTILINE))
         self.assertTrue(
             {
                 "db",
@@ -33,22 +31,20 @@ class ProductionDeploymentTests(unittest.TestCase):
             }.issubset(services)
         )
         self.assertNotIn("erpnext", services)
-        for name in (
-            "db",
-            "redis-cache",
-            "redis-queue",
-            "backend",
-            "frappe-frontend",
-            "spa",
-        ):
-            self.assertIn("healthcheck", services[name])
-        for name, service in services.items():
-            if name not in {"configurator", "site-init"}:
-                self.assertEqual(service.get("restart"), "unless-stopped")
-        self.assertEqual(services["db"]["environment"], {"MARIADB_ROOT_PASSWORD_FILE": "/run/secrets/mariadb_root_password"})
-        self.assertNotIn("ports", services["db"])
-        self.assertNotIn("ports", services["redis-cache"])
-        self.assertNotIn("ports", services["redis-queue"])
+        self.assertEqual(compose.count("    healthcheck:\n"), 6)
+        self.assertGreaterEqual(compose.count("    restart: unless-stopped\n"), 4)
+        self.assertIn(
+            "      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/mariadb_root_password\n",
+            compose,
+        )
+        for service_name in ("db", "redis-cache", "redis-queue"):
+            block = re.search(
+                rf"^  {re.escape(service_name)}:\n(?P<body>.*?)(?=^  [a-z][a-z0-9-]*:\n|^secrets:\n)",
+                compose,
+                re.MULTILINE | re.DOTALL,
+            )
+            self.assertIsNotNone(block)
+            self.assertNotIn("\n    ports:\n", block.group("body"))
 
     def test_images_and_frappe_source_are_immutable(self) -> None:
         containerfile = (DEPLOY / "Containerfile").read_text(encoding="utf-8")

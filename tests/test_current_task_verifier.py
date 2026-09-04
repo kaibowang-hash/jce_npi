@@ -34,62 +34,59 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "P9-08")
-        self.assertEqual(value["task_kind"], "product")
+        self.assertEqual(value["task_id"], "PA-08-DEPLOYMENT")
+        self.assertEqual(value["task_kind"], "delivery_infrastructure")
         self.assertEqual(
             value["status"],
-            "IMPLEMENTATION_COMPLETE",
+            "IN_PROGRESS_EXACT_SHA_CI",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
-        self.assertEqual(
-            value["requirement_ids"],
-            ["UX-003"],
-        )
+        self.assertEqual(value["requirement_ids"], [])
         self.assertEqual(
             value["base_checkpoint"],
-            "d911c2bcecb228cee0f4830c868e0d0fdf35d3e2",
+            "6b274f05be58fc52839b6f14a055b662d607787e",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "d911c2bcecb228cee0f4830c868e0d0fdf35d3e2",
+            "6b274f05be58fc52839b6f14a055b662d607787e",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "P9-08",
-                "phase_status_execution_hold": "NONE",
-                "phase_status_resumed_product_task": "P9-08",
-                "active_goal_marker": "P9-08",
-                "next_action_marker": "P9-08",
-                "controller_marker": "P9-08 Level 3 and release-gate PASS; IMPLEMENTATION_COMPLETE",
+                "phase_status_current_task": "PA-08-DEPLOYMENT",
+                "phase_status_execution_hold": "EXACT_SHA_ORDINARY_CI_REQUIRED_BEFORE_PRODUCTION_CHANGE",
+                "phase_status_resumed_product_task": "COMPLETE",
+                "active_goal_marker": "PA-08-DEPLOYMENT",
+                "next_action_marker": "PA-08-DEPLOYMENT",
+                "controller_marker": "PA-08 production deployment package awaits exact-SHA ordinary CI; production unchanged",
             },
         )
         for invariant in (
-            "P9_07_EXACT_SHA_D911C2BC_ORDINARY_33730217862_AND_LEVEL3_33730710124_PASS",
-            "P9_07_RUNTIME_JOB_100571300835_ARTIFACT_9884231883_PRODUCTION_CONTACT_FALSE",
-            "CONTROLLED_UAT_AT_01_AND_AT_02_REPRESENTATIVE_NON_PRODUCTION_ONLY",
-            "UX_003_RATIO_MEASURES_CONTROLLED_WORKFLOW_COVERAGE_NOT_REAL_USER_ADOPTION",
-            "NO_PRODUCT_CHANGE_WITHOUT_ONE_CONCRETE_REPRODUCIBLE_UAT_GAP",
-            "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REQUIRED_BEFORE_COMPLETION",
-            "P9_08_FINAL_SHA_67290C57_ORDINARY_33741955643_AND_LEVEL3_33742476664_PASS",
-            "P9_08_RUNTIME_100608924712_ARTIFACT_9888803374_PRODUCTION_CONTACT_FALSE_AND_CLEANUP_PASS",
+            "P9_08_AND_PHASE_9_TECHNICAL_IMPLEMENTATION_REMAIN_COMPLETE",
+            "PRODUCTION_DEPLOYMENT_IS_INCREMENTAL_WITH_NAMED_VOLUMES_PRESERVED",
+            "ENCRYPTED_FULL_BACKUP_VERIFIED_BEFORE_MIGRATION_OR_IMAGE_SWITCH",
+            "EXACT_SHA_BACKEND_AND_SPA_IMAGES_SWITCH_TOGETHER",
+            "NPI_ERPNEXT_CONNECTOR_NEVER_INSTALLED_ON_LAUNCHFLOW",
+            "PRODUCTION_ENVIRONMENT_MARKER_AND_PUBLIC_SELF_SIGNUP_DISABLED",
+            "ERP_AUTHORIZATION_INGRESS_AND_REAL_ERP_ADAPTERS_REMAIN_DISABLED",
+            "EXACT_SHA_ORDINARY_CI_AND_LEVEL_3_RELEASE_GATE_REQUIRED",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "implementation/evidence/phase-9/p9-07-validation.md",
-                "implementation/evidence/phase-9/p9-08-plan.md",
-                "implementation/phase-9-requirement-anchor.md",
-                "implementation/uat/p9-08-controlled-uat.json",
-                "scripts/verify_phase9_controlled_uat.py",
-                "scripts/verify-frappe-runtime.sh",
-                "scripts/verify_item_publish_runtime.py",
-                "tests/test_phase8_item_publish_runtime_verifier.py",
-                "frontend/tests/e2e/p9-08-controlled-uat.spec.ts",
+                ".dockerignore",
+                "apps/npi_core/npi_core/production_setup.py",
+                "deploy/production/**",
+                "implementation/evidence/production-activation/pa-08-aws-deployment.md",
+                "tests/test_production_deployment.py",
+                "tests/test_current_task_verifier.py",
             }.issubset(set(value["allowed_paths"]))
         )
-        self.assertFalse(any("*" in path for path in value["allowed_paths"]))
+        self.assertEqual(
+            [path for path in value["allowed_paths"] if "*" in path],
+            ["deploy/production/**"],
+        )
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
         source = MANIFEST.read_text(encoding="utf-8")
@@ -106,10 +103,14 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             load_manifest(self.write_manifest({**self.manifest, "extra": True}))
 
     def test_product_task_rejects_missing_or_unknown_requirement(self) -> None:
-        changed = {**self.manifest, "requirement_ids": []}
+        changed = {**self.manifest, "task_kind": "product", "requirement_ids": []}
         with self.assertRaisesRegex(CurrentTaskError, "freeze at least one"):
             validate_current_task(self.write_manifest(changed), check_git=False)
-        changed = {**self.manifest, "requirement_ids": ["FR-NOT-REAL"]}
+        changed = {
+            **self.manifest,
+            "task_kind": "product",
+            "requirement_ids": ["FR-NOT-REAL"],
+        }
         with self.assertRaisesRegex(CurrentTaskError, "unknown Requirement"):
             validate_current_task(self.write_manifest(changed), check_git=False)
 
@@ -132,6 +133,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         ):
             with self.subTest(key=key):
                 changed = {**self.manifest, key: value}
+                changed["status"] = "IMPLEMENTATION_COMPLETE"
                 with self.assertRaisesRegex(CurrentTaskError, "IMPLEMENTATION_COMPLETE"):
                     validate_current_task(self.write_manifest(changed), check_git=False)
 
