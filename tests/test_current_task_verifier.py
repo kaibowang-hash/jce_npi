@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "PA-09-DESK-BOOT-HOTFIX")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS")
+        self.assertEqual(value["status"], "IMPLEMENTATION_COMPLETE")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
         self.assertEqual(value["requirement_ids"], ["NFR-MNT-001"])
@@ -56,7 +56,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
                 "phase_status_resumed_product_task": "COMPLETE",
                 "active_goal_marker": "PA-09-DESK-BOOT-HOTFIX",
                 "next_action_marker": "PA-09-DESK-BOOT-HOTFIX",
-                "controller_marker": "PA-09 production Frappe Desk boot hotfix active; exact-SHA ordinary CI required before deployment",
+                "controller_marker": "PA-09 exact production hotfix deployed and browser-verified; final exact-SHA ordinary CI and Level 3 required",
             },
         )
         for invariant in (

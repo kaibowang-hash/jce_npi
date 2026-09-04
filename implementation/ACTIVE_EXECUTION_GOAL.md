@@ -1,19 +1,26 @@
 # Active Execution Goal
 
-Updated: `2026-09-04T22:09:28+07:00`
+Updated: `2026-09-04T23:02:36+07:00`
 
-- Active production hotfix: `PA-09-DESK-BOOT-HOTFIX`.
-- Authenticated `/app` and `/app/setup-wizard` return HTTP 200 while every
-  service remains healthy, but Chrome proves the first inline Desk boot script
-  has a syntax error before `frappe.boot` is created. The first malformed
-  source is the SPA-only `Parameter {{index}} category` translation.
-- Apply only the supported `extend_bootinfo` filter that omits double-curly
-  SPA placeholder messages from Frappe Desk boot. LaunchFlow's BFF catalog,
-  user-visible translations, Frappe core, schema, permissions and ERP seams do
-  not change.
-- Require focused tests, repository/i18n verification and exact-SHA ordinary
-  CI before an encrypted-backup incremental production deployment. Then prove
-  authenticated Desk and Setup Wizard and finish one Level 3 release gate.
+- Active production hotfix: `PA-09-DESK-BOOT-HOTFIX — IMPLEMENTATION_COMPLETE`.
+- Exact repair `788ea1e1d9e13ebd3a91a382932fdce34347adad` passes ordinary CI
+  `33888820576`. Its backend and SPA image revisions are active after an
+  independently checksummed encrypted backup; all ten services run with zero
+  unhealthy containers and HTTPS ping passes.
+- Chrome first rendered the Setup Wizard welcome step with its required fields
+  and Next action. A clean reload then followed the already-complete setup state
+  to the authenticated Users workspace with zero fresh console errors. No form
+  was filled or submitted by Codex.
+- The supported `extend_bootinfo` filter is the only product repair. LaunchFlow's
+  BFF catalog, user-visible translations, Frappe core, schema, permissions and
+  ERP seams remain unchanged.
+- The first image-switch attempt safely stopped because the existing rollback
+  helper enables maintenance while the backend health gate requires HTTP 200.
+  The prior release was recovered without data loss before the exact no-schema
+  switch. Keep this rollback-helper limitation explicit for a separate task;
+  the proven manual maintenance-off/image/env/pointer recovery remains retained.
+- Final closure requires exact-SHA ordinary CI and one Level 3 release gate on
+  this sanitized completion checkpoint.
 - Controller marker: `PA-09-DESK-BOOT-HOTFIX`.
 
 - Active delivery task: `PA-08-DEPLOYMENT`.

@@ -12115,3 +12115,30 @@ P9-01 Level 3.
   the exact image pair, verify authenticated Desk/Setup Wizard without reading
   cookies or secrets, and finish one Level 3 release gate.
 - Controller marker: `PA-09 production Frappe Desk boot hotfix active; exact-SHA ordinary CI required before deployment`.
+
+## 2026-09-04 PA-09 exact production hotfix deployed and browser-verified
+
+- Exact repair `788ea1e1d9e13ebd3a91a382932fdce34347adad` passes pre-deploy
+  ordinary CI `33888820576`. The source archive and fresh encrypted full backup
+  are checksummed, and both active image labels match the exact repair SHA.
+- The first switch attempt failed closed because the existing rollback helper
+  enables maintenance before a backend healthcheck that requires HTTP 200. The
+  previous image pair was restored, maintenance was disabled and all ten
+  services recovered without data loss before the no-schema guarded switch.
+  Do not describe the current helper as automated rollback-ready; repair it only
+  in a separate atomic task. Retain the proved manual maintenance-off, image,
+  environment and release-pointer recovery sequence.
+- The guarded exact switch completed at `2026-09-04T16:00:20Z`. Ten services are
+  running, zero are unhealthy, the repository production health gate and HTTPS
+  ping pass.
+- The authenticated browser rendered the Setup Wizard welcome step with the
+  required language, country, timezone, currency and Next controls. A clean
+  reload then honored the completed setup state and opened the Users workspace;
+  no fresh browser console errors were recorded. Codex did not fill or submit
+  setup data.
+- No production ERPNext/JCE-Core contact occurred. No schema, migration,
+  permission, authentication, business-data, named-volume or ERP activation
+  change occurred.
+- Final closure requires exact-SHA ordinary CI and one diagnostics-off Level 3
+  on this sanitized completion checkpoint.
+- Controller marker: `PA-09 exact production hotfix deployed and browser-verified; final exact-SHA ordinary CI and Level 3 required`.

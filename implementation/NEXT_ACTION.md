@@ -1,16 +1,18 @@
 # Next Action
 
 Status:
-`PA-09-DESK-BOOT-HOTFIX — LOCAL REPAIR AND EXACT-SHA ORDINARY CI`
+`PA-09-DESK-BOOT-HOTFIX — IMPLEMENTATION_COMPLETE`
 
-The authenticated production Frappe Desk returns HTTP 200 but its first inline
-boot script fails syntax parsing before `frappe.boot` exists. The first proved
-malformed entry is the NPI SPA-only `Parameter {{index}} category` translation;
-the resulting failures in Desk, list, form, report, telemetry and billing
-bundles are secondary. Add only the supported `extend_bootinfo` filter for
-double-curly source/translation messages, a focused regression and sanitized
-evidence. Run repository and direct i18n checks, commit the exact task and
-require ordinary CI PASS before any production deployment. Marker:
+Exact repair `788ea1e1d9e13ebd3a91a382932fdce34347adad` passes pre-deploy
+ordinary CI `33888820576` and is active on both production images after a fresh
+encrypted backup. Ten services run, zero are unhealthy, HTTPS ping passes, the
+Setup Wizard welcome step renders and a clean authenticated reload reaches the
+Users administration workspace with zero fresh console errors. The repair is
+limited to the supported Desk boot-message filter; no schema, permission,
+authentication or ERP seam changed. The existing rollback helper's
+maintenance/HTTP-200 health conflict is recorded for separate repair; the prior
+release recovery path was proved without data loss. Require exact-SHA ordinary
+CI and one Level 3 release gate on this completion checkpoint. Marker:
 `PA-09-DESK-BOOT-HOTFIX`.
 
 Status:
