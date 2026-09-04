@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json.schemastore.org/design-tokens.json",
+  "meta": {
+    "product": "NPI One",
+    "version": "1.2",
+    "reference": "Siemens Industrial Experience / classic engineering software layout",
+    "note": "Own-company theme. Single industrial teal primary, neutral surfaces, square geometry."
+  },
+  "color": {
+    "surface.canvas": {
+      "value": "#E9EDEF"
+    },
+    "surface.default": {
+      "value": "#FFFFFF"
+    },
+    "surface.subtle": {
+      "value": "#F3F5F6"
+    },
+    "surface.sunken": {
+      "value": "#E1E6E8"
+    },
+    "surface.selected": {
+      "value": "#DDEBED"
+    },
+    "text.primary": {
+      "value": "#172126"
+    },
+    "text.secondary": {
+      "value": "#4D5A60"
+    },
+    "text.muted": {
+      "value": "#6F7A7F"
+    },
+    "border.default": {
+      "value": "#B6C0C4"
+    },
+    "border.strong": {
+      "value": "#7E8A8F"
+    },
+    "brand.primary": {
+      "value": "#006B73"
+    },
+    "brand.hover": {
+      "value": "#00575E"
+    },
+    "brand.active": {
+      "value": "#00464C"
+    },
+    "brand.subtle": {
+      "value": "#E1EFF0"
+    },
+    "action.primary": {
+      "value": "#006B73"
+    },
+    "action.hover": {
+      "value": "#00575E"
+    },
+    "action.disabled": {
+      "value": "#AEB8BC"
+    },
+    "semantic.success": {
+      "value": "#2F6B45"
+    },
+    "semantic.successSubtle": {
+      "value": "#E7F0EA"
+    },
+    "semantic.warning": {
+      "value": "#875A00"
+    },
+    "semantic.warningSubtle": {
+      "value": "#F5EEDC"
+    },
+    "semantic.danger": {
+      "value": "#9B3933"
+    },
+    "semantic.dangerSubtle": {
+      "value": "#F5E7E5"
+    },
+    "semantic.info": {
+      "value": "#006B73"
+    },
+    "focus": {
+      "value": "#004F56"
+    }
+  },
+  "space": {
+    "0": {
+      "value": "0px"
+    },
+    "1": {
+      "value": "4px"
+    },
+    "2": {
+      "value": "8px"
+    },
+    "3": {
+      "value": "12px"
+    },
+    "4": {
+      "value": "16px"
+    },
+    "5": {
+      "value": "20px"
+    },
+    "6": {
+      "value": "24px"
+    },
+    "8": {
+      "value": "32px"
+    },
+    "10": {
+      "value": "40px"
+    },
+    "12": {
+      "value": "48px"
+    }
+  },
+  "radius": {
+    "none": {
+      "value": "0px"
+    },
+    "subtle": {
+      "value": "2px"
+    },
+    "circular": {
+      "value": "999px",
+      "usage": "avatars, radio controls, status lamps and lifecycle nodes only"
+    }
+  },
+  "border": {
+    "default": {
+      "value": "1px"
+    },
+    "selected": {
+      "value": "3px"
+    }
+  },
+  "shadow": {
+    "none": {
+      "value": "none"
+    },
+    "overlay": {
+      "value": "0 2px 8px rgba(23, 33, 38, 0.18)"
+    }
+  },
+  "typography": {
+    "font.family": {
+      "value": "Arial, Noto Sans SC, Noto Sans, system-ui, sans-serif"
+    },
+    "font.mono": {
+      "value": "ui-monospace, SFMono-Regular, Consolas, monospace"
+    },
+    "size.xxs": {
+      "value": "10px"
+    },
+    "size.xs": {
+      "value": "12px"
+    },
+    "size.sm": {
+      "value": "13px"
+    },
+    "size.md": {
+      "value": "14px"
+    },
+    "size.lg": {
+      "value": "18px"
+    },
+    "size.xl": {
+      "value": "22px"
+    },
+    "size.display": {
+      "value": "26px"
+    },
+    "weight.regular": {
+      "value": "400"
+    },
+    "weight.medium": {
+      "value": "500"
+    },
+    "weight.semibold": {
+      "value": "600"
+    }
+  },
+  "layout": {
+    "appHeader": {
+      "value": "48px"
+    },
+    "sideNav": {
+      "value": "216px"
+    },
+    "sideNavCompact": {
+      "value": "64px"
+    },
+    "pageToolbar": {
+      "value": "40px"
+    },
+    "objectHeader": {
+      "value": "72px"
+    },
+    "contextInspector": {
+      "value": "340px"
+    },
+    "statusBar": {
+      "value": "24px"
+    },
+    "contentMax": {
+      "value": "none"
+    }
+  },
+  "density": {
+    "row.compact": {
+      "value": "32px"
+    },
+    "row.default": {
+      "value": "36px"
+    },
+    "tree.row": {
+      "value": "28px"
+    },
+    "control.compact": {
+      "value": "32px"
+    },
+    "control.default": {
+      "value": "36px"
+    }
+  },
+  "motion": {
+    "fast": {
+      "value": "100ms"
+    },
+    "normal": {
+      "value": "160ms"
+    },
+    "slow": {
+      "value": "240ms"
+    },
+    "principle": {
+      "value": "functional only; no decorative motion"
+    }
+  },
+  "usageRatios": {
+    "neutralSurface": {
+      "value": "85-90%"
+    },
+    "primary": {
+      "value": "5-10%"
+    },
+    "semantic": {
+      "value": "<5%"
+    }
+  }
+}

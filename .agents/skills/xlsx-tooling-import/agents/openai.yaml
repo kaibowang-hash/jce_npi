@@ -1,0 +1,4 @@
+interface:
+  display_name: "Controlled Tooling XLSX Import"
+  short_description: "Inspect and plan safe Tooling workbook imports"
+  default_prompt: "Use $xlsx-tooling-import to inspect this Tooling workbook and produce a provenance-safe import plan."

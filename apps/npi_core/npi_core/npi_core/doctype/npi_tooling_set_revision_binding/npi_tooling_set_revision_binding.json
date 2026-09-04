@@ -1,0 +1,34 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Tooling Set Revision Binding",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "binding_key_hash", "fieldtype": "Data", "label": "Set Revision Binding Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tooling_master_global_id", "fieldtype": "Data", "label": "Tooling Master Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tooling_set", "fieldtype": "Link", "label": "Tooling Set", "options": "NPI Tooling Set", "reqd": 1, "read_only": 1},
+    {"fieldname": "tooling_set_global_id", "fieldtype": "Data", "label": "Tooling Set Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tooling_set_snapshot_hash", "fieldtype": "Data", "label": "Tooling Set Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "tooling_revision", "fieldtype": "Link", "label": "Tooling Revision", "options": "NPI Tooling Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "tooling_revision_global_id", "fieldtype": "Data", "label": "Tooling Revision Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tooling_revision_snapshot_hash", "fieldtype": "Data", "label": "Tooling Revision Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "reason", "fieldtype": "Small Text", "label": "Set Revision Binding Reason", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_user_id", "fieldtype": "Data", "label": "Created By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "binding_snapshot", "fieldtype": "JSON", "label": "Set Revision Binding Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

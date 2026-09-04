@@ -1,0 +1,34 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Engineering Part Revision",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "engineering_part", "fieldtype": "Link", "label": "Engineering Part", "options": "NPI Engineering Part", "reqd": 1, "read_only": 1},
+    {"fieldname": "part_global_id", "fieldtype": "Data", "label": "Part Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "originating_project_global_id", "fieldtype": "Data", "label": "Originating Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "revision_number", "fieldtype": "Int", "label": "Part Revision Number", "reqd": 1, "read_only": 1},
+    {"fieldname": "revision_key", "fieldtype": "Data", "label": "Part Revision Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "revision_label", "fieldtype": "Data", "label": "Revision Label", "reqd": 1, "read_only": 1},
+    {"fieldname": "predecessor_global_id", "fieldtype": "Data", "label": "Predecessor Part Revision Global ID", "read_only": 1},
+    {"fieldname": "predecessor_snapshot_hash", "fieldtype": "Data", "label": "Predecessor Snapshot Hash", "read_only": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "Part Title", "reqd": 1, "read_only": 1},
+    {"fieldname": "reason", "fieldtype": "Small Text", "label": "Revision Reason", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_user_id", "fieldtype": "Data", "label": "Created By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "revision_snapshot", "fieldtype": "JSON", "label": "Part Revision Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 1, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

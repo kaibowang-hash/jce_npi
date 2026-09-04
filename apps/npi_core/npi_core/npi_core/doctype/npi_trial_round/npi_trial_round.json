@@ -1,0 +1,38 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Trial Round",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "trial_plan_global_id", "fieldtype": "Data", "label": "Trial Plan Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "trial_plan_revision", "fieldtype": "Link", "label": "Trial Plan Revision", "options": "NPI Trial Plan Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "trial_plan_revision_global_id", "fieldtype": "Data", "label": "Trial Plan Revision Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trial_plan_revision_snapshot_hash", "fieldtype": "Data", "label": "Trial Plan Revision Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "tooling_master", "fieldtype": "Link", "label": "Tooling Master", "options": "NPI Tooling Master", "reqd": 1, "read_only": 1},
+    {"fieldname": "tooling_master_global_id", "fieldtype": "Data", "label": "Tooling Master Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "round_sequence", "fieldtype": "Int", "label": "Trial Round Sequence", "reqd": 1, "read_only": 1},
+    {"fieldname": "display_label", "fieldtype": "Data", "label": "Trial Round Label", "reqd": 1, "read_only": 1},
+    {"fieldname": "purpose", "fieldtype": "Select", "label": "Trial Purpose", "options": "first_trial\ntooling_change_verification\ndesign_verification\nmaterial_color_verification\ncapability_study\ncustomer_sample\nother", "reqd": 1, "read_only": 1},
+    {"fieldname": "planned_start_at", "fieldtype": "Datetime", "label": "Planned Start At", "reqd": 1, "read_only": 1},
+    {"fieldname": "planned_end_at", "fieldtype": "Datetime", "label": "Planned End At", "reqd": 1, "read_only": 1},
+    {"fieldname": "current_state", "fieldtype": "Select", "label": "Trial Round State", "options": "planned\nprepared\nrunning\nanalysis\nsubmitted\napproved\nrejected\ncancelled", "reqd": 1, "read_only": 1},
+    {"fieldname": "current_event_global_id", "fieldtype": "Data", "label": "Current Trial Event Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_user_id", "fieldtype": "Data", "label": "Created By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "round_snapshot", "fieldtype": "JSON", "label": "Trial Round Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

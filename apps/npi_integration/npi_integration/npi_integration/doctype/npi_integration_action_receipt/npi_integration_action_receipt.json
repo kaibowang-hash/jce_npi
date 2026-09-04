@@ -1,0 +1,43 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Integration Action Receipt",
+  "module": "NPI Integration",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "project_global_id,operation_kind,operation_global_id,action_kind,actor_user_id,trace_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "schema_version", "fieldtype": "Int", "label": "Schema Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "operation_kind", "fieldtype": "Select", "label": "Integration Operation Kind", "options": "receive_project_submission\npublish_item\npublish_mbom\ncreate_tool_asset\nupdate_tool_asset", "reqd": 1, "read_only": 1},
+    {"fieldname": "operation_global_id", "fieldtype": "Data", "label": "Integration Operation Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "source_global_id", "fieldtype": "Data", "label": "Integration Source Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "operation_version", "fieldtype": "Int", "label": "Integration Operation Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "raw_state", "fieldtype": "Data", "label": "Integration Raw State", "reqd": 1, "read_only": 1},
+    {"fieldname": "shared_state", "fieldtype": "Select", "label": "Integration Shared State", "options": "queued\nprocessing\nsucceeded\nfailed_retryable\nfailed_final\nuncertain\npartial\nconflict\nquarantined\nunavailable", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_snapshot_hash", "fieldtype": "Data", "label": "Integration Source Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "target_idempotency_key_hash", "fieldtype": "Data", "label": "Target Idempotency Key Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "action_kind", "fieldtype": "Select", "label": "Integration Action Kind", "options": "replay\nrequest_reconciliation", "reqd": 1, "read_only": 1},
+    {"fieldname": "action_idempotency_key_hash", "fieldtype": "Data", "label": "Integration Action Idempotency Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "expected_raw_state", "fieldtype": "Data", "label": "Expected Integration Raw State", "reqd": 1, "read_only": 1},
+    {"fieldname": "expected_version", "fieldtype": "Int", "label": "Expected Integration Operation Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_hash", "fieldtype": "Data", "label": "Integration Action Request Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "outcome_state", "fieldtype": "Select", "label": "Integration Action Outcome", "options": "replay_requested\nreconciliation_requested", "reqd": 1, "read_only": 1},
+    {"fieldname": "outcome_reference_global_id", "fieldtype": "Data", "label": "Integration Action Outcome Reference", "read_only": 1},
+    {"fieldname": "response_snapshot", "fieldtype": "JSON", "label": "Integration Action Response Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "response_hash", "fieldtype": "Data", "label": "Integration Action Response Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "receipt_snapshot", "fieldtype": "JSON", "label": "Integration Action Receipt Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "receipt_hash", "fieldtype": "Data", "label": "Integration Action Receipt Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "actor_user_id", "fieldtype": "Data", "label": "Actor User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Integration Action Recorded At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

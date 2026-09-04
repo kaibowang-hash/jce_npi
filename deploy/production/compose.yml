@@ -1,0 +1,214 @@
+name: launchflow-npi
+
+x-frappe-image: &frappe-image
+  image: ${LAUNCHFLOW_IMAGE:?LAUNCHFLOW_IMAGE is required}
+  pull_policy: never
+  restart: unless-stopped
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
+    - logs:/home/frappe/frappe-bench/logs
+    - ${BACKUP_ROOT:?BACKUP_ROOT is required}:/backups
+
+x-frappe-dependencies: &frappe-dependencies
+  depends_on:
+    configurator:
+      condition: service_completed_successfully
+
+services:
+  db:
+    image: mariadb@sha256:92e50059ea0a5965a33ef751970eab37d421b91ebbd01ac909039cffe159e574
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-name-resolve
+      - --innodb-buffer-pool-size=1G
+    environment:
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/mariadb_root_password
+    secrets:
+      - mariadb_root_password
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    mem_limit: 2g
+    pids_limit: 512
+    security_opt:
+      - no-new-privileges:true
+
+  redis-cache:
+    image: redis@sha256:ccd6aa8d45ff3f033d6fa15b8cc1a50579f65c89f38cf9bb607a954c4f2128ed
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "192mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+
+  redis-queue:
+    image: redis@sha256:ccd6aa8d45ff3f033d6fa15b8cc1a50579f65c89f38cf9bb607a954c4f2128ed
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    volumes:
+      - redis-queue-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    mem_limit: 384m
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+
+  configurator:
+    <<: *frappe-image
+    restart: "no"
+    entrypoint: ["bash", "-euc"]
+    command:
+      - |
+        printf 'frappe\nnpi_core\nnpi_integration\n' > sites/apps.txt
+        bench set-config -g db_host db
+        bench set-config -gp db_port 3306
+        bench set-config -g redis_cache redis://redis-cache:6379
+        bench set-config -g redis_queue redis://redis-queue:6379
+        bench set-config -g redis_socketio redis://redis-queue:6379
+        bench set-config -gp socketio_port 9000
+        bench set-config -g dns_multitenant true
+    depends_on:
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+      redis-queue:
+        condition: service_healthy
+    mem_limit: 384m
+
+  site-init:
+    <<: [*frappe-image, *frappe-dependencies]
+    profiles: ["setup"]
+    restart: "no"
+    command: ["/opt/launchflow/init-site.sh"]
+    environment:
+      SITE_NAME: ${SITE_NAME:?SITE_NAME is required}
+      DATABASE_NAME: ${DATABASE_NAME:?DATABASE_NAME is required}
+      NPI_TENANT_ID: ${NPI_TENANT_ID:?NPI_TENANT_ID is required}
+    secrets:
+      - mariadb_root_password
+      - administrator_password
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+      - ./scripts/init-site.sh:/opt/launchflow/init-site.sh:ro
+    mem_limit: 1g
+
+  backend:
+    <<: [*frappe-image, *frappe-dependencies]
+    environment:
+      SITE_NAME: ${SITE_NAME:?SITE_NAME is required}
+      GUNICORN_WORKERS: 2
+      GUNICORN_THREADS: 4
+      GUNICORN_TIMEOUT: 120
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent --header 'Host: ${SITE_NAME}' http://127.0.0.1:8000/api/method/ping >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    mem_limit: 1g
+    pids_limit: 512
+
+  frappe-frontend:
+    <<: [*frappe-image, *frappe-dependencies]
+    command: ["/usr/local/bin/frappe-nginx-entrypoint.sh"]
+    environment:
+      BACKEND: backend:8000
+      SOCKETIO: websocket:9000
+      FRAPPE_SITE_NAME_HEADER: ${SITE_NAME:?SITE_NAME is required}
+      PROXY_READ_TIMEOUT: 120
+      CLIENT_MAX_BODY_SIZE: 50m
+    ports:
+      - 127.0.0.1:8081:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+      websocket:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent --header 'Host: ${SITE_NAME}' http://127.0.0.1:8080/api/method/ping >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    mem_limit: 192m
+    pids_limit: 256
+
+  websocket:
+    <<: [*frappe-image, *frappe-dependencies]
+    command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+    mem_limit: 384m
+    pids_limit: 256
+
+  scheduler:
+    <<: [*frappe-image, *frappe-dependencies]
+    command: ["bench", "schedule"]
+    mem_limit: 512m
+    pids_limit: 256
+
+  queue-short:
+    <<: [*frappe-image, *frappe-dependencies]
+    command: ["bench", "worker", "--queue", "short,default"]
+    mem_limit: 768m
+    pids_limit: 384
+
+  queue-long:
+    <<: [*frappe-image, *frappe-dependencies]
+    command: ["bench", "worker", "--queue", "long,default,short"]
+    mem_limit: 1g
+    pids_limit: 384
+
+  spa:
+    image: ${LAUNCHFLOW_SPA_IMAGE:?LAUNCHFLOW_SPA_IMAGE is required}
+    pull_policy: never
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 127.0.0.1:8080:80
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    mem_limit: 96m
+    pids_limit: 128
+
+secrets:
+  mariadb_root_password:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/mariadb_root_password
+  administrator_password:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/administrator_password
+
+volumes:
+  db-data:
+    name: launchflow_npi_mariadb_v1
+  redis-queue-data:
+    name: launchflow_npi_redis_queue_v1
+  sites:
+    name: launchflow_npi_sites_v1
+  logs:
+    name: launchflow_npi_logs_v1

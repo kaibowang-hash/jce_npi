@@ -1,0 +1,33 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Part Controlled Specification",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "specification_key_hash", "fieldtype": "Data", "label": "Part Specification Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "engineering_part", "fieldtype": "Link", "label": "Engineering Part", "options": "NPI Engineering Part", "reqd": 1, "read_only": 1},
+    {"fieldname": "part_global_id", "fieldtype": "Data", "label": "Part Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "engineering_part_revision", "fieldtype": "Link", "label": "Engineering Part Revision", "options": "NPI Engineering Part Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "part_revision_global_id", "fieldtype": "Data", "label": "Part Revision Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "part_revision_snapshot_hash", "fieldtype": "Data", "label": "Part Revision Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "item_snapshot", "fieldtype": "JSON", "label": "Part Specification Item Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "external_identity_snapshot", "fieldtype": "JSON", "label": "External Identity Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_user_id", "fieldtype": "Data", "label": "Created By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "specification_snapshot", "fieldtype": "JSON", "label": "Part Controlled Specification Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

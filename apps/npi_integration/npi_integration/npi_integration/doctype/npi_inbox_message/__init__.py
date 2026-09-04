@@ -1,0 +1,1 @@
+"""NPI Inbox Message DocType."""

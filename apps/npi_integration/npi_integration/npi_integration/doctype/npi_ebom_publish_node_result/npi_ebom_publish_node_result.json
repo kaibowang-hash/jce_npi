@@ -1,0 +1,38 @@
+{
+  "doctype": "DocType",
+  "name": "NPI EBOM Publish Node Result",
+  "module": "NPI Integration",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "request_global_id,node_global_id,state,fault_kind",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "publish_request", "fieldtype": "Link", "label": "EBOM Publish Request", "options": "NPI EBOM Publish Request", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_global_id", "fieldtype": "Data", "label": "Publish Request Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "publish_node", "fieldtype": "Link", "label": "EBOM Publish Node", "options": "NPI EBOM Publish Node", "reqd": 1, "read_only": 1},
+    {"fieldname": "node_global_id", "fieldtype": "Data", "label": "Publish Node Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "attempt_number", "fieldtype": "Int", "label": "Attempt Number", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "Node Result State", "options": "validated\nblocked_mapping", "reqd": 1, "read_only": 1},
+    {"fieldname": "fault_kind", "fieldtype": "Select", "label": "Target Fault Kind", "options": "\nduplicate_request\npayload_conflict\ntimeout_after_possible_commit\nrate_limited\ntarget_server_error\nbusiness_validation\npartial_node_success\nstale_mapping\ntarget_unavailable\nrestart_replay", "read_only": 1},
+    {"fieldname": "future_retry_directive", "fieldtype": "Select", "label": "Future Retry Directive", "options": "none\nreplay_sealed_response\nreject_payload_conflict\nreconcile_before_retry\nretry_after\nretry_same_idempotency\nmanual_correction\nretry_failed_nodes_only\nresolve_mapping\nreplay_original_request", "reqd": 1, "read_only": 1},
+    {"fieldname": "future_retryable", "fieldtype": "Check", "label": "Future Retryable", "default": "0", "read_only": 1},
+    {"fieldname": "reconciliation_required", "fieldtype": "Check", "label": "Reconciliation Required", "default": "0", "read_only": 1},
+    {"fieldname": "retry_after_required", "fieldtype": "Check", "label": "Retry After Required", "default": "0", "read_only": 1},
+    {"fieldname": "phase5_dispatch_allowed", "fieldtype": "Check", "label": "Phase 5 Dispatch Allowed", "default": "0", "read_only": 1},
+    {"fieldname": "formal_item_code", "fieldtype": "Data", "label": "Formal Item Code", "read_only": 1},
+    {"fieldname": "formal_mbom_id", "fieldtype": "Data", "label": "Formal MBOM ID", "read_only": 1},
+    {"fieldname": "target_version", "fieldtype": "Data", "label": "Target Version", "read_only": 1},
+    {"fieldname": "occurred_at", "fieldtype": "Datetime", "label": "Occurred At", "reqd": 1, "read_only": 1},
+    {"fieldname": "result_snapshot", "fieldtype": "JSON", "label": "Node Result Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "result_hash", "fieldtype": "Data", "label": "Node Result Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

@@ -1,0 +1,132 @@
+# syntax=docker/dockerfile:1.7
+
+ARG PYTHON_IMAGE=python:3.11-slim-bookworm@sha256:528257d48c1da0dcecc2e725d1ae34498d60c965f1241e39cd6a85a8859bdf84
+ARG NODE_IMAGE=node:24.18.0-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d
+ARG NGINX_IMAGE=nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+
+FROM ${NODE_IMAGE} AS node-runtime
+
+FROM ${NODE_IMAGE} AS spa-builder
+WORKDIR /workspace/frontend
+ARG VITE_DEPLOYMENT_ENV
+COPY frontend/package.json frontend/package-lock.json frontend/.npmrc ./
+RUN npm ci --strict-allow-scripts
+COPY frontend/ ./
+COPY design/ /workspace/design/
+COPY localization/ /workspace/localization/
+COPY contracts/ /workspace/contracts/
+COPY apps/npi_core/ /workspace/apps/npi_core/
+COPY apps/npi_integration/ /workspace/apps/npi_integration/
+COPY implementation/uat/ /workspace/implementation/uat/
+COPY ["docs/Brand Asset/", "/workspace/docs/Brand Asset/"]
+RUN npm run verify && npm run build
+
+FROM ${PYTHON_IMAGE} AS frappe-base
+
+ARG BENCH_VERSION=5.31.0
+ARG UV_VERSION=0.11.30
+ARG WKHTMLTOPDF_VERSION=0.12.6.1-3
+ARG WKHTMLTOPDF_DISTRO=bookworm
+
+ENV PATH=/home/frappe/frappe-bench/env/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin \
+    PYTHONUNBUFFERED=1 \
+    UV_LINK_MODE=copy
+
+COPY --from=node-runtime /usr/local/ /usr/local/
+COPY --from=node-runtime /opt/yarn-v1.22.22/ /opt/yarn-v1.22.22/
+
+RUN useradd --create-home --shell /bin/bash --uid 1000 frappe \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes \
+      ca-certificates curl file gettext-base git gnupg jq less mariadb-client \
+      media-types nginx openssl procps redis-tools restic wait-for-it \
+      libharfbuzz0b libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0 \
+      libpq5 \
+    && arch="$(dpkg --print-architecture)" \
+    && curl --fail --location --silent --show-error \
+      --output /tmp/wkhtmltox.deb \
+      "https://github.com/wkhtmltopdf/packaging/releases/download/${WKHTMLTOPDF_VERSION}/wkhtmltox_${WKHTMLTOPDF_VERSION}.${WKHTMLTOPDF_DISTRO}_${arch}.deb" \
+    && apt-get install --no-install-recommends --yes /tmp/wkhtmltox.deb \
+    && python -m pip install --no-cache-dir "frappe-bench==${BENCH_VERSION}" "uv==${UV_VERSION}" \
+    && test "$(yarn --version)" = "1.22.22" \
+    && apt-get clean \
+    && rm -f /tmp/wkhtmltox.deb \
+    && rm -rf /var/lib/apt/lists/* /etc/nginx/sites-enabled/default \
+    && sed -i '/user www-data/d' /etc/nginx/nginx.conf \
+    && touch /run/nginx.pid \
+    && chown -R frappe:frappe /etc/nginx /var/lib/nginx /var/log/nginx /run/nginx.pid \
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log
+
+COPY deploy/production/nginx/frappe.conf.template /templates/nginx/frappe.conf.template
+COPY deploy/production/nginx/security-headers.conf /etc/nginx/snippets/security_headers.conf
+COPY deploy/production/scripts/backend-entrypoint.sh /usr/local/bin/backend-entrypoint.sh
+COPY deploy/production/scripts/frappe-nginx-entrypoint.sh /usr/local/bin/frappe-nginx-entrypoint.sh
+COPY deploy/production/scripts/start-gunicorn.sh /usr/local/bin/start-gunicorn.sh
+RUN chmod 0755 /usr/local/bin/backend-entrypoint.sh \
+      /usr/local/bin/frappe-nginx-entrypoint.sh /usr/local/bin/start-gunicorn.sh \
+    && chown -R frappe:frappe /templates/nginx /etc/nginx/snippets
+
+FROM frappe-base AS frappe-builder
+
+ARG FRAPPE_COMMIT=a3d8090ba80cb91d3ed72ea90bec67df201db5c1
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes \
+      build-essential cron gcc libcairo2-dev libffi-dev libgif-dev libjpeg-dev \
+      liblcms2-dev libldap2-dev libmariadb-dev libpango1.0-dev libpq-dev \
+      librsvg2-dev libsasl2-dev libtiff5-dev libwebp-dev pkg-config \
+      python3-dev rlwrap tk8.6-dev wget \
+    && rm -rf /var/lib/apt/lists/*
+
+USER frappe
+WORKDIR /home/frappe
+RUN git init --quiet /tmp/frappe-source \
+    && git -C /tmp/frappe-source remote add origin https://github.com/frappe/frappe.git \
+    && git -C /tmp/frappe-source fetch --depth 1 origin "${FRAPPE_COMMIT}" \
+    && git -C /tmp/frappe-source checkout --quiet -b pinned-production FETCH_HEAD \
+    && test "$(git -C /tmp/frappe-source rev-parse HEAD)" = "${FRAPPE_COMMIT}" \
+    && bench init \
+      --frappe-path /tmp/frappe-source \
+      --frappe-branch pinned-production \
+      --python python3.11 \
+      --no-backups \
+      --no-procfile \
+      --skip-redis-config-generation \
+      /home/frappe/frappe-bench \
+    && test "$(git -C /home/frappe/frappe-bench/apps/frappe rev-parse HEAD)" = "${FRAPPE_COMMIT}"
+
+COPY --chown=frappe:frappe apps/npi_core/ /home/frappe/frappe-bench/apps/npi_core/
+COPY --chown=frappe:frappe apps/npi_integration/ /home/frappe/frappe-bench/apps/npi_integration/
+WORKDIR /home/frappe/frappe-bench
+RUN uv pip install --python env/bin/python --no-deps --editable apps/npi_core \
+    && uv pip install --python env/bin/python --no-deps --editable apps/npi_integration \
+    && printf 'frappe\nnpi_core\nnpi_integration\n' > sites/apps.txt \
+    && printf '%s\n' "${FRAPPE_COMMIT}" > sites/.frappe-commit \
+    && find apps -mindepth 1 -type d -name .git -prune -exec rm -rf '{}' +
+
+FROM frappe-base AS backend
+
+ARG RELEASE_SHA
+ARG FRAPPE_COMMIT=a3d8090ba80cb91d3ed72ea90bec67df201db5c1
+LABEL org.opencontainers.image.title="LaunchFlow NPI One" \
+      org.opencontainers.image.revision="${RELEASE_SHA}" \
+      io.launchflow.frappe.revision="${FRAPPE_COMMIT}"
+
+COPY --from=frappe-builder --chown=frappe:frappe /home/frappe/frappe-bench /home/frappe/frappe-bench
+WORKDIR /home/frappe/frappe-bench
+RUN cp -a sites/assets /home/frappe/frappe-bench/image-assets \
+    && rm -rf sites/assets
+
+VOLUME ["/home/frappe/frappe-bench/sites", "/home/frappe/frappe-bench/logs", "/backups"]
+USER frappe
+ENTRYPOINT ["/usr/local/bin/backend-entrypoint.sh"]
+CMD ["/usr/local/bin/start-gunicorn.sh"]
+
+FROM ${NGINX_IMAGE} AS spa
+ARG RELEASE_SHA
+LABEL org.opencontainers.image.title="LaunchFlow NPI One SPA" \
+      org.opencontainers.image.revision="${RELEASE_SHA}"
+COPY deploy/production/nginx/spa.conf /etc/nginx/conf.d/default.conf
+COPY --from=spa-builder /workspace/frontend/dist/ /usr/share/nginx/html/
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -q -O /dev/null http://127.0.0.1/healthz || exit 1

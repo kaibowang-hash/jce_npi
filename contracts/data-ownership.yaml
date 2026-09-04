@@ -1,0 +1,1605 @@
+version: "1.2"
+principles:
+  - one_field_one_owner
+  - projections_are_read_only
+  - formal_execution_in_erpnext
+  - no_cross_database_access
+  - conflicts_create_visible_exception
+  - released_versions_are_immutable
+
+identity:
+  required:
+    - global_id
+    - source_system
+    - source_object_type
+    - source_object_id
+    - version
+  mapping_store_owner: NPI_ONE
+
+objects:
+  EngineeringChange:
+    owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
+    erp_view: formal_change_observation_link
+    fields:
+      change_identity_project_and_current_revision: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NONE, conflict: LOCKED_PLUS_ONE_VERSION}
+      impact_assessment_affected_versions_tasks_and_revalidation: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: IMMUTABLE_REVISION}
+      effectivity_disposition_cost_and_closure_evidence: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: EVIDENCE_REQUIRED_FAIL_CLOSED}
+      formal_change_identifier_raw_status_source_version_and_effectivity_transaction_truth: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: EXACT_READ_ONLY_OBSERVATION}
+
+  EngineeringChangeRevision:
+    owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
+    erp_view: none
+    fields:
+      exact_predecessor_and_canonical_snapshot_hash: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      baseline_document_ebom_tooling_trial_gate_and_work_references: {owner: REFERENCED_NPI_SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      formal_ecr_observation_snapshot: {owner: ERPNEXT_VIA_NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: NEVER_CALLER_EDITABLE}
+
+  EngineeringChangeEvent:
+    owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
+    erp_view: none
+    fields:
+      exact_change_revision_actor_request_trace_and_hash: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  EngineeringChangeIdempotency:
+    owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
+    erp_view: none
+    fields:
+      actor_project_operation_and_payload_hash: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDEMPOTENCY_SCOPE}
+      exact_change_and_sealed_response: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [NPI_ONE_CHANGE_CONTROL_SERVICE], direction: NONE, conflict: ONE_WAY_SEAL_EXACT_REPLAY}
+
+  EngineeringChangeIntegrationInbox:
+    owner_system: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE
+    erp_view: signed_formal_change_observation_receipt
+    fields:
+      exact_event_project_change_source_version_hash_actor_trace_and_profile: {owner: ERPNEXT_SIGNED_EVENT_VIA_NPI_ONE_INTAKE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_EXACT_EVENT}
+      receipt_claim_attempt_and_safe_failure_state: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE], direction: NONE, conflict: OPERATION_SPECIFIC_LEASE}
+      raw_request_credentials_and_unbounded_business_payload: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  EngineeringChangeImplementationSummaryRequest:
+    owner_system: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE
+    erp_view: versioned_implementation_summary
+    fields:
+      exact_change_revision_formal_observation_and_closeout_hashes: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: EXACT_VERSION_REFERENCE}
+      actor_profile_service_actor_trace_and_hashed_idempotency: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_REQUEST_SCOPE}
+      request_outbox_attempt_result_and_terminal_state: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE], direction: NONE, conflict: OPERATION_SPECIFIC_FAIL_CLOSED}
+      erp_formal_status_or_transaction_truth: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_OVERWRITE_FROM_SUMMARY}
+
+  Customer:
+    owner_system: ERPNEXT
+    npi_view: projection
+    key: erpnext_customer_id
+    fields:
+      name: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      customer_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      project_specific_contact_notes: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NPI_ONLY}
+
+  Supplier:
+    owner_system: ERPNEXT
+    npi_view: projection
+    key: erpnext_supplier_id
+    fields:
+      name: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      supplier_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      portal_profile_and_commercial_master: {owner: ERPNEXT_OR_FUTURE_APPROVED_SUPPLIER_PORTAL, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  EngineeringProject:
+    owner_system: NPI_ONE
+    erp_view: summary_link
+    fields:
+      business_code: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      target_sop: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      gate_status: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      lifecycle_state: {owner: VERSIONED_PROJECT_CONTROL_POLICY, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: VERSION_CONFLICT}
+      control_policy_binding: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      current_health_summary: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: VERSION_CONFLICT}
+      factory_reference: {owner: NPI_ONE_PROJECT_COMMAND, editable_in: [NPI_ONE_PROJECT_COMMAND], direction: REFERENCE_ONLY, conflict: EXACT_TYPED_REFERENCE}
+      sales_order_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      erp_project_source_binding_and_initial_draft_seed: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: CREATE_ONCE_NO_AUTOMATIC_REWRITE}
+
+  PortfolioAndReportingProjection:
+    owner_system: NPI_ONE_REPORTING_QUERY_SERVICE
+    erp_view: read_only_projection_inputs
+    fields:
+      project_gate_work_tooling_trial_document_change_and_file_facts: {owner: REFERENCED_NPI_SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_VERSION}
+      customer_item_cost_quality_and_asset_facts: {owner: ERPNEXT_VIA_NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXPLICIT_AVAILABLE_STALE_PARTIAL_OR_UNAVAILABLE}
+      filters_cursor_permissions_and_result_shape: {owner: NPI_ONE_REPORTING_QUERY_SERVICE, editable_in: [], direction: NPI_ONE_TO_READ_ONLY_BI, conflict: SERVER_FILTERED_DETERMINISTIC_PAGE}
+      kpi_name_numerator_denominator_source_timezone_and_availability: {owner: NPI_ONE_REPORTING_QUERY_SERVICE, editable_in: [], direction: NPI_ONE_TO_READ_ONLY_BI, conflict: FIXED_DEFINITION_NO_FAKE_VALUE}
+      reverse_write_or_generic_configuration_mutation: {owner: NEVER_ALLOWED, editable_in: [], direction: NONE, conflict: REJECT}
+
+  ProjectTeam:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      membership: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      project_roles: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      substitutions: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      raci_assignments: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      approval_authority: {owner: VERSIONED_APPROVAL_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  ProjectWorkPlan:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      wbs_hierarchy: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      dependencies: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      planned_dates: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      actual_dates: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      progress: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      critical_task: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      plan_baseline: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  DomainWorkItem:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      semantic_kind: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      lifecycle_policy: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      lifecycle_state: {owner: NPI_ONE, editable_in: [NPI_ONE_POLICY_ENGINE], direction: NONE, conflict: VERSION_CONFLICT}
+      context_and_relations: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      owner_due_severity_blocking: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      evidence_references: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+
+  ProjectControlPolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      draft_policy_version: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_policy_version: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      health_rules_and_authority_slots: {owner: VERSIONED_PROJECT_CONTROL_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      lifecycle_transitions_and_prerequisites: {owner: VERSIONED_PROJECT_CONTROL_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  ProjectControlBinding:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_policy_version_and_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      frozen_member_authorities: {owner: NPI_ONE_PROJECT_MEMBERSHIP, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      binding_version_and_audit: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: APPEND_ONLY}
+
+  ProjectHealthAssessment:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_policy_binding_and_actor: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      dimension_inputs_and_results: {owner: VERSIONED_PROJECT_CONTROL_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      current_project_health_pointer: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      erp_cost_actual: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: FAIL_CLOSED_WHILE_UNAVAILABLE}
+
+  ProjectActivity:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      comment_and_event_payload: {owner: NPI_ONE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: APPEND_ONLY}
+      mention_identity: {owner: NPI_ONE_PROJECT_MEMBERSHIP, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      attachment_and_object_snapshots: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      notification_delivery: {owner: FUTURE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ProjectFollower:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      project_and_user_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_follow_state: {owner: NPI_ONE_PROJECT_CONTROL_COMMAND, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      notification_delivery: {owner: FUTURE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  MeetingMinute:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      template_version_sections_attendees_and_content_hash: {owner: NPI_ONE_MEETING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      linked_action_and_decision_identity: {owner: NPI_ONE_PROJECT_WORK_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_VERSION}
+      actor_trace_version_and_audit: {owner: NPI_ONE_MEETING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  InternalNotification:
+    owner_system: NPI_ONE_NOTIFICATION_SERVICE
+    erp_view: none
+    fields:
+      source_identity_version_due_time_and_route: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_VERSION}
+      recipient_kind_bucket_and_delivery_key: {owner: NPI_ONE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: IDEMPOTENT_RECIPIENT_PROJECTION}
+      read_state: {owner: NPI_ONE_NOTIFICATION_COMMAND, editable_in: [NPI_ONE_NOTIFICATION_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      email_delivery_state: {owner: NPI_ONE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: QUEUED_FAILED_UNAVAILABLE_OR_NOT_REQUESTED_NO_FAKE_DELIVERY}
+      critical_audit_delivery: {owner: NPI_ONE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: MANDATORY_APPEND_ONLY}
+
+  NotificationPreference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      user_and_tenant_identity: {owner: NPI_ONE_IDENTITY, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      non_critical_email_kinds: {owner: NPI_ONE_NOTIFICATION_COMMAND, editable_in: [NPI_ONE_NOTIFICATION_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      in_app_and_critical_audit_delivery: {owner: NPI_ONE_NOTIFICATION_SERVICE, editable_in: [], direction: NONE, conflict: MANDATORY_NOT_USER_MUTABLE}
+
+  ProjectLearning:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      learning_identity_kind_and_content: {owner: NPI_ONE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: APPEND_ONLY}
+      exact_source_project_template: {owner: NPI_ONE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      template_improvement_feedback: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: PROPOSAL_ONLY}
+
+  MyWorkAssignmentProjection:
+    owner_system: NPI_ONE_PROJECTION
+    erp_view: none
+    fields:
+      source_identity_and_version: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      actor_assignment: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      category_action_and_target: {owner: NPI_ONE_PROJECTION, editable_in: [], direction: NONE, conflict: REBUILD_FROM_SOURCE}
+      active_projection_state: {owner: NPI_ONE_PROJECTION, editable_in: [NPI_ONE_PROJECTION_SERVICE], direction: NONE, conflict: REVALIDATE_SOURCE}
+
+  ERPProjectionObservation:
+    owner_system: NPI_ONE_ERP_PROJECTION_SERVICE
+    erp_view: source_observation
+    fields:
+      exact_event_source_version_modified_time_payload_and_hash: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY_OBSERVATION}
+      tenant_project_and_server_owned_scope: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: NONE, conflict: PROJECT_FIRST_EXACT_SCOPE}
+      availability_freshness_and_application_disposition: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: SOURCE_ORDER_AND_POLICY_WIN}
+      credentials_raw_response_and_target_error_body: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  ERPProjectionHead:
+    owner_system: NPI_ONE_ERP_PROJECTION_SERVICE
+    erp_view: read_model_pointer
+    fields:
+      exact_stream_identity_and_optimistic_version: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: NONE, conflict: LOCKED_VERSION_CONFLICT}
+      confirmed_current_and_latest_refresh_observation_pointers: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_ORDER}
+      source_version_modified_time_payload_hash_and_freshness_policy_ref: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: DERIVED_READ_ONLY, conflict: SOURCE_OBSERVATION_WINS}
+      erp_business_fields: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_COPIED_AS_EDITABLE_TRUTH}
+
+  FormalQualityLinkRevision:
+    owner_system: NPI_ONE_QUALITY_LINK_SERVICE
+    erp_view: exact_read_only_observation_reference
+    fields:
+      source_identity_version_state_and_snapshot_hash: {owner: NPI_SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_EXACT_SOURCE}
+      formal_observation_head_version_raw_status_and_result: {owner: ERPNEXT_VIA_NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXACT_CURRENT_FRESH_APPLIED_OBSERVATION_ONLY}
+      link_revision_state_actor_trace_and_hash: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      formal_pass_gate_and_readiness_interpretation: {owner: FUTURE_APPROVED_VERSIONED_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE_RAW_CODES_ARE_NOT_PASS}
+
+  FormalQualityLinkHead:
+    owner_system: NPI_ONE_QUALITY_LINK_SERVICE
+    erp_view: read_model_pointer
+    fields:
+      tenant_project_source_and_stream_identity: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_revision_observation_and_projection_head_pointer: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [NPI_ONE_QUALITY_LINK_SERVICE], direction: REFERENCE_ONLY, conflict: LOCKED_PLUS_ONE_VERSION}
+      erp_formal_quality_fields: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_COPIED_AS_EDITABLE_TRUTH}
+
+  FormalQualityLinkCommandIdempotency:
+    owner_system: NPI_ONE_QUALITY_LINK_SERVICE
+    erp_view: none
+    fields:
+      tenant_project_actor_operation_and_key_hash: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDEMPOTENCY_SCOPE}
+      payload_source_and_projection_head_expectation_hashes: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: SAME_KEY_DIFFERENT_PAYLOAD_CONFLICT}
+      exact_link_revision_and_sealed_response: {owner: NPI_ONE_QUALITY_LINK_SERVICE, editable_in: [NPI_ONE_QUALITY_LINK_SERVICE], direction: NONE, conflict: ONE_WAY_SEAL_EXACT_REPLAY}
+
+  UserAuthorizationProjection:
+    owner_system: ERPNEXT
+    npi_view: minimum_read_only_authorization_projection
+    fields:
+      enabled_internal_user_roles_and_approved_scopes: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: COMPLETE_NEWER_SOURCE_VERSION_REPLACES}
+      target_npi_user_mapping: {owner: APPROVED_IDENTITY_MAPPING, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_ONE_TO_ONE_OR_REJECT}
+      tenant_project_company_customer_and_supplier_scope_interpretation: {owner: APPROVED_VERSIONED_AUTHORIZATION_MAPPING, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNKNOWN_OR_STALE_FAILS_CLOSED}
+      source_subject_and_projection_hashes_event_version_trace_and_audit: {owner: NPI_ONE_AUTHORIZATION_PROJECTION_SERVICE, editable_in: [NPI_ONE_AUTHORIZATION_PROJECTION_SERVICE], direction: DERIVED_READ_ONLY, conflict: IMMUTABLE_EVENT_AND_EXACT_REPLAY}
+      passwords_mfa_factors_provider_secrets_session_cookies_and_raw_tokens: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  ERPProjectSourceEvent:
+    owner_system: ERPNEXT
+    npi_view: authenticated_append_only_receipt
+    fields:
+      event_source_identity_version_and_submitted_payload: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: EXACT_EVENT_AND_SOURCE_VERSION_HASH}
+      service_actor_trace_correlation_and_occurrence: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_SIGNED_ENVELOPE}
+      tenant_profile_policy_and_project_mapping: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: NONE, conflict: SERVER_RESOLVED_FAIL_CLOSED}
+      raw_hmac_secret_signature_header_cookie_and_authorization: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  InboundProjectReceipt:
+    owner_system: NPI_ONE_INBOUND_PROJECT_SERVICE
+    erp_view: none
+    fields:
+      exact_raw_body_event_policy_and_authentication_evidence: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY_HASHED_RECEIPT}
+      processing_claim_disposition_error_and_project_result: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [NPI_ONE_INBOUND_PROJECT_SERVICE], direction: NONE, conflict: LEASED_STATE_TRANSITION}
+      legacy_inbox_rows: {owner: LEGACY_INTEGRATION_HISTORY, editable_in: [], direction: NONE, conflict: READ_ONLY_NEVER_PROMOTE}
+
+  ProjectSourceBinding:
+    owner_system: NPI_ONE_INBOUND_PROJECT_SERVICE
+    erp_view: source_identity_mapping
+    fields:
+      tenant_profile_source_identity_and_key_hash: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_IDENTITY}
+      highest_received_version_payload_and_inbox: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [NPI_ONE_INBOUND_PROJECT_SERVICE], direction: DERIVED_READ_ONLY, conflict: LOCKED_SOURCE_ORDER}
+      bound_project_version_payload_and_policy: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: BIND_ONCE}
+
+  InboundProjectProfileAndPolicy:
+    owner_system: NPI_ONE_ADMIN
+    erp_view: none
+    fields:
+      tenant_service_actor_event_allowlist_and_nonproduction_attestation: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: VERSIONED_FAIL_CLOSED_CONFIGURATION}
+      project_template_type_owner_and_business_code_mode: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_POLICY_SNAPSHOT_PER_RECEIPT}
+      signing_key_id_validity_and_opaque_secret_reference: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: ROTATE_BY_NEW_KEY_DESCRIPTOR}
+      raw_hmac_secret: {owner: EXTERNAL_SECRET_RESOLVER, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_OR_EXPOSE}
+
+  GateTemplate:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      template_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      published_version: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      applicable_project_types: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_TEMPLATE_VERSION}
+      requirement_definitions: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_TEMPLATE_VERSION}
+      production_condition_policy: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  GateInstance:
+    owner_system: NPI_ONE
+    erp_view: summary_link
+    fields:
+      gate_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      gate_template_reference: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      requirement_snapshot: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      explicit_owner_reviewer_dates: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_BEFORE_FREEZE], direction: NONE, conflict: FREEZE_ONCE}
+      decision_state: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  GateEvidenceReference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      gate_requirement_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      evidence_source_identity: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      exact_version_hash_snapshot: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      attachment_audit: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      replacement_or_detach_policy: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  GateReviewPolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      draft_policy_version: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_policy_version: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      authority_slots_and_rules: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  GateReviewCycle:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      cycle_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_policy_and_input_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      frozen_member_bindings: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      lifecycle_state_and_version: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_GATE_REVIEW_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      prior_cycle_and_decision_reference: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  GateReviewRecord:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      review_identity_and_assignment: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      reviewed_input_and_opinion: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      actor_request_trace_audit: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  GateReviewException:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      immutable_request: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_policy_rule_and_authority: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      one_way_decision: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_GATE_REVIEW_COMMAND], direction: NONE, conflict: APPEND_ONLY}
+      expiry_and_closure_action_reference: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+
+  GateReviewEvent:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      event_identity_and_type: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_old_new_and_successor_references: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      payload_hash_and_audit: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  GateDecisionSnapshot:
+    owner_system: NPI_ONE
+    erp_view: summary_link
+    fields:
+      decision_identity_and_outcome: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_input_review_exception_policy_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      snapshot_hash_and_audit: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      downstream_current_guard: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  FileRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      project_document_revision_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      private_file_identity_and_metadata: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      sha256: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: HASH_MISMATCH_EXCEPTION}
+      scan_state: {owner: NPI_ONE_SCAN_SERVICE, editable_in: [NPI_ONE_SCAN_SERVICE], direction: NONE, conflict: VERSION_CONFLICT}
+      raw_private_url: {owner: FRAPPE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_EXPOSE_AS_PROJECT_AUTHORIZATION}
+
+  Item:
+    owner_system: ERPNEXT_AFTER_RELEASE
+    phases:
+      engineering_draft:
+        owner: NPI_ONE
+        identifier: engineering_item_id
+      formal:
+        owner: ERPNEXT
+        identifier: item_code
+    fields:
+      engineering_description: {owner: NPI_ONE_BEFORE_RELEASE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: LOCK_DURING_EXECUTION}
+      item_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      stock_uom: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      project_requirements: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NPI_ONLY}
+
+  EBOM_MBOM:
+    owner_system: SPLIT_BY_STAGE
+    fields:
+      ebom_revision: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: RELEASE_NEW_REVISION}
+      mbom_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      manufacturing_routing: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      conversion_notes: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NPI_ONLY}
+
+  EngineeringBOMPolicy:
+    owner_system: NPI_ONE_ADMIN
+    erp_view: none
+    fields:
+      policy_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      production_numbering_line_quantity_uom_alternate_effectivity_attribute_rules: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  EngineeringBOMPolicyVersion:
+    owner_system: VERSIONED_EBOM_POLICY
+    erp_view: none
+    fields:
+      synthetic_rules_and_authority_bindings: {owner: VERSIONED_EBOM_POLICY, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_snapshot_and_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  EngineeringBOM:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      engineering_identity: {owner: NPI_ONE, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_IDENTITY}
+      latest_exact_revision_pointer: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [NPI_ONE_EBOM_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      formal_item_code_mbom_and_routing: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  EngineeringBOMRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_content_and_policy_snapshot: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      exact_predecessor_lineage: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  EngineeringBOMLine:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      hierarchy_quantity_engineering_uom_alternate_effectivity_attributes: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      formal_item_mapping_and_stock_uom: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+
+  EngineeringBOMRevisionLifecycle:
+    owner_system: NPI_ONE_RULE_ENGINE
+    erp_view: none
+    fields:
+      state_and_optimistic_version: {owner: VERSIONED_EBOM_POLICY, editable_in: [NPI_ONE_EBOM_LIFECYCLE_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      exact_revision_and_last_event: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+
+  EngineeringBOMLifecycleEvent:
+    owner_system: NPI_ONE_RULE_ENGINE
+    erp_view: none
+    fields:
+      transition_policy_authority_and_confirmation: {owner: VERSIONED_EBOM_POLICY, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_revision_actor_request_trace_and_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  EngineeringBOMCommandIdempotency:
+    owner_system: NPI_ONE_EBOM_COMMAND
+    erp_view: none
+    fields:
+      actor_operation_and_payload_identity: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [NPI_ONE_EBOM_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+
+  EngineeringBOMPublishPolicy:
+    owner_system: NPI_ONE_INTEGRATION_ADMIN
+    erp_view: none
+    fields:
+      policy_identity_and_project_scope: {owner: NPI_ONE, editable_in: [NPI_ONE_INTEGRATION_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      production_authority_and_target_activation: {owner: FUTURE_APPROVED_INTEGRATION_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  EngineeringBOMPublishPolicyVersion:
+    owner_system: VERSIONED_INTEGRATION_POLICY
+    erp_view: none
+    fields:
+      synthetic_requester_bindings_and_mock_mode: {owner: VERSIONED_INTEGRATION_POLICY, editable_in: [NPI_ONE_INTEGRATION_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_snapshot_and_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  EngineeringBOMPublishRequest:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      request_actor_trace_idempotency_and_state: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_IDENTITY}
+      exact_released_ebom_policy_and_approval_snapshot: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      dispatch_state_and_target_completion: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: BIDIRECTIONAL_EVENT, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  EngineeringBOMPublishNode:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_ebom_line_and_owned_field_input: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      server_derived_item_and_mbom_operations: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+
+  EngineeringBOMPublishMappingObservation:
+    owner_system: SPLIT_BY_SOURCE
+    erp_view: source_record
+    fields:
+      engineering_line_and_request_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      formal_item_code_mbom_id_and_target_version: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      mapping_state_and_observation_hash: {owner: NPI_ONE_INTEGRATION_PROJECTION, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: NONE, conflict: APPEND_ONLY_OBSERVATION}
+
+  EngineeringBOMPublishNodeResult:
+    owner_system: SPLIT_BY_EXECUTION_STAGE
+    erp_view: source_record
+    fields:
+      mock_validation_result: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      target_attempt_result_and_formal_identifiers: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      retry_and_reconciliation_classification: {owner: NPI_ONE_INTEGRATION_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  EngineeringBOMPublishCommandIdempotency:
+    owner_system: NPI_ONE_PUBLISH_REQUEST_COMMAND
+    erp_view: none
+    fields:
+      actor_operation_and_payload_identity: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [NPI_ONE_PUBLISH_REQUEST_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+
+  ItemPublishRequest:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      project_scoped_engineering_identity_and_exact_released_source: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      request_profile_actor_trace_and_idempotency_identity: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_IDENTITY}
+      execution_state_and_terminal_result_reference: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: APPEND_ONLY_TRANSITION}
+      formal_item_code_stock_uom_item_group_naming_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ItemPublishCommandIdempotency:
+    owner_system: NPI_ONE_ITEM_PUBLISH_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      request_payload_hash_and_sealed_response: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  ItemPublishOutboxMessage:
+    owner_system: NPI_ONE_ITEM_EXECUTION_SERVICE
+    erp_view: integration_message
+    fields:
+      immutable_versioned_event_request_profile_source_and_actor_envelope: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_SNAPSHOT}
+      claim_lease_attempt_count_and_safe_disposition: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: NONE, conflict: LEASE_AND_ONE_WAY_TRANSITION}
+      raw_secret_authorization_header_and_arbitrary_response_body: {owner: SECRET_AND_TRANSPORT_BOUNDARY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      legacy_outbox_execution_authority: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_PROMOTE}
+
+  ItemPublishAttempt:
+    owner_system: NPI_ONE_ITEM_EXECUTION_SERVICE
+    erp_view: reference_only
+    fields:
+      immutable_request_claim_profile_source_and_target_idempotency_identity: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_IDENTITY}
+      adapter_boundary_transport_hash_and_safe_fault_truth: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: ONE_WAY_SEAL}
+      retry_or_reconciliation_authority: {owner: FUTURE_P8_07_RETRY_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  ItemPublishResult:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      request_event_attempt_source_and_response_binding: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formal_item_code_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+      result_authority_fault_and_observation_hash: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  ItemMappingObservation:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      project_scoped_source_stream_request_event_attempt_and_result_identity: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      observed_formal_item_code_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+      authority_disposition_previous_mapping_and_observation_hash: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_OBSERVATION}
+      synthetic_or_mock_formal_mapping: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  ItemMappingHead:
+    owner_system: NPI_ONE_INTEGRATION_PROJECTION
+    erp_view: reference_only
+    fields:
+      project_scoped_source_stream_and_engineering_identity: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_authoritative_observation_pointer_and_mapping_version: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: NONE, conflict: COMPARE_AND_SET}
+      formal_item_code_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_ITEM_IDENTITY}
+
+  MBOMPublishRequest:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_released_ebom_topology_item_readiness_and_mapping_expectations: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      request_profile_projection_policy_actor_trace_and_idempotency_identity: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_IDENTITY}
+      execution_state_and_terminal_result_reference: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: APPEND_ONLY_TRANSITION}
+      formal_bom_id_target_version_submission_routing_and_manufacturing_lifecycle: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+
+  MBOMPublishNode:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_line_parent_role_item_readiness_and_mapping_expectation: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      node_state_and_result_reference: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: APPEND_ONLY_TRANSITION}
+      component_only_target_mutation: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  MBOMPublishCommandIdempotency:
+    owner_system: NPI_ONE_MBOM_PUBLISH_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      request_payload_hash_and_sealed_response: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  MBOMPublishOutboxMessage:
+    owner_system: NPI_ONE_MBOM_EXECUTION_SERVICE
+    erp_view: integration_message
+    fields:
+      immutable_schema_version_2_request_profile_topology_mapping_sets_and_actor_envelope: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_SNAPSHOT}
+      claim_lease_attempt_count_and_safe_disposition: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: NONE, conflict: LEASE_AND_ONE_WAY_TRANSITION}
+      item_version_1_and_legacy_execution_authority: {owner: EXISTING_OPERATION_SPECIFIC_CONTROLLER, editable_in: [], direction: NONE, conflict: NEVER_REINTERPRET}
+      raw_secret_authorization_header_and_arbitrary_response_body: {owner: SECRET_AND_TRANSPORT_BOUNDARY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
+  MBOMPublishAttempt:
+    owner_system: NPI_ONE_MBOM_EXECUTION_SERVICE
+    erp_view: reference_only
+    fields:
+      immutable_request_claim_profile_topology_mapping_sets_node_manifest_and_target_idempotency: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_IDENTITY}
+      adapter_boundary_transport_hash_and_safe_fault_truth: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: ONE_WAY_SEAL}
+      retry_or_reconciliation_authority: {owner: FUTURE_P8_07_RETRY_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  MBOMPublishResult:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      aggregate_request_event_attempt_source_mapping_sets_and_response_binding: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      aggregate_authority_fault_and_node_result_set_hash: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      aggregate_http_or_queue_status_as_success: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  MBOMPublishNodeResult:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      request_attempt_node_and_response_binding: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formal_bom_id_target_version_and_submission_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+      result_authority_fault_and_observation_hash: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      synthetic_or_mock_formal_mapping: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  MBOMMappingObservation:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      project_ebom_assembly_request_event_attempt_result_and_node_identity: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      observed_formal_bom_id_target_version_and_submission_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+      authority_disposition_previous_mapping_and_observation_hash: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_OBSERVATION}
+      synthetic_or_mock_formal_mapping: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  MBOMMappingHead:
+    owner_system: NPI_ONE_INTEGRATION_PROJECTION
+    erp_view: reference_only
+    fields:
+      project_ebom_and_stable_assembly_source_identity: {owner: NPI_ONE_MBOM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_authoritative_observation_pointer_and_mapping_version: {owner: NPI_ONE_MBOM_EXECUTION_SERVICE, editable_in: [NPI_ONE_MBOM_EXECUTION_SERVICE], direction: NONE, conflict: COMPARE_AND_SET}
+      formal_bom_id_target_version_and_submission_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_SUBMITTED_BOM_IDENTITY}
+      submitted_bom_successor_or_overwrite_authority: {owner: NONE, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  EngineeringPart:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      stable_part_identity_and_title: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_exact_revision_pointer: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [NPI_ONE_TOOLING_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      formal_item_mapping: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  EngineeringPartRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_revision_identity_predecessor_and_reason: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      immutable_snapshot_hash_and_provenance: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      material_color_compliance_and_process_specification: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+
+  ToolingRequirement:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      project_need_identity_kind_title_and_reason: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_target_part_revision_and_date: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingMaster:
+    owner_system: NPI_ONE
+    erp_view: summary_link
+    fields:
+      stable_logical_identity_title_and_origin: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      immutable_revision_history: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      physical_set_truth: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      formal_asset_id_state_location_shot_count_and_maintenance: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolingApplicability:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_master_project_product_model_part_revision_scope: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      relationship_version_predecessor_and_effectivity: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      normalized_relationship_key_and_snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
+
+  ToolingSet:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: reference_only
+    fields:
+      physical_set_identity_master_requirement_and_serial: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      customer_ownership_custody_repair_authorization_and_return_provenance: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_source_tooling_revision: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: INITIAL_BINDING_ONLY}
+      formal_supplier: {owner: ERPNEXT, editable_in: [FUTURE_P6_04_ERP_PROJECTION], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      formal_asset_id_state_location_shot_count_and_maintenance: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolingIntake:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_set_version_predecessor_transport_and_custody_handover: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      accessory_inspection_and_difference_snapshot: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      lifecycle_or_acceptance_result: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingIntakeEvidenceReference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_intake_difference_role_and_file_revision_identity: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      immutable_file_hash_metadata_snapshot: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      raw_private_url_and_file_content: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_EXPOSE_OR_MUTATE}
+      external_customer_signature_or_approval: {owner: FUTURE_APPROVED_CUSTOMER_AUTHORITY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_master_revision_predecessor_and_provenance: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      unit_bearing_specification_cavity_insert_and_external_identity_snapshot: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_design_document_revision_references: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  PartControlledSpecification:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_part_revision_identity_and_snapshot_hash: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      material_color_compliance_process_and_external_identity_snapshot: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formal_item_mapping: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolingProcessChainRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_chain_version_predecessor_and_provenance: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      ordered_part_and_tooling_revision_step_snapshot: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      combined_trial_result: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingSetRevisionBinding:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_set_and_source_revision_snapshot_hashes: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: INITIAL_BINDING_ONLY}
+      binding_identity_reason_and_provenance: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  ToolingManufacturingPlanRevision:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: reference_only
+    fields:
+      exact_plan_version_predecessor_project_master_and_tooling_revision: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      internal_sourcing_engineering_estimate_budget_and_responsibility: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_released_planning_and_design_document_evidence: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      ordered_milestone_schedule_and_internal_or_supplier_responsibility_kind: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      approved_funding_and_formal_purchase_order_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      tooling_lifecycle_and_manufacturing_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingManufacturingMilestoneObservation:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_plan_milestone_version_predecessor_and_progress: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      actual_dates_risk_note_and_internal_reporter: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      clean_private_file_revision_evidence: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      external_supplier_submission_identity: {owner: FUTURE_APPROVED_SUPPLIER_PORTAL, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingProcurementCostProjection:
+    owner_system: ERPNEXT
+    npi_view: read_only
+    fields:
+      formal_supplier_purchase_order_receipt_invoice_and_actual_cost: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      source_object_versions_currency_amount_and_raw_cost_type_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      exact_master_supplier_raw_cost_type_aggregation: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: SOURCE_ROWS_WIN}
+      source_observation_connection: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXACT_TARGET_OBSERVATION}
+      production_projection_connection_and_reconciliation: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
+
+  ToolingDefectRevision:
+    owner_system: NPI_ONE
+    erp_view: optional_ncr_request_only
+    fields:
+      exact_defect_version_predecessor_project_master_revision_and_cavity: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      severity_blocking_intent_root_cause_responsibility_and_target_round_intention: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      action_state_and_clean_private_verification_evidence: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      exact_trial_round_and_official_quality_result: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      exact_trial_successor_tip: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: SINGLE_LOGICAL_DEFECT_NO_FORK}
+      project_work_item_and_gate_blocking_application: {owner: FUTURE_PHASE_7_GATE_INTEGRATION, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  TrialCavityResultRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_result_version_predecessor_round_input_lock_sample_tooling_set_and_cavity: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      characteristic_definition_measurement_state_value_source_actor_and_time: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      clean_private_trial_measurement_evidence: {owner: NPI_ONE_TRIAL_EVIDENCE_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      missing_measurement_interpretation: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXPLICIT_NO_ZERO_OR_PASS_IMPUTATION}
+      formal_quality_inspection_and_approved_result: {owner: ERPNEXT_AND_FUTURE_APPROVED_TRIAL_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_03}
+
+  TrialDefectRevision:
+    owner_system: NPI_ONE
+    erp_view: optional_ncr_request_only
+    fields:
+      stable_defect_identity_and_cross_store_exact_predecessor_tip: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: SINGLE_LOGICAL_DEFECT_NO_FORK}
+      exact_round_input_lock_sample_tooling_revision_set_cavity_and_observation: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      category_location_severity_blocking_root_cause_responsibility_occurrence_and_evidence: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      action_identity_state_member_due_date_and_exact_target_round: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      ncr_quality_inspection_gate_tooling_lifecycle_and_work_item_effects: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_03}
+
+  TrialDefectVerificationRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_attempt_defect_revision_action_target_round_verification_round_and_cavity_result: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      independent_verifier_result_finding_time_and_clean_private_evidence: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      defect_action_and_lifecycle_effect: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: EXPLICIT_SUCCESSOR_REQUIRED}
+      formal_ncr_quality_inspection_gate_and_tooling_lifecycle_effect: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_03}
+
+  TrialConclusionPolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_policy_version_predecessor_project_plan_and_plan_revision: {owner: NPI_ONE_TRIAL_REVIEW_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      required_source_reference_blocker_and_conclusion_rules: {owner: NPI_ONE_TRIAL_REVIEW_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      submit_decide_and_reopen_authority_bindings: {owner: NPI_ONE_TRIAL_REVIEW_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: EXACT_PUBLISHED_POLICY_VERSION}
+      default_production_policy_or_authority_row: {owner: FUTURE_APPROVED_TRIAL_POLICY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_METADATA}
+
+  TrialRoundComparisonSnapshot:
+    owner_system: NPI_ONE
+    erp_view: read_only_formal_quality_projection
+    fields:
+      exact_project_plan_target_round_policy_and_ordered_round_sources: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      input_parameter_dimension_and_defect_comparison_truth: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_SOURCE_SNAPSHOTS_WIN}
+      missing_cycle_time_and_yield_interpretation: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXPLICIT_UNAVAILABLE_NO_ZERO_IMPUTATION}
+      formal_quality_inspection_ncr_report_identity_and_result: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IN_P7_04}
+
+  TrialReviewReferenceRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_reference_version_predecessor_project_round_and_comparison: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_part_tooling_revision_physical_set_and_clean_private_file_revision: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      reference_kind_effectivity_and_reason: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      customer_signature_production_approval_and_formal_quality_authority: {owner: FUTURE_APPROVED_POLICY_OR_PROVIDER, editable_in: [], direction: NONE, conflict: EVIDENCE_IS_NOT_APPROVAL_UNAVAILABLE_IN_P7_04}
+
+  TrialConclusionRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_conclusion_version_predecessor_round_policy_comparison_and_review_references: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY}
+      server_derived_blockers_and_one_page_summary_input: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_SOURCE_SNAPSHOTS_WIN}
+      submitted_decision_and_reopen_history: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: EXPLICIT_IMMUTABLE_SUCCESSOR_REQUIRED}
+      proposed_next_work_gate_and_npi_effect: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: PROPOSAL_ONLY_NO_EXTERNAL_MUTATION}
+      gate_npi_readiness_tooling_lifecycle_formal_quality_and_customer_signature_effect: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_04}
+
+  ReleasedTrialSummaryRevision:
+    owner_system: NPI_ONE
+    erp_view: future_read_only_projection
+    fields:
+      exact_summary_stream_revision_predecessor_project_plan_round_and_decided_conclusion: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_EXACT_CURRENT_TIP}
+      complete_trial_source_manifest_and_immutable_snapshot: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_IDENTITIES_VERSIONS_AND_HASHES_WIN}
+      localized_neutral_url_free_presentation_and_structural_redaction: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: CLOSED_SERVER_DERIVED_NO_TRUNCATION}
+      controlled_print_source_projection: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_ADAPTER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_RETAINED_REVISION_ONLY}
+      production_form_mapping_signer_retention_browser_print_and_copy_policy: {owner: FUTURE_APPROVED_CONTROLLED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_P7_07}
+      external_event_payload_consumer_redaction_delivery_projection_and_receipt: {owner: FUTURE_PHASE_8_INTEGRATION_CONTRACT, editable_in: [], direction: NONE, conflict: UNAVAILABLE_UNDER_DR_REC_009}
+      customer_approval_formal_signature_production_acceptance_g7_gate_project_work_item_tooling_and_erp_effect: {owner: FUTURE_SEPARATELY_APPROVED_AUTHORITIES, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_OR_AUTHORITY}
+
+  NpiReadinessTemplate:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_template_identity_code_title_and_enabled_selection: {owner: NPI_ONE_READINESS_TEMPLATE_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN], direction: NONE, conflict: GUARDED_OPTIMISTIC_COMMAND_ONLY}
+      production_default_template_policy_or_authority: {owner: FUTURE_APPROVED_READINESS_POLICY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_METADATA}
+
+  NpiReadinessTemplateVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_template_version_project_type_customer_and_npi_industry_applicability: {owner: NPI_ONE_READINESS_TEMPLATE_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: EXACT_VERSIONED_CONFIGURATION}
+      category_item_weight_completion_evidence_blocking_level_and_gate_definition: {owner: NPI_ONE_READINESS_TEMPLATE_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: NEW_TEMPLATE_VERSION_AFTER_PUBLISH}
+      published_template_snapshot: {owner: NPI_ONE_READINESS_TEMPLATE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      industry_deliverable_defaults: {owner: VERSIONED_READINESS_TEMPLATE, editable_in: [], direction: NONE, conflict: CONFIGURATION_NOT_GLOBAL_HARDCODE}
+
+  NpiReadinessInstanceRevision:
+    owner_system: SPLIT_BY_FACT_LAYER
+    erp_view: read_only_external_provider_projection
+    fields:
+      exact_instance_version_predecessor_project_template_gate_and_item_identity: {owner: NPI_ONE_READINESS_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SNAPSHOT}
+      npi_confirmation_owner_due_status_and_controlled_evidence: {owner: NPI_ONE_READINESS_COMMAND, editable_in: [NPI_ONE_READINESS_COMMAND], direction: NONE, conflict: IMMUTABLE_SUCCESSOR_REQUIRED}
+      exact_project_work_document_tooling_trial_and_file_sources: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      formal_erp_material_quality_run_at_rate_hr_and_supplier_sources: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_NO_CALLER_STATUS}
+      deterministic_category_total_scores_and_blockers: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_ITEM_SNAPSHOT_WINS}
+      readiness_blocker_to_gate_review_input: {owner: NPI_ONE_GATE_REVIEW_INPUT_BUILDER, editable_in: [], direction: REFERENCE_ONLY, conflict: GATE_POLICY_REMAINS_INDEPENDENT}
+      gate_work_item_risk_tooling_handover_and_external_effect: {owner: FUTURE_SEPARATELY_APPROVED_COMMANDS, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_IN_P7_05}
+
+  ProductionTransitionPolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_policy_identity_tenant_scoped_code_title_and_optimistic_version: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN], direction: NONE, conflict: GUARDED_SAME_TENANT_OPTIMISTIC_COMMAND_ONLY}
+      production_default_policy_project_binding_or_organization_mapping: {owner: FUTURE_APPROVED_PRODUCTION_TRANSITION_AUTHORITY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_METADATA}
+
+  ProductionTransitionPolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_policy_version_tenant_and_project_applicability: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: EXACT_SAME_TENANT_VERSIONED_CONFIGURATION}
+      npi_receiving_groups_sender_receiver_slots_handover_requirements_and_observation_rules: {owner: VERSIONED_PRODUCTION_TRANSITION_POLICY, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION_AFTER_PUBLISH}
+      published_policy_snapshot: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formal_department_quorum_signature_stability_and_g7_authority: {owner: FUTURE_APPROVED_PRODUCTION_TRANSITION_AUTHORITY, editable_in: [], direction: NONE, conflict: CONFIGURATION_NOT_GLOBAL_HARDCODE}
+
+  HandoverPackageRevision:
+    owner_system: SPLIT_BY_FACT_LAYER
+    erp_view: reference_only
+    fields:
+      exact_handover_version_predecessor_project_policy_and_source_manifest: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_EXACT_SNAPSHOT}
+      exact_project_member_role_and_receiving_group_slot_snapshots: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      complete_non_terminal_action_snapshot: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: SERVER_ENUMERATED_ALL_NON_TERMINAL}
+      source_projection_truth: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      fully_acknowledged_projection: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: NEVER_PERSIST_OR_REHASH_PACKAGE}
+      formal_production_department_acceptance_signature_gate_and_g7_effect: {owner: FUTURE_SEPARATELY_APPROVED_COMMANDS, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_IN_P7_06}
+
+  HandoverAcknowledgement:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_package_slot_actor_member_and_role_snapshot: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_CURRENT_TIP_ONLY}
+      acknowledgement_intent_actor_time_request_and_trace: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_ACTOR_BOUND_FACT}
+      substitution_delegation_admin_proxy_signature_and_approval: {owner: FUTURE_APPROVED_PRODUCTION_TRANSITION_AUTHORITY, editable_in: [], direction: NONE, conflict: UNAVAILABLE_NO_PROXY_OR_SIGNATURE}
+
+  ObservationPeriodRevision:
+    owner_system: SPLIT_BY_FACT_LAYER
+    erp_view: read_only_external_provider_projection
+    fields:
+      exact_observation_version_predecessor_project_policy_handover_and_npi_context: {owner: NPI_ONE_OBSERVATION_PERIOD_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_UNIQUE_CURRENT_TIP}
+      retrospective_note_and_exact_npi_evidence: {owner: NPI_ONE_OBSERVATION_PERIOD_COMMAND, editable_in: [NPI_ONE_OBSERVATION_PERIOD_COMMAND], direction: NONE, conflict: IMMUTABLE_SUCCESSOR_REQUIRED}
+      actual_sop: {owner: FUTURE_APPROVED_PRODUCTION_ACTUAL_PROVIDER, editable_in: [], direction: EXTERNAL_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      first_batch_yield: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      customer_complaint: {owner: FUTURE_APPROVED_CUSTOMER_COMPLAINT_PROVIDER, editable_in: [], direction: EXTERNAL_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      production_cycle_time: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      tooling_stability: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      source_availability_observed_window_and_technical_disposition: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: NOT_EVALUABLE_WHILE_ANY_PROVIDER_UNAVAILABLE}
+      formal_production_stability_acceptance_gate_and_g7_effect: {owner: FUTURE_SEPARATELY_APPROVED_COMMANDS, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_IN_P7_06}
+
+  ProductionTransitionCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_PRODUCTION_TRANSITION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_PRODUCTION_TRANSITION_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_PRODUCTION_TRANSITION_COMMAND, editable_in: [NPI_ONE_PRODUCTION_TRANSITION_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_target_identity: {owner: NPI_ONE_PRODUCTION_TRANSITION_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  ToolingProcessProfileRevision:
+    owner_system: SPLIT_BY_FACT_LAYER
+    erp_view: none
+    fields:
+      customer_standard_or_provided_specification: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY}
+      trial_actual_measurement: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: NOT_MEASURED}
+      approved_process_baseline: {owner: FUTURE_PHASE_7_TRIAL_APPROVAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      exact_metric_unit_source_context_effectivity_and_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      comparison_rule_and_textual_state: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_RULE_VERSION}
+      production_exception_color_semantics: {owner: FUTURE_APPROVED_VARIANCE_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingCapacityScenarioRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_scenario_version_predecessor_project_master_and_effectivity: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      explicit_hours_days_oee_yield_cycle_cavity_usage_set_and_demand_inputs: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formula_version_rounding_part_assembly_bottleneck_and_gap_results: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: INPUT_SNAPSHOT_WINS}
+      physical_set_operational_or_asset_state: {owner: ERPNEXT_AND_FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
+
+  ToolingAcceptanceEvidenceRevision:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: reference_only
+    fields:
+      exact_evidence_version_predecessor_project_master_physical_set_binding_and_revision: {owner: NPI_ONE_TOOLING_ACCEPTANCE_EVIDENCE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      checklist_evidence_presence_and_clean_private_file_references: {owner: NPI_ONE_TOOLING_ACCEPTANCE_EVIDENCE_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      project_asset_action_spare_recommendation_and_repair_evidence: {owner: NPI_ONE_TOOLING_ACCEPTANCE_EVIDENCE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      acceptance_approval_and_tooling_lifecycle_result: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      official_trial_quality_and_approved_process_baseline: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      actual_asset_movement_repair_inventory_and_cost_result: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolingImportBatch:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_project_customer_private_file_revision_and_hash: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      source_file_bytes_and_raw_workbook_values: {owner: NPI_ONE_PRIVATE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: CONFIDENTIAL_EXACT_SOURCE}
+      production_customer_mapping_activation: {owner: FUTURE_APPROVED_TOOLING_IMPORT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingImportInspectionRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      passive_archive_xml_and_formula_safety_report: {owner: NPI_ONE_TOOLING_IMPORT_INSPECTOR, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_POLICY_VERSION}
+      position_independent_columns_regions_and_image_anchor_candidates: {owner: NPI_ONE_TOOLING_IMPORT_DETECTOR, editable_in: [], direction: DERIVED_READ_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      raw_cell_values: {owner: NPI_ONE_PRIVATE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: AUTHORIZED_DETAIL_ONLY}
+
+  ToolingImportMappingRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      complete_source_columns_candidate_targets_and_transform_versions: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      ambiguous_numeric_classification_and_legacy_grade_meaning: {owner: FUTURE_APPROVED_TOOLING_IMPORT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      fixture_mapping_activation: {owner: CONTROLLED_TEST_FIXTURE_ONLY, editable_in: [], direction: NONE, conflict: EXACT_FIXTURE_SCOPE}
+
+  ToolingImportPreviewRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_source_inspection_mapping_and_transform_snapshots: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      create_update_skip_blocked_candidates_and_field_findings: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_INPUT_SNAPSHOT}
+      ambiguous_relationship_and_image_confirmation: {owner: AUTHORIZED_PROJECT_MEMBER, editable_in: [NPI_ONE_TOOLING_IMPORT_CONFIRMATION_COMMAND], direction: NONE, conflict: HUMAN_CONFIRMATION_REQUIRED}
+      target_mutation: {owner: FUTURE_P6_07_EXECUTION_WORKER, editable_in: [], direction: NONE, conflict: NOT_EXECUTED_BY_PREVIEW}
+
+  ToolingImportMappingActivation:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_source_customer_mapping_and_fixture_version: {owner: CONTROLLED_TEST_FIXTURE_ONLY, editable_in: [], direction: NONE, conflict: EXACT_FIXTURE_SCOPE}
+      production_customer_mapping_activation: {owner: FUTURE_APPROVED_TOOLING_IMPORT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      execution_field_bindings: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  ToolingImportJob:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_actor_project_source_preview_and_mapping_activation: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      durable_attempt_state_counts_and_version: {owner: NPI_ONE_TOOLING_IMPORT_WORKER, editable_in: [NPI_ONE_TOOLING_IMPORT_WORKER], direction: NONE, conflict: VERSION_CONFLICT}
+      erpnext_execution_or_formal_manufacturing_result: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingImportRowResult:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_job_attempt_source_row_state_and_target_snapshot: {owner: NPI_ONE_TOOLING_IMPORT_WORKER, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      per_field_result_codes_messages_and_trace: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      raw_source_values: {owner: NPI_ONE_PRIVATE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_IN_RESULT}
+
+  ToolingImportTargetBinding:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_batch_row_mapping_target_version_and_hash: {owner: NPI_ONE_TOOLING_IMPORT_WORKER, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      source_field_and_raw_value_provenance_hashes: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      target_mutation_authority: {owner: EXACT_ACTIVE_FIXTURE_MAPPING, editable_in: [NPI_ONE_TOOLING_IMPORT_WORKER], direction: NONE, conflict: EXACT_FIXTURE_SCOPE}
+
+  ToolingImportCorrectionArtifact:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_job_snapshot_private_file_hash_and_allowlisted_columns: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      correction_values: {owner: AUTHORIZED_PROJECT_MEMBER, editable_in: [NPI_ONE_TOOLING_IMPORT_CORRECTION_COMMAND], direction: NONE, conflict: AUTHORIZED_PRIVATE_ARTIFACT_ONLY}
+      download_authority_and_audit: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: NONE, conflict: PER_DOWNLOAD_AUTHORIZATION}
+
+  ToolingImportReconciliationRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_job_target_expected_and_observed_snapshot: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY}
+      downstream_reference_count_and_rollback_eligibility: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: FAIL_CLOSED}
+      destructive_rollback: {owner: NPI_ONE_TOOLING_IMPORT_ROLLBACK_COMMAND, editable_in: [], direction: NONE, conflict: ALL_TARGETS_MUST_REMAIN_EXACT_AND_UNUSED}
+
+  ToolAssetRequest:
+    owner_system: NPI_ONE_INTEGRATION
+    erp_view: execution_intent_only
+    fields:
+      exact_draft_request_actor_project_physical_set_and_input_hash: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      mock_input_validation: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: LOCAL_VALIDATION_ONLY}
+      business_approval_dispatch_and_target_result: {owner: FUTURE_APPROVED_TOOLING_POLICY_AND_PHASE_8_ADAPTER, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      formal_asset_id_mapping_and_target_version: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolAssetCommandIdempotency:
+    owner_system: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_payload_identity: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [NPI_ONE_TOOL_ASSET_REQUEST_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+      raw_idempotency_key: {owner: REQUEST_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
+  ToolAssetExecutionRequest:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND
+    erp_view: execution_intent_only
+    fields:
+      exact_project_master_physical_set_binding_revision_and_acceptance_source: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      business_approval_reference: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: REFERENCE_ONLY, conflict: UNAVAILABLE_UNTIL_EXPLICITLY_RESOLVED}
+      create_unmapped_or_update_exact_mapping_expectation: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_EXPECTATION}
+      profile_actor_trace_idempotency_and_state: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY_AND_ONE_WAY_TRANSITION}
+      formal_asset_identity_version_lifecycle_location_maintenance_repair_and_spares: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  ToolAssetExecutionOutboxMessage:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: command_envelope_only
+    fields:
+      immutable_schema_version_3_operation_request_profile_source_mapping_and_actor_envelope: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_SNAPSHOT}
+      claim_lease_attempt_count_and_safe_disposition: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE], direction: NONE, conflict: LEASE_AND_ONE_WAY_TRANSITION}
+      raw_credentials_request_headers_and_exception_text: {owner: TRANSIENT_TRANSPORT_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
+  ToolAssetExecutionAttempt:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: none
+    fields:
+      immutable_request_claim_operation_source_mapping_profile_and_target_idempotency: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_IDENTITY}
+      adapter_boundary_transport_hash_fault_and_reconciliation_truth: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: ONE_WAY_SEAL}
+
+  ToolAssetExecutionResult:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: observed_result_only
+    fields:
+      request_event_attempt_source_mapping_and_response_binding: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      aggregate_and_field_authority_fault_partial_and_uncertain_truth: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY}
+      formal_asset_id_and_target_version: {owner: ERPNEXT, editable_in: [FUTURE_APPROVED_TOOL_ASSET_SANDBOX_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_COMPLETE_RESULT_ONLY}
+
+  ToolAssetMappingObservation:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: read_only_mapping_observation
+    fields:
+      physical_set_request_attempt_result_and_previous_mapping_binding: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      authority_disposition_response_and_observed_mapping_hash: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY_OBSERVATION}
+
+  ToolAssetMappingHead:
+    owner_system: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE
+    erp_view: read_only_mapping_pointer
+    fields:
+      project_physical_set_and_source_stream_identity: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_authoritative_observation_formal_asset_target_version_and_mapping_version: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE], direction: ERPNEXT_TO_NPI, conflict: COMPARE_AND_SET}
+      partial_uncertain_mock_and_synthetic_results: {owner: NPI_ONE_TOOL_ASSET_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_ADVANCE_MAPPING}
+
+  ToolAssetProjection:
+    owner_system: ERPNEXT
+    npi_view: read_only
+    fields:
+      zero_or_one_mapping_per_physical_set: {owner: ERPNEXT, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      formal_asset_id_state_location_shot_life_and_maintenance_due: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      movement_repair_spare_inventory_supplier_and_cost_history: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      source_observation_and_mapping_version: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXACT_TARGET_OBSERVATION}
+      production_reconciliation: {owner: FUTURE_PHASE_8_RECONCILIATION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
+
+  ToolingHealthProjection:
+    owner_system: ERPNEXT
+    npi_view: read_only
+    fields:
+      formal_shot_count_maintenance_repair_downtime_and_asset_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      source_kind_and_calibration_version: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
+      health_score_threshold_and_preventive_recommendation: {owner: FUTURE_APPROVED_TOOLING_HEALTH_POLICY, editable_in: [], direction: DERIVED_READ_ONLY, conflict: UNAVAILABLE}
+
+  ToolingListPreference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_actor_project_view_grid_and_table_schema_identity: {owner: NPI_ONE_TOOLING_LIST_PREFERENCE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      versioned_filter_sort_group_and_column_layout_snapshot: {owner: NPI_ONE_TOOLING_LIST_PREFERENCE_COMMAND, editable_in: [NPI_ONE_TOOLING_LIST_PREFERENCE_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      business_object_state_or_shared_default: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_IN_PREFERENCE}
+
+  ToolingExportPackage:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_actor_project_mode_query_or_selection_and_object_snapshot_hashes: {owner: NPI_ONE_TOOLING_EXPORT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      private_one_hour_package_file_hash_manifest_and_localized_allowlisted_rows: {owner: NPI_ONE_TOOLING_EXPORT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      raw_file_url_workbook_external_party_cost_evidence_and_lifecycle_truth: {owner: SOURCE_SYSTEM, editable_in: [], direction: NONE, conflict: NEVER_INCLUDE_IN_PACKAGE}
+      approval_publisher_or_lifecycle_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingExportCommandIdempotency:
+    owner_system: NPI_ONE_TOOLING_EXPORT_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_payload_identity: {owner: NPI_ONE_TOOLING_EXPORT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_TOOLING_EXPORT_COMMAND, editable_in: [NPI_ONE_TOOLING_EXPORT_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+      raw_idempotency_key: {owner: REQUEST_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
+  ToolingCommandIdempotency:
+    owner_system: NPI_ONE_TOOLING_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_payload_identity: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [NPI_ONE_TOOLING_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+      raw_idempotency_key: {owner: REQUEST_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
+  Tooling:
+    owner_system: SPLIT_BY_LIFECYCLE
+    fields:
+      development_state: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      specification_revision: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: RELEASE_NEW_REVISION}
+      design_revision: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: RELEASE_NEW_REVISION}
+      trial_state: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: OWNER_WINS}
+      asset_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      asset_status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      location: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      shot_count: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      maintenance: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  TrialPlanRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_plan_identity_and_project_tooling_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_version_predecessor_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      objective_purpose_time_sample_and_measurement_intent: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: NEW_REVISION}
+      responsible_project_member_snapshot: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: NEW_REVISION}
+      machine_equipment_and_material_proposals: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: PLANNING_PROPOSAL_ONLY}
+      resource_availability_and_reservation: {owner: FUTURE_APPROVED_RESOURCE_READER_AND_BOOKING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  TrialRound:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_round_identity_and_project_tooling_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_trial_plan_revision_reference: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      round_sequence_label_purpose_and_planned_interval: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_PLANNING_SNAPSHOT}
+      current_state_event_and_optimistic_version: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [NPI_ONE_TRIAL_COMMAND], direction: NONE, conflict: APPEND_EVENT_THEN_ADVANCE}
+      locked_inputs: {owner: FUTURE_P7_TRIAL_PREPARATION_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_01}
+      process_parameters: {owner: FUTURE_P7_TRIAL_EXECUTION_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_01}
+      defects: {owner: FUTURE_P7_TRIAL_ANALYSIS_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_01}
+      official_quality_result: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  TrialRoundLifecycleEvent:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_round_event_version_state_transition_and_reason: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      actor_time_request_trace_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_AUDIT_SNAPSHOT}
+
+  TrialPlanWorkLink:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_plan_revision_and_optional_round_reference: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_EXACT_REFERENCE}
+      domain_work_item_reference: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_LINK}
+      task_state_due_owner_and_completion_truth: {owner: NPI_ONE_DOMAIN_WORK_COMMAND, editable_in: [NPI_ONE_DOMAIN_WORK_COMMAND], direction: NONE, conflict: DOMAIN_WORK_ITEM_OWNER_WINS}
+
+  TrialCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [NPI_ONE_TRIAL_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_target_identity: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  TrialRoundInputLockRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_lock_round_project_and_plan_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_version_predecessor_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      exact_design_part_tooling_set_cavity_process_and_document_references: {owner: SOURCE_AGGREGATE_PER_REFERENCE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      observed_material_color_additive_and_batch: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_OBSERVATION}
+      parameter_definitions_units_targets_and_windows: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_WITHIN_LOCK_REVISION}
+      erp_master_availability_reservation_and_batch_verification: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IN_P7_02}
+
+  TrialRoundActualRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_actual_round_and_exact_input_lock_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_version_predecessor_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      manual_machine_material_environment_and_parameter_observations: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_MANUAL_OBSERVATION}
+      measured_and_not_measured_state: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: EXPLICIT_NO_IMPUTATION}
+      customer_standard_values: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROL_COMMAND, editable_in: [], direction: NONE, conflict: NEVER_COPY_TO_TRIAL_ACTUAL}
+      approved_process_baseline: {owner: FUTURE_APPROVED_TRIAL_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_02}
+      automatic_machine_import: {owner: FUTURE_APPROVED_ACQUISITION_ADAPTER, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_02}
+
+  TrialSampleBatchRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_batch_round_and_exact_input_lock_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_version_predecessor_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      cavity_material_quantity_packaging_destination_and_feedback: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: NEW_REVISION}
+      formal_item_batch_stock_and_delivery_truth: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IN_P7_02}
+
+  TrialEvidenceReference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_round_and_optional_sample_revision_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_EXACT_REFERENCE}
+      exact_private_file_revision_hash_size_mime_scan_and_role: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: CLEAN_PRIVATE_FILE_ONLY}
+      raw_private_file_url_or_token: {owner: CONTROLLED_FILE_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_OR_RETURN}
+      formal_quality_inspection_ncr_approval_and_gate_effect: {owner: ERPNEXT_AND_FUTURE_GATE_COMMAND, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IN_P7_02}
+
+  EngineeringChange:
+    owner_system: SPLIT
+    fields:
+      formal_change_number: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      approval_status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      engineering_impact: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      validation_tasks: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: OWNER_WINS}
+
+  QualityInspection:
+    owner_system: ERPNEXT
+    npi_view: projection_and_gate_evidence
+    fields:
+      inspection_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      result: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      gate_interpretation: {owner: NPI_ONE, editable_in: [NPI_ONE_RULE_ENGINE], direction: NONE, conflict: RECOMPUTE}
+
+  ControlledDocument:
+    owner_system: SPLIT_BY_STAGE
+    fields:
+      stable_identity_number_and_type: {owner: NPI_ONE, editable_in: [NPI_ONE_DOCUMENT_COMMAND], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_document_policy_reference: {owner: VERSIONED_DOCUMENT_POLICY, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      title_and_confidentiality: {owner: NPI_ONE, editable_in: [NPI_ONE_DOCUMENT_COMMAND], direction: NONE, conflict: NEW_REVISION}
+      current_revision_pointer: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      current_edit_lease_pointer: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      baseline_membership: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_BASELINE_COMMAND], direction: NPI_TO_ERPNEXT_REFERENCE, conflict: IMMUTABLE_SNAPSHOT}
+      official_archive_id: {owner: ERPNEXT_OR_DMS, editable_in: [ERPNEXT_OR_DMS], direction: EXTERNAL_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      external_retrieval: {owner: FUTURE_EXTERNAL_ACCESS_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  DocumentPolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      draft_policy_version: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_policy_version: {owner: VERSIONED_DOCUMENT_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      numbering_type_confidentiality_file_and_lease_rules: {owner: VERSIONED_DOCUMENT_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  DocumentPolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_version_identity_and_publication: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: PUBLISH_ONCE}
+      numbering_type_confidentiality_file_and_lease_rules: {owner: VERSIONED_DOCUMENT_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
+
+  DocumentRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      revision_identity_major_minor_and_predecessor: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      reason_effectivity_and_state: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_policy_lock_file_and_provenance_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      review_release_and_archive_state: {owner: VERSIONED_DOCUMENT_RELEASE_POLICY, editable_in: [NPI_ONE_DOCUMENT_RELEASE_COMMAND], direction: NONE, conflict: APPEND_EVENT_AND_VERSION_CONFLICT}
+
+  DocumentRevisionFile:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_document_revision_file_revision_association: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      original_display_filename: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      frappe_storage_filename_and_identity: {owner: FRAPPE_FILE_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      file_role_and_provenance: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      connector_state: {owner: FUTURE_CAD_PDM_ADAPTER, editable_in: [], direction: NONE, conflict: UNAVAILABLE_OR_ISOLATED_FAILURE}
+
+  DocumentReleasePolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_identity_and_project_scope: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      enabled_and_title: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: VERSION_CONFLICT}
+      production_authority_configuration: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  DocumentReleasePolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_version_identity_and_publication: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: PUBLISH_ONCE}
+      exact_submit_review_release_supersede_and_obsolete_bindings: {owner: VERSIONED_DOCUMENT_RELEASE_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      integrity_confirmation_and_replacement_rules: {owner: VERSIONED_DOCUMENT_RELEASE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
+
+  DocumentBaselinePolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_identity_and_project_scope: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      enabled_and_title: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: VERSION_CONFLICT}
+      production_baseline_authority_and_content_rules: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  DocumentBaselinePolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_version_identity_and_publication: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: PUBLISH_ONCE}
+      exact_baseline_authority_bindings: {owner: VERSIONED_DOCUMENT_BASELINE_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
+
+  DocumentBaseline:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_project_policy_member_and_file_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      creator_time_request_and_trace: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      production_baseline_semantics: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  DocumentBaselineMember:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_baseline_document_revision_release_and_file_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      member_sequence_and_hash: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  BaselineCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_operation_and_hashed_key_scope: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [NPI_ONE_DOCUMENT_BASELINE_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_baseline_identity: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  BaselineGateDependency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_baseline_member_gate_requirement_and_evidence_reference: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXPLICIT_REGISTRATION_ONLY}
+      registration_actor_time_request_and_trace: {owner: NPI_ONE_GATE_EVIDENCE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      production_dependency_matrix: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  BaselineImpactEvent:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_registered_dependency_and_successor_lineage: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY}
+      affected_gate_requirement_and_evidence_reference: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXPLICIT_DEPENDENCY_ONLY}
+      resolution_state: {owner: EXISTING_GATE_REVIEW_CYCLE, editable_in: [NPI_ONE_GATE_REVIEW_COMMAND], direction: NONE, conflict: NEW_REVIEW_CYCLE}
+
+  DocumentReviewCycle:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_revision_file_policy_and_assignment_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      submission_actor_time_request_and_trace: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      prior_rejected_cycle: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+
+  DocumentConfirmation:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      confirmation_identity_type_intent_and_method: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_revision_file_cycle_policy_and_authority_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      actor_time_request_trace_and_evidence_hash: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  DocumentLifecycleEvent:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_state_transition_and_versions: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_cycle_policy_confirmation_and_replacement_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      actor_time_request_trace_and_event_hash: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  DocumentRevisionLifecycle:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      revision_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_state_and_version: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_RELEASE_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      active_approved_release_terminal_and_replacement_pointers: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_RELEASE_COMMAND], direction: REFERENCE_ONLY, conflict: EXACT_EVENT_REFERENCE}
+
+  DocumentRelationship:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      relationship_identity_and_type: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_same_project_target_snapshot: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+
+  DocumentLockEvent:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      acquisition_and_terminal_event: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      holder_lease_prior_event_and_recovery_reason: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  DocumentCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_operation_and_hashed_key_scope: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [NPI_ONE_DOCUMENT_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_audit_identity: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  DocumentShareGrant:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      bounded_grant_record: {owner: NPI_ONE, editable_in: [NPI_ONE_SHARE_POLICY], direction: NONE, conflict: APPEND_ONLY_TRANSITION}
+      external_identity_and_retrieval_authority: {owner: FUTURE_EXTERNAL_ACCESS_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      raw_token_or_private_url: {owner: FUTURE_EXTERNAL_ACCESS_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_OR_EXPOSE}
+
+  ControlledPrintRegistry:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      registry_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      draft_mapping_version: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_mapping_and_template_snapshot: {owner: NPI_ONE_CONTROLLED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_source_project_gate_state_language_effectivity: {owner: NPI_ONE_CONTROLLED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      exact_form_signer_retention_and_copy_policy: {owner: FUTURE_APPROVED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ControlledPrintSnapshot:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_source_and_mapping_snapshot: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      language_actor_time_watermark_copy_and_verification_truth: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      source_live_state: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: NEVER_SUBSTITUTE_LIVE_DATA}
+
+  ControlledPrintOutput:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_private_file_identity_and_hash: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      retained_pdf_bytes: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: NEVER_RERENDER_IN_PLACE}
+      raw_private_file_url: {owner: FRAPPE_PRIVATE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_EXPOSE}
+
+  ControlledPrintAccessEvent:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_snapshot_output_actor_time_and_type: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      event_hash_and_trace: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  ControlledPrintCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [NPI_ONE_CONTROLLED_PRINT_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_snapshot_identity: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  IntegrationOperationProjection:
+    owner_system: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE
+    erp_view: derived_project_scoped_read_model
+    fields:
+      exact_operation_source_attempt_result_and_mapping_references: {owner: P8_02_TO_P9_01_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      raw_operation_state_and_fault_code: {owner: P8_02_TO_P9_01_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: NEVER_REWRITE_OR_TRANSLATE}
+      shared_state_and_logical_dlq_classification: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: REBUILD_FROM_OWNING_TRUTH}
+      replay_and_reconciliation_authority: {owner: P8_02_TO_P9_01_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: NONE, conflict: OPERATION_SPECIFIC_FAIL_CLOSED_P9_01_READ_ONLY}
+
+  IntegrationActionReceipt:
+    owner_system: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE
+    erp_view: none
+    fields:
+      tenant_project_operation_source_state_and_version: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_EXACT_SOURCE}
+      action_actor_trace_and_hashed_idempotency: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_ACTION_IDENTITY}
+      replay_payload_and_target_idempotency: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: REUSE_ORIGINAL_EXACTLY}
+      reconciliation_request: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: NONE, conflict: OPERATOR_INTENT_ONLY_NEVER_TARGET_TRUTH}
+      sealed_safe_response_and_receipt_hash: {owner: NPI_ONE_INTEGRATION_OPERATIONS_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_REPLAY}
+      raw_payload_response_credentials_and_secrets: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  IntegrationReconciliationObservation:
+    owner_system: NPI_ONE_OPERATION_SPECIFIC_RECONCILIATION_SERVICE
+    erp_view: authenticated_append_only_observation
+    fields:
+      exact_action_operation_source_attempt_profile_and_adapter: {owner: NPI_ONE_OPERATION_SPECIFIC_RECONCILIATION_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_EXACT_SOURCE}
+      observation_state_and_authenticated_authority: {owner: TRUSTED_OPERATION_SPECIFIC_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY_EVIDENCE}
+      forward_state_or_mapping_change: {owner: P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER, editable_in: [P8_02_TO_P8_05_OPERATION_SPECIFIC_OWNER], direction: NONE, conflict: EXISTING_LOCKED_CAS_ONLY}
+      human_asserted_target_success_or_identity: {owner: NEVER_ACCEPT, editable_in: [], direction: NONE, conflict: REJECT}
+      raw_target_request_response_credentials_and_secrets: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+exception_policy:
+  create_object: IntegrationException
+  required_fields:
+    - global_id
+    - object_type
+    - field_path
+    - expected_owner
+    - npi_value_hash
+    - erp_value_hash
+    - detected_at
+    - severity
+    - assigned_to
+    - status

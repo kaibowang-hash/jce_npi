@@ -1,0 +1,103 @@
+Actor User ID,操作用户 ID
+Adapter Boundary Crossed,已越过适配器边界
+Attempt Count,尝试次数
+Attempt Number,尝试序号
+Canonical Event Hash,规范事件哈希
+Claim Token,领取令牌
+Claimed At,领取时间
+Completed At,完成时间
+Created At,创建时间
+Engineering Change,工程变更
+Engineering Change Inbox history can only be changed by the authenticated intake service.,工程变更收件箱历史只能由已认证的接入服务更改。
+Engineering Change integration history cannot be changed.,不能更改工程变更集成历史。
+Engineering Change integration history cannot be deleted.,不能删除工程变更集成历史。
+Engineering Change integration write authority is invalid.,工程变更集成写入权限无效。
+Engineering Change summary Outbox messages can only be changed by the controlled execution service.,工程变更摘要发件箱消息只能由受控执行服务更改。
+Engineering Change summary attempts can only be changed by the controlled execution service.,工程变更摘要尝试只能由受控执行服务更改。
+Engineering Change summary requests can only be changed through an authorized command.,工程变更摘要请求只能通过已授权命令更改。
+Engineering Change summary results can only be appended by the controlled execution service.,工程变更摘要结果只能由受控执行服务追加。
+Engineering change event authentication failed.,工程变更事件认证失败。
+Engineering change integration conflict,工程变更集成冲突
+Engineering change integration is unavailable.,工程变更集成不可用。
+Event ID,事件 ID
+Event Snapshot,事件快照
+Event Type,事件类型
+Fault Kind,故障类型
+Global ID,全局 ID
+Idempotency Key Hash,幂等键哈希
+Integration Profile Hash,集成配置哈希
+Integration Profile ID,集成配置标识符
+Integration Profile Version,集成配置版本
+Last Attempt ID,上次尝试标识符
+Last Error At,上次错误时间
+Last Error Code,上次错误代码
+Lease Expires At,租约到期时间
+NPI Engineering Change Inbox,NPI 工程变更收件箱
+NPI Engineering Change Summary Attempt,NPI 工程变更摘要尝试
+NPI Engineering Change Summary Outbox,NPI 工程变更摘要发件箱
+NPI Engineering Change Summary Request,NPI 工程变更摘要请求
+NPI Engineering Change Summary Result,NPI 工程变更摘要结果
+Object Version,对象版本
+Observation Revision ID,观察修订标识符
+Observation Snapshot Hash,观察快照哈希
+Observed At,观察时间
+Outbox Event ID,发件箱事件标识符
+Payload,载荷
+Payload Hash,载荷哈希
+Project,项目
+Raw Body Hash,原始正文哈希
+Receipt ID,回执 ID
+Received At,接收时间
+Refresh the Engineering Change and retry with its exact current version.,请刷新工程变更并使用其准确的当前版本重试。
+Request ID,请求 ID
+Response Authenticated,响应已认证
+Response Contract Valid,响应合同有效
+Response Hash,响应哈希
+Result Hash,结果哈希
+Result ID,结果标识符
+Result Snapshot,结果快照
+Retry After Seconds,重试等待秒数
+Retry Directive,重试指令
+Revision ID,修订标识符
+Revision Number,修订号
+Revision Snapshot Hash,修订快照哈希
+Safe Error Code,安全错误代码
+Schema Version,模式版本
+Service Actor User ID,服务操作用户 ID
+Signed At,签名时间
+Signing Key ID,签名密钥 ID
+Source Hash,来源哈希
+Source Key Hash,来源键哈希
+Source Snapshot,来源快照
+Started At,开始时间
+State,状态
+Summary Attempt,摘要尝试
+Summary Outbox,摘要发件箱
+Summary Request,摘要请求
+Target Idempotency Key Hash,目标幂等键哈希
+Tenant ID,租户 ID
+The Engineering Change event is unavailable.,工程变更事件不可用。
+The Engineering Change integration actor is invalid.,工程变更集成操作用户无效。
+The Engineering Change integration actor is unavailable.,工程变更集成操作用户不可用。
+The Engineering Change integration actor lacks the required role.,工程变更集成操作用户缺少所需角色。
+The Engineering Change integration profile is not active for this Project.,此项目的工程变更集成配置未启用。
+The signed Engineering Change event could not be accepted.,无法接受已签名的工程变更事件。
+Trace ID,跟踪 ID
+Updated At,更新时间
+failed_final,最终失败
+failed_retryable,可重试失败
+identity_conflict,标识冲突
+observed_failure,已观察失败
+observed_success,已观察成功
+partial,部分完成
+partially_succeeded,部分成功
+pending,待处理
+processing,处理中
+quarantined,已隔离
+queued,已排队
+started,已开始
+succeeded,成功
+superseded,已取代
+synthetic_verified,合成验证通过
+uncertain,不确定
+uncertain_after_timeout,超时后不确定

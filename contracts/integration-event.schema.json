@@ -1,0 +1,1901 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.internal/npi/contracts/integration-event.schema.json",
+  "title": "NPI One Integration Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "occurred_at",
+    "source_system",
+    "global_id",
+    "object_type",
+    "object_version",
+    "trace_id",
+    "payload"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "anyOf": [
+              {"const": "erpnext.quotation.submitted"},
+              {"const": "erpnext.sales_order.submitted"}
+            ]
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "occurred_at": {"type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "source_object_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "object_version": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+          "correlation_id": {"type": "string", "format": "uuid"},
+          "causation_id": false,
+          "idempotency_key": false,
+          "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "sensitivity": {"const": "confidential"},
+          "actor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "id"],
+            "properties": {
+              "type": {"const": "service"},
+              "id": {"type": "string", "minLength": 1, "maxLength": 254}
+            }
+          },
+          "payload": {"$ref": "#/$defs/erp_project_source_submitted_v1"}
+        },
+        "required": [
+          "target_system",
+          "source_object_id",
+          "correlation_id",
+          "actor",
+          "payload_hash",
+          "sensitivity"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {"event_type": {"const": "erpnext.quotation.submitted"}},
+        "required": ["event_type"]
+      },
+      "then": {"properties": {"object_type": {"const": "Quotation"}}}
+    },
+    {
+      "if": {
+        "properties": {"event_type": {"const": "erpnext.sales_order.submitted"}},
+        "required": ["event_type"]
+      },
+      "then": {"properties": {"object_type": {"const": "Sales Order"}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "npi.ebom_publish_request.ready"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_system": {
+            "const": "NPI_ONE"
+          },
+          "target_system": {
+            "const": "ERPNEXT"
+          },
+          "object_type": {
+            "const": "EngineeringBOMPublishRequest"
+          },
+          "payload": {
+            "$ref": "#/$defs/engineering_bom_publish_request_ready_v1"
+          }
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "anyOf": [
+              {"const": "npi.integration_action.recorded"},
+              {"const": "npi.integration_reconciliation.observed"}
+            ]
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "NPI_ONE"},
+          "target_system": {"const": "NPI_ONE"},
+          "object_version": {"const": 1},
+          "correlation_id": {"type": "string", "format": "uuid"},
+          "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "sensitivity": {"const": "internal"},
+          "actor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "id"],
+            "properties": {
+              "type": {"const": "service"},
+              "id": {"type": "string", "minLength": 1, "maxLength": 254}
+            }
+          }
+        },
+        "required": [
+          "target_system",
+          "correlation_id",
+          "payload_hash",
+          "sensitivity",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {"event_type": {"const": "npi.integration_action.recorded"}},
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "object_type": {"const": "IntegrationActionReceipt"},
+          "payload": {"$ref": "#/$defs/integration_action_recorded_v1"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"event_type": {"const": "npi.integration_reconciliation.observed"}},
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "object_type": {"const": "IntegrationReconciliationObservation"},
+          "payload": {"$ref": "#/$defs/integration_reconciliation_observed_v1"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "erpnext.ebom_publish_result.observed"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_system": {
+            "const": "ERPNEXT"
+          },
+          "target_system": {
+            "const": "NPI_ONE"
+          },
+          "object_type": {
+            "const": "EngineeringBOMPublishRequest"
+          },
+          "payload": {
+            "$ref": "#/$defs/engineering_bom_publish_result_observed_v1"
+          }
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "correlation_id",
+          "causation_id",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {"const": "npi.item_publish_request.ready"}
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "NPI_ONE"},
+          "target_system": {"const": "ERPNEXT"},
+          "object_type": {"const": "ItemPublishRequest"},
+          "object_version": {"const": 1},
+          "payload": {"$ref": "#/$defs/item_publish_request_ready_v1"}
+        },
+        "required": ["target_system", "payload_hash", "actor"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {"const": "erpnext.item_publish_result.observed"}
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "object_type": {"const": "ItemPublishRequest"},
+          "object_version": {"const": 1},
+          "payload": {"$ref": "#/$defs/item_publish_result_observed_v1"}
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "correlation_id",
+          "causation_id",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {"const": "npi.mbom_publish_request.ready"}
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "NPI_ONE"},
+          "target_system": {"const": "ERPNEXT"},
+          "object_type": {"const": "MBOMPublishRequest"},
+          "object_version": {"const": 1},
+          "payload": {"$ref": "#/$defs/mbom_publish_request_ready_v1"}
+        },
+        "required": ["target_system", "payload_hash", "actor"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {"const": "erpnext.mbom_publish_result.observed"}
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "object_type": {"const": "MBOMPublishRequest"},
+          "object_version": {"const": 1},
+          "payload": {"$ref": "#/$defs/mbom_publish_result_observed_v1"}
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "correlation_id",
+          "causation_id",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {"const": "npi.tool_asset_request.ready"}
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "NPI_ONE"},
+          "target_system": {"const": "ERPNEXT"},
+          "object_type": {"const": "ToolAssetExecutionRequest"},
+          "object_version": {"const": 1},
+          "payload": {"$ref": "#/$defs/tool_asset_request_ready_v2"}
+        },
+        "required": ["target_system", "payload_hash", "actor"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {"const": "erpnext.tool_asset_result.observed"}
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "object_type": {"const": "ToolAssetExecutionRequest"},
+          "object_version": {"const": 1},
+          "payload": {"$ref": "#/$defs/tool_asset_result_observed_v2"}
+        },
+        "required": ["target_system", "payload_hash", "correlation_id", "causation_id", "actor"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "npi.tooling_asset_request.ready"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_system": {
+            "const": "NPI_ONE"
+          },
+          "target_system": {
+            "const": "ERPNEXT"
+          },
+          "object_type": {
+            "const": "ToolAssetRequest"
+          },
+          "payload": {
+            "$ref": "#/$defs/tooling_asset_request_ready_v1"
+          }
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "erpnext.tooling_asset_result.observed"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_system": {
+            "const": "ERPNEXT"
+          },
+          "target_system": {
+            "const": "NPI_ONE"
+          },
+          "object_type": {
+            "const": "ToolAssetRequest"
+          },
+          "payload": {
+            "$ref": "#/$defs/tooling_asset_result_observed_v1"
+          }
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "correlation_id",
+          "causation_id",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "enum": [
+              "erpnext.customer_master.observed",
+              "erpnext.supplier_master.observed",
+              "erpnext.formal_item_master.observed",
+              "erpnext.tooling_procurement_cost.observed",
+              "erpnext.project_cost.observed",
+              "erpnext.formal_quality_status.observed",
+              "erpnext.tool_asset_status.observed"
+            ]
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "source_object_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "object_version": {"const": 1},
+          "correlation_id": {"type": "string", "format": "uuid"},
+          "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "sensitivity": {"enum": ["internal", "confidential"]},
+          "actor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "id"],
+            "properties": {
+              "type": {"const": "service"},
+              "id": {"type": "string", "minLength": 1, "maxLength": 255}
+            }
+          },
+          "payload": {"$ref": "#/$defs/erp_projection_observation_v1"}
+        },
+        "required": ["target_system", "source_object_id", "payload_hash", "correlation_id", "actor"]
+      }
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.customer_master.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "Customer"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "customer_master"}, "scope_kind": {"const": "project"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_master_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.supplier_master.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "Supplier"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "supplier_master"}, "scope_kind": {"const": "tooling_master"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_master_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.formal_item_master.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "Item"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "formal_item_master"}, "scope_kind": {"const": "engineering_item"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_item_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.tooling_procurement_cost.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "ToolingProcurementCost"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "tooling_procurement_cost"}, "scope_kind": {"const": "tooling_master"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_tooling_cost_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.project_cost.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "ProjectCost"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "project_cost"}, "scope_kind": {"const": "project"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_project_cost_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.formal_quality_status.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "FormalQualityStatus"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "formal_quality_status"}, "scope_kind": {"enum": ["project", "trial_round", "readiness"]}, "values": {"oneOf": [{"$ref": "#/$defs/erp_quality_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.tool_asset_status.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "Asset"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "tool_asset_status"}, "scope_kind": {"const": "tooling_set"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_tool_asset_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "npi.erp-engineering-change.v1"}}, "required": ["event_type"]},
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "object_type": {"const": "Engineering Change Request"},
+          "payload": {"$ref": "#/$defs/engineering_change_observation_event_v1"}
+        },
+        "required": ["target_system", "source_object_id", "idempotency_key", "correlation_id", "actor", "payload_hash", "sensitivity"]
+      }
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "npi.change-implementation-summary.v1"}}, "required": ["event_type"]},
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "NPI_ONE"},
+          "target_system": {"const": "ERPNEXT"},
+          "object_type": {"const": "EngineeringChangeImplementationSummary"},
+          "payload": {"$ref": "#/$defs/change_implementation_summary_v1"}
+        },
+        "required": ["target_system", "correlation_id", "actor", "payload_hash", "sensitivity"]
+      }
+    }
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "npi.ebom_publish_request.ready",
+        "erpnext.ebom_publish_result.observed",
+        "npi.item_publish_request.ready",
+        "erpnext.item_publish_result.observed",
+        "npi.mbom_publish_request.ready",
+        "erpnext.mbom_publish_result.observed",
+        "npi.tool_asset_request.ready",
+        "erpnext.tool_asset_result.observed",
+        "npi.integration_action.recorded",
+        "npi.integration_reconciliation.observed",
+        "npi.tooling_asset_request.ready",
+        "erpnext.tooling_asset_result.observed",
+        "erpnext.customer_master.observed",
+        "erpnext.supplier_master.observed",
+        "erpnext.formal_item_master.observed",
+        "erpnext.tooling_procurement_cost.observed",
+        "erpnext.project_cost.observed",
+        "erpnext.formal_quality_status.observed",
+        "erpnext.tool_asset_status.observed",
+        "erpnext.quotation.submitted",
+        "erpnext.sales_order.submitted"
+        ,"npi.erp-engineering-change.v1"
+        ,"npi.change-implementation-summary.v1"
+      ]
+    },
+    "event_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_system": {
+      "enum": [
+        "NPI_ONE",
+        "ERPNEXT"
+      ]
+    },
+    "target_system": {
+      "enum": [
+        "NPI_ONE",
+        "ERPNEXT"
+      ]
+    },
+    "global_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "object_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "source_object_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    },
+    "object_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "idempotency_key": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    },
+    "correlation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "causation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "actor": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "user",
+            "service"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 255
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ]
+    },
+    "payload_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "sensitivity": {
+      "enum": [
+        "internal",
+        "confidential",
+        "restricted"
+      ],
+      "default": "internal"
+    }
+  },
+  "$defs": {
+    "erp_project_source_submitted_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "submission_state",
+        "title",
+        "target_sop",
+        "source_modified_at"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "submission_state": {"const": "submitted"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 140},
+        "target_sop": {"type": "string", "format": "date"},
+        "source_modified_at": {"type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}
+      }
+    },
+    "engineering_bom_publish_request_ready_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "publish_request_global_id",
+        "project_global_id",
+        "ebom_global_id",
+        "revision_global_id",
+        "revision_snapshot_hash",
+        "release_event_global_id",
+        "release_event_hash",
+        "approval_evidence_ids",
+        "target_mode",
+        "owned_fields",
+        "node_input_hashes"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "api_version": {
+          "const": "npi.erp-publish.v1"
+        },
+        "operation": {
+          "const": "publish_released_ebom_item_mbom"
+        },
+        "publish_request_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "project_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ebom_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "release_event_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "release_event_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "approval_evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "target_mode": {
+          "const": "sandbox"
+        },
+        "owned_fields": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "engineering_item_id",
+              "engineering_description",
+              "ebom_hierarchy",
+              "engineering_quantity",
+              "engineering_uom",
+              "alternates",
+              "effectivity",
+              "engineering_attributes"
+            ]
+          }
+        },
+        "node_input_hashes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "engineering_bom_publish_result_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "publish_request_global_id",
+        "request_payload_hash",
+        "attempt_id",
+        "results"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "api_version": {
+          "const": "npi.erp-publish.v1"
+        },
+        "operation": {
+          "const": "publish_released_ebom_item_mbom"
+        },
+        "publish_request_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "results": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "node_global_id",
+              "node_input_hash",
+              "state",
+              "formal_item_code",
+              "formal_mbom_id",
+              "target_version",
+              "fault_kind"
+            ],
+            "properties": {
+              "node_global_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "node_input_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "succeeded",
+                  "failed_retryable",
+                  "failed_final",
+                  "uncertain_after_timeout",
+                  "target_unavailable"
+                ]
+              },
+              "formal_item_code": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 140
+              },
+              "formal_mbom_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 140
+              },
+              "target_version": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 140
+              },
+              "fault_kind": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "timeout_after_possible_commit",
+                  "rate_limited",
+                  "target_server_error",
+                  "business_validation",
+                  "stale_mapping",
+                  "target_unavailable",
+                  null
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "mbom_publish_request_ready_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "request_global_id",
+        "request_payload_hash",
+        "project_global_id",
+        "source_stream_key_hash",
+        "source_hash",
+        "topology_hash",
+        "item_mapping_set_hash",
+        "mbom_mapping_set_hash",
+        "assembly_count",
+        "target_mode",
+        "profile_id",
+        "profile_version",
+        "profile_snapshot_hash",
+        "projection_policy_hash",
+        "idempotency_key_hash",
+        "target_idempotency_key_hash",
+        "semantic_effect_hash"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "api_version": {"const": "npi.erp-mbom-publish.v1"},
+        "operation": {"const": "publish_released_mbom"},
+        "request_global_id": {"type": "string", "format": "uuid"},
+        "request_payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "source_stream_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "topology_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "item_mapping_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "mbom_mapping_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "assembly_count": {"type": "integer", "minimum": 1, "maximum": 499},
+        "target_mode": {"enum": ["synthetic", "sandbox"]},
+        "profile_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "profile_version": {"type": "integer", "minimum": 1},
+        "profile_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "projection_policy_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target_idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "semantic_effect_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "mbom_publish_result_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "request_global_id",
+        "request_payload_hash",
+        "outbox_event_id",
+        "attempt_global_id",
+        "attempt_number",
+        "source_hash",
+        "topology_hash",
+        "item_mapping_set_hash",
+        "mbom_mapping_set_hash",
+        "state",
+        "authority",
+        "response_authenticated",
+        "response_hash",
+        "fault_kind",
+        "node_results",
+        "observed_at"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "api_version": {"const": "npi.erp-mbom-publish.v1"},
+        "operation": {"const": "publish_released_mbom"},
+        "request_global_id": {"type": "string", "format": "uuid"},
+        "request_payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "outbox_event_id": {"type": "string", "format": "uuid"},
+        "attempt_global_id": {"type": "string", "format": "uuid"},
+        "attempt_number": {"type": "integer", "minimum": 1},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "topology_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "item_mapping_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "mbom_mapping_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "state": {
+          "enum": [
+            "synthetic_verified",
+            "partially_succeeded",
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "uncertain_after_timeout",
+            "mapping_conflict"
+          ]
+        },
+        "authority": {"enum": ["none", "synthetic", "authoritative_sandbox"]},
+        "response_authenticated": {"type": "boolean"},
+        "response_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "fault_kind": {"type": "string", "minLength": 1, "maxLength": 100},
+        "node_results": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 499,
+          "items": {"$ref": "#/$defs/mbom_publish_node_result_observed_v1"}
+        },
+        "observed_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "mbom_publish_node_result_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stable_line_key",
+        "assembly_source_key",
+        "state",
+        "authority",
+        "response_authenticated",
+        "response_hash",
+        "formal_bom_id",
+        "target_version",
+        "target_submission_state",
+        "fault_kind"
+      ],
+      "properties": {
+        "stable_line_key": {"type": "string", "minLength": 1, "maxLength": 128},
+        "assembly_source_key": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "state": {
+          "enum": [
+            "synthetic_verified",
+            "succeeded_authoritative",
+            "failed_retryable",
+            "failed_final",
+            "blocked_item_mapping",
+            "blocked_submitted",
+            "uncertain_after_timeout",
+            "observed_conflict"
+          ]
+        },
+        "authority": {"enum": ["none", "synthetic", "authoritative_sandbox"]},
+        "response_authenticated": {"type": "boolean"},
+        "response_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "formal_bom_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 140},
+        "target_version": {"type": ["string", "null"], "minLength": 1, "maxLength": 140},
+        "target_submission_state": {
+          "type": ["string", "null"],
+          "enum": ["editable_draft", "submitted_immutable", null]
+        },
+        "fault_kind": {"type": "string", "minLength": 1, "maxLength": 100}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"state": {"const": "succeeded_authoritative"}},
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "authority": {"const": "authoritative_sandbox"},
+              "response_authenticated": {"const": true},
+              "formal_bom_id": {"type": "string"},
+              "target_version": {"type": "string"},
+              "target_submission_state": {"const": "editable_draft"},
+              "fault_kind": {"const": "none"}
+            }
+          },
+          "else": {
+            "properties": {
+              "formal_bom_id": {"type": "null"},
+              "target_version": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"state": {"const": "synthetic_verified"}},
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "authority": {"const": "synthetic"},
+              "response_authenticated": {"const": false},
+              "target_submission_state": {"type": "null"},
+              "fault_kind": {"const": "none"}
+            }
+          }
+        }
+      ]
+    },
+    "item_publish_request_ready_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "request_global_id",
+        "request_payload_hash",
+        "project_global_id",
+        "source_stream_key_hash",
+        "source_hash",
+        "intent",
+        "expected_mapping_version",
+        "expected_target_version",
+        "target_mode",
+        "profile_id",
+        "profile_version",
+        "profile_snapshot_hash",
+        "idempotency_key_hash",
+        "target_idempotency_key_hash",
+        "semantic_source_effect_hash",
+        "semantic_effect_hash"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "api_version": {"const": "npi.erp-item-publish.v1"},
+        "operation": {"const": "publish_released_item"},
+        "request_global_id": {"type": "string", "format": "uuid"},
+        "request_payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "source_stream_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "intent": {"enum": ["create_item", "update_item_engineering_fields"]},
+        "expected_mapping_version": {"type": "integer", "minimum": 0},
+        "expected_target_version": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "target_mode": {"enum": ["synthetic", "sandbox"]},
+        "profile_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "profile_version": {"type": "integer", "minimum": 1},
+        "profile_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target_idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "semantic_source_effect_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "semantic_effect_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"intent": {"const": "create_item"}},
+            "required": ["intent"]
+          },
+          "then": {
+            "properties": {
+              "expected_mapping_version": {"const": 0},
+              "expected_target_version": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"intent": {"const": "update_item_engineering_fields"}},
+            "required": ["intent"]
+          },
+          "then": {
+            "properties": {
+              "expected_mapping_version": {"type": "integer", "minimum": 1},
+              "expected_target_version": {"type": "string"}
+            }
+          }
+        }
+      ]
+    },
+    "item_publish_result_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "request_global_id",
+        "request_payload_hash",
+        "outbox_event_id",
+        "attempt_global_id",
+        "attempt_number",
+        "idempotency_key_hash",
+        "source_hash",
+        "expected_target_version",
+        "state",
+        "authority",
+        "response_authenticated",
+        "response_hash",
+        "formal_item_code",
+        "target_version",
+        "fault_kind",
+        "observed_at"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "api_version": {"const": "npi.erp-item-publish.v1"},
+        "operation": {"const": "publish_released_item"},
+        "request_global_id": {"type": "string", "format": "uuid"},
+        "request_payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "outbox_event_id": {"type": "string", "format": "uuid"},
+        "attempt_global_id": {"type": "string", "format": "uuid"},
+        "attempt_number": {"type": "integer", "minimum": 1},
+        "idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "expected_target_version": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "state": {
+          "enum": [
+            "synthetic_verified",
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "uncertain_after_timeout"
+          ]
+        },
+        "authority": {"enum": ["none", "synthetic", "authoritative_sandbox"]},
+        "response_authenticated": {"type": "boolean"},
+        "response_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "formal_item_code": {"type": ["string", "null"], "minLength": 1, "maxLength": 140},
+        "target_version": {"type": ["string", "null"], "minLength": 1, "maxLength": 140},
+        "fault_kind": {
+          "enum": [
+            "none",
+            "payload_conflict",
+            "source_engineering_item_conflict",
+            "stale_mapping",
+            "timeout_after_possible_commit",
+            "rate_limited",
+            "target_server_error",
+            "business_validation",
+            "response_contract_invalid",
+            "response_authentication_invalid",
+            "target_unavailable"
+          ]
+        },
+        "observed_at": {"type": "string", "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"state": {"const": "succeeded"}},
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "authority": {"const": "authoritative_sandbox"},
+              "response_authenticated": {"const": true},
+              "formal_item_code": {"type": "string"},
+              "target_version": {"type": "string"},
+              "fault_kind": {"const": "none"}
+            }
+          },
+          "else": {
+            "properties": {
+              "formal_item_code": {"type": "null"},
+              "target_version": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"state": {"const": "synthetic_verified"}},
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "authority": {"const": "synthetic"},
+              "response_authenticated": {"const": false},
+              "fault_kind": {"const": "none"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"state": {"const": "uncertain_after_timeout"}},
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {"fault_kind": {"const": "timeout_after_possible_commit"}}
+          }
+        },
+        {
+          "if": {
+            "properties": {"authority": {"const": "authoritative_sandbox"}},
+            "required": ["authority"]
+          },
+          "then": {
+            "properties": {"response_authenticated": {"const": true}}
+          }
+        },
+        {
+          "if": {
+            "properties": {"authority": {"const": "none"}},
+            "required": ["authority"]
+          },
+          "then": {
+            "properties": {"response_authenticated": {"const": false}}
+          }
+        }
+      ]
+    },
+    "tool_asset_request_ready_v2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "api_version", "operation", "tool_asset_request_global_id", "tenant_id", "project_global_id", "tooling_set_global_id", "source_stream_key_hash", "source_hash", "approval_hash", "mapping_expectation_hash", "profile_id", "profile_version", "profile_snapshot_hash", "request_payload_hash", "target_idempotency_key_hash"],
+      "properties": {
+        "schema_version": {"const": 2},
+        "api_version": {"const": "npi.erp-tool-asset.v1"},
+        "operation": {"enum": ["create_tool_asset", "update_tool_asset"]},
+        "tool_asset_request_global_id": {"type": "string", "format": "uuid"},
+        "tenant_id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$"},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "tooling_set_global_id": {"type": "string", "format": "uuid"},
+        "source_stream_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "approval_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "mapping_expectation_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "profile_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "profile_version": {"type": "integer", "minimum": 1},
+        "profile_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "request_payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target_idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "tool_asset_result_observed_v2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "api_version", "operation", "tool_asset_request_global_id", "source_stream_key_hash", "source_hash", "mapping_expectation_hash", "attempt_global_id", "attempt_number", "state", "authority", "response_authenticated", "response_hash", "fault_kind", "field_result_set_hash", "formal_asset_id", "target_version", "observed_at"],
+      "properties": {
+        "schema_version": {"const": 2},
+        "api_version": {"const": "npi.erp-tool-asset.v1"},
+        "operation": {"enum": ["create_tool_asset", "update_tool_asset"]},
+        "tool_asset_request_global_id": {"type": "string", "format": "uuid"},
+        "source_stream_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "mapping_expectation_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "attempt_global_id": {"type": "string", "format": "uuid"},
+        "attempt_number": {"type": "integer", "minimum": 1},
+        "state": {"enum": ["synthetic_verified", "partially_succeeded", "succeeded", "failed_retryable", "failed_final", "uncertain_after_timeout", "mapping_conflict"]},
+        "authority": {"enum": ["none", "synthetic", "authoritative_sandbox"]},
+        "response_authenticated": {"type": "boolean"},
+        "response_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "fault_kind": {"enum": ["none", "source_conflict", "approval_unavailable", "stale_mapping", "timeout_after_possible_commit", "rate_limited", "target_server_error", "business_validation", "response_contract_invalid", "response_authentication_invalid", "target_unavailable"]},
+        "field_result_set_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "formal_asset_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 140},
+        "target_version": {"type": ["string", "null"], "minLength": 1, "maxLength": 140},
+        "observed_at": {"type": "string", "format": "date-time"}
+      },
+      "allOf": [
+        {"if": {"properties": {"state": {"const": "succeeded"}}, "required": ["state"]}, "then": {"properties": {"authority": {"const": "authoritative_sandbox"}, "response_authenticated": {"const": true}, "formal_asset_id": {"type": "string"}, "target_version": {"type": "string"}, "fault_kind": {"const": "none"}}}},
+        {"if": {"properties": {"state": {"const": "synthetic_verified"}}, "required": ["state"]}, "then": {"properties": {"authority": {"const": "synthetic"}, "response_authenticated": {"const": false}, "formal_asset_id": {"type": "null"}, "target_version": {"type": "null"}, "fault_kind": {"const": "none"}}}},
+        {"if": {"properties": {"state": {"enum": ["partially_succeeded", "uncertain_after_timeout"]}}, "required": ["state"]}, "then": {"properties": {"formal_asset_id": {"type": "null"}, "target_version": {"type": "null"}}}}
+      ]
+    },
+    "tooling_asset_request_ready_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "tool_asset_request_global_id",
+        "request_payload_hash",
+        "project_global_id",
+        "tooling_master_global_id",
+        "tooling_set_global_id",
+        "tooling_set_snapshot_hash",
+        "tooling_revision_global_id",
+        "tooling_revision_snapshot_hash",
+        "acceptance_revision_global_id",
+        "acceptance_snapshot_hash",
+        "business_approval_evidence_id",
+        "target_mode",
+        "owned_fields"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "api_version": {
+          "const": "npi.tooling-asset.v1"
+        },
+        "operation": {
+          "const": "create_or_update_tool_asset"
+        },
+        "tool_asset_request_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "project_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tooling_master_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tooling_set_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tooling_set_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "tooling_revision_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tooling_revision_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "acceptance_revision_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "acceptance_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "business_approval_evidence_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "target_mode": {
+          "const": "sandbox"
+        },
+        "owned_fields": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "tooling_master_title",
+              "physical_set_serial",
+              "tooling_requirement_kind",
+              "source_tooling_revision",
+              "acceptance_evidence_reference"
+            ]
+          }
+        }
+      }
+    },
+    "erp_projection_observation_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "adapter_contract_version",
+        "projection_kind",
+        "tenant_id",
+        "project_global_id",
+        "scope_kind",
+        "scope_global_id",
+        "adapter_mode",
+        "source_environment",
+        "source_object_id",
+        "source_version",
+        "source_modified_at",
+        "received_at",
+        "availability",
+        "unavailable_reason_code",
+        "values"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "adapter_contract_version": {"const": "npi.erp-projection.v1"},
+        "projection_kind": {"enum": ["customer_master", "supplier_master", "formal_item_master", "tooling_procurement_cost", "project_cost", "formal_quality_status", "tool_asset_status"]},
+        "tenant_id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$"},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "scope_kind": {"enum": ["project", "tooling_master", "tooling_set", "engineering_item", "trial_round", "readiness"]},
+        "scope_global_id": {"type": "string", "format": "uuid"},
+        "adapter_mode": {"enum": ["mock", "sandbox", "synthetic"]},
+        "source_environment": {"type": "string", "minLength": 1, "maxLength": 128},
+        "source_object_id": {"type": "string", "minLength": 1, "maxLength": 255},
+        "source_version": {"type": ["string", "null"], "minLength": 1, "maxLength": 255},
+        "source_modified_at": {"type": ["string", "null"], "format": "date-time"},
+        "received_at": {"type": "string", "format": "date-time"},
+        "availability": {"enum": ["available", "unavailable", "synthetic"]},
+        "unavailable_reason_code": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"},
+        "values": {"type": ["object", "null"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"availability": {"const": "unavailable"}}, "required": ["availability"]},
+          "then": {"properties": {"values": {"type": "null"}, "unavailable_reason_code": {"type": "string"}}},
+          "else": {"properties": {"values": {"type": "object"}, "unavailable_reason_code": {"type": "null"}, "source_version": {"type": "string"}, "source_modified_at": {"type": "string", "format": "date-time"}}}
+        },
+        {
+          "if": {"properties": {"availability": {"const": "available"}}, "required": ["availability"]},
+          "then": {"properties": {"adapter_mode": {"const": "sandbox"}}}
+        },
+        {
+          "if": {"properties": {"availability": {"const": "synthetic"}}, "required": ["availability"]},
+          "then": {"properties": {"adapter_mode": {"const": "synthetic"}}}
+        },
+        {
+          "if": {"properties": {"adapter_mode": {"const": "mock"}}, "required": ["adapter_mode"]},
+          "then": {"properties": {"availability": {"const": "unavailable"}}}
+        }
+      ]
+    },
+    "erp_master_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "displayName", "enabled", "statusCode"],
+      "properties": {
+        "code": {"type": "string", "minLength": 1, "maxLength": 128},
+        "displayName": {"type": "string", "minLength": 1, "maxLength": 200},
+        "enabled": {"type": "boolean"},
+        "statusCode": {"type": ["string", "null"], "minLength": 1, "maxLength": 128}
+      }
+    },
+    "erp_item_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["itemCode", "stockUom", "enabled", "statusCode"],
+      "properties": {
+        "itemCode": {"type": "string", "minLength": 1, "maxLength": 128},
+        "stockUom": {"type": "string", "minLength": 1, "maxLength": 128},
+        "enabled": {"type": "boolean"},
+        "statusCode": {"type": ["string", "null"], "minLength": 1, "maxLength": 128}
+      }
+    },
+    "erp_tooling_cost_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["toolingMasterGlobalId", "supplier", "rows"],
+      "properties": {
+        "toolingMasterGlobalId": {"type": "string", "format": "uuid"},
+        "supplier": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceObjectId", "targetVersion", "supplierCode", "supplierName"],
+          "properties": {
+            "sourceObjectId": {"type": "string", "minLength": 1, "maxLength": 128},
+            "targetVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+            "supplierCode": {"type": "string", "minLength": 1, "maxLength": 128},
+            "supplierName": {"type": "string", "minLength": 1, "maxLength": 200}
+          }
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["toolingMasterGlobalId", "sourceRowId", "sourceRowVersion", "supplierSourceObjectId", "purchaseOrderSourceId", "purchaseReceiptSourceId", "purchaseInvoiceSourceId", "actualCostSourceId", "costTypeCode", "postingDate", "currency", "amount"],
+            "properties": {
+              "toolingMasterGlobalId": {"type": "string", "format": "uuid"},
+              "sourceRowId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "sourceRowVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+              "supplierSourceObjectId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "purchaseOrderSourceId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "purchaseReceiptSourceId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "purchaseInvoiceSourceId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "actualCostSourceId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "costTypeCode": {"type": "string", "minLength": 1, "maxLength": 128},
+              "postingDate": {"type": "string", "format": "date"},
+              "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+              "amount": {"type": "string", "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32}
+            }
+          }
+        }
+      }
+    },
+    "erp_project_cost_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rows"],
+      "properties": {
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rowKind", "sourceRowId", "sourceRowVersion", "postingDate", "currency", "amount", "hours"],
+            "properties": {
+              "rowKind": {"enum": ["commitment", "actual_cost", "labor_hours", "expense"]},
+              "sourceRowId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "sourceRowVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+              "postingDate": {"type": "string", "format": "date"},
+              "currency": {"type": ["string", "null"], "pattern": "^[A-Z]{3}$"},
+              "amount": {"type": ["string", "null"], "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32},
+              "hours": {"type": ["string", "null"], "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32}
+            },
+            "allOf": [
+              {"if": {"properties": {"rowKind": {"const": "labor_hours"}}, "required": ["rowKind"]}, "then": {"properties": {"currency": {"type": "null"}, "amount": {"type": "null"}, "hours": {"type": "string"}}}, "else": {"properties": {"currency": {"type": "string"}, "amount": {"type": "string"}, "hours": {"type": "null"}}}}
+            ]
+          }
+        }
+      }
+    },
+    "erp_quality_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordKind", "statusCode", "resultCode", "observedAt"],
+      "properties": {
+        "recordKind": {"enum": ["quality_inspection", "ncr", "capa"]},
+        "statusCode": {"type": "string", "minLength": 1, "maxLength": 128},
+        "resultCode": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "observedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "erp_tool_asset_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["toolingSetGlobalId", "mappingVersion", "formalAssetId", "targetVersion", "assetState", "currentLocation", "shotCount", "expectedLifeShots", "maintenanceDue", "movements", "repairs", "spares"],
+      "properties": {
+        "toolingSetGlobalId": {"type": "string", "format": "uuid"},
+        "mappingVersion": {"type": "integer", "minimum": 1},
+        "formalAssetId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "targetVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+        "assetState": {"type": "string", "minLength": 1, "maxLength": 128},
+        "currentLocation": {"type": "string", "minLength": 1, "maxLength": 255},
+        "shotCount": {"type": "integer", "minimum": 0},
+        "expectedLifeShots": {"type": ["integer", "null"], "minimum": 1},
+        "maintenanceDue": {"type": ["string", "null"], "format": "date"},
+        "movements": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/erp_asset_movement_v1"}},
+        "repairs": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/erp_asset_repair_v1"}},
+        "spares": {"type": "array", "maxItems": 500, "items": {"$ref": "#/$defs/erp_asset_spare_v1"}}
+      }
+    },
+    "erp_asset_movement_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["globalId", "actionKind", "fromLocation", "toLocation", "occurredAt", "sourceObjectId"],
+      "properties": {
+        "globalId": {"type": "string", "format": "uuid"},
+        "actionKind": {"enum": ["move", "loan", "return", "archive", "scrap"]},
+        "fromLocation": {"type": ["string", "null"], "minLength": 1, "maxLength": 255},
+        "toLocation": {"type": ["string", "null"], "minLength": 1, "maxLength": 255},
+        "occurredAt": {"type": "string", "format": "date-time"},
+        "sourceObjectId": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "erp_asset_repair_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["globalId", "summary", "downtimeHours", "completedAt", "sourceObjectId"],
+      "properties": {
+        "globalId": {"type": "string", "format": "uuid"},
+        "summary": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "downtimeHours": {"type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32},
+        "completedAt": {"type": "string", "format": "date-time"},
+        "sourceObjectId": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "erp_asset_spare_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formalItemId", "description", "stockOnHand", "minimumStock", "unit", "supplierId"],
+      "properties": {
+        "formalItemId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "description": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "stockOnHand": {"type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32},
+        "minimumStock": {"type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32},
+        "unit": {"type": "string", "minLength": 1, "maxLength": 32},
+        "supplierId": {"type": ["string", "null"], "minLength": 1, "maxLength": 128}
+      }
+    },
+    "formal_engineering_change_observation_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["doctype", "documentName", "rawStatus", "sourceVersion", "sourceModifiedAt", "sourceHash", "observedAt"],
+      "properties": {
+        "doctype": {"const": "Engineering Change Request"},
+        "documentName": {"type": "string", "minLength": 1, "maxLength": 140},
+        "rawStatus": {"type": "string", "minLength": 1, "maxLength": 140},
+        "sourceVersion": {"type": "string", "minLength": 1, "maxLength": 140},
+        "sourceModifiedAt": {"type": "string", "format": "date-time"},
+        "sourceHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "observedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "engineering_change_observation_event_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenantId", "projectGlobalId", "changeGlobalId", "formalChange"],
+      "properties": {
+        "tenantId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "projectGlobalId": {"type": "string", "format": "uuid"},
+        "changeGlobalId": {"type": "string", "format": "uuid"},
+        "formalChange": {"$ref": "#/$defs/formal_engineering_change_observation_v1"}
+      }
+    },
+    "change_implementation_summary_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["api_version", "operation", "tenant_id", "project_global_id", "change_global_id", "revision_global_id", "revision_number", "revision_snapshot_hash", "formal_change", "affected_versions_hash", "effectivity_hash", "disposition_hash", "revalidation_hash", "closure_evidence_hash", "request_global_id", "profile_id", "profile_version", "profile_snapshot_hash", "source_hash"],
+      "properties": {
+        "api_version": {"const": "npi.change-implementation-summary.v1"},
+        "operation": {"const": "record_change_implementation_summary"},
+        "tenant_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "change_global_id": {"type": "string", "format": "uuid"},
+        "revision_global_id": {"type": "string", "format": "uuid"},
+        "revision_number": {"type": "integer", "minimum": 1},
+        "revision_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "formal_change": {"$ref": "#/$defs/formal_engineering_change_observation_v1"},
+        "affected_versions_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "effectivity_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "disposition_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "revalidation_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "closure_evidence_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "request_global_id": {"type": "string", "format": "uuid"},
+        "profile_id": {"type": "string", "minLength": 1, "maxLength": 140},
+        "profile_version": {"type": "integer", "minimum": 1},
+        "profile_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "integration_operation_reference_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tenant_id",
+        "project_global_id",
+        "operation_kind",
+        "operation_global_id",
+        "source_global_id",
+        "operation_version",
+        "raw_state",
+        "shared_state",
+        "source_snapshot_hash",
+        "target_idempotency_key_hash"
+      ],
+      "properties": {
+        "tenant_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "operation_kind": {
+          "enum": [
+            "receive_project_submission",
+            "publish_item",
+            "publish_mbom",
+            "create_tool_asset",
+            "update_tool_asset"
+            ,"receive_engineering_change_event"
+            ,"publish_change_implementation_summary"
+          ]
+        },
+        "operation_global_id": {"type": "string", "format": "uuid"},
+        "source_global_id": {"type": "string", "format": "uuid"},
+        "operation_version": {"type": "integer", "minimum": 1},
+        "raw_state": {"type": "string", "minLength": 1, "maxLength": 140},
+        "shared_state": {
+          "enum": [
+            "queued",
+            "processing",
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "uncertain",
+            "partial",
+            "conflict",
+            "quarantined",
+            "unavailable"
+          ]
+        },
+        "source_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target_idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "integration_action_recorded_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "receipt_global_id",
+        "operation",
+        "action_kind",
+        "outcome_state",
+        "receipt_hash"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "receipt_global_id": {"type": "string", "format": "uuid"},
+        "operation": {"$ref": "#/$defs/integration_operation_reference_v1"},
+        "action_kind": {"enum": ["replay", "request_reconciliation"]},
+        "outcome_state": {"enum": ["replay_requested", "reconciliation_requested"]},
+        "receipt_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"action_kind": {"const": "replay"}}, "required": ["action_kind"]},
+          "then": {"properties": {"outcome_state": {"const": "replay_requested"}}}
+        },
+        {
+          "if": {"properties": {"action_kind": {"const": "request_reconciliation"}}, "required": ["action_kind"]},
+          "then": {"properties": {"outcome_state": {"const": "reconciliation_requested"}}}
+        }
+      ]
+    },
+    "integration_reconciliation_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "observation_global_id",
+        "operation",
+        "action_receipt_global_id",
+        "reconciliation_state",
+        "authority",
+        "response_authenticated",
+        "evidence_hash",
+        "observation_hash"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "observation_global_id": {"type": "string", "format": "uuid"},
+        "operation": {"$ref": "#/$defs/integration_operation_reference_v1"},
+        "action_receipt_global_id": {"type": "string", "format": "uuid"},
+        "reconciliation_state": {
+          "enum": ["confirmed_succeeded", "confirmed_failed", "still_uncertain", "target_unavailable"]
+        },
+        "authority": {"enum": ["none", "authoritative_sandbox"]},
+        "response_authenticated": {"type": "boolean"},
+        "evidence_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "observation_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"reconciliation_state": {"enum": ["confirmed_succeeded", "confirmed_failed"]}}, "required": ["reconciliation_state"]},
+          "then": {"properties": {"authority": {"const": "authoritative_sandbox"}, "response_authenticated": {"const": true}}}
+        },
+        {
+          "if": {"properties": {"reconciliation_state": {"const": "target_unavailable"}}, "required": ["reconciliation_state"]},
+          "then": {"properties": {"authority": {"const": "none"}, "response_authenticated": {"const": false}}}
+        }
+      ]
+    },
+    "tooling_asset_result_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "tool_asset_request_global_id",
+        "request_payload_hash",
+        "tooling_set_global_id",
+        "attempt_id",
+        "state",
+        "formal_asset_id",
+        "mapping_version",
+        "target_version",
+        "fault_kind"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "api_version": {
+          "const": "npi.tooling-asset.v1"
+        },
+        "operation": {
+          "const": "create_or_update_tool_asset"
+        },
+        "tool_asset_request_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "tooling_set_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "enum": [
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "uncertain_after_timeout",
+            "target_unavailable"
+          ]
+        },
+        "formal_asset_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 140
+        },
+        "mapping_version": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "target_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 140
+        },
+        "fault_kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "timeout_after_possible_commit",
+            "rate_limited",
+            "target_server_error",
+            "business_validation",
+            "mapping_conflict",
+            "target_unavailable",
+            null
+          ]
+        }
+      }
+    }
+  }
+}

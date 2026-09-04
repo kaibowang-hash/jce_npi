@@ -1,0 +1,41 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Tooling Intake Evidence Reference",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "evidence_key_hash", "fieldtype": "Data", "label": "Tooling Intake Evidence Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tooling_master_global_id", "fieldtype": "Data", "label": "Tooling Master Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "tooling_set_global_id", "fieldtype": "Data", "label": "Tooling Set Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tooling_intake", "fieldtype": "Link", "label": "Tooling Intake", "options": "NPI Tooling Intake", "reqd": 1, "read_only": 1},
+    {"fieldname": "tooling_intake_global_id", "fieldtype": "Data", "label": "Tooling Intake Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "intake_snapshot_hash", "fieldtype": "Data", "label": "Tooling Intake Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "evidence_role", "fieldtype": "Select", "label": "Tooling Intake Evidence Role", "options": "arrival_photo\ntransport_document\naccessory_document\ninspection_evidence\ncustomer_confirmation", "reqd": 1, "read_only": 1},
+    {"fieldname": "difference_global_ids", "fieldtype": "JSON", "label": "Difference Global IDs", "reqd": 1, "read_only": 1},
+    {"fieldname": "file_revision", "fieldtype": "Link", "label": "File Revision", "options": "NPI File Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "file_revision_global_id", "fieldtype": "Data", "label": "File Revision Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "file_optimistic_version", "fieldtype": "Int", "label": "File Optimistic Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "frappe_content_hash", "fieldtype": "Data", "label": "Frappe Content Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "file_name", "fieldtype": "Data", "label": "File Name", "reqd": 1, "read_only": 1},
+    {"fieldname": "mime_type", "fieldtype": "Data", "label": "MIME Type", "reqd": 1, "read_only": 1},
+    {"fieldname": "size_bytes", "fieldtype": "Int", "label": "Size in Bytes", "reqd": 1, "read_only": 1},
+    {"fieldname": "sha256", "fieldtype": "Data", "label": "SHA-256", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_user_id", "fieldtype": "Data", "label": "Created By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "evidence_snapshot", "fieldtype": "JSON", "label": "Tooling Intake Evidence Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

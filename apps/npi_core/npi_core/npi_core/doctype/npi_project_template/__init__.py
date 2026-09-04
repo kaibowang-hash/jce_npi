@@ -1,0 +1,1 @@
+"""NPI Project Template DocType."""

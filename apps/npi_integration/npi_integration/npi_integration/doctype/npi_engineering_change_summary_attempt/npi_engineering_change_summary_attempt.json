@@ -1,0 +1,20 @@
+{
+ "actions":[],"allow_rename":0,"autoname":"field:global_id","doctype":"DocType","engine":"InnoDB",
+ "field_order":["global_id","request_global_id","outbox_event_id","attempt_number","state","adapter_boundary_crossed","target_idempotency_key_hash","source_hash","started_at","completed_at","safe_error_code","response_hash"],
+ "fields":[
+  {"fieldname":"global_id","fieldtype":"Data","label":"Global ID","read_only":1,"reqd":1,"unique":1},
+  {"fieldname":"request_global_id","fieldtype":"Link","label":"Summary Request","options":"NPI Engineering Change Summary Request","read_only":1,"reqd":1},
+  {"fieldname":"outbox_event_id","fieldtype":"Link","label":"Summary Outbox","options":"NPI Engineering Change Summary Outbox","read_only":1,"reqd":1},
+  {"fieldname":"attempt_number","fieldtype":"Int","label":"Attempt Number","read_only":1,"reqd":1},
+  {"fieldname":"state","fieldtype":"Select","label":"State","options":"started\nobserved_success\nobserved_failure\npartial\nuncertain","read_only":1,"reqd":1},
+  {"default":"0","fieldname":"adapter_boundary_crossed","fieldtype":"Check","label":"Adapter Boundary Crossed","read_only":1},
+  {"fieldname":"target_idempotency_key_hash","fieldtype":"Data","label":"Target Idempotency Key Hash","read_only":1,"reqd":1},
+  {"fieldname":"source_hash","fieldtype":"Data","label":"Source Hash","read_only":1,"reqd":1},
+  {"fieldname":"started_at","fieldtype":"Datetime","label":"Started At","read_only":1,"reqd":1},
+  {"fieldname":"completed_at","fieldtype":"Datetime","label":"Completed At","read_only":1},
+  {"fieldname":"safe_error_code","fieldtype":"Data","label":"Safe Error Code","read_only":1},
+  {"fieldname":"response_hash","fieldtype":"Data","label":"Response Hash","read_only":1}
+ ],
+ "index_web_pages_for_search":0,"module":"NPI Integration","name":"NPI Engineering Change Summary Attempt","read_only":1,"track_changes":0,
+ "permissions":[{"role":"System Manager","read":1,"create":1,"write":1},{"role":"NPI API User","read":1,"create":1,"write":1}]
+}

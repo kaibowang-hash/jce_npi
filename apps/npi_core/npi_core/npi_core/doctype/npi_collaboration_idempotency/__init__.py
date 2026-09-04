@@ -1,0 +1,1 @@
+"""NPI Collaboration Idempotency DocType."""

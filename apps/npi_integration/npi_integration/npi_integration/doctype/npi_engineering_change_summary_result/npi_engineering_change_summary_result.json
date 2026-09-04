@@ -1,0 +1,22 @@
+{
+ "actions":[],"allow_rename":0,"autoname":"field:global_id","doctype":"DocType","engine":"InnoDB",
+ "field_order":["global_id","request_global_id","outbox_event_id","attempt_global_id","state","fault_kind","retry_directive","response_hash","response_authenticated","response_contract_valid","retry_after_seconds","observed_at","result_snapshot","result_hash"],
+ "fields":[
+  {"fieldname":"global_id","fieldtype":"Data","label":"Global ID","read_only":1,"reqd":1,"unique":1},
+  {"fieldname":"request_global_id","fieldtype":"Link","label":"Summary Request","options":"NPI Engineering Change Summary Request","read_only":1,"reqd":1},
+  {"fieldname":"outbox_event_id","fieldtype":"Link","label":"Summary Outbox","options":"NPI Engineering Change Summary Outbox","read_only":1,"reqd":1},
+  {"fieldname":"attempt_global_id","fieldtype":"Link","label":"Summary Attempt","options":"NPI Engineering Change Summary Attempt","read_only":1,"reqd":1},
+  {"fieldname":"state","fieldtype":"Select","label":"State","options":"synthetic_verified\nsucceeded\nfailed_retryable\nfailed_final\npartially_succeeded\nuncertain_after_timeout\nidentity_conflict","read_only":1,"reqd":1},
+  {"fieldname":"fault_kind","fieldtype":"Data","label":"Fault Kind","read_only":1,"reqd":1},
+  {"fieldname":"retry_directive","fieldtype":"Data","label":"Retry Directive","read_only":1,"reqd":1},
+  {"fieldname":"response_hash","fieldtype":"Data","label":"Response Hash","read_only":1,"reqd":1},
+  {"default":"0","fieldname":"response_authenticated","fieldtype":"Check","label":"Response Authenticated","read_only":1},
+  {"default":"0","fieldname":"response_contract_valid","fieldtype":"Check","label":"Response Contract Valid","read_only":1},
+  {"fieldname":"retry_after_seconds","fieldtype":"Int","label":"Retry After Seconds","read_only":1},
+  {"fieldname":"observed_at","fieldtype":"Datetime","label":"Observed At","read_only":1,"reqd":1},
+  {"fieldname":"result_snapshot","fieldtype":"Long Text","label":"Result Snapshot","read_only":1,"reqd":1},
+  {"fieldname":"result_hash","fieldtype":"Data","label":"Result Hash","read_only":1,"reqd":1}
+ ],
+ "index_web_pages_for_search":0,"module":"NPI Integration","name":"NPI Engineering Change Summary Result","read_only":1,"track_changes":0,
+ "permissions":[{"role":"System Manager","read":1,"create":1,"write":1},{"role":"NPI API User","read":1,"create":1,"write":1}]
+}

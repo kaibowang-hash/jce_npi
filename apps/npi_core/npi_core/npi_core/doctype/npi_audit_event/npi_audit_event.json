@@ -1,0 +1,23 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Audit Event",
+  "module": "NPI Core",
+  "custom": 0,
+  "is_submittable": 0,
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "event_id", "fieldtype": "Data", "label": "Event ID", "reqd": 1, "unique": 1},
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1},
+    {"fieldname": "object_version", "fieldtype": "Int", "label": "Object Version", "reqd": 1},
+    {"fieldname": "actor", "fieldtype": "Data", "label": "Actor", "reqd": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1},
+    {"fieldname": "operation", "fieldtype": "Data", "label": "Operation", "reqd": 1},
+    {"fieldname": "result", "fieldtype": "Data", "label": "Result", "reqd": 1},
+    {"fieldname": "input_summary", "fieldtype": "JSON", "label": "Input Summary"}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "create": 1, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

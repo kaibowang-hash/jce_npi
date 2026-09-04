@@ -1,0 +1,166 @@
+# P6-01 Applicability-create Diagnostic Checkpoint
+
+Updated: `2026-08-07T16:50:49Z`
+
+Status: `CLOSED — CORRECTIVE REPAIR EFFECTIVE`; final Task Gate evidence is in
+`implementation/evidence/phase-6/p6-01-validation.md`.
+
+## Trigger evidence
+
+Receipt repair checkpoint `84ac63b` passed complete ordinary CI `31190599179`.
+Final unchanged workflow `31191425881` retained that exact SHA. Repository
+`92908918643`, visual `92908918453`, pinned Bench, disposable Site, migrations,
+retained P5 runtime and all preceding P6-01 commands passed. Controlled job
+`92908918591` then reported only that the first synthetic Applicability command
+did not return HTTP 201. No unique implementation root is yet proven.
+
+## Bounded diagnostic
+
+Only the first synthetic Applicability-create request sends
+`X-NPI-Diagnostic-Scope: p601-applicability-create-v1`. Server instrumentation
+is additionally route-gated and can record at most one allowlisted substage,
+validated exception type and exact trace ID. It records no payload, business
+value, message, stack, credential or response body. Diagnostic recording is
+secondary and cannot change the response, transaction, rollback or safe public
+problem response.
+
+Counters are diagnostic `0/1`, uniquely proved repair `0/1`, final unchanged
+Gate `0/1`. Affected and complete ordinary CI must pass before the sole
+diagnostic Site. Only its uniquely proved root may be repaired; activation must
+then close before final ordinary CI and one unchanged controlled Gate.
+
+No Requirement, public API, permission, Schema intent, ownership, transaction,
+idempotency, audit, baseline, threshold or PASS criterion changes. Production
+lifecycle, numbering, Tooling Revision/Set/Trial, mapping, adapter, ERPNext
+endpoint, credential and production default remain absent.
+
+## Local validation before checkpoint
+
+Changed-files to affected-tests mapping:
+
+- diagnostic context, API route gate and repository substages ->
+  `tests.test_phase6_tooling_api`, `tests.test_phase6_tooling_repository`;
+- one-request verifier activation and sanitized parser ->
+  `tests.test_phase6_tooling_runtime_verifier`;
+- control/evidence changes -> YAML parse, reconciliation and diff checks.
+
+Results: affected `23/23` PASS; complete tracked Python `1,130/1,130` PASS;
+Python compilation, workflow/status YAML parse, prototype approval, P0 visual
+governance, V1.2 reconciliation and `git diff --check` PASS; prohibited pattern
+scan returned no matches. Complete exact-SHA ordinary CI remains mandatory
+before the sole diagnostic Site.
+
+## Diagnostic result and unique root
+
+Checkpoint `f82906f` passed complete ordinary CI `31192675103`: repository
+`92913143816`, visual `92913143717` at `73/73`, and controlled runtime
+`92913144500` correctly skipped. The sole diagnostic workflow `31193365348`
+then passed repository `92915506746`, visual `92915506767`, pinned Bench, Site,
+migrations and all earlier runtime stages. Controlled job `92915506979`
+returned only:
+
+`P601_APPLICABILITY_CREATE_RELATIONSHIP_INSERT / ValidationError /
+trace-59e45d5266c05965a8e353f52abe26c5`
+
+Pinned Frappe `Document.insert()` applies `_set_defaults()`, whose Select
+fallback uses the first listed option. The request intentionally omits optional
+Product and Model references, but both source-system Selects listed `NPI_ONE`
+first. Frappe therefore supplied source systems while the paired object IDs
+remained empty, and the immutable `ToolingApplicability` paired-reference
+invariant correctly raised `ValidationError` during relationship insert.
+
+The unique repair prepends the empty Select option to both optional source
+systems and sets verifier diagnostic activation to false. Supported non-empty
+values remain exactly `NPI_ONE` and `ERPNEXT`; no relationship, ownership,
+transaction, idempotency, audit or public response rule changes. Counters are
+diagnostic `1/1`, repair `0/1` in progress, final unchanged Gate `0/1`.
+
+Repair changed-files to affected-tests mapping:
+
+- two optional Select metadata fields -> Phase 6 Tooling metadata and complete
+  metadata/i18n source validation;
+- diagnostic closure -> Tooling runtime-verifier header/activation tests;
+- cumulative safety -> Tooling API/repository diagnostics and retained P5/P6
+  Python suites.
+
+Affected Tooling `31/31` and complete tracked Python `1,130/1,130` pass after
+the repair. Compilation, YAML parse, prototype/P0 governance, reconciliation,
+prohibited-pattern and diff checks pass. Complete exact-SHA ordinary CI and one
+final unchanged controlled Gate remain mandatory.
+
+## Closed-diagnostic final Gate and second deterministic root
+
+Optional-reference repair checkpoint `c1f627c` passed complete ordinary CI
+`31194339295`: repository `92918744817` and fixed-Linux visual `92918744821`
+passed; controlled job `92918745415` correctly skipped. Final unchanged
+workflow `31195049338` retained that exact SHA with both diagnostic activations
+false. Repository `92921107120`, visual `92921106655`, pinned Bench, disposable
+Site, migrations and every predecessor passed. Controlled job `92921106746`
+then reached the same coarse relationship-insert stage after the optional
+paired-reference contradiction was removed.
+
+The next unconditional validator check provides a unique code-contract proof
+without another diagnostic dispatch:
+
+- repository `_insert_applicability()` writes a raw version string to
+  `version_key`;
+- `tooling_applicability.validate()` calculates a tenant-namespaced SHA-256
+  digest and rejects any non-empty different value;
+- therefore the repository value cannot pass the immutable DocType invariant.
+
+The uniquely proved root is
+`P601_APPLICABILITY_VERSION_KEY_HASH_MISMATCH`. Repair only the repository
+formula to use the required SHA-256 digest and add a direct regression
+assertion. Diagnostics remain closed. Changed-files to affected-tests mapping:
+
+- repository version-key helper -> `tests.test_phase6_tooling_repository`;
+- cumulative Tooling safety -> metadata and runtime-verifier tests;
+- controller/evidence truth -> YAML parse, reconciliation and diff checks.
+
+Affected tests pass `23/23`; complete tracked Python passes `1,130/1,130`.
+Compilation, workflow/status YAML parse, prototype approval, P0 visual
+governance, V1.2 reconciliation, prohibited-pattern scan and `git diff --check`
+pass locally. Complete exact-SHA ordinary CI and one diagnostics-closed final
+unchanged Gate remain mandatory.
+
+## Initial repair failure and exact corrective formula
+
+Initial repair checkpoint `ab718e6` hashed
+`relationship_global_id:applicability_version` and passed complete ordinary CI
+`31196125343`: repository `92924661787` and visual `92924661816` passed, while
+controlled `92924662804` correctly skipped. Diagnostics-closed workflow
+`31196918023` retained that exact SHA. Repository `92927290257`, visual
+`92927290466`, pinned Bench, Site, migrations and every predecessor passed;
+controlled job `92927290342` then returned the same first Applicability command
+non-201.
+
+The initial implementation and evidence omitted a material part of the full
+DocType formula. The validator actually hashes
+`tenant_id:relationship_global_id:applicability_version`. The new regression
+assertion had mirrored the incomplete repository helper, so ordinary CI could
+not detect the cross-file contract mismatch. This explains why the apparent
+repair passed all ordinary checks but had no effect on the controlled Site.
+
+The corrective repair adds `tenant_id` to the repository helper input and
+asserts the same namespace in the DocType validator source. This remains the
+same uniquely proved version-key root; it changes no Requirement, public API,
+permission, Schema intent, ownership, transaction, idempotency, audit or PASS
+rule. Affected tests pass `23/23`, complete tracked Python passes
+`1,130/1,130`, compilation and diff checks pass. Complete ordinary CI and one
+diagnostics-closed unchanged Gate remain mandatory.
+
+## Corrective PASS
+
+Corrective checkpoint `d0a9258` passed complete ordinary CI `31197968661`:
+repository `92930758119` and visual `92930757760` passed, while controlled
+`92930758895` correctly skipped. Final diagnostics-closed workflow
+`31198574475` retained the exact SHA and passed repository `92932746371`,
+visual `92932746394` and controlled runtime `92932746437`.
+
+Artifact `9001947238`, `p6-tooling-runtime-31198574475`, has GitHub digest
+`sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`.
+It proves that the tenant-namespaced version-key correction advanced through
+all Applicability, replay, rollback, IDOR and route-disable/recovery checks.
+The diagnostic cycle is closed with both verifier diagnostic activations
+false; no Requirement, public API, permission, Schema intent, ownership,
+transaction, idempotency, audit or PASS criterion changed.
