@@ -28,8 +28,18 @@ flock -n 9 || {
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 staging_parent="${BACKUP_ROOT}/staging"
 encrypted_root="${BACKUP_ROOT}/encrypted"
-install -d -m 0700 "${staging_parent}" "${encrypted_root}"
+install -d -m 0711 "${staging_parent}"
+chmod 0711 "${staging_parent}"
+install -d -m 0700 "${encrypted_root}"
 staging_dir="$(mktemp -d "${staging_parent}/backup-${timestamp}.XXXXXX")"
+backend_uid="$(compose exec -T backend id -u)"
+backend_gid="$(compose exec -T backend id -g)"
+if [[ ! "${backend_uid}" =~ ^[0-9]+$ || ! "${backend_gid}" =~ ^[0-9]+$ ]]; then
+  echo "The backend container identity is invalid." >&2
+  exit 1
+fi
+chown "${backend_uid}:${backend_gid}" "${staging_dir}"
+chmod 0700 "${staging_dir}"
 cleanup() {
   if [[ -d "${staging_dir}" ]]; then
     find "${staging_dir}" -depth -delete

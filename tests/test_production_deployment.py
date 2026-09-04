@@ -103,6 +103,14 @@ class ProductionDeploymentTests(unittest.TestCase):
             self.assertIsNone(prohibited.search(text), path.as_posix())
         json.loads((DEPLOY / "host" / "docker-daemon.json").read_text(encoding="utf-8"))
 
+    def test_backup_staging_is_private_and_writable_by_backend(self) -> None:
+        script = (DEPLOY / "scripts" / "backup.sh").read_text(encoding="utf-8")
+        self.assertIn('chmod 0711 "${staging_parent}"', script)
+        self.assertIn('backend_uid="$(compose exec -T backend id -u)"', script)
+        self.assertIn('backend_gid="$(compose exec -T backend id -g)"', script)
+        self.assertIn('chown "${backend_uid}:${backend_gid}" "${staging_dir}"', script)
+        self.assertIn('chmod 0700 "${staging_dir}"', script)
+
     def test_https_and_spa_routes_share_one_origin(self) -> None:
         nginx = (DEPLOY / "host" / "nginx-tls.conf").read_text(encoding="utf-8")
         self.assertIn("server_name launchflow.whjichen.cn", nginx)
