@@ -1,17 +1,17 @@
 # Next Action
 
 Status:
-`PA-08-DEPLOYMENT — EXACT-SHA ORDINARY CI REQUIRED BEFORE PRODUCTION CHANGE`
+`PA-08-DEPLOYMENT — DEPLOYED; FINAL ORDINARY CI AND LEVEL 3 REQUIRED`
 
-The user's 2026-09-04 SSH deployment authorization activates only the
-incremental LaunchFlow AWS release task. Commit the registered PA-08 manifest
-and require one exact-SHA ordinary CI PASS. Then archive the server's dirty
-not-ready worktree, verify an encrypted full Site backup, build immutable
-backend/SPA images, run the guarded initializer/migration, switch the pair and
-prove HTTPS, login redirect, API authentication, scheduler and service health.
-Keep the current image pair and every named volume. Do not delete the Site or
-database, install `npi_erpnext_connector` on LaunchFlow, activate ERP adapters,
-or expose secrets. Marker: `PA-08-DEPLOYMENT`.
+Exact release `003597014d18cc35d74caf695e8f201e52f1306a` is active on the
+authorized AWS host. The encrypted full backup was independently verified,
+all named volumes and the previous image pair remain available, and HTTPS,
+root/login, unauthenticated API, scheduler, production markers, app inventory
+and all ten services pass. Commit only this sanitized checkpoint and require
+one exact-SHA ordinary CI PASS followed by the PA-08 Level 3 release gate. Do
+not redeploy, delete the Site/database, install `npi_erpnext_connector` on
+LaunchFlow, activate ERP adapters, or expose secrets. Marker:
+`PA-08-DEPLOYMENT`.
 
 Status:
 `IMPLEMENTATION_COMPLETE — P9-08 AND PHASE 9 PASS`

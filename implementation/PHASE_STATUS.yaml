@@ -3,16 +3,38 @@ overall_status: IMPLEMENTATION_COMPLETE
 technical_implementation_complete: true
 production_ready: false
 current_phase: 9
-updated_at: '2026-09-04T16:36:00+07:00'
+updated_at: '2026-09-04T19:39:30+07:00'
 authorization: automatic_transition_after_pass
-execution_hold: EXACT_SHA_ORDINARY_CI_REQUIRED_BEFORE_PRODUCTION_CHANGE
+execution_hold: FINAL_EXACT_SHA_ORDINARY_AND_LEVEL_3_REQUIRED_AFTER_DEPLOYMENT
 current_task: PA-08-DEPLOYMENT
-current_task_status: IN_PROGRESS_EXACT_SHA_CI
-current_task_completed_stage: DEPLOYMENT_PACKAGE_LOCAL_LEVEL_3_CHECKS_PASS_NPM_AUDIT_POST_UNAVAILABLE
-current_task_next_stage: EXACT_SHA_ORDINARY_CI_THEN_BACKUP_BUILD_MIGRATE_HEALTH
+current_task_status: IN_PROGRESS_DEPLOYED_FINAL_GATES_PENDING
+current_task_completed_stage: EXACT_SHA_RELEASE_ACTIVATED_POST_DEPLOY_HEALTH_PASS
+current_task_next_stage: FINAL_EVIDENCE_EXACT_SHA_ORDINARY_CI_THEN_LEVEL_3
 current_task_next_stage_status: PENDING
 resumed_product_task: COMPLETE
 resumed_product_task_status: COMPLETE
+production_activation:
+  task_id: PA-08-DEPLOYMENT
+  deployment_sha: 003597014d18cc35d74caf695e8f201e52f1306a
+  pre_deploy_ordinary_ci: 33866659603_ATTEMPT_4_PASS
+  activation_utc: '2026-09-04T12:38:57Z'
+  post_deploy_health_utc: '2026-09-04T12:39:30Z'
+  deployment_mode: INCREMENTAL_PRESERVED_NAMED_VOLUMES
+  source_archive_checksum: sha256:4319c6b354d4f648c4a7121409c2564b9530434e81e1c2d3692d4b1621099bfe
+  encrypted_full_backup_checksum: sha256:a7121fdad7f39cbbe1f08d5a916c68a6caa95c0d5b1b29b9a9618cb630ca7d28
+  immutable_release_checksum: sha256:0284169e6bf726b83b659931998976ab2696d33438c23aba39d3e6f7e441c172
+  service_health: PASS_10_OF_10
+  https_root_health_login: PASS_200
+  unauthenticated_session_contract: PASS_401_AUTHENTICATION_REQUIRED
+  installed_apps: [frappe, npi_core, npi_integration]
+  production_markers: PASS
+  public_signup: DISABLED
+  scheduler: ENABLED
+  previous_images: RETAINED
+  real_erp_adapters: DISABLED
+  erp_authorization_ingress: DISABLED
+  final_evidence_ordinary_ci: PENDING
+  final_level_3: PENDING
 scope_decisions:
   production_read_only_fact_check:
     decision_marker: USER_EXPANDED_READ_ONLY_AUTHORIZATION_2026_08_30_WORKTREE_CURRENT_DOCTYPE_RUNTIME_METADATA

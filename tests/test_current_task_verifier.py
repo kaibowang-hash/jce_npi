@@ -38,7 +38,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         self.assertEqual(value["task_kind"], "delivery_infrastructure")
         self.assertEqual(
             value["status"],
-            "IN_PROGRESS_EXACT_SHA_CI",
+            "IN_PROGRESS_DEPLOYED_FINAL_GATES_PENDING",
         )
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
@@ -55,11 +55,11 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             value["expected_state"],
             {
                 "phase_status_current_task": "PA-08-DEPLOYMENT",
-                "phase_status_execution_hold": "EXACT_SHA_ORDINARY_CI_REQUIRED_BEFORE_PRODUCTION_CHANGE",
+                "phase_status_execution_hold": "FINAL_EXACT_SHA_ORDINARY_AND_LEVEL_3_REQUIRED_AFTER_DEPLOYMENT",
                 "phase_status_resumed_product_task": "COMPLETE",
                 "active_goal_marker": "PA-08-DEPLOYMENT",
                 "next_action_marker": "PA-08-DEPLOYMENT",
-                "controller_marker": "PA-08 production deployment package awaits exact-SHA ordinary CI; production unchanged",
+                "controller_marker": "PA-08 exact release deployed and healthy; final evidence ordinary CI and Level 3 required",
             },
         )
         for invariant in (

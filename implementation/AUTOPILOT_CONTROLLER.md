@@ -12047,3 +12047,30 @@ P9-01 Level 3.
   production state. Register this independent delivery-infrastructure task and
   require one corrected exact-SHA ordinary PASS before any backup/build/switch.
 - Controller marker: `PA-08 production deployment package awaits exact-SHA ordinary CI; production unchanged`.
+
+## 2026-09-04 PA-08 exact release deployed; final evidence gates pending
+
+- Backup-permission repair SHA
+  `003597014d18cc35d74caf695e8f201e52f1306a` passes exact-SHA ordinary CI
+  `33866659603` attempt 4. Every repository, secret, frontend, E2E-shard,
+  visual and aggregate lane passes. The immutable AWS build also passes the
+  unchanged full and production-only dependency audits with zero
+  vulnerabilities, frontend `1155/1155`, i18n `9364` at 100% zh/zh-TW,
+  build budgets and brand checks.
+- The server's dirty not-ready worktree was preserved in a root-owned archive.
+  The existing Site/database/files/configuration were captured in one
+  independently decrypted and checksummed encrypted full backup. All named
+  volumes and the previous exact backend/SPA image pair remain intact.
+- The clean 2433-file release and both OCI labels match the exact deployment
+  SHA. The fixed configurator, guarded Site initializer and migration passed
+  before the release pointer and image pair switched together.
+- Post-deployment verification passes all ten services, trusted HTTPS root,
+  health and login entry, unauthenticated NPI API contract, scheduler,
+  production ownership/environment markers, disabled developer mode and public
+  signup, exact app inventory (`frappe`, `npi_core`, `npi_integration`) and
+  retained rollback images. Real ERP adapters and P9-04 authorization ingress
+  remain disabled; no ERPNext connection or data synchronization occurred.
+- Commit only the sanitized deployment checkpoint, require one exact-SHA
+  ordinary CI and then the PA-08 Level 3 release gate. These evidence gates do
+  not authorize or trigger a second production deployment.
+- Controller marker: `PA-08 exact release deployed and healthy; final evidence ordinary CI and Level 3 required`.
