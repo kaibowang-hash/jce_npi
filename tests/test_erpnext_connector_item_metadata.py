@@ -107,6 +107,15 @@ class ERPNextConnectorItemMetadataTest(unittest.TestCase):
         self.assertNotIn("from datetime import UTC", sources)
         self.assertNotIn("from enum import StrEnum", sources)
 
+    def test_capability_versions_follow_the_installed_app_version(self) -> None:
+        package = (APP / "__init__.py").read_text(encoding="utf-8")
+        self.assertIn('__version__ = "0.9.0"', package)
+        for module in ("item_api.py", "mbom_api.py", "tool_asset_api.py"):
+            source = (APP / module).read_text(encoding="utf-8")
+            self.assertIn("from npi_erpnext_connector import __version__", source)
+            self.assertIn('"appVersion": __version__', source)
+            self.assertNotIn('"appVersion": "0.5.0"', source)
+
     def test_engineering_update_does_not_overwrite_erp_owned_item_fields(self) -> None:
         tree = ast.parse((APP / "item_frappe.py").read_text(encoding="utf-8"))
         functions = {

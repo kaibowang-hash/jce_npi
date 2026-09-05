@@ -5,6 +5,7 @@ import re
 import frappe
 from frappe import _
 
+from npi_erpnext_connector import __version__
 from npi_erpnext_connector.item_contract import canonical_hash
 from npi_erpnext_connector.receiver_security import (
     ReceiverAuthenticationError,
@@ -115,7 +116,7 @@ def capabilities() -> dict[str, object]:
     ):
         raise frappe.PermissionError
     return {
-        "appVersion": "0.5.0",
+        "appVersion": __version__,
         "supportedFrappeMajors": [15, 16],
         "operations": {
             "createToolAsset": {

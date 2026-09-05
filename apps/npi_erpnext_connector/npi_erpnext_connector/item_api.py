@@ -5,6 +5,7 @@ import re
 import frappe
 from frappe import _
 
+from npi_erpnext_connector import __version__
 from npi_erpnext_connector.item_config import (
     ItemConfigurationError,
     load_item_profile,
@@ -116,7 +117,7 @@ def capabilities() -> dict[str, object]:
     ):
         raise frappe.PermissionError
     return {
-        "appVersion": "0.5.0",
+        "appVersion": __version__,
         "supportedFrappeMajors": [15, 16],
         "operations": {
             "publishReleasedItem": {

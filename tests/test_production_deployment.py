@@ -53,7 +53,19 @@ class ProductionDeploymentTests(unittest.TestCase):
             queue_short.group("body"),
         )
         self.assertIn(
+            "NPI_MBOM_PUBLISH_SANDBOX_SECRETS=",
+            queue_short.group("body"),
+        )
+        self.assertIn(
+            "NPI_TOOL_ASSET_SANDBOX_SECRETS=",
+            queue_short.group("body"),
+        )
+        self.assertIn(
             "NPI_TRIAL_SUMMARY_ERP_SANDBOX_SECRETS=",
+            queue_short.group("body"),
+        )
+        self.assertIn(
+            "NPI_ENGINEERING_CHANGE_SANDBOX_SECRETS=",
             queue_short.group("body"),
         )
         backend = re.search(
@@ -68,6 +80,10 @@ class ProductionDeploymentTests(unittest.TestCase):
             backend.group("body"),
         )
         self.assertIn(
+            "NPI_ENGINEERING_CHANGE_INGRESS_SECRETS=",
+            backend.group("body"),
+        )
+        self.assertIn(
             "exec setpriv --reuid=1000 --regid=1000 --clear-groups "
             "/usr/local/bin/start-gunicorn.sh",
             backend.group("body"),
@@ -78,6 +94,26 @@ class ProductionDeploymentTests(unittest.TestCase):
             "npi_trial_summary_erp_sandbox_secrets\n",
             compose,
         )
+        for secret_name in (
+            "npi_mbom_publish_sandbox_secrets",
+            "npi_tool_asset_sandbox_secrets",
+            "npi_engineering_change_sandbox_secrets",
+            "npi_engineering_change_ingress_secrets",
+        ):
+            self.assertIn(
+                f"  {secret_name}:\n"
+                "    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/"
+                f"{secret_name}\n",
+                compose,
+            )
+        queue_long = re.search(
+            r"^  queue-long:\n(?P<body>.*?)(?=^  [a-z][a-z0-9-]*:\n|^secrets:\n)",
+            compose,
+            re.MULTILINE | re.DOTALL,
+        )
+        self.assertIsNotNone(queue_long)
+        self.assertIn('"--queue", "long,default"', queue_long.group("body"))
+        self.assertNotIn("NPI_", queue_long.group("body"))
         self.assertIn(
             "  npi_erp_project_ingress_secrets:\n"
             "    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/"
