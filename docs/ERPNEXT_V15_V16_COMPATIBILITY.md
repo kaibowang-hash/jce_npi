@@ -5,9 +5,9 @@ Date: 2026-09-06
 ## Scope
 
 This evidence applies to the standalone `npi_erpnext_connector` custom app at
-version `0.9.0`. It covers installation and schema compatibility only; receiver
-operations remain disabled until their explicit non-production configuration
-and least-privilege service identities are installed.
+version `0.9.0`. It covers installation, schema and configured non-production
+execution compatibility. Least-privilege service identities and explicit
+project-bound profiles are installed only on `erpnext-test`.
 
 ## ERPNext v15 executable verification
 
@@ -38,10 +38,12 @@ Frappe majors 15 and 16, and remained disabled by default.
 ## ERPNext v16 target fact
 
 The authorized `erpnext-test` target currently runs ERPNext `16.14.0` and
-Frappe `16.16.0`. Its installed connector is the obsolete `0.5.1` build and is
-missing the `NPI ERP Project Mapping` DocType. Therefore that site's current
-state is not integration-ready; deployment and migration of `0.9.0` are
-required before live end-to-end verification.
+Frappe `16.16.0`. Connector `0.9.0` is installed and migrated there. All 13
+connector support DocTypes exist; Item, MBOM, Tool Asset create/update, released
+Trial Summary and Engineering Change receivers are enabled. Authorization,
+Project and master-data senders are also enabled and their current deliveries
+are confirmed by the live evidence in
+`implementation/evidence/erpnext-test/full-integration-live-2026-09-06.md`.
 
 ## Compatibility controls
 
@@ -52,7 +54,8 @@ required before live end-to-end verification.
 - Capability responses read the installed package version instead of a stale
   hard-coded version.
 - Receivers fail closed by default and do not enable themselves during install
-  or migration.
+  or migration. The live test Site was enabled only through explicit bounded
+  configuration after backup and least-privilege identity verification.
 
 ## Rollback boundary
 
