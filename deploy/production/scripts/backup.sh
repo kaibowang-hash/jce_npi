@@ -32,8 +32,8 @@ install -d -m 0711 "${staging_parent}"
 chmod 0711 "${staging_parent}"
 install -d -m 0700 "${encrypted_root}"
 staging_dir="$(mktemp -d "${staging_parent}/backup-${timestamp}.XXXXXX")"
-backend_uid="$(compose exec -T backend id -u)"
-backend_gid="$(compose exec -T backend id -g)"
+backend_uid="$(compose exec -T backend stat -c %u /home/frappe/frappe-bench)"
+backend_gid="$(compose exec -T backend stat -c %g /home/frappe/frappe-bench)"
 if [[ ! "${backend_uid}" =~ ^[0-9]+$ || ! "${backend_gid}" =~ ^[0-9]+$ ]]; then
   echo "The backend container identity is invalid." >&2
   exit 1
@@ -48,7 +48,7 @@ cleanup() {
 trap cleanup EXIT
 
 container_staging="/backups/staging/$(basename "${staging_dir}")"
-compose exec -T backend bench --site "${SITE_NAME}" backup \
+compose exec -T --user "${backend_uid}:${backend_gid}" backend bench --site "${SITE_NAME}" backup \
   --with-files --compress --backup-path "${container_staging}"
 
 database_backup="$(find "${staging_dir}" -maxdepth 1 -type f -name '*-database.sql.gz' -print -quit)"

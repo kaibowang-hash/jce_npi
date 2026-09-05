@@ -190,10 +190,20 @@ class ProductionDeploymentTests(unittest.TestCase):
     def test_backup_staging_is_private_and_writable_by_backend(self) -> None:
         script = (DEPLOY / "scripts" / "backup.sh").read_text(encoding="utf-8")
         self.assertIn('chmod 0711 "${staging_parent}"', script)
-        self.assertIn('backend_uid="$(compose exec -T backend id -u)"', script)
-        self.assertIn('backend_gid="$(compose exec -T backend id -g)"', script)
+        self.assertIn(
+            'backend_uid="$(compose exec -T backend stat -c %u /home/frappe/frappe-bench)"',
+            script,
+        )
+        self.assertIn(
+            'backend_gid="$(compose exec -T backend stat -c %g /home/frappe/frappe-bench)"',
+            script,
+        )
         self.assertIn('chown "${backend_uid}:${backend_gid}" "${staging_dir}"', script)
         self.assertIn('chmod 0700 "${staging_dir}"', script)
+        self.assertIn(
+            'compose exec -T --user "${backend_uid}:${backend_gid}" backend bench',
+            script,
+        )
 
     def test_https_and_spa_routes_share_one_origin(self) -> None:
         nginx = (DEPLOY / "host" / "nginx-tls.conf").read_text(encoding="utf-8")
