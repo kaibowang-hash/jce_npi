@@ -24,6 +24,7 @@ class ERPNextConnectionStatusTest(unittest.TestCase):
             sys.modules.pop(name, None)
         self.now = datetime(2026, 9, 5, 17, 10, tzinfo=UTC)
         self.applied_at = self.now - timedelta(minutes=5)
+        self.master_heads: list[dict[str, object]] = []
         self.counts = {
             "NPI Project Source Binding": 0,
             "NPI ERP Projection Head": 0,
@@ -90,6 +91,8 @@ class ERPNextConnectionStatusTest(unittest.TestCase):
     def get_all(self, doctype: str, **_kwargs: object) -> list[dict[str, object]]:
         if doctype == "NPI Authorization Projection":
             return [{"applied_at": self.applied_at.replace(tzinfo=None)}]
+        if doctype == "NPI ERP Master Catalog Head":
+            return self.master_heads
         raise AssertionError(f"unexpected DocType {doctype}")
 
     def count(self, doctype: str, filters=None) -> int:
@@ -113,6 +116,7 @@ class ERPNextConnectionStatusTest(unittest.TestCase):
                 "authorizationSynchronization": True,
                 "itemCommands": True,
                 "projectSynchronization": False,
+                "masterDataSynchronization": False,
                 "reportingSynchronization": False,
             },
         )
@@ -128,6 +132,23 @@ class ERPNextConnectionStatusTest(unittest.TestCase):
         stale = self.module._status(now=self.now)
         self.assertEqual(stale["connectionState"], "partially_connected")
         self.assertFalse(stale["capabilities"]["authorizationSynchronization"])
+
+    def test_master_data_requires_all_four_fresh_catalogs(self) -> None:
+        self.master_heads = [
+            {
+                "catalog_kind": kind,
+                "source_environment": "test",
+                "last_synchronized_at": self.now - timedelta(minutes=10),
+            }
+            for kind in ("customer", "supplier", "item_group", "item")
+        ]
+        result = self.module._status(now=self.now)
+        self.assertTrue(result["capabilities"]["masterDataSynchronization"])
+        self.assertTrue(result["capabilities"]["reportingSynchronization"])
+
+        self.master_heads.pop()
+        partial = self.module._status(now=self.now)
+        self.assertFalse(partial["capabilities"]["masterDataSynchronization"])
 
     def test_invalid_or_ambiguous_configuration_returns_safe_unavailable(self) -> None:
         self.frappe.conf["npi_item_publish_sandbox_profiles"].append(

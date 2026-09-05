@@ -16,6 +16,7 @@ export interface ERPConnectionStatus {
     authorizationSynchronization: boolean;
     itemCommands: boolean;
     projectSynchronization: boolean;
+    masterDataSynchronization: boolean;
     reportingSynchronization: boolean;
   };
 }
@@ -57,6 +58,7 @@ export function isERPConnectionStatus(
       "authorizationSynchronization",
       "itemCommands",
       "projectSynchronization",
+      "masterDataSynchronization",
       "reportingSynchronization",
     ]) &&
     value.schemaVersion === 1 &&

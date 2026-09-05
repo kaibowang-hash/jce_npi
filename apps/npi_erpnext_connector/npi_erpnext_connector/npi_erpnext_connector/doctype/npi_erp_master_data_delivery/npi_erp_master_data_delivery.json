@@ -1,0 +1,36 @@
+{
+  "doctype":"DocType",
+  "name":"NPI ERP Master Data Delivery",
+  "module":"NPI ERPNext Connector",
+  "custom":0,
+  "autoname":"field:event_id",
+  "allow_rename":0,
+  "track_changes":0,
+  "read_only":1,
+  "search_fields":"catalog_kind,status,event_id,target_snapshot_id",
+  "sort_field":"creation",
+  "sort_order":"DESC",
+  "fields":[
+    {"fieldname":"event_id","fieldtype":"Data","label":"Event ID","reqd":1,"unique":1,"read_only":1},
+    {"fieldname":"stream_key","fieldtype":"Data","label":"Stream Key","reqd":1,"unique":1,"read_only":1},
+    {"fieldname":"catalog_kind","fieldtype":"Select","label":"Master Catalog Type","options":"customer\nsupplier\nitem_group\nitem","reqd":1,"read_only":1},
+    {"fieldname":"source_version","fieldtype":"Int","label":"Source Version","reqd":1,"read_only":1},
+    {"fieldname":"source_snapshot_hash","fieldtype":"Data","label":"Source Snapshot Hash","reqd":1,"read_only":1},
+    {"fieldname":"event_hash","fieldtype":"Data","label":"Event Hash","reqd":1,"read_only":1},
+    {"fieldname":"event_json","fieldtype":"Long Text","label":"Event JSON","reqd":1,"read_only":1,"hidden":1},
+    {"fieldname":"request_id","fieldtype":"Data","label":"Request ID","reqd":1,"read_only":1},
+    {"fieldname":"trace_id","fieldtype":"Data","label":"Trace ID","reqd":1,"read_only":1},
+    {"fieldname":"record_count","fieldtype":"Int","label":"Master Data Record Count","reqd":1,"read_only":1},
+    {"fieldname":"status","fieldtype":"Select","label":"Status","options":"pending\nretry\ndelivered\npermanent_failure","reqd":1,"read_only":1,"search_index":1},
+    {"fieldname":"attempt_count","fieldtype":"Int","label":"Attempt Count","reqd":1,"read_only":1},
+    {"fieldname":"next_attempt_at","fieldtype":"Datetime","label":"Next Attempt At","read_only":1},
+    {"fieldname":"last_attempt_at","fieldtype":"Datetime","label":"Last Attempt At","read_only":1},
+    {"fieldname":"delivered_at","fieldtype":"Datetime","label":"Delivered At","read_only":1},
+    {"fieldname":"last_error_code","fieldtype":"Data","label":"Last Error Code","read_only":1},
+    {"fieldname":"target_snapshot_id","fieldtype":"Data","label":"Target Master Snapshot ID","read_only":1},
+    {"fieldname":"response_payload_hash","fieldtype":"Data","label":"Response Payload Hash","read_only":1}
+  ],
+  "permissions":[
+    {"role":"System Manager","read":1,"write":0,"create":0,"delete":0,"export":0,"print":0,"email":0,"share":0}
+  ]
+}

@@ -9431,3 +9431,30 @@ reconciled_present,对账确认存在
 reconciled_absent,对账确认不存在
 HTTP Status,请求状态
 Error Code,错误代码
+ERPNext master data can only be changed by the controlled integration service.,ERPNext 主数据只能由受控集成服务更改。
+ERPNext master data synchronization history cannot be deleted.,不能删除 ERPNext 主数据同步历史。
+ERPNext master data synchronization is temporarily unavailable.,ERPNext 主数据同步暂时不可用。
+Enter a valid ERPNext master data snapshot.,请输入有效的 ERPNext 主数据快照。
+Select a supported ERPNext master data type.,请选择受支持的 ERPNext 主数据类型。
+Enter a valid master data search.,请输入有效的主数据搜索内容。
+Enter a valid master data page.,请输入有效的主数据分页参数。
+NPI ERP Master Catalog Entry,NPI 企业资源计划主数据目录条目
+ERPNext Master Catalog Type,ERPNext 主数据目录类型
+item_group,物料组
+item,物料
+ERPNext Master Data Key,ERPNext 主数据键
+Display Name,显示名称
+Present in ERPNext,存在于 ERPNext
+ERPNext Group Key,ERPNext 分组键
+ERPNext Parent Key,ERPNext 上级键
+Stock UOM,库存计量单位
+Is Group,是否为分组
+Is Stock Item,是否为库存物料
+Current Master Snapshot,当前主数据快照
+Source Record Hash,来源记录哈希
+NPI ERP Master Catalog Head,NPI 企业资源计划主数据目录头
+Current Source Event ID,当前来源事件标识符
+Master Data Record Count,主数据记录数量
+Last Synchronized At,最后同步时间
+NPI ERP Master Snapshot,NPI 企业资源计划主数据快照
+Exact Master Data Snapshot,精确主数据快照

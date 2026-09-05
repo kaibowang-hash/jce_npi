@@ -109,8 +109,13 @@ class AuthorizationProjectionMetadataTest(unittest.TestCase):
         ownership = OWNERSHIP.read_text(encoding="utf-8")
         for source in (bff, openapi):
             self.assertIn("/integration/erpnext/user-authorization", source)
+        self.assertIn('method == "PUT"', bff)
         self.assertIn(
-            'method == "PUT"\n        and path == "/api/npi/v1/integration/erpnext/user-authorization"',
+            '"/api/npi/v1/integration/erpnext/user-authorization"',
+            bff,
+        )
+        self.assertIn(
+            '"/api/npi/v1/integration/erpnext/master-data"',
             bff,
         )
         self.assertIn("replace_user_authorization", api)

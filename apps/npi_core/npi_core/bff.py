@@ -74,6 +74,12 @@ _ROUTES = {
     ("PUT", "/api/npi/v1/integration/erpnext/user-authorization"): (
         "npi_integration.authorization_projection_api.replace_user_authorization"
     ),
+    ("PUT", "/api/npi/v1/integration/erpnext/master-data"): (
+        "npi_integration.master_data_api.replace_master_catalog"
+    ),
+    ("GET", "/api/npi/v1/integration/erpnext/master-data"): (
+        "npi_integration.master_data_api.get_master_catalog"
+    ),
     ("GET", "/api/npi/v1/integration/erpnext/status"): (
         "npi_integration.erp_connection_status_api.get_erpnext_connection_status"
     ),
@@ -2661,8 +2667,14 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if (
         method == "PUT"
-        and path == "/api/npi/v1/integration/erpnext/user-authorization"
+        and path
+        in {
+            "/api/npi/v1/integration/erpnext/user-authorization",
+            "/api/npi/v1/integration/erpnext/master-data",
+        }
     ):
+        return True
+    if method == "GET" and path == "/api/npi/v1/integration/erpnext/master-data":
         return True
     if method == "POST" and path == "/api/npi/v1/projects":
         return True

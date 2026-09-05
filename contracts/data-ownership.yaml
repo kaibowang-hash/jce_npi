@@ -84,6 +84,28 @@ objects:
       status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
       portal_profile_and_commercial_master: {owner: ERPNEXT_OR_FUTURE_APPROVED_SUPPLIER_PORTAL, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
 
+  ItemGroup:
+    owner_system: ERPNEXT
+    npi_view: projection
+    key: erpnext_item_group_id
+    fields:
+      name_and_hierarchy: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: COMPLETE_NEWER_SOURCE_VERSION_REPLACES}
+      enabled_and_group_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  ERPMasterCatalogSnapshot:
+    owner_system: NPI_ONE_ERP_MASTER_DATA_INTEGRATION_SERVICE
+    erp_view: none
+    fields:
+      exact_catalog_environment_version_records_and_hash: {owner: ERPNEXT_AUTHENTICATED_SERVICE_CALL, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_EXACT_EVENT}
+      receipt_trace_and_audit: {owner: NPI_ONE_ERP_MASTER_DATA_INTEGRATION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  ERPMasterCatalogEntry:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: none
+    fields:
+      customer_supplier_item_group_and_item_values: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: COMPLETE_NEWER_SOURCE_VERSION_REPLACES}
+      current_projection_identity_and_tombstone: {owner: NPI_ONE_ERP_MASTER_DATA_INTEGRATION_SERVICE, editable_in: [NPI_ONE_ERP_MASTER_DATA_INTEGRATION_SERVICE], direction: NONE, conflict: OWNER_SNAPSHOT_WINS}
+
   EngineeringProject:
     owner_system: NPI_ONE
     erp_view: summary_link

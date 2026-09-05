@@ -48,6 +48,26 @@ doc_events = {
     "Project": {
         "after_insert": "npi_erpnext_connector.hooks_runtime.queue_project_create",
     },
+    "Customer": {
+        "after_insert": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_update": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_trash": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+    },
+    "Supplier": {
+        "after_insert": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_update": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_trash": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+    },
+    "Item Group": {
+        "after_insert": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_update": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_trash": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+    },
+    "Item": {
+        "after_insert": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_update": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_trash": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+    },
 }
 
 scheduler_events = {
@@ -55,10 +75,12 @@ scheduler_events = {
         "*/5 * * * *": [
             "npi_erpnext_connector.worker.recover_pending_deliveries",
             "npi_erpnext_connector.project_worker.recover_project_deliveries",
+            "npi_erpnext_connector.master_data_worker.recover_master_data_deliveries",
         ],
         "*/15 * * * *": [
             "npi_erpnext_connector.worker.reconcile_all_users",
             "npi_erpnext_connector.project_worker.reconcile_projects",
+            "npi_erpnext_connector.master_data_worker.reconcile_master_catalogs",
         ],
     },
 }

@@ -125,6 +125,69 @@ paths:
         "500": { $ref: "#/components/responses/InternalError" }
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
 
+  /integration/erpnext/master-data:
+    put:
+      tags: [Integration]
+      operationId: replaceErpnextMasterCatalog
+      description: >-
+        Atomically replaces one complete ERPNext-owned Customer, Supplier,
+        Item Group, or Item catalog. The authenticated service actor cannot
+        select a DocType or field set; source versions, exact replay and
+        removed-record tombstones are server enforced.
+      x-required-transport-role: NPI API User
+      x-transaction-boundary: erp-master-catalog
+      x-audit-operation: replace_erp_master_catalog
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ERPMasterSnapshotEvent" }
+      responses:
+        "200":
+          description: Master catalog applied or exactly replayed
+          headers:
+            Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ERPMasterSnapshotResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    get:
+      tags: [Integration]
+      operationId: getErpnextMasterCatalog
+      description: >-
+        Returns one authenticated read-only current ERPNext master catalog page.
+        Customer and Supplier rows are restricted by the caller's ERPNext-owned
+        authorization projection; Item and Item Group are shared internal
+        references. Raw support DocTypes are not readable through this route.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - { in: query, name: kind, required: true, schema: { $ref: "#/components/schemas/ERPMasterCatalogKind" } }
+        - { in: query, name: query, schema: { type: string, minLength: 1, maxLength: 100 } }
+        - { in: query, name: limit, schema: { type: integer, minimum: 1, maximum: 200, default: 100 } }
+        - { in: query, name: offset, schema: { type: integer, minimum: 0, maximum: 50000, default: 0 } }
+      responses:
+        "200":
+          description: Current ERPNext master catalog page
+          headers:
+            Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ERPMasterCatalogPage" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
   /integration/erpnext/engineering-change-events:
     post:
       tags: [Integration, Change Control]
@@ -10530,12 +10593,110 @@ components:
         capabilities:
           type: object
           additionalProperties: false
-          required: [authorizationSynchronization, itemCommands, projectSynchronization, reportingSynchronization]
+          required: [authorizationSynchronization, itemCommands, projectSynchronization, masterDataSynchronization, reportingSynchronization]
           properties:
             authorizationSynchronization: { type: boolean }
             itemCommands: { type: boolean }
             projectSynchronization: { type: boolean }
+            masterDataSynchronization: { type: boolean }
             reportingSynchronization: { type: boolean }
+    ERPMasterCatalogKind:
+      type: string
+      enum: [customer, supplier, item_group, item]
+    ERPMasterCustomerRecord:
+      type: object
+      additionalProperties: false
+      required: [sourceKey, displayName, enabled, groupKey, sourceModifiedAt]
+      properties:
+        sourceKey: { type: string, minLength: 1, maxLength: 255 }
+        displayName: { type: string, minLength: 1, maxLength: 255 }
+        enabled: { type: boolean }
+        groupKey: { type: [string, "null"], minLength: 1, maxLength: 255 }
+        sourceModifiedAt: { type: string, format: date-time }
+    ERPMasterSupplierRecord:
+      $ref: "#/components/schemas/ERPMasterCustomerRecord"
+    ERPMasterItemGroupRecord:
+      type: object
+      additionalProperties: false
+      required: [sourceKey, displayName, enabled, parentKey, isGroup, sourceModifiedAt]
+      properties:
+        sourceKey: { type: string, minLength: 1, maxLength: 255 }
+        displayName: { type: string, minLength: 1, maxLength: 255 }
+        enabled: { type: boolean }
+        parentKey: { type: [string, "null"], minLength: 1, maxLength: 255 }
+        isGroup: { type: boolean }
+        sourceModifiedAt: { type: string, format: date-time }
+    ERPMasterItemRecord:
+      type: object
+      additionalProperties: false
+      required: [sourceKey, displayName, enabled, groupKey, stockUom, isStockItem, sourceModifiedAt]
+      properties:
+        sourceKey: { type: string, minLength: 1, maxLength: 255 }
+        displayName: { type: string, minLength: 1, maxLength: 255 }
+        enabled: { type: boolean }
+        groupKey: { type: string, minLength: 1, maxLength: 255 }
+        stockUom: { type: string, minLength: 1, maxLength: 140 }
+        isStockItem: { type: boolean }
+        sourceModifiedAt: { type: string, format: date-time }
+    ERPMasterSnapshotEvent:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, operation, sourceSystem, targetSystem, eventId, catalogKind, sourceEnvironment, sourceVersion, sourceModifiedAt, records, issuedAt, traceId, payloadHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        operation: { type: string, const: replace_master_catalog }
+        sourceSystem: { type: string, const: ERPNEXT }
+        targetSystem: { type: string, const: NPI_ONE }
+        eventId: { type: string, format: uuid }
+        catalogKind: { $ref: "#/components/schemas/ERPMasterCatalogKind" }
+        sourceEnvironment: { type: string, enum: [sandbox, test, testing, qa, staging, stage] }
+        sourceVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+        sourceModifiedAt: { type: string, format: date-time }
+        records:
+          type: array
+          maxItems: 10000
+          items:
+            oneOf:
+              - { $ref: "#/components/schemas/ERPMasterCustomerRecord" }
+              - { $ref: "#/components/schemas/ERPMasterItemGroupRecord" }
+              - { $ref: "#/components/schemas/ERPMasterItemRecord" }
+        issuedAt: { type: string, format: date-time }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ERPMasterSnapshotResult:
+      type: object
+      additionalProperties: false
+      required: [snapshotId, catalogKind, sourceVersion, recordCount, payloadHash, exactReplay, requestId, traceId]
+      properties:
+        snapshotId: { type: string, format: uuid }
+        catalogKind: { $ref: "#/components/schemas/ERPMasterCatalogKind" }
+        sourceVersion: { type: integer, minimum: 1 }
+        recordCount: { type: integer, minimum: 0, maximum: 10000 }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        exactReplay: { type: boolean }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+    ERPMasterCatalogPage:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, catalogKind, sourceVersion, sourceModifiedAt, lastSynchronizedAt, total, offset, limit, items]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        catalogKind: { $ref: "#/components/schemas/ERPMasterCatalogKind" }
+        sourceVersion: { type: integer, minimum: 0 }
+        sourceModifiedAt: { type: [string, "null"], format: date-time }
+        lastSynchronizedAt: { type: [string, "null"], format: date-time }
+        total: { type: integer, minimum: 0, maximum: 10000 }
+        offset: { type: integer, minimum: 0 }
+        limit: { type: integer, minimum: 1, maximum: 200 }
+        items:
+          type: array
+          maxItems: 200
+          items:
+            oneOf:
+              - { $ref: "#/components/schemas/ERPMasterCustomerRecord" }
+              - { $ref: "#/components/schemas/ERPMasterItemGroupRecord" }
+              - { $ref: "#/components/schemas/ERPMasterItemRecord" }
     ERPProjectionKind:
       type: string
       enum: [customer_master, supplier_master, formal_item_master, tooling_procurement_cost, project_cost, formal_quality_status, tool_asset_status]

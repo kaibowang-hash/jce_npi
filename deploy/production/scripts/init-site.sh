@@ -100,6 +100,7 @@ done
 
 # Production ERP authorization ingress and every real ERP adapter stay closed.
 bench --site "${SITE_NAME}" set-config --parse npi_p9_04_authorization_projection_routes_disabled True
+bench --site "${SITE_NAME}" set-config --parse npi_erp_master_data_routes_disabled True
 bench --site "${SITE_NAME}" migrate
 bench --site "${SITE_NAME}" execute npi_core.production_setup.enforce_production_auth_settings
 bench --site "${SITE_NAME}" clear-cache

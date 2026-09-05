@@ -1,1 +1,2 @@
 npi_integration.patches.v0_2.backfill_released_trial_summary_deliveries
+npi_integration.patches.v0_3.sync_master_data_schema

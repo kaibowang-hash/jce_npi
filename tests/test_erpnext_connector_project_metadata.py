@@ -43,10 +43,25 @@ class ERPNextConnectorProjectMetadataTest(unittest.TestCase):
         hooks = (APP / "hooks.py").read_text(encoding="utf-8")
         config = (APP / "project_config.py").read_text(encoding="utf-8")
         repository = (APP / "project_repository.py").read_text(encoding="utf-8")
-        self.assertIn('"Project": {', hooks)
-        self.assertIn('"after_insert":', hooks)
-        project_hook = hooks[hooks.index('"Project": {') : hooks.index("scheduler_events")]
-        self.assertNotIn('"on_update":', project_hook)
+        module = ast.parse(hooks)
+        doc_events = next(
+            node.value
+            for node in module.body
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name) and target.id == "doc_events"
+                for target in node.targets
+            )
+        )
+        project_hook = ast.literal_eval(doc_events)["Project"]
+        self.assertEqual(
+            project_hook,
+            {
+                "after_insert": (
+                    "npi_erpnext_connector.hooks_runtime.queue_project_create"
+                )
+            },
+        )
         self.assertIn('"*/15 * * * *"', hooks)
         self.assertIn("reconcile_projects", hooks)
         self.assertIn('DISABLED_KEY = "npi_erp_project_sender_disabled"', config)

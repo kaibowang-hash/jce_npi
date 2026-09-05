@@ -116,6 +116,7 @@ class ProductionDeploymentTests(unittest.TestCase):
         self.assertIn("developer_mode 0", init_script)
         self.assertIn("npi_deployment_environment production", init_script)
         self.assertIn("npi_p9_04_authorization_projection_routes_disabled True", init_script)
+        self.assertIn("npi_erp_master_data_routes_disabled True", init_script)
         self.assertIn(
             "npi_core.production_setup.enforce_production_auth_settings",
             init_script,
