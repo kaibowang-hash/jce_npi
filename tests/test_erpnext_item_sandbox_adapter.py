@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import sys
 import unittest
@@ -8,12 +10,9 @@ from uuid import UUID
 
 ROOT = Path(__file__).resolve().parents[1]
 INTEGRATION_APP = ROOT / "apps/npi_integration"
-ERP_APP = ROOT / "apps/npi_erpnext_connector"
-for app in (INTEGRATION_APP, ERP_APP):
-    if str(app) not in sys.path:
-        sys.path.insert(0, str(app))
+if str(INTEGRATION_APP) not in sys.path:
+    sys.path.insert(0, str(INTEGRATION_APP))
 
-from npi_erpnext_connector.receiver_security import signed_response  # noqa: E402
 from npi_integration.item_publish.adapters import (  # noqa: E402
     ItemAdapterCommand,
 )
@@ -38,6 +37,26 @@ ATTEMPT_ID = UUID("00000000-0000-4000-8000-000000002003")
 NODE_ID = "00000000-0000-4000-8000-000000002004"
 LINE_ID = "00000000-0000-4000-8000-000000002005"
 NOW = 1_788_537_600
+SIGNATURE_VERSION = "npi-hmac-sha256-v1"
+
+
+def signed_response(
+    payload: dict[str, object], secret: str, *, now: int
+) -> dict[str, object]:
+    value = {**payload, "signatureVersion": SIGNATURE_VERSION, "signedAt": now}
+    canonical = json.dumps(
+        value,
+        allow_nan=False,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    )
+    signature = hmac.new(
+        secret.encode("utf-8"),
+        canonical.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    return {**value, "responseSignature": signature}
 
 
 def profile_mapping() -> dict[str, object]:
