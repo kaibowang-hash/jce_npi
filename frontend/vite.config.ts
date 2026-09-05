@@ -43,6 +43,7 @@ export default defineConfig({
     environment: "jsdom",
     include: ["tests/unit/**/*.{test,spec}.{ts,tsx}"],
     setupFiles: ["./tests/setup.ts"],
+    maxWorkers: 4,
     css: true,
     coverage: {
       provider: "v8",
