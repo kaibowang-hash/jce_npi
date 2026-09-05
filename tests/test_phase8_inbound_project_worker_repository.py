@@ -147,6 +147,7 @@ class Phase8InboundProjectWorkerRepositoryTest(unittest.TestCase):
         self.assertIsNotNone(claim)
         assert claim is not None
         captured: list[object] = []
+        harness = self.harness
         project_id = UUID(int=999)
 
         class StubProjectRepository:
@@ -162,6 +163,7 @@ class Phase8InboundProjectWorkerRepositoryTest(unittest.TestCase):
                 captured.append(repository)
 
             def instantiate(self, command):
+                captured.append(("persistence_user", harness.frappe.session.user))
                 captured.append(command)
                 return types.SimpleNamespace(
                     project=types.SimpleNamespace(
@@ -194,6 +196,8 @@ class Phase8InboundProjectWorkerRepositoryTest(unittest.TestCase):
         self.assertEqual(command.references, ())
         self.assertEqual(command.expected_version, 2)
         self.assertEqual(len(command.idempotency_key), 64)
+        self.assertIn(("persistence_user", "Administrator"), captured)
+        self.assertEqual(self.harness.frappe.session.user, "Guest")
 
         # A second current claim that observes the durable binding can only
         # seal the exact existing Project ID; it never invokes Project creation.

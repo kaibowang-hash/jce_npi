@@ -205,7 +205,14 @@ class FrappeInboundProjectWorkerRepository:
                 expected_version=template.version,
                 references=(),
             )
-            result = ProjectInstantiationService(project_repository).instantiate(command)
+            # Project persistence uses private support DocTypes that intentionally
+            # grant no CRUD to the transport principal. Enter the repository's
+            # bounded system scope for the atomic write while the domain command,
+            # owner and audit actor remain bound to the configured service actor.
+            with inbound_project_repository_write():
+                result = ProjectInstantiationService(project_repository).instantiate(
+                    command
+                )
         except (TemplateUnavailable, TemplateNotPublished) as error:
             raise InboundProjectFinalFailure(
                 "INBOUND_PROJECT_TEMPLATE_UNAVAILABLE"
