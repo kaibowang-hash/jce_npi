@@ -1,13 +1,20 @@
 # Next Action
 
 Status:
-`PA-10-ERP-AUTHORIZATION-HOTFIX — IN_PROGRESS_DEPLOYMENT`
+`PA-10-ERP-AUTHORIZATION-HOTFIX — IMPLEMENTATION_COMPLETE`
 
-Exact sender and receiver regressions are green. Deploy the immutable
-LaunchFlow receiver repair only after an encrypted full backup, preserve the
-prior image pair, then retry the existing failed ERPNext-test delivery and
-verify the same canonical user's durable projection. Keep enforcement disabled
-and do not invent Project or organization mappings. Marker:
+Exact product SHA `118fb6b90aa47aca8a2e790f9c834cd5b74ee843`
+passes Level 3 `33975755695` attempt 2, is active after an encrypted backup,
+and has passed ten-service health verification. Fresh ERPNext-test delivery
+`ef5c30f0-5608-59d0-b5ba-8c48bfcdebf4` delivered on attempt 1 with source
+version 2. The canonical user received only `NPI API User`; Project access and
+organization scopes remain empty, and enforcement remains disabled.
+
+No automatic action remains in this hotfix. The next permitted work is a
+separately authorized ERPNext-owned Project master/access synchronization task,
+followed later by the already-requested Item Group, Customer and Supplier
+master projections. Do not represent ERPNext-test Projects as visible before
+that task is implemented and verified. Marker:
 `PA-10-ERP-AUTHORIZATION-HOTFIX`.
 
 Status:

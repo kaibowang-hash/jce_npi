@@ -1,14 +1,21 @@
 # Active Execution Goal
 
-Updated: `2026-09-05T22:19:46+07:00`
+Updated: `2026-09-05T23:46:46+07:00`
 
-- Active integration hotfix: `PA-10-ERP-AUTHORIZATION-HOTFIX — IN_PROGRESS_DEPLOYMENT`.
-- Repair the live ERPNext-test user projection failures without deleting valid
-  Unicode roles or making LaunchFlow a second editable permission master.
-- The sender emits only explicitly mapped roles. LaunchFlow may adopt an
-  existing canonical internal User while still protecting its built-in and
-  transport-service identities. Authorization enforcement remains disabled
-  until the complete role and Project mapping is approved and delivered.
+- Completed integration hotfix: `PA-10-ERP-AUTHORIZATION-HOTFIX — IMPLEMENTATION_COMPLETE`.
+- Exact product SHA `118fb6b90aa47aca8a2e790f9c834cd5b74ee843`
+  passes Level 3 `33975755695` attempt 2 and is active on both LaunchFlow
+  images after encrypted backup. All ten services and post-deployment health
+  pass.
+- A fresh ERPNext-test source-version-2 event for the canonical user delivered
+  on attempt 1. Only the explicit `NPI API User` mapping was projected;
+  Project access and organization scopes are empty. Authorization ingress is
+  enabled, while enforcement remains disabled.
+- This closes the user/permission transport failure only. ERPNext Project
+  master synchronization and owner-approved Project mapping remain a separate
+  implementation task; Projects created in ERPNext-test are therefore not yet
+  visible in NPI One. Production ERPNext was not contacted.
+- Final release-gate: `PASS`. The product remains not production-ready.
 - Controller marker: `PA-10-ERP-AUTHORIZATION-HOTFIX`.
 
 - Active production hotfix: `PA-09-DESK-BOOT-HOTFIX — IMPLEMENTATION_COMPLETE`.

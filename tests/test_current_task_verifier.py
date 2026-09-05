@@ -36,7 +36,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(value["task_id"], "PA-10-ERP-AUTHORIZATION-HOTFIX")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_DEPLOYMENT")
+        self.assertEqual(value["status"], "IMPLEMENTATION_COMPLETE")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
         self.assertEqual(value["requirement_ids"], ["INT-012", "NFR-SEC-003"])
