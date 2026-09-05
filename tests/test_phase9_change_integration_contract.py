@@ -55,6 +55,8 @@ class Phase9ChangeIntegrationContractTest(unittest.TestCase):
             schema = EVENT["$defs"][name]
             self.assertFalse(schema["additionalProperties"])
             self.assertEqual(set(schema["required"]), set(schema["properties"]))
+        summary = EVENT["$defs"]["change_implementation_summary_v1"]
+        self.assertEqual(summary["properties"]["actor_user_id"]["format"], "email")
 
     def test_openapi_has_only_operation_specific_inbound_and_project_first_summary_routes(self) -> None:
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]

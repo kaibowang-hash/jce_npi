@@ -406,6 +406,14 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
         self.assertIn("recover_mbom_publish_outbox_messages", hooks)
         self.assertIn("npi_mbom_publish_adapter_registry", hooks)
         self.assertIn("npi_mbom_publish_profile_resolver", hooks)
+        self.assertIn(
+            '"npi_integration.mbom_publish.connector_runtime.resolve_profile"',
+            hooks,
+        )
+        self.assertIn(
+            '"npi_integration.mbom_publish.connector_runtime.resolve_adapter_registry"',
+            hooks,
+        )
         openapi = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
         self.assertIn("/projects/{projectId}/mbom-publish-requests:", openapi)
         self.assertIn(

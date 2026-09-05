@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 from uuid import UUID
 
-import frappe
-
 from .adapters import (
     AdapterCommand,
     AdapterRegistration,
@@ -26,6 +24,8 @@ def resolve_profile(
     tenant_id: str,
     project_global_id: object,
 ) -> IntegrationProfile | None:
+    import frappe
+
     if not _enabled():
         return None
     project = _environment("NPI_P9_01C_RUNTIME_PROJECT_ID")
@@ -78,6 +78,8 @@ def resolve_adapter_registry() -> AdapterRegistry | None:
 
 
 def synthetic_adapter(command: AdapterCommand) -> AdapterResponse:
+    import frappe
+
     global _adapter_calls
     if not _enabled() or not isinstance(command, AdapterCommand):
         raise RuntimeError("Engineering Change runtime adapter is unavailable.")
@@ -125,6 +127,8 @@ def allows_disposable_loopback_http(request: object) -> bool:
 
 
 def _enabled() -> bool:
+    import frappe
+
     return bool(
         os.environ.get("NPI_P9_01C_RUNTIME_ENABLED") == "1"
         and frappe.conf.get("npi_runtime_disposable_marker") == _RUNTIME_MARKER

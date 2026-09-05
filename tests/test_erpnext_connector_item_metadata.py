@@ -48,11 +48,18 @@ class ERPNextConnectorItemMetadataTest(unittest.TestCase):
                 "NPI ERP Integration Service",
                 "NPI ERP MBOM Integration Service",
                 "NPI ERP Tool Asset Integration Service",
+                "NPI ERP Trial Summary Integration Service",
+                "NPI ERP Trial Summary Viewer",
+                "NPI ERP Engineering Change Integration Service",
+                "NPI ERP Engineering Change Summary Viewer",
             },
         )
         for name, role in by_name.items():
             self.assertEqual(role["role_name"], name)
-            self.assertEqual(role["desk_access"], 0)
+            self.assertEqual(
+                role["desk_access"],
+                1 if name.endswith("Viewer") else 0,
+            )
             self.assertEqual(role["disabled"], 0)
             self.assertEqual(role["is_custom"], 0)
         for path in DOCTYPE_ROOT.glob("npi_erp_item_*/*.json"):
@@ -150,7 +157,7 @@ class ERPNextConnectorItemMetadataTest(unittest.TestCase):
         ]
         self.assertEqual(len(reload_calls), 1)
         self.assertIn("for doctype in _CONNECTOR_DOCTYPES", install)
-        self.assertEqual(install.count('"npi_erp_'), 9)
+        self.assertEqual(install.count('"npi_erp_'), 13)
         self.assertIn('"npi_erpnext_connector"', install)
 
 

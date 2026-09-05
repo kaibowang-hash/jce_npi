@@ -20,6 +20,7 @@ _CONNECTOR_DOCTYPES = (
     "npi_erp_trial_summary",
     "npi_erp_trial_summary_fact",
     "npi_erp_master_data_delivery",
+    "npi_erp_change_implementation_summary",
 )
 
 

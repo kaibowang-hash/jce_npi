@@ -32,18 +32,33 @@ Required secret files:
 - `npi_item_publish_sandbox_secrets` (a closed JSON object keyed by the
   approved opaque Item connector secret reference; use `{}` while Item
   Sandbox dispatch remains disabled)
+- `npi_mbom_publish_sandbox_secrets` (a closed JSON object keyed by the
+  approved opaque MBOM connector secret reference; use `{}` while MBOM
+  Sandbox dispatch remains disabled)
+- `npi_tool_asset_sandbox_secrets` (a closed JSON object keyed by the
+  approved opaque Tool Asset connector secret reference; use `{}` while Tool
+  Asset Sandbox dispatch remains disabled)
 - `npi_trial_summary_erp_sandbox_secrets` (a closed JSON object keyed by the
   approved opaque released-Trial-Summary connector secret reference; use `{}`
   while that Sandbox dispatch remains disabled)
+- `npi_engineering_change_sandbox_secrets` (a closed JSON object keyed by the
+  approved opaque Engineering Change summary connector secret reference; use
+  `{}` while that Sandbox dispatch remains disabled)
 - `npi_erp_project_ingress_secrets` (a closed JSON object keyed by the
   approved opaque ERP Project webhook secret reference; use `{}` while the
   inbound Project profile remains disabled)
+- `npi_engineering_change_ingress_secrets` (a closed JSON object keyed by the
+  approved Engineering Change webhook signing-key ID; use `{}` while the
+  inbound Engineering Change profile remains disabled)
 
-Only the short worker receives the Item and released-Trial-Summary connector
-secrets, and only the backend receives the Project-ingress secret. Their root
-startup wrappers read the root-only files and immediately drop to the `frappe`
-UID/GID before executing the worker or web process. The Site configuration
-stores only non-secret profiles, never API credentials.
+Only the short worker receives the Item, MBOM, Tool Asset, released-Trial-
+Summary and Engineering Change outbound connector secrets. Only the backend
+receives the Project and Engineering Change ingress signing secrets. The long
+worker does not consume the short queue, so a
+secret-dependent operation cannot be claimed by a worker without its scoped
+credential. Root startup wrappers read the root-only files and immediately
+drop to the `frappe` UID/GID before executing the worker or web process. The
+Site configuration stores only non-secret profiles, never API credentials.
 
 The production Site is initialized only through `init-site.sh`. It refuses an
 existing Site without the production ownership marker, verifies the database

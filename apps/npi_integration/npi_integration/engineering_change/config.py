@@ -16,6 +16,10 @@ _CODE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,139}$")
 _TENANT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
 _ACTOR = re.compile(r"^[^\s\x00-\x1f\x7f]{1,254}$")
 _KEY = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+_NON_PRODUCTION_LABELS = frozenset(
+    {"sandbox", "test", "testing", "dev", "development", "qa", "staging", "stage"}
+)
+_PRODUCTION_LABELS = frozenset({"prod", "production", "live"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -113,7 +117,12 @@ def _sandbox_host(value: object) -> str:
     if not isinstance(value, str) or value != value.strip():
         raise EngineeringChangeIntegrationError("Sandbox hostname is invalid.")
     host = value.casefold().rstrip(".")
-    if _HOST.fullmatch(host) is None or "sandbox" not in host.split("."):
+    labels = set(host.split("."))
+    if (
+        _HOST.fullmatch(host) is None
+        or labels & _PRODUCTION_LABELS
+        or not labels & _NON_PRODUCTION_LABELS
+    ):
         raise EngineeringChangeIntegrationError("Sandbox hostname is invalid.")
     try:
         ipaddress.ip_address(host)

@@ -262,6 +262,7 @@ class SummaryRequest:
     def event_payload(self) -> dict[str, object]:
         return {
             **self.summary.payload(),
+            "actor_user_id": self.actor_user_id,
             "request_global_id": str(self.global_id),
             "profile_id": self.profile.profile_id,
             "profile_version": self.profile.profile_version,

@@ -122,6 +122,7 @@ services:
       - -euc
       - |
         export NPI_ERP_PROJECT_INGRESS_SECRETS="$(</run/secrets/npi_erp_project_ingress_secrets)"
+        export NPI_ENGINEERING_CHANGE_INGRESS_SECRETS="$(</run/secrets/npi_engineering_change_ingress_secrets)"
         exec setpriv --reuid=1000 --regid=1000 --clear-groups /usr/local/bin/start-gunicorn.sh
     environment:
       SITE_NAME: ${SITE_NAME:?SITE_NAME is required}
@@ -130,6 +131,7 @@ services:
       GUNICORN_TIMEOUT: 120
     secrets:
       - npi_erp_project_ingress_secrets
+      - npi_engineering_change_ingress_secrets
     healthcheck:
       test: ["CMD-SHELL", "curl --fail --silent --header 'Host: ${SITE_NAME}' http://127.0.0.1:8000/api/method/ping >/dev/null"]
       interval: 30s
@@ -184,17 +186,23 @@ services:
       - -euc
       - |
         export NPI_ITEM_PUBLISH_SANDBOX_SECRETS="$(</run/secrets/npi_item_publish_sandbox_secrets)"
+        export NPI_MBOM_PUBLISH_SANDBOX_SECRETS="$(</run/secrets/npi_mbom_publish_sandbox_secrets)"
+        export NPI_TOOL_ASSET_SANDBOX_SECRETS="$(</run/secrets/npi_tool_asset_sandbox_secrets)"
         export NPI_TRIAL_SUMMARY_ERP_SANDBOX_SECRETS="$(</run/secrets/npi_trial_summary_erp_sandbox_secrets)"
+        export NPI_ENGINEERING_CHANGE_SANDBOX_SECRETS="$(</run/secrets/npi_engineering_change_sandbox_secrets)"
         exec setpriv --reuid=1000 --regid=1000 --clear-groups bench worker --queue short,default
     secrets:
       - npi_item_publish_sandbox_secrets
+      - npi_mbom_publish_sandbox_secrets
+      - npi_tool_asset_sandbox_secrets
       - npi_trial_summary_erp_sandbox_secrets
+      - npi_engineering_change_sandbox_secrets
     mem_limit: 768m
     pids_limit: 384
 
   queue-long:
     <<: [*frappe-image, *frappe-dependencies]
-    command: ["bench", "worker", "--queue", "long,default,short"]
+    command: ["bench", "worker", "--queue", "long,default"]
     mem_limit: 1g
     pids_limit: 384
 
@@ -223,10 +231,18 @@ secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/administrator_password
   npi_item_publish_sandbox_secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_item_publish_sandbox_secrets
+  npi_mbom_publish_sandbox_secrets:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_mbom_publish_sandbox_secrets
+  npi_tool_asset_sandbox_secrets:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_tool_asset_sandbox_secrets
   npi_trial_summary_erp_sandbox_secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_trial_summary_erp_sandbox_secrets
+  npi_engineering_change_sandbox_secrets:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_engineering_change_sandbox_secrets
   npi_erp_project_ingress_secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_erp_project_ingress_secrets
+  npi_engineering_change_ingress_secrets:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_engineering_change_ingress_secrets
 
 volumes:
   db-data:

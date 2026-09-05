@@ -15,6 +15,7 @@ MBOM_EXECUTION_WRITE_FLAG = "npi_erp_mbom_execution_write"
 TOOL_ASSET_EXECUTION_WRITE_FLAG = "npi_erp_tool_asset_execution_write"
 PROJECT_DELIVERY_WRITE_FLAG = "npi_erp_project_delivery_write"
 TRIAL_SUMMARY_EXECUTION_WRITE_FLAG = "npi_erp_trial_summary_execution_write"
+ENGINEERING_CHANGE_EXECUTION_WRITE_FLAG = "npi_erp_engineering_change_execution_write"
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,6 +87,19 @@ _TRIAL_SUMMARY_CURRENT: ContextVar[TrialSummaryExecutionWriteCapability | None] 
         "npi_erp_trial_summary_execution_capability",
         default=None,
     )
+)
+
+
+@dataclass(frozen=True, slots=True)
+class EngineeringChangeExecutionWriteCapability:
+    request_global_id: str
+
+
+_ENGINEERING_CHANGE_CURRENT: ContextVar[
+    EngineeringChangeExecutionWriteCapability | None
+] = ContextVar(
+    "npi_erp_engineering_change_execution_capability",
+    default=None,
 )
 
 
@@ -327,6 +341,46 @@ def deny_trial_summary_execution_delete() -> None:
     )
 
 
+@contextmanager
+def engineering_change_execution_write(
+    request_global_id: str,
+) -> Iterator[EngineeringChangeExecutionWriteCapability]:
+    if not isinstance(request_global_id, str) or not request_global_id:
+        raise RuntimeError("Engineering Change execution capability is invalid.")
+    capability = EngineeringChangeExecutionWriteCapability(request_global_id)
+    token = _ENGINEERING_CHANGE_CURRENT.set(capability)
+    previous = getattr(frappe.flags, ENGINEERING_CHANGE_EXECUTION_WRITE_FLAG, None)
+    setattr(frappe.flags, ENGINEERING_CHANGE_EXECUTION_WRITE_FLAG, True)
+    try:
+        yield capability
+    finally:
+        _ENGINEERING_CHANGE_CURRENT.reset(token)
+        if previous is None:
+            try:
+                delattr(frappe.flags, ENGINEERING_CHANGE_EXECUTION_WRITE_FLAG)
+            except AttributeError:
+                pass
+        else:
+            setattr(frappe.flags, ENGINEERING_CHANGE_EXECUTION_WRITE_FLAG, previous)
+
+
+def require_engineering_change_execution_write() -> None:
+    if not getattr(frappe.flags, ENGINEERING_CHANGE_EXECUTION_WRITE_FLAG, False):
+        frappe.throw(
+            _(
+                "ERPNext Engineering Change summary records can only be changed by the controlled operation."
+            ),
+            frappe.PermissionError,
+        )
+
+
+def deny_engineering_change_execution_delete() -> None:
+    frappe.throw(
+        _("ERPNext Engineering Change summary history cannot be deleted."),
+        frappe.PermissionError,
+    )
+
+
 def insert_item_target_document(
     document: Any,
     *,
@@ -441,6 +495,15 @@ def insert_trial_summary_support_document(
     capability: TrialSummaryExecutionWriteCapability,
 ) -> Any:
     _authorize_trial_summary_support(document, capability)
+    return document.insert(ignore_permissions=True)
+
+
+def insert_engineering_change_support_document(
+    document: Any,
+    *,
+    capability: EngineeringChangeExecutionWriteCapability,
+) -> Any:
+    _authorize_engineering_change_support(document, capability)
     return document.insert(ignore_permissions=True)
 
 
@@ -622,3 +685,18 @@ def _authorize_trial_summary_support(
         or bound_request != capability.request_global_id
     ):
         raise RuntimeError("Trial Summary execution capability is invalid.")
+
+
+def _authorize_engineering_change_support(
+    document: Any,
+    capability: EngineeringChangeExecutionWriteCapability,
+) -> None:
+    if (
+        _ENGINEERING_CHANGE_CURRENT.get() is not capability
+        or not getattr(frappe.flags, ENGINEERING_CHANGE_EXECUTION_WRITE_FLAG, False)
+        or str(getattr(document, "doctype", ""))
+        != "NPI ERP Change Implementation Summary"
+        or str(getattr(document, "request_global_id", "") or "")
+        != capability.request_global_id
+    ):
+        raise RuntimeError("Engineering Change execution capability is invalid.")

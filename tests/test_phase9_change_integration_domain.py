@@ -218,6 +218,7 @@ class Phase9ChangeIntegrationDomainTest(unittest.TestCase):
         )
         self.assertEqual(command.source_hash, request.summary.source_hash)
         self.assertEqual(command.payload["source_hash"], command.source_hash)
+        self.assertEqual(command.payload["actor_user_id"], request.actor_user_id)
         self.assertIs(registry.resolve(profile()), adapter)
         self.assertIsNone(registry.resolve(profile(TargetMode.DISABLED)))
 

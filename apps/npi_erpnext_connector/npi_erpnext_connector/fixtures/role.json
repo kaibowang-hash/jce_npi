@@ -38,5 +38,21 @@
     "desk_access": 1,
     "disabled": 0,
     "is_custom": 0
+  },
+  {
+    "doctype": "Role",
+    "name": "NPI ERP Engineering Change Integration Service",
+    "role_name": "NPI ERP Engineering Change Integration Service",
+    "desk_access": 0,
+    "disabled": 0,
+    "is_custom": 0
+  },
+  {
+    "doctype": "Role",
+    "name": "NPI ERP Engineering Change Summary Viewer",
+    "role_name": "NPI ERP Engineering Change Summary Viewer",
+    "desk_access": 1,
+    "disabled": 0,
+    "is_custom": 0
   }
 ]

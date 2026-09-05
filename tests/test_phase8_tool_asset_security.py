@@ -40,6 +40,14 @@ class Phase8ToolAssetSecurityTest(unittest.TestCase):
         self.assertIn("recover_tool_asset_outbox_messages", hooks)
         self.assertIn("npi_tool_asset_execution_profile_resolver", hooks)
         self.assertIn("npi_tool_asset_adapter_registry", hooks)
+        self.assertIn(
+            '"npi_integration.tool_asset_request.connector_runtime.resolve_profile"',
+            hooks,
+        )
+        self.assertIn(
+            '"npi_integration.tool_asset_request.connector_runtime.resolve_adapter_registry"',
+            hooks,
+        )
         prohibited_probe = ast.parse(".".join(("frappe", "db", "sql")) + "('select 1')")
         self.assertTrue(any(_is_direct_frappe_sql_call(node) for node in ast.walk(prohibited_probe)))
         for path in (MODULE / "execution_domain.py", MODULE / "config.py", MODULE / "execution_frappe_validation.py", MODULE / "doctype_base.py", MODULE / "diagnostics.py", MODULE / "frappe_repository.py", MODULE / "adapters.py", MODULE / "worker.py", MODULE / "worker_repository.py", MODULE / "runtime_fixture.py"):

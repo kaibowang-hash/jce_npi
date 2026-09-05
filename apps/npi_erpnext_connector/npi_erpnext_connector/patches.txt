@@ -3,3 +3,4 @@ npi_erpnext_connector.patches.v0_4.sync_tool_asset_schema
 npi_erpnext_connector.patches.v0_5.sync_project_schema
 npi_erpnext_connector.patches.v0_5.sync_trial_summary_schema
 npi_erpnext_connector.patches.v0_6.sync_master_data_schema
+npi_erpnext_connector.patches.v0_9.sync_engineering_change_schema

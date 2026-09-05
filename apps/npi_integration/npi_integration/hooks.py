@@ -65,33 +65,33 @@ npi_item_publish_adapter_registry = (
     "npi_integration.item_publish.connector_runtime.resolve_adapter_registry"
 )
 
-# P8-04 is inert outside its explicit disposable marker. The only built-in
-# adapter is a network-free synthetic batch proof with no formal target IDs.
+# P8-04 preserves the disposable synthetic proof and adds one exact,
+# default-disabled non-production ERPNext Sandbox adapter.
 npi_mbom_publish_profile_resolver = (
-    "npi_integration.mbom_publish.runtime_fixture.resolve_profile"
+    "npi_integration.mbom_publish.connector_runtime.resolve_profile"
 )
 npi_mbom_publish_adapter_registry = (
-    "npi_integration.mbom_publish.runtime_fixture.resolve_adapter_registry"
+    "npi_integration.mbom_publish.connector_runtime.resolve_adapter_registry"
 )
 
-# P8-05 is inert outside its exact disposable marker. The registry contains
-# only operation-specific, network-free synthetic create/update adapters.
+# P8-05 preserves the disposable synthetic proof and adds exact,
+# default-disabled non-production ERPNext Sandbox create/update adapters.
 npi_tool_asset_execution_profile_resolver = (
-    "npi_integration.tool_asset_request.runtime_fixture.resolve_profile"
+    "npi_integration.tool_asset_request.connector_runtime.resolve_profile"
 )
 npi_tool_asset_adapter_registry = (
-    "npi_integration.tool_asset_request.runtime_fixture.resolve_adapter_registry"
+    "npi_integration.tool_asset_request.connector_runtime.resolve_adapter_registry"
 )
 
-# P9-01C is likewise inert outside its exact disposable marker. The built-in
-# profile has one network-free adapter and one ephemeral test-only signing key;
-# production profiles, endpoints and credentials are deliberately absent.
+# P9-01C preserves its exact disposable proof and adds one default-disabled,
+# authenticated non-production ERPNext summary adapter and inbound signing-key
+# resolver. Endpoint and credential values remain outside source control.
 npi_engineering_change_profile_resolver = (
-    "npi_integration.engineering_change.runtime_fixture.resolve_profile"
+    "npi_integration.engineering_change.connector_runtime.resolve_profile"
 )
 npi_engineering_change_secret_resolver = (
-    "npi_integration.engineering_change.runtime_fixture.resolve_secret"
+    "npi_integration.engineering_change.connector_runtime.resolve_secret"
 )
 npi_engineering_change_adapter_registry = (
-    "npi_integration.engineering_change.runtime_fixture.resolve_adapter_registry"
+    "npi_integration.engineering_change.connector_runtime.resolve_adapter_registry"
 )

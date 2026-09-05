@@ -60,7 +60,8 @@ objects:
     erp_view: versioned_implementation_summary
     fields:
       exact_change_revision_formal_observation_and_closeout_hashes: {owner: NPI_ONE_CHANGE_CONTROL_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: EXACT_VERSION_REFERENCE}
-      actor_profile_service_actor_trace_and_hashed_idempotency: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_REQUEST_SCOPE}
+      source_actor_attribution: {owner: NPI_ONE_IDENTITY_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT_ATTRIBUTION, conflict: EXACT_ENABLED_USER_OR_REJECT}
+      profile_service_actor_trace_and_hashed_idempotency: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_REQUEST_SCOPE}
       request_outbox_attempt_result_and_terminal_state: {owner: NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE, editable_in: [NPI_ONE_ENGINEERING_CHANGE_INTEGRATION_SERVICE], direction: NONE, conflict: OPERATION_SPECIFIC_FAIL_CLOSED}
       erp_formal_status_or_transaction_truth: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_OVERWRITE_FROM_SUMMARY}
 

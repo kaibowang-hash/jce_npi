@@ -1726,7 +1726,7 @@
     "change_implementation_summary_v1": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["api_version", "operation", "tenant_id", "project_global_id", "change_global_id", "revision_global_id", "revision_number", "revision_snapshot_hash", "formal_change", "affected_versions_hash", "effectivity_hash", "disposition_hash", "revalidation_hash", "closure_evidence_hash", "request_global_id", "profile_id", "profile_version", "profile_snapshot_hash", "source_hash"],
+      "required": ["api_version", "operation", "tenant_id", "project_global_id", "change_global_id", "revision_global_id", "revision_number", "revision_snapshot_hash", "formal_change", "affected_versions_hash", "effectivity_hash", "disposition_hash", "revalidation_hash", "closure_evidence_hash", "actor_user_id", "request_global_id", "profile_id", "profile_version", "profile_snapshot_hash", "source_hash"],
       "properties": {
         "api_version": {"const": "npi.change-implementation-summary.v1"},
         "operation": {"const": "record_change_implementation_summary"},
@@ -1742,6 +1742,7 @@
         "disposition_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "revalidation_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "closure_evidence_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "actor_user_id": {"type": "string", "format": "email", "maxLength": 254},
         "request_global_id": {"type": "string", "format": "uuid"},
         "profile_id": {"type": "string", "minLength": 1, "maxLength": 140},
         "profile_version": {"type": "integer", "minimum": 1},

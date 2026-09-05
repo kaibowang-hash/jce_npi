@@ -108,12 +108,13 @@ class ERPNextConnectorMbomMetadataTest(unittest.TestCase):
         self.assertNotIn("drop", source.casefold())
         patches = (APP / "patches.txt").read_text(encoding="utf-8").splitlines()
         self.assertEqual(
-            patches,
+            patches[:2],
             [
                 "npi_erpnext_connector.patches.v0_3.sync_mbom_doctypes",
                 "npi_erpnext_connector.patches.v0_4.sync_tool_asset_schema",
             ],
         )
+        self.assertEqual(len(patches), len(set(patches)))
 
     def test_new_visible_sources_have_direct_symmetric_chinese_translations(
         self,

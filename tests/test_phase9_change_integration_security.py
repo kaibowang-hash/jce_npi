@@ -87,7 +87,10 @@ class Phase9ChangeIntegrationSecurityTest(unittest.TestCase):
                 pass
 
     def test_only_fixed_helpers_have_permission_bypass_and_no_direct_sql_or_raw_transport(self) -> None:
-        files = [*PACKAGE.glob("*.py"), API]
+        connector = PACKAGE / "connector_runtime.py"
+        files = [
+            path for path in PACKAGE.glob("*.py") if path != connector
+        ] + [API]
         combined = "\n".join(path.read_text(encoding="utf-8") for path in files)
         for forbidden in (
             "frappe" + ".db" + ".sql",
@@ -107,16 +110,28 @@ class Phase9ChangeIntegrationSecurityTest(unittest.TestCase):
                     bypasses.append((path.name, ast.unparse(node.value)))
         self.assertEqual(bypasses, [])
         self.assertNotIn("frappe.client", combined)
+        transport = connector.read_text(encoding="utf-8")
+        self.assertEqual(transport.count("session.post("), 1)
+        self.assertIn("allow_redirects=False", transport)
+        self.assertIn("session.trust_env = False", transport)
+        self.assertIn("MAX_RESPONSE_BYTES = 262_144", transport)
+        self.assertNotIn("frappe.db.sql", transport)
+        self.assertNotIn("ignore_permissions", transport)
 
     def test_runtime_defaults_are_synthetic_or_disabled_and_production_origin_is_absent(self) -> None:
         hooks = (ROOT / "apps/npi_integration/npi_integration/hooks.py").read_text(
             encoding="utf-8"
         )
         fixture = (PACKAGE / "runtime_fixture.py").read_text(encoding="utf-8")
-        self.assertIn("runtime_fixture.resolve_profile", hooks)
+        self.assertIn("engineering_change.connector_runtime.resolve_profile", hooks)
+        self.assertIn("resolve_synthetic_profile", (PACKAGE / "connector_runtime.py").read_text(encoding="utf-8"))
         self.assertIn("TargetMode.SYNTHETIC", fixture)
         self.assertIn("disposable_runtime_marker=True", fixture)
-        for source in (hooks, fixture):
+        for source in (
+            hooks,
+            fixture,
+            (PACKAGE / "connector_runtime.py").read_text(encoding="utf-8"),
+        ):
             self.assertNotIn("JCE-Core", source)
             self.assertNotIn("jce.1", source)
             self.assertNotIn("core.whjichen.cn", source)
