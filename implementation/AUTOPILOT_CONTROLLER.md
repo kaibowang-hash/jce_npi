@@ -253,6 +253,20 @@ pending until that proof is produced in Codespaces.
 
 ## Current checkpoint
 
+### PA-10 ERP authorization ownership hotfix
+
+The user explicitly requested repair after live ERPNext-test evidence proved
+that a valid Unicode source role stopped the whole user projection and the
+next request was rejected because the canonical LaunchFlow User already held
+System Manager. PA-10 keeps ERPNext as the authorization owner: all valid
+Unicode ERPNext role names may be inspected, but only explicitly mapped target
+roles are emitted. The receiver protects built-in and transport-service
+identities while allowing ERPNext to adopt an existing canonical internal
+User. An absent disabled target is stored as bounded identity data rather than
+an invalid required User Link. Authorization enforcement remains disabled
+until complete owner-approved mappings exist. Production ERPNext is untouched.
+Controller marker: `PA-10 ERP authorization ownership hotfix`.
+
 ### P8-07F consolidated compatibility checkpoint awaits final Level 3
 
 Exact SHA `77b4258f3b086420e0ae7769bd95830bf9dabfaa` passes ordinary CI

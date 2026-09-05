@@ -834,7 +834,7 @@ class V12ReconciliationTests(unittest.TestCase):
             "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3",
             phase_status,
         )
-        self.assertIn("current_task: PA-09-DESK-BOOT-HOTFIX", phase_status)
+        self.assertIn("current_task: PA-10-ERP-AUTHORIZATION-HOTFIX", phase_status)
         self.assertIn("task_id: PA-08-DEPLOYMENT", phase_status)
         self.assertIn("p9_07:", phase_status)
         self.assertIn("final_level_3: 33730710124_PASS", phase_status)
@@ -843,8 +843,8 @@ class V12ReconciliationTests(unittest.TestCase):
             "evidence_class: CONTROLLED_NON_PRODUCTION_TECHNICAL_UAT",
             phase_status,
         )
-        self.assertIn("overall_status: IMPLEMENTATION_COMPLETE", phase_status)
-        self.assertIn("technical_implementation_complete: true", phase_status)
+        self.assertIn("overall_status: IN_PROGRESS", phase_status)
+        self.assertIn("technical_implementation_complete: false", phase_status)
         self.assertIn(
             "repair_checkpoint: 788ea1e1d9e13ebd3a91a382932fdce34347adad",
             phase_status,

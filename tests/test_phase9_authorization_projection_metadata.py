@@ -60,6 +60,8 @@ class AuthorizationProjectionMetadataTest(unittest.TestCase):
         self.assertEqual(self.metadata["autoname"], "field:global_id")
         self.assertEqual(self.metadata["allow_rename"], 0)
         self.assertEqual(self.metadata["read_only"], 1)
+        self.assertEqual(fields["target_user_id"]["fieldtype"], "Data")
+        self.assertNotIn("options", fields["target_user_id"])
         self.assertNotIn("fixtures", self.metadata)
         self.assertNotIn("records", self.metadata)
         self.assertTrue(all(field.get("read_only") == 1 for field in fields.values()))

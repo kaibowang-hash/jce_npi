@@ -1,6 +1,16 @@
 # Next Action
 
 Status:
+`PA-10-ERP-AUTHORIZATION-HOTFIX — IN_PROGRESS_DEPLOYMENT`
+
+Exact sender and receiver regressions are green. Deploy the immutable
+LaunchFlow receiver repair only after an encrypted full backup, preserve the
+prior image pair, then retry the existing failed ERPNext-test delivery and
+verify the same canonical user's durable projection. Keep enforcement disabled
+and do not invent Project or organization mappings. Marker:
+`PA-10-ERP-AUTHORIZATION-HOTFIX`.
+
+Status:
 `PA-09-DESK-BOOT-HOTFIX — IMPLEMENTATION_COMPLETE`
 
 Exact repair `788ea1e1d9e13ebd3a91a382932fdce34347adad` passes pre-deploy

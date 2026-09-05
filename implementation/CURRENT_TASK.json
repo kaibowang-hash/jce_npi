@@ -1,83 +1,83 @@
 {
   "schema_version": 1,
-  "task_id": "PA-09-DESK-BOOT-HOTFIX",
+  "task_id": "PA-10-ERP-AUTHORIZATION-HOTFIX",
   "task_kind": "product",
   "phase": 9,
-  "status": "IMPLEMENTATION_COMPLETE",
+  "status": "IN_PROGRESS_DEPLOYMENT",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "COMPLETE",
-  "base_checkpoint": "238d72413bfd80c3fa0fdbfb058a8e54dd25e5af",
-  "predecessor_product_checkpoint": "003597014d18cc35d74caf695e8f201e52f1306a",
+  "base_checkpoint": "7a707d4e7dad1ecc083f5c9f0fff1911c02efdc4",
+  "predecessor_product_checkpoint": "7a707d4e7dad1ecc083f5c9f0fff1911c02efdc4",
   "requirement_ids": [
-    "NFR-MNT-001"
+    "INT-012",
+    "NFR-SEC-003"
   ],
   "scope": [
-    "Repair the reproduced production Frappe Desk boot failure that leaves authenticated administrators on the splash logo and blocks the first-run Setup Wizard.",
-    "Keep the approved React translation catalogs unchanged and remove only double-curly SPA placeholder messages from Frappe's server-rendered Desk boot dictionary through the supported extend_bootinfo hook.",
-    "Prove the filter with a focused regression, repository and direct i18n checks, exact-SHA ordinary CI, an encrypted pre-deploy backup, exact-SHA incremental deployment, authenticated Desk/Setup Wizard browser evidence and a final Level 3 release gate.",
-    "Preserve all existing Site data, named volumes, disabled ERP adapters, disabled ERP authorization ingress and the retained rollback image pair."
+    "Repair the confirmed ERPNext authorization sender failure caused by a valid Unicode ERPNext role while continuing to emit only explicitly mapped LaunchFlow roles.",
+    "Allow the authenticated ERPNext authorization owner to adopt an existing canonical internal LaunchFlow User, including an existing System Manager, while retaining the built-in and transport-service identity protections.",
+    "Store a disabled projection target as bounded identity data so an absent disabled User can be durably audited without an invalid dangling Frappe Link.",
+    "Prove the repair with focused sender and receiver tests, Python 3.10 compatibility, encrypted LaunchFlow backup, exact immutable deployment and live ERPNext-test delivery evidence."
   ],
   "non_scope": [
-    "No Frappe or ERPNext core patch, translation-key migration, user-visible copy change, architecture redesign, schema change, permission change or ERP activation.",
-    "No production ERPNext or JCE-Core contact, business-data mutation, generic DocType writer, cross-database access, browser-direct ERP access or dual-master field.",
-    "No deletion or recreation of the LaunchFlow Site, database or named volumes and no staging, rollback or overwrite of user-owned local files.",
-    "No password, token, cookie, endpoint configuration or other secret may be printed, committed or included in evidence."
+    "No production ERPNext or JCE-Core contact or mutation, no password or Entra configuration change, and no generic DocType writer.",
+    "No Project, Customer, Supplier or Item Group synchronization and no guessed role or Project mapping.",
+    "No frontend, visual, translation-source, business workflow or data-ownership redesign.",
+    "No activation of authorization enforcement before complete owner-approved role and Project mappings exist."
   ],
   "frozen_invariants": [
-    "FRAPPE_DESK_REMAINS_ADMINISTRATION_AND_SUPPORT_ONLY",
-    "NPI_REACT_BFF_TRANSLATION_CATALOGS_AND_PLACEHOLDERS_REMAIN_UNCHANGED",
-    "SUPPORTED_EXTEND_BOOTINFO_HOOK_ONLY_NO_FRAPPE_CORE_PATCH",
-    "FILTER_ONLY_DOUBLE_CURLY_MESSAGES_FROM_DESK_BOOT",
-    "NO_SCHEMA_PERMISSION_AUTHENTICATION_OR_ERP_INTEGRATION_CHANGE",
-    "FINAL_FULL_PRODUCTION_ERPNEXT_LAUNCHFLOW_READ_ONLY_RECONCILIATION_REMAINS_ACCEPTED_NO_NEW_ERP_DEPENDENCY",
-    "PRODUCTION_DEPLOYMENT_REMAINS_INCREMENTAL_AND_BACKED_UP",
-    "EXACT_SHA_ORDINARY_CI_BEFORE_DEPLOYMENT_AND_LEVEL_3_RELEASE_GATE_REQUIRED",
-    "USER_OWNED_DIRTY_AND_UNTRACKED_FILES_REMAIN_UNSTAGED"
+    "ERPNEXT_REMAINS_AUTHORIZATION_OWNER",
+    "ONLY_EXPLICITLY_MAPPED_ROLES_AND_SCOPES_ARE_PROJECTED",
+    "BUILT_IN_AND_TRANSPORT_SERVICE_IDENTITIES_REMAIN_PROTECTED",
+    "UNKNOWN_DISABLED_EXPIRED_OR_UNMAPPED_PRINCIPALS_FAIL_CLOSED",
+    "AUTHORIZATION_ENFORCEMENT_REMAINS_DISABLED_DURING_PARTIAL_MAPPING",
+    "NO_PRODUCTION_ERPNEXT_CONTACT_OR_MUTATION",
+    "FINAL_FULL_PRODUCTION_ERPNEXT_READ_ONLY_RECONCILIATION_REMAINS_REQUIRED_BEFORE_PRODUCTION_READY",
+    "EXACT_IMMUTABLE_DEPLOYMENT_REQUIRES_ENCRYPTED_BACKUP_AND_ROLLBACK",
+    "USER_OWNED_DIRTY_WORKSPACE_FILES_REMAIN_UNSTAGED"
   ],
   "allowed_paths": [
-    "apps/npi_core/npi_core/hooks.py",
+    "apps/npi_integration/npi_integration/authorization_projection/frappe_repository.py",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_authorization_projection/npi_authorization_projection.json",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/CURRENT_TASK.json",
     "implementation/NEXT_ACTION.md",
     "implementation/PHASE_STATUS.yaml",
-    "implementation/evidence/production-activation/pa-09-frappe-desk-boot-hotfix.md",
+    "implementation/evidence/erpnext-test/authorization-sync-hotfix-0.5.1.md",
     "tests/test_current_task_verifier.py",
-    "tests/test_frappe_desk_boot.py",
+    "tests/test_phase9_authorization_projection_metadata.py",
+    "tests/test_phase9_authorization_projection_repository.py",
     "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {
     "level_1": [
-      ["python", "-m", "unittest", "tests.test_frappe_desk_boot", "-v"],
-      ["python", "scripts/verify_current_task.py"],
+      ["python", "-m", "unittest", "tests.test_phase9_authorization_projection_metadata", "tests.test_phase9_authorization_projection_repository", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
       ["bash", "scripts/verify.sh", "--repository"],
-      ["npm", "--prefix", "frontend", "run", "lint:i18n"],
-      ["python", "-m", "unittest", "tests.test_frappe_desk_boot", "tests.test_phase3_localization", "-v"]
+      ["python", "-m", "unittest", "tests.test_phase9_authorization_projection_api", "tests.test_phase9_authorization_projection_domain", "tests.test_phase9_authorization_projection_metadata", "tests.test_phase9_authorization_projection_repository", "tests.test_phase9_authorization_projection_runtime_verifier", "tests.test_phase9_authorization_projection_security", "-v"]
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
-      ["python", "-m", "unittest", "tests.test_frappe_desk_boot", "-v"]
+      ["python", "-m", "unittest", "tests.test_phase9_authorization_projection_runtime_verifier", "-v"]
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
       ["npm", "--prefix", "frontend", "run", "test:e2e"],
-      ["npm", "--prefix", "frontend", "run", "test:visual"],
-      ["python", "-m", "unittest", "tests.test_frappe_desk_boot", "tests.test_phase3_localization", "-v"]
+      ["npm", "--prefix", "frontend", "run", "test:visual"]
     ]
   },
   "expected_state": {
-    "phase_status_current_task": "PA-09-DESK-BOOT-HOTFIX",
+    "phase_status_current_task": "PA-10-ERP-AUTHORIZATION-HOTFIX",
     "phase_status_execution_hold": "NONE",
     "phase_status_resumed_product_task": "COMPLETE",
-    "active_goal_marker": "PA-09-DESK-BOOT-HOTFIX",
-    "next_action_marker": "PA-09-DESK-BOOT-HOTFIX",
-    "controller_marker": "PA-09 exact production hotfix deployed and browser-verified; final exact-SHA ordinary CI and Level 3 required"
+    "active_goal_marker": "PA-10-ERP-AUTHORIZATION-HOTFIX",
+    "next_action_marker": "PA-10-ERP-AUTHORIZATION-HOTFIX",
+    "controller_marker": "PA-10 ERP authorization ownership hotfix"
   },
   "rollback": {
-    "before_product_resume": "Discard only the PA-09 scoped files and restore the completed PA-08 controller state; production remains on the current image and needs no rollback.",
-    "after_product_resume": "Take a fresh encrypted safety backup before switching images. If Desk verification fails, switch both backend and SPA to the retained PA-08 image pair without schema downgrade and run the production health gate; use a reviewed forward fix if image rollback is unsafe."
+    "before_product_resume": "Discard only the PA-10 allowlisted files and retain the active LaunchFlow and ERPNext-test releases unchanged.",
+    "after_product_resume": "Disable ERPNext-test authorization sending, keep projection enforcement off, retain immutable delivery and audit evidence, restore the backed-up ERPNext-test connector files, and switch LaunchFlow to the retained prior image pair without a schema downgrade."
   }
 }

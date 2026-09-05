@@ -340,7 +340,7 @@ class ProjectionRepositoryTest(unittest.TestCase):
             ],
         )
 
-    def test_disabled_absent_user_and_privileged_target_are_safe(self) -> None:
+    def test_disabled_absent_user_and_existing_manager_follow_erp_truth(self) -> None:
         self.users.pop(TARGET)
         disabled = self.repository().apply(
             AuthorizationProjectionEvent.from_mapping(
@@ -364,12 +364,37 @@ class ProjectionRepositoryTest(unittest.TestCase):
             "user_type": "System User",
             "roles": [{"role": "System Manager"}],
         }
+        adopted = self.repository().apply(
+            AuthorizationProjectionEvent.from_mapping(
+                event_mapping(
+                    eventId=str(UUID(int=922)),
+                    targetUserId=privileged,
+                )
+            )
+        )
+        revoked = self.repository().apply(
+            AuthorizationProjectionEvent.from_mapping(
+                event_mapping(
+                    eventId=str(UUID(int=923)),
+                    targetUserId=privileged,
+                    sourceVersion=2,
+                    enabled=False,
+                    roles=[],
+                    projectAccess=[],
+                    organizationScopes=[],
+                )
+            )
+        )
+        self.assertEqual(adopted.local_user_disposition, "retained")
+        self.assertEqual(revoked.local_user_disposition, "disabled")
+        self.assertEqual(int(self.users[privileged]["enabled"]), 0)
+
         with self.assertRaises(PermissionDenied):
             self.repository().apply(
                 AuthorizationProjectionEvent.from_mapping(
                     event_mapping(
-                        eventId=str(UUID(int=922)),
-                        targetUserId=privileged,
+                        eventId=str(UUID(int=924)),
+                        targetUserId=ACTOR,
                     )
                 )
             )

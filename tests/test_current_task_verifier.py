@@ -34,46 +34,45 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "PA-09-DESK-BOOT-HOTFIX")
+        self.assertEqual(value["task_id"], "PA-10-ERP-AUTHORIZATION-HOTFIX")
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IMPLEMENTATION_COMPLETE")
+        self.assertEqual(value["status"], "IN_PROGRESS_DEPLOYMENT")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
-        self.assertEqual(value["requirement_ids"], ["NFR-MNT-001"])
+        self.assertEqual(value["requirement_ids"], ["INT-012", "NFR-SEC-003"])
         self.assertEqual(
             value["base_checkpoint"],
-            "238d72413bfd80c3fa0fdbfb058a8e54dd25e5af",
+            "7a707d4e7dad1ecc083f5c9f0fff1911c02efdc4",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "003597014d18cc35d74caf695e8f201e52f1306a",
+            "7a707d4e7dad1ecc083f5c9f0fff1911c02efdc4",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "PA-09-DESK-BOOT-HOTFIX",
+                "phase_status_current_task": "PA-10-ERP-AUTHORIZATION-HOTFIX",
                 "phase_status_execution_hold": "NONE",
                 "phase_status_resumed_product_task": "COMPLETE",
-                "active_goal_marker": "PA-09-DESK-BOOT-HOTFIX",
-                "next_action_marker": "PA-09-DESK-BOOT-HOTFIX",
-                "controller_marker": "PA-09 exact production hotfix deployed and browser-verified; final exact-SHA ordinary CI and Level 3 required",
+                "active_goal_marker": "PA-10-ERP-AUTHORIZATION-HOTFIX",
+                "next_action_marker": "PA-10-ERP-AUTHORIZATION-HOTFIX",
+                "controller_marker": "PA-10 ERP authorization ownership hotfix",
             },
         )
         for invariant in (
-            "FRAPPE_DESK_REMAINS_ADMINISTRATION_AND_SUPPORT_ONLY",
-            "NPI_REACT_BFF_TRANSLATION_CATALOGS_AND_PLACEHOLDERS_REMAIN_UNCHANGED",
-            "SUPPORTED_EXTEND_BOOTINFO_HOOK_ONLY_NO_FRAPPE_CORE_PATCH",
-            "FILTER_ONLY_DOUBLE_CURLY_MESSAGES_FROM_DESK_BOOT",
-            "NO_SCHEMA_PERMISSION_AUTHENTICATION_OR_ERP_INTEGRATION_CHANGE",
-            "PRODUCTION_DEPLOYMENT_REMAINS_INCREMENTAL_AND_BACKED_UP",
-            "EXACT_SHA_ORDINARY_CI_BEFORE_DEPLOYMENT_AND_LEVEL_3_RELEASE_GATE_REQUIRED",
+            "ERPNEXT_REMAINS_AUTHORIZATION_OWNER",
+            "ONLY_EXPLICITLY_MAPPED_ROLES_AND_SCOPES_ARE_PROJECTED",
+            "BUILT_IN_AND_TRANSPORT_SERVICE_IDENTITIES_REMAIN_PROTECTED",
+            "UNKNOWN_DISABLED_EXPIRED_OR_UNMAPPED_PRINCIPALS_FAIL_CLOSED",
+            "AUTHORIZATION_ENFORCEMENT_REMAINS_DISABLED_DURING_PARTIAL_MAPPING",
+            "EXACT_IMMUTABLE_DEPLOYMENT_REQUIRES_ENCRYPTED_BACKUP_AND_ROLLBACK",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "apps/npi_core/npi_core/hooks.py",
-                "implementation/evidence/production-activation/pa-09-frappe-desk-boot-hotfix.md",
-                "tests/test_frappe_desk_boot.py",
+                "apps/npi_integration/npi_integration/authorization_projection/frappe_repository.py",
+                "implementation/evidence/erpnext-test/authorization-sync-hotfix-0.5.1.md",
+                "tests/test_phase9_authorization_projection_repository.py",
                 "tests/test_current_task_verifier.py",
             }.issubset(set(value["allowed_paths"]))
         )

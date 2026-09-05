@@ -1,6 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-09-04T23:02:36+07:00`
+Updated: `2026-09-05T22:19:46+07:00`
+
+- Active integration hotfix: `PA-10-ERP-AUTHORIZATION-HOTFIX — IN_PROGRESS_DEPLOYMENT`.
+- Repair the live ERPNext-test user projection failures without deleting valid
+  Unicode roles or making LaunchFlow a second editable permission master.
+- The sender emits only explicitly mapped roles. LaunchFlow may adopt an
+  existing canonical internal User while still protecting its built-in and
+  transport-service identities. Authorization enforcement remains disabled
+  until the complete role and Project mapping is approved and delivered.
+- Controller marker: `PA-10-ERP-AUTHORIZATION-HOTFIX`.
 
 - Active production hotfix: `PA-09-DESK-BOOT-HOTFIX — IMPLEMENTATION_COMPLETE`.
 - Exact repair `788ea1e1d9e13ebd3a91a382932fdce34347adad` passes ordinary CI

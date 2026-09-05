@@ -1,18 +1,28 @@
 version: '1.2'
-overall_status: IMPLEMENTATION_COMPLETE
-technical_implementation_complete: true
+overall_status: IN_PROGRESS
+technical_implementation_complete: false
 production_ready: false
 current_phase: 9
-updated_at: '2026-09-04T23:02:36+07:00'
+updated_at: '2026-09-05T22:19:46+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: PA-09-DESK-BOOT-HOTFIX
-current_task_status: IMPLEMENTATION_COMPLETE
-current_task_completed_stage: EXACT_PRODUCTION_DEPLOYMENT_AND_BROWSER_VERIFICATION
-current_task_next_stage: COMPLETE
-current_task_next_stage_status: COMPLETE
+current_task: PA-10-ERP-AUTHORIZATION-HOTFIX
+current_task_status: IN_PROGRESS_DEPLOYMENT
+current_task_completed_stage: LOCAL_LEVEL_2_AND_ERPNEXT_TEST_SENDER_DEPLOYMENT
+current_task_next_stage: EXACT_LAUNCHFLOW_DEPLOYMENT_AND_LIVE_RETRY
+current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: COMPLETE
 resumed_product_task_status: COMPLETE
+erp_authorization_hotfix:
+  task_id: PA-10-ERP-AUTHORIZATION-HOTFIX
+  source_environment: ERPNEXT_TEST_ONLY
+  production_erpnext_contact: false
+  root_1: VALID_UNICODE_ERPNEXT_ROLE_REJECTED_BEFORE_MAPPING
+  root_2: EXISTING_INTERNAL_SYSTEM_MANAGER_REJECTED_DESPITE_ERPNEXT_AUTHORIZATION_OWNERSHIP
+  root_3: ABSENT_DISABLED_PROJECTION_TARGET_MODELED_AS_REQUIRED_USER_LINK
+  sender_version: 0.5.1
+  authorization_enforcement: DISABLED
+  status: IN_PROGRESS_DEPLOYMENT
 production_activation:
   task_id: PA-08-DEPLOYMENT
   deployment_sha: 003597014d18cc35d74caf695e8f201e52f1306a

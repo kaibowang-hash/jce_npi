@@ -412,7 +412,6 @@ def _require_managed_local_user(user: Any, target_user_id: str) -> None:
         str(getattr(user, "name", "")) != target_user_id
         or str(getattr(user, "email", "")) != target_user_id
         or str(getattr(user, "user_type", "")) != "System User"
-        or "System Manager" in set(frappe.get_roles(target_user_id) or ())
     ):
         raise PermissionDenied()
 
