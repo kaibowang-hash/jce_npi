@@ -20,3 +20,9 @@ disabled projection remains durable and auditable.
 Production ERPNext is not contacted. Authorization enforcement remains off.
 Project, Customer, Supplier and Item Group synchronization are not part of this
 hotfix and no mapping is guessed.
+
+The first exact-SHA Level 3 run identified only two unregistered synthetic
+credential fingerprints from the predecessor Item adapter test. Both are fixed
+test values bound to `.invalid` configuration; their exact historical
+fingerprints are added to the existing reviewed allowlist before the unchanged
+gate is repeated.

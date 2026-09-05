@@ -96,6 +96,14 @@ REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
             "bfa9c9bb4fa70d0c66938b940b286c7f9bbb3d47:"
             "frontend/tests/unit/item-publish-data-source.test.ts:generic-api-key:26"
         ),
+        (
+            "0430d0a64afa17cd103f95dfb2bb44c24b1c15e5:"
+            "tests/test_erpnext_item_sandbox_adapter.py:generic-api-key:217"
+        ),
+        (
+            "0430d0a64afa17cd103f95dfb2bb44c24b1c15e5:"
+            "tests/test_erpnext_item_sandbox_adapter.py:generic-api-key:226"
+        ),
     }
 )
 
