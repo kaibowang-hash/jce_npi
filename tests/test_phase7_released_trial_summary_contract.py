@@ -126,7 +126,8 @@ class Phase7ReleasedTrialSummaryContractTest(unittest.TestCase):
             "conflict: CLOSED_SERVER_DERIVED_NO_TRUNCATION",
             "conflict: EXACT_RETAINED_REVISION_ONLY",
             "conflict: NOT_INSTALLED_BY_P7_07",
-            "conflict: UNAVAILABLE_UNDER_DR_REC_009",
+            "conflict: IMMUTABLE_REVISION_IDEMPOTENT_SIGNED_RECEIPT",
+            "conflict: TARGET_IDEMPOTENCY_KEY_AND_SOURCE_HASH_MUST_MATCH",
             "conflict: NO_AUTOMATIC_MUTATION_OR_AUTHORITY",
         ):
             self.assertIn(boundary, OWNERSHIP)
