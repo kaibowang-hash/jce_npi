@@ -4,6 +4,7 @@ import importlib
 import sys
 import types
 import unittest
+from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
@@ -115,6 +116,21 @@ class ERPNextMasterDataWorkerTest(unittest.TestCase):
         self.assertTrue(
             all(call[1]["enqueue_after_commit"] for call in self.enqueued)
         )
+
+    def test_display_names_normalize_erp_edge_spaces_without_changing_keys(self) -> None:
+        repository = sys.modules["npi_erpnext_connector.master_data_repository"]
+        record = repository._record(
+            repository.MasterCatalogKind.CUSTOMER,
+            {
+                "name": "CUSTOMER-001",
+                "customer_name": " Customer\nname ",
+                "disabled": 0,
+                "customer_group": "Primary",
+                "modified": datetime(2026, 9, 6, 2, 0),
+            },
+        )
+        self.assertEqual(record["sourceKey"], "CUSTOMER-001")
+        self.assertEqual(record["displayName"], "Customer name")
 
 
 if __name__ == "__main__":

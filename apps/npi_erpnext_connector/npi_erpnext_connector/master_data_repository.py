@@ -147,7 +147,9 @@ def _record(kind: MasterCatalogKind, row: object) -> dict[str, object]:
     if kind is MasterCatalogKind.CUSTOMER:
         return {
             "sourceKey": source_key,
-            "displayName": _text(row.get("customer_name") or source_key, "Customer name"),
+            "displayName": _display_text(
+                row.get("customer_name") or source_key, "Customer name"
+            ),
             "enabled": not bool(row.get("disabled")),
             "groupKey": _optional_text(row.get("customer_group")),
             "sourceModifiedAt": modified,
@@ -155,7 +157,9 @@ def _record(kind: MasterCatalogKind, row: object) -> dict[str, object]:
     if kind is MasterCatalogKind.SUPPLIER:
         return {
             "sourceKey": source_key,
-            "displayName": _text(row.get("supplier_name") or source_key, "Supplier name"),
+            "displayName": _display_text(
+                row.get("supplier_name") or source_key, "Supplier name"
+            ),
             "enabled": not bool(row.get("disabled")),
             "groupKey": _optional_text(row.get("supplier_group")),
             "sourceModifiedAt": modified,
@@ -163,7 +167,9 @@ def _record(kind: MasterCatalogKind, row: object) -> dict[str, object]:
     if kind is MasterCatalogKind.ITEM_GROUP:
         return {
             "sourceKey": source_key,
-            "displayName": _text(row.get("item_group_name") or source_key, "Item Group name"),
+            "displayName": _display_text(
+                row.get("item_group_name") or source_key, "Item Group name"
+            ),
             "enabled": True,
             "parentKey": _optional_text(row.get("parent_item_group")),
             "isGroup": bool(row.get("is_group")),
@@ -171,7 +177,7 @@ def _record(kind: MasterCatalogKind, row: object) -> dict[str, object]:
         }
     return {
         "sourceKey": source_key,
-        "displayName": _text(row.get("item_name") or source_key, "Item name"),
+        "displayName": _display_text(row.get("item_name") or source_key, "Item name"),
         "enabled": not bool(row.get("disabled")),
         "groupKey": _text(row.get("item_group"), "Item Group"),
         "stockUom": _text(row.get("stock_uom"), "Stock UOM"),
@@ -253,6 +259,15 @@ def _text(value: object, label: str) -> str:
     ):
         raise MasterDataSenderError(f"{label} is invalid.")
     return value
+
+
+def _display_text(value: object, label: str) -> str:
+    if isinstance(value, str):
+        value = "".join(
+            " " if ord(character) < 32 or ord(character) == 127 else character
+            for character in value
+        ).strip(" ")
+    return _text(value, label)
 
 
 def _optional_text(value: object) -> str | None:
