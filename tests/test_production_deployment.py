@@ -144,6 +144,10 @@ class ProductionDeploymentTests(unittest.TestCase):
         self.assertIn("ARG VITE_DEPLOYMENT_ENV", containerfile)
         self.assertIn('--build-arg "VITE_DEPLOYMENT_ENV=production"', build_script)
 
+    def test_production_images_target_the_server_architecture(self) -> None:
+        build_script = (DEPLOY / "scripts" / "build-release.sh").read_text(encoding="utf-8")
+        self.assertEqual(build_script.count("--platform linux/amd64"), 2)
+
     def test_production_init_excludes_development_and_real_erp_activation(self) -> None:
         init_script = (DEPLOY / "scripts" / "init-site.sh").read_text(encoding="utf-8")
         self.assertIn("install-app npi_core", init_script)

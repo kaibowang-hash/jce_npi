@@ -14,12 +14,14 @@ if [[ ! "${release_sha}" =~ ^[0-9a-f]{40}$ ]]; then
 fi
 
 docker build \
+  --platform linux/amd64 \
   --file deploy/production/Containerfile \
   --target backend \
   --build-arg "RELEASE_SHA=${release_sha}" \
   --tag "launchflow-npi:${release_sha}" \
   .
 docker build \
+  --platform linux/amd64 \
   --file deploy/production/Containerfile \
   --target spa \
   --build-arg "RELEASE_SHA=${release_sha}" \
