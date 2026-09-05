@@ -168,6 +168,29 @@ _PROJECT_FORMAL_QUALITY_LINK_COMMAND_ROUTE = re.compile(
 _PROJECT_INTEGRATION_OPERATIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/integration-operations$"
 )
+_PROJECT_TRIAL_SUMMARY_DELIVERIES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-summary-deliveries$"
+)
+_PROJECT_TRIAL_SUMMARY_DELIVERY_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-summary-deliveries/"
+    r"(?P<delivery_id>[^/:]+)$"
+)
+_PROJECT_TRIAL_SUMMARY_DELIVERY_COMMAND_ROUTES = (
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/"
+            r"trial-summary-deliveries/(?P<delivery_id>[^/:]+):retry$"
+        ),
+        "npi_integration.trial_summary_publish.api.retry_delivery",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/"
+            r"trial-summary-deliveries/(?P<delivery_id>[^/:]+):request-reconciliation$"
+        ),
+        "npi_integration.trial_summary_publish.api.request_reconciliation",
+    ),
+)
 _PROJECT_INTEGRATION_OPERATION_DLQ_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/integration-operations/dlq$"
 )
@@ -1016,6 +1039,22 @@ def route_request() -> None:
         if match is not None:
             command = "npi_integration.projection_api.get_erp_projections"
             route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        for route, candidate in (
+            (
+                _PROJECT_TRIAL_SUMMARY_DELIVERIES_ROUTE,
+                "npi_integration.trial_summary_publish.api.list_deliveries",
+            ),
+            (
+                _PROJECT_TRIAL_SUMMARY_DELIVERY_ROUTE,
+                "npi_integration.trial_summary_publish.api.get_delivery",
+            ),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "GET":
         for route, candidate in (
             (
@@ -1882,6 +1921,13 @@ def route_request() -> None:
                 break
     if command is None and request.method == "POST":
         for route, candidate in _PROJECT_WORK_COMMAND_ROUTES:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "POST":
+        for route, candidate in _PROJECT_TRIAL_SUMMARY_DELIVERY_COMMAND_ROUTES:
             match = route.fullmatch(path)
             if match is not None:
                 command = candidate

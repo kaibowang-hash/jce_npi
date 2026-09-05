@@ -17,6 +17,8 @@ _CONNECTOR_DOCTYPES = (
     "npi_erp_tool_asset_operation_receipt",
     "npi_erp_project_delivery",
     "npi_erp_project_mapping",
+    "npi_erp_trial_summary",
+    "npi_erp_trial_summary_fact",
 )
 
 

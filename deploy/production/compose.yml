@@ -184,9 +184,11 @@ services:
       - -euc
       - |
         export NPI_ITEM_PUBLISH_SANDBOX_SECRETS="$(</run/secrets/npi_item_publish_sandbox_secrets)"
+        export NPI_TRIAL_SUMMARY_ERP_SANDBOX_SECRETS="$(</run/secrets/npi_trial_summary_erp_sandbox_secrets)"
         exec setpriv --reuid=1000 --regid=1000 --clear-groups bench worker --queue short,default
     secrets:
       - npi_item_publish_sandbox_secrets
+      - npi_trial_summary_erp_sandbox_secrets
     mem_limit: 768m
     pids_limit: 384
 
@@ -221,6 +223,8 @@ secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/administrator_password
   npi_item_publish_sandbox_secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_item_publish_sandbox_secrets
+  npi_trial_summary_erp_sandbox_secrets:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_trial_summary_erp_sandbox_secrets
   npi_erp_project_ingress_secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_erp_project_ingress_secrets
 

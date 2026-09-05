@@ -99,7 +99,7 @@ class ProductionActivationERPAuthorizationSenderMetadataTest(unittest.TestCase):
         validation = (APP / "frappe_validation.py").read_text(encoding="utf-8")
         repository = (APP / "frappe_repository.py").read_text(encoding="utf-8")
         worker = (APP / "worker.py").read_text(encoding="utf-8")
-        self.assertEqual(validation.count("ignore_permissions=True"), 16)
+        self.assertEqual(validation.count("ignore_permissions=True"), 17)
         self.assertNotIn("ignore_permissions", repository)
         self.assertNotIn("ignore_permissions", worker)
         tree = ast.parse(validation)
@@ -117,6 +117,10 @@ class ProductionActivationERPAuthorizationSenderMetadataTest(unittest.TestCase):
             "save_tool_asset_support_document",
         ):
             self.assertIn("_authorize_tool_asset_", ast.unparse(functions[function]))
+        self.assertIn(
+            "_authorize_trial_summary_support",
+            ast.unparse(functions["insert_trial_summary_support_document"]),
+        )
 
     def test_visible_strings_have_symmetric_direct_chinese_translations(self) -> None:
         doctype_directories = (

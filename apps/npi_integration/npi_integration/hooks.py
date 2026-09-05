@@ -28,7 +28,20 @@ scheduler_events = {
         "npi_integration.mbom_publish.worker.recover_mbom_publish_outbox_messages",
         "npi_integration.tool_asset_request.worker.recover_tool_asset_outbox_messages",
         "npi_integration.engineering_change.worker.recover_engineering_change_work",
+        "npi_integration.trial_summary_publish.worker.recover_trial_summary_deliveries",
     ]
+}
+
+# Every immutable technical summary gets an Outbox row in the same transaction.
+# The hook never contacts ERPNext; the background worker remains inert until an
+# exact non-production Sandbox profile and credential reference are configured.
+doc_events = {
+    "NPI Released Trial Summary Revision": {
+        "after_insert": (
+            "npi_integration.trial_summary_publish.service."
+            "queue_released_trial_summary"
+        )
+    }
 }
 
 # These resolvers are inert unless the fixed disposable-runtime marker and

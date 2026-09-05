@@ -48,6 +48,14 @@ class ProductionDeploymentTests(unittest.TestCase):
             "exec setpriv --reuid=1000 --regid=1000 --clear-groups bench worker",
             queue_short.group("body"),
         )
+        self.assertIn(
+            "NPI_ITEM_PUBLISH_SANDBOX_SECRETS=",
+            queue_short.group("body"),
+        )
+        self.assertIn(
+            "NPI_TRIAL_SUMMARY_ERP_SANDBOX_SECRETS=",
+            queue_short.group("body"),
+        )
         backend = re.search(
             r"^  backend:\n(?P<body>.*?)(?=^  [a-z][a-z0-9-]*:\n|^secrets:\n)",
             compose,
@@ -63,6 +71,12 @@ class ProductionDeploymentTests(unittest.TestCase):
             "exec setpriv --reuid=1000 --regid=1000 --clear-groups "
             "/usr/local/bin/start-gunicorn.sh",
             backend.group("body"),
+        )
+        self.assertIn(
+            "  npi_trial_summary_erp_sandbox_secrets:\n"
+            "    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/"
+            "npi_trial_summary_erp_sandbox_secrets\n",
+            compose,
         )
         self.assertIn(
             "  npi_erp_project_ingress_secrets:\n"

@@ -952,6 +952,104 @@ paths:
       <<: *integration-reconciliation-action
       operationId: requestToolAssetUpdateIntegrationOperationReconciliation
 
+  /projects/{projectId}/trial-summary-deliveries:
+    get:
+      tags: [Projects, Integration, Trials]
+      operationId: getTrialSummaryDeliveries
+      description: >-
+        Lists the bounded delivery state of immutable Released Trial Summary
+        revisions sent to the ERPNext read-only engineering-evidence projection.
+        This route does not expose credentials, endpoint URLs, request bodies or
+        provider response bodies.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - { in: query, name: trialRoundGlobalId, required: false, schema: { type: string, format: uuid } }
+        - { in: query, name: state, required: false, schema: { $ref: "#/components/schemas/TrialSummaryDeliveryState" } }
+        - { in: query, name: start, required: false, schema: { type: integer, minimum: 0, default: 0 } }
+        - { in: query, name: limit, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        "200":
+          description: Trial Summary delivery collection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TrialSummaryDeliveryCollection" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-summary-deliveries/{deliveryId}:
+    get:
+      tags: [Projects, Integration, Trials]
+      operationId: getTrialSummaryDelivery
+      description: Returns one delivery with bounded append-only attempt evidence.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialSummaryDeliveryId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Trial Summary delivery detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TrialSummaryDeliveryDetail" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-summary-deliveries/{deliveryId}:retry:
+    post:
+      tags: [Projects, Integration, Trials]
+      operationId: retryTrialSummaryDelivery
+      description: >-
+        Requeues a failed delivery. Uncertain deliveries are rejected and must
+        use receipt reconciliation first.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialSummaryDeliveryId"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          description: Delivery requeued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TrialSummaryDeliveryAction" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-summary-deliveries/{deliveryId}:request-reconciliation:
+    post:
+      tags: [Projects, Integration, Trials]
+      operationId: reconcileTrialSummaryDelivery
+      description: >-
+        Queues a signed target receipt lookup for an uncertain delivery. A
+        verified absent receipt permits redispatch; a matching receipt seals
+        success; a conflict fails closed.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialSummaryDeliveryId"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          description: Reconciliation queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TrialSummaryDeliveryAction" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/erp-projections:
     get:
       tags: [Projects, Execution]
@@ -8052,6 +8150,12 @@ components:
       name: integrationOperationId
       required: true
       description: Exact owning Inbox or request global identifier within the authorized Project.
+      schema: { type: string, format: uuid }
+    TrialSummaryDeliveryId:
+      in: path
+      name: deliveryId
+      required: true
+      description: Immutable ERPNext projection delivery global identifier within the authorized Project.
       schema: { type: string, format: uuid }
     TrialRoundId:
       in: path
@@ -25253,6 +25357,85 @@ components:
           type: array
           maxItems: 50
           items: { $ref: "#/components/schemas/RetentionArchiveRecord" }
+    TrialSummaryDeliveryState:
+      type: string
+      enum: [pending, processing, succeeded, failed_retryable, failed_final, uncertain]
+    TrialSummaryDelivery:
+      type: object
+      additionalProperties: false
+      required: [globalId, projectGlobalId, trialRoundGlobalId, summaryRevisionGlobalId, summaryVersion, state, attemptCount, createdAt, updatedAt]
+      properties:
+        globalId: { type: string, format: uuid }
+        eventType: { type: [string, "null"] }
+        tenantId: { type: [string, "null"] }
+        projectGlobalId: { type: string, format: uuid }
+        trialPlanGlobalId: { type: [string, "null"], format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        summaryGlobalId: { type: [string, "null"], format: uuid }
+        summaryRevisionGlobalId: { type: string, format: uuid }
+        summaryVersion: { type: integer, minimum: 1 }
+        sourceHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        sourceSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        targetIdempotencyKeyHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        actorUserId: { type: [string, "null"] }
+        traceId: { type: [string, "null"] }
+        state: { $ref: "#/components/schemas/TrialSummaryDeliveryState" }
+        attemptCount: { type: integer, minimum: 0, maximum: 100 }
+        profileId: { type: [string, "null"] }
+        profileVersion: { type: [integer, "null"], minimum: 1 }
+        profileSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        environmentCode: { type: [string, "null"] }
+        serviceActorUserId: { type: [string, "null"] }
+        projectionId: { type: [string, "null"] }
+        factCount: { type: [integer, "null"], minimum: 0, maximum: 25000 }
+        responseHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        lastHttpStatus: { type: [integer, "null"], minimum: 100, maximum: 599 }
+        lastErrorCode: { type: [string, "null"] }
+        nextRetryAt: { type: [string, "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    TrialSummaryDeliveryAttempt:
+      type: object
+      additionalProperties: false
+      required: [globalId, attemptNumber, attemptKind, state, adapterBoundaryCrossed, responseAuthenticated, responseContractValid, traceId, startedAt]
+      properties:
+        globalId: { type: string, format: uuid }
+        attemptNumber: { type: integer, minimum: 1, maximum: 100 }
+        attemptKind: { type: string, enum: [publish, reconcile] }
+        state: { type: string, enum: [started, succeeded, failed_retryable, failed_final, uncertain, reconciled_present, reconciled_absent] }
+        adapterBoundaryCrossed: { type: boolean }
+        responseAuthenticated: { type: boolean }
+        responseContractValid: { type: boolean }
+        httpStatus: { type: [integer, "null"], minimum: 100, maximum: 599 }
+        responseHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        errorCode: { type: [string, "null"] }
+        traceId: { type: string }
+        startedAt: { type: string, format: date-time }
+        completedAt: { type: [string, "null"], format: date-time }
+    TrialSummaryDeliveryCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, items, start, limit]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        items: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/TrialSummaryDelivery" } }
+        start: { type: integer, minimum: 0 }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+    TrialSummaryDeliveryDetail:
+      type: object
+      additionalProperties: false
+      required: [delivery, attempts]
+      properties:
+        delivery: { $ref: "#/components/schemas/TrialSummaryDelivery" }
+        attempts: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/TrialSummaryDeliveryAttempt" } }
+    TrialSummaryDeliveryAction:
+      type: object
+      additionalProperties: false
+      required: [deliveryGlobalId, state]
+      properties:
+        deliveryGlobalId: { type: string, format: uuid }
+        state: { $ref: "#/components/schemas/TrialSummaryDeliveryState" }
+        reconciliationQueued: { type: boolean }
     ProblemDetails:
       type: object
       additionalProperties: false

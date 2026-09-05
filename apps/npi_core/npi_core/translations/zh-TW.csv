@@ -9367,4 +9367,67 @@ Required action,所需操作
 LaunchFlow Site environment,LaunchFlow 站點環境
 Set the exact LaunchFlow Site environment before go-live.,上線前設定準確的 LaunchFlow 站點環境。
 The Project source receipt was not found.,找不到專案來源回執。
-Enter a valid receipt ID.,請輸入有效的回執 ID。
+Enter a valid receipt ID.,請輸入有效的回執識別碼。
+Delivery Global ID,投遞全域識別碼
+Trial Summary Global ID,試模摘要全域識別碼
+Trial Summary Revision Global ID,試模摘要修訂全域識別碼
+Trial Summary Delivery Claim Token,試模摘要投遞領取權杖
+Last Trial Summary Delivery Attempt,最後一次試模摘要投遞嘗試
+Trial Summary delivery source fields are immutable.,試模摘要投遞來源欄位不可變。
+The Trial Summary execution route is immutable after binding.,試模摘要執行路由綁定後不可變。
+The Trial Summary delivery transition is invalid.,試模摘要投遞狀態轉換無效。
+The Trial Summary delivery type or state is invalid.,試模摘要投遞類型或狀態無效。
+Trial Summary Version is invalid.,試模摘要版本無效。
+Trial Summary Delivery Attempt Count is invalid.,試模摘要投遞嘗試次數無效。
+Trial Summary Delivery Source Hash,試模摘要投遞來源雜湊
+The exact Trial Summary delivery source is invalid.,精確試模摘要投遞來源無效。
+The Trial Summary delivery source binding is invalid.,試模摘要投遞來源綁定無效。
+Trial Summary Execution Profile Snapshot Hash is invalid.,試模摘要執行設定快照雜湊無效。
+ERPNext Trial Summary Response Hash is invalid.,ERPNext 試模摘要回應雜湊無效。
+Attempt Global ID,嘗試全域識別碼
+Trial Summary Delivery,試模摘要投遞
+Trial Summary attempt identity is immutable.,試模摘要嘗試識別不可變。
+The Trial Summary attempt transition is invalid.,試模摘要嘗試狀態轉換無效。
+A Trial Summary attempt must start before it is completed.,試模摘要嘗試必須先開始才能完成。
+Trial Summary Attempt Kind is invalid.,試模摘要嘗試類型無效。
+Attempt Number is invalid.,嘗試序號無效。
+Attempt Key Hash is invalid.,嘗試鍵雜湊無效。
+The Trial Summary attempt key is invalid.,試模摘要嘗試鍵無效。
+Response Hash is invalid.,回應雜湊無效。
+Trial Summary Delivery State is invalid.,試模摘要投遞狀態無效。
+Trial Summary attempts exceed the safe bound.,試模摘要嘗試超過安全上限。
+Only a failed Trial Summary delivery can be retried.,只能重試失敗的試模摘要投遞。
+The Trial Summary delivery attempt limit was reached.,已達到試模摘要投遞嘗試次數上限。
+Only an uncertain Trial Summary delivery can be reconciled.,只能對不確定的試模摘要投遞執行對帳。
+Global ID is invalid.,全域識別碼無效。
+The query page is invalid.,查詢分頁無效。
+Trial Summary deliveries can only be changed by the controlled integration service.,試模摘要投遞只能由受控整合服務變更。
+Trial Summary delivery history cannot be deleted.,不能刪除試模摘要投遞歷史。
+NPI Trial Summary Delivery,NPI 試模摘要投遞
+Trial Summary Delivery Event Type,試模摘要投遞事件類型
+Trial Summary Version,試模摘要版本
+Exact Trial Summary Delivery Source,精確試模摘要投遞來源
+Source Actor User ID,來源操作使用者識別碼
+Trial Summary Delivery State,試模摘要投遞狀態
+Trial Summary Delivery Attempt Count,試模摘要投遞嘗試次數
+Trial Summary Delivery Claimed At,試模摘要投遞領取時間
+Trial Summary Delivery Lease Expires At,試模摘要投遞租約到期時間
+Trial Summary Adapter Boundary Crossed,已越過試模摘要配接器邊界
+Trial Summary Execution Profile ID,試模摘要執行設定識別碼
+Trial Summary Execution Profile Version,試模摘要執行設定版本
+Trial Summary Execution Profile Snapshot Hash,試模摘要執行設定快照雜湊
+ERPNext Trial Summary Projection ID,ERPNext 試模摘要投影識別碼
+ERPNext Trial Summary Fact Count,ERPNext 試模摘要事實數量
+ERPNext Trial Summary Response Hash,ERPNext 試模摘要回應雜湊
+Last HTTP Status,最後請求狀態
+Next Retry At,下次重試時間
+NPI Trial Summary Delivery Attempt,NPI 試模摘要投遞嘗試
+Attempt Key Hash,嘗試鍵雜湊
+Trial Summary Attempt Kind,試模摘要嘗試類型
+publish,發佈
+reconcile,對帳
+Trial Summary Attempt State,試模摘要嘗試狀態
+reconciled_present,對帳確認存在
+reconciled_absent,對帳確認不存在
+HTTP Status,請求狀態
+Error Code,錯誤代碼

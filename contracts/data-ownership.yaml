@@ -886,15 +886,24 @@ objects:
 
   ReleasedTrialSummaryRevision:
     owner_system: NPI_ONE
-    erp_view: future_read_only_projection
+    erp_view: immutable_read_only_projection
     fields:
       exact_summary_stream_revision_predecessor_project_plan_round_and_decided_conclusion: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_EXACT_CURRENT_TIP}
       complete_trial_source_manifest_and_immutable_snapshot: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_IDENTITIES_VERSIONS_AND_HASHES_WIN}
       localized_neutral_url_free_presentation_and_structural_redaction: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: CLOSED_SERVER_DERIVED_NO_TRUNCATION}
       controlled_print_source_projection: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_ADAPTER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_RETAINED_REVISION_ONLY}
       production_form_mapping_signer_retention_browser_print_and_copy_policy: {owner: FUTURE_APPROVED_CONTROLLED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_P7_07}
-      external_event_payload_consumer_redaction_delivery_projection_and_receipt: {owner: FUTURE_PHASE_8_INTEGRATION_CONTRACT, editable_in: [], direction: NONE, conflict: UNAVAILABLE_UNDER_DR_REC_009}
+      external_event_payload_consumer_redaction_delivery_projection_and_receipt: {owner: NPI_ONE_TRIAL_SUMMARY_DELIVERY, editable_in: [], direction: NPI_ONE_TO_ERPNEXT, conflict: IMMUTABLE_REVISION_IDEMPOTENT_SIGNED_RECEIPT}
       customer_approval_formal_signature_production_acceptance_g7_gate_project_work_item_tooling_and_erp_effect: {owner: FUTURE_SEPARATELY_APPROVED_AUTHORITIES, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_OR_AUTHORITY}
+
+  ERPTrialSummaryProjection:
+    owner_system: NPI_ONE
+    erp_view: immutable_read_only_projection
+    fields:
+      exact_summary_revision_project_plan_round_conclusion_and_hashes: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_COMMAND, editable_in: [], direction: NPI_ONE_TO_ERPNEXT, conflict: SOURCE_REVISION_AND_HASHES_WIN}
+      flattened_parameter_cavity_defect_action_verification_comparison_reference_and_blocker_facts: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NPI_ONE_TO_ERPNEXT, conflict: EXACT_PRESENTATION_PROJECTION_WINS}
+      receipt_delivery_state_attempt_and_reconciliation_evidence: {owner: NPI_ONE_TRIAL_SUMMARY_DELIVERY_AND_ERPNEXT_CONNECTOR, editable_in: [], direction: SIGNED_OPERATION_RESULT, conflict: TARGET_IDEMPOTENCY_KEY_AND_SOURCE_HASH_MUST_MATCH}
+      formal_quality_inspection_ncr_capa_production_acceptance_and_gate_decision: {owner: ERPNEXT_OR_FUTURE_APPROVED_AUTHORITY, editable_in: [], direction: NONE, conflict: NEVER_INFERRED_FROM_NPI_PROJECTION}
 
   NpiReadinessTemplate:
     owner_system: NPI_ONE

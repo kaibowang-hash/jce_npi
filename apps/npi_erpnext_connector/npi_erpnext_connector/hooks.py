@@ -18,6 +18,8 @@ fixtures = [
                     "NPI ERP Integration Service",
                     "NPI ERP MBOM Integration Service",
                     "NPI ERP Tool Asset Integration Service",
+                    "NPI ERP Trial Summary Integration Service",
+                    "NPI ERP Trial Summary Viewer",
                 ],
             ]
         ],
