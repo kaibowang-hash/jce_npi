@@ -37,6 +37,17 @@ class ProductionDeploymentTests(unittest.TestCase):
             "      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/mariadb_root_password\n",
             compose,
         )
+        queue_short = re.search(
+            r"^  queue-short:\n(?P<body>.*?)(?=^  [a-z][a-z0-9-]*:\n|^secrets:\n)",
+            compose,
+            re.MULTILINE | re.DOTALL,
+        )
+        self.assertIsNotNone(queue_short)
+        self.assertIn('    user: "0:0"\n', queue_short.group("body"))
+        self.assertIn(
+            "exec setpriv --reuid=1000 --regid=1000 --clear-groups bench worker",
+            queue_short.group("body"),
+        )
         for service_name in ("db", "redis-cache", "redis-queue"):
             block = re.search(
                 rf"^  {re.escape(service_name)}:\n(?P<body>.*?)(?=^  [a-z][a-z0-9-]*:\n|^secrets:\n)",

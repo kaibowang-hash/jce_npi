@@ -169,12 +169,13 @@ services:
 
   queue-short:
     <<: [*frappe-image, *frappe-dependencies]
+    user: "0:0"
     command:
       - bash
       - -euc
       - |
         export NPI_ITEM_PUBLISH_SANDBOX_SECRETS="$(</run/secrets/npi_item_publish_sandbox_secrets)"
-        exec bench worker --queue short,default
+        exec setpriv --reuid=1000 --regid=1000 --clear-groups bench worker --queue short,default
     secrets:
       - npi_item_publish_sandbox_secrets
     mem_limit: 768m
