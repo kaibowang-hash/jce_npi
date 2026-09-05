@@ -43,7 +43,11 @@ export default defineConfig({
     environment: "jsdom",
     include: ["tests/unit/**/*.{test,spec}.{ts,tsx}"],
     setupFiles: ["./tests/setup.ts"],
-    maxWorkers: 4,
+    // Keep the release-container gate deterministic on the small deployment
+    // host.  The DOM-heavy suites are fast in isolation but starve each other
+    // when Vitest starts several jsdom workers alongside the image build.
+    maxWorkers: 1,
+    fileParallelism: false,
     css: true,
     coverage: {
       provider: "v8",
