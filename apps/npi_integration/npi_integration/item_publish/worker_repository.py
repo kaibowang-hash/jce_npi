@@ -6,7 +6,6 @@ from typing import Any
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 import frappe
-
 from npi_core.documents.frappe_repository import _database_datetime, _json_object
 from npi_core.foundation.audit import create_audit_event
 
@@ -47,7 +46,6 @@ from .frappe_validation import (
     save_item_support_document,
     validate_item_service_actor,
 )
-
 
 CLAIM_LEASE_SECONDS = 300
 RECOVERY_BATCH_LIMIT = 100
@@ -236,7 +234,9 @@ def _require_guard_active_binding(
         != str(value.target_idempotency_key_hash)
         or str(_value(guard, "active_state")) not in allow_state
     ):
-        raise RuntimeError("Persisted Item source stream guard active binding is invalid.")
+        raise RuntimeError(
+            "Persisted Item source stream guard active binding is invalid."
+        )
 
 
 def _set_guard_active_state(
@@ -343,8 +343,7 @@ class FrappeItemPublishWorkerRepository:
         if value.service_actor_user_id != route.service_actor_user_id:
             raise RuntimeError("Item service actor binding changed before claim.")
         if (
-            state == "pending"
-            and value.state is not ItemPublishRequestState.QUEUED
+            state == "pending" and value.state is not ItemPublishRequestState.QUEUED
         ) or (
             state == "processing"
             and value.state is not ItemPublishRequestState.PROCESSING
@@ -362,9 +361,7 @@ class FrappeItemPublishWorkerRepository:
             expired_recovery = True
             previous_attempt = _required_attempt(outbox)
             _require_attempt_binding(previous_attempt, outbox, value)
-            recovered_after_boundary = bool(
-                _value(outbox, "adapter_boundary_crossed")
-            )
+            recovered_after_boundary = bool(_value(outbox, "adapter_boundary_crossed"))
             if recovered_after_boundary != bool(
                 _value(previous_attempt, "adapter_boundary_crossed")
             ):
@@ -415,9 +412,7 @@ class FrappeItemPublishWorkerRepository:
                 save_item_support_document(previous_attempt, capability=capability)
             outbox.state = "processing"
             outbox.disposition = (
-                "recover_uncertain"
-                if recovered_after_boundary
-                else "processing"
+                "recover_uncertain" if recovered_after_boundary else "processing"
             )
             outbox.claim_token = str(lease.token)
             outbox.claimed_at = _database_datetime(lease.claimed_at)
@@ -564,10 +559,14 @@ class FrappeItemPublishWorkerRepository:
         # only the active binding here would reject that late immutable result.
         observation = result.observation
         if profile is None:
-            if observation.authority is not ItemResultAuthority.NONE or observation.state in {
-                ItemPublishResultState.SYNTHETIC_VERIFIED,
-                ItemPublishResultState.SUCCEEDED,
-            }:
+            if (
+                observation.authority is not ItemResultAuthority.NONE
+                or observation.state
+                in {
+                    ItemPublishResultState.SYNTHETIC_VERIFIED,
+                    ItemPublishResultState.SUCCEEDED,
+                }
+            ):
                 raise RuntimeError(
                     "An Item adapter result without a profile cannot claim target truth."
                 )
@@ -575,8 +574,7 @@ class FrappeItemPublishWorkerRepository:
             self.require_execution_profile(claim, profile)
         if (
             observation.request_global_id != claim.request_global_id
-            or observation.attempt_global_id
-            != claim.command.attempt_global_id
+            or observation.attempt_global_id != claim.command.attempt_global_id
             or observation.attempt_number != claim.command.attempt_number
             or observation.idempotency_key_hash
             != claim.command.target_idempotency_key_hash
@@ -584,11 +582,15 @@ class FrappeItemPublishWorkerRepository:
         ):
             raise RuntimeError("Item adapter result binding is inconsistent.")
         boundary_crossed = bool(_value(outbox, "adapter_boundary_crossed"))
-        if observation.state in {
-            ItemPublishResultState.SYNTHETIC_VERIFIED,
-            ItemPublishResultState.SUCCEEDED,
-            ItemPublishResultState.UNCERTAIN_AFTER_TIMEOUT,
-        } and not boundary_crossed:
+        if (
+            observation.state
+            in {
+                ItemPublishResultState.SYNTHETIC_VERIFIED,
+                ItemPublishResultState.SUCCEEDED,
+                ItemPublishResultState.UNCERTAIN_AFTER_TIMEOUT,
+            }
+            and not boundary_crossed
+        ):
             raise RuntimeError("Item adapter result lacks a durable boundary.")
 
         current_row, current = _locked_current_mapping(value)
@@ -704,16 +706,12 @@ class FrappeItemPublishWorkerRepository:
                 save_item_support_document(request, capability=capability)
                 outbox.state = _outbox_state(observation.state)
                 outbox.disposition = (
-                    "mapping_conflict"
-                    if mapping_conflict
-                    else observation.state.value
+                    "mapping_conflict" if mapping_conflict else observation.state.value
                 )
                 outbox.result_global_id = str(result_id)
                 outbox.last_error_code = result.safe_error_code
                 outbox.last_error_at = (
-                    _database_datetime(completed_at)
-                    if result.safe_error_code
-                    else None
+                    _database_datetime(completed_at) if result.safe_error_code else None
                 )
                 save_item_support_document(outbox, capability=capability)
             _append_audit(
@@ -949,6 +947,7 @@ def _command(
         attempt_number=attempt_number,
         target_idempotency_key_hash=str(value.target_idempotency_key_hash),
         source_hash=value.source.source_hash,
+        actor_user_id=value.actor_user_id,
         source_snapshot=value.source.canonical_mapping(),
         intent=value.intent,
         expected_mapping_version=value.mapping_expectation.mapping_version,
@@ -956,7 +955,9 @@ def _command(
     )
 
 
-def _command_from_attempt(attempt: Any, value: ItemPublishRequest) -> ItemAdapterCommand:
+def _command_from_attempt(
+    attempt: Any, value: ItemPublishRequest
+) -> ItemAdapterCommand:
     snapshot = _json_object(attempt.request_snapshot)
     command = _command(
         value,
@@ -1198,14 +1199,11 @@ def _result_row_matches(
 ) -> bool:
     snapshot = _json_object(_value(row, "result_snapshot"))
     return bool(
-        str(_value(row, "global_id"))
-        == expected_snapshot["globalId"]
+        str(_value(row, "global_id")) == expected_snapshot["globalId"]
         and str(_value(row, "attempt_global_id"))
         == str(claim.command.attempt_global_id)
-        and str(_value(row, "request_global_id"))
-        == str(claim.request_global_id)
-        and str(_value(row, "outbox_event_id"))
-        == str(claim.outbox_event_id)
+        and str(_value(row, "request_global_id")) == str(claim.request_global_id)
+        and str(_value(row, "outbox_event_id")) == str(claim.outbox_event_id)
         and str(_value(row, "result_hash")) == expected_hash
         and snapshot == expected_snapshot
         and canonical_hash(snapshot) == str(_value(row, "result_hash"))

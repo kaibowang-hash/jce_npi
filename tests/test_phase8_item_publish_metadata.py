@@ -248,20 +248,23 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
             )
         self.assertEqual(set(catalogs["zh"]), set(catalogs["zh-TW"]))
 
-    def test_checkpoint_three_activates_only_closed_worker_and_synthetic_runtime(self) -> None:
-        combined = "\n".join(
-            path.read_text(encoding="utf-8")
+    def test_sandbox_connector_is_the_only_item_network_runtime(self) -> None:
+        sources = {
+            path.name: path.read_text(encoding="utf-8").casefold()
             for path in ITEM_ROOT.glob("*.py")
-        ).casefold()
+        }
+        connector = sources.pop("connector_runtime.py")
+        self.assertIn("session_factory = requests.session", connector)
+        combined = "\n".join(sources.values())
+        self.assertNotIn("requests" + ".", combined)
         for forbidden in (
-            "requests" + ".",
             "httpx" + ".",
             "urllib." + "request",
             "socket" + ".",
             "frappe.db" + ".sql",
             "adapter.call",
         ):
-            self.assertNotIn(forbidden, combined)
+            self.assertNotIn(forbidden, f"{combined}\n{connector}")
         repository = (ITEM_ROOT / "frappe_repository.py").read_text(
             encoding="utf-8"
         )

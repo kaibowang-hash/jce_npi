@@ -29,6 +29,13 @@ Required secret files:
 - `mariadb_root_password`
 - `administrator_password`
 - `backup_passphrase`
+- `npi_item_publish_sandbox_secrets` (a closed JSON object keyed by the
+  approved opaque Item connector secret reference; use `{}` while Item
+  Sandbox dispatch remains disabled)
+
+Only the short worker receives the Item connector secret. The Site
+configuration stores the non-secret HTTPS origin, exact hostname and
+tenant/Project/requester profile, never the API credential.
 
 The production Site is initialized only through `init-site.sh`. It refuses an
 existing Site without the production ownership marker, verifies the database

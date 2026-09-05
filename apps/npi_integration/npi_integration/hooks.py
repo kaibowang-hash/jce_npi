@@ -41,14 +41,15 @@ npi_inbound_project_secret_resolver = (
     "npi_integration.inbound_project.runtime_fixture.resolve_secret"
 )
 
-# P8-03 remains inert outside the explicit disposable runtime marker. The
-# registry contains only the network-free synthetic operation adapter; no
-# Sandbox or production endpoint, credential, method, or field mapping exists.
+# P8-03 remains inert outside either the explicit disposable marker or an exact
+# non-production Site profile. The connector runtime preserves the synthetic
+# proof and adds one closed, authenticated Item Sandbox operation. Credentials
+# are injected by opaque environment reference and never stored in Site config.
 npi_item_publish_profile_resolver = (
-    "npi_integration.item_publish.runtime_fixture.resolve_profile"
+    "npi_integration.item_publish.connector_runtime.resolve_profile"
 )
 npi_item_publish_adapter_registry = (
-    "npi_integration.item_publish.runtime_fixture.resolve_adapter_registry"
+    "npi_integration.item_publish.connector_runtime.resolve_adapter_registry"
 )
 
 # P8-04 is inert outside its explicit disposable marker. The only built-in

@@ -7,7 +7,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "apps/npi_integration"))
 
@@ -29,7 +28,6 @@ from npi_integration.item_publish.domain import (
     ItemTargetMode,
     canonical_hash,
 )
-
 
 NOW = datetime(2026, 8, 16, 15, 30, tzinfo=UTC)
 REQUEST_ID = UUID("00000000-0000-4000-8000-000000008351")
@@ -100,6 +98,7 @@ def command() -> ItemAdapterCommand:
         attempt_number=1,
         target_idempotency_key_hash="b" * 64,
         source_hash=source_hash,
+        actor_user_id="publisher@example.invalid",
         source_snapshot=source,
         intent=ItemPublishIntent.CREATE_ITEM,
         expected_mapping_version=0,
@@ -122,7 +121,9 @@ def response(**changes: object) -> ItemAdapterResponse:
 
 
 class Phase8ItemPublishAdapterTest(unittest.TestCase):
-    def test_registry_is_empty_by_default_and_resolves_only_exact_closed_tuple(self) -> None:
+    def test_registry_is_empty_by_default_and_resolves_only_exact_closed_tuple(
+        self,
+    ) -> None:
         synthetic = profile(ItemTargetMode.SYNTHETIC)
         adapter = lambda value: response()
         self.assertIsNone(ItemAdapterRegistry().resolve(synthetic))
@@ -157,7 +158,9 @@ class Phase8ItemPublishAdapterTest(unittest.TestCase):
                 )
             )
 
-    def test_synthetic_success_is_non_authoritative_without_formal_identity(self) -> None:
+    def test_synthetic_success_is_non_authoritative_without_formal_identity(
+        self,
+    ) -> None:
         value = classify_item_adapter_response(
             profile=profile(ItemTargetMode.SYNTHETIC),
             command=command(),
@@ -173,7 +176,9 @@ class Phase8ItemPublishAdapterTest(unittest.TestCase):
         self.assertIsNone(value.observation.target_version)
         self.assertFalse(value.reconciliation_required)
 
-    def test_authoritative_sandbox_success_requires_exact_authenticated_binding(self) -> None:
+    def test_authoritative_sandbox_success_requires_exact_authenticated_binding(
+        self,
+    ) -> None:
         sandbox = profile(ItemTargetMode.SANDBOX)
         success = classify_item_adapter_response(
             profile=sandbox,
@@ -201,7 +206,9 @@ class Phase8ItemPublishAdapterTest(unittest.TestCase):
             ),
             observed_at=NOW,
         )
-        self.assertEqual(mismatch.observation.state, ItemPublishResultState.FAILED_FINAL)
+        self.assertEqual(
+            mismatch.observation.state, ItemPublishResultState.FAILED_FINAL
+        )
         self.assertEqual(
             mismatch.observation.fault_kind,
             ItemFaultKind.RESPONSE_CONTRACT_INVALID,
@@ -249,7 +256,9 @@ class Phase8ItemPublishAdapterTest(unittest.TestCase):
                 self.assertEqual(value.observation.fault_kind, fault)
                 self.assertIsNone(value.observation.formal_item_code)
 
-    def test_timeout_after_boundary_is_uncertain_and_never_redispatch_truth(self) -> None:
+    def test_timeout_after_boundary_is_uncertain_and_never_redispatch_truth(
+        self,
+    ) -> None:
         value = uncertain_item_adapter_result(
             command=command(),
             observed_at=NOW,

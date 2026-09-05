@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
@@ -19,8 +20,8 @@ from .domain import (
     classify_adapter_fault,
 )
 
-
-ITEM_ADAPTER_CONTRACT_VERSION = 1
+ITEM_ADAPTER_CONTRACT_VERSION = 2
+_ACTOR = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,6 +31,7 @@ class ItemAdapterCommand:
     attempt_number: int
     target_idempotency_key_hash: str
     source_hash: str
+    actor_user_id: str
     source_snapshot: Mapping[str, object]
     intent: ItemPublishIntent
     expected_mapping_version: int
@@ -49,15 +51,24 @@ class ItemAdapterCommand:
                 or any(character not in "0123456789abcdef" for character in value)
             ):
                 raise ItemPublishContractError("Item adapter hash is invalid.")
+        if (
+            not isinstance(self.actor_user_id, str)
+            or self.actor_user_id != self.actor_user_id.casefold()
+            or len(self.actor_user_id) > 254
+            or _ACTOR.fullmatch(self.actor_user_id) is None
+            or self.actor_user_id in {"guest", "administrator"}
+        ):
+            raise ItemPublishContractError("Item adapter business actor is invalid.")
         if not isinstance(self.source_snapshot, Mapping):
             raise ItemPublishContractError("Item adapter source snapshot is invalid.")
         source = dict(self.source_snapshot)
         source_payload = dict(source)
         source_payload.pop("streamKeyHash", None)
         source_payload.pop("sourceHash", None)
-        if source.get("sourceHash") != self.source_hash or canonical_hash(
-            source_payload
-        ) != self.source_hash:
+        if (
+            source.get("sourceHash") != self.source_hash
+            or canonical_hash(source_payload) != self.source_hash
+        ):
             raise ItemPublishContractError("Item adapter source hash is invalid.")
         if not isinstance(self.intent, ItemPublishIntent):
             raise ItemPublishContractError("Item adapter intent is invalid.")
@@ -87,6 +98,7 @@ class ItemAdapterCommand:
             "attemptNumber": self.attempt_number,
             "targetIdempotencyKeyHash": self.target_idempotency_key_hash,
             "sourceHash": self.source_hash,
+            "actorUserId": self.actor_user_id,
             "source": dict(self.source_snapshot),
             "intent": self.intent.value,
             "expectedMappingVersion": self.expected_mapping_version,
@@ -113,7 +125,9 @@ class ItemAdapterResponse:
         if not isinstance(self.request_global_id, UUID) or not isinstance(
             self.attempt_global_id, UUID
         ):
-            raise ItemPublishContractError("Item adapter response identities are invalid.")
+            raise ItemPublishContractError(
+                "Item adapter response identities are invalid."
+            )
         if type(self.attempt_number) is not int or self.attempt_number < 1:
             raise ItemPublishContractError(
                 "Item adapter response attempt number is invalid."
@@ -130,8 +144,7 @@ class ItemAdapterResponse:
             ):
                 raise ItemPublishContractError("Item adapter response hash is invalid.")
         if self.http_status is not None and (
-            type(self.http_status) is not int
-            or not 100 <= self.http_status <= 599
+            type(self.http_status) is not int or not 100 <= self.http_status <= 599
         ):
             raise ItemPublishContractError("Item adapter response status is invalid.")
         for value in (
@@ -175,9 +188,7 @@ class ItemAdapterRegistration:
             or self.operation != ITEM_PUBLISH_OPERATION
             or not callable(self.adapter)
         ):
-            raise ItemPublishContractError(
-                "Item adapter registration is invalid."
-            )
+            raise ItemPublishContractError("Item adapter registration is invalid.")
 
 
 class ItemAdapterRegistry:
@@ -213,9 +224,7 @@ class ItemAdapterRegistry:
         resolver = profile.adapter_resolver
         if resolver is None:
             return None
-        return self._values.get(
-            (resolver, profile.target_mode, ITEM_PUBLISH_OPERATION)
-        )
+        return self._values.get((resolver, profile.target_mode, ITEM_PUBLISH_OPERATION))
 
 
 @dataclass(frozen=True, slots=True)
@@ -240,8 +249,7 @@ def classify_item_adapter_response(
         response.request_global_id == command.request_global_id
         and response.attempt_global_id == command.attempt_global_id
         and response.attempt_number == command.attempt_number
-        and response.target_idempotency_key_hash
-        == command.target_idempotency_key_hash
+        and response.target_idempotency_key_hash == command.target_idempotency_key_hash
         and response.source_hash == command.source_hash
     )
     if profile.target_mode is ItemTargetMode.SYNTHETIC:
@@ -281,9 +289,7 @@ def classify_item_adapter_response(
         contract_valid = False
     if response.http_status is not None and 200 <= response.http_status < 300:
         contract_valid = bool(
-            contract_valid
-            and response.formal_item_code
-            and response.target_version
+            contract_valid and response.formal_item_code and response.target_version
         )
     classification = classify_adapter_fault(
         adapter_boundary_crossed=True,

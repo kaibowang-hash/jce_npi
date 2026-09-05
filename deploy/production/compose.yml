@@ -169,7 +169,14 @@ services:
 
   queue-short:
     <<: [*frappe-image, *frappe-dependencies]
-    command: ["bench", "worker", "--queue", "short,default"]
+    command:
+      - bash
+      - -euc
+      - |
+        export NPI_ITEM_PUBLISH_SANDBOX_SECRETS="$(</run/secrets/npi_item_publish_sandbox_secrets)"
+        exec bench worker --queue short,default
+    secrets:
+      - npi_item_publish_sandbox_secrets
     mem_limit: 768m
     pids_limit: 384
 
@@ -202,6 +209,8 @@ secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/mariadb_root_password
   administrator_password:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/administrator_password
+  npi_item_publish_sandbox_secrets:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_item_publish_sandbox_secrets
 
 volumes:
   db-data:
