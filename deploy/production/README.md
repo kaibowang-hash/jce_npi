@@ -32,12 +32,15 @@ Required secret files:
 - `npi_item_publish_sandbox_secrets` (a closed JSON object keyed by the
   approved opaque Item connector secret reference; use `{}` while Item
   Sandbox dispatch remains disabled)
+- `npi_erp_project_ingress_secrets` (a closed JSON object keyed by the
+  approved opaque ERP Project webhook secret reference; use `{}` while the
+  inbound Project profile remains disabled)
 
-Only the short worker receives the Item connector secret. Its root startup
-wrapper reads the root-only file and immediately drops to the `frappe` UID/GID
-before executing the worker. The Site configuration stores the non-secret
-HTTPS origin, exact hostname and tenant/Project/requester profile, never the
-API credential.
+Only the short worker receives the Item connector secret, and only the backend
+receives the Project-ingress secret. Their root startup wrappers read the
+root-only files and immediately drop to the `frappe` UID/GID before executing
+the worker or web process. The Site configuration stores only non-secret
+profiles, never either API credential.
 
 The production Site is initialized only through `init-site.sh`. It refuses an
 existing Site without the production ownership marker, verifies the database

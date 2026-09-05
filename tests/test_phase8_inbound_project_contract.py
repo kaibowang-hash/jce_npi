@@ -14,18 +14,24 @@ OWNERSHIP = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
 
 
 class Phase8InboundProjectContractTest(unittest.TestCase):
-    def test_shared_event_schema_has_only_two_closed_project_source_events(self) -> None:
+    def test_shared_event_schema_has_three_closed_project_source_events(self) -> None:
         event_types = set(EVENT_SCHEMA["properties"]["event_type"]["enum"])
         self.assertTrue(
             {
                 "erpnext.quotation.submitted",
                 "erpnext.sales_order.submitted",
+                "erpnext.project.created",
             }.issubset(event_types)
         )
         self.assertNotIn("erpnext.generic_doc.submitted", event_types)
         payload = EVENT_SCHEMA["$defs"]["erp_project_source_submitted_v1"]
         self.assertFalse(payload["additionalProperties"])
         self.assertEqual(set(payload["required"]), set(payload["properties"]))
+        project_payload = EVENT_SCHEMA["$defs"]["erp_project_created_v1"]
+        self.assertFalse(project_payload["additionalProperties"])
+        self.assertEqual(
+            set(project_payload["required"]), set(project_payload["properties"])
+        )
         common = next(
             condition
             for condition in EVENT_SCHEMA["allOf"]
@@ -59,6 +65,10 @@ class Phase8InboundProjectContractTest(unittest.TestCase):
         self.assertEqual(
             conditions["erpnext.sales_order.submitted"]["object_type"]["const"],
             "Sales Order",
+        )
+        self.assertEqual(
+            conditions["erpnext.project.created"]["object_type"]["const"],
+            "Project",
         )
         common = next(
             condition["then"]["properties"]

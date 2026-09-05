@@ -135,6 +135,25 @@ def load_sandbox_profile(
     return matches[0] if matches else None
 
 
+def configured_sandbox_environments(configuration: object) -> tuple[str, ...]:
+    """Return only validated, non-secret environment identities for status views."""
+    if not _sandbox_enabled(configuration):
+        return ()
+    if not hasattr(configuration, "get"):
+        raise ItemPublishContractError("Sandbox Item configuration is unavailable.")
+    raw_profiles = configuration.get(SANDBOX_PROFILES_KEY)
+    if (
+        isinstance(raw_profiles, (str, bytes))
+        or not isinstance(raw_profiles, Sequence)
+        or not 1 <= len(raw_profiles) <= 32
+    ):
+        raise ItemPublishContractError("Sandbox Item profiles are invalid.")
+    environments = tuple(sorted({_profile(value).environment_code for value in raw_profiles}))
+    if len(environments) != 1:
+        raise ItemPublishContractError("Sandbox Item environment is ambiguous.")
+    return environments
+
+
 def sandbox_adapter(command: ItemAdapterCommand) -> ItemAdapterResponse:
     if not isinstance(command, ItemAdapterCommand):
         raise ItemPublishContractError("Sandbox Item command is invalid.")

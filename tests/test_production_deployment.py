@@ -48,6 +48,28 @@ class ProductionDeploymentTests(unittest.TestCase):
             "exec setpriv --reuid=1000 --regid=1000 --clear-groups bench worker",
             queue_short.group("body"),
         )
+        backend = re.search(
+            r"^  backend:\n(?P<body>.*?)(?=^  [a-z][a-z0-9-]*:\n|^secrets:\n)",
+            compose,
+            re.MULTILINE | re.DOTALL,
+        )
+        self.assertIsNotNone(backend)
+        self.assertIn('    user: "0:0"\n', backend.group("body"))
+        self.assertIn(
+            "NPI_ERP_PROJECT_INGRESS_SECRETS=",
+            backend.group("body"),
+        )
+        self.assertIn(
+            "exec setpriv --reuid=1000 --regid=1000 --clear-groups "
+            "/usr/local/bin/start-gunicorn.sh",
+            backend.group("body"),
+        )
+        self.assertIn(
+            "  npi_erp_project_ingress_secrets:\n"
+            "    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/"
+            "npi_erp_project_ingress_secrets\n",
+            compose,
+        )
         for service_name in ("db", "redis-cache", "redis-queue"):
             block = re.search(
                 rf"^  {re.escape(service_name)}:\n(?P<body>.*?)(?=^  [a-z][a-z0-9-]*:\n|^secrets:\n)",

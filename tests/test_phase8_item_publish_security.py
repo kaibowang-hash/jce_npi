@@ -153,6 +153,78 @@ EXPECTED_PERMISSION_CALLS = Counter(
             "document",
             "save",
         ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_item_target_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "save_item_target_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_item_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "save_item_support_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_mbom_target_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "save_mbom_target_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_mbom_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "save_mbom_support_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_tool_asset_target_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "save_tool_asset_target_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_tool_asset_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "save_tool_asset_support_document",
+            "document",
+            "save",
+        ): 1,
     }
 )
 
@@ -225,7 +297,7 @@ def _scan_permission_paths(paths: list[Path] | tuple[Path, ...]):
 
 
 class Phase8ItemPublishSecurityTest(unittest.TestCase):
-    def test_ignore_permissions_is_exactly_twenty_one_controlled_calls(self) -> None:
+    def test_ignore_permissions_is_exactly_thirty_three_controlled_calls(self) -> None:
         calls, violations = _scan_permission_paths(tuple(APP_ROOT.rglob("*.py")))
         self.assertEqual(violations, [])
         self.assertEqual(Counter(calls), EXPECTED_PERMISSION_CALLS)

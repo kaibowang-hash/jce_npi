@@ -32,11 +32,13 @@ class ProjectSourceContractError(ValueError):
 class ProjectSourceEventType(StrEnum):
     QUOTATION_SUBMITTED = "erpnext.quotation.submitted"
     SALES_ORDER_SUBMITTED = "erpnext.sales_order.submitted"
+    ERP_PROJECT_CREATED = "erpnext.project.created"
 
 
 class ProjectSourceObjectType(StrEnum):
     QUOTATION = "Quotation"
     SALES_ORDER = "Sales Order"
+    PROJECT = "Project"
 
 
 PROJECT_SOURCE_EVENT_TYPES: Mapping[ProjectSourceEventType, ProjectSourceObjectType] = (
@@ -44,6 +46,7 @@ PROJECT_SOURCE_EVENT_TYPES: Mapping[ProjectSourceEventType, ProjectSourceObjectT
         {
             ProjectSourceEventType.QUOTATION_SUBMITTED: ProjectSourceObjectType.QUOTATION,
             ProjectSourceEventType.SALES_ORDER_SUBMITTED: ProjectSourceObjectType.SALES_ORDER,
+            ProjectSourceEventType.ERP_PROJECT_CREATED: ProjectSourceObjectType.PROJECT,
         }
     )
 )
@@ -67,9 +70,49 @@ class ProjectSourcePayload:
     title: str
     target_sop: str
     source_modified_at: str
+    source_state: str = "submitted"
+    source_owner_user_id: str | None = None
 
     @classmethod
-    def from_mapping(cls, value: object) -> ProjectSourcePayload:
+    def from_mapping(
+        cls,
+        value: object,
+        object_type: ProjectSourceObjectType,
+    ) -> ProjectSourcePayload:
+        if object_type is ProjectSourceObjectType.PROJECT:
+            source = _closed_mapping(
+                value,
+                "payload",
+                {
+                    "schema_version",
+                    "project_state",
+                    "title",
+                    "target_sop",
+                    "source_modified_at",
+                    "source_owner_user_id",
+                },
+            )
+            if _integer(source["schema_version"], "payload.schema_version") != 1:
+                raise ProjectSourceContractError(
+                    "payload.schema_version is unsupported."
+                )
+            if source["project_state"] != "open":
+                raise ProjectSourceContractError(
+                    "payload.project_state is unsupported."
+                )
+            return cls(
+                title=_text(source["title"], "payload.title", 140),
+                target_sop=_date_text(source["target_sop"], "payload.target_sop"),
+                source_modified_at=_utc_text(
+                    source["source_modified_at"], "payload.source_modified_at"
+                ),
+                source_state="open",
+                source_owner_user_id=_pattern_text(
+                    source["source_owner_user_id"],
+                    "payload.source_owner_user_id",
+                    _ACTOR_PATTERN,
+                ),
+            )
         source = _closed_mapping(
             value,
             "payload",
@@ -94,6 +137,15 @@ class ProjectSourcePayload:
         )
 
     def canonical_mapping(self) -> dict[str, object]:
+        if self.source_state == "open" and self.source_owner_user_id is not None:
+            return {
+                "schema_version": PROJECT_SOURCE_EVENT_SCHEMA_VERSION,
+                "project_state": "open",
+                "title": self.title,
+                "target_sop": self.target_sop,
+                "source_modified_at": self.source_modified_at,
+                "source_owner_user_id": self.source_owner_user_id,
+            }
         return {
             "schema_version": PROJECT_SOURCE_EVENT_SCHEMA_VERSION,
             "submission_state": "submitted",
@@ -162,7 +214,7 @@ class InboundProjectEvent:
         actor = _closed_mapping(source["actor"], "actor", {"type", "id"})
         if actor["type"] != "service":
             raise ProjectSourceContractError("event actor must be a service.")
-        payload = ProjectSourcePayload.from_mapping(source["payload"])
+        payload = ProjectSourcePayload.from_mapping(source["payload"], object_type)
         payload_hash = _hash(source["payload_hash"], "payload_hash")
         if payload_hash != canonical_json_hash(payload.canonical_mapping()):
             raise ProjectSourceContractError("payload_hash does not match payload.")

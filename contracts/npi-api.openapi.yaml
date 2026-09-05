@@ -159,7 +159,7 @@ paths:
       operationId: acceptErpnextProjectSourceEvent
       security: []
       description: >-
-        Accepts one closed ERPNext Quotation or Sales Order submitted event
+        Accepts one closed ERPNext Project-created, Quotation-submitted, or Sales Order-submitted event
         after HMAC-SHA256 authentication over the exact raw request body. The
         server resolves tenant and intake policy; a 202 response confirms only
         durable Inbox acceptance or exact replay and never Project creation.
@@ -203,6 +203,54 @@ paths:
         "500": { $ref: "#/components/responses/InternalError" }
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
+
+  /integration/erpnext/project-source-receipts:
+    get:
+      tags: [Integration]
+      operationId: getErpnextProjectSourceReceipt
+      description: >-
+        Returns the authenticated processing result for one previously accepted
+        ERPNext Project source receipt so the connector can persist the exact
+        ERPNext Project to NPI One Project identity mapping.
+      parameters:
+        - name: receiptId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Current durable Project source receipt state
+          headers:
+            Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InboundProjectReceiptStatus" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/ProjectError" }
+        "404": { $ref: "#/components/responses/ProjectError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /integration/erpnext/status:
+    get:
+      tags: [Integration]
+      operationId: getErpnextConnectionStatus
+      description: >-
+        Returns only authenticated, non-secret connection evidence and enabled
+        capability state for the configured ERPNext environment.
+      responses:
+        "200":
+          description: Current sanitized ERPNext connection status
+          headers:
+            Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ERPNextConnectionStatus" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
 
   /session/bootstrap:
     get:
@@ -10280,19 +10328,30 @@ components:
         title: { type: string, minLength: 1, maxLength: 140 }
         target_sop: { type: string, format: date }
         source_modified_at: { type: string, format: date-time, pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" }
+    InboundERPProjectSourcePayload:
+      type: object
+      additionalProperties: false
+      required: [schema_version, project_state, title, target_sop, source_modified_at, source_owner_user_id]
+      properties:
+        schema_version: { type: integer, const: 1 }
+        project_state: { type: string, const: open }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        target_sop: { type: string, format: date }
+        source_modified_at: { type: string, format: date-time, pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" }
+        source_owner_user_id: { type: string, minLength: 1, maxLength: 254 }
     InboundProjectSourceEvent:
       type: object
       additionalProperties: false
       required: [event_id, event_type, event_version, occurred_at, source_system, target_system, global_id, object_type, source_object_id, object_version, correlation_id, trace_id, actor, payload_hash, payload, sensitivity]
       properties:
         event_id: { type: string, format: uuid }
-        event_type: { type: string, enum: [erpnext.quotation.submitted, erpnext.sales_order.submitted] }
+        event_type: { type: string, enum: [erpnext.quotation.submitted, erpnext.sales_order.submitted, erpnext.project.created] }
         event_version: { type: integer, const: 1 }
         occurred_at: { type: string, format: date-time, pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" }
         source_system: { type: string, const: ERPNEXT }
         target_system: { type: string, const: NPI_ONE }
         global_id: { type: string, format: uuid }
-        object_type: { type: string, enum: [Quotation, Sales Order] }
+        object_type: { type: string, enum: [Quotation, Sales Order, Project] }
         source_object_id: { type: string, minLength: 1, maxLength: 255 }
         object_version: { type: integer, minimum: 1, maximum: 2147483647 }
         correlation_id: { type: string, format: uuid }
@@ -10305,7 +10364,10 @@ components:
             type: { type: string, const: service }
             id: { type: string, minLength: 1, maxLength: 254 }
         payload_hash: { type: string, pattern: "^[a-f0-9]{64}$" }
-        payload: { $ref: "#/components/schemas/InboundProjectSourcePayload" }
+        payload:
+          oneOf:
+            - { $ref: "#/components/schemas/InboundProjectSourcePayload" }
+            - { $ref: "#/components/schemas/InboundERPProjectSourcePayload" }
         sensitivity: { type: string, const: confidential }
       allOf:
         - if:
@@ -10317,7 +10379,16 @@ components:
             properties: { event_type: { const: erpnext.sales_order.submitted } }
             required: [event_type]
           then:
-            properties: { object_type: { const: Sales Order } }
+            properties:
+              object_type: { const: Sales Order }
+              payload: { $ref: "#/components/schemas/InboundProjectSourcePayload" }
+        - if:
+            properties: { event_type: { const: erpnext.project.created } }
+            required: [event_type]
+          then:
+            properties:
+              object_type: { const: Project }
+              payload: { $ref: "#/components/schemas/InboundERPProjectSourcePayload" }
     InboundProjectReceiptAccepted:
       type: object
       additionalProperties: false
@@ -10329,6 +10400,38 @@ components:
         exactDuplicate: { type: boolean }
         requestId: { type: string, format: uuid }
         traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+    InboundProjectReceiptStatus:
+      type: object
+      additionalProperties: false
+      required: [receiptId, eventId, state, terminal, disposition, projectGlobalId, errorCode, traceId]
+      properties:
+        receiptId: { type: string, format: uuid }
+        eventId: { type: string, format: uuid }
+        state: { type: string, enum: [pending, processing, succeeded, failed_retryable, failed_final, quarantined, superseded, received_after_creation] }
+        terminal: { type: boolean }
+        disposition: { type: string, enum: [pending, project_created, project_replayed, superseded, conflicted, received_after_creation, failed_retryable, failed_final] }
+        projectGlobalId: { type: [string, "null"], format: uuid }
+        errorCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+    ERPNextConnectionStatus:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, targetSystem, targetEnvironment, connectionState, lastConfirmedAt, capabilities]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        targetSystem: { type: string, const: ERPNEXT }
+        targetEnvironment: { type: [string, "null"], enum: [test, null] }
+        connectionState: { type: string, enum: [connected, partially_connected, not_connected, unavailable] }
+        lastConfirmedAt: { type: [string, "null"], format: date-time }
+        capabilities:
+          type: object
+          additionalProperties: false
+          required: [authorizationSynchronization, itemCommands, projectSynchronization, reportingSynchronization]
+          properties:
+            authorizationSynchronization: { type: boolean }
+            itemCommands: { type: boolean }
+            projectSynchronization: { type: boolean }
+            reportingSynchronization: { type: boolean }
     ERPProjectionKind:
       type: string
       enum: [customer_master, supplier_master, formal_item_master, tooling_procurement_cost, project_cost, formal_quality_status, tool_asset_status]

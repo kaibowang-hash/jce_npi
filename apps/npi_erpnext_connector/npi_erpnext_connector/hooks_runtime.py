@@ -5,6 +5,7 @@ import hashlib
 import frappe
 
 from npi_erpnext_connector.config import sender_is_disabled
+from npi_erpnext_connector.project_config import project_sender_is_disabled
 
 
 QUEUE_JOB = "npi_erpnext_connector.frappe_repository.enqueue_user_authorization"
@@ -18,6 +19,20 @@ def queue_user_change(document: object, method: str | None = None) -> None:
 def queue_user_permission_change(document: object, method: str | None = None) -> None:
     del method
     _queue(str(getattr(document, "user", "") or ""))
+
+
+def queue_project_create(document: object, method: str | None = None) -> None:
+    del method
+    source_project_id = str(getattr(document, "name", "") or "")
+    if project_sender_is_disabled(frappe.conf) or not source_project_id:
+        return
+    frappe.enqueue(
+        "npi_erpnext_connector.project_repository.enqueue_project",
+        queue="short",
+        enqueue_after_commit=True,
+        job_id=f"npi-erp-project-source-{hashlib.sha256(source_project_id.encode()).hexdigest()[:32]}",
+        source_project_id=source_project_id,
+    )
 
 
 def _queue(target_user_id: str) -> None:

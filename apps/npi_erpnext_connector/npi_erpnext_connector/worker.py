@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import frappe
 from frappe import _
@@ -29,6 +29,7 @@ MAX_ATTEMPTS = 10
 RECOVERY_PAGE_SIZE = 100
 DELIVERY_JOB = "npi_erpnext_connector.worker.deliver_pending"
 SOURCE_JOB = "npi_erpnext_connector.frappe_repository.enqueue_user_authorization"
+UTC = timezone.utc
 
 
 def deliver_pending(delivery_id: str) -> None:

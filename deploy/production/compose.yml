@@ -116,11 +116,20 @@ services:
 
   backend:
     <<: [*frappe-image, *frappe-dependencies]
+    user: "0:0"
+    command:
+      - bash
+      - -euc
+      - |
+        export NPI_ERP_PROJECT_INGRESS_SECRETS="$(</run/secrets/npi_erp_project_ingress_secrets)"
+        exec setpriv --reuid=1000 --regid=1000 --clear-groups /usr/local/bin/start-gunicorn.sh
     environment:
       SITE_NAME: ${SITE_NAME:?SITE_NAME is required}
       GUNICORN_WORKERS: 2
       GUNICORN_THREADS: 4
       GUNICORN_TIMEOUT: 120
+    secrets:
+      - npi_erp_project_ingress_secrets
     healthcheck:
       test: ["CMD-SHELL", "curl --fail --silent --header 'Host: ${SITE_NAME}' http://127.0.0.1:8000/api/method/ping >/dev/null"]
       interval: 30s
@@ -212,6 +221,8 @@ secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/administrator_password
   npi_item_publish_sandbox_secrets:
     file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_item_publish_sandbox_secrets
+  npi_erp_project_ingress_secrets:
+    file: ${SECRETS_ROOT:?SECRETS_ROOT is required}/npi_erp_project_ingress_secrets
 
 volumes:
   db-data:

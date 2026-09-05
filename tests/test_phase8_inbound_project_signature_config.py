@@ -240,13 +240,14 @@ class Phase8InboundProjectSignatureConfigTest(unittest.TestCase):
             profile(service_actor_user_id="Guest")
         with self.assertRaises(ProjectSourceContractError):
             profile(service_actor_user_id="Administrator")
-        with self.assertRaises(ProjectSourceContractError):
-            profile(
-                allowed_event_types=(
-                    ProjectSourceEventType.QUOTATION_SUBMITTED,
-                ),
-                policies=(policy(ProjectSourceObjectType.QUOTATION),),
-            )
+        quotation_only = profile(
+            allowed_event_types=(ProjectSourceEventType.QUOTATION_SUBMITTED,),
+            policies=(policy(ProjectSourceObjectType.QUOTATION),),
+        )
+        self.assertEqual(
+            quotation_only.allowed_event_types,
+            (ProjectSourceEventType.QUOTATION_SUBMITTED,),
+        )
         with self.assertRaises(ProjectSourceContractError):
             profile(policies=(policy(ProjectSourceObjectType.QUOTATION),))
         with self.assertRaises(ProjectSourceContractError):

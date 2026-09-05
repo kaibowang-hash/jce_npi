@@ -22,6 +22,7 @@ from npi_integration.item_publish.connector_runtime import (  # noqa: E402
     SANDBOX_ENABLED_KEY,
     SANDBOX_PROFILES_KEY,
     SandboxCredential,
+    configured_sandbox_environments,
     execute_sandbox_item,
     load_sandbox_credential,
     load_sandbox_profile,
@@ -213,6 +214,8 @@ class ERPNextItemSandboxAdapterTest(unittest.TestCase):
         assert profile is not None
         self.assertEqual(profile.adapter_resolver, SANDBOX_ADAPTER_PATH)
         self.assertEqual(profile.base_url, "https://erpnext.test.example.invalid")
+        self.assertEqual(configured_sandbox_environments(configuration()), ("test",))
+        self.assertEqual(configured_sandbox_environments({}), ())
         self.assertIsNone(
             load_sandbox_profile(configuration(), "TENANT-OTHER", PROJECT_ID)
         )
@@ -228,6 +231,8 @@ class ERPNextItemSandboxAdapterTest(unittest.TestCase):
         ]
         with self.assertRaisesRegex(ValueError, "non-production"):
             load_sandbox_profile(production, "TENANT-SANDBOX", PROJECT_ID)
+        with self.assertRaisesRegex(ValueError, "non-production"):
+            configured_sandbox_environments(production)
 
     def test_credentials_are_closed_and_selected_by_opaque_reference(self) -> None:
         serialized = json.dumps(

@@ -35,10 +35,10 @@ scheduler_events = {
 # explicit process environment are both present. They never read production
 # endpoints or persist raw webhook secrets.
 npi_inbound_project_profile_resolver = (
-    "npi_integration.inbound_project.runtime_fixture.resolve_profile"
+    "npi_integration.inbound_project.connector_runtime.resolve_profile"
 )
 npi_inbound_project_secret_resolver = (
-    "npi_integration.inbound_project.runtime_fixture.resolve_secret"
+    "npi_integration.inbound_project.connector_runtime.resolve_secret"
 )
 
 # P8-03 remains inert outside either the explicit disposable marker or an exact

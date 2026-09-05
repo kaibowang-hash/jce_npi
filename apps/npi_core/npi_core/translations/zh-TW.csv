@@ -528,7 +528,6 @@ The session exit could not be confirmed.,無法確認會話是否已登出。
 No further command is allowed until the current Frappe session is checked.,確認目前 Frappe 會話狀態前不允許繼續執行命令。
 Live project data,即時專案資料
 The live project request is being refreshed.,正在重新整理即時專案請求。
-Live project data. No production ERPNext system is connected.,即時專案資料。未連接任何生產 ERPNext 系統。
 Customer-owned tool project,客戶自有模具專案
 New tool project,新模具專案
 Tool change project,模具變更專案
@@ -1730,7 +1729,6 @@ Gate review assignment,階段門評審指派
 Gate review invalidation,階段門評審失效
 Integration unavailable,整合無法使用
 Live My Work data,即時「我的工作」資料
-Live My Work data. No production ERPNext system is connected.,即時「我的工作」資料。未連線生產 ERPNext 系統。
 Loading My Work,正在載入「我的工作」
 My Work access is not available,無法存取「我的工作」
 My Work changed,「我的工作」已變更
@@ -8883,7 +8881,13 @@ Open the read-only configuration capability catalog.,開啟唯讀設定功能目
 Configuration,設定
 Live reporting data,即時報告資料
 The live reporting request is being refreshed.,正在重新整理即時報告請求。
-Live reporting data. No production ERPNext system is connected.,即時報告資料。未連線正式環境 ERPNext 系統。
+Checking ERPNext connection.,正在檢查 ERPNext 連線。
+ERPNext connection status could not be confirmed.,無法確認 ERPNext 連線狀態。
+Connected to the ERPNext test environment.,已連線 ERPNext 測試環境。
+Connected to the ERPNext test environment. Reporting synchronization is not yet enabled.,已連線 ERPNext 測試環境。報告資料同步尚未啟用。
+Connected to the ERPNext test environment. Project synchronization is not yet enabled.,已連線 ERPNext 測試環境。專案同步尚未啟用。
+The ERPNext test environment is partially connected.,ERPNext 測試環境已部分連線。
+ERPNext is not connected.,ERPNext 尚未連線。
 Global search results,全域搜尋結果
 Close global search,關閉全域搜尋
 Searching authorized objects,正在搜尋已授權物件
@@ -9362,3 +9366,5 @@ System of authority,主責系統
 Required action,所需操作
 LaunchFlow Site environment,LaunchFlow 站點環境
 Set the exact LaunchFlow Site environment before go-live.,上線前設定準確的 LaunchFlow 站點環境。
+The Project source receipt was not found.,找不到專案來源回執。
+Enter a valid receipt ID.,請輸入有效的回執 ID。

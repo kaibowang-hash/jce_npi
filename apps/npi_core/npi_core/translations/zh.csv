@@ -528,7 +528,6 @@ The session exit could not be confirmed.,无法确认会话是否已退出。
 No further command is allowed until the current Frappe session is checked.,确认当前 Frappe 会话状态前不允许继续执行命令。
 Live project data,实时项目数据
 The live project request is being refreshed.,正在刷新实时项目请求。
-Live project data. No production ERPNext system is connected.,实时项目数据。未连接任何生产 ERPNext 系统。
 Customer-owned tool project,客户自有模具项目
 New tool project,新模具项目
 Tool change project,模具变更项目
@@ -1730,7 +1729,6 @@ Gate review assignment,阶段门评审分配
 Gate review invalidation,阶段门评审失效
 Integration unavailable,集成不可用
 Live My Work data,实时“我的工作”数据
-Live My Work data. No production ERPNext system is connected.,实时“我的工作”数据。未连接生产 ERPNext 系统。
 Loading My Work,正在加载“我的工作”
 My Work access is not available,无法访问“我的工作”
 My Work changed,“我的工作”已更改
@@ -8883,7 +8881,13 @@ Open the read-only configuration capability catalog.,打开只读配置功能目
 Configuration,配置
 Live reporting data,实时报告数据
 The live reporting request is being refreshed.,正在刷新实时报告请求。
-Live reporting data. No production ERPNext system is connected.,实时报告数据。未连接生产 ERPNext 系统。
+Checking ERPNext connection.,正在检查 ERPNext 连接。
+ERPNext connection status could not be confirmed.,无法确认 ERPNext 连接状态。
+Connected to the ERPNext test environment.,已连接 ERPNext 测试环境。
+Connected to the ERPNext test environment. Reporting synchronization is not yet enabled.,已连接 ERPNext 测试环境。报告数据同步尚未启用。
+Connected to the ERPNext test environment. Project synchronization is not yet enabled.,已连接 ERPNext 测试环境。项目同步尚未启用。
+The ERPNext test environment is partially connected.,ERPNext 测试环境已部分连接。
+ERPNext is not connected.,ERPNext 尚未连接。
 Global search results,全局搜索结果
 Close global search,关闭全局搜索
 Searching authorized objects,正在搜索已授权对象
@@ -9362,3 +9366,5 @@ System of authority,主责系统
 Required action,所需操作
 LaunchFlow Site environment,LaunchFlow 站点环境
 Set the exact LaunchFlow Site environment before go-live.,上线前设置准确的 LaunchFlow 站点环境。
+The Project source receipt was not found.,未找到项目来源回执。
+Enter a valid receipt ID.,请输入有效的回执 ID。

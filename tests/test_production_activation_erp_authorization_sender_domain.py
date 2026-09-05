@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from pathlib import Path
 import sys
 import unittest
+from datetime import datetime, timezone
+from pathlib import Path
 from uuid import UUID
 
 
@@ -29,6 +29,7 @@ from npi_integration.authorization_projection.domain import (  # noqa: E402
 
 
 PROJECT_ID = "34dc62c5-ab4b-44ec-882b-fb3df759dc79"
+UTC = timezone.utc
 
 
 def _policy(**changes: object) -> SenderPolicy:
@@ -147,6 +148,36 @@ class ProductionActivationERPAuthorizationSenderDomainTest(unittest.TestCase):
                 self.assertEqual(snapshot.project_access, ())
                 self.assertEqual(snapshot.organization_scopes, ())
 
+    def test_unicode_erpnext_roles_do_not_block_mapped_authorization(self) -> None:
+        source = SourceUser(
+            "user@example.com",
+            "user@example.com",
+            True,
+            "System User",
+            ("Manufacturing User", "品管"),
+            (),
+        )
+        snapshot = project_source_user(source, _policy())
+        self.assertTrue(snapshot.enabled)
+        self.assertEqual(snapshot.roles, ("NPI Engineer",))
+
+        policy = _policy(
+            roleMap={"品管": "NPI Reviewer"},
+            projectAccessByRole={"品管": "approve"},
+        )
+        mapped = project_source_user(
+            SourceUser(
+                "user@example.com",
+                "user@example.com",
+                True,
+                "System User",
+                ("品管",),
+                (),
+            ),
+            policy,
+        )
+        self.assertEqual(mapped.roles, ("NPI Reviewer",))
+
     def test_project_permission_requires_explicit_id_and_access_mapping(self) -> None:
         source = SourceUser(
             "user@example.com",
@@ -156,16 +187,34 @@ class ProductionActivationERPAuthorizationSenderDomainTest(unittest.TestCase):
             ("Manufacturing User",),
             (SourcePermission("Project", "ERP-PROJECT-001"),),
         )
-        with self.assertRaisesRegex(MappingIncomplete, "without an approved access mapping"):
+        with self.assertRaisesRegex(
+            MappingIncomplete, "without an approved access mapping"
+        ):
             project_source_user(
                 source,
                 _policy(projectAccessByRole={}),
             )
-        with self.assertRaisesRegex(MappingIncomplete, "no approved LaunchFlow Project"):
+        with self.assertRaisesRegex(
+            MappingIncomplete, "no approved LaunchFlow Project"
+        ):
             project_source_user(
                 source,
                 _policy(projectMap={}),
             )
+
+    def test_unrestricted_erp_project_role_grants_all_persisted_project_mappings(self) -> None:
+        snapshot = project_source_user(
+            SourceUser(
+                "user@example.com",
+                "user@example.com",
+                True,
+                "System User",
+                ("Manufacturing User",),
+                (),
+            ),
+            _policy(),
+        )
+        self.assertEqual(snapshot.project_access, ((PROJECT_ID, "contribute"),))
 
     def test_identity_and_policy_never_guess_defaults(self) -> None:
         with self.assertRaisesRegex(MappingIncomplete, "canonical lowercase"):

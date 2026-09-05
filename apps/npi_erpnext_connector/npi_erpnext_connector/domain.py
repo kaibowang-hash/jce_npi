@@ -3,12 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
-from enum import StrEnum
+from datetime import datetime, timedelta, timezone
+from enum import Enum
 from uuid import UUID, uuid5
-
 
 SCHEMA_VERSION = 1
 OPERATION = "replace_user_authorization"
@@ -27,7 +26,7 @@ _EMAIL = re.compile(
     r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?"
     r"(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$"
 )
-_ROLE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 _./:&()-]{0,127}$")
+_TARGET_ROLE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 _./:&()-]{0,127}$")
 _REFERENCE = re.compile(r"^[^\s\x00-\x1f\x7f]{1,255}$")
 
 
@@ -39,7 +38,10 @@ class MappingIncomplete(AuthorizationSenderError):
     """Raised when an enabled source cannot be represented without guessing."""
 
 
-class ProjectAccess(StrEnum):
+UTC = timezone.utc
+
+
+class ProjectAccess(str, Enum):
     VIEW = "view"
     CONTRIBUTE = "contribute"
     APPROVE = "approve"
@@ -54,7 +56,7 @@ _ACCESS_RANK = {
 }
 
 
-class OrganizationScopeKind(StrEnum):
+class OrganizationScopeKind(str, Enum):
     COMPANY = "Company"
     CUSTOMER = "Customer"
     SUPPLIER = "Supplier"
@@ -66,7 +68,10 @@ class SourcePermission:
     reference_key: str
 
     def __post_init__(self) -> None:
-        if self.kind not in {"Project", *(kind.value for kind in OrganizationScopeKind)}:
+        if self.kind not in {
+            "Project",
+            *(kind.value for kind in OrganizationScopeKind),
+        }:
             raise AuthorizationSenderError("User Permission kind is unsupported.")
         _reference(self.reference_key, "User Permission reference")
 
@@ -94,7 +99,7 @@ class SourceUser:
         if tuple(sorted(set(self.roles))) != self.roles:
             raise AuthorizationSenderError("ERPNext roles must be unique and sorted.")
         for role in self.roles:
-            _role(role, "ERPNext role")
+            _source_role(role)
         if tuple(sorted(set(self.permissions))) != self.permissions:
             raise AuthorizationSenderError(
                 "ERPNext User Permissions must be unique and sorted."
@@ -118,8 +123,8 @@ class SenderPolicy:
         if not role_map or len(role_map) > 128:
             raise AuthorizationSenderError("Role mapping is required and bounded.")
         for source_role, target_role in role_map.items():
-            _role(source_role, "ERPNext role")
-            _role(target_role, "LaunchFlow role")
+            _source_role(source_role)
+            _target_role(target_role)
 
         raw_project_map = _string_map(source["projectMap"], "projectMap")
         if len(raw_project_map) > MAX_PROJECT_SCOPES:
@@ -131,6 +136,10 @@ class SenderPolicy:
                 target_project,
                 "LaunchFlow Project",
             )
+        if len(set(project_map.values())) != len(project_map):
+            raise AuthorizationSenderError(
+                "LaunchFlow Project mappings must be one-to-one."
+            )
 
         raw_access_map = _string_map(
             source["projectAccessByRole"],
@@ -138,7 +147,7 @@ class SenderPolicy:
         )
         access_map: dict[str, ProjectAccess] = {}
         for source_role, access in raw_access_map.items():
-            _role(source_role, "ERPNext role")
+            _source_role(source_role)
             if source_role not in role_map:
                 raise AuthorizationSenderError(
                     "Project access role must also exist in role mapping."
@@ -216,14 +225,16 @@ class AuthorizationEvent:
         return canonical_hash(self.event)
 
 
-def project_source_user(source: SourceUser, policy: SenderPolicy) -> AuthorizationSnapshot:
+def project_source_user(
+    source: SourceUser, policy: SenderPolicy
+) -> AuthorizationSnapshot:
     mapped_roles = tuple(
-        sorted({policy.role_map[role] for role in source.roles if role in policy.role_map})
+        sorted(
+            {policy.role_map[role] for role in source.roles if role in policy.role_map}
+        )
     )
     is_enabled = (
-        source.enabled
-        and source.user_type == "System User"
-        and bool(mapped_roles)
+        source.enabled and source.user_type == "System User" and bool(mapped_roles)
     )
     if not is_enabled:
         return AuthorizationSnapshot(
@@ -255,13 +266,20 @@ def project_source_user(source: SourceUser, policy: SenderPolicy) -> Authorizati
         else None
     )
     project_access: list[tuple[str, str]] = []
-    for permission in project_permissions:
-        project_id = policy.project_map.get(permission.reference_key)
-        if project_id is None:
-            raise MappingIncomplete(
-                "ERPNext Project permission has no approved LaunchFlow Project mapping."
+    if access is not None:
+        if project_permissions:
+            for permission in project_permissions:
+                project_id = policy.project_map.get(permission.reference_key)
+                if project_id is None:
+                    raise MappingIncomplete(
+                        "ERPNext Project permission has no approved LaunchFlow Project mapping."
+                    )
+                project_access.append((str(project_id), str(access)))
+        else:
+            project_access.extend(
+                (str(project_id), str(access))
+                for project_id in policy.project_map.values()
             )
-        project_access.append((str(project_id), str(access)))
     project_access.sort()
     if len(project_access) > MAX_PROJECT_SCOPES:
         raise AuthorizationSenderError("Mapped Project access is too large.")
@@ -369,13 +387,26 @@ def _email(value: object) -> str:
         or value != value.casefold()
         or _EMAIL.fullmatch(value) is None
     ):
-        raise MappingIncomplete("ERPNext User email is not a canonical lowercase identity.")
+        raise MappingIncomplete(
+            "ERPNext User email is not a canonical lowercase identity."
+        )
     return value
 
 
-def _role(value: object, name: str) -> str:
-    if not isinstance(value, str) or _ROLE.fullmatch(value) is None:
-        raise AuthorizationSenderError(f"{name} is invalid.")
+def _source_role(value: object) -> str:
+    if (
+        not isinstance(value, str)
+        or not 1 <= len(value) <= 128
+        or value != value.strip()
+        or any(ord(character) < 32 or ord(character) == 127 for character in value)
+    ):
+        raise AuthorizationSenderError("ERPNext role is invalid.")
+    return value
+
+
+def _target_role(value: object) -> str:
+    if not isinstance(value, str) or _TARGET_ROLE.fullmatch(value) is None:
+        raise AuthorizationSenderError("LaunchFlow role is invalid.")
     return value
 
 

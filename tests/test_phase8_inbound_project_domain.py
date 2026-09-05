@@ -103,6 +103,37 @@ class Phase8InboundProjectDomainTest(unittest.TestCase):
         )
         self.assertNotEqual(raw_body_hash(raw(indent=2)), raw_body_hash(raw()))
 
+    def test_erp_project_created_event_uses_its_own_closed_payload(self) -> None:
+        candidate = event(
+            event_type="erpnext.project.created",
+            object_type="Project",
+        )
+        payload = {
+            "schema_version": 1,
+            "project_state": "open",
+            "title": "ERPNext Project Seed",
+            "target_sop": "2026-12-31",
+            "source_modified_at": "2026-08-16T04:59:00Z",
+            "source_owner_user_id": "engineer@example.invalid",
+        }
+        candidate["payload"] = payload
+        candidate["payload_hash"] = canonical_json_hash(payload)
+        parsed = parse_project_source_event(raw(candidate))
+        self.assertEqual(parsed.object_type, ProjectSourceObjectType.PROJECT)
+        self.assertEqual(parsed.payload.source_state, "open")
+        self.assertEqual(
+            parsed.payload.source_owner_user_id,
+            "engineer@example.invalid",
+        )
+        for changed in (
+            {**payload, "project_state": "completed"},
+            {**payload, "unexpected": True},
+        ):
+            invalid = {**candidate, "payload": changed}
+            invalid["payload_hash"] = canonical_json_hash(changed)
+            with self.assertRaises(ProjectSourceContractError):
+                parse_project_source_event(raw(invalid))
+
     def test_event_and_payload_are_exact_and_hash_owned(self) -> None:
         baseline = event()
         invalid: list[dict[str, object]] = [

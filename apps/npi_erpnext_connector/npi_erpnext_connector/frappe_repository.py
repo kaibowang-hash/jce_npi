@@ -2,17 +2,18 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 import frappe
 
-from npi_erpnext_connector.config import load_profile, sender_is_disabled
+from npi_erpnext_connector.config import SenderProfile, load_profile, sender_is_disabled
 from npi_erpnext_connector.domain import (
     AuthorizationEvent,
     AuthorizationSenderError,
     SourcePermission,
     SourceUser,
+    SenderPolicy,
     build_event,
     canonical_hash,
     canonical_json,
@@ -27,12 +28,13 @@ from npi_erpnext_connector.frappe_validation import (
 DOCTYPE = "NPI ERP Authorization Delivery"
 MAX_RECONCILIATION_USERS = 500
 DELIVERY_JOB = "npi_erpnext_connector.worker.deliver_pending"
+UTC = timezone.utc
 
 
 def enqueue_user_authorization(target_user_id: str) -> str | None:
     if sender_is_disabled(frappe.conf):
         return None
-    profile = load_profile(frappe.conf)
+    profile = _with_persisted_project_map(load_profile(frappe.conf))
     source = _load_source_user(target_user_id)
     snapshot = project_source_user(source, profile.policy)
     now = datetime.now(UTC).replace(microsecond=0)
@@ -194,6 +196,29 @@ def _load_source_user(target_user_id: str) -> SourceUser:
         user_type=str(record.get("user_type") or ""),
         roles=tuple(sorted(set(raw_roles))),
         permissions=permissions,
+    )
+
+
+def _with_persisted_project_map(profile: SenderProfile) -> SenderProfile:
+    from npi_erpnext_connector.project_repository import persisted_project_map
+
+    project_map = dict(profile.policy.project_map)
+    for source_project_id, target_project_id in persisted_project_map().items():
+        parsed_target = UUID(target_project_id)
+        existing = project_map.get(source_project_id)
+        if existing is not None and existing != parsed_target:
+            raise AuthorizationSenderError(
+                "Configured and persisted Project mappings conflict."
+            )
+        project_map[source_project_id] = parsed_target
+    return SenderProfile(
+        profile.base_url,
+        SenderPolicy(
+            role_map=profile.policy.role_map,
+            project_map=project_map,
+            project_access_by_role=profile.policy.project_access_by_role,
+            ttl_seconds=profile.policy.ttl_seconds,
+        ),
     )
 
 

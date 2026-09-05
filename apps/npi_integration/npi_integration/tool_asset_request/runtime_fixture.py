@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 from uuid import UUID
 
-import frappe
-
 from .adapters import (
     ToolAssetAdapterFieldResponse,
     ToolAssetAdapterRegistration,
@@ -44,6 +42,8 @@ def resolve_adapter_registry() -> ToolAssetAdapterRegistry | None:
 
 def synthetic_adapter(command):
     global _CALLS
+    import frappe
+
     if not _enabled() or getattr(getattr(frappe, "session", None), "user", None) != os.environ.get("NPI_TOOL_ASSET_WORKER_USER"):
         raise RuntimeError("Tool Asset synthetic adapter scope is invalid.")
     _CALLS += 1

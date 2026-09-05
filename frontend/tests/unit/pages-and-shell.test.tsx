@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { AppShell as ProductionAppShell } from "../../src/app/app-shell";
 import { App } from "../../src/app/app";
 import type { AppRoute } from "../../src/app/router";
+import type { ERPConnectionStatusDataSource } from "../../src/api/erp-connection-status-data-source";
 import { LiveMyWorkDataSource } from "../../src/api/my-work-data-source";
 import type { ProjectControlsDataSource } from "../../src/api/project-controls-data-source";
 import { NpiTransportError } from "../../src/api/http";
@@ -193,6 +194,49 @@ describe("application shell behavior", () => {
     expect(
       screen.queryByText("Production environment"),
     ).not.toBeInTheDocument();
+  });
+
+  it("reports the confirmed ERPNext test connection and incomplete project synchronization", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(response(sessionBootstrap("en", "a".repeat(32)))),
+    );
+    const erpConnectionStatusDataSource: ERPConnectionStatusDataSource = {
+      loadStatus: vi.fn().mockResolvedValue({
+        schemaVersion: 1,
+        targetSystem: "ERPNEXT",
+        targetEnvironment: "test",
+        connectionState: "connected",
+        lastConfirmedAt: "2026-09-05T16:43:25Z",
+        capabilities: {
+          authorizationSynchronization: true,
+          itemCommands: true,
+          projectSynchronization: false,
+          reportingSynchronization: false,
+        },
+      }),
+    };
+
+    renderWithLocale(
+      <AppShell
+        erpConnectionStatusDataSource={erpConnectionStatusDataSource}
+        navigate={vi.fn()}
+        route={route("project", "/projects/example")}
+      >
+        <p>Live Project workspace</p>
+      </AppShell>,
+      "en",
+      "/projects/example",
+    );
+
+    expect(
+      await screen.findByText(
+        "Connected to the ERPNext test environment. Project synchronization is not yet enabled.",
+      ),
+    ).toBeVisible();
+    expect(erpConnectionStatusDataSource.loadStatus).toHaveBeenCalledOnce();
   });
 
   it("keeps the legacy execution route backed by the explicit prototype", async () => {
@@ -713,7 +757,7 @@ describe("application shell behavior", () => {
 
     expect(
       screen.getByText(
-        "Live project data. No production ERPNext system is connected.",
+        "ERPNext connection status could not be confirmed.",
       ),
     ).toBeVisible();
     expect(
@@ -796,7 +840,7 @@ describe("application shell behavior", () => {
 
     expect(
       screen.getByText(
-        "Live My Work data. No production ERPNext system is connected.",
+        "ERPNext connection status could not be confirmed.",
       ),
     ).toBeVisible();
     expect(

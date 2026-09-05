@@ -16,6 +16,7 @@ import { prototypeUsabilityRecorder } from "../telemetry/recorder";
 import { LiveProjectControlsDataSource } from "../api/project-controls-data-source";
 import { LiveReportingDataSource } from "../api/reporting-data-source";
 import { LiveCollaborationDataSource } from "../api/collaboration-data-source";
+import { LiveERPConnectionStatusDataSource } from "../api/erp-connection-status-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -44,6 +45,7 @@ const DataExchangeRoute = lazy(() => import("./data-exchange-route"));
 const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
 const liveReportingDataSource = new LiveReportingDataSource();
 const liveCollaborationDataSource = new LiveCollaborationDataSource();
+const liveERPConnectionStatusDataSource = new LiveERPConnectionStatusDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -239,6 +241,7 @@ export function App(): React.JSX.Element {
     <>
       <AppShell
         collaborationDataSource={liveCollaborationDataSource}
+        erpConnectionStatusDataSource={liveERPConnectionStatusDataSource}
         navigate={guardedNavigate}
         projectControlsDataSource={liveProjectControlsDataSource}
         reportingDataSource={liveReportingDataSource}

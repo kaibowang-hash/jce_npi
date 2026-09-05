@@ -351,7 +351,7 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
                 setattr(value, missing, None)
                 value._validate_mbom_v2(previous)
 
-    def test_checkpoint_three_adds_only_closed_worker_and_network_free_fixture(self) -> None:
+    def test_sandbox_connector_is_the_only_mbom_network_runtime(self) -> None:
         files = {path.name for path in MBOM_ROOT.glob("*.py")}
         self.assertEqual(
             files,
@@ -368,20 +368,25 @@ class Phase8MbomPublishMetadataTest(unittest.TestCase):
                 "worker.py",
                 "worker_repository.py",
                 "runtime_fixture.py",
+                "connector_runtime.py",
             },
         )
-        combined = "\n".join(
-            path.read_text(encoding="utf-8") for path in MBOM_ROOT.glob("*.py")
-        ).casefold()
+        sources = {
+            path.name: path.read_text(encoding="utf-8").casefold()
+            for path in MBOM_ROOT.glob("*.py")
+        }
+        connector = sources.pop("connector_runtime.py")
+        self.assertIn("session_factory = requests.session", connector)
+        combined = "\n".join(sources.values())
+        self.assertNotIn("requests" + ".", combined)
         for forbidden in (
-            "requests" + ".",
             "httpx" + ".",
             "urllib." + "request",
             "socket" + ".",
             "frappe.db" + ".sql",
             "adapter.call",
         ):
-            self.assertNotIn(forbidden, combined)
+            self.assertNotIn(forbidden, f"{combined}\n{connector}")
         diagnostics = (MBOM_ROOT / "diagnostics.py").read_text(encoding="utf-8")
         worker_repository = (MBOM_ROOT / "worker_repository.py").read_text(
             encoding="utf-8"

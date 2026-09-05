@@ -16,7 +16,7 @@
     {"fieldname": "profile_version", "fieldtype": "Int", "label": "Source Profile Version", "reqd": 1, "read_only": 1},
     {"fieldname": "source_system", "fieldtype": "Select", "label": "Source System", "options": "ERPNEXT", "reqd": 1, "read_only": 1},
     {"fieldname": "target_system", "fieldtype": "Select", "label": "Target System", "options": "NPI_ONE", "reqd": 1, "read_only": 1},
-    {"fieldname": "source_object_type", "fieldtype": "Select", "label": "Source Object Type", "options": "Quotation\nSales Order", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_object_type", "fieldtype": "Select", "label": "Source Object Type", "options": "Quotation\nSales Order\nProject", "reqd": 1, "read_only": 1},
     {"fieldname": "source_object_id", "fieldtype": "Data", "label": "Source Object ID", "reqd": 1, "read_only": 1, "search_index": 1},
     {"fieldname": "highest_received_version", "fieldtype": "Int", "label": "Highest Received Version", "reqd": 1, "read_only": 1},
     {"fieldname": "highest_payload_hash", "fieldtype": "Data", "label": "Highest Payload Hash", "reqd": 1, "read_only": 1},

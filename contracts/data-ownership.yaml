@@ -285,7 +285,7 @@ objects:
     owner_system: ERPNEXT
     npi_view: authenticated_append_only_receipt
     fields:
-      event_source_identity_version_and_submitted_payload: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: EXACT_EVENT_AND_SOURCE_VERSION_HASH}
+      event_source_identity_version_and_intake_payload: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: EXACT_EVENT_AND_SOURCE_VERSION_HASH}
       service_actor_trace_correlation_and_occurrence: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_SIGNED_ENVELOPE}
       tenant_profile_policy_and_project_mapping: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: NONE, conflict: SERVER_RESOLVED_FAIL_CLOSED}
       raw_hmac_secret_signature_header_cookie_and_authorization: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}

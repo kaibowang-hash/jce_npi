@@ -74,6 +74,12 @@ _ROUTES = {
     ("PUT", "/api/npi/v1/integration/erpnext/user-authorization"): (
         "npi_integration.authorization_projection_api.replace_user_authorization"
     ),
+    ("GET", "/api/npi/v1/integration/erpnext/status"): (
+        "npi_integration.erp_connection_status_api.get_erpnext_connection_status"
+    ),
+    ("GET", "/api/npi/v1/integration/erpnext/project-source-receipts"): (
+        "npi_integration.project_source_status_api.get_project_source_receipt"
+    ),
     ("GET", "/api/npi/v1/me/work"): "npi_core.my_work_api.get_my_work",
     ("GET", "/api/npi/v1/me/preferences/my-work-grid"): (
         "npi_core.grid_personalization_api.get_my_work_grid_preferences"

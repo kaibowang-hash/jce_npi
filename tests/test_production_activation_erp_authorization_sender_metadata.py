@@ -22,7 +22,7 @@ class ProductionActivationERPAuthorizationSenderMetadataTest(unittest.TestCase):
         transport = (APP / "transport.py").read_text(encoding="utf-8")
         pyproject = (APP.parent / "pyproject.toml").read_text(encoding="utf-8")
         self.assertIn('app_name = "npi_erpnext_connector"', hooks)
-        self.assertIn("required_apps = []", hooks)
+        self.assertIn('required_apps = ["erpnext"]', hooks)
         self.assertNotIn("npi_core", "\n".join((hooks, config, transport, pyproject)))
         self.assertIn('DISABLED_KEY = "npi_erp_authorization_sender_disabled"', config)
         self.assertIn("configuration.get(DISABLED_KEY) is False", config)
@@ -95,11 +95,11 @@ class ProductionActivationERPAuthorizationSenderMetadataTest(unittest.TestCase):
         self.assertIn("deny_delivery_delete()", controller)
         self.assertIn("canonical_hash(event) != self.event_hash", controller)
 
-    def test_only_two_permission_bypasses_are_capability_wrapped(self) -> None:
+    def test_all_permission_bypasses_are_capability_wrapped(self) -> None:
         validation = (APP / "frappe_validation.py").read_text(encoding="utf-8")
         repository = (APP / "frappe_repository.py").read_text(encoding="utf-8")
         worker = (APP / "worker.py").read_text(encoding="utf-8")
-        self.assertEqual(validation.count("ignore_permissions=True"), 2)
+        self.assertEqual(validation.count("ignore_permissions=True"), 16)
         self.assertNotIn("ignore_permissions", repository)
         self.assertNotIn("ignore_permissions", worker)
         tree = ast.parse(validation)
@@ -110,23 +110,44 @@ class ProductionActivationERPAuthorizationSenderMetadataTest(unittest.TestCase):
         }
         self.assertIn("_authorize", ast.unparse(functions["insert_delivery_document"]))
         self.assertIn("_authorize", ast.unparse(functions["save_delivery_document"]))
+        for function in (
+            "insert_tool_asset_target_document",
+            "save_tool_asset_target_document",
+            "insert_tool_asset_support_document",
+            "save_tool_asset_support_document",
+        ):
+            self.assertIn("_authorize_tool_asset_", ast.unparse(functions[function]))
 
     def test_visible_strings_have_symmetric_direct_chinese_translations(self) -> None:
-        metadata = json.loads(
-            (DOCTYPE / "npi_erp_authorization_delivery.json").read_text(
-                encoding="utf-8"
+        doctype_directories = (
+            DOCTYPE,
+            APP / "npi_erpnext_connector/doctype/npi_erp_item_mapping",
+            APP / "npi_erpnext_connector/doctype/npi_erp_item_operation_receipt",
+            APP / "npi_erpnext_connector/doctype/npi_erp_project_delivery",
+            APP / "npi_erpnext_connector/doctype/npi_erp_project_mapping",
+        )
+        sources: set[str] = {"NPI ERP Integration Service"}
+        for directory in doctype_directories:
+            metadata = json.loads(
+                (directory / f"{directory.name}.json").read_text(encoding="utf-8")
             )
+            sources.add(metadata["name"])
+            sources.update(field["label"] for field in metadata["fields"])
+            sources.update(
+                option
+                for field in metadata["fields"]
+                if field.get("fieldtype") == "Select"
+                for option in str(field.get("options", "")).splitlines()
+                if option
+            )
+        python_sources = (
+            *(directory / f"{directory.name}.py" for directory in doctype_directories),
+            APP / "item_api.py",
+            APP / "worker.py",
+            APP / "project_worker.py",
+            APP / "frappe_validation.py",
         )
-        sources = {metadata["name"]}
-        sources.update(field["label"] for field in metadata["fields"])
-        sources.update(
-            option
-            for field in metadata["fields"]
-            if field.get("fieldtype") == "Select"
-            for option in str(field.get("options", "")).splitlines()
-            if option
-        )
-        for path in (DOCTYPE / "npi_erp_authorization_delivery.py", APP / "worker.py", APP / "frappe_validation.py"):
+        for path in python_sources:
             tree = ast.parse(path.read_text(encoding="utf-8"))
             sources.update(
                 str(node.args[0].value)

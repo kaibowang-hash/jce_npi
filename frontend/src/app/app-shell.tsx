@@ -20,6 +20,10 @@ import {
 } from "../api/project-controls-data-source";
 import type { ReportingDataSource } from "../api/reporting-data-source";
 import type { CollaborationDataSource } from "../api/collaboration-data-source";
+import type {
+  ERPConnectionStatus,
+  ERPConnectionStatusDataSource,
+} from "../api/erp-connection-status-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import { scenarioLabel } from "../i18n/copy";
 import { supportedLocales, useI18n, type Locale } from "../i18n/runtime";
@@ -110,6 +114,7 @@ export function AppShell({
   projectControlsDataSource,
   reportingDataSource,
   collaborationDataSource,
+  erpConnectionStatusDataSource,
   children,
 }: PropsWithChildren<{
   route: AppRoute;
@@ -117,6 +122,7 @@ export function AppShell({
   projectControlsDataSource?: ProjectControlsDataSource | undefined;
   reportingDataSource: ReportingDataSource;
   collaborationDataSource: CollaborationDataSource;
+  erpConnectionStatusDataSource?: ERPConnectionStatusDataSource | undefined;
 }>): React.JSX.Element {
   const {
     locale,
@@ -140,6 +146,12 @@ export function AppShell({
     setNavigationCollapsed,
   } = useI18n();
   const [utilityMessage, setUtilityMessage] = useState<string | null>(null);
+  const [erpConnectionStatus, setERPConnectionStatus] =
+    useState<ERPConnectionStatus | null>(null);
+  const [erpConnectionStatusPending, setERPConnectionStatusPending] =
+    useState(false);
+  const [erpConnectionStatusFailed, setERPConnectionStatusFailed] =
+    useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [navigationTooltip, setNavigationTooltip] =
     useState<NavigationTooltipState | null>(null);
@@ -169,6 +181,44 @@ export function AppShell({
     isLiveExecution;
   const isLiveDataContext =
     isLiveWork || isLiveProjectContext || isLivePortfolio;
+  useEffect(() => {
+    if (
+      !isLiveDataContext ||
+      isPrototypeFallback ||
+      !sessionCommandContext ||
+      !erpConnectionStatusDataSource
+    ) {
+      setERPConnectionStatus(null);
+      setERPConnectionStatusPending(false);
+      setERPConnectionStatusFailed(false);
+      return undefined;
+    }
+    const controller = new AbortController();
+    setERPConnectionStatusPending(true);
+    setERPConnectionStatusFailed(false);
+    void erpConnectionStatusDataSource
+      .loadStatus(controller.signal)
+      .then((status) => {
+        if (!controller.signal.aborted) setERPConnectionStatus(status);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setERPConnectionStatus(null);
+          setERPConnectionStatusFailed(true);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setERPConnectionStatusPending(false);
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [
+    erpConnectionStatusDataSource,
+    isLiveDataContext,
+    isPrototypeFallback,
+    sessionCommandContext,
+  ]);
   const deploymentEnvironmentLabel = isPrototypeFallback
     ? t("Test environment")
     : sessionCommandContext?.deploymentEnvironment === "production"
@@ -177,6 +227,30 @@ export function AppShell({
         ? t("Sandbox environment")
         : t("Deployment environment not confirmed");
   const prototypeNavigationAllowed = !isLiveDataContext;
+  const liveERPStatusMessage = !erpConnectionStatusDataSource
+    ? t("ERPNext connection status could not be confirmed.")
+    : erpConnectionStatusPending
+    ? t("Checking ERPNext connection.")
+    : erpConnectionStatusFailed ||
+        erpConnectionStatus?.connectionState === "unavailable"
+      ? t("ERPNext connection status could not be confirmed.")
+      : erpConnectionStatus?.connectionState === "connected" &&
+          erpConnectionStatus.targetEnvironment === "test"
+        ? isLivePortfolio &&
+          !erpConnectionStatus.capabilities.reportingSynchronization
+          ? t(
+              "Connected to the ERPNext test environment. Reporting synchronization is not yet enabled.",
+            )
+          : isLiveProjectContext &&
+              !erpConnectionStatus.capabilities.projectSynchronization
+            ? t(
+                "Connected to the ERPNext test environment. Project synchronization is not yet enabled.",
+              )
+            : t("Connected to the ERPNext test environment.")
+        : erpConnectionStatus?.connectionState === "partially_connected" &&
+            erpConnectionStatus.targetEnvironment === "test"
+          ? t("The ERPNext test environment is partially connected.")
+          : t("ERPNext is not connected.");
   const liveProjectPath =
     route.projectGlobalId === null
       ? null
@@ -1228,19 +1302,9 @@ export function AppShell({
           >
             <Icon name="info" />
             <strong>
-              {isLiveWork
-                ? t(
-                    "Live My Work data. No production ERPNext system is connected.",
-                  )
-                : isLivePortfolio
-                  ? t(
-                      "Live reporting data. No production ERPNext system is connected.",
-                    )
-                  : isLiveProjectContext
-                    ? t(
-                        "Live project data. No production ERPNext system is connected.",
-                      )
-                    : t("Prototype data - no production system is connected.")}
+              {isLiveDataContext
+                ? liveERPStatusMessage
+                : t("Prototype data - no production system is connected.")}
             </strong>
             {localizationFailure ? (
               <div className="localization-failure">

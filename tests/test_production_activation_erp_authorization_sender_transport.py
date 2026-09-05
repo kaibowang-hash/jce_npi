@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
@@ -10,6 +10,7 @@ from uuid import UUID
 
 ROOT = Path(__file__).resolve().parents[1]
 ERP_APP = ROOT / "apps/npi_erpnext_connector"
+UTC = timezone.utc
 if str(ERP_APP) not in sys.path:
     sys.path.insert(0, str(ERP_APP))
 

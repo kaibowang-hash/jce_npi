@@ -194,7 +194,7 @@ class InboundProjectProfile:
         if (
             any(not isinstance(value, ProjectSourceEventType) for value in self.allowed_event_types)
             or len(set(self.allowed_event_types)) != len(self.allowed_event_types)
-            or set(self.allowed_event_types) != set(PROJECT_SOURCE_EVENT_TYPES)
+            or not set(self.allowed_event_types).issubset(PROJECT_SOURCE_EVENT_TYPES)
         ):
             raise ProjectSourceContractError("Profile event allowlist is invalid.")
         if type(self.keys) is not tuple or not self.keys:

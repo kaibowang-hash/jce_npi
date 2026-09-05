@@ -1,0 +1,26 @@
+[
+  {
+    "doctype": "Role",
+    "name": "NPI ERP Integration Service",
+    "role_name": "NPI ERP Integration Service",
+    "desk_access": 0,
+    "disabled": 0,
+    "is_custom": 0
+  },
+  {
+    "doctype": "Role",
+    "name": "NPI ERP MBOM Integration Service",
+    "role_name": "NPI ERP MBOM Integration Service",
+    "desk_access": 0,
+    "disabled": 0,
+    "is_custom": 0
+  },
+  {
+    "doctype": "Role",
+    "name": "NPI ERP Tool Asset Integration Service",
+    "role_name": "NPI ERP Tool Asset Integration Service",
+    "desk_access": 0,
+    "disabled": 0,
+    "is_custom": 0
+  }
+]
