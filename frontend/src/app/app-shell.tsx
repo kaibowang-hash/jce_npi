@@ -63,6 +63,12 @@ interface NavigationTooltipState {
   top: number;
 }
 
+interface ERPConnectionLoadState {
+  dataSource: ERPConnectionStatusDataSource;
+  failed: boolean;
+  status: ERPConnectionStatus | null;
+}
+
 type QuickCreateState =
   | { kind: "idle" }
   | { kind: "checking" }
@@ -146,12 +152,8 @@ export function AppShell({
     setNavigationCollapsed,
   } = useI18n();
   const [utilityMessage, setUtilityMessage] = useState<string | null>(null);
-  const [erpConnectionStatus, setERPConnectionStatus] =
-    useState<ERPConnectionStatus | null>(null);
-  const [erpConnectionStatusPending, setERPConnectionStatusPending] =
-    useState(false);
-  const [erpConnectionStatusFailed, setERPConnectionStatusFailed] =
-    useState(false);
+  const [erpConnectionLoad, setERPConnectionLoad] =
+    useState<ERPConnectionLoadState | null>(null);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [navigationTooltip, setNavigationTooltip] =
     useState<NavigationTooltipState | null>(null);
@@ -181,44 +183,47 @@ export function AppShell({
     isLiveExecution;
   const isLiveDataContext =
     isLiveWork || isLiveProjectContext || isLivePortfolio;
+  const shouldLoadERPConnectionStatus = Boolean(
+    isLiveDataContext &&
+    !isPrototypeFallback &&
+    sessionCommandContext &&
+    erpConnectionStatusDataSource,
+  );
+  const currentERPConnectionLoad =
+    shouldLoadERPConnectionStatus &&
+    erpConnectionLoad?.dataSource === erpConnectionStatusDataSource
+      ? erpConnectionLoad
+      : null;
+  const erpConnectionStatus = currentERPConnectionLoad?.status ?? null;
+  const erpConnectionStatusPending =
+    shouldLoadERPConnectionStatus && !currentERPConnectionLoad;
+  const erpConnectionStatusFailed = currentERPConnectionLoad?.failed ?? false;
   useEffect(() => {
-    if (
-      !isLiveDataContext ||
-      isPrototypeFallback ||
-      !sessionCommandContext ||
-      !erpConnectionStatusDataSource
-    ) {
-      setERPConnectionStatus(null);
-      setERPConnectionStatusPending(false);
-      setERPConnectionStatusFailed(false);
+    if (!shouldLoadERPConnectionStatus || !erpConnectionStatusDataSource)
       return undefined;
-    }
     const controller = new AbortController();
-    setERPConnectionStatusPending(true);
-    setERPConnectionStatusFailed(false);
     void erpConnectionStatusDataSource
       .loadStatus(controller.signal)
       .then((status) => {
-        if (!controller.signal.aborted) setERPConnectionStatus(status);
+        if (!controller.signal.aborted)
+          setERPConnectionLoad({
+            dataSource: erpConnectionStatusDataSource,
+            failed: false,
+            status,
+          });
       })
       .catch(() => {
-        if (!controller.signal.aborted) {
-          setERPConnectionStatus(null);
-          setERPConnectionStatusFailed(true);
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setERPConnectionStatusPending(false);
+        if (!controller.signal.aborted)
+          setERPConnectionLoad({
+            dataSource: erpConnectionStatusDataSource,
+            failed: true,
+            status: null,
+          });
       });
     return () => {
       controller.abort();
     };
-  }, [
-    erpConnectionStatusDataSource,
-    isLiveDataContext,
-    isPrototypeFallback,
-    sessionCommandContext,
-  ]);
+  }, [erpConnectionStatusDataSource, shouldLoadERPConnectionStatus]);
   const deploymentEnvironmentLabel = isPrototypeFallback
     ? t("Test environment")
     : sessionCommandContext?.deploymentEnvironment === "production"
@@ -230,27 +235,27 @@ export function AppShell({
   const liveERPStatusMessage = !erpConnectionStatusDataSource
     ? t("ERPNext connection status could not be confirmed.")
     : erpConnectionStatusPending
-    ? t("Checking ERPNext connection.")
-    : erpConnectionStatusFailed ||
-        erpConnectionStatus?.connectionState === "unavailable"
-      ? t("ERPNext connection status could not be confirmed.")
-      : erpConnectionStatus?.connectionState === "connected" &&
-          erpConnectionStatus.targetEnvironment === "test"
-        ? isLivePortfolio &&
-          !erpConnectionStatus.capabilities.reportingSynchronization
-          ? t(
-              "Connected to the ERPNext test environment. Reporting synchronization is not yet enabled.",
-            )
-          : isLiveProjectContext &&
-              !erpConnectionStatus.capabilities.projectSynchronization
-            ? t(
-                "Connected to the ERPNext test environment. Project synchronization is not yet enabled.",
-              )
-            : t("Connected to the ERPNext test environment.")
-        : erpConnectionStatus?.connectionState === "partially_connected" &&
+      ? t("Checking ERPNext connection.")
+      : erpConnectionStatusFailed ||
+          erpConnectionStatus?.connectionState === "unavailable"
+        ? t("ERPNext connection status could not be confirmed.")
+        : erpConnectionStatus?.connectionState === "connected" &&
             erpConnectionStatus.targetEnvironment === "test"
-          ? t("The ERPNext test environment is partially connected.")
-          : t("ERPNext is not connected.");
+          ? isLivePortfolio &&
+            !erpConnectionStatus.capabilities.reportingSynchronization
+            ? t(
+                "Connected to the ERPNext test environment. Reporting synchronization is not yet enabled.",
+              )
+            : isLiveProjectContext &&
+                !erpConnectionStatus.capabilities.projectSynchronization
+              ? t(
+                  "Connected to the ERPNext test environment. Project synchronization is not yet enabled.",
+                )
+              : t("Connected to the ERPNext test environment.")
+          : erpConnectionStatus?.connectionState === "partially_connected" &&
+              erpConnectionStatus.targetEnvironment === "test"
+            ? t("The ERPNext test environment is partially connected.")
+            : t("ERPNext is not connected.");
   const liveProjectPath =
     route.projectGlobalId === null
       ? null

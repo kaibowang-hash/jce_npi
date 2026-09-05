@@ -201,22 +201,25 @@ describe("application shell behavior", () => {
     vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(response(sessionBootstrap("en", "a".repeat(32)))),
+      vi
+        .fn()
+        .mockResolvedValue(response(sessionBootstrap("en", "a".repeat(32)))),
     );
+    const loadERPConnectionStatus = vi.fn().mockResolvedValue({
+      schemaVersion: 1,
+      targetSystem: "ERPNEXT",
+      targetEnvironment: "test",
+      connectionState: "connected",
+      lastConfirmedAt: "2026-09-05T16:43:25Z",
+      capabilities: {
+        authorizationSynchronization: true,
+        itemCommands: true,
+        projectSynchronization: false,
+        reportingSynchronization: false,
+      },
+    });
     const erpConnectionStatusDataSource: ERPConnectionStatusDataSource = {
-      loadStatus: vi.fn().mockResolvedValue({
-        schemaVersion: 1,
-        targetSystem: "ERPNEXT",
-        targetEnvironment: "test",
-        connectionState: "connected",
-        lastConfirmedAt: "2026-09-05T16:43:25Z",
-        capabilities: {
-          authorizationSynchronization: true,
-          itemCommands: true,
-          projectSynchronization: false,
-          reportingSynchronization: false,
-        },
-      }),
+      loadStatus: loadERPConnectionStatus,
     };
 
     renderWithLocale(
@@ -236,7 +239,7 @@ describe("application shell behavior", () => {
         "Connected to the ERPNext test environment. Project synchronization is not yet enabled.",
       ),
     ).toBeVisible();
-    expect(erpConnectionStatusDataSource.loadStatus).toHaveBeenCalledOnce();
+    expect(loadERPConnectionStatus).toHaveBeenCalledOnce();
   });
 
   it("keeps the legacy execution route backed by the explicit prototype", async () => {
@@ -756,9 +759,7 @@ describe("application shell behavior", () => {
     );
 
     expect(
-      screen.getByText(
-        "ERPNext connection status could not be confirmed.",
-      ),
+      screen.getByText("ERPNext connection status could not be confirmed."),
     ).toBeVisible();
     expect(
       screen.queryByRole("combobox", { name: "Fixture state" }),
@@ -839,9 +840,7 @@ describe("application shell behavior", () => {
     );
 
     expect(
-      screen.getByText(
-        "ERPNext connection status could not be confirmed.",
-      ),
+      screen.getByText("ERPNext connection status could not be confirmed."),
     ).toBeVisible();
     expect(
       screen.queryByRole("combobox", { name: "Fixture state" }),

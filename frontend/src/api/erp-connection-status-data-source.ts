@@ -28,7 +28,10 @@ function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function exact(value: Record<string, unknown>, keys: readonly string[]): boolean {
+function exact(
+  value: Record<string, unknown>,
+  keys: readonly string[],
+): boolean {
   return (
     Object.keys(value).length === keys.length &&
     keys.every((key) => Object.hasOwn(value, key))
@@ -59,9 +62,12 @@ export function isERPConnectionStatus(
     value.schemaVersion === 1 &&
     value.targetSystem === "ERPNEXT" &&
     (value.targetEnvironment === "test" || value.targetEnvironment === null) &&
-    ["connected", "partially_connected", "not_connected", "unavailable"].includes(
-      String(value.connectionState),
-    ) &&
+    [
+      "connected",
+      "partially_connected",
+      "not_connected",
+      "unavailable",
+    ].includes(String(value.connectionState)) &&
     (value.lastConfirmedAt === null ||
       (typeof value.lastConfirmedAt === "string" &&
         value.lastConfirmedAt.length >= 20 &&
@@ -71,9 +77,7 @@ export function isERPConnectionStatus(
   );
 }
 
-export class LiveERPConnectionStatusDataSource
-  implements ERPConnectionStatusDataSource
-{
+export class LiveERPConnectionStatusDataSource implements ERPConnectionStatusDataSource {
   constructor(private readonly http = new NpiHttpClient()) {}
 
   loadStatus(signal: AbortSignal): Promise<ERPConnectionStatus> {

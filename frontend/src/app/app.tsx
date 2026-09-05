@@ -45,7 +45,8 @@ const DataExchangeRoute = lazy(() => import("./data-exchange-route"));
 const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
 const liveReportingDataSource = new LiveReportingDataSource();
 const liveCollaborationDataSource = new LiveCollaborationDataSource();
-const liveERPConnectionStatusDataSource = new LiveERPConnectionStatusDataSource();
+const liveERPConnectionStatusDataSource =
+  new LiveERPConnectionStatusDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
