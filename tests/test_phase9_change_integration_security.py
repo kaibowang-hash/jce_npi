@@ -115,7 +115,7 @@ class Phase9ChangeIntegrationSecurityTest(unittest.TestCase):
         self.assertIn("allow_redirects=False", transport)
         self.assertIn("session.trust_env = False", transport)
         self.assertIn("MAX_RESPONSE_BYTES = 262_144", transport)
-        self.assertNotIn("frappe.db.sql", transport)
+        self.assertNotIn("frappe" + ".db" + ".sql", transport)
         self.assertNotIn("ignore_permissions", transport)
 
     def test_runtime_defaults_are_synthetic_or_disabled_and_production_origin_is_absent(self) -> None:
