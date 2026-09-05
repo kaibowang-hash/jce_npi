@@ -175,6 +175,18 @@ def save_inbound_project_replay_document(
     return document.save(ignore_permissions=True)
 
 
+def inbound_project_manual_replay_is_active(receipt_id: object) -> bool:
+    """Return true only for the exact receipt bound to the active replay scope."""
+
+    current = _CURRENT_REPLAY.get()
+    return bool(
+        current is not None
+        and str(receipt_id) == current.receipt_id
+        and getattr(getattr(frappe, "session", None), "user", None) == current.actor
+        and getattr(frappe.flags, INBOX_WRITE_FLAG, False)
+    )
+
+
 @contextmanager
 def _flag_scope(name: str) -> Iterator[None]:
     missing = object()

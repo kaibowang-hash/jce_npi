@@ -186,6 +186,19 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
             validation.count("def save_inbound_project_replay_document("),
             1,
         )
+        self.assertEqual(
+            validation.count("def inbound_project_manual_replay_is_active("),
+            1,
+        )
+        inbox = (
+            DOCTYPE_ROOT / "npi_inbox_message/npi_inbox_message.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "inbound_project_manual_replay_is_active(document.name)", inbox
+        )
+        self.assertIn('previous_state == "failed_retryable"', inbox)
+        self.assertIn('state == "pending"', inbox)
+        self.assertIn("attempt_count != previous_attempt", inbox)
         self.assertNotIn("requests" + ".", validation.casefold())
         self.assertNotIn("frappe.db" + ".sql", validation.casefold())
         bff = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")

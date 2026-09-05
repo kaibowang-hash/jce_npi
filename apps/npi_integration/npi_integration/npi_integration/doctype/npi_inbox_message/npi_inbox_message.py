@@ -27,6 +27,7 @@ from npi_integration.inbound_project.domain import (
 from npi_integration.inbound_project.frappe_validation import (
     deny_inbound_project_delete,
     deny_legacy_inbox_update,
+    inbound_project_manual_replay_is_active,
     require_inbox_write,
 )
 from npi_integration.integration_operations.frappe_validation import (
@@ -117,6 +118,7 @@ class NPIInboxMessage(Document):
             and not (
                 str(previous.state) == "failed_retryable"
                 and str(self.state) == "pending"
+                and inbound_project_manual_replay_is_active(self.name)
                 and integration_operation_manual_replay_is_active(
                     "receive_project_submission"
                 )
@@ -420,7 +422,23 @@ def _validate_processing_state(document: NPIInboxMessage, previous: object | Non
     if previous is None:
         return
     previous_state = str(getattr(previous, "state", "") or "")
+    manual_replay = bool(
+        previous_state == "failed_retryable"
+        and state == "pending"
+        and inbound_project_manual_replay_is_active(document.name)
+        and integration_operation_manual_replay_is_active(
+            "receive_project_submission"
+        )
+    )
     if previous_state in _TERMINAL_STATES:
+        if manual_replay:
+            previous_attempt = int(getattr(previous, "attempt_count", 0) or 0)
+            if attempt_count != previous_attempt:
+                frappe.throw(
+                    _("The Inbox processing transition is not allowed."),
+                    frappe.ValidationError,
+                )
+            return
         assert_immutable_fields(document, previous, _PROCESSING_FIELDS)
         return
     allowed = {

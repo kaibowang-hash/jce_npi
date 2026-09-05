@@ -5,6 +5,7 @@ import importlib.util
 import sys
 import types
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
@@ -131,6 +132,73 @@ class Phase8IntegrationOperationsSecurityTest(unittest.TestCase):
                     allowed=allowed,
                 ):
                     pass
+
+    def test_inbound_replay_capability_is_bound_to_one_receipt(self) -> None:
+        permission_error = type("PinnedPermissionError", (Exception,), {})
+        frappe = types.ModuleType("frappe")
+        frappe._ = lambda value: value
+        frappe.PermissionError = permission_error
+        frappe.flags = types.SimpleNamespace()
+        frappe.session = types.SimpleNamespace(user="service@example.invalid")
+        frappe.get_roles = lambda _user: ["NPI API User"]
+        frappe.db = types.SimpleNamespace(
+            get_value=lambda *_args, **_kwargs: {
+                "enabled": 1,
+                "user_type": "System User",
+            }
+        )
+
+        def throw(message, error=None):
+            raise (error or permission_error)(message)
+
+        frappe.throw = throw
+        central = types.ModuleType(
+            "npi_integration.integration_operations.frappe_validation"
+        )
+
+        @contextmanager
+        def manual_replay(**_values):
+            yield
+
+        central.integration_operation_manual_replay = manual_replay
+        path = (
+            ROOT
+            / "apps/npi_integration/npi_integration/inbound_project/frappe_validation.py"
+        )
+        spec = importlib.util.spec_from_file_location(
+            "p807_inbound_project_guard",
+            path,
+        )
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        guard = importlib.util.module_from_spec(spec)
+        with patch.dict(
+            sys.modules,
+            {
+                "frappe": frappe,
+                central.__name__: central,
+                spec.name: guard,
+            },
+        ):
+            spec.loader.exec_module(guard)
+            with guard.inbound_project_manual_replay_write(
+                actor_user_id="service@example.invalid",
+                receipt_id="receipt-one",
+            ):
+                self.assertTrue(
+                    guard.inbound_project_manual_replay_is_active("receipt-one")
+                )
+                self.assertFalse(
+                    guard.inbound_project_manual_replay_is_active("receipt-two")
+                )
+                frappe.session.user = "different@example.invalid"
+                self.assertFalse(
+                    guard.inbound_project_manual_replay_is_active("receipt-one")
+                )
+                frappe.session.user = "service@example.invalid"
+            self.assertFalse(
+                guard.inbound_project_manual_replay_is_active("receipt-one")
+            )
 
     def test_checkpoint_two_routes_repository_and_queue_are_fixed_and_bounded(self) -> None:
         files = list(PACKAGE.glob("*.py"))
