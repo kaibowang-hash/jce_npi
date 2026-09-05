@@ -165,8 +165,8 @@ revocation, stale/conflict and timeout-after-commit behavior, then enable
 enforcement last:
 
 ```text
-bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_projection_routes_disabled false
-bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_projection_enforced true
+bench --site <launchflow-site> set-config npi_p9_04_authorization_projection_routes_disabled False --parse
+bench --site <launchflow-site> set-config npi_p9_04_authorization_projection_enforced True --parse
 ```
 
 Rollback sets enforcement to `false` first and closes ingress by setting

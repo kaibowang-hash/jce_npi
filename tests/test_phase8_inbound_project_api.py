@@ -151,6 +151,14 @@ class Phase8InboundProjectApiTest(unittest.TestCase):
         self.frappe = types.ModuleType("frappe")
         self.frappe._ = lambda source: source
         self.frappe.flags = types.SimpleNamespace()
+        self.frappe.session = types.SimpleNamespace(user="Guest")
+        self.user_transitions: list[tuple[str, str]] = []
+
+        def set_user(user: str) -> None:
+            self.user_transitions.append((self.frappe.session.user, user))
+            self.frappe.session.user = user
+
+        self.frappe.set_user = set_user
         self.frappe.local = types.SimpleNamespace(
             request=None,
             response=AttrDict(),
@@ -236,10 +244,40 @@ class Phase8InboundProjectApiTest(unittest.TestCase):
     def reset_response(self) -> None:
         self.frappe.flags = types.SimpleNamespace()
         self.frappe.local.response = AttrDict()
+        self.frappe.session.user = "Guest"
+        self.user_transitions.clear()
         self.events.clear()
         self.partial_rows.clear()
         self.repository = FakeRepository(self)
         self.frappe.db.fail_commit = False
+
+    def test_fixed_worker_is_enqueued_as_system_user_and_request_user_is_restored(
+        self,
+    ) -> None:
+        queued: list[tuple[tuple[object, ...], dict[str, object], str]] = []
+
+        def enqueue(*args: object, **kwargs: object) -> None:
+            queued.append((args, kwargs, self.frappe.session.user))
+
+        self.frappe.enqueue = enqueue
+        receipt_id = UUID(int=801)
+
+        self.api._enqueue_after_commit(receipt_id)
+
+        self.assertEqual(len(queued), 1)
+        args, kwargs, queued_user = queued[0]
+        self.assertEqual(
+            args,
+            ("npi_integration.inbound_project.worker.process_inbox_message",),
+        )
+        self.assertEqual(kwargs["receipt_id"], str(receipt_id))
+        self.assertEqual(kwargs["job_id"], f"inbound-project-{receipt_id}")
+        self.assertEqual(queued_user, "Administrator")
+        self.assertEqual(self.frappe.session.user, "Guest")
+        self.assertEqual(
+            self.user_transitions,
+            [("Guest", "Administrator"), ("Administrator", "Guest")],
+        )
 
     def assert_response(self, status: int, code: str | None = None) -> dict[str, object]:
         body = self.frappe.flags.npi_response_body

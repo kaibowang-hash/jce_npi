@@ -62,7 +62,7 @@ placeholders; role, Project and origin values must come from the approved
 mapping, not from this document.
 
 ```text
-bench --site <erp-site> set-config --parse npi_erp_authorization_sender_disabled true
+bench --site <erp-site> set-config npi_erp_authorization_sender_disabled True --parse
 bench --site <erp-site> set-config npi_erp_authorization_target_base_url <launchflow-https-origin>
 bench --site <erp-site> set-config --parse npi_erp_authorization_role_map '<approved-json-object>'
 bench --site <erp-site> set-config --parse npi_erp_authorization_project_map '<approved-json-object>'
@@ -82,8 +82,8 @@ initial seed:
 ```text
 bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_role_allowlist '<approved-sorted-json-role-array>'
 bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_max_ttl_seconds '<approved-integer-300-to-86400>'
-bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_projection_enforced false
-bench --site <launchflow-site> set-config --parse npi_p9_04_authorization_projection_routes_disabled false
+bench --site <launchflow-site> set-config npi_p9_04_authorization_projection_enforced False --parse
+bench --site <launchflow-site> set-config npi_p9_04_authorization_projection_routes_disabled False --parse
 ```
 
 ## Sandbox activation sequence

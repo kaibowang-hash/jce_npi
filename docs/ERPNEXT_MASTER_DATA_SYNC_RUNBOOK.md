@@ -47,7 +47,7 @@ sides remain inert until the exact booleans below are changed.
 ERPNext test Site:
 
 ```text
-bench --site <erpnext-test-site> set-config --parse npi_erp_master_data_sender_disabled true
+bench --site <erpnext-test-site> set-config npi_erp_master_data_sender_disabled True --parse
 bench --site <erpnext-test-site> set-config npi_erp_master_data_target_base_url <launchflow-https-origin>
 bench --site <erpnext-test-site> set-config npi_erp_master_data_source_environment test
 ```
@@ -55,7 +55,7 @@ bench --site <erpnext-test-site> set-config npi_erp_master_data_source_environme
 LaunchFlow Site:
 
 ```text
-bench --site <launchflow-site> set-config --parse npi_erp_master_data_routes_disabled true
+bench --site <launchflow-site> set-config npi_erp_master_data_routes_disabled True --parse
 ```
 
 The connector supports Frappe/ERPNext majors 15 and 16 and uses Python 3.10
@@ -71,13 +71,13 @@ is modified.
 3. Enable the LaunchFlow receiver first:
 
    ```text
-   bench --site <launchflow-site> set-config --parse npi_erp_master_data_routes_disabled false
+   bench --site <launchflow-site> set-config npi_erp_master_data_routes_disabled False --parse
    ```
 
 4. Enable the ERPNext test sender:
 
    ```text
-   bench --site <erpnext-test-site> set-config --parse npi_erp_master_data_sender_disabled false
+   bench --site <erpnext-test-site> set-config npi_erp_master_data_sender_disabled False --parse
    ```
 
 5. Queue one full, operation-specific reconciliation:

@@ -270,14 +270,31 @@ def _single_hook(name: str) -> Callable[..., Any] | None:
 
 
 def _enqueue_after_commit(receipt_id: UUID) -> None:
-    frappe.enqueue(
-        "npi_integration.inbound_project.worker.process_inbox_message",
-        queue="short",
-        enqueue_after_commit=False,
-        deduplicate=True,
-        job_id=f"inbound-project-{receipt_id}",
-        receipt_id=str(receipt_id),
-    )
+    # Frappe persists the current request user on every queued job. This route is
+    # intentionally guest-accessible because authentication is the signed raw
+    # webhook, so enqueuing directly would run the already-authenticated receipt
+    # as Guest and fail the controlled Project write. Only the fixed worker and
+    # the already-persisted receipt identity cross this short system boundary;
+    # the worker revalidates the frozen profile, policy, source head and service
+    # actor before creating any business record.
+    previous_user = getattr(getattr(frappe, "session", None), "user", None)
+    if not isinstance(previous_user, str) or not previous_user:
+        raise RuntimeError("Inbound Project enqueue user context is unavailable.")
+    switched_user = previous_user != "Administrator"
+    if switched_user:
+        frappe.set_user("Administrator")
+    try:
+        frappe.enqueue(
+            "npi_integration.inbound_project.worker.process_inbox_message",
+            queue="short",
+            enqueue_after_commit=False,
+            deduplicate=True,
+            job_id=f"inbound-project-{receipt_id}",
+            receipt_id=str(receipt_id),
+        )
+    finally:
+        if switched_user:
+            frappe.set_user(previous_user)
 
 
 def _stage_success(
