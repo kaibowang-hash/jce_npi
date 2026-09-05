@@ -25,6 +25,10 @@ AUTHORIZATION_PROJECTION_ROOT = (
 ERP_AUTHORIZATION_SENDER_ROOT = (
     APP_ROOT / "npi_erpnext_connector/npi_erpnext_connector"
 )
+MASTER_DATA_ROOT = APP_ROOT / "npi_integration/npi_integration/master_data"
+TRIAL_SUMMARY_ROOT = (
+    APP_ROOT / "npi_integration/npi_integration/trial_summary_publish"
+)
 EXPECTED_PERMISSION_CALLS = Counter(
     {
         (
@@ -225,6 +229,72 @@ EXPECTED_PERMISSION_CALLS = Counter(
             "document",
             "save",
         ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_trial_summary_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_engineering_change_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "insert_project_delivery_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "frappe_validation.py"),
+            "save_project_delivery_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "master_data_validation.py"),
+            "insert_master_data_delivery_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_AUTHORIZATION_SENDER_ROOT / "master_data_validation.py"),
+            "save_master_data_delivery_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(MASTER_DATA_ROOT / "frappe_validation.py"),
+            "insert_master_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(MASTER_DATA_ROOT / "frappe_validation.py"),
+            "save_master_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(MASTER_DATA_ROOT / "frappe_validation.py"),
+            "insert_master_audit",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(TRIAL_SUMMARY_ROOT / "frappe_validation.py"),
+            "insert_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(TRIAL_SUMMARY_ROOT / "frappe_validation.py"),
+            "save_support_document",
+            "document",
+            "save",
+        ): 1,
     }
 )
 
@@ -297,7 +367,7 @@ def _scan_permission_paths(paths: list[Path] | tuple[Path, ...]):
 
 
 class Phase8ItemPublishSecurityTest(unittest.TestCase):
-    def test_ignore_permissions_is_exactly_thirty_three_controlled_calls(self) -> None:
+    def test_ignore_permissions_matches_the_complete_controlled_call_catalog(self) -> None:
         calls, violations = _scan_permission_paths(tuple(APP_ROOT.rglob("*.py")))
         self.assertEqual(violations, [])
         self.assertEqual(Counter(calls), EXPECTED_PERMISSION_CALLS)
