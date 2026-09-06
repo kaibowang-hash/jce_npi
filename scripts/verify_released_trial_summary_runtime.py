@@ -770,6 +770,13 @@ def cumulative_protected_context(
         "integration:NPI ERP Project Publish Request",
         "integration:NPI ERP Project Publish Attempt",
         "integration:NPI ERP Project Publish Result",
+        # Retaining and revising the exact Released Trial Summary is expected
+        # to append its own delivery Outbox rows. Those rows are verified by
+        # the dedicated P8-08 delivery runtime; they are not predecessor truth
+        # for the P7-07 immutability assertion below.
+        "integration:NPI Trial Summary Delivery",
+        "integration:NPI Trial Summary Delivery Attempt",
+        "integration:NPI Trial Summary Delivery Result",
         "audit:non-p706",
     }
     return {
