@@ -145,6 +145,13 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
             **values,
         )
 
+    def tooling_import_batches(self, project_id: UUID) -> dict[str, object] | None:
+        response = super().tooling_import_batches(project_id)
+        if response is None:
+            return None
+        response["permissions"] = self._execution_permissions(None)
+        return response
+
     def tooling_import_batch_detail(
         self,
         project_id: UUID,
@@ -904,7 +911,10 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
     # Persistence and execution helpers follow. They intentionally keep raw
     # workbook values out of logs, audits, receipts and normal detail payloads.
 
-    def _execution_permissions(self, source: ToolingImportSource) -> dict[str, bool]:
+    def _execution_permissions(
+        self,
+        source: ToolingImportSource | None,
+    ) -> dict[str, bool]:
         manage = self._is_internal_system_manager()
         activation = self._mapping_authority_from_store(source)
         available = activation.get("state") == "approved_fixture"

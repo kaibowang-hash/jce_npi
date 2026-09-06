@@ -1,18 +1,27 @@
 version: '1.2'
-overall_status: IMPLEMENTATION_COMPLETE
-technical_implementation_complete: true
+overall_status: IN_PROGRESS_TRIAL_HOTFIX
+technical_implementation_complete: false
 production_ready: false
 current_phase: 9
-updated_at: '2026-09-06T17:48:51+07:00'
+updated_at: '2026-09-06T18:03:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION
-current_task_status: IMPLEMENTATION_COMPLETE
-current_task_completed_stage: LEVEL_3_DEPLOYMENT_AND_LIVE_UAT_PASS
-current_task_next_stage: COMPLETE
-current_task_next_stage_status: COMPLETE
+current_task: PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX
+current_task_status: IN_PROGRESS_IMPLEMENTATION
+current_task_completed_stage: ROOT_CAUSE_PROVEN
+current_task_next_stage: LEVEL_1_AND_LEVEL_2
+current_task_next_stage_status: AUTHORIZED
 resumed_product_task: COMPLETE
 resumed_product_task_status: COMPLETE
+tooling_import_collection_contract_hotfix:
+  task_id: PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX
+  target_environment: LAUNCHFLOW_ONLY
+  production_erpnext_contact: false
+  root_cause: COLLECTION_RETURNED_OLD_SEVEN_FIELD_PERMISSION_CONTRACT
+  expected_permission_fields: 14
+  schema_change: false
+  business_data_verification_mutation: false
+  status: IN_PROGRESS_IMPLEMENTATION
 erpnext_bidirectional_trial_integration:
   task_id: PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION
   target_environment: ERPNEXT_TEST_ONLY

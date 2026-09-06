@@ -1,6 +1,17 @@
 # Next Action
 
 Status:
+`PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IN_PROGRESS_IMPLEMENTATION`
+
+Patch the Tooling import batch collection to emit the full fourteen-field
+permission contract, enforce that exact shape in the controlled runtime, and
+run the affected Level 1/2 checks. Then run exact-SHA ordinary CI and Level 3,
+take a fresh LaunchFlow backup, deploy the immutable backend/SPA pair and
+verify the authenticated route without creating business records. Do not
+activate production mapping, change ERPNext-test or contact production
+ERPNext. Marker: `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX`.
+
+Status:
 `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION — IMPLEMENTATION_COMPLETE`
 
 Exact product release `3fd0f084d8d63549affbecd2b1b8ccc07107e4c3`

@@ -149,6 +149,23 @@ IMPORT_DOCTYPES = (
     "NPI Tooling Import Command Idempotency",
 )
 
+IMPORT_PERMISSION_NAMES = {
+    "view",
+    "registerSource",
+    "inspect",
+    "createMappingProposal",
+    "createPreview",
+    "confirmPreview",
+    "activateProductionMapping",
+    "execute",
+    "retry",
+    "createCorrectionArtifact",
+    "downloadCorrectionArtifact",
+    "reconcile",
+    "evaluateRollback",
+    "rollback",
+}
+
 
 def deterministic_uuid(label: str) -> str:
     seeded = uuid5(NAMESPACE_URL, f"npi-one:p6-07:{FIXTURE_RUN_ID}:{label}")
@@ -228,6 +245,17 @@ def tooling_request(*args, query_key: str = "query", **kwargs):
         *args,
         query_key=f"p607-{query_key}",
         **kwargs,
+    )
+
+
+def validate_collection_permissions(value: object) -> None:
+    require(
+        isinstance(value, dict)
+        and set(value) == IMPORT_PERMISSION_NAMES
+        and all(type(item) is bool for item in value.values())
+        and value.get("view") is True
+        and value.get("activateProductionMapping") is False,
+        "P6-07 import collection permission contract drifted",
     )
 
 
@@ -1552,6 +1580,7 @@ def run_fresh(
         empty.status == 200 and empty.body.get("batches") == [],
         "P6-07 fresh import collection was not empty",
     )
+    validate_collection_permissions(empty.body.get("permissions"))
     guest = tooling_request(
         urllib.request.build_opener(),
         base_url,
@@ -1624,6 +1653,7 @@ def run_replay(actor, base_url: str, csrf_token: str) -> dict[str, object]:
         collection.status == 200 and isinstance(batches, list) and len(batches) == 2,
         "P6-07 replay collection truth drifted",
     )
+    validate_collection_permissions(collection.body.get("permissions"))
     scenarios = []
     for index, fixture in enumerate(FIXTURES, start=1):
         batch = exact_single(
@@ -1758,6 +1788,7 @@ def route_disable_probe(actor, base_url: str, expected_mode: str) -> None:
         imports.status == 200 and len(imports.body.get("batches", [])) == 2,
         "P6-07 route recovery lost retained import history",
     )
+    validate_collection_permissions(imports.body.get("permissions"))
 
 
 def verify_tooling_import_runtime_schema(fixture_run_id: str) -> dict[str, object]:

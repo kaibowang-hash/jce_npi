@@ -12191,3 +12191,20 @@ P9-01 Level 3.
 - PA-11 is implementation-complete and ready for controlled test trial. No
   production ERPNext or `JCE-Core` access occurred or is authorized;
   production readiness remains false.
+
+## 2026-09-06 PA-12 Tooling import collection contract hotfix
+
+- Controller marker: `PA-12 Tooling import collection contract hotfix`.
+- The user reported that the authenticated Tooling List import page rejected
+  its response and explicitly requested a direct hotfix. The root cause is an
+  exact cross-layer drift: the execution repository inherited the original
+  seven-field collection permission payload while the already-frozen frontend
+  parser requires the complete fourteen-field execution contract.
+- The bounded repair may override only the collection projection, accept no
+  source when calculating collection-level execution permissions, and add
+  repository plus controlled-runtime regression proof. It must not weaken the
+  strict frontend validator or activate production mapping authority.
+- Require Level 1, Level 2, exact-SHA ordinary CI and full Level 3 before a
+  fresh LaunchFlow backup and exact backend/SPA deployment. Verify the affected
+  authenticated route without workbook upload or business-record mutation.
+  ERPNext-test and production ERPNext are not deployment targets.

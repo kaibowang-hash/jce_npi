@@ -21,6 +21,18 @@ permission and master-data direction. It may activate only after exact-SHA
 ordinary and Level 3 gates, encrypted backups and live test-environment
 verification. Production ERPNext and `JCE-Core` remain out of scope.
 
+## PA-12 authorized Tooling import contract hotfix
+
+On 2026-09-06 the user reported that the authenticated Tooling List import
+workspace rejected the service response and explicitly requested a direct
+hotfix. `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX` allocates only
+`FR-TX-012`: align the backend batch-collection permission shape with the
+already-frozen frontend contract, add a controlled-runtime assertion, pass
+Level 3, back up LaunchFlow, deploy the exact release pair and verify the
+affected authenticated route without creating business records. Production
+mapping activation, unresolved workbook-field semantics, ERPNext-test changes
+and any production ERPNext or `JCE-Core` contact remain out of scope.
+
 ## Authority and fixed boundaries
 
 - The approved LaunchFlow architecture, data ownership, OpenAPI/event contracts,

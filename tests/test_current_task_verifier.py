@@ -36,60 +36,48 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         value = validate_current_task(check_git=False)
         self.assertEqual(
             value["task_id"],
-            "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
+            "PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX",
         )
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IMPLEMENTATION_COMPLETE")
+        self.assertEqual(value["status"], "IN_PROGRESS_IMPLEMENTATION")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
         self.assertEqual(
             value["requirement_ids"],
-            [
-                "INT-001",
-                "INT-002",
-                "INT-003",
-                "INT-004",
-                "INT-005",
-                "INT-008",
-                "INT-012",
-                "NFR-INT-001",
-                "NFR-SEC-003",
-            ],
+            ["FR-TX-012"],
         )
         self.assertEqual(
             value["base_checkpoint"],
-            "57b64feb3d8598384ae0f1e6eff9d4e19609a1e0",
+            "bce8de3ff17b733d5ea2a1613bc32f5895a45f71",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "57b64feb3d8598384ae0f1e6eff9d4e19609a1e0",
+            "bce8de3ff17b733d5ea2a1613bc32f5895a45f71",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
+                "phase_status_current_task": "PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX",
                 "phase_status_execution_hold": "NONE",
                 "phase_status_resumed_product_task": "COMPLETE",
-                "active_goal_marker": "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
-                "next_action_marker": "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
-                "controller_marker": "PA-11 ERPNext bidirectional trial integration",
+                "active_goal_marker": "PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX",
+                "next_action_marker": "PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX",
+                "controller_marker": "PA-12 Tooling import collection contract hotfix",
             },
         )
         for invariant in (
-            "ERPNEXT_OWNS_FORMAL_PROJECT_AND_ITEM_IDENTITIES",
-            "NPI_OWNS_NPI_ENGINEERING_PROCESS_TRUTH",
-            "BUSINESS_ACTOR_IS_VISIBLE_AND_TRANSPORT_IDENTITY_IS_SEPARATE",
-            "OUTBOX_INBOX_IDEMPOTENCY_RETRY_RECONCILIATION_AND_LOOP_SUPPRESSION_ARE_REQUIRED",
-            "UNKNOWN_DISABLED_OR_UNAUTHORIZED_PRINCIPALS_FAIL_CLOSED",
-            "LEVEL_3_AND_LIVE_TEST_EXCHANGE_ARE_REQUIRED_BEFORE_READY_FOR_TRIAL",
+            "FRONTEND_AND_BACKEND_TOOLING_IMPORT_CONTRACTS_MATCH_EXACTLY",
+            "MISSING_OR_EXTRA_RESPONSE_FIELDS_FAIL_CLOSED",
+            "PRODUCTION_MAPPING_AUTHORITY_REMAINS_UNAVAILABLE",
+            "BUSINESS_DATA_IS_NOT_CREATED_BY_HOTFIX_VERIFICATION",
+            "LEVEL_3_AND_AUTHENTICATED_LIVE_VERIFICATION_ARE_REQUIRED",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "apps/npi_integration/npi_integration/project_publish/worker.py",
-                "apps/npi_erpnext_connector/npi_erpnext_connector/project_publish_api.py",
-                "implementation/evidence/erpnext-test/bidirectional-project-integration-0.10.0.md",
-                "tests/test_project_publish_worker.py",
+                "apps/npi_core/npi_core/tooling/import_execution_repository.py",
+                "scripts/verify_tooling_import_runtime.py",
+                "tests/test_phase6_tooling_import_execution_repository.py",
                 "tests/test_current_task_verifier.py",
             }.issubset(set(value["allowed_paths"]))
         )

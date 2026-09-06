@@ -38,6 +38,29 @@ def _validation_source(name: str) -> str:
 
 
 class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
+    def test_collection_exposes_the_complete_execution_permission_contract(self) -> None:
+        collection = _source("tooling_import_batches")
+        permissions = _source("_execution_permissions")
+        self.assertIn("super().tooling_import_batches(project_id)", collection)
+        self.assertIn(
+            "response['permissions'] = self._execution_permissions(None)",
+            collection,
+        )
+        self.assertIn("source: ToolingImportSource | None", permissions)
+        self.assertIn("**super()._import_permissions()", permissions)
+        for name in (
+            "activateProductionMapping",
+            "execute",
+            "retry",
+            "createCorrectionArtifact",
+            "downloadCorrectionArtifact",
+            "reconcile",
+            "evaluateRollback",
+            "rollback",
+        ):
+            with self.subTest(name=name):
+                self.assertIn(repr(name), permissions)
+
     def test_execution_is_fixture_scoped_and_never_contacts_erpnext(self) -> None:
         imports = {
             alias.name

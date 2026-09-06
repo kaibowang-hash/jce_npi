@@ -2,6 +2,18 @@
 
 Updated: `2026-09-06T17:48:51+07:00`
 
+- Active hotfix: `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IN_PROGRESS_IMPLEMENTATION`.
+- Root cause is proven: the Tooling import collection returned the legacy
+  seven-field permission map while the frozen frontend contract requires all
+  fourteen fields. The authenticated browser therefore rejected HTTP 200 as an
+  invalid response before rendering the workspace.
+- Apply only the backend collection override and exact regression coverage.
+  Then run Level 1, Level 2 and the full Level 3 release gate; back up and
+  deploy only LaunchFlow, and verify the route without creating business data.
+- Production mapping authority and unresolved workbook-field semantics remain
+  unchanged. ERPNext-test and production ERPNext are not deployment targets.
+- Controller marker: `PA-12 Tooling import collection contract hotfix`.
+
 - Completed integration task: `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION — IMPLEMENTATION_COMPLETE`.
 - The authorized outcome is a real bidirectional test-environment connection:
   ERPNext-test continues to publish Project/User/permission/master-data truth

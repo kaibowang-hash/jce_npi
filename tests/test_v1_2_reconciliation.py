@@ -835,7 +835,7 @@ class V12ReconciliationTests(unittest.TestCase):
             phase_status,
         )
         self.assertIn(
-            "current_task: PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
+            "current_task: PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX",
             phase_status,
         )
         self.assertIn("task_id: PA-08-DEPLOYMENT", phase_status)
@@ -846,8 +846,8 @@ class V12ReconciliationTests(unittest.TestCase):
             "evidence_class: CONTROLLED_NON_PRODUCTION_TECHNICAL_UAT",
             phase_status,
         )
-        self.assertIn("overall_status: IMPLEMENTATION_COMPLETE", phase_status)
-        self.assertIn("technical_implementation_complete: true", phase_status)
+        self.assertIn("overall_status: IN_PROGRESS_TRIAL_HOTFIX", phase_status)
+        self.assertIn("technical_implementation_complete: false", phase_status)
         self.assertIn("level_3: 33975755695_ATTEMPT_2_PASS", phase_status)
         self.assertIn("project_master_sync: NOT_IMPLEMENTED", phase_status)
         self.assertIn(
