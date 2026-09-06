@@ -46,6 +46,7 @@
     "LEVEL_3_AND_LIVE_TEST_EXCHANGE_ARE_REQUIRED_BEFORE_READY_FOR_TRIAL"
   ],
   "allowed_paths": [
+    ".gitleaksignore",
     "apps/npi_core/npi_core/project/frappe_repository.py",
     "apps/npi_core/npi_core/reporting/frappe_repository.py",
     "apps/npi_core/npi_core/translations/zh-TW.csv",
