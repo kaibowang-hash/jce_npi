@@ -1,5 +1,14 @@
 # Last Run
 
+## PA-13 explicit release authorization received
+
+The user's “允许” confirms the precise requested scope: transmit code and
+controlled screenshots to existing `kaibowang-hash/jce_npi`, run complete
+exact-SHA CI, then back up and update LaunchFlow and ERPNext-test. The previous
+pre-execution review holds are resolved by this new authority. Production
+ERPNext/JCE-Core remains prohibited. Deployment and live verification have not
+yet occurred; local checks do not constitute release completion.
+
 ## PA-13 ERP master-data selectors — local validation
 
 The user requested ERPNext-derived dropdowns and explicitly authorized changing

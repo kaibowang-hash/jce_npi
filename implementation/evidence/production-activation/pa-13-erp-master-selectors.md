@@ -1,6 +1,7 @@
 # PA-13 ERP master-data selectors
 
-Status: IN_PROGRESS — local checks pass; release/activation approval remains pending.
+Status: IN_PROGRESS — local checks pass; explicit release authority received;
+exact-SHA CI and live activation remain pending.
 
 ## Scope and source evidence
 
@@ -71,3 +72,12 @@ releases without destructive schema downgrade; do not delete master snapshots.
 Full release and authenticated live checks remain pending. This task does not
 claim production readiness or replace the required final production compatibility
 reconciliation under its separate authorization boundary.
+
+## Explicit authorization after the review holds
+
+The user answered “允许” to the precise request to push code and controlled test
+screenshots to existing `kaibowang-hash/jce_npi`, run complete CI, and after PASS
+back up and update LaunchFlow and ERPNext-test, without connecting to or changing
+JCE Core production ERPNext. Both previous pre-execution review holds are now
+resolved by this new authority; their historical records above remain unchanged.
+Release Gate is still pending exact-SHA ordinary/Level 3 and live evidence.

@@ -11,6 +11,13 @@ No machine booking, permission expansion or production ERPNext contact is
 authorized. Release requires exact Level 3 and backup/live evidence, not merely
 successful compilation. Previous PA-12 completion remains historical.
 
+The user's subsequent explicit “允许” resolves the destination/scope holds:
+push code and controlled test screenshots to the existing
+`kaibowang-hash/jce_npi` repository; run exact-SHA ordinary CI and Level 3;
+after PASS, back up and update LaunchFlow and ERPNext-test. This permission
+does not authorize any connection to or modification of JCE Core production
+ERPNext, unrelated services, business-record creation or permission widening.
+
 Updated: `2026-08-26T23:45:00Z`
 
 ## Authority and operating mode
