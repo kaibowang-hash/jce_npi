@@ -81,3 +81,44 @@ back up and update LaunchFlow and ERPNext-test, without connecting to or changin
 JCE Core production ERPNext. Both previous pre-execution review holds are now
 resolved by this new authority; their historical records above remain unchanged.
 Release Gate is still pending exact-SHA ordinary/Level 3 and live evidence.
+
+## Initial activation and live ordering repair
+
+Release `695afbbbf60b3a28740c5990f83b637a4a06a01b` passed ordinary CI
+`34038154058` and Level 3 `34038151983`: 3,183 repository tests, 1,191 frontend
+tests, 478 browser cases and 135 fixed visual cases. The controlled v15 runtime
+job `101500713678` passed; artifact `9991052328` has digest
+`sha256:825c490de36058dce4ee2708f7f58b98704a9aa3e7dd7e5b617b7c1d24ad7fef`.
+All 9,501 English sources retain complete zh/zh-TW coverage and audits are clean.
+
+LaunchFlow was backed up and upgraded to that exact backend and SPA revision;
+all ten services and the public health contract passed. The encrypted backup
+checksum is `deceb9d89da92191fd54374a3c5c96fb50ab16c8cfd4e6b6edb4d723b7fd3675`.
+Backend image digest is `0fe73accfc7798c0818b6cf87a3e425ccde348026b3ceda3e4f718be7645d466`;
+SPA image digest is `3ebdeb8c0b5a0a432fae49a3ce6a495a85048d82a2b1d1e893e3c53a7ca9e914`.
+The SPA uses the fully verified immutable spa-builder layer from the unchanged
+Containerfile and its identical final pinned Nginx/COPY/health-check stage;
+unused legacy-builder backend stages were not needed for packaging.
+
+ERPNext-test routing was explicitly verified to use `jce.1` (v16), not the
+co-located older v15 Site. A full database/config/public/private backup and
+checksum verification preceded connector 0.11.0 deployment. Standard Frappe
+migration unexpectedly removed three pre-existing orphan Report definitions.
+All three were restored transactionally from their exact Deleted Document
+snapshots, with substantive content and role hashes matching. One already-dangling
+role reference was retained exactly through the public insert recovery option;
+normal create permissions and Report validation remained enabled. No Role was
+created, no permission granted, no core source written, and recovery audit is
+retained. Do not repeat Site-wide orphan cleanup for the code-only correction.
+
+Live Workstation synchronization exposed SQL collation order differing from the
+contract's code-point order, causing the sender's sorted/unique validation to
+reject the catalog before transmission. Connector 0.11.1 sorts the complete
+bounded projection before hashing, without changing keys, dropping duplicates,
+loosening receiver validation or altering master records. A regression covers
+case/Unicode order, hash stability across DB ordering and duplicate rejection
+for all five kinds. This code-only connector correction still needs its exact
+CI and test-host activation; LaunchFlow source and schema need no further update.
+
+The real Chrome session now requires login; the user was asked to sign in again.
+Authenticated dropdown interaction remains pending and is not claimed PASS.

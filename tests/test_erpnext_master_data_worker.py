@@ -206,6 +206,30 @@ class ERPNextMasterDataWorkerTest(unittest.TestCase):
         self.assertEqual(record["groupKey"], "Injection")
         self.assertFalse(record["enabled"])
 
+    def test_catalog_canonical_order_does_not_depend_on_sql_collation(self) -> None:
+        repository = sys.modules["npi_erpnext_connector.master_data_repository"]
+        rows = [{
+            "name": key, "customer_name": key, "supplier_name": key,
+            "item_group_name": key, "item_name": key, "workstation_name": key,
+            "stock_uom": "Nos", "item_group": "Primary",
+            "modified": datetime(2026, 9, 6, 2, 0),
+        } for key in ("a-01", "A-02", "工位甲", "Z-03")]
+        frappe = sys.modules["frappe"]
+        frappe.get_all = lambda *_args, **_kwargs: rows
+        frappe.get_meta = lambda _doctype: types.SimpleNamespace(has_field=lambda _field: True)
+        for kind in repository.MasterCatalogKind:
+            with self.subTest(kind=kind.value):
+                snapshot = repository.load_source_snapshot(kind)
+                self.assertEqual(
+                    [record["sourceKey"] for record in snapshot.records],
+                    ["A-02", "Z-03", "a-01", "工位甲"],
+                )
+                rows.reverse()
+                self.assertEqual(repository.load_source_snapshot(kind).snapshot_hash, snapshot.snapshot_hash)
+        rows.append(dict(rows[0]))
+        with self.assertRaisesRegex(repository.MasterDataSenderError, "unique and sorted"):
+            repository.load_source_snapshot(repository.MasterCatalogKind.MACHINE)
+
 
 if __name__ == "__main__":
     unittest.main()

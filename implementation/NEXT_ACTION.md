@@ -1,6 +1,16 @@
 # Next Action
 
 Current: `PA-13-ERP-MASTER-DATA-SELECTORS — IN_PROGRESS`.
+Initial exact release `695afbbb` passed ordinary/Level 3 and is active on
+LaunchFlow; connector 0.11.0 migrated on ERPNext-test after full backups.
+Finish the code-only 0.11.1 canonical-order correction, run its exact CI,
+then update only the connector files (no repeated Site-wide migration).
+Verify machine delivery plus five fresh matching catalog heads. Three orphan
+Report definitions removed by standard Frappe migration were restored exactly,
+including existing legacy role metadata; no role/permission change was made.
+The user must sign in again for authenticated browser interaction verification.
+Earlier authority-hold history below is superseded by the explicit approval.
+
 Local frontend, backend and affected browser checks pass. The user's explicit
 “允许” now resolves both previous authorization holds: push code and controlled
 test screenshots to existing `kaibowang-hash/jce_npi`; run exact-SHA ordinary

@@ -1,5 +1,18 @@
 # Last Run
 
+## PA-13 initial release active; canonical ordering correction pending
+
+Exact `695afbbb` passed ordinary `34038154058` and Level 3 `34038151983`.
+LaunchFlow backup/migration and ten-service health passed; ERPNext-test connector
+0.11.0 and full backup passed. Live machine source loading proved a mismatch
+between SQL collation and the contract's canonical key order. The 0.11.1
+correction preserves all source keys and duplicate validation and adds focused
+regression coverage. It requires exact CI before code-only test deployment.
+Three unrelated orphan Report definitions removed by standard migration were
+transactionally restored with matching metadata/roles and audit; no Role was
+created, no permission expanded, no core source written. Do not rerun Site-wide
+migration for this correction. Browser verification is pending user login.
+
 ## PA-13 explicit release authorization received
 
 The user's “允许” confirms the precise requested scope: transmit code and

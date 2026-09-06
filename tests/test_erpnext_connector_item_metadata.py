@@ -109,7 +109,7 @@ class ERPNextConnectorItemMetadataTest(unittest.TestCase):
 
     def test_capability_versions_follow_the_installed_app_version(self) -> None:
         package = (APP / "__init__.py").read_text(encoding="utf-8")
-        self.assertIn('__version__ = "0.11.0"', package)
+        self.assertIn('__version__ = "0.11.1"', package)
         for module in ("item_api.py", "mbom_api.py", "tool_asset_api.py"):
             source = (APP / module).read_text(encoding="utf-8")
             self.assertIn("from npi_erpnext_connector import __version__", source)

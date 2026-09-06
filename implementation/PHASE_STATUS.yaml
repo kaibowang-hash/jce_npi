@@ -8,8 +8,8 @@ authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: PA-13-ERP-MASTER-DATA-SELECTORS
 current_task_status: IN_PROGRESS
-current_task_completed_stage: SOURCE_FACTS_VERIFIED
-current_task_next_stage: IMPLEMENTATION_AND_VALIDATION
+current_task_completed_stage: INITIAL_RELEASE_VALIDATED_AND_DEPLOYED
+current_task_next_stage: CANONICAL_ORDER_CORRECTION_AND_LIVE_VERIFICATION
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: PA-13-ERP-MASTER-DATA-SELECTORS
 resumed_product_task_status: IN_PROGRESS

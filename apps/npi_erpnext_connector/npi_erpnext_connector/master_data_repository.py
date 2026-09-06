@@ -130,7 +130,12 @@ def load_source_snapshot(kind: MasterCatalogKind) -> SourceMasterSnapshot:
     )
     if len(rows) > MAX_RECORDS:
         raise MasterDataSenderError("Master catalog exceeds the safe bound.")
-    records = tuple(_record(kind, row) for row in rows)
+    # SQL collation order is not the wire contract's Unicode code-point order.
+    # Preserve every key and retain duplicate rejection in SourceMasterSnapshot.
+    records = tuple(sorted(
+        (_record(kind, row) for row in rows),
+        key=lambda record: record["sourceKey"],
+    ))
     source_modified_at = max(
         (_datetime(row.get("modified")) for row in rows),
         default=datetime(1970, 1, 1, tzinfo=UTC),

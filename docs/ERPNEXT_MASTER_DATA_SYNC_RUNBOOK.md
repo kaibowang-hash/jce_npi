@@ -66,6 +66,14 @@ The connector supports Frappe/ERPNext majors 15 and 16 and uses Python 3.10
 compatible code. No core file, standard DocType schema, or standard permission
 is modified.
 
+Before a Site-wide migration, inspect existing orphan metadata: Frappe also
+cleans unrelated orphan Report definitions. Preserve a full backup and resolve
+that impact before proceeding. Code-only connector updates with unchanged
+patches/schema do not need another Site-wide migration. The PA-13 activation
+recovered three such definitions and retained their exact legacy role metadata.
+Catalog wire order is explicitly canonicalized independently of SQL collation;
+source IDs and duplicate detection are unchanged.
+
 ## ERPNext-test activation sequence
 
 1. Verify the installed app versions and that the four NPI master-data support
