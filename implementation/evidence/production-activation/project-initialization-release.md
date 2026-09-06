@@ -54,3 +54,19 @@ checks and do not activate any ERP adapter or workflow approval.
 Rollback restores the retained image selection and pointer with maintenance
 off, then repeats health checks; no schema downgrade or historical deletion.
 A failure stops the switch and restores service rather than asserting success.
+
+## Candidate verification and fixture correction
+
+Candidate cd32fc90 passes local Python 3195/3195 and pinned frontend 1208/1208,
+all four unchanged coverage thresholds, type/lint, 9645-source complete Chinese
+coverage, build/budgets/brand and both zero-vulnerability dependency audits.
+Exact-SHA ordinary 34040573713 and Level 3 34040573816 pass repository,
+frontend verification, secret scan, first E2E shard and the complete visual lane.
+The second E2E shard fails eight missing-translation assertions before runtime.
+
+Those fixtures had synthesized Frappe response messages from the newly slimmed
+browser catalog. They now load the full source CSV through the existing CSV
+parser in a test-only server translator, which fails on missing sources. The
+product still displays server-localized messages verbatim. No scanner,
+threshold, golden image or production message was bypassed. Both complete
+exact-SHA gates must rerun after this correction. No production mutation occurred.

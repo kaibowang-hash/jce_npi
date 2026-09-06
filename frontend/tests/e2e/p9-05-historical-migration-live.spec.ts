@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 import { translate } from "../translate";
+import { translateServerMessage } from "../server-translate";
 import {
   notificationFixture,
   notificationPreferenceFixture,
@@ -103,7 +104,7 @@ async function installApi(page: Page, locale: TestLocale): Promise<void> {
                   {
                     code: "target_difference",
                     field: "project",
-                    message: translate(
+                    message: translateServerMessage(
                       locale,
                       "The existing Project differs from the historical source.",
                     ),
@@ -148,7 +149,7 @@ for (const locale of ["en", "zh", "zh-TW"] as const) {
     ).toBeVisible();
     await expect(
       page.getByText(
-        translate(
+        translateServerMessage(
           locale,
           "The existing Project differs from the historical source.",
         ),

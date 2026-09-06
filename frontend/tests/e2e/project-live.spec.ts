@@ -4,6 +4,7 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 import type { ProblemDetails } from "../../src/api/http";
 import type { ProjectCockpitViewModel } from "../../src/domain/view-models";
 import { translate } from "../translate";
+import { translateServerMessage } from "../server-translate";
 import { projectCockpitFixture } from "../support/project-fixture";
 import {
   effectiveViewport,
@@ -40,7 +41,7 @@ function problem(
 ): ProblemDetails {
   return {
     type: `urn:npi:problem:${definition.code.toLowerCase()}`,
-    title: translate(locale, definition.title),
+    title: translateServerMessage(locale, definition.title),
     status: definition.status,
     code: definition.code,
     traceId: definition.traceId,
