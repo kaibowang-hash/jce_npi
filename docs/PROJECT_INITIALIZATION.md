@@ -1,7 +1,9 @@
 # Project initialization and injection-moulding collaboration
 
-This guide covers the new Project setup workspace. It is an implementation
-candidate; repository changes do not configure or deploy a live Site.
+This guide covers the Project setup workspace deployed on 2026-09-06 at code
+release `1509101557622611a9417bb9417e4181c31f48f4`. The requested six-department
+work policy has been published and the current Project role framework initialized.
+Project Gate templates remain independently reviewed, versioned configuration.
 
 ## Configuration locations
 
