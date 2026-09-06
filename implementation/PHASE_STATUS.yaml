@@ -3,16 +3,46 @@ overall_status: IMPLEMENTATION_COMPLETE
 technical_implementation_complete: true
 production_ready: false
 current_phase: 9
-updated_at: '2026-09-06T19:39:00+07:00'
+updated_at: '2026-09-06T15:31:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: PA-13-ERP-MASTER-DATA-SELECTORS
 current_task_status: IN_PROGRESS
-current_task_completed_stage: INITIAL_RELEASE_VALIDATED_AND_DEPLOYED
-current_task_next_stage: CANONICAL_ORDER_CORRECTION_AND_LIVE_VERIFICATION
-current_task_next_stage_status: IN_PROGRESS
+current_task_completed_stage: TEST_RELEASE_DEPLOYED_AND_LIVE_VERIFIED
+current_task_next_stage: SEPARATE_FINAL_PRODUCTION_COMPATIBILITY_GATE
+current_task_next_stage_status: NOT_AUTHORIZED_BY_PA13
 resumed_product_task: PA-13-ERP-MASTER-DATA-SELECTORS
 resumed_product_task_status: IN_PROGRESS
+erp_master_data_selectors:
+  task_id: PA-13-ERP-MASTER-DATA-SELECTORS
+  status: TEST_RELEASE_PASS
+  production_erpnext_contact: false
+  production_ready: false
+  launchflow_backend_and_spa: 695afbbbf60b3a28740c5990f83b637a4a06a01b
+  connector_code_checkpoint: 569be6ed61ac7fff92383e4a3a6826a9678e5edb
+  connector_code_version: 0.11.1
+  ordinary_ci: 34041371487_PASS
+  level_3: 34041369501_PASS
+  controlled_v15_runtime_job: 101509448770_PASS
+  controlled_runtime_artifact: 9992001278
+  controlled_runtime_artifact_digest: sha256:68831613a4d893dae4dca87038213b9d9c9ea7b203bc445ce61921a5393c9842
+  repository_tests: 3184_PASS
+  frontend_tests: 1191_PASS
+  browser_tests: 478_PASS
+  visual_cases: 135_PASS
+  matching_catalog_counts: CUSTOMER_13_SUPPLIER_35_ITEM_GROUP_24_ITEM_816_MACHINE_126
+  matching_catalog_versions_and_hashes: PASS_5_OF_5
+  live_machine_paging_search_keyboard: PASS
+  live_material_selection_and_unit: PASS
+  live_customer_empty_scope: PASS_HONEST_PROJECT_SCOPE
+  published_template_rules: UNCHANGED
+  browser_console_errors: 0
+  verification_business_records_created: 0
+  service_health: PASS_10_RUNNING_0_UNHEALTHY
+  code_rollback_archive_sha256: cad1cd2e588face11a378bcfee8eb319a3da6a393787b370c1183dd69d1bf420
+  restored_report_definitions_and_audits: PASS_3_OF_3
+  new_roles_or_permission_grants: 0
+  repeated_site_migration_for_code_fix: false
 tooling_import_collection_contract_hotfix:
   task_id: PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX
   target_environment: LAUNCHFLOW_ONLY

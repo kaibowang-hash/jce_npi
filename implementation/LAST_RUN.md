@@ -1,5 +1,28 @@
 # Last Run
 
+## PA-13 dropdown test release verified — 2026-09-06T15:31Z
+
+Exact connector `569be6ed` passed ordinary `34041371487` and complete Level 3
+`34041369501` (3,184 repository / 1,191 frontend / 478 browser / 135 visual).
+The controlled v15 runtime, recovery and security/i18n checks pass. Its three-file
+0.11.1 code-only correction is deployed with a fresh rollback archive; no repeat
+Site migration occurred. LaunchFlow remains at backend/SPA `695afbbb`, with ten
+running services, zero unhealthy services and the public health check passing.
+
+All five catalogs match exact counts/versions/response hashes across both sides:
+13 customers, 35 suppliers, 24 item groups, 816 items and 126 machines.
+Authenticated browser material search/keyboard selection/unit autofill and
+machine paging/search/keyboard selection pass with zero console errors. The
+customer picker correctly reports an empty project scope; the currently available
+published Project template does not allow customer references. Drafts were all
+cancelled; no business record was created or template changed.
+
+All three restored Report definitions and audit records were independently
+confirmed, with developer mode false before/after and no source-directory removal.
+Requested test-release gate PASS. Global IMPLEMENTATION_COMPLETE/production-ready
+is not claimed; the separately governed full production compatibility gate remains.
+The following pending-state entries are historical and superseded by this result.
+
 ## PA-13 initial release active; canonical ordering correction pending
 
 Exact `695afbbb` passed ordinary `34038154058` and Level 3 `34038151983`.

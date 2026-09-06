@@ -1,26 +1,26 @@
 # Next Action
 
 Current: `PA-13-ERP-MASTER-DATA-SELECTORS — IN_PROGRESS`.
-Initial exact release `695afbbb` passed ordinary/Level 3 and is active on
-LaunchFlow; connector 0.11.0 migrated on ERPNext-test after full backups.
-Finish the code-only 0.11.1 canonical-order correction, run its exact CI,
-then update only the connector files (no repeated Site-wide migration).
-Verify machine delivery plus five fresh matching catalog heads. Three orphan
-Report definitions removed by standard Frappe migration were restored exactly,
-including existing legacy role metadata; no role/permission change was made.
-The user must sign in again for authenticated browser interaction verification.
-Earlier authority-hold history below is superseded by the explicit approval.
+The requested dropdown test release is verified; do not repeat deployment.
+LaunchFlow backend/SPA `695afbbb` remain healthy. Exact connector correction
+`569be6ed` passed ordinary `34041371487` and Level 3 `34041369501` and is
+installed on ERPNext-test. Five fresh catalog heads match delivery hashes/counts;
+all 126 machines are delivered. Authenticated machine paging/search/keyboard
+selection and material selection/unit autofill pass. Customer scope is honestly
+empty for the inspected project; its published template does not permit customer
+references. Do not change templates or create business records for verification.
 
-Local frontend, backend and affected browser checks pass. The user's explicit
-“允许” now resolves both previous authorization holds: push code and controlled
-test screenshots to existing `kaibowang-hash/jce_npi`; run exact-SHA ordinary
-CI/Level 3; after PASS, back up and update LaunchFlow and ERPNext-test.
-The implementation is saved locally at `4b32e724`. Push the current integration
-branch and run both gates before changing either runtime. Preserve the previous
-rejections as historical evidence; they occurred before any remote action.
-Complete the release validation for the selector/machine-catalog vertical slice, then deploy
-the exact verified release only to LaunchFlow and ERPNext-test after backups.
-Production ERPNext, JCE-Core and business-record creation remain out of scope.
+Three Report definitions unexpectedly cleaned by the initial standard migration
+were fully restored with matching content/roles and restoration audits. Developer
+mode was false before/after. No second Site-wide migration was performed.
+
+Seal the evidence-only checkpoint with ordinary CI. No further runtime mutation
+is needed for PA-13. Retain IN_PROGRESS only because global implementation closure
+requires the separate final production compatibility reconciliation; do not mark
+IMPLEMENTATION_COMPLETE or production-ready from a test-environment release.
+Production ERPNext/JCE-Core access is not authorized by PA-13. Any template
+business-rule change or final production compatibility activation needs its
+own bounded task/authority; do not infer it from successful dropdown verification.
 
 Status:
 `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IMPLEMENTATION_COMPLETE`

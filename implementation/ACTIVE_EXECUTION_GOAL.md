@@ -1,12 +1,17 @@
 # Active Execution Goal
 
 Current authorized delta: `PA-13-ERP-MASTER-DATA-SELECTORS — IN_PROGRESS`.
-Implement searchable ERP-owned customer/material/machine choices, exact identifier
-round-trips and permission-scoped validation. Workstation source metadata was
-confirmed read-only on ERPNext-test. Previous completion below remains historical;
-PA-13 has not passed release or live verification yet.
+The requested ERP-owned dropdown test release is deployed and live verified.
+Exact connector `569be6ed` passes ordinary `34041371487` and Level 3
+`34041369501`; LaunchFlow backend/SPA `695afbbb` remain active and healthy.
+Five catalogs reconcile, including 126 machines; authenticated machine/material
+interaction passes without business-record creation. Customer choices still obey
+the published template and project scope. The test-release gate is PASS.
+IN_PROGRESS is retained only to avoid global IMPLEMENTATION_COMPLETE before the
+separately governed full production compatibility reconciliation. No production
+ERPNext/JCE-Core contact or automatic further runtime change is authorized here.
 
-Updated: `2026-09-06T19:39:00+07:00`
+Updated: `2026-09-06T15:31:00Z`
 
 - Completed hotfix: `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IMPLEMENTATION_COMPLETE`.
 - Root cause is proven: the Tooling import collection returned the legacy

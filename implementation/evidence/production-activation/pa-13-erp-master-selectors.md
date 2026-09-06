@@ -1,7 +1,8 @@
 # PA-13 ERP master-data selectors
 
-Status: IN_PROGRESS — local checks pass; explicit release authority received;
-exact-SHA CI and live activation remain pending.
+Status: TEST_RELEASE_PASS — the requested dropdown slice is deployed and live
+verified. Global implementation/production closure remains unclaimed pending
+the separately governed production compatibility reconciliation.
 
 ## Scope and source evidence
 
@@ -120,5 +121,77 @@ case/Unicode order, hash stability across DB ordering and duplicate rejection
 for all five kinds. This code-only connector correction still needs its exact
 CI and test-host activation; LaunchFlow source and schema need no further update.
 
-The real Chrome session now requires login; the user was asked to sign in again.
-Authenticated dropdown interaction remains pending and is not claimed PASS.
+At that checkpoint the real Chrome session required login. The authenticated
+session subsequently became available; the final evidence below supersedes
+the pending CI, activation and login states above.
+
+## Final test release and authenticated evidence — 2026-09-06T15:31Z
+
+Exact connector correction `569be6ed61ac7fff92383e4a3a6826a9678e5edb` passed
+ordinary CI `34041371487` and complete Level 3 `34041369501`: 3,184 repository
+tests, 1,191 frontend tests, 478 browser tests and 135 visual cases. The v15
+controlled runtime job `101509448770` passed; artifact `9992001278` digest is
+`sha256:68831613a4d893dae4dca87038213b9d9c9ea7b203bc445ce61921a5393c9842`.
+Its restore and forward-fix checks are true and productionContact is false.
+All 9,501 English sources retain complete zh/zh-TW coverage; audits report zero
+vulnerabilities. The original three-locale controlled screenshots remain valid
+because the correction changes no frontend file.
+
+After both gates passed, only the three changed connector files were installed
+on ERPNext-test, with a fresh exact-code rollback archive whose SHA-256 is
+`cad1cd2e588face11a378bcfee8eb319a3da6a393787b370c1183dd69d1bf420`.
+Their deployed checksums equal the exact checked-out release. The fixed
+reconciliation was queued and all three relevant Supervisor processes run.
+The Site imports connector version `0.11.1`. `bench list-apps` still displays
+the last-migration registry value `0.11.0`; this is not the loaded code version
+and is not a reason to rerun destructive orphan cleanup. Verify imported version
+and exact file checksums for this code-only update.
+There was no second Site-wide migration and no further LaunchFlow deployment.
+The retained full backups and earlier application releases remain available.
+LaunchFlow still runs exact backend/SPA `695afbbb`; its final health contract
+passes with ten running services and zero unhealthy services.
+
+Both sides independently report the following matching version/count/payload
+hash tuples. All receiver heads are fresh, explicitly sourced from `test`;
+each latest delivery succeeded on attempt one without an error code.
+
+| Catalog | Records | Source version | Receiver and delivery-response payload SHA-256 |
+| --- | ---: | ---: | --- |
+| Customer | 13 | 14 | `31c9e31dc9369be5462834966a5c3098ad28fa6c2978db504e193774854d5fdc` |
+| Supplier | 35 | 14 | `25af260e0b6d44063d7dcb7a36259d4c5716de5e53e2ba172af7eebebd1984c4` |
+| Item Group | 24 | 14 | `53caf2a0fd4a773d03ed7f82f7cf5f6f19f5bb4adb9332f2e09cfede8efc6ba1` |
+| Item | 816 | 14 | `1a6dd947fb7b752db4aa56fdea1aeb9e255d928a99bdbba828fe153d3261503d` |
+| Machine | 126 | 1 | `4fe162772ba0666ea055174afd2ebfe2e005a418a39674fee5114616a5a23135` |
+
+Authenticated Chrome verification used the existing user's real session in a
+separate verification tab; the user's administration tab was left untouched:
+
+- Trial proposed material lists real ERP items, searches by exact code, accepts
+  ArrowDown/Enter selection and automatically fills the source stock unit.
+- Trial proposed machine lists real Workstations, pages to the next twenty,
+  searches by source-name text and accepts keyboard selection of the exact
+  Unicode ERP key. Visual inspection confirms the square industrial selector
+  layout and no overlapping clipped dropdown text.
+- Tooling import renders a customer combobox and an honest project-scoped empty
+  state. This existing project has no customer references. The available
+  published create-Project template does not allow customer references, so its
+  create form correctly has no customer picker; the allowed-template path is
+  covered by regression tests. No template or customer scope was changed to
+  manufacture a nonempty live result.
+- All drafts were cancelled. No Project, Trial Plan, workbook registration or
+  other business record was submitted. The verification tab reports zero
+  browser console errors. Live business screenshots were inspected in-session,
+  not persisted to Git or uploaded as controlled fixture evidence.
+
+Independent recovery verification confirms all three restored Report definitions
+and all three restoration audit records exist. Developer mode was false both
+before migration and after recovery, so Report deletion did not remove source
+directories. Substantive metadata and existing roles remain unchanged.
+
+Release-gate result for this authorized **test** deployment: PASS. ERP master
+ownership, server-side scope/freshness validation, translations and failure
+states are unchanged by the live repair. No production ERPNext/JCE-Core contact
+occurred. This does not approve workbook production mappings, resource booking,
+published-template changes or overall production readiness. The controller
+retains IN_PROGRESS solely to avoid asserting global IMPLEMENTATION_COMPLETE
+before the separately authorized final production compatibility gate.
