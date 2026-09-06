@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import frappe
 
@@ -29,6 +29,7 @@ from npi_erpnext_connector.master_data_domain import (
 DELIVERY_DOCTYPE = "NPI ERP Master Data Delivery"
 DELIVERY_JOB = "npi_erpnext_connector.master_data_worker.deliver_master_data"
 UTC = timezone.utc
+MASTER_DATA_REFRESH_INTERVAL = timedelta(hours=1)
 _SOURCE_DOCTYPES = {
     MasterCatalogKind.CUSTOMER: "Customer",
     MasterCatalogKind.SUPPLIER: "Supplier",
@@ -75,16 +76,22 @@ def enqueue_master_catalog(catalog_kind: str) -> str | None:
     profile = load_master_data_profile(frappe.conf)
     kind = MasterCatalogKind(catalog_kind)
     snapshot = load_source_snapshot(kind)
+    now = datetime.now(UTC)
     latest = _latest_delivery(kind)
     if latest and latest.get("source_snapshot_hash") == snapshot.snapshot_hash:
         if latest.get("status") in {"pending", "retry"}:
             _enqueue_delivery(str(latest["name"]))
-        return str(latest["name"])
+            return str(latest["name"])
+        if latest.get("status") == "delivered" and _delivered_snapshot_is_fresh(
+            latest.get("delivered_at"),
+            now=now,
+        ):
+            return str(latest["name"])
     version = int(latest.get("source_version") or 0) + 1 if latest else 1
     event = build_event(
         snapshot,
         source_version=version,
-        issued_at=datetime.now(UTC),
+        issued_at=now,
         source_environment=profile.environment_code,
     )
     for attempt in range(2):
@@ -214,11 +221,26 @@ def _latest_delivery(kind: MasterCatalogKind) -> dict[str, object] | None:
     rows = frappe.get_all(
         DELIVERY_DOCTYPE,
         filters={"catalog_kind": kind.value},
-        fields=["name", "source_version", "source_snapshot_hash", "status"],
+        fields=[
+            "name",
+            "source_version",
+            "source_snapshot_hash",
+            "status",
+            "delivered_at",
+        ],
         order_by="source_version desc",
         page_length=1,
     )
     return dict(rows[0]) if rows else None
+
+
+def _delivered_snapshot_is_fresh(value: object, *, now: datetime) -> bool:
+    if value in (None, ""):
+        return False
+    delivered_at = _datetime(value)
+    if delivered_at > now + timedelta(minutes=5):
+        raise MasterDataSenderError("Master data delivery time is invalid.")
+    return delivered_at >= now - MASTER_DATA_REFRESH_INTERVAL
 
 
 def _delivery_by_event(event_id: str) -> dict[str, object] | None:

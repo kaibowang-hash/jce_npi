@@ -5,7 +5,7 @@ Date: 2026-09-06
 ## Scope
 
 This evidence applies to the standalone `npi_erpnext_connector` custom app at
-version `0.9.0`. It covers installation, schema and configured non-production
+version `0.9.1`. It covers installation, schema and configured non-production
 execution compatibility. Least-privilege service identities and explicit
 project-bound profiles are installed only on `erpnext-test`.
 
@@ -18,7 +18,7 @@ using the official `frappe/erpnext:v15` image. The resulting versions were:
 - Frappe `15.120.0`
 - Python `3.11`
 - MariaDB `10.6`
-- `npi_erpnext_connector` `0.9.0`
+- `npi_erpnext_connector` `0.9.1`
 
 `bench --site v15-compat.localhost migrate` completed successfully. The
 following additive connector patches executed successfully:
@@ -32,13 +32,13 @@ following additive connector patches executed successfully:
 
 The migrated site contained all 13 connector-owned support DocTypes and all
 seven service/viewer roles. Runtime imports compiled successfully. Item, MBOM,
-and Tool Asset capability endpoints returned app version `0.9.0`, advertised
+and Tool Asset capability endpoints returned app version `0.9.1`, advertised
 Frappe majors 15 and 16, and remained disabled by default.
 
 ## ERPNext v16 target fact
 
 The authorized `erpnext-test` target currently runs ERPNext `16.14.0` and
-Frappe `16.16.0`. Connector `0.9.0` is installed and migrated there. All 13
+Frappe `16.16.0`. Connector `0.9.1` is installed and migrated there. All 13
 connector support DocTypes exist; Item, MBOM, Tool Asset create/update, released
 Trial Summary and Engineering Change receivers are enabled. Authorization,
 Project and master-data senders are also enabled and their current deliveries

@@ -25,6 +25,9 @@ class ERPNextMasterDataMetadataTest(unittest.TestCase):
             self.assertIn(f'"{doctype}": {{', hooks)
         self.assertIn("recover_master_data_deliveries", hooks)
         self.assertIn("reconcile_master_catalogs", hooks)
+        repository = (ERP / "master_data_repository.py").read_text()
+        self.assertIn("MASTER_DATA_REFRESH_INTERVAL = timedelta(hours=1)", repository)
+        self.assertIn('"delivered_at",', repository)
         self.assertIn("patches.v0_6.sync_master_data_schema", (ERP / "patches.txt").read_text())
         self.assertIn("patches.v0_3.sync_master_data_schema", (NPI / "patches.txt").read_text())
 

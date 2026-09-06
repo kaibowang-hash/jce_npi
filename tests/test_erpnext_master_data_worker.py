@@ -4,7 +4,7 @@ import importlib
 import sys
 import types
 import unittest
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
@@ -116,6 +116,68 @@ class ERPNextMasterDataWorkerTest(unittest.TestCase):
         self.assertTrue(
             all(call[1]["enqueue_after_commit"] for call in self.enqueued)
         )
+
+    def test_unchanged_catalog_is_refreshed_before_status_evidence_expires(self) -> None:
+        repository = sys.modules["npi_erpnext_connector.master_data_repository"]
+        now = datetime(2026, 9, 6, 2, 0, tzinfo=UTC)
+
+        self.assertTrue(
+            repository._delivered_snapshot_is_fresh(
+                now - timedelta(minutes=59), now=now
+            )
+        )
+        self.assertFalse(
+            repository._delivered_snapshot_is_fresh(
+                now - timedelta(minutes=61), now=now
+            )
+        )
+        self.assertFalse(repository._delivered_snapshot_is_fresh(None, now=now))
+        with self.assertRaises(repository.MasterDataSenderError):
+            repository._delivered_snapshot_is_fresh(
+                now + timedelta(minutes=6), now=now
+            )
+
+    def test_unchanged_stale_catalog_creates_the_next_heartbeat_delivery(self) -> None:
+        repository = sys.modules["npi_erpnext_connector.master_data_repository"]
+        now = datetime.now(UTC)
+        latest = {
+            "name": str(UUID(int=993)),
+            "source_version": 4,
+            "source_snapshot_hash": "a" * 64,
+            "status": "delivered",
+            "delivered_at": now,
+        }
+        repository.master_data_sender_is_disabled = lambda _conf: False
+        repository.load_master_data_profile = lambda _conf: types.SimpleNamespace(
+            environment_code="test"
+        )
+        repository.load_source_snapshot = lambda _kind: types.SimpleNamespace(
+            snapshot_hash="a" * 64
+        )
+        repository._latest_delivery = lambda _kind: latest
+        builds: list[dict[str, object]] = []
+
+        def build_event(_snapshot: object, **values: object) -> object:
+            builds.append(values)
+            return types.SimpleNamespace(event_id=UUID(int=994))
+
+        repository.build_event = build_event
+        repository._insert_delivery = lambda _event: types.SimpleNamespace(
+            name=str(UUID(int=994))
+        )
+        enqueued: list[str] = []
+        repository._enqueue_delivery = enqueued.append
+
+        fresh = repository.enqueue_master_catalog("item")
+        self.assertEqual(fresh, str(UUID(int=993)))
+        self.assertEqual(builds, [])
+
+        latest["delivered_at"] = now - timedelta(hours=2)
+        stale = repository.enqueue_master_catalog("item")
+        self.assertEqual(stale, str(UUID(int=994)))
+        self.assertEqual(builds[0]["source_version"], 5)
+        self.assertEqual(builds[0]["source_environment"], "test")
+        self.assertEqual(enqueued, [str(UUID(int=994))])
 
     def test_display_names_normalize_erp_edge_spaces_without_changing_keys(self) -> None:
         repository = sys.modules["npi_erpnext_connector.master_data_repository"]
