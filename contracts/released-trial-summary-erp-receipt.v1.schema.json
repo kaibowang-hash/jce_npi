@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.internal/npi/contracts/released-trial-summary-erp-receipt.v1.schema.json",
+  "title": "Released Trial Summary ERPNext Signed Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["message"],
+  "properties": {
+    "message": {
+      "oneOf": [
+        {"$ref": "#/$defs/publishReceipt"},
+        {"$ref": "#/$defs/reconcileReceipt"}
+      ]
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "commonReceipt": {
+      "type": "object",
+      "required": [
+        "contractVersion",
+        "requestGlobalId",
+        "attemptGlobalId",
+        "targetIdempotencyKeyHash",
+        "sourceHash",
+        "httpStatus",
+        "projectionId",
+        "factCount",
+        "errorCode",
+        "responseHash",
+        "signatureVersion",
+        "signedAt",
+        "responseSignature"
+      ],
+      "properties": {
+        "contractVersion": {"const": 1},
+        "requestGlobalId": {"type": "string", "format": "uuid"},
+        "attemptGlobalId": {"type": "string", "format": "uuid"},
+        "targetIdempotencyKeyHash": {"$ref": "#/$defs/sha256"},
+        "sourceHash": {"$ref": "#/$defs/sha256"},
+        "httpStatus": {"type": "integer", "minimum": 100, "maximum": 599},
+        "projectionId": {"type": ["string", "null"], "format": "uuid"},
+        "factCount": {"type": ["integer", "null"], "minimum": 0, "maximum": 25000},
+        "errorCode": {"type": ["string", "null"], "pattern": "^[A-Z][A-Z0-9_]{2,127}$"},
+        "responseHash": {"$ref": "#/$defs/sha256"},
+        "signatureVersion": {"const": "npi-hmac-sha256-v1"},
+        "signedAt": {"type": "integer", "minimum": 0},
+        "responseSignature": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "publishReceipt": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {"$ref": "#/$defs/commonReceipt"},
+        {
+          "type": "object",
+          "required": ["operation", "attemptNumber", "exactReplay"],
+          "properties": {
+            "operation": {"const": "publish_released_trial_summary"},
+            "attemptNumber": {"type": "integer", "minimum": 1, "maximum": 100},
+            "exactReplay": {"type": "boolean"}
+          }
+        }
+      ]
+    },
+    "reconcileReceipt": {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "allOf": [
+        {"$ref": "#/$defs/commonReceipt"},
+        {
+          "type": "object",
+          "required": ["operation", "found"],
+          "properties": {
+            "operation": {"const": "reconcile_released_trial_summary"},
+            "found": {"type": "boolean"}
+          }
+        }
+      ]
+    }
+  }
+}

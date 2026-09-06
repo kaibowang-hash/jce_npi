@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.internal/npi/contracts/npi-erp-project-result.v1.schema.json",
+  "title": "ERPNext Project create result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "operation", "requestGlobalId", "attemptGlobalId", "attemptNumber", "targetIdempotencyKeyHash", "sourceHash", "httpStatus", "formalProjectId", "targetVersion", "exactReplay", "errorCode", "responseHash", "signatureVersion", "signedAt", "responseSignature"],
+  "properties": {
+    "contractVersion": {"const": 1},
+    "operation": {"const": "create_erp_project"},
+    "requestGlobalId": {"type": "string", "format": "uuid"},
+    "attemptGlobalId": {"type": "string", "format": "uuid"},
+    "attemptNumber": {"type": "integer", "minimum": 1},
+    "targetIdempotencyKeyHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "sourceHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "httpStatus": {"type": "integer", "minimum": 100, "maximum": 599},
+    "formalProjectId": {"type": ["string", "null"], "maxLength": 140},
+    "targetVersion": {"type": ["string", "null"], "maxLength": 140},
+    "exactReplay": {"type": "boolean"},
+    "errorCode": {"type": ["string", "null"], "maxLength": 128},
+    "responseHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "signatureVersion": {"const": "npi-hmac-sha256-v1"},
+    "signedAt": {"type": "integer", "minimum": 1},
+    "responseSignature": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

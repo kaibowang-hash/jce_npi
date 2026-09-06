@@ -1,0 +1,35 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Item Publish Result",
+  "module": "NPI Integration",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "request_global_id,attempt_global_id,state,fault_kind",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "request_global_id", "fieldtype": "Link", "label": "Item Publish Request", "options": "NPI Item Publish Request", "reqd": 1, "read_only": 1},
+    {"fieldname": "outbox_event_id", "fieldtype": "Link", "label": "Item Outbox Event ID", "options": "NPI Outbox Message", "reqd": 1, "read_only": 1},
+    {"fieldname": "attempt_global_id", "fieldtype": "Link", "label": "Item Publish Attempt", "options": "NPI Item Publish Attempt", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "attempt_number", "fieldtype": "Int", "label": "Item Publish Attempt Number", "reqd": 1, "read_only": 1},
+    {"fieldname": "idempotency_key_hash", "fieldtype": "Data", "label": "Idempotency Key Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_hash", "fieldtype": "Data", "label": "Item Source Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "expected_target_version", "fieldtype": "Data", "label": "Expected Target Version", "read_only": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "Item Publish Result State", "options": "synthetic_verified\nsucceeded\nfailed_retryable\nfailed_final\nuncertain_after_timeout", "reqd": 1, "read_only": 1},
+    {"fieldname": "authority", "fieldtype": "Select", "label": "Item Result Authority", "options": "none\nsynthetic\nauthoritative_sandbox", "reqd": 1, "read_only": 1},
+    {"fieldname": "response_authenticated", "fieldtype": "Check", "label": "Response Authenticated", "default": "0", "read_only": 1},
+    {"fieldname": "response_hash", "fieldtype": "Data", "label": "Target Response Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "formal_item_code", "fieldtype": "Data", "label": "Observed Formal Item Code", "read_only": 1},
+    {"fieldname": "target_version", "fieldtype": "Data", "label": "Observed Target Version", "read_only": 1},
+    {"fieldname": "fault_kind", "fieldtype": "Data", "label": "Item Publish Fault Kind", "reqd": 1, "read_only": 1},
+    {"fieldname": "result_snapshot", "fieldtype": "JSON", "label": "Item Publish Result Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "result_hash", "fieldtype": "Data", "label": "Item Publish Result Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "observed_at", "fieldtype": "Datetime", "label": "Observed At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

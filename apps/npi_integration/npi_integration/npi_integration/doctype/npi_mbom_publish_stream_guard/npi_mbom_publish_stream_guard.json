@@ -1,0 +1,30 @@
+{
+  "doctype": "DocType",
+  "name": "NPI MBOM Publish Stream Guard",
+  "module": "NPI Integration",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:source_stream_key_hash",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "tenant_id,project_global_id,ebom_global_id,active_state,last_state",
+  "fields": [
+    {"fieldname": "source_stream_key_hash", "fieldtype": "Data", "label": "MBOM Source Stream Key Hash", "reqd": 1, "unique": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "ebom_global_id", "fieldtype": "Data", "label": "EBOM Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "active_request_global_id", "fieldtype": "Link", "label": "Active MBOM Publish Request", "options": "NPI MBOM Publish Request", "read_only": 1},
+    {"fieldname": "active_target_idempotency_key_hash", "fieldtype": "Data", "label": "Active Target Idempotency Key Hash", "read_only": 1},
+    {"fieldname": "active_state", "fieldtype": "Select", "label": "Active MBOM Publish State", "options": "\nqueued\nprocessing\nfailed_retryable\nuncertain_after_timeout\nmapping_conflict", "read_only": 1},
+    {"fieldname": "last_request_global_id", "fieldtype": "Link", "label": "Last MBOM Publish Request", "options": "NPI MBOM Publish Request", "read_only": 1},
+    {"fieldname": "last_target_idempotency_key_hash", "fieldtype": "Data", "label": "Last Target Idempotency Key Hash", "read_only": 1},
+    {"fieldname": "last_state", "fieldtype": "Select", "label": "Last MBOM Publish State", "options": "\nsynthetic_verified\npartially_succeeded\nsucceeded\nfailed_final\nfailed_retryable\nuncertain_after_timeout\nmapping_conflict", "read_only": 1},
+    {"fieldname": "blocked_reason_code", "fieldtype": "Data", "label": "Blocked Reason Code", "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "updated_at", "fieldtype": "Datetime", "label": "Updated At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

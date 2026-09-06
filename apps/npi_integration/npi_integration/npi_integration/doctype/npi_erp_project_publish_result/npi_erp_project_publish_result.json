@@ -1,0 +1,29 @@
+{
+  "doctype": "DocType",
+  "name": "NPI ERP Project Publish Result",
+  "module": "NPI Integration",
+  "custom": 0,
+  "autoname": "field:global_id",
+  "allow_rename": 0,
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "request_global_id,formal_erp_project_id,state,error_code",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "request_global_id", "fieldtype": "Link", "label": "Request", "options": "NPI ERP Project Publish Request", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "attempt_global_id", "fieldtype": "Link", "label": "Attempt", "options": "NPI ERP Project Publish Attempt", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "State", "options": "pending\nsucceeded\nfailed_retryable\nfailed_final\nuncertain", "reqd": 1, "read_only": 1},
+    {"fieldname": "response_authenticated", "fieldtype": "Check", "label": "Response Authenticated", "default": "0", "read_only": 1},
+    {"fieldname": "response_contract_valid", "fieldtype": "Check", "label": "Response Contract Valid", "default": "0", "read_only": 1},
+    {"fieldname": "http_status", "fieldtype": "Int", "label": "HTTP Status", "read_only": 1},
+    {"fieldname": "response_hash", "fieldtype": "Data", "label": "Response Hash", "read_only": 1},
+    {"fieldname": "formal_erp_project_id", "fieldtype": "Data", "label": "Formal ERP Project ID", "read_only": 1, "search_index": 1},
+    {"fieldname": "target_version", "fieldtype": "Data", "label": "Target Version", "read_only": 1},
+    {"fieldname": "exact_replay", "fieldtype": "Check", "label": "Exact Replay", "default": "0", "read_only": 1},
+    {"fieldname": "error_code", "fieldtype": "Data", "label": "Error Code", "read_only": 1},
+    {"fieldname": "observed_at", "fieldtype": "Datetime", "label": "Observed At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0, "share": 0}
+  ]
+}

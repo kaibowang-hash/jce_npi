@@ -1,0 +1,93 @@
+import { createHash } from "node:crypto";
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import {
+  catalogFromRows,
+  extractTranslationSources,
+  frontendRoot,
+  parseCsv,
+  repositoryRoot,
+} from "./shared.mjs";
+
+const checkOnly = process.argv.includes("--check");
+const locales = ["zh", "zh-TW"];
+const sources = await extractTranslationSources();
+const catalogs = {};
+let versionInput = "";
+
+for (const locale of locales) {
+  const file = path.join(
+    repositoryRoot,
+    "apps",
+    "npi_core",
+    "npi_core",
+    "translations",
+    `${locale}.csv`,
+  );
+  const content = await readFile(file, "utf8");
+  versionInput += `${locale}\0${content}\0`;
+  const catalog = catalogFromRows(parseCsv(content, file), file);
+  const missing = [...sources.keys()].filter((source) => !catalog.has(source));
+  const unused = [...catalog.keys()].filter((source) => !sources.has(source));
+  if (missing.length > 0)
+    throw new Error(`${locale} is missing: ${missing.join(" | ")}`);
+  if (unused.length > 0)
+    throw new Error(`${locale} has unused sources: ${unused.join(" | ")}`);
+  catalogs[locale] = Object.fromEntries(
+    [...catalog.entries()].sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
+const version = createHash("sha256")
+  .update(versionInput)
+  .digest("hex")
+  .slice(0, 16);
+const bootstrapSources = ["LaunchFlow", "Loading LaunchFlow"];
+const bootstrapCatalogs = Object.fromEntries(
+  locales.map((locale) => [
+    locale,
+    Object.fromEntries(
+      bootstrapSources.map((source) => [source, catalogs[locale][source]]),
+    ),
+  ]),
+);
+const generated = new Map([
+  [
+    "catalog-version.ts",
+    [
+      "/* Generated from npi_core Frappe CSV catalogs. Do not edit. */",
+      `export const catalogVersion = '${version}';`,
+      "",
+    ].join("\n"),
+  ],
+  [
+    "catalog-bootstrap.ts",
+    [
+      "/* Generated startup-only translations. Do not edit. */",
+      `export const bootstrapCatalogs: Readonly<Record<"zh" | "zh-TW", Readonly<Record<string, string>>>> = ${JSON.stringify(bootstrapCatalogs, null, 2)};`,
+      "",
+    ].join("\n"),
+  ],
+  ...locales.map((locale) => [
+    `catalog-${locale}.ts`,
+    [
+      "/* Generated from an npi_core Frappe CSV catalog. Do not edit. */",
+      `const messages: Readonly<Record<string, string>> = ${JSON.stringify(catalogs[locale], null, 2)};`,
+      "export default messages;",
+      "",
+    ].join("\n"),
+  ]),
+]);
+
+for (const [fileName, content] of generated) {
+  const output = path.join(frontendRoot, "src", "generated", fileName);
+  if (checkOnly) {
+    const current = await readFile(output, "utf8").catch(() => "");
+    if (current !== content)
+      throw new Error(
+        "Generated React catalogs are stale. Run npm run generate.",
+      );
+  } else {
+    await writeFile(output, content, "utf8");
+  }
+}

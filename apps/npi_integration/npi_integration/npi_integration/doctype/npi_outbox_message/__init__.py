@@ -1,0 +1,1 @@
+"""NPI Outbox Message DocType."""

@@ -1,0 +1,21 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Readiness Template",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 1,
+  "title_field": "title",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "template_code", "fieldtype": "Data", "label": "NPI Readiness Template Code", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "NPI Readiness Template Title", "reqd": 1, "read_only": 1},
+    {"fieldname": "enabled", "fieldtype": "Check", "label": "Enabled", "reqd": 1, "default": "1", "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

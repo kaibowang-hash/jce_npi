@@ -1,0 +1,35 @@
+{
+  "doctype": "DocType",
+  "name": "NPI ERP Trial Summary Fact",
+  "module": "NPI ERPNext Connector",
+  "custom": 0,
+  "autoname": "field:fact_global_id",
+  "allow_rename": 0,
+  "track_changes": 0,
+  "read_only": 1,
+  "title_field": "fact_key",
+  "search_fields": "project_global_id,trial_round_global_id,fact_type,fact_key,value_state,value_text",
+  "sort_field": "creation",
+  "sort_order": "ASC",
+  "fields": [
+    {"fieldname": "fact_global_id", "fieldtype": "Data", "label": "Trial Summary Fact Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "trial_summary", "fieldtype": "Link", "label": "NPI ERP Trial Summary", "options": "NPI ERP Trial Summary", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "summary_revision_global_id", "fieldtype": "Data", "label": "Trial Summary Revision Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "trial_round_global_id", "fieldtype": "Data", "label": "Trial Round Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "fact_group", "fieldtype": "Data", "label": "Trial Summary Fact Group", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "fact_type", "fieldtype": "Select", "label": "Trial Summary Fact Type", "options": "actual_parameter\nblocker\ncavity_result\ncomparison\ncontrolled_reference\ninput_change\nsample\ntooling_defect\ntooling_action\ntrial_defect\ntrial_action\ndefect_verification\nother", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "fact_key", "fieldtype": "Data", "label": "Trial Summary Fact Key", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "value_state", "fieldtype": "Select", "label": "Trial Summary Fact Value State", "options": "measured\nnot_measured\nunavailable\nsatisfied\nfailed\nopen\nclosed\ninformational", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "value_text", "fieldtype": "Long Text", "label": "Trial Summary Fact Value", "read_only": 1},
+    {"fieldname": "value_json", "fieldtype": "Long Text", "label": "Trial Summary Fact JSON Value", "reqd": 1, "read_only": 1},
+    {"fieldname": "unit", "fieldtype": "Data", "label": "Unit", "read_only": 1},
+    {"fieldname": "source_references", "fieldtype": "JSON", "label": "Trial Summary Fact Source References", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_references_hash", "fieldtype": "Data", "label": "Trial Summary Fact Source References Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_global_id", "fieldtype": "Data", "label": "Delivery Request Global ID", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 1, "print": 1, "email": 0, "share": 0},
+    {"role": "NPI ERP Trial Summary Viewer", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 1, "print": 1, "email": 0, "share": 0}
+  ]
+}

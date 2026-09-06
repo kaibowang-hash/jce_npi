@@ -1,0 +1,43 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Trial Conclusion Policy Version",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "policy_global_id", "fieldtype": "Data", "label": "Trial Conclusion Policy Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "version_key_hash", "fieldtype": "Data", "label": "Trial Conclusion Policy Version Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "trial_plan_global_id", "fieldtype": "Data", "label": "Trial Plan Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "trial_plan_revision", "fieldtype": "Link", "label": "Trial Plan Revision", "options": "NPI Trial Plan Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "trial_plan_revision_global_id", "fieldtype": "Data", "label": "Trial Plan Revision Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trial_plan_revision_snapshot_hash", "fieldtype": "Data", "label": "Trial Plan Revision Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_version", "fieldtype": "Int", "label": "Trial Conclusion Policy Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "predecessor_global_id", "fieldtype": "Data", "label": "Predecessor Trial Conclusion Policy Global ID", "read_only": 1},
+    {"fieldname": "predecessor_snapshot_hash", "fieldtype": "Data", "label": "Predecessor Snapshot Hash", "read_only": 1},
+    {"fieldname": "required_parameter_snapshot", "fieldtype": "JSON", "label": "Required Trial Parameter Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "required_dimension_snapshot", "fieldtype": "JSON", "label": "Required Trial Dimension Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "required_reference_kind_snapshot", "fieldtype": "JSON", "label": "Required Trial Review Reference Kind Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "require_cavity_results", "fieldtype": "Check", "label": "Require Trial Cavity Results", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "block_on_open_blocking_defects", "fieldtype": "Check", "label": "Block on Open Blocking Trial Defects", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "block_on_unverified_required_actions", "fieldtype": "Check", "label": "Block on Unverified Required Trial Actions", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "allowed_conclusion_code_snapshot", "fieldtype": "JSON", "label": "Allowed Trial Conclusion Code Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "out_of_spec_blocking_code_snapshot", "fieldtype": "JSON", "label": "Out-of-Specification Blocking Code Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "authority_binding_snapshot", "fieldtype": "JSON", "label": "Trial Conclusion Authority Binding Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "published_by_user_id", "fieldtype": "Data", "label": "Published By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "published_at", "fieldtype": "Datetime", "label": "Published At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_snapshot", "fieldtype": "JSON", "label": "Trial Conclusion Policy Version Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

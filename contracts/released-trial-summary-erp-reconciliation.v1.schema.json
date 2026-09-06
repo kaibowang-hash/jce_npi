@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.internal/npi/contracts/released-trial-summary-erp-reconciliation.v1.schema.json",
+  "title": "Released Trial Summary ERPNext Receipt Reconciliation Command",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "operation",
+    "requestGlobalId",
+    "attemptGlobalId",
+    "targetIdempotencyKeyHash",
+    "sourceHash"
+  ],
+  "properties": {
+    "contractVersion": {"const": 1},
+    "operation": {"const": "reconcile_released_trial_summary"},
+    "requestGlobalId": {"type": "string", "format": "uuid"},
+    "attemptGlobalId": {"type": "string", "format": "uuid"},
+    "targetIdempotencyKeyHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "sourceHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

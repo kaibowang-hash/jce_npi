@@ -1,0 +1,39 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Trial Input Lock Revision",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "input_lock_global_id", "fieldtype": "Data", "label": "Trial Input Lock Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "version_key_hash", "fieldtype": "Data", "label": "Trial Input Lock Version Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "trial_round", "fieldtype": "Link", "label": "Trial Round", "options": "NPI Trial Round", "reqd": 1, "read_only": 1},
+    {"fieldname": "trial_round_global_id", "fieldtype": "Data", "label": "Trial Round Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "trial_plan_revision", "fieldtype": "Link", "label": "Trial Plan Revision", "options": "NPI Trial Plan Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "trial_plan_revision_global_id", "fieldtype": "Data", "label": "Trial Plan Revision Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trial_plan_revision_snapshot_hash", "fieldtype": "Data", "label": "Trial Plan Revision Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "lock_version", "fieldtype": "Int", "label": "Trial Input Lock Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "predecessor_global_id", "fieldtype": "Data", "label": "Predecessor Trial Input Lock Revision Global ID", "read_only": 1},
+    {"fieldname": "predecessor_snapshot_hash", "fieldtype": "Data", "label": "Predecessor Snapshot Hash", "read_only": 1},
+    {"fieldname": "reference_snapshot", "fieldtype": "JSON", "label": "Locked Trial Reference Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "material_snapshot", "fieldtype": "JSON", "label": "Trial Material Observation Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "parameter_definition_snapshot", "fieldtype": "JSON", "label": "Trial Parameter Definition Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "reason", "fieldtype": "Small Text", "label": "Trial Input Lock Revision Reason", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_user_id", "fieldtype": "Data", "label": "Created By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "lock_snapshot", "fieldtype": "JSON", "label": "Trial Input Lock Revision Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

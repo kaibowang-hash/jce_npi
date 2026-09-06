@@ -1,0 +1,29 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Historical Migration Target Binding",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:binding_key_hash",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "binding_key_hash", "fieldtype": "Data", "label": "Binding Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "family", "fieldtype": "Select", "label": "Migration Family", "options": "project\ntooling_mapping\nfile_index\nnpi_reference", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_system", "fieldtype": "Data", "label": "Legacy Source System", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_key", "fieldtype": "Data", "label": "Legacy Source Key", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_hash", "fieldtype": "Data", "label": "Source Row Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "target_doctype", "fieldtype": "Data", "label": "Target Object Type", "reqd": 1, "read_only": 1},
+    {"fieldname": "target_global_id", "fieldtype": "Data", "label": "Target Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "target_version", "fieldtype": "Int", "label": "Target Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "target_snapshot_hash", "fieldtype": "Data", "label": "Target Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_job_global_id", "fieldtype": "Link", "label": "Created By Historical Migration Job", "options": "NPI Historical Migration Job", "reqd": 1, "read_only": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "Binding State", "options": "active\nrolled_back\nforward_correction_required", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "updated_at", "fieldtype": "Datetime", "label": "Updated At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

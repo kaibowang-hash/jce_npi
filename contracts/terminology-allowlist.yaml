@@ -1,0 +1,227 @@
+version: '1.2'
+source_language: en
+required_locales:
+  - en
+  - zh
+  - zh-TW
+frappe_language_codes_must_be_verified_in_m0: false
+rules:
+  mixed_ui_language_forbidden: true
+  business_data_exempt: true
+  identifiers_exempt: true
+  units_exempt: true
+  missing_translation_blocks_release: true
+  source_must_be_english_literal: true
+retain_terms:
+  - source: NPI One
+    zh_cn: NPI One
+    zh_tw: NPI One
+    category: product
+  - source: LaunchFlow
+    zh_cn: LaunchFlow
+    zh_tw: LaunchFlow
+    category: product
+  - source: JCE Core
+    zh_cn: JCE Core
+    zh_tw: JCE Core
+    category: product
+  - source: ERPNext
+    zh_cn: ERPNext
+    zh_tw: ERPNext
+    category: product
+  - source: Frappe
+    zh_cn: Frappe
+    zh_tw: Frappe
+    category: product
+  - source: Microsoft Entra
+    zh_cn: Microsoft Entra
+    zh_tw: Microsoft Entra
+    category: product
+  - source: NPI
+    zh_cn: NPI
+    zh_tw: NPI
+    category: engineering
+  - source: DFM
+    zh_cn: DFM
+    zh_tw: DFM
+    category: engineering
+  - source: APQP
+    zh_cn: APQP
+    zh_tw: APQP
+    category: quality
+  - source: PPAP
+    zh_cn: PPAP
+    zh_tw: PPAP
+    category: quality
+  - source: FAI
+    zh_cn: FAI
+    zh_tw: FAI
+    category: quality
+  - source: CAD
+    zh_cn: CAD
+    zh_tw: CAD
+    category: engineering
+  - source: CAM
+    zh_cn: CAM
+    zh_tw: CAM
+    category: engineering
+  - source: CAE
+    zh_cn: CAE
+    zh_tw: CAE
+    category: engineering
+  - source: BOM
+    zh_cn: BOM
+    zh_tw: BOM
+    category: engineering
+  - source: EBOM
+    zh_cn: EBOM
+    zh_tw: EBOM
+    category: engineering
+  - source: MBOM
+    zh_cn: MBOM
+    zh_tw: MBOM
+    category: engineering
+  - source: SOP
+    zh_cn: SOP
+    zh_tw: SOP
+    category: manufacturing
+  - source: ECR
+    zh_cn: ECR
+    zh_tw: ECR
+    category: change
+  - source: ECO
+    zh_cn: ECO
+    zh_tw: ECO
+    category: change
+  - source: ECN
+    zh_cn: ECN
+    zh_tw: ECN
+    category: change
+  - source: T0
+    zh_cn: T0
+    zh_tw: T0
+    category: trial
+  - source: T1
+    zh_cn: T1
+    zh_tw: T1
+    category: trial
+  - source: T2
+    zh_cn: T2
+    zh_tw: T2
+    category: trial
+  - source: Tn
+    zh_cn: Tn
+    zh_tw: Tn
+    category: trial
+  - source: API
+    zh_cn: API
+    zh_tw: API
+    category: technology
+  - source: UUID
+    zh_cn: UUID
+    zh_tw: UUID
+    category: technology
+  - source: SSO
+    zh_cn: SSO
+    zh_tw: SSO
+    category: technology
+  - source: OIDC
+    zh_cn: OIDC
+    zh_tw: OIDC
+    category: technology
+  - source: LDAP
+    zh_cn: LDAP
+    zh_tw: LDAP
+    category: technology
+  - source: PO
+    zh_cn: PO
+    zh_tw: PO
+    category: erp
+translated_ui_terms:
+  - source: Tool Asset
+    zh_cn: 模具资产
+    zh_tw: 模具資產
+  - source: Tooling
+    zh_cn: 模具开发
+    zh_tw: 模具開發
+  - source: Tooling Cockpit
+    zh_cn: 模具开发驾驶舱
+    zh_tw: 模具開發駕駛艙
+  - source: Gate
+    zh_cn: 阶段门
+    zh_tw: 階段門
+  - source: Gate Review Room
+    zh_cn: 阶段门评审室
+    zh_tw: 階段門評審室
+  - source: Trial
+    zh_cn: 试模
+    zh_tw: 試模
+  - source: Trial Workspace
+    zh_cn: 试模工作区
+    zh_tw: 試模工作區
+  - source: Worklist
+    zh_cn: 工作清单
+    zh_tw: 工作清單
+  - source: Object Page
+    zh_cn: 工程对象页
+    zh_tw: 工程物件頁
+  - source: Workspace
+    zh_cn: 工程工作区
+    zh_tw: 工程工作區
+  - source: Execution Request
+    zh_cn: 执行请求
+    zh_tw: 執行請求
+  - source: Project Cockpit
+    zh_cn: 项目驾驶舱
+    zh_tw: 專案駕駛艙
+forbidden_general_english_in_zh_ui:
+  - Save
+  - Cancel
+  - Submit
+  - Approve
+  - Reject
+  - Status
+  - Owner
+  - Search
+  - Filter
+  - Create
+  - Edit
+  - Delete
+  - Close
+  - Open
+  - Retry
+  - Loading
+  - Error
+  - Warning
+  - Success
+  - Tooling
+  - Gate
+  - Trial
+  - Worklist
+  - Workspace
+business_data_exempt_examples:
+  - customer_name
+  - supplier_name
+  - part_number
+  - document_number
+  - drawing_title
+  - file_name
+  - revision
+  - user_name
+  - email_address
+unit_examples:
+  - mm
+  - cm
+  - m
+  - kg
+  - g
+  - s
+  - min
+  - h
+  - MPa
+  - kPa
+  - bar
+  - °C
+  - kN
+  - N
+  - '%'

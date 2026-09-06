@@ -1,0 +1,14 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Template Reference Rule",
+  "module": "NPI Core",
+  "custom": 0,
+  "istable": 1,
+  "editable_grid": 1,
+  "fields": [
+    {"fieldname": "reference_type", "fieldtype": "Select", "label": "Reference Type", "options": "customer\nproduct\npart\ntooling\norder", "reqd": 1},
+    {"fieldname": "required", "fieldtype": "Check", "label": "Required", "default": "0"},
+    {"fieldname": "allow_multiple", "fieldtype": "Check", "label": "Allow Multiple", "default": "0"}
+  ],
+  "permissions": []
+}

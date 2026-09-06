@@ -1,0 +1,38 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Baseline Impact Event",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "baseline_global_id,old_revision_global_id,new_revision_global_id,gate_global_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "impact_key", "fieldtype": "Data", "label": "Impact Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "event_type", "fieldtype": "Select", "label": "Impact Event Type", "options": "invalidated", "reqd": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1},
+    {"fieldname": "dependency_global_id", "fieldtype": "Link", "label": "Baseline Gate Dependency", "options": "NPI Baseline Gate Dependency", "reqd": 1, "read_only": 1},
+    {"fieldname": "baseline_global_id", "fieldtype": "Data", "label": "Baseline Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "baseline_snapshot_hash", "fieldtype": "Data", "label": "Baseline Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "old_revision_global_id", "fieldtype": "Data", "label": "Prior Revision Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "old_revision_snapshot_hash", "fieldtype": "Data", "label": "Prior Revision Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "new_revision_global_id", "fieldtype": "Data", "label": "Successor Revision Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "new_revision_snapshot_hash", "fieldtype": "Data", "label": "Successor Revision Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "gate_global_id", "fieldtype": "Data", "label": "Gate Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "requirement_global_id", "fieldtype": "Data", "label": "Requirement Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "evidence_reference_global_id", "fieldtype": "Data", "label": "Evidence Reference Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "initiated_by_user_id", "fieldtype": "Data", "label": "Initiated By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "occurred_at", "fieldtype": "Datetime", "label": "Occurred At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "event_snapshot", "fieldtype": "JSON", "label": "Canonical Impact Event Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "event_hash", "fieldtype": "Data", "label": "Impact Event Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

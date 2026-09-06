@@ -1,0 +1,21 @@
+source_string,translated_string,context
+My Work,我的工作,navigation
+Project Portfolio,项目组合,navigation
+Project Cockpit,项目驾驶舱,page-title
+Tooling,模具开发,domain
+Tooling Cockpit,模具开发驾驶舱,page-title
+Gate,阶段门,domain
+Gate Review Room,阶段门评审室,page-title
+Trial,试模,domain
+Trial Workspace,试模工作区,page-title
+Execution Request,执行请求,domain
+ERPNext Execution and Reconciliation,ERPNext 执行与对账,page-title
+Save,保存,action
+Cancel,取消,action
+Approve,批准,action
+Reject,驳回,action
+Retry,重试,action
+Status,状态,field
+Owner,负责人,field
+Search,搜索,action
+Filter,筛选,action

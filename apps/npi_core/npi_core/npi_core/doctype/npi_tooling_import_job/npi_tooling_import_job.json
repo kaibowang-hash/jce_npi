@@ -1,0 +1,37 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Tooling Import Job",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "batch_global_id", "fieldtype": "Link", "label": "Tooling Import Batch", "options": "NPI Tooling Import Batch", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_snapshot_hash", "fieldtype": "Data", "label": "Source Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "preview_global_id", "fieldtype": "Data", "label": "Preview Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "preview_revision_global_id", "fieldtype": "Link", "label": "Tooling Import Preview Revision", "options": "NPI Tooling Import Preview Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "preview_snapshot_hash", "fieldtype": "Data", "label": "Preview Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "mapping_activation_global_id", "fieldtype": "Link", "label": "Tooling Import Mapping Activation", "options": "NPI Tooling Import Mapping Activation", "reqd": 1, "read_only": 1},
+    {"fieldname": "actor_user_id", "fieldtype": "Data", "label": "Actor User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "attempt", "fieldtype": "Int", "label": "Import Attempt", "reqd": 1, "read_only": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "Import Job State", "options": "queued\nprocessing\npartially_succeeded\nsucceeded\nfailed_retryable\nfailed_final\nrolled_back\nrollback_denied", "reqd": 1, "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "correction_artifact_global_id", "fieldtype": "Data", "label": "Correction Artifact Global ID", "read_only": 1},
+    {"fieldname": "correction_artifact_snapshot_hash", "fieldtype": "Data", "label": "Correction Artifact Snapshot Hash", "read_only": 1},
+    {"fieldname": "job_snapshot", "fieldtype": "JSON", "label": "Tooling Import Job Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "queued_at", "fieldtype": "Datetime", "label": "Queued At", "reqd": 1, "read_only": 1},
+    {"fieldname": "updated_at", "fieldtype": "Datetime", "label": "Updated At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

@@ -1,0 +1,64 @@
+.erp-master-select {
+  position: relative;
+  min-width: 0;
+}
+
+fieldset > .erp-master-select {
+  grid-column: 1 / -1;
+}
+
+.erp-master-select__control {
+  display: flex;
+  gap: var(--npi-space-1);
+}
+
+.erp-master-select__control input {
+  min-width: 0;
+  flex: 1;
+}
+
+.erp-master-select__popup {
+  position: absolute;
+  z-index: 20;
+  inset-inline: 0;
+  top: 100%;
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  background: var(--npi-color-surface-default);
+}
+
+.erp-master-select__popup p {
+  margin: var(--npi-space-2);
+}
+
+.erp-master-select__options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.erp-master-select__options li {
+  display: flex;
+  flex-direction: column;
+  padding: var(--npi-space-2);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.erp-master-select__options li:hover,
+.erp-master-select__options .erp-master-select__active {
+  background: var(--npi-color-surface-selected);
+}
+
+.erp-master-select__options li[aria-disabled="true"] {
+  color: var(--npi-color-text-muted);
+  cursor: not-allowed;
+}
+
+.erp-master-select__paging {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--npi-space-1);
+}

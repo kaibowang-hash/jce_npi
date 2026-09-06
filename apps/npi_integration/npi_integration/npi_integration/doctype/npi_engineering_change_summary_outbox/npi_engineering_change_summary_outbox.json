@@ -1,0 +1,33 @@
+{
+ "actions":[],"allow_rename":0,"autoname":"field:event_id","doctype":"DocType","engine":"InnoDB",
+ "field_order":["event_id","schema_version","event_type","request_global_id","tenant_id","project_global_id","change_global_id","revision_global_id","source_hash","payload","payload_hash","profile_snapshot_hash","service_actor_user_id","trace_id","target_idempotency_key_hash","state","attempt_count","claim_token","claimed_at","lease_expires_at","adapter_boundary_crossed","last_attempt_global_id","result_global_id","last_error_code","last_error_at"],
+ "fields":[
+  {"fieldname":"event_id","fieldtype":"Data","label":"Event ID","read_only":1,"reqd":1,"unique":1},
+  {"fieldname":"schema_version","fieldtype":"Int","label":"Schema Version","read_only":1,"reqd":1},
+  {"fieldname":"event_type","fieldtype":"Data","label":"Event Type","read_only":1,"reqd":1},
+  {"fieldname":"request_global_id","fieldtype":"Link","label":"Summary Request","options":"NPI Engineering Change Summary Request","read_only":1,"reqd":1},
+  {"fieldname":"tenant_id","fieldtype":"Data","label":"Tenant ID","read_only":1,"reqd":1},
+  {"fieldname":"project_global_id","fieldtype":"Link","label":"Project","options":"NPI Engineering Project","read_only":1,"reqd":1},
+  {"fieldname":"change_global_id","fieldtype":"Link","label":"Engineering Change","options":"NPI Engineering Change","read_only":1,"reqd":1},
+  {"fieldname":"revision_global_id","fieldtype":"Data","label":"Revision ID","read_only":1,"reqd":1},
+  {"fieldname":"source_hash","fieldtype":"Data","label":"Source Hash","read_only":1,"reqd":1},
+  {"fieldname":"payload","fieldtype":"Long Text","label":"Payload","read_only":1,"reqd":1},
+  {"fieldname":"payload_hash","fieldtype":"Data","label":"Payload Hash","read_only":1,"reqd":1},
+  {"fieldname":"profile_snapshot_hash","fieldtype":"Data","label":"Integration Profile Hash","read_only":1,"reqd":1},
+  {"fieldname":"service_actor_user_id","fieldtype":"Data","label":"Service Actor User ID","read_only":1,"reqd":1},
+  {"fieldname":"trace_id","fieldtype":"Data","label":"Trace ID","read_only":1,"reqd":1},
+  {"fieldname":"target_idempotency_key_hash","fieldtype":"Data","label":"Target Idempotency Key Hash","read_only":1,"reqd":1},
+  {"fieldname":"state","fieldtype":"Select","label":"State","options":"pending\nprocessing\nsynthetic_verified\nsucceeded\nfailed_retryable\nfailed_final\npartially_succeeded\nuncertain_after_timeout\nidentity_conflict","read_only":1,"reqd":1},
+  {"default":"0","fieldname":"attempt_count","fieldtype":"Int","label":"Attempt Count","read_only":1},
+  {"fieldname":"claim_token","fieldtype":"Data","label":"Claim Token","read_only":1},
+  {"fieldname":"claimed_at","fieldtype":"Datetime","label":"Claimed At","read_only":1},
+  {"fieldname":"lease_expires_at","fieldtype":"Datetime","label":"Lease Expires At","read_only":1},
+  {"default":"0","fieldname":"adapter_boundary_crossed","fieldtype":"Check","label":"Adapter Boundary Crossed","read_only":1},
+  {"fieldname":"last_attempt_global_id","fieldtype":"Data","label":"Last Attempt ID","read_only":1},
+  {"fieldname":"result_global_id","fieldtype":"Data","label":"Result ID","read_only":1},
+  {"fieldname":"last_error_code","fieldtype":"Data","label":"Last Error Code","read_only":1},
+  {"fieldname":"last_error_at","fieldtype":"Datetime","label":"Last Error At","read_only":1}
+ ],
+ "index_web_pages_for_search":0,"module":"NPI Integration","name":"NPI Engineering Change Summary Outbox","read_only":1,"track_changes":0,
+ "permissions":[{"role":"System Manager","read":1,"create":1,"write":1},{"role":"NPI API User","read":1,"create":1,"write":1}]
+}

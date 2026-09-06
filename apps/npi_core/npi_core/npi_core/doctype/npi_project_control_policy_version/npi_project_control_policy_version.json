@@ -1,0 +1,34 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Project Control Policy Version",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:version_key",
+  "track_changes": 1,
+  "title_field": "title",
+  "search_fields": "policy_code,title,version_key",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "project_control_policy", "fieldtype": "Link", "label": "Project Control Policy", "options": "NPI Project Control Policy", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_global_id", "fieldtype": "Data", "label": "Policy Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_code", "fieldtype": "Data", "label": "Project Control Policy Code", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_version", "fieldtype": "Int", "label": "Policy Version", "reqd": 1},
+    {"fieldname": "version_key", "fieldtype": "Data", "label": "Version Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "Policy Version Title", "reqd": 1},
+    {"fieldname": "publication_state", "fieldtype": "Select", "label": "Publication State", "options": "draft\npublished", "reqd": 1, "default": "draft"},
+    {"fieldname": "prior_version_ref", "fieldtype": "JSON", "label": "Prior Policy Version Reference", "read_only": 1},
+    {"fieldname": "authority_slots", "fieldtype": "JSON", "label": "Project Control Authority Slots", "reqd": 1},
+    {"fieldname": "health_assessment_slot", "fieldtype": "Data", "label": "Health Assessment Authority Slot", "reqd": 1},
+    {"fieldname": "health_rules", "fieldtype": "JSON", "label": "Project Health Rules", "reqd": 1},
+    {"fieldname": "require_all_dimensions", "fieldtype": "Check", "label": "Require All Health Dimensions", "reqd": 1, "default": "1"},
+    {"fieldname": "lifecycle_transitions", "fieldtype": "JSON", "label": "Project Lifecycle Transitions", "reqd": 1},
+    {"fieldname": "snapshot", "fieldtype": "JSON", "label": "Policy Snapshot", "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "read_only": 1},
+    {"fieldname": "published_at", "fieldtype": "Datetime", "label": "Published At", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+  ]
+}

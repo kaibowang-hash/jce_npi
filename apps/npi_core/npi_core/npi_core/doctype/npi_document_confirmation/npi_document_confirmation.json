@@ -1,0 +1,42 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Document Confirmation",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "revision_global_id,cycle_global_id,confirmation_type,actor_user_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "confirmation_key", "fieldtype": "Data", "label": "Confirmation Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "document_global_id", "fieldtype": "Link", "label": "Controlled Document", "options": "NPI Controlled Document", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "document_revision", "fieldtype": "Link", "label": "Document Revision", "options": "NPI Document Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "revision_global_id", "fieldtype": "Data", "label": "Revision Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "review_cycle", "fieldtype": "Link", "label": "Review Cycle", "options": "NPI Document Review Cycle", "reqd": 1, "read_only": 1},
+    {"fieldname": "cycle_global_id", "fieldtype": "Data", "label": "Review Cycle Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "policy_global_id", "fieldtype": "Data", "label": "Release Policy Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_version", "fieldtype": "Int", "label": "Release Policy Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_snapshot_hash", "fieldtype": "Data", "label": "Release Policy Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "evidence_snapshot_hash", "fieldtype": "Data", "label": "Evidence Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "confirmation_type", "fieldtype": "Select", "label": "Confirmation Type", "options": "review_approve\nreview_reject\nrelease\nsupersede\nobsolete", "reqd": 1, "read_only": 1},
+    {"fieldname": "actor_user_id", "fieldtype": "Data", "label": "Actor User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "authority_slot", "fieldtype": "Data", "label": "Authority Slot", "reqd": 1, "read_only": 1},
+    {"fieldname": "confirmation_method", "fieldtype": "Data", "label": "Confirmation Method", "reqd": 1, "read_only": 1},
+    {"fieldname": "confirmation_intent", "fieldtype": "Data", "label": "Confirmation Intent", "reqd": 1, "read_only": 1},
+    {"fieldname": "confirmed", "fieldtype": "Check", "label": "Confirmed", "reqd": 1, "read_only": 1},
+    {"fieldname": "reason", "fieldtype": "Text", "label": "Confirmation Reason", "read_only": 1},
+    {"fieldname": "confirmed_at", "fieldtype": "Datetime", "label": "Confirmed At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "confirmation_evidence", "fieldtype": "JSON", "label": "Confirmation Evidence", "reqd": 1, "read_only": 1},
+    {"fieldname": "evidence_hash", "fieldtype": "Data", "label": "Confirmation Evidence Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

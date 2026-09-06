@@ -1,0 +1,40 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Engineering BOM Line",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "line_key,engineering_item_id,project_global_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "line_identity_key", "fieldtype": "Data", "label": "EBOM Line Identity Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "engineering_bom", "fieldtype": "Link", "label": "Engineering BOM", "options": "NPI Engineering BOM", "reqd": 1, "read_only": 1},
+    {"fieldname": "ebom_global_id", "fieldtype": "Data", "label": "Engineering BOM Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "engineering_bom_revision", "fieldtype": "Link", "label": "Engineering BOM Revision", "options": "NPI Engineering BOM Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "revision_global_id", "fieldtype": "Data", "label": "EBOM Revision Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "revision_snapshot_hash", "fieldtype": "Data", "label": "EBOM Revision Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "line_key", "fieldtype": "Data", "label": "EBOM Line Key", "reqd": 1, "read_only": 1},
+    {"fieldname": "parent_line_key", "fieldtype": "Data", "label": "Parent EBOM Line Key", "read_only": 1},
+    {"fieldname": "engineering_item_id", "fieldtype": "Data", "label": "Engineering Item Identity", "reqd": 1, "read_only": 1},
+    {"fieldname": "description", "fieldtype": "Small Text", "label": "Engineering Description", "reqd": 1, "read_only": 1},
+    {"fieldname": "quantity", "fieldtype": "Data", "label": "Engineering Quantity", "reqd": 1, "read_only": 1},
+    {"fieldname": "engineering_uom", "fieldtype": "Data", "label": "Engineering UOM", "reqd": 1, "read_only": 1},
+    {"fieldname": "alternate_for_line_key", "fieldtype": "Data", "label": "Alternate For EBOM Line Key", "read_only": 1},
+    {"fieldname": "alternate_group_key", "fieldtype": "Data", "label": "Alternate Group Key", "read_only": 1},
+    {"fieldname": "effectivity_start", "fieldtype": "Date", "label": "Effectivity Start", "read_only": 1},
+    {"fieldname": "effectivity_end", "fieldtype": "Date", "label": "Effectivity End", "read_only": 1},
+    {"fieldname": "attributes", "fieldtype": "JSON", "label": "Controlled Attributes", "reqd": 1, "read_only": 1},
+    {"fieldname": "line_snapshot", "fieldtype": "JSON", "label": "Canonical EBOM Line Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "line_hash", "fieldtype": "Data", "label": "EBOM Line Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

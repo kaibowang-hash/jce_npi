@@ -1,0 +1,1 @@
+"""NPI Notification Preference DocType."""

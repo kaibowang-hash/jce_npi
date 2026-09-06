@@ -1,0 +1,16 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Gate Requirement Definition",
+  "module": "NPI Core",
+  "custom": 0,
+  "istable": 1,
+  "editable_grid": 1,
+  "fields": [
+    {"fieldname": "requirement_key", "fieldtype": "Data", "label": "Requirement Key", "reqd": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "Requirement Title", "reqd": 1},
+    {"fieldname": "classification", "fieldtype": "Select", "label": "Requirement Classification", "options": "required\noptional", "reqd": 1},
+    {"fieldname": "priority", "fieldtype": "Select", "label": "Requirement Priority", "options": "P0\nP1\nP2", "reqd": 1},
+    {"fieldname": "allowed_evidence_kinds", "fieldtype": "JSON", "label": "Allowed Evidence Kinds", "reqd": 1}
+  ],
+  "permissions": []
+}

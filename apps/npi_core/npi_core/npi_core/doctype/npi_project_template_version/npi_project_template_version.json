@@ -1,0 +1,30 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Project Template Version",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:version_key",
+  "track_changes": 1,
+  "title_field": "title",
+  "search_fields": "template_code,title,version_key",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "project_template", "fieldtype": "Link", "label": "Project Template", "options": "NPI Project Template", "reqd": 1},
+    {"fieldname": "template_global_id", "fieldtype": "Data", "label": "Template Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "template_code", "fieldtype": "Data", "label": "Template Code", "reqd": 1, "read_only": 1},
+    {"fieldname": "template_version", "fieldtype": "Int", "label": "Template Version", "reqd": 1},
+    {"fieldname": "version_key", "fieldtype": "Data", "label": "Version Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "Template Version Title", "reqd": 1},
+    {"fieldname": "publication_state", "fieldtype": "Select", "label": "Publication State", "options": "draft\npublished", "reqd": 1, "default": "draft"},
+    {"fieldname": "applicable_project_types", "fieldtype": "JSON", "label": "Applicable Project Types", "reqd": 1},
+    {"fieldname": "reference_rules", "fieldtype": "Table", "label": "Reference Rules", "options": "NPI Template Reference Rule"},
+    {"fieldname": "gates", "fieldtype": "Table", "label": "Gate Definitions", "options": "NPI Template Gate Definition", "reqd": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "read_only": 1},
+    {"fieldname": "published_at", "fieldtype": "Datetime", "label": "Published At", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+  ]
+}

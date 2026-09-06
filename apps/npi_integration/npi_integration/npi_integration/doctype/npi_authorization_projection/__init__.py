@@ -1,0 +1,1 @@
+"""NPI Authorization Projection DocType."""

@@ -1,0 +1,22 @@
+{
+  "doctype": "DocType",
+  "name": "NPI ERP Project Mapping",
+  "module": "NPI ERPNext Connector",
+  "custom": 0,
+  "autoname": "field:source_project_id",
+  "allow_rename": 0,
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "source_project_id,target_project_global_id,receipt_id",
+  "fields": [
+    {"fieldname": "source_project_id", "fieldtype": "Link", "label": "Source Project", "options": "Project", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "target_project_global_id", "fieldtype": "Data", "label": "Target Project Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "receipt_id", "fieldtype": "Data", "label": "Receipt ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "event_id", "fieldtype": "Link", "label": "Delivery Event", "options": "NPI ERP Project Delivery", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_version", "fieldtype": "Int", "label": "Source Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "mapped_at", "fieldtype": "Datetime", "label": "Mapped At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0, "share": 0}
+  ]
+}

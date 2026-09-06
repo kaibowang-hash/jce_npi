@@ -1,0 +1,33 @@
+{
+  "name": "NPI One Development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:2.1.0": {
+      "version": "24.18.0",
+      "npmVersion": "11.16.0",
+      "nodeGypDependencies": true,
+      "installYarnUsingApt": false
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:3.0.1": {
+      "version": "28.3.3",
+      "dockerDashComposeVersion": "v2",
+      "moby": true
+    }
+  },
+  "containerEnv": {
+    "NPI_TOOLCHAIN_FILE": "${containerWorkspaceFolder}/.devcontainer/toolchain.env"
+  },
+  "postCreateCommand": "bash scripts/bootstrap-dev.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  },
+  "remoteUser": "vscode"
+}

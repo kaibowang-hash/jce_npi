@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.internal/npi/contracts/npi-erp-project-create.v1.schema.json",
+  "title": "NPI to ERPNext Project create command",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "operation", "requestGlobalId", "attemptGlobalId", "attemptNumber", "targetIdempotencyKeyHash", "sourceHash", "actorUserId", "source"],
+  "properties": {
+    "contractVersion": {"const": 1},
+    "operation": {"const": "create_erp_project"},
+    "requestGlobalId": {"type": "string", "format": "uuid"},
+    "attemptGlobalId": {"type": "string", "format": "uuid"},
+    "attemptNumber": {"type": "integer", "minimum": 1, "maximum": 20},
+    "targetIdempotencyKeyHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "sourceHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "actorUserId": {"type": "string", "format": "email", "maxLength": 254},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "tenantId", "projectGlobalId", "businessCode", "title", "projectType", "targetSop", "actorUserId", "sourceVersion"],
+      "properties": {
+        "schemaVersion": {"const": 1},
+        "tenantId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "projectGlobalId": {"type": "string", "format": "uuid"},
+        "businessCode": {"type": "string", "minLength": 1, "maxLength": 140},
+        "title": {"type": "string", "minLength": 1, "maxLength": 140},
+        "projectType": {"enum": ["customer_owned_tool", "new_tool", "tool_change"]},
+        "targetSop": {"type": "string", "format": "date"},
+        "actorUserId": {"type": "string", "format": "email", "maxLength": 254},
+        "sourceVersion": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+"""NPI Meeting Minute DocType."""
