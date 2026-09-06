@@ -194,6 +194,17 @@ class StubFrappeStore:
                 ),
                 reverse=True,
             )
+        elif (
+            doctype == "NPI ERP Project Publish Request"
+            and order_by == "updated_at desc, name asc"
+        ):
+            documents.sort(
+                key=lambda document: (
+                    str(document.get("updated_at")),
+                    str(document.get("name")),
+                ),
+                reverse=True,
+            )
         else:
             raise AssertionError(f"Unexpected order: {order_by}")
         limit = page_length if page_length is not None else limit_page_length
@@ -826,6 +837,8 @@ class Phase4ProjectApiTest(unittest.TestCase):
             "state": "unbound",
             "sourceObjectId": None,
             "lastProcessedAt": None,
+            "requestGlobalId": None,
+            "errorCode": None,
         })
         self.assertEqual(
             set(result["project"]),
@@ -1052,6 +1065,8 @@ class Phase4ProjectApiTest(unittest.TestCase):
             "state": "bound",
             "sourceObjectId": "ERP-PROJECT-001",
             "lastProcessedAt": "2026-07-23T13:00:00Z",
+            "requestGlobalId": None,
+            "errorCode": None,
         })
         self.assertEqual(len(result["references"]), 2)
 

@@ -298,3 +298,12 @@
 "Master data delivery state is invalid.","主資料投遞狀態無效。"
 "Master data delivery event binding is invalid.","主資料投遞事件綁定無效。"
 "Completed master data delivery is incomplete.","已完成的主資料投遞資訊不完整。"
+Business Actor User,業務操作使用者
+Business Code,業務編碼
+ERP Project publication history cannot be deleted.,ERP 專案發佈歷史不能刪除。
+ERP Project publication records can only be changed by the controlled operation.,ERP 專案發佈記錄只能由受控操作變更。
+Formal Project ID,正式專案編號
+Integration Project reconciliation contract is invalid.,整合專案對帳契約無效。
+Integration Project request contract is invalid.,整合專案請求契約無效。
+NPI ERP Project Publish Mapping,NPI ERP 專案發佈映射
+NPI ERP Project Publish Receipt,NPI ERP 專案發佈回執

@@ -29,6 +29,7 @@ from .runtime_fixture import (
     resolve_adapter_registry as resolve_synthetic_adapter_registry,
 )
 from .runtime_fixture import resolve_profile as resolve_synthetic_profile
+from npi_integration.project_publish.profile_inheritance import inherited_project_profile
 
 
 SANDBOX_ENABLED_KEY = "npi_mbom_publish_sandbox_enabled"
@@ -135,7 +136,15 @@ def load_sandbox_profile(
             matches.append(profile)
     if len(matches) > 1:
         raise MbomPublishContractError("Sandbox MBOM profile resolution is ambiguous.")
-    return matches[0] if matches else None
+    if matches:
+        return matches[0]
+    try:
+        inherited = inherited_project_profile(
+            values, tenant_id, project_global_id, family="mbom"
+        )
+    except ValueError as error:
+        raise MbomPublishContractError(str(error)) from error
+    return _profile(inherited) if inherited is not None else None
 
 
 def sandbox_adapter(command: MbomAdapterCommand) -> MbomAdapterResponse:

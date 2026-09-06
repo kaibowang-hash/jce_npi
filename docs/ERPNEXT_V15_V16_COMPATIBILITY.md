@@ -5,7 +5,7 @@ Date: 2026-09-06
 ## Scope
 
 This evidence applies to the standalone `npi_erpnext_connector` custom app at
-version `0.9.1`. It covers installation, schema and configured non-production
+version `0.10.0`. It covers installation, schema and configured non-production
 execution compatibility. Least-privilege service identities and explicit
 project-bound profiles are installed only on `erpnext-test`.
 
@@ -18,9 +18,9 @@ using the official `frappe/erpnext:v15` image. The resulting versions were:
 - Frappe `15.120.0`
 - Python `3.11`
 - MariaDB `10.6`
-- `npi_erpnext_connector` `0.9.1`
+- `npi_erpnext_connector` `0.10.0`
 
-`bench --site v15-compat.localhost migrate` completed successfully. The
+`bench --site v15-project3.localhost migrate` completed successfully twice. The
 following additive connector patches executed successfully:
 
 - `v0_3.sync_mbom_doctypes`
@@ -29,21 +29,23 @@ following additive connector patches executed successfully:
 - `v0_5.sync_trial_summary_schema`
 - `v0_6.sync_master_data_schema`
 - `v0_9.sync_engineering_change_schema`
+- `v0_10.sync_project_publish_schema`
 
-The migrated site contained all 13 connector-owned support DocTypes and all
-seven service/viewer roles. Runtime imports compiled successfully. Item, MBOM,
-and Tool Asset capability endpoints returned app version `0.9.1`, advertised
-Frappe majors 15 and 16, and remained disabled by default.
+The migrated site contained all 15 connector-owned support DocTypes, including
+`NPI ERP Project Publish Mapping` and `NPI ERP Project Publish Receipt`, and all
+seven service/viewer roles. Runtime imports compiled successfully. Receivers
+remain disabled by default, and package metadata continues to advertise Frappe
+majors 15 and 16.
 
 ## ERPNext v16 target fact
 
-The authorized `erpnext-test` target currently runs ERPNext `16.14.0` and
-Frappe `16.16.0`. Connector `0.9.1` is installed and migrated there. All 13
-connector support DocTypes exist; Item, MBOM, Tool Asset create/update, released
-Trial Summary and Engineering Change receivers are enabled. Authorization,
-Project and master-data senders are also enabled and their current deliveries
-are confirmed by the live evidence in
-`implementation/evidence/erpnext-test/full-integration-live-2026-09-06.md`.
+The authorized `erpnext-test` target runs ERPNext `16.14.0` and Frappe
+`16.16.0`. The pre-deployment baseline is connector `0.9.1` with all 13 prior
+connector support DocTypes. Item, MBOM, Tool Asset create/update, released Trial
+Summary and Engineering Change receivers are enabled. Authorization, Project
+and master-data senders are also enabled. Connector `0.10.0` deployment and the
+new NPI-to-ERPNext Project receiver are recorded separately in the live evidence
+after the release gate passes.
 
 ## Compatibility controls
 

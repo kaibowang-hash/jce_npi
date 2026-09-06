@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from urllib.parse import urlsplit
 
 from .domain import OPERATION, TrialSummaryDeliveryError, canonical_hash, parse_uuid
+from npi_integration.project_publish.profile_inheritance import inherited_project_profile
 
 SANDBOX_ENABLED_KEY = "npi_trial_summary_erp_sandbox_enabled"
 SANDBOX_PROFILES_KEY = "npi_trial_summary_erp_sandbox_profiles"
@@ -102,7 +103,15 @@ def load_profile(
     ]
     if len(matches) > 1:
         raise TrialSummaryDeliveryError("Trial Summary Sandbox profile is ambiguous.")
-    return matches[0] if matches else None
+    if matches:
+        return matches[0]
+    try:
+        inherited = inherited_project_profile(
+            raw_profiles, tenant_id, project_global_id, family="trial-summary"
+        )
+    except ValueError as error:
+        raise TrialSummaryDeliveryError(str(error)) from error
+    return _profile(inherited) if inherited is not None else None
 
 
 def _profile(value: object) -> TrialSummaryProfile:

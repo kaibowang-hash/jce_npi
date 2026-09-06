@@ -29,6 +29,12 @@ MASTER_DATA_ROOT = APP_ROOT / "npi_integration/npi_integration/master_data"
 TRIAL_SUMMARY_ROOT = (
     APP_ROOT / "npi_integration/npi_integration/trial_summary_publish"
 )
+PROJECT_PUBLISH_ROOT = (
+    APP_ROOT / "npi_integration/npi_integration/project_publish"
+)
+ERP_PROJECT_PUBLISH_ROOT = (
+    APP_ROOT / "npi_erpnext_connector/npi_erpnext_connector"
+)
 EXPECTED_PERMISSION_CALLS = Counter(
     {
         (
@@ -294,6 +300,30 @@ EXPECTED_PERMISSION_CALLS = Counter(
             "save_support_document",
             "document",
             "save",
+        ): 1,
+        (
+            str(PROJECT_PUBLISH_ROOT / "frappe_validation.py"),
+            "insert_support_document",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(PROJECT_PUBLISH_ROOT / "frappe_validation.py"),
+            "save_support_document",
+            "document",
+            "save",
+        ): 1,
+        (
+            str(ERP_PROJECT_PUBLISH_ROOT / "project_publish_validation.py"),
+            "insert_target",
+            "document",
+            "insert",
+        ): 1,
+        (
+            str(ERP_PROJECT_PUBLISH_ROOT / "project_publish_validation.py"),
+            "insert_support",
+            "document",
+            "insert",
         ): 1,
     }
 )

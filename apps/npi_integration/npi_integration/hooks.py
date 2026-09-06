@@ -29,6 +29,7 @@ scheduler_events = {
         "npi_integration.tool_asset_request.worker.recover_tool_asset_outbox_messages",
         "npi_integration.engineering_change.worker.recover_engineering_change_work",
         "npi_integration.trial_summary_publish.worker.recover_trial_summary_deliveries",
+        "npi_integration.project_publish.worker.recover_project_publish_requests",
     ]
 }
 
@@ -36,6 +37,11 @@ scheduler_events = {
 # The hook never contacts ERPNext; the background worker remains inert until an
 # exact non-production Sandbox profile and credential reference are configured.
 doc_events = {
+    "NPI Engineering Project": {
+        "after_insert": (
+            "npi_integration.project_publish.service.queue_engineering_project"
+        )
+    },
     "NPI Released Trial Summary Revision": {
         "after_insert": (
             "npi_integration.trial_summary_publish.service."

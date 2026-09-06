@@ -29,6 +29,8 @@ export function projectCockpitFixture(
       state: "bound",
       sourceObjectId: "SYN-ERP-PROJECT-001",
       lastProcessedAt: "2026-07-22T09:05:00Z",
+      requestGlobalId: null,
+      errorCode: null,
     },
     templateRef: {
       globalId: "22222222-2222-4222-8222-222222222222",

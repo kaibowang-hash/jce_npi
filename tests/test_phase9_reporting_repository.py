@@ -70,6 +70,8 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
         self.query_calls: list[tuple[str, dict[str, Any]]] = []
         self.get_doc_calls = 0
         self.social_login_rows: list[Row] = []
+        self.project_publish_rows: list[Row] = []
+        self.project_source_binding_rows: list[Row] | None = None
         self.disable_signup: object = 1
         frappe = types.ModuleType("frappe")
         frappe._ = lambda source: source
@@ -167,7 +169,16 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
             ]
         if doctype == "NPI ERP Projection Head":
             return []
+        if doctype == "NPI ERP Project Publish Request":
+            visible = set(kwargs["filters"]["project_global_id"][1])
+            return [
+                row
+                for row in self.project_publish_rows
+                if row.project_global_id in visible
+            ]
         if doctype == "NPI Project Source Binding":
+            if self.project_source_binding_rows is not None:
+                return list(self.project_source_binding_rows)
             visible = set(kwargs["filters"]["bound_project_global_id"][1])
             project_id = list(self.projects)[0]
             return [
@@ -226,8 +237,39 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
             "state": "bound",
             "sourceObjectId": "ERP-PROJECT-001",
             "lastProcessedAt": "2026-09-03T08:00:00Z",
+            "requestGlobalId": None,
+            "errorCode": None,
         })
         self.assertNotIn("cost", item)
+
+    def test_portfolio_reports_npi_origin_project_publish_state(self) -> None:
+        project_id = list(self.projects)[0]
+        self.project_source_binding_rows = []
+        self.project_publish_rows = [
+            Row(
+                name="30000000-0000-4000-8000-000000000001",
+                project_global_id=project_id,
+                state="succeeded",
+                formal_erp_project_id="PROJ-0042",
+                last_error_code=None,
+                updated_at=NOW,
+                completed_at=NOW,
+            )
+        ]
+        response = self.repository().portfolio(
+            filters=PortfolioFilters(), cursor=None, limit=25
+        )
+        self.assertEqual(
+            response["items"][0]["erp"]["projectBinding"],
+            {
+                "sourceSystem": "ERPNEXT",
+                "state": "bound",
+                "sourceObjectId": "PROJ-0042",
+                "lastProcessedAt": "2026-09-03T08:00:00Z",
+                "requestGlobalId": "30000000-0000-4000-8000-000000000001",
+                "errorCode": None,
+            },
+        )
 
     def test_search_filters_every_object_through_visible_projects(self) -> None:
         response = self.repository().global_search(
@@ -371,6 +413,7 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
                 "NPI Project Reference",
                 "NPI Domain Work Item",
                 "NPI Gate Shell",
+                "NPI ERP Project Publish Request",
                 "NPI Project Source Binding",
                 "NPI ERP Projection Head",
             ],

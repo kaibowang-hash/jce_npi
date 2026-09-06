@@ -32,6 +32,11 @@ def enqueue_project(source_project_id: str) -> str | None:
     if project_sender_is_disabled(frappe.conf):
         return None
     profile = load_project_sender_profile(frappe.conf)
+    if frappe.db.exists(
+        "NPI ERP Project Publish Mapping",
+        {"formal_project_id": source_project_id},
+    ):
+        return None
     if frappe.db.exists(MAPPING_DOCTYPE, source_project_id):
         return None
     source = _load_source_project(source_project_id)

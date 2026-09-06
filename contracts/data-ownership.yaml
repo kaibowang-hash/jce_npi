@@ -120,6 +120,9 @@ objects:
       factory_reference: {owner: NPI_ONE_PROJECT_COMMAND, editable_in: [NPI_ONE_PROJECT_COMMAND], direction: REFERENCE_ONLY, conflict: EXACT_TYPED_REFERENCE}
       sales_order_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
       erp_project_source_binding_and_initial_draft_seed: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: CREATE_ONCE_NO_AUTOMATIC_REWRITE}
+      erp_project_formal_identity_for_npi_origin: {owner: ERPNEXT_PROJECT_PUBLISH_RECEIVER, editable_in: [], direction: NPI_TO_ERPNEXT_COMMAND_AND_ERPNEXT_TO_NPI_RESULT, conflict: CREATE_ONCE_IDEMPOTENT_MAPPING}
+      erp_project_creation_business_actor: {owner: NPI_ONE_AUTHENTICATED_PROJECT_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_COMMAND, conflict: ERP_ENABLED_SYSTEM_USER_REQUIRED}
+      erp_project_execution_request_attempt_result: {owner: NPI_ONE_PROJECT_PUBLISH_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT_COMMAND_AND_RECONCILIATION, conflict: APPEND_ONLY_EXACT_REPLAY}
 
   PortfolioAndReportingProjection:
     owner_system: NPI_ONE_REPORTING_QUERY_SERVICE

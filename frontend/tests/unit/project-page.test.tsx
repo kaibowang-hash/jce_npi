@@ -83,6 +83,41 @@ describe("live Project cockpit states", () => {
     ).toHaveLength(0);
   });
 
+  it.each([
+    ["linking", "Project link in progress", null],
+    ["failed", "Project link failed", "ERP_PROJECT_CREATE_REJECTED"],
+  ] as const)(
+    "renders the %s ERP Project publication truth",
+    async (state, label, errorCode) => {
+      const fixture = projectCockpitFixture();
+      const publicationFixture = {
+        ...fixture,
+        erpProjectBinding: {
+          sourceSystem: "ERPNEXT" as const,
+          state,
+          sourceObjectId: null,
+          lastProcessedAt: "2026-09-06T08:00:00Z",
+          requestGlobalId: "66666666-6666-4666-8666-666666666666",
+          errorCode,
+        },
+      } satisfies ProjectCockpitViewModel;
+
+      renderWithLocale(
+        <ProjectPage
+          dataSource={resolvedDataSource(publicationFixture)}
+          globalId={fixture.project.globalId}
+          navigate={vi.fn()}
+        />,
+      );
+
+      expect((await screen.findAllByText(label)).length).toBeGreaterThan(0);
+      expect(
+        screen.getByText("66666666-6666-4666-8666-666666666666"),
+      ).toBeVisible();
+      if (errorCode) expect(screen.getByText(errorCode)).toBeVisible();
+    },
+  );
+
   it("opens the selected live Gate evidence route from its exact identities", async () => {
     const fixture = projectCockpitFixture();
     const firstGate = fixture.gates[0];

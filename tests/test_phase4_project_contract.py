@@ -349,6 +349,8 @@ class Phase4ProjectContractTests(unittest.TestCase):
                 "state",
                 "sourceObjectId",
                 "lastProcessedAt",
+                "requestGlobalId",
+                "errorCode",
             },
         }
         for schema_name, properties in exact_properties.items():

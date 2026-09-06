@@ -50,6 +50,7 @@ Engineering Project、Gate、设计基线、Tooling Development、Trial Round、
 ## 4. Execution Request
 
 正式动作示例：
+- `create_erp_project`
 - `create_item`
 - `update_item_engineering_fields`
 - `create_or_update_mbom`
@@ -58,6 +59,16 @@ Engineering Project、Gate、设计基线、Tooling Development、Trial Round、
 - `publish_controlled_file_reference`
 - `request_quality_inspection`
 - `update_project_handover_status`
+
+Engineering Project 的双向链路按来源分流，但不形成字段双主：
+
+- ERPNext 新建的正式 `Project` 继续通过签名事件在 NPI One 建立一个初始工程项目和不可变来源绑定；
+- NPI One 新建的工程项目在同一事务写入 `create_erp_project` 请求，后台以签名 REST 命令让 ERPNext 分配正式 Project 编号；
+- Project 创建复用现有受限 ERPNext 命令传输账号及密钥注入，不新建业务账号；`actorUserId` 仍独立记录实际创建人；
+- ERPNext 回传正式编号和目标版本，NPI One 只保存链接、请求、尝试和结果，不允许 ERPNext 覆盖 NPI 主责工程字段；
+- 业务创建人必须是 ERPNext 中已启用的同一 System User，技术传输账号只负责认证和回执；
+- ERPNext 为 NPI 来源 Project 保存幂等映射，ERPNext 的 Project 新建钩子据此抑制反向回环；
+- 超时后先对账，不能在未知目标结果时盲目再次创建。
 
 每个请求包含：
 - request/global/idempotency ID；

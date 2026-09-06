@@ -109,7 +109,7 @@ class ERPNextConnectorItemMetadataTest(unittest.TestCase):
 
     def test_capability_versions_follow_the_installed_app_version(self) -> None:
         package = (APP / "__init__.py").read_text(encoding="utf-8")
-        self.assertIn('__version__ = "0.9.1"', package)
+        self.assertIn('__version__ = "0.10.0"', package)
         for module in ("item_api.py", "mbom_api.py", "tool_asset_api.py"):
             source = (APP / module).read_text(encoding="utf-8")
             self.assertIn("from npi_erpnext_connector import __version__", source)
@@ -166,7 +166,7 @@ class ERPNextConnectorItemMetadataTest(unittest.TestCase):
         ]
         self.assertEqual(len(reload_calls), 1)
         self.assertIn("for doctype in _CONNECTOR_DOCTYPES", install)
-        self.assertEqual(install.count('"npi_erp_'), 13)
+        self.assertEqual(install.count('"npi_erp_'), 15)
         self.assertIn('"npi_erpnext_connector"', install)
 
 

@@ -139,9 +139,17 @@ export interface ProjectGateShellViewModel {
 
 export interface ErpProjectBindingViewModel {
   sourceSystem: "ERPNEXT";
-  state: "bound" | "unbound" | "conflicted" | "unavailable";
+  state:
+    | "bound"
+    | "unbound"
+    | "linking"
+    | "failed"
+    | "conflicted"
+    | "unavailable";
   sourceObjectId: string | null;
   lastProcessedAt: string | null;
+  requestGlobalId: string | null;
+  errorCode: string | null;
 }
 
 export interface ProjectCockpitViewModel {

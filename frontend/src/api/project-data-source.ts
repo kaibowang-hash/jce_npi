@@ -251,15 +251,37 @@ function isErpProjectBinding(value: unknown): boolean {
       "state",
       "sourceObjectId",
       "lastProcessedAt",
+      "requestGlobalId",
+      "errorCode",
     ]) &&
     value.sourceSystem === "ERPNEXT" &&
-    ["bound", "unbound", "conflicted", "unavailable"].includes(state) &&
+    [
+      "bound",
+      "unbound",
+      "linking",
+      "failed",
+      "conflicted",
+      "unavailable",
+    ].includes(state) &&
     (value.sourceObjectId === null ||
       isConstrainedString(value.sourceObjectId, 280)) &&
     (value.lastProcessedAt === null || isUtcTimestamp(value.lastProcessedAt)) &&
+    (value.requestGlobalId === null || isUuid(value.requestGlobalId)) &&
+    (value.errorCode === null || isConstrainedString(value.errorCode, 128)) &&
     (state === "bound"
       ? value.sourceObjectId !== null
-      : value.sourceObjectId === null && value.lastProcessedAt === null)
+      : value.sourceObjectId === null) &&
+    (state === "linking"
+      ? value.requestGlobalId !== null && value.lastProcessedAt !== null
+      : state === "failed"
+        ? value.requestGlobalId !== null &&
+          value.lastProcessedAt !== null &&
+          value.errorCode !== null
+        : state === "bound"
+          ? value.errorCode === null
+          : value.requestGlobalId === null &&
+            value.errorCode === null &&
+            value.lastProcessedAt === null)
   );
 }
 

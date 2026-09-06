@@ -538,8 +538,31 @@ class FrappeReportingRepository:
             project_id: _erp_project_binding("unbound")
             for project_id in project_ids
         }
+        outbound_rows: list[Any] = []
         try:
-            rows = frappe.get_all(
+            outbound_rows = frappe.get_all(
+                "NPI ERP Project Publish Request",
+                filters={
+                    "tenant_id": self.principal.tenant_id,
+                    "project_global_id": ["in", sorted(project_ids)],
+                },
+                fields=[
+                    "name",
+                    "project_global_id",
+                    "state",
+                    "formal_erp_project_id",
+                    "last_error_code",
+                    "updated_at",
+                    "completed_at",
+                ],
+                order_by="project_global_id asc, updated_at desc, name asc",
+                limit_page_length=(len(project_ids) * 2) + 1,
+            )
+        except Exception as error:
+            if not _missing_doctype(error):
+                raise
+        try:
+            inbound_rows = frappe.get_all(
                 "NPI Project Source Binding",
                 filters={
                     "tenant_id": self.principal.tenant_id,
@@ -559,24 +582,74 @@ class FrappeReportingRepository:
             )
         except Exception as error:
             if _missing_doctype(error):
-                return {
-                    project_id: _erp_project_binding("unavailable")
-                    for project_id in project_ids
-                }
-            raise
+                inbound_rows = []
+                if not outbound_rows:
+                    return {
+                        project_id: _erp_project_binding("unavailable")
+                        for project_id in project_ids
+                    }
+            else:
+                raise
         requested = frozenset(project_ids)
-        grouped = _group_rows(
-            rows,
+        inbound_grouped = _group_rows(
+            inbound_rows,
             "bound_project_global_id",
             requested,
             max_per_key=2,
             scope="ERP Project source binding",
         )
-        for project_id, project_rows in grouped.items():
-            if len(project_rows) > 1:
+        outbound_grouped = _group_rows(
+            outbound_rows,
+            "project_global_id",
+            requested,
+            max_per_key=2,
+            scope="ERP Project publish request",
+        )
+        for project_id in project_ids:
+            inbound = inbound_grouped.get(project_id, ())
+            outbound = outbound_grouped.get(project_id, ())
+            if len(inbound) > 1 or len(outbound) > 1:
                 defaults[project_id] = _erp_project_binding("conflicted")
                 continue
-            row = project_rows[0]
+            if outbound:
+                request = outbound[0]
+                request_state = str(_value(request, "state"))
+                request_id = str(_value(request, "name"))
+                formal_id = _value(request, "formal_erp_project_id", None)
+                updated_at = _optional_utc(
+                    _value(request, "completed_at", None)
+                    or _value(request, "updated_at", None)
+                )
+                error_code = _value(request, "last_error_code", None)
+                if request_state == "succeeded" and formal_id:
+                    if inbound and str(_value(inbound[0], "source_object_id")) != str(formal_id):
+                        defaults[project_id] = _erp_project_binding("conflicted")
+                    else:
+                        defaults[project_id] = _erp_project_binding(
+                            "bound",
+                            source_object_id=str(formal_id),
+                            last_processed_at=updated_at,
+                            request_global_id=request_id,
+                        )
+                    continue
+                if request_state in {"pending", "processing", "failed_retryable"}:
+                    defaults[project_id] = _erp_project_binding(
+                        "linking",
+                        last_processed_at=updated_at,
+                        request_global_id=request_id,
+                        error_code=str(error_code) if error_code else None,
+                    )
+                    continue
+                defaults[project_id] = _erp_project_binding(
+                    "failed",
+                    last_processed_at=updated_at,
+                    request_global_id=request_id,
+                    error_code=str(error_code) if error_code else "PROJECT_PUBLISH_FAILED",
+                )
+                continue
+            if not inbound:
+                continue
+            row = inbound[0]
             state = str(_value(row, "stream_state"))
             defaults[project_id] = _erp_project_binding(
                 "bound" if state == "bound" else "conflicted",
@@ -921,12 +994,16 @@ def _erp_project_binding(
     *,
     source_object_id: str | None = None,
     last_processed_at: str | None = None,
+    request_global_id: str | None = None,
+    error_code: str | None = None,
 ) -> dict[str, object]:
     return {
         "sourceSystem": SourceSystem.ERPNEXT.value,
         "state": state,
         "sourceObjectId": source_object_id,
         "lastProcessedAt": last_processed_at,
+        "requestGlobalId": request_global_id,
+        "errorCode": error_code,
     }
 
 

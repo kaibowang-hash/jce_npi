@@ -66,6 +66,30 @@ describe("reporting data source", () => {
     ).toBe(false);
     const portfolio = portfolioFixture();
     expect(isProjectPortfolioResponse(portfolio)).toBe(true);
+    for (const [state, errorCode] of [
+      ["linking", null],
+      ["failed", "ERP_PROJECT_CREATE_REJECTED"],
+    ] as const) {
+      expect(
+        isProjectPortfolioResponse({
+          ...portfolio,
+          items: portfolio.items.map((item) => ({
+            ...item,
+            erp: {
+              ...item.erp,
+              projectBinding: {
+                sourceSystem: "ERPNEXT",
+                state,
+                sourceObjectId: null,
+                lastProcessedAt: "2026-09-06T08:00:00Z",
+                requestGlobalId: "66666666-6666-4666-8666-666666666666",
+                errorCode,
+              },
+            },
+          })),
+        }),
+      ).toBe(true);
+    }
     expect(isProjectPortfolioResponse({ ...portfolio, items: [null] })).toBe(
       false,
     );

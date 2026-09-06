@@ -24,6 +24,7 @@ from .runtime_fixture import (
 )
 from .runtime_fixture import resolve_profile as resolve_synthetic_profile
 from .runtime_fixture import resolve_secret as resolve_synthetic_secret
+from npi_integration.project_publish.profile_inheritance import inherited_project_profile
 
 SANDBOX_ENABLED_KEY = "npi_engineering_change_sandbox_enabled"
 SANDBOX_PROFILES_KEY = "npi_engineering_change_sandbox_profiles"
@@ -154,7 +155,15 @@ def load_sandbox_profile(
         raise EngineeringChangeIntegrationError(
             "Engineering Change Sandbox profile is ambiguous."
         )
-    return matches[0] if matches else None
+    if matches:
+        return matches[0]
+    try:
+        inherited = inherited_project_profile(
+            raw_profiles, tenant_id, project_global_id, family="engineering-change"
+        )
+    except ValueError as error:
+        raise EngineeringChangeIntegrationError(str(error)) from error
+    return _profile(inherited) if inherited is not None else None
 
 
 def sandbox_adapter(command: AdapterCommand) -> AdapterResponse:

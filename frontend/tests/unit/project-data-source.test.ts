@@ -101,6 +101,29 @@ describe("Project cockpit response validation", () => {
     expect(isProjectCockpitResponse(projectCockpitFixture())).toBe(true);
   });
 
+  it.each([
+    ["linking", null],
+    ["failed", "ERP_PROJECT_CREATE_REJECTED"],
+  ] as const)(
+    "accepts a complete %s ERP Project publication state",
+    (state, errorCode) => {
+      const fixture = projectCockpitFixture();
+      expect(
+        isProjectCockpitResponse({
+          ...fixture,
+          erpProjectBinding: {
+            sourceSystem: "ERPNEXT",
+            state,
+            sourceObjectId: null,
+            lastProcessedAt: "2026-09-06T08:00:00Z",
+            requestGlobalId: "66666666-6666-4666-8666-666666666666",
+            errorCode,
+          },
+        }),
+      ).toBe(true);
+    },
+  );
+
   it("accepts the canonical UUID syntax allowed by the server and OpenAPI", () => {
     const fixture = projectCockpitFixture();
     expect(
@@ -131,6 +154,8 @@ describe("Project cockpit response validation", () => {
           state: "bound",
           sourceObjectId: null,
           lastProcessedAt: null,
+          requestGlobalId: null,
+          errorCode: null,
         },
       }),
     ],

@@ -29,6 +29,7 @@ from .runtime_fixture import (
     resolve_adapter_registry as resolve_synthetic_adapter_registry,
 )
 from .runtime_fixture import resolve_profile as resolve_synthetic_profile
+from npi_integration.project_publish.profile_inheritance import inherited_project_profile
 
 SANDBOX_ENABLED_KEY = "npi_tool_asset_sandbox_enabled"
 SANDBOX_PROFILES_KEY = "npi_tool_asset_sandbox_profiles"
@@ -147,7 +148,15 @@ def load_sandbox_profile(
         raise ToolAssetExecutionContractError(
             "Sandbox Tool Asset profile resolution is ambiguous."
         )
-    return matches[0] if matches else None
+    if matches:
+        return matches[0]
+    try:
+        inherited = inherited_project_profile(
+            values, tenant_id, project_global_id, family="tool-asset"
+        )
+    except ValueError as error:
+        raise ToolAssetExecutionContractError(str(error)) from error
+    return _profile(inherited) if inherited is not None else None
 
 
 def sandbox_adapter(command: ToolAssetAdapterCommand) -> ToolAssetAdapterResponse:

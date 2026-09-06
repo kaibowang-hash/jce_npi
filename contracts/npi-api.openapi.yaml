@@ -11398,10 +11398,10 @@ components:
       description: >
         Project-level ERPNext source identity kept separate from governed object
         references and from ERP business-fact observation availability.
-      required: [sourceSystem, state, sourceObjectId, lastProcessedAt]
+      required: [sourceSystem, state, sourceObjectId, lastProcessedAt, requestGlobalId, errorCode]
       properties:
         sourceSystem: { type: string, const: ERPNEXT }
-        state: { type: string, enum: [bound, unbound, conflicted, unavailable] }
+        state: { type: string, enum: [bound, unbound, linking, failed, conflicted, unavailable] }
         sourceObjectId:
           oneOf:
             - { type: string, minLength: 1, maxLength: 280 }
@@ -11409,6 +11409,14 @@ components:
         lastProcessedAt:
           oneOf:
             - { type: string, format: date-time }
+            - { type: "null" }
+        requestGlobalId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+        errorCode:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 128 }
             - { type: "null" }
     CreateProjectDraft:
       type: object

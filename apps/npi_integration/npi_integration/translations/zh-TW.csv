@@ -197,3 +197,30 @@ uncertain_after_timeout,逾時後不確定
 "Last Synchronized At","最後同步時間"
 "NPI ERP Master Snapshot","NPI 企業資源規劃主資料快照"
 "Exact Master Data Snapshot","精確主資料快照"
+Attempt,嘗試
+Attempt Kind,嘗試類型
+ERP Project publication attempt count cannot decrease.,ERPNext 專案發佈嘗試次數不能減少。
+ERP Project publication attempt history is immutable.,ERPNext 專案發佈嘗試歷史不可變。
+ERP Project publication attempt identity is immutable.,ERPNext 專案發佈嘗試識別不可變。
+ERP Project publication attempt is invalid.,ERPNext 專案發佈嘗試無效。
+ERP Project publication history cannot be deleted.,ERPNext 專案發佈歷史不能刪除。
+ERP Project publication idempotency identity does not match.,ERPNext 專案發佈冪等識別不相符。
+ERP Project publication records can only be changed by the controlled integration service.,ERPNext 專案發佈記錄只能由受控整合服務變更。
+ERP Project publication request identity is immutable.,ERPNext 專案發佈請求識別不可變。
+ERP Project publication request is invalid.,ERPNext 專案發佈請求無效。
+ERP Project publication source does not match the request.,ERPNext 專案發佈來源與請求不相符。
+ERP Project publication state transition is invalid.,ERPNext 專案發佈狀態轉換無效。
+Environment Code,環境代碼
+Exact Replay,精確重放
+Formal ERP Project ID,正式 ERPNext 專案編號
+Last Attempt,最近嘗試
+Latest Result,最新結果
+NPI ERP Project Publish Attempt,NPI ERPNext 專案發佈嘗試
+NPI ERP Project Publish Request,NPI ERPNext 專案發佈請求
+NPI ERP Project Publish Result,NPI ERPNext 專案發佈結果
+Profile ID,設定識別
+Profile Snapshot Hash,設定快照雜湊
+Profile Version,設定版本
+Request,請求
+Source Version,來源版本
+Target Version,目標版本

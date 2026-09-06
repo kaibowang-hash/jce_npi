@@ -8,6 +8,8 @@ export type ReportingAvailability =
 export type ErpProjectBindingState =
   | "bound"
   | "unbound"
+  | "linking"
+  | "failed"
   | "conflicted"
   | "unavailable";
 export type GlobalSearchKind =
@@ -113,6 +115,8 @@ export interface ProjectPortfolioItem {
       state: ErpProjectBindingState;
       sourceObjectId: string | null;
       lastProcessedAt: string | null;
+      requestGlobalId: string | null;
+      errorCode: string | null;
     };
   };
   detailRoute: string;
@@ -524,18 +528,41 @@ function projectPortfolioItem(value: unknown): value is ProjectPortfolioItem {
       "state",
       "sourceObjectId",
       "lastProcessedAt",
+      "requestGlobalId",
+      "errorCode",
     ]) &&
     value.erp.projectBinding.sourceSystem === "ERPNEXT" &&
-    ["bound", "unbound", "conflicted", "unavailable"].includes(
-      String(value.erp.projectBinding.state),
-    ) &&
+    [
+      "bound",
+      "unbound",
+      "linking",
+      "failed",
+      "conflicted",
+      "unavailable",
+    ].includes(String(value.erp.projectBinding.state)) &&
     stringOrNull(value.erp.projectBinding.sourceObjectId, 280) &&
+    (value.erp.projectBinding.requestGlobalId === null ||
+      (typeof value.erp.projectBinding.requestGlobalId === "string" &&
+        UUID.test(value.erp.projectBinding.requestGlobalId))) &&
+    stringOrNull(value.erp.projectBinding.errorCode, 128) &&
     (value.erp.projectBinding.lastProcessedAt === null ||
       dateTime(value.erp.projectBinding.lastProcessedAt)) &&
     (value.erp.projectBinding.state === "bound"
-      ? value.erp.projectBinding.sourceObjectId !== null
-      : value.erp.projectBinding.sourceObjectId === null &&
-        value.erp.projectBinding.lastProcessedAt === null) &&
+      ? value.erp.projectBinding.sourceObjectId !== null &&
+        value.erp.projectBinding.errorCode === null
+      : value.erp.projectBinding.state === "linking"
+        ? value.erp.projectBinding.sourceObjectId === null &&
+          value.erp.projectBinding.requestGlobalId !== null &&
+          value.erp.projectBinding.lastProcessedAt !== null
+        : value.erp.projectBinding.state === "failed"
+          ? value.erp.projectBinding.sourceObjectId === null &&
+            value.erp.projectBinding.requestGlobalId !== null &&
+            value.erp.projectBinding.lastProcessedAt !== null &&
+            value.erp.projectBinding.errorCode !== null
+          : value.erp.projectBinding.sourceObjectId === null &&
+            value.erp.projectBinding.lastProcessedAt === null &&
+            value.erp.projectBinding.requestGlobalId === null &&
+            value.erp.projectBinding.errorCode === null) &&
     validDetailRoute(value.detailRoute, value.globalId)
   );
 }

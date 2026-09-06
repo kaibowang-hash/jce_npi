@@ -513,6 +513,7 @@ Reconciliation impact review,對帳影響評審
 "A submitted command would record the checklist versions, approver, reason, result, and trace ID.",提交後的命令會記錄檢查表版本、核准人、原因、結果和追蹤編號。
 "A submitted command would record the actor, conclusion, reason, input hash, result, and trace ID.",提交後的命令會記錄操作人、結論、原因、輸入雜湊、結果和追蹤編號。
 Request ID,請求編號
+Error code,錯誤代碼
 Client reference ID,用戶端參考編號
 The service could not be reached.,無法連線至服務。
 The service returned an invalid response.,服務傳回無效回應。
@@ -9473,5 +9474,29 @@ Last processed,最近處理時間
 No ERP fact observations yet.,尚無企業資源規劃事實觀察。
 Project link conflict,專案連結衝突
 Project link data unavailable,專案連結資料無法使用
+Project link failed,專案連結失敗
+Project link in progress,專案連結處理中
 Project linked,專案已連結
 Project not linked,專案未連結
+ERP Project publication attempt is invalid.,ERPNext 專案發佈嘗試無效。
+ERP Project publication attempt history is immutable.,ERPNext 專案發佈嘗試歷史不可變。
+ERP Project publication attempt identity is immutable.,ERPNext 專案發佈嘗試識別不可變。
+ERP Project publication request is invalid.,ERPNext 專案發佈請求無效。
+ERP Project publication source does not match the request.,ERPNext 專案發佈來源與請求不相符。
+ERP Project publication idempotency identity does not match.,ERPNext 專案發佈冪等識別不相符。
+ERP Project publication request identity is immutable.,ERPNext 專案發佈請求識別不可變。
+ERP Project publication state transition is invalid.,ERPNext 專案發佈狀態轉換無效。
+ERP Project publication attempt count cannot decrease.,ERPNext 專案發佈嘗試次數不能減少。
+ERP Project publication records can only be changed by the controlled integration service.,ERPNext 專案發佈記錄只能由受控整合服務變更。
+ERP Project publication history cannot be deleted.,ERPNext 專案發佈歷史不能刪除。
+NPI ERP Project Publish Attempt,NPI ERPNext 專案發佈嘗試
+Attempt Kind,嘗試類型
+NPI ERP Project Publish Request,NPI ERPNext 專案發佈請求
+Profile ID,設定識別
+Profile Snapshot Hash,設定快照雜湊
+Environment Code,環境代碼
+Last Attempt,最近嘗試
+Latest Result,最新結果
+Formal ERP Project ID,正式 ERPNext 專案編號
+Exact Replay,精確重放
+NPI ERP Project Publish Result,NPI ERPNext 專案發佈結果

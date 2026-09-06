@@ -402,6 +402,23 @@ class FrappeProjectRepository:
         project_global_id: str,
     ) -> dict[str, object]:
         try:
+            outbound_rows = frappe.get_all(
+                "NPI ERP Project Publish Request",
+                filters={
+                    "tenant_id": tenant_id,
+                    "project_global_id": project_global_id,
+                },
+                fields=[
+                    "name",
+                    "state",
+                    "formal_erp_project_id",
+                    "last_error_code",
+                    "updated_at",
+                    "completed_at",
+                ],
+                order_by="updated_at desc, name asc",
+                limit_page_length=2,
+            )
             rows = frappe.get_all(
                 "NPI Project Source Binding",
                 filters={
@@ -417,8 +434,55 @@ class FrappeProjectRepository:
             )
         except Exception as error:
             if _missing_doctype(error):
-                return _erp_project_binding_view("unavailable")
-            raise
+                outbound_rows = []
+                try:
+                    rows = frappe.get_all(
+                        "NPI Project Source Binding",
+                        filters={
+                            "tenant_id": tenant_id,
+                            "source_system": "ERPNEXT",
+                            "target_system": "NPI_ONE",
+                            "source_object_type": "Project",
+                            "bound_project_global_id": project_global_id,
+                        },
+                        fields=["source_object_id", "stream_state", "last_processed_at"],
+                        order_by="updated_at desc, source_object_id asc",
+                        limit_page_length=3,
+                    )
+                except Exception as inbound_error:
+                    if _missing_doctype(inbound_error):
+                        return _erp_project_binding_view("unavailable")
+                    raise
+            else:
+                raise
+        if len(outbound_rows) > 1:
+            return _erp_project_binding_view("conflicted")
+        if outbound_rows:
+            outbound = outbound_rows[0]
+            state = str(outbound.state)
+            if state == "succeeded" and outbound.formal_erp_project_id:
+                outbound_id = str(outbound.formal_erp_project_id)
+                if rows and any(str(row.source_object_id) != outbound_id for row in rows):
+                    return _erp_project_binding_view("conflicted")
+                return _erp_project_binding_view(
+                    "bound",
+                    source_object_id=outbound_id,
+                    last_processed_at=_datetime_iso(outbound.completed_at or outbound.updated_at),
+                    request_global_id=str(outbound.name),
+                )
+            if state in {"pending", "processing", "failed_retryable"}:
+                return _erp_project_binding_view(
+                    "linking",
+                    last_processed_at=_datetime_iso(outbound.updated_at),
+                    request_global_id=str(outbound.name),
+                    error_code=(str(outbound.last_error_code) if outbound.last_error_code else None),
+                )
+            return _erp_project_binding_view(
+                "failed",
+                last_processed_at=_datetime_iso(outbound.updated_at),
+                request_global_id=str(outbound.name),
+                error_code=(str(outbound.last_error_code) if outbound.last_error_code else "PROJECT_PUBLISH_FAILED"),
+            )
         if not rows:
             return _erp_project_binding_view("unbound")
         if len(rows) > 1:
@@ -522,12 +586,16 @@ def _erp_project_binding_view(
     *,
     source_object_id: str | None = None,
     last_processed_at: str | None = None,
+    request_global_id: str | None = None,
+    error_code: str | None = None,
 ) -> dict[str, object]:
     return {
         "sourceSystem": "ERPNEXT",
         "state": state,
         "sourceObjectId": source_object_id,
         "lastProcessedAt": last_processed_at,
+        "requestGlobalId": request_global_id,
+        "errorCode": error_code,
     }
 
 

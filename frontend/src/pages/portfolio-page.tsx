@@ -65,6 +65,10 @@ function projectBindingLabel(
       return t("Project linked");
     case "unbound":
       return t("Project not linked");
+    case "linking":
+      return t("Project link in progress");
+    case "failed":
+      return t("Project link failed");
     case "conflicted":
       return t("Project link conflict");
     case "unavailable":
@@ -74,8 +78,9 @@ function projectBindingLabel(
 
 function projectBindingTone(
   state: ErpProjectBindingState,
-): "success" | "warning" | "danger" {
+): "success" | "info" | "warning" | "danger" {
   if (state === "bound") return "success";
+  if (state === "linking") return "info";
   if (state === "unbound") return "warning";
   return "danger";
 }

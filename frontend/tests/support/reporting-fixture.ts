@@ -91,6 +91,8 @@ export function portfolioFixture(
             state: "bound",
             sourceObjectId: "SYN-ERP-PROJECT-001",
             lastProcessedAt: "2026-08-31T11:55:00Z",
+            requestGlobalId: null,
+            errorCode: null,
           },
         },
         detailRoute: `/projects/${reportingProjectId}`,

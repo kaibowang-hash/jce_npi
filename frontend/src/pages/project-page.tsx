@@ -76,6 +76,10 @@ function projectBindingLabel(
       return t("Project linked");
     case "unbound":
       return t("Project not linked");
+    case "linking":
+      return t("Project link in progress");
+    case "failed":
+      return t("Project link failed");
     case "conflicted":
       return t("Project link conflict");
     case "unavailable":
@@ -85,8 +89,9 @@ function projectBindingLabel(
 
 function projectBindingTone(
   state: ProjectCockpitViewModel["erpProjectBinding"]["state"],
-): "success" | "warning" | "danger" {
+): "success" | "warning" | "danger" | "info" {
   if (state === "bound") return "success";
+  if (state === "linking") return "info";
   if (state === "unbound") return "warning";
   return "danger";
 }
@@ -330,6 +335,9 @@ function ProjectCockpit({
     version: projectControlState.version,
   };
   const currentCockpit = { ...cockpit, project };
+  const showProjectPublicationDetails =
+    currentCockpit.erpProjectBinding.requestGlobalId !== null ||
+    currentCockpit.erpProjectBinding.errorCode !== null;
   const readOnly = !permissions.canContribute;
   return (
     <article className="page page--object">
@@ -474,6 +482,12 @@ function ProjectCockpit({
                       <th>{t("Status")}</th>
                       <th>{t("ERPNext Project")}</th>
                       <th>{t("Last processed")}</th>
+                      {showProjectPublicationDetails ? (
+                        <>
+                          <th>{t("Request ID")}</th>
+                          <th>{t("Error code")}</th>
+                        </>
+                      ) : null}
                     </tr>
                   </thead>
                   <tbody>
@@ -511,6 +525,17 @@ function ProjectCockpit({
                           "—"
                         )}
                       </td>
+                      {showProjectPublicationDetails ? (
+                        <>
+                          <td data-language-exempt="identifier">
+                            {currentCockpit.erpProjectBinding.requestGlobalId ??
+                              "—"}
+                          </td>
+                          <td data-language-exempt="identifier">
+                            {currentCockpit.erpProjectBinding.errorCode ?? "—"}
+                          </td>
+                        </>
+                      ) : null}
                     </tr>
                   </tbody>
                 </table>

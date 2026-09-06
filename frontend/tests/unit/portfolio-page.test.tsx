@@ -80,6 +80,8 @@ describe("Portfolio reporting workspace", () => {
             state: "unbound",
             sourceObjectId: null,
             lastProcessedAt: null,
+            requestGlobalId: null,
+            errorCode: null,
           },
         },
       })),
@@ -98,6 +100,45 @@ describe("Portfolio reporting workspace", () => {
     expect(screen.queryByText("SYN-ERP-PROJECT-001")).toBeNull();
     expect(screen.getByText(/ERP facts.*Stale/u)).toBeVisible();
   });
+
+  it.each([
+    ["linking", "Project link in progress"],
+    ["failed", "Project link failed"],
+  ] as const)(
+    "renders the %s ERP Project publication state",
+    async (state, label) => {
+      const dataSource = new SyntheticReportingDataSource();
+      vi.spyOn(dataSource, "loadPortfolio").mockResolvedValue({
+        ...portfolioFixture(),
+        items: portfolioFixture().items.map((item) => ({
+          ...item,
+          erp: {
+            ...item.erp,
+            projectBinding: {
+              sourceSystem: "ERPNEXT",
+              state,
+              sourceObjectId: null,
+              lastProcessedAt: "2026-09-06T08:00:00Z",
+              requestGlobalId: "66666666-6666-4666-8666-666666666666",
+              errorCode:
+                state === "failed" ? "ERP_PROJECT_CREATE_REJECTED" : null,
+            },
+          },
+        })),
+      });
+      renderWithLocale(
+        <PortfolioPage
+          dataSource={dataSource}
+          navigate={vi.fn()}
+          view="portfolio"
+        />,
+        "en",
+        "/portfolio",
+      );
+
+      expect(await screen.findByText(label)).toBeVisible();
+    },
+  );
 
   it("shows fixed KPI definitions and honest availability", async () => {
     renderWithLocale(

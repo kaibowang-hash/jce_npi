@@ -1,0 +1,31 @@
+{
+  "doctype": "DocType",
+  "name": "NPI ERP Project Publish Attempt",
+  "module": "NPI Integration",
+  "custom": 0,
+  "autoname": "field:global_id",
+  "allow_rename": 0,
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "request_global_id,state,trace_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "request_global_id", "fieldtype": "Link", "label": "Request", "options": "NPI ERP Project Publish Request", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "attempt_number", "fieldtype": "Int", "label": "Attempt Number", "reqd": 1, "read_only": 1},
+    {"fieldname": "attempt_kind", "fieldtype": "Select", "label": "Attempt Kind", "options": "publish\nreconcile", "reqd": 1, "read_only": 1},
+    {"fieldname": "attempt_key_hash", "fieldtype": "Data", "label": "Attempt Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "State", "options": "started\nsucceeded\nreconciled_present\nreconciled_absent\nfailed_retryable\nfailed_final\nuncertain", "reqd": 1, "read_only": 1},
+    {"fieldname": "adapter_boundary_crossed", "fieldtype": "Check", "label": "Adapter Boundary Crossed", "default": "0", "read_only": 1},
+    {"fieldname": "response_authenticated", "fieldtype": "Check", "label": "Response Authenticated", "default": "0", "read_only": 1},
+    {"fieldname": "response_contract_valid", "fieldtype": "Check", "label": "Response Contract Valid", "default": "0", "read_only": 1},
+    {"fieldname": "http_status", "fieldtype": "Int", "label": "HTTP Status", "read_only": 1},
+    {"fieldname": "response_hash", "fieldtype": "Data", "label": "Response Hash", "read_only": 1},
+    {"fieldname": "error_code", "fieldtype": "Data", "label": "Error Code", "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "started_at", "fieldtype": "Datetime", "label": "Started At", "reqd": 1, "read_only": 1},
+    {"fieldname": "completed_at", "fieldtype": "Datetime", "label": "Completed At", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0, "share": 0}
+  ]
+}

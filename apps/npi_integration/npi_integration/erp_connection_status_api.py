@@ -14,6 +14,7 @@ from npi_core.request_security import (
 from npi_integration.item_publish.connector_runtime import (
     configured_sandbox_environments,
 )
+from npi_integration.project_publish.config import configured_environments as configured_project_environments
 
 
 _STATUS_FIELDS = frozenset()
@@ -82,10 +83,13 @@ def _count(doctype: str, filters: dict[str, object] | None = None) -> int:
 
 def _status(*, now: datetime) -> dict[str, object]:
     environments = configured_sandbox_environments(frappe.conf)
+    project_environments = configured_project_environments(frappe.conf)
     if environments and environments[0] not in _TEST_ENVIRONMENTS:
         raise RuntimeError("ERPNext connection environment is unsupported.")
+    if project_environments and project_environments[0] not in _TEST_ENVIRONMENTS:
+        raise RuntimeError("ERPNext project connection environment is unsupported.")
     master_confirmed_at, master_environment = _latest_master_data_confirmation()
-    target_environment = "test" if environments or master_environment else None
+    target_environment = "test" if environments or project_environments or master_environment else None
     last_confirmed_at = _latest_authorization_confirmation()
     authorization_connected = bool(
         last_confirmed_at is not None
@@ -98,7 +102,7 @@ def _status(*, now: datetime) -> dict[str, object]:
         <= master_confirmed_at
         <= now + timedelta(minutes=5)
     )
-    project_synchronized = (
+    project_synchronized = bool(project_environments) or (
         _count(
             "NPI Project Source Binding",
             {"source_object_type": "Project", "stream_state": "bound"},
