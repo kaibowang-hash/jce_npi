@@ -1,0 +1,30 @@
+{
+ "actions": [], "allow_rename": 0, "autoname": "field:global_id", "doctype": "DocType", "engine": "InnoDB",
+ "field_order": ["global_id","tenant_id","project_global_id","change_global_id","revision_global_id","revision_number","revision_snapshot_hash","source_snapshot","source_hash","profile_id","profile_version","profile_snapshot_hash","actor_user_id","service_actor_user_id","request_id","trace_id","idempotency_key_hash","state","outbox_event_id","result_global_id","created_at","updated_at"],
+ "fields": [
+  {"fieldname":"global_id","fieldtype":"Data","label":"Global ID","read_only":1,"reqd":1,"unique":1},
+  {"fieldname":"tenant_id","fieldtype":"Data","label":"Tenant ID","read_only":1,"reqd":1},
+  {"fieldname":"project_global_id","fieldtype":"Link","label":"Project","options":"NPI Engineering Project","read_only":1,"reqd":1},
+  {"fieldname":"change_global_id","fieldtype":"Link","label":"Engineering Change","options":"NPI Engineering Change","read_only":1,"reqd":1},
+  {"fieldname":"revision_global_id","fieldtype":"Data","label":"Revision ID","read_only":1,"reqd":1},
+  {"fieldname":"revision_number","fieldtype":"Int","label":"Revision Number","read_only":1,"reqd":1},
+  {"fieldname":"revision_snapshot_hash","fieldtype":"Data","label":"Revision Snapshot Hash","read_only":1,"reqd":1},
+  {"fieldname":"source_snapshot","fieldtype":"Long Text","label":"Source Snapshot","read_only":1,"reqd":1},
+  {"fieldname":"source_hash","fieldtype":"Data","label":"Source Hash","read_only":1,"reqd":1},
+  {"fieldname":"profile_id","fieldtype":"Data","label":"Integration Profile ID","read_only":1,"reqd":1},
+  {"fieldname":"profile_version","fieldtype":"Int","label":"Integration Profile Version","read_only":1,"reqd":1},
+  {"fieldname":"profile_snapshot_hash","fieldtype":"Data","label":"Integration Profile Hash","read_only":1,"reqd":1},
+  {"fieldname":"actor_user_id","fieldtype":"Data","label":"Actor User ID","read_only":1,"reqd":1},
+  {"fieldname":"service_actor_user_id","fieldtype":"Data","label":"Service Actor User ID","read_only":1,"reqd":1},
+  {"fieldname":"request_id","fieldtype":"Data","label":"Request ID","read_only":1,"reqd":1},
+  {"fieldname":"trace_id","fieldtype":"Data","label":"Trace ID","read_only":1,"reqd":1},
+  {"fieldname":"idempotency_key_hash","fieldtype":"Data","label":"Idempotency Key Hash","read_only":1,"reqd":1},
+  {"fieldname":"state","fieldtype":"Select","label":"State","options":"queued\nprocessing\nsynthetic_verified\nsucceeded\nfailed_retryable\nfailed_final\npartially_succeeded\nuncertain_after_timeout\nidentity_conflict","read_only":1,"reqd":1},
+  {"fieldname":"outbox_event_id","fieldtype":"Data","label":"Outbox Event ID","read_only":1,"reqd":1},
+  {"fieldname":"result_global_id","fieldtype":"Data","label":"Result ID","read_only":1},
+  {"fieldname":"created_at","fieldtype":"Datetime","label":"Created At","read_only":1,"reqd":1},
+  {"fieldname":"updated_at","fieldtype":"Datetime","label":"Updated At","read_only":1,"reqd":1}
+ ],
+ "index_web_pages_for_search":0,"module":"NPI Integration","name":"NPI Engineering Change Summary Request","read_only":1,"track_changes":0,
+ "permissions":[{"role":"System Manager","read":1,"create":1,"write":1},{"role":"NPI API User","read":1,"create":1,"write":1}]
+}

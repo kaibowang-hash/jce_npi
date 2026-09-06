@@ -1,0 +1,41 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Item Mapping Observation",
+  "module": "NPI Integration",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "engineering_item_id,formal_item_code,disposition",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "source_stream_key_hash", "fieldtype": "Data", "label": "Item Source Stream Key Hash", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "engineering_item_id", "fieldtype": "Data", "label": "Engineering Item ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "mapping_version", "fieldtype": "Int", "label": "Item Mapping Version", "read_only": 1},
+    {"fieldname": "formal_item_code", "fieldtype": "Data", "label": "Observed Formal Item Code", "read_only": 1},
+    {"fieldname": "target_version", "fieldtype": "Data", "label": "Observed Target Version", "read_only": 1},
+    {"fieldname": "request_global_id", "fieldtype": "Link", "label": "Item Publish Request", "options": "NPI Item Publish Request", "reqd": 1, "read_only": 1},
+    {"fieldname": "outbox_event_id", "fieldtype": "Link", "label": "Item Outbox Event ID", "options": "NPI Outbox Message", "reqd": 1, "read_only": 1},
+    {"fieldname": "attempt_global_id", "fieldtype": "Link", "label": "Item Publish Attempt", "options": "NPI Item Publish Attempt", "reqd": 1, "read_only": 1},
+    {"fieldname": "result_global_id", "fieldtype": "Link", "label": "Item Publish Result", "options": "NPI Item Publish Result", "reqd": 1, "read_only": 1},
+    {"fieldname": "profile_id", "fieldtype": "Data", "label": "Item Execution Profile ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "profile_version", "fieldtype": "Int", "label": "Item Execution Profile Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "environment_code", "fieldtype": "Data", "label": "Target Environment Code", "reqd": 1, "read_only": 1},
+    {"fieldname": "authority", "fieldtype": "Select", "label": "Item Result Authority", "options": "synthetic\nauthoritative_sandbox", "reqd": 1, "read_only": 1},
+    {"fieldname": "disposition", "fieldtype": "Select", "label": "Item Mapping Disposition", "options": "advanced\nnon_authoritative\nobserved_conflict", "reqd": 1, "read_only": 1},
+    {"fieldname": "previous_mapping_version", "fieldtype": "Int", "label": "Previous Item Mapping Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "previous_observation_hash", "fieldtype": "Data", "label": "Previous Mapping Observation Hash", "read_only": 1},
+    {"fieldname": "target_result_snapshot", "fieldtype": "JSON", "label": "Exact Target Result Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "target_result_hash", "fieldtype": "Data", "label": "Exact Target Result Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "observation_snapshot", "fieldtype": "JSON", "label": "Item Mapping Observation Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "observation_hash", "fieldtype": "Data", "label": "Item Mapping Observation Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "observed_at", "fieldtype": "Datetime", "label": "Observed At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

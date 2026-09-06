@@ -1,0 +1,226 @@
+Actor User ID,操作用户 ID
+Adapter Boundary Crossed,已越过适配器边界
+Attempt Count,尝试次数
+Attempt Number,尝试序号
+Canonical Event Hash,规范事件哈希
+Claim Token,领取令牌
+Claimed At,领取时间
+Completed At,完成时间
+Created At,创建时间
+Engineering Change,工程变更
+Engineering Change Inbox history can only be changed by the authenticated intake service.,工程变更收件箱历史只能由已认证的接入服务更改。
+Engineering Change integration history cannot be changed.,不能更改工程变更集成历史。
+Engineering Change integration history cannot be deleted.,不能删除工程变更集成历史。
+Engineering Change integration write authority is invalid.,工程变更集成写入权限无效。
+Engineering Change summary Outbox messages can only be changed by the controlled execution service.,工程变更摘要发件箱消息只能由受控执行服务更改。
+Engineering Change summary attempts can only be changed by the controlled execution service.,工程变更摘要尝试只能由受控执行服务更改。
+Engineering Change summary requests can only be changed through an authorized command.,工程变更摘要请求只能通过已授权命令更改。
+Engineering Change summary results can only be appended by the controlled execution service.,工程变更摘要结果只能由受控执行服务追加。
+Engineering change event authentication failed.,工程变更事件认证失败。
+Engineering change integration conflict,工程变更集成冲突
+Engineering change integration is unavailable.,工程变更集成不可用。
+Event ID,事件 ID
+Event Snapshot,事件快照
+Event Type,事件类型
+Fault Kind,故障类型
+Global ID,全局 ID
+Idempotency Key Hash,幂等键哈希
+Integration Profile Hash,集成配置哈希
+Integration Profile ID,集成配置标识符
+Integration Profile Version,集成配置版本
+Last Attempt ID,上次尝试标识符
+Last Error At,上次错误时间
+Last Error Code,上次错误代码
+Lease Expires At,租约到期时间
+NPI Engineering Change Inbox,NPI 工程变更收件箱
+NPI Engineering Change Summary Attempt,NPI 工程变更摘要尝试
+NPI Engineering Change Summary Outbox,NPI 工程变更摘要发件箱
+NPI Engineering Change Summary Request,NPI 工程变更摘要请求
+NPI Engineering Change Summary Result,NPI 工程变更摘要结果
+Object Version,对象版本
+Observation Revision ID,观察修订标识符
+Observation Snapshot Hash,观察快照哈希
+Observed At,观察时间
+Outbox Event ID,发件箱事件标识符
+Payload,载荷
+Payload Hash,载荷哈希
+Project,项目
+Raw Body Hash,原始正文哈希
+Receipt ID,回执 ID
+Received At,接收时间
+Refresh the Engineering Change and retry with its exact current version.,请刷新工程变更并使用其准确的当前版本重试。
+Request ID,请求 ID
+Response Authenticated,响应已认证
+Response Contract Valid,响应合同有效
+Response Hash,响应哈希
+Result Hash,结果哈希
+Result ID,结果标识符
+Result Snapshot,结果快照
+Retry After Seconds,重试等待秒数
+Retry Directive,重试指令
+Revision ID,修订标识符
+Revision Number,修订号
+Revision Snapshot Hash,修订快照哈希
+Safe Error Code,安全错误代码
+Schema Version,模式版本
+Service Actor User ID,服务操作用户 ID
+Signed At,签名时间
+Signing Key ID,签名密钥 ID
+Source Hash,来源哈希
+Source Key Hash,来源键哈希
+Source Snapshot,来源快照
+Started At,开始时间
+State,状态
+Summary Attempt,摘要尝试
+Summary Outbox,摘要发件箱
+Summary Request,摘要请求
+Target Idempotency Key Hash,目标幂等键哈希
+Tenant ID,租户 ID
+The Engineering Change event is unavailable.,工程变更事件不可用。
+The Engineering Change integration actor is invalid.,工程变更集成操作用户无效。
+The Engineering Change integration actor is unavailable.,工程变更集成操作用户不可用。
+The Engineering Change integration actor lacks the required role.,工程变更集成操作用户缺少所需角色。
+The Engineering Change integration profile is not active for this Project.,此项目的工程变更集成配置未启用。
+The signed Engineering Change event could not be accepted.,无法接受已签名的工程变更事件。
+Trace ID,跟踪 ID
+Updated At,更新时间
+failed_final,最终失败
+failed_retryable,可重试失败
+identity_conflict,标识冲突
+observed_failure,已观察失败
+observed_success,已观察成功
+partial,部分完成
+partially_succeeded,部分成功
+pending,待处理
+processing,处理中
+quarantined,已隔离
+queued,已排队
+started,已开始
+succeeded,成功
+superseded,已取代
+synthetic_verified,合成验证通过
+uncertain,不确定
+uncertain_after_timeout,超时后不确定
+"NPI Trial Summary Delivery","NPI 试模摘要投递"
+"NPI Trial Summary Delivery Attempt","NPI 试模摘要投递尝试"
+"Delivery Global ID","投递全局标识符"
+"Trial Summary Delivery Event Type","试模摘要投递事件类型"
+"Project Global ID","项目全局标识符"
+"Trial Plan Global ID","试模计划全局标识符"
+"Trial Round Global ID","试模轮次全局标识符"
+"Trial Summary Global ID","试模摘要全局标识符"
+"Trial Summary Revision Global ID","试模摘要修订全局标识符"
+"Trial Summary Version","试模摘要版本"
+"Exact Trial Summary Delivery Source","精确试模摘要投递来源"
+"Trial Summary Delivery Source Hash","试模摘要投递来源哈希"
+"Source Snapshot Hash","来源快照哈希"
+"Source Actor User ID","来源操作用户标识符"
+"Trial Summary Delivery State","试模摘要投递状态"
+"Trial Summary Delivery Attempt Count","试模摘要投递尝试次数"
+"Trial Summary Delivery Claim Token","试模摘要投递领取令牌"
+"Trial Summary Delivery Claimed At","试模摘要投递领取时间"
+"Trial Summary Delivery Lease Expires At","试模摘要投递租约到期时间"
+"Trial Summary Adapter Boundary Crossed","已越过试模摘要适配器边界"
+"Trial Summary Execution Profile ID","试模摘要执行配置标识符"
+"Trial Summary Execution Profile Version","试模摘要执行配置版本"
+"Trial Summary Execution Profile Snapshot Hash","试模摘要执行配置快照哈希"
+"Target Environment Code","目标环境代码"
+"Last Trial Summary Delivery Attempt","最后一次试模摘要投递尝试"
+"ERPNext Trial Summary Projection ID","ERPNext 试模摘要投影标识符"
+"ERPNext Trial Summary Fact Count","ERPNext 试模摘要事实数量"
+"ERPNext Trial Summary Response Hash","ERPNext 试模摘要响应哈希"
+"Last HTTP Status","最后请求状态"
+"Next Retry At","下次重试时间"
+"Attempt Global ID","尝试全局标识符"
+"Attempt Key Hash","尝试键哈希"
+"Trial Summary Delivery","试模摘要投递"
+"Trial Summary Attempt Kind","试模摘要尝试类型"
+"Trial Summary Attempt State","试模摘要尝试状态"
+"Error Code","错误代码"
+"HTTP Status","请求状态"
+"publish","发布"
+"reconcile","对账"
+"reconciled_absent","对账确认不存在"
+"reconciled_present","对账确认存在"
+"A Trial Summary attempt must start before it is completed.","试模摘要尝试必须先开始才能完成。"
+"Attempt Key Hash is invalid.","尝试键哈希无效。"
+"Attempt Number is invalid.","尝试序号无效。"
+"ERPNext Trial Summary Response Hash is invalid.","ERPNext 试模摘要响应哈希无效。"
+"Global ID is invalid.","全局标识符无效。"
+"Only a failed Trial Summary delivery can be retried.","只能重试失败的试模摘要投递。"
+"Only an uncertain Trial Summary delivery can be reconciled.","只能对不确定的试模摘要投递执行对账。"
+"Response Hash is invalid.","响应哈希无效。"
+"The Trial Summary attempt key is invalid.","试模摘要尝试键无效。"
+"The Trial Summary attempt transition is invalid.","试模摘要尝试状态转换无效。"
+"The Trial Summary delivery attempt limit was reached.","已达到试模摘要投递尝试次数上限。"
+"The Trial Summary delivery source binding is invalid.","试模摘要投递来源绑定无效。"
+"The Trial Summary delivery type or state is invalid.","试模摘要投递类型或状态无效。"
+"The Trial Summary execution route is immutable after binding.","试模摘要执行路由绑定后不可变。"
+"The exact Trial Summary delivery source is invalid.","精确试模摘要投递来源无效。"
+"The query page is invalid.","查询分页无效。"
+"Trial Summary Attempt Kind is invalid.","试模摘要尝试类型无效。"
+"Trial Summary Delivery Attempt Count is invalid.","试模摘要投递尝试次数无效。"
+"Trial Summary Delivery State is invalid.","试模摘要投递状态无效。"
+"Trial Summary Execution Profile Snapshot Hash is invalid.","试模摘要执行配置快照哈希无效。"
+"Trial Summary Version is invalid.","试模摘要版本无效。"
+"Trial Summary attempt identity is immutable.","试模摘要尝试标识不可变。"
+"Trial Summary attempts exceed the safe bound.","试模摘要尝试超过安全上限。"
+"Trial Summary deliveries can only be changed by the controlled integration service.","试模摘要投递只能由受控集成服务更改。"
+"Trial Summary delivery history cannot be deleted.","不能删除试模摘要投递历史。"
+"Trial Summary delivery source fields are immutable.","试模摘要投递来源字段不可变。"
+"The Trial Summary delivery transition is invalid.","试模摘要投递状态转换无效。"
+"{field} is invalid.","{field} 无效。"
+"ERPNext master data can only be changed by the controlled integration service.","ERPNext 主数据只能由受控集成服务更改。"
+"ERPNext master data synchronization history cannot be deleted.","不能删除 ERPNext 主数据同步历史。"
+"ERPNext master data synchronization is temporarily unavailable.","ERPNext 主数据同步暂时不可用。"
+"Enter a valid ERPNext master data snapshot.","请输入有效的 ERPNext 主数据快照。"
+"Select a supported ERPNext master data type.","请选择受支持的 ERPNext 主数据类型。"
+"Enter a valid master data search.","请输入有效的主数据搜索内容。"
+"Enter a valid master data page.","请输入有效的主数据分页参数。"
+"NPI ERP Master Catalog Entry","NPI 企业资源计划主数据目录条目"
+"ERPNext Master Catalog Type","ERPNext 主数据目录类型"
+"item_group","物料组"
+"item","物料"
+"ERPNext Master Data Key","ERPNext 主数据键"
+"Display Name","显示名称"
+"Present in ERPNext","存在于 ERPNext"
+"ERPNext Group Key","ERPNext 分组键"
+"ERPNext Parent Key","ERPNext 上级键"
+"Stock UOM","库存计量单位"
+"Is Group","是否为分组"
+"Is Stock Item","是否为库存物料"
+"Current Master Snapshot","当前主数据快照"
+"Source Record Hash","来源记录哈希"
+"NPI ERP Master Catalog Head","NPI 企业资源计划主数据目录头"
+"Current Source Event ID","当前来源事件标识符"
+"Master Data Record Count","主数据记录数量"
+"Last Synchronized At","最后同步时间"
+"NPI ERP Master Snapshot","NPI 企业资源计划主数据快照"
+"Exact Master Data Snapshot","精确主数据快照"
+Attempt,尝试
+Attempt Kind,尝试类型
+ERP Project publication attempt count cannot decrease.,ERPNext 项目发布尝试次数不能减少。
+ERP Project publication attempt history is immutable.,ERPNext 项目发布尝试历史不可变。
+ERP Project publication attempt identity is immutable.,ERPNext 项目发布尝试标识不可变。
+ERP Project publication attempt is invalid.,ERPNext 项目发布尝试无效。
+ERP Project publication history cannot be deleted.,ERPNext 项目发布历史不能删除。
+ERP Project publication idempotency identity does not match.,ERPNext 项目发布幂等标识不匹配。
+ERP Project publication records can only be changed by the controlled integration service.,ERPNext 项目发布记录只能由受控集成服务更改。
+ERP Project publication request identity is immutable.,ERPNext 项目发布请求标识不可变。
+ERP Project publication request is invalid.,ERPNext 项目发布请求无效。
+ERP Project publication source does not match the request.,ERPNext 项目发布来源与请求不匹配。
+ERP Project publication state transition is invalid.,ERPNext 项目发布状态转换无效。
+Environment Code,环境代码
+Exact Replay,精确重放
+Formal ERP Project ID,正式 ERPNext 项目编号
+Last Attempt,最近尝试
+Latest Result,最新结果
+NPI ERP Project Publish Attempt,NPI ERPNext 项目发布尝试
+NPI ERP Project Publish Request,NPI ERPNext 项目发布请求
+NPI ERP Project Publish Result,NPI ERPNext 项目发布结果
+Profile ID,配置标识
+Profile Snapshot Hash,配置快照哈希
+Profile Version,配置版本
+Request,请求
+Source Version,来源版本
+Target Version,目标版本

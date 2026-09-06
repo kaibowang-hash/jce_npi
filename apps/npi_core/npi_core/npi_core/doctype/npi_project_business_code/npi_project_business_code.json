@@ -1,0 +1,20 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Project Business Code",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:reservation_key_hash",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "tenant_id,business_code,project_global_id",
+  "fields": [
+    {"fieldname": "reservation_key_hash", "fieldtype": "Data", "label": "Reservation Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "business_code", "fieldtype": "Data", "label": "Business Code", "reqd": 1, "read_only": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+  ]
+}

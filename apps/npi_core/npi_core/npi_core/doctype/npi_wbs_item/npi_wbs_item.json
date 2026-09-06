@@ -1,0 +1,37 @@
+{
+  "doctype": "DocType",
+  "name": "NPI WBS Item",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 1,
+  "title_field": "title",
+  "search_fields": "wbs_code,title,project_global_id,owner_role_assignment_global_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "work_policy_global_id", "fieldtype": "Data", "label": "Work Policy Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "work_policy_version", "fieldtype": "Int", "label": "Work Policy Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "work_policy_snapshot_hash", "fieldtype": "Data", "label": "Work Policy Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "wbs_code", "fieldtype": "Data", "label": "WBS Code", "reqd": 1, "read_only": 1},
+    {"fieldname": "title", "fieldtype": "Small Text", "label": "WBS Title", "reqd": 1, "read_only": 1},
+    {"fieldname": "parent_global_id", "fieldtype": "Data", "label": "Parent WBS Global ID", "read_only": 1},
+    {"fieldname": "owner_role_assignment_global_id", "fieldtype": "Data", "label": "Owner Role Assignment Global ID", "read_only": 1},
+    {"fieldname": "planned_start", "fieldtype": "Date", "label": "Planned Start", "reqd": 1, "read_only": 1},
+    {"fieldname": "planned_end", "fieldtype": "Date", "label": "Planned End", "reqd": 1, "read_only": 1},
+    {"fieldname": "actual_start", "fieldtype": "Date", "label": "Actual Start", "read_only": 1},
+    {"fieldname": "actual_end", "fieldtype": "Date", "label": "Actual End", "read_only": 1},
+    {"fieldname": "milestone", "fieldtype": "Check", "label": "Milestone", "default": "0", "read_only": 1},
+    {"fieldname": "status_key", "fieldtype": "Data", "label": "Status Key", "reqd": 1, "read_only": 1},
+    {"fieldname": "status_label_source", "fieldtype": "Data", "label": "Status Label Source", "reqd": 1, "read_only": 1},
+    {"fieldname": "progress_percent", "fieldtype": "Int", "label": "Progress Percent", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "critical_task", "fieldtype": "Check", "label": "Critical Task", "default": "0", "read_only": 1},
+    {"fieldname": "plan_revision", "fieldtype": "Int", "label": "Work Plan Revision", "reqd": 1, "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+  ]
+}

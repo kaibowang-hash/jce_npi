@@ -1,0 +1,43 @@
+{
+  "doctype": "DocType",
+  "name": "NPI EBOM Policy Version",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:version_key",
+  "track_changes": 1,
+  "title_field": "title",
+  "search_fields": "policy_key,title,version_key,project_global_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "ebom_policy", "fieldtype": "Link", "label": "EBOM Policy", "options": "NPI EBOM Policy", "reqd": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "policy_global_id", "fieldtype": "Data", "label": "EBOM Policy Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_key", "fieldtype": "Data", "label": "EBOM Policy Key", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_version", "fieldtype": "Int", "label": "EBOM Policy Version", "reqd": 1},
+    {"fieldname": "version_key", "fieldtype": "Data", "label": "EBOM Policy Version Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "EBOM Policy Title", "reqd": 1},
+    {"fieldname": "publication_state", "fieldtype": "Select", "label": "Publication State", "options": "draft\npublished", "reqd": 1, "default": "draft"},
+    {"fieldname": "synthetic_namespace", "fieldtype": "Data", "label": "Synthetic EBOM Namespace", "reqd": 1},
+    {"fieldname": "line_identity_mode", "fieldtype": "Select", "label": "Line Identity Mode", "options": "caller_supplied_stable_key", "reqd": 1, "default": "caller_supplied_stable_key"},
+    {"fieldname": "quantity_scale", "fieldtype": "Int", "label": "Quantity Scale", "reqd": 1},
+    {"fieldname": "maximum_nodes", "fieldtype": "Int", "label": "Maximum Nodes", "reqd": 1},
+    {"fieldname": "engineering_uoms", "fieldtype": "JSON", "label": "Engineering UOM Allowlist", "reqd": 1},
+    {"fieldname": "attribute_keys", "fieldtype": "JSON", "label": "Controlled Attribute Keys", "reqd": 1},
+    {"fieldname": "creator_user_ids", "fieldtype": "JSON", "label": "Creator User IDs", "reqd": 1},
+    {"fieldname": "review_submitter_user_ids", "fieldtype": "JSON", "label": "Review Submitter User IDs", "reqd": 1},
+    {"fieldname": "reviewer_user_ids", "fieldtype": "JSON", "label": "Reviewer User IDs", "reqd": 1},
+    {"fieldname": "release_authority_user_ids", "fieldtype": "JSON", "label": "Release Authority User IDs", "reqd": 1},
+    {"fieldname": "require_acyclic_graph", "fieldtype": "Check", "label": "Require Acyclic Graph", "reqd": 1, "default": "1"},
+    {"fieldname": "require_closed_alternates", "fieldtype": "Check", "label": "Require Closed Alternates", "reqd": 1, "default": "1"},
+    {"fieldname": "require_effectivity_order", "fieldtype": "Check", "label": "Require Effectivity Order", "reqd": 1, "default": "1"},
+    {"fieldname": "policy_snapshot", "fieldtype": "JSON", "label": "Canonical EBOM Policy Snapshot", "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "EBOM Policy Snapshot Hash", "read_only": 1},
+    {"fieldname": "published_at", "fieldtype": "Datetime", "label": "Published At", "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

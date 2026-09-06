@@ -1,0 +1,26 @@
+{
+  "doctype": "DocType",
+  "name": "NPI ERP Master Catalog Head",
+  "module": "NPI Integration",
+  "autoname": "field:global_id",
+  "read_only": 1,
+  "track_changes": 1,
+  "allow_import": 0,
+  "fields": [
+    {"fieldname":"global_id","fieldtype":"Data","label":"Global ID","reqd":1,"unique":1,"read_only":1},
+    {"fieldname":"tenant_id","fieldtype":"Data","label":"Tenant ID","reqd":1,"read_only":1},
+    {"fieldname":"catalog_kind","fieldtype":"Select","label":"ERPNext Master Catalog Type","options":"customer\nsupplier\nitem_group\nitem\nmachine","reqd":1,"read_only":1},
+    {"fieldname":"source_environment","fieldtype":"Data","label":"Source Environment","reqd":1,"read_only":1},
+    {"fieldname":"source_version","fieldtype":"Int","label":"Source Version","reqd":1,"read_only":1},
+    {"fieldname":"source_modified_at","fieldtype":"Datetime","label":"Source Modified At","reqd":1,"read_only":1},
+    {"fieldname":"current_snapshot_id","fieldtype":"Link","label":"Current Master Snapshot","options":"NPI ERP Master Snapshot","reqd":1,"read_only":1},
+    {"fieldname":"current_event_id","fieldtype":"Data","label":"Current Source Event ID","reqd":1,"read_only":1},
+    {"fieldname":"payload_hash","fieldtype":"Data","label":"Payload Hash","reqd":1,"read_only":1},
+    {"fieldname":"record_count","fieldtype":"Int","label":"Master Data Record Count","reqd":1,"read_only":1},
+    {"fieldname":"last_synchronized_at","fieldtype":"Datetime","label":"Last Synchronized At","reqd":1,"read_only":1}
+  ],
+  "permissions": [
+    {"role":"System Manager","read":1,"write":0,"create":0,"delete":0,"export":0,"print":0,"email":0,"share":0},
+    {"role":"NPI API User","read":0,"write":0,"create":0,"delete":0,"export":0,"print":0,"email":0,"share":0}
+  ]
+}

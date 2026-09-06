@@ -1,0 +1,31 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Controlled Print Output",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "controlled_print_snapshot", "fieldtype": "Link", "label": "Controlled Print Snapshot", "options": "NPI Controlled Print Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_global_id", "fieldtype": "Data", "label": "Snapshot Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "frappe_file_id", "fieldtype": "Link", "label": "Frappe File ID", "options": "File", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "file_name", "fieldtype": "Data", "label": "File Name", "reqd": 1, "read_only": 1},
+    {"fieldname": "mime_type", "fieldtype": "Data", "label": "MIME Type", "reqd": 1, "default": "application/pdf", "read_only": 1},
+    {"fieldname": "size_bytes", "fieldtype": "Int", "label": "Size Bytes", "reqd": 1, "read_only": 1},
+    {"fieldname": "frappe_content_hash", "fieldtype": "Data", "label": "Frappe Content Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "sha256", "fieldtype": "Data", "label": "SHA-256", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_user_id", "fieldtype": "Data", "label": "Created By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "output_snapshot", "fieldtype": "JSON", "label": "Output Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "record_hash", "fieldtype": "Data", "label": "Record Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

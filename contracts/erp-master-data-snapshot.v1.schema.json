@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://launchflow.whjichen.cn/contracts/erp-master-data-snapshot.v1.schema.json",
+  "title": "ERPNext master data snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "operation",
+    "sourceSystem",
+    "targetSystem",
+    "eventId",
+    "catalogKind",
+    "sourceEnvironment",
+    "sourceVersion",
+    "sourceModifiedAt",
+    "records",
+    "issuedAt",
+    "traceId",
+    "payloadHash"
+  ],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "operation": {"const": "replace_master_catalog"},
+    "sourceSystem": {"const": "ERPNEXT"},
+    "targetSystem": {"const": "NPI_ONE"},
+    "eventId": {"type": "string", "format": "uuid"},
+    "catalogKind": {"enum": ["customer", "supplier", "item_group", "item", "machine"]},
+    "sourceEnvironment": {"enum": ["sandbox", "test", "testing", "qa", "staging", "stage"]},
+    "sourceVersion": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+    "sourceModifiedAt": {"type": "string", "format": "date-time"},
+    "records": {"type": "array", "maxItems": 10000},
+    "issuedAt": {"type": "string", "format": "date-time"},
+    "traceId": {"type": "string", "minLength": 8, "maxLength": 128, "pattern": "^[A-Za-z0-9._:-]+$"},
+    "payloadHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"catalogKind": {"enum": ["customer", "supplier", "machine"]}}},
+      "then": {"properties": {"records": {"items": {"$ref": "#/$defs/organizationRecord"}}}}
+    },
+    {
+      "if": {"properties": {"catalogKind": {"const": "item_group"}}},
+      "then": {"properties": {"records": {"items": {"$ref": "#/$defs/itemGroupRecord"}}}}
+    },
+    {
+      "if": {"properties": {"catalogKind": {"const": "item"}}},
+      "then": {"properties": {"records": {"items": {"$ref": "#/$defs/itemRecord"}}}}
+    }
+  ],
+  "$defs": {
+    "base": {
+      "type": "object",
+      "properties": {
+        "sourceKey": {"type": "string", "minLength": 1, "maxLength": 255},
+        "displayName": {"type": "string", "minLength": 1, "maxLength": 255},
+        "enabled": {"type": "boolean"},
+        "sourceModifiedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "organizationRecord": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceKey", "displayName", "enabled", "groupKey", "sourceModifiedAt"],
+          "properties": {
+            "sourceKey": true,
+            "displayName": true,
+            "enabled": true,
+            "groupKey": {"type": ["string", "null"], "minLength": 1, "maxLength": 255},
+            "sourceModifiedAt": true
+          }
+        }
+      ]
+    },
+    "itemGroupRecord": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceKey", "displayName", "enabled", "parentKey", "isGroup", "sourceModifiedAt"],
+          "properties": {
+            "sourceKey": true,
+            "displayName": true,
+            "enabled": true,
+            "parentKey": {"type": ["string", "null"], "minLength": 1, "maxLength": 255},
+            "isGroup": {"type": "boolean"},
+            "sourceModifiedAt": true
+          }
+        }
+      ]
+    },
+    "itemRecord": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceKey", "displayName", "enabled", "groupKey", "stockUom", "isStockItem", "sourceModifiedAt"],
+          "properties": {
+            "sourceKey": true,
+            "displayName": true,
+            "enabled": true,
+            "groupKey": {"type": "string", "minLength": 1, "maxLength": 255},
+            "stockUom": {"type": "string", "minLength": 1, "maxLength": 140},
+            "isStockItem": {"type": "boolean"},
+            "sourceModifiedAt": true
+          }
+        }
+      ]
+    }
+  }
+}

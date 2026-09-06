@@ -1,0 +1,27 @@
+{
+  "fixtureVersion": "p6-07.synthetic-tooling-list.v1",
+  "provenance": "Deterministically generated synthetic verification data; no customer workbook values.",
+  "containsCustomerData": false,
+  "fixtures": [
+    {
+      "fixtureVersion": "p6-07.synthetic-tooling-list.v1",
+      "fileName": "p6-07-synthetic-title-row-deleted.xlsx",
+      "sha256": "b807aca4ef6776a0ad6e8eada1c8291b3a13dbe32724828d33661d67bc8e684f",
+      "synthetic": true,
+      "titleRowCount": 1,
+      "headerRow": 2,
+      "sourceColumnCount": 43,
+      "containsCustomerData": false
+    },
+    {
+      "fixtureVersion": "p6-07.synthetic-tooling-list.v1",
+      "fileName": "p6-07-synthetic-title-rows-inserted.xlsx",
+      "sha256": "f1c67a991bb59cffbee208fcc786ee44de342d3a2cf56da31d3422c9026459b4",
+      "synthetic": true,
+      "titleRowCount": 3,
+      "headerRow": 4,
+      "sourceColumnCount": 43,
+      "containsCustomerData": false
+    }
+  ]
+}

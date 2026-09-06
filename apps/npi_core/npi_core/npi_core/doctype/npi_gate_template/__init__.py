@@ -1,0 +1,1 @@
+"""NPI Gate Template DocType."""

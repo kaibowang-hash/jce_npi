@@ -1,0 +1,1 @@
+"""NPI Engineering Part DocType."""

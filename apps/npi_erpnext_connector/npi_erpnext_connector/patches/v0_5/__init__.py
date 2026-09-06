@@ -1,0 +1,1 @@
+"""Project synchronization schema patches."""

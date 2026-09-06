@@ -1,0 +1,404 @@
+{
+  "schemaVersion": "p9-08-controlled-uat.v1",
+  "evidenceClass": "CONTROLLED_NON_PRODUCTION_TECHNICAL_UAT",
+  "requirementId": "UX-003",
+  "threshold": 0.8,
+  "claims": {
+    "environment": "representative_non_production",
+    "realPilot": false,
+    "realProject": false,
+    "realUserAdoption": false
+  },
+  "allowedSurfaces": [
+    "my_work",
+    "project_context",
+    "outside_context"
+  ],
+  "requiredFamilies": [
+    "project_work",
+    "permissions",
+    "documents_baselines",
+    "ebom",
+    "gates",
+    "tooling",
+    "trial",
+    "quality_readiness",
+    "erp_projections",
+    "erp_execution",
+    "integration_operations",
+    "change_control",
+    "reporting_collaboration",
+    "security",
+    "data_exchange",
+    "recovery",
+    "localization_visual"
+  ],
+  "supportingEvidence": [
+    {
+      "family": "security",
+      "path": "tests/test_phase9_change_integration_security.py",
+      "selector": "test_guest_admin_wrong_roles_and_unbound_session_fail_closed"
+    },
+    {
+      "family": "data_exchange",
+      "path": "frontend/tests/e2e/p9-06-data-exchange-live.spec.ts",
+      "selector": "P9-06 Data Exchange remains closed, accessible and language-pure"
+    },
+    {
+      "family": "recovery",
+      "path": "tests/test_phase9_go_live_rehearsal.py",
+      "selector": "test_forward_fix_compares_the_json_canonical_manifest_shape"
+    },
+    {
+      "family": "localization_visual",
+      "path": "frontend/tests/e2e/p9-01-change-control-live.spec.ts",
+      "selector": "renders the governed Change Control workspace"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "AT-01",
+      "projectType": "customer_owned_mold",
+      "activities": [
+        {
+          "id": "AT01-01",
+          "flow": "golden",
+          "title": "Open the governed customer-owned-mold Project from My Work",
+          "surface": "my_work",
+          "routeTemplate": "/work",
+          "families": ["project_work"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p4-05-live.spec.ts",
+              "selector": "loads validated work, supports keyboard selection, and derives a safe local target"
+            }
+          ]
+        },
+        {
+          "id": "AT01-02",
+          "flow": "golden",
+          "title": "Review ownership, responsibility and intake work",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}",
+          "families": ["project_work", "permissions"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/project-workspace-live.spec.ts",
+              "selector": "shows complete dated substitution details to the holder and substitute"
+            }
+          ]
+        },
+        {
+          "id": "AT01-03",
+          "flow": "golden",
+          "title": "Release the controlled intake evidence baseline",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}",
+          "families": ["documents_baselines"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p5-01-documents-live.spec.ts",
+              "selector": "creates one immutable release baseline from an exact released revision"
+            }
+          ]
+        },
+        {
+          "id": "AT01-04",
+          "flow": "fault",
+          "title": "Hold the Gate when a major intake input changes",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/gates/{gateGlobalId}",
+          "families": ["gates", "permissions"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/gate-evidence-live.spec.ts",
+              "selector": "requires review exposes only exact input-change acknowledgement"
+            }
+          ]
+        },
+        {
+          "id": "AT01-05",
+          "flow": "golden",
+          "title": "Bind the accepted Tooling revision to its physical Set",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/tooling/{toolingMasterGlobalId}",
+          "families": ["tooling"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts",
+              "selector": "binds one exact immutable Revision to one physical Set"
+            }
+          ]
+        },
+        {
+          "id": "AT01-06",
+          "flow": "golden",
+          "title": "Start the prepared T0 or T1 Round from locked inputs",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/trials",
+          "families": ["trial"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p7-02-trial-execution-live.spec.ts",
+              "selector": "starts one prepared Round with exact manual observations and locked material"
+            }
+          ]
+        },
+        {
+          "id": "AT01-07",
+          "flow": "fault",
+          "title": "Keep quality failure and readiness blockers authoritative",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/trials",
+          "families": ["quality_readiness", "trial"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts",
+              "selector": "shows an explicit retryable quality failure without hiding execution truth"
+            },
+            {
+              "path": "frontend/tests/e2e/p7-05-readiness-live.spec.ts",
+              "selector": "keeps P0 blockers dominant over a high score"
+            }
+          ]
+        },
+        {
+          "id": "AT01-08",
+          "flow": "fault",
+          "title": "Withhold stale ERP projection and Tool Asset handoff truth",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/tooling/{toolingMasterGlobalId}",
+          "families": ["erp_projections", "erp_execution", "tooling"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p8-01-erp-projections-live.spec.ts",
+              "selector": "withholds stale, unavailable, synthetic and conflicted observations"
+            },
+            {
+              "path": "frontend/tests/e2e/p8-05-tool-asset-execution-live.spec.ts",
+              "selector": "keeps the operation-specific command Project-first and browser target-network-free"
+            }
+          ]
+        },
+        {
+          "id": "AT01-09",
+          "flow": "fault",
+          "title": "Expose DLQ, stale replay and change-operation truth",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/integration-operations",
+          "families": ["integration_operations", "change_control"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p8-07-integration-operations-live.spec.ts",
+              "selector": "shows the logical DLQ and keeps a stale command conflict visible"
+            },
+            {
+              "path": "frontend/tests/e2e/p9-01-change-control-live.spec.ts",
+              "selector": "uses only Project-first BFF reads and queues the exact summary command"
+            }
+          ]
+        },
+        {
+          "id": "AT01-10",
+          "flow": "golden",
+          "title": "Review permission-filtered portfolio reporting",
+          "surface": "outside_context",
+          "routeTemplate": "/reports",
+          "families": ["reporting_collaboration"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts",
+              "selector": "uses permission-filtered reporting, global search, and recipient notifications"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "AT-02",
+      "projectType": "new_tooling",
+      "activities": [
+        {
+          "id": "AT02-01",
+          "flow": "golden",
+          "title": "Open the governed new-tooling Project from My Work",
+          "surface": "my_work",
+          "routeTemplate": "/work",
+          "families": ["project_work"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p4-05-live.spec.ts",
+              "selector": "loads validated work, supports keyboard selection, and derives a safe local target"
+            }
+          ]
+        },
+        {
+          "id": "AT02-02",
+          "flow": "golden",
+          "title": "Review and release the DFM and design baseline",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}",
+          "families": ["documents_baselines"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p5-01-documents-live.spec.ts",
+              "selector": "renders exact revision, file, provider, and lock truth"
+            }
+          ]
+        },
+        {
+          "id": "AT02-03",
+          "flow": "golden",
+          "title": "Submit the immutable EBOM revision",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}",
+          "families": ["ebom", "documents_baselines"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p5-04-ebom-live.spec.ts",
+              "selector": "submits one exact revision with CSRF and actor-bound idempotency"
+            }
+          ]
+        },
+        {
+          "id": "AT02-04",
+          "flow": "golden",
+          "title": "Record Tooling specification and manufacturing progress",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/tooling/{toolingMasterGlobalId}",
+          "families": ["tooling"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts",
+              "selector": "appends only an internal immutable plan Revision"
+            }
+          ]
+        },
+        {
+          "id": "AT02-05",
+          "flow": "golden",
+          "title": "Execute and compare T0 through Tn Rounds",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/trials",
+          "families": ["trial", "quality_readiness"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p7-02-trial-execution-live.spec.ts",
+              "selector": "renders exact locked, actual, sample and evidence truth"
+            },
+            {
+              "path": "frontend/tests/e2e/p7-04-trial-review-live.spec.ts",
+              "selector": "renders exact comparison, policy blockers and proposal boundary"
+            }
+          ]
+        },
+        {
+          "id": "AT02-06",
+          "flow": "fault",
+          "title": "Reject stale readiness and production-handover decisions",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/trials",
+          "families": ["gates", "quality_readiness"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p7-05-readiness-live.spec.ts",
+              "selector": "fails closed on 409 drift and 422 validation without submitting caller score or Gate truth"
+            },
+            {
+              "path": "frontend/tests/e2e/p7-06-production-transition-live.spec.ts",
+              "selector": "does not blindly retry a conflict and requires an explicit current-package reload"
+            }
+          ]
+        },
+        {
+          "id": "AT02-07",
+          "flow": "fault",
+          "title": "Keep Item and MBOM publication partial or uncertain truth visible",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}",
+          "families": ["erp_execution", "erp_projections"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p8-03-item-publish-live.spec.ts",
+              "selector": "blocks uncertain execution and shows an authoritative mapping only when supplied"
+            },
+            {
+              "path": "frontend/tests/e2e/p8-04-mbom-publish-live.spec.ts",
+              "selector": "shows partial, failed, uncertain, conflict and authoritative truth without fake aggregate success"
+            }
+          ]
+        },
+        {
+          "id": "AT02-08",
+          "flow": "golden",
+          "title": "Queue Tool Asset and link formal quality through Project-first commands",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/tooling/{toolingMasterGlobalId}",
+          "families": ["erp_execution", "quality_readiness", "tooling"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p8-05-tool-asset-execution-live.spec.ts",
+              "selector": "keeps the operation-specific command Project-first and browser target-network-free"
+            },
+            {
+              "path": "frontend/tests/e2e/p8-06-formal-quality-link-live.spec.ts",
+              "selector": "gates the sole link action through Impact Review and performs no browser target call"
+            }
+          ]
+        },
+        {
+          "id": "AT02-09",
+          "flow": "fault",
+          "title": "Keep Engineering Change and integration recovery Project-first",
+          "surface": "project_context",
+          "routeTemplate": "/projects/{projectGlobalId}/integration-operations",
+          "families": ["change_control", "integration_operations", "security"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p9-01-change-control-live.spec.ts",
+              "selector": "supports keyboard navigation, exact read-only truth and accessibility"
+            },
+            {
+              "path": "frontend/tests/e2e/p8-07-integration-operations-live.spec.ts",
+              "selector": "keeps replay visible but disabled in a read-only Project"
+            }
+          ]
+        },
+        {
+          "id": "AT02-10",
+          "flow": "golden",
+          "title": "Review portfolio and collaboration outputs",
+          "surface": "outside_context",
+          "routeTemplate": "/reports",
+          "families": ["reporting_collaboration"],
+          "requirementIds": ["UX-003"],
+          "evidence": [
+            {
+              "path": "frontend/tests/e2e/p9-02-reporting-collaboration-live.spec.ts",
+              "selector": "creates an immutable meeting minute only through the Project command"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

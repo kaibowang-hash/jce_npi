@@ -1,0 +1,32 @@
+{
+  "doctype": "DocType",
+  "name": "NPI ERP MBOM Mapping",
+  "module": "NPI ERPNext Connector",
+  "custom": 0,
+  "autoname": "field:assembly_source_key",
+  "allow_rename": 0,
+  "track_changes": 1,
+  "read_only": 1,
+  "search_fields": "stable_line_key,formal_bom_id,assembly_source_key",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "fields": [
+    {"fieldname": "assembly_source_key", "fieldtype": "Data", "label": "Assembly Source Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "ebom_global_id", "fieldtype": "Data", "label": "EBOM Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "stable_line_key", "fieldtype": "Data", "label": "Stable Line Key", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "formal_bom_id", "fieldtype": "Link", "label": "Formal BOM ID", "options": "BOM", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "mapping_version", "fieldtype": "Int", "label": "MBOM Mapping Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "target_version", "fieldtype": "Data", "label": "Target Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "submission_state", "fieldtype": "Select", "label": "BOM Submission State", "options": "editable_draft\nsubmitted_immutable", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_hash", "fieldtype": "Data", "label": "Source Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "topology_hash", "fieldtype": "Data", "label": "Topology Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "last_request_global_id", "fieldtype": "Data", "label": "Last Request Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "last_target_idempotency_key_hash", "fieldtype": "Data", "label": "Last Target Idempotency Key Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "updated_at", "fieldtype": "Datetime", "label": "Updated At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0, "share": 0}
+  ]
+}

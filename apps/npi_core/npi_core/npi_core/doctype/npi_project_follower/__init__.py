@@ -1,0 +1,1 @@
+"""NPI Project Follower DocType."""

@@ -1,0 +1,35 @@
+{
+  "doctype": "DocType",
+  "name": "NPI My Work Assignment",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "search_fields": "assignment_key,actor_user_id,project_global_id,source_global_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "assignment_key", "fieldtype": "Data", "label": "My Work Assignment Key", "reqd": 1, "unique": 1, "read_only": 1, "length": 500},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "actor_user_id", "fieldtype": "Data", "label": "Assigned User ID", "reqd": 1, "read_only": 1, "search_index": 1, "length": 254},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "source_type", "fieldtype": "Select", "label": "My Work Source Type", "options": "domain_work_item\ngate_review_assignment\ngate_review_invalidation", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "source_global_id", "fieldtype": "Data", "label": "Source Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "source_version", "fieldtype": "Int", "label": "Source Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "assignment_code", "fieldtype": "Data", "label": "Assignment Reason Code", "reqd": 1, "read_only": 1},
+    {"fieldname": "category", "fieldtype": "Select", "label": "My Work Category", "options": "task\napproval\nblocker\nrisk\nissue\ndecision", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "due_at", "fieldtype": "Datetime", "label": "Due At", "read_only": 1, "search_index": 1},
+    {"fieldname": "priority_scheme", "fieldtype": "Select", "label": "Priority Scheme", "options": "\ndomain_severity\ngate_requirement_priority", "read_only": 1, "search_index": 1},
+    {"fieldname": "priority_value", "fieldtype": "Data", "label": "Priority Value", "read_only": 1, "search_index": 1},
+    {"fieldname": "blocking", "fieldtype": "Check", "label": "Blocking", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "active", "fieldtype": "Check", "label": "Active", "reqd": 1, "default": "1", "read_only": 1, "search_index": 1},
+    {"fieldname": "source_snapshot", "fieldtype": "JSON", "label": "My Work Source Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "indexed_at", "fieldtype": "Datetime", "label": "Indexed At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

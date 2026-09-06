@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.internal/npi/contracts/released-trial-summary-erp-projection.v1.schema.json",
+  "title": "Released Trial Summary ERPNext Projection Command",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "operation",
+    "requestGlobalId",
+    "attemptGlobalId",
+    "attemptNumber",
+    "targetIdempotencyKeyHash",
+    "sourceHash",
+    "actorUserId",
+    "source"
+  ],
+  "properties": {
+    "contractVersion": {"const": 1},
+    "operation": {"const": "publish_released_trial_summary"},
+    "requestGlobalId": {"type": "string", "format": "uuid"},
+    "attemptGlobalId": {"type": "string", "format": "uuid"},
+    "attemptNumber": {"type": "integer", "minimum": 1, "maximum": 100},
+    "targetIdempotencyKeyHash": {"$ref": "#/$defs/sha256"},
+    "sourceHash": {"$ref": "#/$defs/sha256"},
+    "actorUserId": {"type": "string", "minLength": 1, "maxLength": 254},
+    "source": {"$ref": "#/$defs/source"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "projectionPurpose",
+        "formalMpAcceptance",
+        "tenantId",
+        "projectGlobalId",
+        "trialPlanGlobalId",
+        "trialRoundGlobalId",
+        "summaryGlobalId",
+        "summaryRevisionGlobalId",
+        "summaryVersion",
+        "predecessorGlobalId",
+        "sourceSnapshotHash",
+        "sourceManifestHash",
+        "presentationProjectionHash",
+        "redactionManifestHash",
+        "conclusionState",
+        "conclusionCode",
+        "createdByUserId",
+        "createdAt",
+        "presentationProjection",
+        "redactionManifest"
+      ],
+      "properties": {
+        "schemaVersion": {"const": "npi.released_trial_summary.erp_projection.v1"},
+        "projectionPurpose": {"const": "erpnext_read_only_engineering_evidence"},
+        "formalMpAcceptance": {"const": false},
+        "tenantId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "projectGlobalId": {"type": "string", "format": "uuid"},
+        "trialPlanGlobalId": {"type": "string", "format": "uuid"},
+        "trialRoundGlobalId": {"type": "string", "format": "uuid"},
+        "summaryGlobalId": {"type": "string", "format": "uuid"},
+        "summaryRevisionGlobalId": {"type": "string", "format": "uuid"},
+        "summaryVersion": {"type": "integer", "minimum": 1},
+        "predecessorGlobalId": {"type": ["string", "null"], "format": "uuid"},
+        "sourceSnapshotHash": {"$ref": "#/$defs/sha256"},
+        "sourceManifestHash": {"$ref": "#/$defs/sha256"},
+        "presentationProjectionHash": {"$ref": "#/$defs/sha256"},
+        "redactionManifestHash": {"$ref": "#/$defs/sha256"},
+        "conclusionState": {"enum": ["approved", "rejected"]},
+        "conclusionCode": {"enum": ["pass", "conditional_pass", "tooling_change", "design_change", "process_tuning", "material_change", "cancelled"]},
+        "createdByUserId": {"type": "string", "minLength": 1, "maxLength": 254},
+        "createdAt": {"type": "string", "format": "date-time"},
+        "presentationProjection": {"$ref": "#/$defs/presentationProjection"},
+        "redactionManifest": {"$ref": "#/$defs/redactionManifest"}
+      }
+    },
+    "sourceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "globalId", "sourceVersion", "snapshotHash"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "trial_plan_revision",
+            "trial_round",
+            "trial_input_lock_revision",
+            "trial_actual_revision",
+            "trial_sample_batch_revision",
+            "trial_cavity_result_revision",
+            "tooling_defect_revision",
+            "trial_defect_revision",
+            "trial_defect_verification_revision",
+            "trial_round_comparison_snapshot",
+            "trial_review_reference_revision",
+            "trial_conclusion_revision"
+          ]
+        },
+        "globalId": {"type": "string", "format": "uuid"},
+        "sourceVersion": {"type": "integer", "minimum": 1},
+        "snapshotHash": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factKey", "valueState", "value", "unit", "sourceReferences"],
+      "properties": {
+        "factKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$"
+        },
+        "valueState": {
+          "enum": [
+            "measured",
+            "not_measured",
+            "unavailable",
+            "satisfied",
+            "failed",
+            "open",
+            "closed",
+            "informational"
+          ]
+        },
+        "value": {
+          "type": ["string", "number", "integer", "boolean", "null"],
+          "maxLength": 4000
+        },
+        "unit": {"type": ["string", "null"], "minLength": 1, "maxLength": 64},
+        "sourceReferences": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {"$ref": "#/$defs/sourceReference"}
+        }
+      }
+    },
+    "factArray": {
+      "type": "array",
+      "maxItems": 25000,
+      "items": {"$ref": "#/$defs/fact"}
+    },
+    "presentationProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "projectGlobalId",
+        "trialPlanGlobalId",
+        "trialRoundGlobalId",
+        "conclusionRevision",
+        "conclusionState",
+        "conclusionCode",
+        "sourceManifest",
+        "facts",
+        "externalEffects"
+      ],
+      "properties": {
+        "schemaVersion": {"const": "npi.released_trial_summary.presentation.v1"},
+        "projectGlobalId": {"type": "string", "format": "uuid"},
+        "trialPlanGlobalId": {"type": "string", "format": "uuid"},
+        "trialRoundGlobalId": {"type": "string", "format": "uuid"},
+        "conclusionRevision": {"$ref": "#/$defs/sourceReference"},
+        "conclusionState": {"enum": ["approved", "rejected"]},
+        "conclusionCode": {"enum": ["pass", "conditional_pass", "tooling_change", "design_change", "process_tuning", "material_change", "cancelled"]},
+        "sourceManifest": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 25000,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "facts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["inputChanges", "actualParameters", "samples", "cavityResults", "defects", "comparison", "controlledReferences", "blockers"],
+          "properties": {
+            "inputChanges": {"$ref": "#/$defs/factArray"},
+            "actualParameters": {"$ref": "#/$defs/factArray"},
+            "samples": {"$ref": "#/$defs/factArray"},
+            "cavityResults": {"$ref": "#/$defs/factArray"},
+            "defects": {"$ref": "#/$defs/factArray"},
+            "comparison": {"$ref": "#/$defs/factArray"},
+            "controlledReferences": {"$ref": "#/$defs/factArray"},
+            "blockers": {"$ref": "#/$defs/factArray"}
+          }
+        },
+        "externalEffects": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["customerApproval", "externalProjection", "formalSignature", "gateDecision", "productionAcceptance"],
+          "properties": {
+            "customerApproval": {"const": "unavailable"},
+            "externalProjection": {"const": "unavailable"},
+            "formalSignature": {"const": "unavailable"},
+            "gateDecision": {"const": "unavailable"},
+            "productionAcceptance": {"const": "unavailable"}
+          }
+        }
+      }
+    },
+    "redactionManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "appliedRuleCodes", "excludedSensitiveFieldClasses", "externalProjection"],
+      "properties": {
+        "schemaVersion": {"const": "npi.released_trial_summary.redaction.v1"},
+        "appliedRuleCodes": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["exclude_credentials", "exclude_file_content", "exclude_private_locators", "exclude_provider_payloads", "exclude_unapproved_external_projection"]
+          }
+        },
+        "excludedSensitiveFieldClasses": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["authorization_headers", "credentials", "file_content", "private_paths", "private_urls", "production_hostnames", "provider_payloads", "secrets", "session_cookies"]
+          }
+        },
+        "externalProjection": {"const": "unavailable"}
+      }
+    }
+  }
+}

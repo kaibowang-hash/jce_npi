@@ -1,0 +1,2 @@
+# Preserve the user-supplied sole-source brand package byte-for-byte.
+docs/Brand?Asset/** binary

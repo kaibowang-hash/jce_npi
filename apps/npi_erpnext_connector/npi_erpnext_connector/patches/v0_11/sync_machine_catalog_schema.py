@@ -1,0 +1,1 @@
+from npi_erpnext_connector.patches.v0_6.sync_master_data_schema import execute
