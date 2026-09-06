@@ -12205,6 +12205,22 @@ P9-01 Level 3.
   repository plus controlled-runtime regression proof. It must not weaken the
   strict frontend validator or activate production mapping authority.
 - Require Level 1, Level 2, exact-SHA ordinary CI and full Level 3 before a
-  fresh LaunchFlow backup and exact backend/SPA deployment. Verify the affected
-  authenticated route without workbook upload or business-record mutation.
+  fresh LaunchFlow backup and exact backend deployment. The already-proven SPA
+  may remain unchanged only when the exact frontend source diff is empty.
+  Verify the affected authenticated route without workbook upload or
+  business-record mutation.
   ERPNext-test and production ERPNext are not deployment targets.
+- Repair SHA `2e9fedaf18ab9d0cc74e3b509180e47a0f245f02`
+  passes ordinary CI `34030796525` and Level 3 `34030817154`; disposable
+  Frappe v15 runtime job `101480581559` and artifact `9988751417` pass.
+- A fresh encrypted full backup with checksum
+  `sha256:47f2ef02c4061ae60f38d9a9c5cb4b003a808a43a8d6f31dc055f77fdad44f10`
+  preceded the guarded no-schema switch. Six backend-image services now carry
+  the repair revision; all ten services run and none is unhealthy. The SPA
+  remains at `3fd0f084d8d63549affbecd2b1b8ccc07107e4c3` because its source diff is
+  empty.
+- The authenticated browser now renders the eight-step Tooling import
+  workspace and honest zero-batch state. ERPNext-test remains connected,
+  console errors are zero and verification created no record. Production
+  mapping authority remains unavailable. Release-gate is `PASS`; PA-12 is
+  `IMPLEMENTATION_COMPLETE` and no automatic task remains.

@@ -1,15 +1,19 @@
 # Next Action
 
 Status:
-`PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IN_PROGRESS_IMPLEMENTATION`
+`PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IMPLEMENTATION_COMPLETE`
 
-Patch the Tooling import batch collection to emit the full fourteen-field
-permission contract, enforce that exact shape in the controlled runtime, and
-run the affected Level 1/2 checks. Then run exact-SHA ordinary CI and Level 3,
-take a fresh LaunchFlow backup, deploy the immutable backend/SPA pair and
-verify the authenticated route without creating business records. Do not
-activate production mapping, change ERPNext-test or contact production
-ERPNext. Marker: `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX`.
+Exact backend release `2e9fedaf18ab9d0cc74e3b509180e47a0f245f02`
+passes ordinary CI `34030796525`, Level 3 `34030817154`, encrypted backup,
+ten-service health and authenticated browser verification. The Tooling import
+route now renders its eight-step workspace and zero-batch state with zero
+fresh console errors. The unchanged prior SPA remains active, ERPNext-test
+still reports connected, and verification created no business record.
+
+No automatic task remains. Production mapping authority remains unavailable
+until `DR-REC-007/008` business semantics are approved; production ERPNext and
+`JCE-Core` remain out of scope. Marker:
+`PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX`.
 
 Status:
 `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION — IMPLEMENTATION_COMPLETE`

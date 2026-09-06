@@ -28,8 +28,9 @@ workspace rejected the service response and explicitly requested a direct
 hotfix. `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX` allocates only
 `FR-TX-012`: align the backend batch-collection permission shape with the
 already-frozen frontend contract, add a controlled-runtime assertion, pass
-Level 3, back up LaunchFlow, deploy the exact release pair and verify the
-affected authenticated route without creating business records. Production
+Level 3, back up LaunchFlow, deploy the exact backend release while retaining
+the prior SPA only when its source is unchanged, and verify the affected
+authenticated route without creating business records. Production
 mapping activation, unresolved workbook-field semantics, ERPNext-test changes
 and any production ERPNext or `JCE-Core` contact remain out of scope.
 

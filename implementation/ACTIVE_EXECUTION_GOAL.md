@@ -1,17 +1,27 @@
 # Active Execution Goal
 
-Updated: `2026-09-06T17:48:51+07:00`
+Updated: `2026-09-06T19:39:00+07:00`
 
-- Active hotfix: `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IN_PROGRESS_IMPLEMENTATION`.
+- Completed hotfix: `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IMPLEMENTATION_COMPLETE`.
 - Root cause is proven: the Tooling import collection returned the legacy
   seven-field permission map while the frozen frontend contract requires all
   fourteen fields. The authenticated browser therefore rejected HTTP 200 as an
   invalid response before rendering the workspace.
-- Apply only the backend collection override and exact regression coverage.
-  Then run Level 1, Level 2 and the full Level 3 release gate; back up and
-  deploy only LaunchFlow, and verify the route without creating business data.
+- The backend collection override and exact regression coverage pass Level 1,
+  Level 2, ordinary CI `34030796525` and Level 3 `34030817154`, including the
+  disposable Frappe v15 runtime job `101480581559`.
+- Exact backend release `2e9fedaf18ab9d0cc74e3b509180e47a0f245f02`
+  is active after an independently checksummed encrypted backup. All ten
+  services run with zero unhealthy containers. The prior SPA is intentionally
+  retained because the frontend source diff is empty.
+- The authenticated project route renders the eight-step Tooling import
+  workspace and honest zero-batch state with zero fresh console errors. The
+  connected ERPNext-test banner remains present; no workbook was registered
+  and no business record was created.
 - Production mapping authority and unresolved workbook-field semantics remain
   unchanged. ERPNext-test and production ERPNext are not deployment targets.
+- Release-gate: `PASS`; ready for controlled test trial, not production ERPNext
+  activation. No automatic task remains.
 - Controller marker: `PA-12 Tooling import collection contract hotfix`.
 
 - Completed integration task: `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION — IMPLEMENTATION_COMPLETE`.

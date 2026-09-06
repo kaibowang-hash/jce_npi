@@ -3,7 +3,7 @@
   "task_id": "PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX",
   "task_kind": "product",
   "phase": 9,
-  "status": "IN_PROGRESS_IMPLEMENTATION",
+  "status": "IMPLEMENTATION_COMPLETE",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "COMPLETE",
   "base_checkpoint": "bce8de3ff17b733d5ea2a1613bc32f5895a45f71",
@@ -12,7 +12,7 @@
   "scope": [
     "Restore the exact Tooling import batch-collection permission contract so the authenticated workspace can render instead of rejecting a valid HTTP response.",
     "Add repository and controlled-runtime regression coverage for the complete fourteen-field permission payload.",
-    "Pass the complete Level 3 release gate and deploy the exact backend and SPA pair to LaunchFlow after a fresh backup.",
+    "Pass the complete Level 3 release gate and deploy the exact backend image to LaunchFlow after a fresh backup while retaining the already-proven SPA because the frontend source is unchanged.",
     "Verify the affected authenticated project route and collection response after deployment without creating or modifying business records."
   ],
   "non_scope": [
@@ -77,6 +77,6 @@
   },
   "rollback": {
     "before_product_resume": "Discard only the PA-12 allowlisted code and governance delta; retain the active LaunchFlow release unchanged.",
-    "after_product_resume": "Restore the fresh encrypted LaunchFlow backup if required and switch to the retained prior exact backend and SPA image pair without schema downgrade."
+    "after_product_resume": "Restore the fresh encrypted LaunchFlow backup if required and switch the backend environment plus release pointer to the retained prior exact release without schema downgrade; the unchanged prior SPA remains retained."
   }
 }

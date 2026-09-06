@@ -1,5 +1,24 @@
 # Last Run
 
+## PA-12 Tooling import collection contract hotfix deployed — `IMPLEMENTATION_COMPLETE` — 2026-09-06T12:38:27Z
+
+- Exact repair `2e9fedaf18ab9d0cc74e3b509180e47a0f245f02` restores the
+  fourteen-field collection permission contract without weakening the strict
+  frontend parser or activating production mapping.
+- Ordinary CI `34030796525` and Level 3 `34030817154` pass, including
+  disposable Frappe v15 runtime job `101480581559` and artifact `9988751417`.
+- A fresh encrypted full backup was independently verified at
+  `sha256:47f2ef02c4061ae60f38d9a9c5cb4b003a808a43a8d6f31dc055f77fdad44f10`.
+  The guarded no-schema switch put the repair SHA on all six backend-image
+  services; all ten services run and none is unhealthy. The prior SPA remains
+  active because its exact source diff is empty.
+- The authenticated route renders the eight-step Tooling import workspace and
+  honest zero-batch state, retains the connected ERPNext-test banner and has
+  zero fresh browser console errors. Verification created no record.
+- Production mapping and `DR-REC-007/008` remain held. ERPNext-test was not
+  changed and production ERPNext/`JCE-Core` was not contacted. Release-gate is
+  PASS and no automatic task remains.
+
 ## P5-04 blocker checkpoint sealed by exact-SHA ordinary CI — `BLOCKED_EXTERNAL` — 2026-08-05T15:11:40Z
 
 - Blocker-state checkpoint
