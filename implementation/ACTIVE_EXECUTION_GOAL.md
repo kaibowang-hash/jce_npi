@@ -1,8 +1,8 @@
 # Active Execution Goal
 
-Updated: `2026-09-06T15:00:00+07:00`
+Updated: `2026-09-06T17:48:51+07:00`
 
-- Active integration task: `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION — IN_PROGRESS_LEVEL_3`.
+- Completed integration task: `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION — IMPLEMENTATION_COMPLETE`.
 - The authorized outcome is a real bidirectional test-environment connection:
   ERPNext-test continues to publish Project/User/permission/master-data truth
   into NPI One, while an NPI-created Project creates exactly one formal ERPNext
@@ -10,11 +10,21 @@ Updated: `2026-09-06T15:00:00+07:00`
 - Exact business-user attribution is mandatory. The signed command carries the
   NPI actor, ERPNext validates that enabled System User, and the formal Project
   owner is that actor; the Website User transport account remains separate.
-- Candidate `576465c9e41801960f9a867db738a5e16148e0d7` passes local repository
-  `3171/3171`, frontend `1174/1174`, browser E2E `475/475`, and disposable
-  ERPNext v15 install plus double migration. GitHub ordinary and Level 3 gates,
-  encrypted backups, ERPNext-test v16 deployment, and live exchange remain
-  required before the task may be called ready for trial.
+- Product release `3fd0f084d8d63549affbecd2b1b8ccc07107e4c3` passes ordinary CI
+  `34026885838` and Level 3 `34026883237`, plus local repository
+  `3173/3173`, frontend `1174/1174`, browser E2E `475/475`, and disposable
+  ERPNext v15 install plus double migration.
+- The exact release is active on LaunchFlow with ten healthy services.
+  ERPNext-test runs connector `0.10.0`; its migration, Supervisor health and
+  public ping pass after full backups.
+- Existing NPI Project `MM-35029` created formal ERPNext Project
+  `PROJ-0030` once. The ERP Project owner is
+  `kaibo_wang@whjichen.cn`; signed exact replay, reconciliation, reverse-loop
+  suppression, all five downstream profiles, user/permission and four
+  master-data projections pass. Connection state is `connected` with all
+  five capabilities true.
+- The result is ready for controlled test trial. It is not a production ERPNext
+  activation, and `production_ready` remains false.
 - Production ERPNext and `JCE-Core` remain excluded. Controller marker:
   `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION`.
 

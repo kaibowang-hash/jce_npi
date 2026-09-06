@@ -40,12 +40,17 @@ majors 15 and 16.
 ## ERPNext v16 target fact
 
 The authorized `erpnext-test` target runs ERPNext `16.14.0` and Frappe
-`16.16.0`. The pre-deployment baseline is connector `0.9.1` with all 13 prior
-connector support DocTypes. Item, MBOM, Tool Asset create/update, released Trial
-Summary and Engineering Change receivers are enabled. Authorization, Project
-and master-data senders are also enabled. Connector `0.10.0` deployment and the
-new NPI-to-ERPNext Project receiver are recorded separately in the live evidence
-after the release gate passes.
+`16.16.0`. Connector `0.10.0` is installed after an independently checksummed
+Site backup and previous-app copy. The additive Project publish patch migrated
+successfully, all 15 connector-owned support DocTypes are present, the
+test-only NPI-to-ERPNext Project receiver is enabled, and all Supervisor
+services plus the public ping pass. Item, MBOM, Tool Asset create/update,
+released Trial Summary and Engineering Change receivers remain enabled.
+Authorization, Project and master-data senders also remain enabled.
+
+The signed live exchange, exact replay, reconciliation and loop-suppression
+result is recorded in
+`implementation/evidence/erpnext-test/bidirectional-project-integration-0.10.0.md`.
 
 ## Compatibility controls
 

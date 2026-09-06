@@ -39,7 +39,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
         )
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IN_PROGRESS_LEVEL_3")
+        self.assertEqual(value["status"], "IMPLEMENTATION_COMPLETE")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
         self.assertEqual(

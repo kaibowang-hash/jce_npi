@@ -12171,7 +12171,23 @@ P9-01 Level 3.
   paths. It preserves single-field ownership, actual-user attribution, durable
   idempotency/retry/reconciliation, loop suppression, ERPNext v15/v16 support,
   translation and industrial UI rules.
-- No production ERPNext or `JCE-Core` access is authorized. Exact-SHA ordinary
-  CI and complete Level 3 must pass before encrypted backups,
-  test-environment deployment and live exchange. Only complete live evidence
-  may advance the task to ready for trial.
+- Exact product release `3fd0f084d8d63549affbecd2b1b8ccc07107e4c3`
+  passes ordinary CI `34026885838` and diagnostics-off Level 3
+  `34026883237`. The ERPNext v15 double migration and the live ERPNext v16
+  connector `0.10.0` migration both pass.
+- Checksummed full backups precede both target changes. LaunchFlow runs the
+  exact backend and SPA release with ten healthy services; ERPNext-test runs
+  all Supervisor services and passes its public ping.
+- Existing NPI Project `MM-35029` created exactly one formal ERPNext Project
+  `PROJ-0030`. Its owner is the business actor
+  `kaibo_wang@whjichen.cn`, while the technical user remains only the
+  transport identity. Signed exact replay, live reconciliation, durable
+  mapping/receipt, reverse-loop suppression and both pre-existing ERP-origin
+  Project bindings pass.
+- All five downstream execution profiles resolve for the new Project.
+  ERP-owned User/permission and Customer/Supplier/Item Group/Item projections
+  are current. LaunchFlow reports `connected` with all five capabilities
+  true.
+- PA-11 is implementation-complete and ready for controlled test trial. No
+  production ERPNext or `JCE-Core` access occurred or is authorized;
+  production readiness remains false.
