@@ -6,9 +6,9 @@ LaunchFlow Site: `launchflow.whjichen.cn`
 
 ERPNext test Site: `jce.1` through `https://test.core.whjichen.cn`
 
-LaunchFlow release: `5140328b91bb2c053c70c123340479fb232a1195`
+LaunchFlow release: `1522d700f4f8675f91bd06d550522fa1e0106afa`
 
-ERPNext connector app: `npi_erpnext_connector` `0.9.0`
+ERPNext connector app: `npi_erpnext_connector` `0.9.1`
 
 The production ERPNext alias `JCE-Core` was not contacted or modified.
 
@@ -32,8 +32,10 @@ The production ERPNext alias `JCE-Core` was not contacted or modified.
 - A full ERPNext-test backup was taken before installing the connector: database,
   public files, private files and Site configuration. The prior connector app was
   retained at `/home/ubuntu/npi-erpnext-connector-backups/0.9.0-before-final-24e592f1`.
-- The exact ERPNext app archive checksum was
-  `c6771fe7c8615503a35f517fb92ca3c25d735bf9558f682395802a29f535b0d0`.
+- The immediately preceding `0.9.0` source was additionally retained at
+  `/home/ubuntu/npi-erpnext-connector-backups/0.9.0-before-0.9.1-c6280c43`.
+- The exact `0.9.1` ERPNext app archive checksum was
+  `230b610431f4362aa9d3c7efcddcfd8874cda24a510ffdbb400351880ee4ddae`.
 - ERPNext `bench migrate` and restart completed; web, Socket.IO, scheduler,
   short queue and long queue processes returned to `RUNNING`.
 - A checksum-verified encrypted LaunchFlow backup was created before the final
@@ -48,17 +50,20 @@ The production ERPNext alias `JCE-Core` was not contacted or modified.
 
 ## Executable verification
 
-- Targeted backend integration and security suite: 207/207 passed.
-- Focused slow frontend suites after deterministic worker bounding: 67/67 passed.
-- Production image verification: 78 files and 1,156 tests passed.
-- Frontend coverage passed at 80.04% statements, 79.43% branches, 82.04%
-  functions and 82.64% lines.
-- English-source i18n audit covered 9,460 literal sources with 100% Simplified
+- Exact repository release gate after the master-data freshness change:
+  3,153/3,153 passed.
+- Full non-visual browser suite: 472/472 passed; the three-language Project
+  creation browser suite passed 3/3.
+- Production image verification: 79 files and 1,165 tests passed.
+- Frontend coverage passed at 80.04% statements, 79.43% branches, 82.06%
+  functions and 82.65% lines.
+- English-source i18n audit covered 9,468 literal sources with 100% Simplified
   and Traditional Chinese coverage.
 - Production dependency audits reported zero vulnerabilities.
 - The same custom app installed and migrated successfully on disposable
-  ERPNext `15.121.0` / Frappe `15.120.0`; the live target runs ERPNext `16.14.0`
-  / Frappe `16.16.0`.
+  ERPNext `15.121.0` / Frappe `15.120.0`, including two consecutive migrations,
+  13 connector DocTypes and the `0.9.1` capability probe. The live target runs
+  ERPNext `16.14.0` / Frappe `16.16.0`.
 
 ## Live connection and data exchange
 
@@ -83,10 +88,16 @@ ERPNext-test delivered these owned master catalogs to NPI One:
 
 | Catalog | Records | Source version | Delivery |
 | --- | ---: | ---: | --- |
-| Customer | 13 | 1 | delivered |
-| Supplier | 35 | 1 | delivered |
-| Item Group | 24 | 1 | delivered |
-| Item | 816 | 1 | delivered |
+| Customer | 13 | 2 | delivered |
+| Supplier | 35 | 2 | delivered |
+| Item Group | 24 | 2 | delivered |
+| Item | 816 | 2 | delivered |
+
+Unchanged delivered catalogs are reissued after one hour by the existing
+15-minute reconciliation schedule. This keeps the two-hour LaunchFlow
+connection freshness gate truthful without creating or modifying an ERPNext
+business record. The post-delivery LaunchFlow status again reported all five
+capabilities as `true` and `connectionState` as `connected`.
 
 ERPNext-test Projects were seeded without creating replacement ERP records:
 
@@ -96,10 +107,17 @@ ERPNext-test Projects were seeded without creating replacement ERP records:
 | `PROJ-0028` | `503e9075-c77b-5e16-b7b3-5375ce410ee6` | `kaibo_wang@whjichen.cn` | draft |
 
 The latest `kaibo_wang@whjichen.cn` authorization delivery is source version
-7, status `delivered`, attempt 1. Its NPI projection is enabled with role
-`NPI API User` and `administer` access to both Project global IDs. Authorization
-projection enforcement and the inbound authorization, master-data and Project
-routes are enabled.
+9, status `delivered`. Its NPI projection is enabled with roles `NPI API User`
+and `System Manager`, and `administer` access to both Project global IDs.
+Authorization projection enforcement and the inbound authorization,
+master-data and Project routes are enabled.
+
+The deployed session bootstrap exposes `canCreateProject` to this internal
+System Manager. The application shell now provides `Quick create` ->
+`Create project`, backed by the real `POST /api/npi/v1/projects` command. Its
+creation context uses the published `ERPTEST-NEW-TOOL` template version 1 for
+`new_tool` Projects and the authenticated actor as owner. No Project was
+fabricated for this availability check.
 
 LaunchFlow has two real Project-bound profiles for each outbound operation:
 Item, MBOM, Tool Asset, released Trial Summary and Engineering Change. On
