@@ -119,6 +119,7 @@
     "frontend/src/pages/project-page.tsx",
     "frontend/tests/support/project-fixture.ts",
     "frontend/tests/support/reporting-fixture.ts",
+    "frontend/tests/e2e/*-snapshots/*-linux.png",
     "frontend/tests/unit/portfolio-page.test.tsx",
     "frontend/tests/unit/project-data-source.test.ts",
     "frontend/tests/unit/project-page.test.tsx",
