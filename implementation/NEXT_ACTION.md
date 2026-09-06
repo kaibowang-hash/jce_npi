@@ -5,6 +5,10 @@ Local frontend, backend and affected browser checks pass. Complete exact-SHA
 CI/Level 3. Online activation is held pending explicit user scope confirmation
 after automatic safety review rejected the LaunchFlow SSH preflight. Do not
 retry that host or claim deployment until the hold is resolved.
+The implementation is saved locally at `4b32e724`. GitHub push/workflow dispatch
+was also rejected before execution. Ask for explicit authorization to send the
+code and test evidence to existing `kaibowang-hash/jce_npi`, then push the current
+integration branch and run exact-SHA ordinary/Level 3 before any approved release.
 Complete the release validation for the selector/machine-catalog vertical slice, then deploy
 the exact verified release only to LaunchFlow and ERPNext-test after backups.
 Production ERPNext, JCE-Core and business-record creation remain out of scope.

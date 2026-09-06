@@ -55,6 +55,13 @@ the precise scope: backup/update LaunchFlow plus ERPNext-test, never JCE Core
 production ERPNext. Do not retry that host without resolving this authority hold.
 Release Gate: BLOCKED pending exact-SHA Level 3, scope clarification and live proof.
 
+The implementation is committed locally as `4b32e724`. A subsequent push to the
+existing `kaibowang-hash/jce_npi` GitHub repository and Level 3 workflow dispatch
+was also rejected before execution by automatic review, requiring explicit
+authorization to transmit this code and its controlled test evidence to that
+destination. No push or new CI run occurred. Resolve both the GitHub and online
+deployment scope approvals before continuing; do not work around either rejection.
+
 New patches reload only the NPI support DocTypes to add the machine enum; they
 do not alter standard ERPNext DocTypes or erase history. Receiver upgrade must
 precede connector upgrade and machine reconciliation. Prior exact images,

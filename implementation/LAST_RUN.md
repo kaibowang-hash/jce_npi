@@ -10,6 +10,9 @@ ERPNext-test connector preflight is read-only at version 0.10.0. Online LaunchFl
 SSH was rejected before connection by automatic safety review; explicit deployment
 scope clarification is pending. No production ERPNext or JCE-Core contact, no
 business writes and no live deployment occurred. See PA-13 evidence and CURRENT_TASK.
+Implementation was committed locally as `4b32e724`; the subsequent GitHub push
+and Level 3 dispatch were rejected before execution pending destination-specific
+authorization. No remote branch update or CI dispatch occurred.
 
 ## PA-12 Tooling import collection contract hotfix deployed — `IMPLEMENTATION_COMPLETE` — 2026-09-06T12:38:27Z
 
