@@ -140,8 +140,8 @@ No personal account/date prerequisite, placeholder user or permission grant was
 introduced. These are the user's actual configuration records, not smoke-test
 business records. Business identifiers and identities are not copied here.
 
-The G0–G7 Project template remains a draft pending actual Gate evidence/approval
-rules. Existing Project Gate snapshots were preserved. No readiness blockers,
+At the initial closeout, the G0–G7 Project template remained a draft.
+The subsequent publication correction below supersedes that configuration state. Existing Project Gate snapshots were preserved. No readiness blockers,
 Gate approvals, dates, personal assignments or plan baseline were fabricated.
 Rollback after configuration must preserve these immutable records and use a
 compatible policy-label reader; do not restore the pre-configuration database or
@@ -152,3 +152,31 @@ artifact, production build and deployment/health results are retained in the
 shared workspace at `implementation/evidence/development/project-initialization-release-local/`.
 The local owned verification container was removed. This documentation closeout
 does not change the deployed code SHA or assert deployment of its later commit.
+
+## Project-template dropdown correction — 2026-09-06
+
+The user showed that Create project offered only the pre-existing test template.
+The six-role work policy had been published, while the separately stored Project
+Template Version was still a draft. The previous explanation incorrectly treated
+Gate approval configuration as a prerequisite for publishing the Project stage
+framework. Source review confirms `ProjectTemplateVersion._validate_publishable`
+requires Gate definitions, while `GateDefinition` and the persistence controller
+allow an absent Gate-template reference; a provided reference must be complete,
+exact, published and applicable. No rule or code was changed to permit this.
+
+Using the authenticated administrative form, the already reviewed original
+`INJECTION-SIX-DEPT` version 1 was published with its eight existing G0–G7 rows
+and `new_tool` applicability. Optimistic version advanced from 1 to 2, the
+content snapshot stayed unchanged, and the UI recorded a publication timestamp
+and version-history entry. No Gate evidence, approver, waiver or automatic
+approval was introduced. Existing Project snapshots were not modified.
+
+An independent browser tab opened Portfolio → Create project and confirmed
+`INJECTION-SIX-DEPT · 注塑六部门协作标准模板 · v1` in the live Project template
+dropdown, then selected it successfully. The existing test option remains.
+No Project was submitted by this verification, and the user's original form
+was not operated. The guide now distinguishes reusable Project templates,
+role policy initialization and Gate approval configuration. Runtime code and
+images remain the already verified `15091015` release; no redeployment is needed.
+If availability must be withdrawn later, disable the template master rather
+than deleting or rewriting its published version or existing Project snapshots.

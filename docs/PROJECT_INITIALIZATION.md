@@ -3,7 +3,9 @@
 This guide covers the Project setup workspace deployed on 2026-09-06 at code
 release `1509101557622611a9417bb9417e4181c31f48f4`. The requested six-department
 work policy has been published and the current Project role framework initialized.
-Project Gate templates remain independently reviewed, versioned configuration.
+The G0–G7 Project template was subsequently published after the user reported
+its absence in the Create project dropdown. Gate approval rules remain
+independently reviewed, versioned configuration.
 
 ## Configuration locations
 
@@ -28,15 +30,18 @@ It does not provide a library for reopening arbitrary historical draft versions.
 
 ## Initialization sequence
 
-1. Open an existing draft Project and its Team and responsibilities tab. The
-   Injection-moulding collaboration template action creates a fresh **draft**
-   Project template/version and work-policy version. Enter a unique template
-   code and a meaningful title. Review the exact returned configuration links.
-2. Review the G0–G7 stages and six role keys, configure the Gate evidence and
-   approver rules, and publish the reviewed configuration versions. A Project
-   template's Gate rows carry exact published Gate-template references. No
-   approver, approval quorum, waiver or automatic Gate pass is supplied by the
-   draft generator.
+1. In Portfolio, open Create project and select the existing published
+   `INJECTION-SIX-DEPT` / six-department injection-moulding template, version 1.
+   It is available for `new_tool` and supplies the G0–G7 stage framework. Reuse
+   it for each new Project; do not create another template for every Project.
+   Administrators use the Injection-moulding collaboration template action in
+   Team and responsibilities only when a separate fresh draft bundle is needed.
+2. Project stage-framework publication and Gate approval configuration are
+   separate. The existing domain permits ordered Gate definitions without a
+   Gate-template binding. When a binding is configured, it must identify the
+   exact published, applicable Gate-template version and snapshot. Publishing
+   the Project framework does not approve Gates or invent evidence, approvers,
+   approval quorum or waivers. Review those rules for actual Gate execution.
 3. In Team and responsibilities, choose **Initialize project roles** and an
    exact published work policy. Review the six role definitions and confirm.
    This initializes the Project's role framework without names, dates, dummy
