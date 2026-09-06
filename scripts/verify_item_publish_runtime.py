@@ -13,6 +13,7 @@ from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Iterator, Mapping
+from urllib.parse import urlencode
 from uuid import UUID, uuid5
 
 import verify_document_runtime as document_runtime
@@ -178,6 +179,7 @@ _LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES = (
     "P803_LEGACY_FULL_DETAIL_CONTRACT",
     "P803_LEGACY_FULL_REDACTION",
     "P803_LEGACY_FULL_BINDINGS",
+    "P803_LEGACY_FULL_MAPPING_EXPECTATION",
     "P803_LEGACY_FULL_PROBE_ISOLATION",
     "P803_LEGACY_FULL_RECONCILIATION_HTTP",
     "P803_LEGACY_FULL_RECONCILIATION_CONTRACT",
@@ -1204,6 +1206,44 @@ def run_legacy(
             ),
             "P8-03 legacy runtime binding is incomplete",
         )
+    # Later integration-operation fixtures may have established an ERP-owned
+    # Item mapping for this released source.  Use the same server-projected
+    # optimistic expectation that the browser uses so this probe reaches the
+    # migrated-stream guard instead of being rejected by an obsolete local
+    # mapping-version default.
+    with legacy_full_boundary_diagnostic_step(
+        "P803_LEGACY_FULL_MAPPING_EXPECTATION"
+    ):
+        expectation_query = urlencode(
+            {
+                "publishRequestGlobalId": context["publishRequestGlobalId"],
+                "selectedPublishNodeGlobalId": legacy_node_id,
+            }
+        )
+        expectation_path = f"{path}?{expectation_query}"
+        expectation_response = item_publish_request(
+            actor,
+            base_url,
+            expectation_path,
+            query_key="legacy-expectation",
+        )
+        mapping_expectation = (
+            expectation_response.body.get("mappingExpectation")
+            if isinstance(expectation_response.body, dict)
+            else None
+        )
+        expected_mapping_version = (
+            mapping_expectation.get("mappingVersion")
+            if isinstance(mapping_expectation, dict)
+            else None
+        )
+        require(
+            expectation_response.status == 200
+            and isinstance(expected_mapping_version, int)
+            and not isinstance(expected_mapping_version, bool)
+            and expected_mapping_version >= 0,
+            "P8-03 current Item mapping expectation is unavailable",
+        )
     # Isolate the disposable guard immediately before the command under test.
     # A second fixture process proves the commit is visible across DB
     # connections before HTTP reconstructs the reconciliation-only guard from
@@ -1242,7 +1282,10 @@ def run_legacy(
             base_url,
             path,
             method="POST",
-            payload=create_payload(context, legacy_node_id),
+            payload={
+                **create_payload(context, legacy_node_id),
+                "expectedMappingVersion": expected_mapping_version,
+            },
             csrf_token=actor_csrf,
             idempotency_key=f"p8-03-legacy-reconcile-{FIXTURE_RUN_ID}",
             create_diagnostic=reconciliation_diagnostics,
@@ -1311,6 +1354,7 @@ def run_legacy(
             "legacyBindingsNull": inspected["legacyBindingsNull"],
             "legacyRowsRemoved": cleaned["legacyRowsRemoved"],
             "listAndDetailReadable": True,
+            "serverProjectedMappingExpectation": True,
             "workerZeroClaimAdapter": inspected["workerRoute"] is None,
         }
 

@@ -360,6 +360,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertFalse(
             module.LEGACY_POST_P807_COLLECTION_FALLBACK_DIAGNOSTICS_ENABLED
         )
+
         source = SCRIPT.read_text(encoding="utf-8")
         assignments = {
             node.targets[0].id: node.value.value
@@ -395,7 +396,7 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
             )
             self.assertEqual(
                 len(module._active_legacy_full_diagnostic_codes()),
-                73,
+                74,
             )
         run_legacy = source.split("def run_legacy(", 1)[1].split("\ndef ", 1)[0]
         self.assertIn(
@@ -417,6 +418,21 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         )[1].split("\ndef ", 1)[0]
         for code in module._LEGACY_FULL_BOUNDARY_DIAGNOSTIC_CODES[:2]:
             self.assertEqual(requested.count(f'"{code}"'), 1, code)
+
+    def test_legacy_probe_uses_server_projected_mapping_expectation(self) -> None:
+        functions = {
+            node.name: node
+            for node in ast.parse(SCRIPT.read_text(encoding="utf-8")).body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+        legacy = ast.unparse(functions["run_legacy"])
+        self.assertIn("urlencode", legacy)
+        self.assertIn("mappingExpectation", legacy)
+        self.assertIn("expected_mapping_version >= 0", legacy)
+        self.assertIn(
+            "'expectedMappingVersion': expected_mapping_version",
+            legacy,
+        )
 
     def test_legacy_collection_parent_fallback_is_ordered_after_server_reader(
         self,
