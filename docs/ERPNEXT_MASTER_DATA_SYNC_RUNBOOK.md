@@ -3,7 +3,7 @@
 Status: **CODE READY FOR ERPNEXT-TEST — NOT AUTHORIZED FOR PRODUCTION**
 
 This runbook covers the operation-specific, full-catalog synchronization of
-ERPNext-owned `Customer`, `Supplier`, `Item Group`, and `Item` reference data to
+ERPNext-owned `Customer`, `Supplier`, `Item Group`, `Item`, and `Workstation` reference data to
 NPI One. ERPNext remains the only editable owner. NPI One stores read-only
 snapshots and current catalog entries for selection and display; it does not
 write these masters back, expose a generic DocType endpoint, or query the ERP
@@ -31,7 +31,11 @@ The connector reads only these bounded ERPNext fields:
 - `Item Group`: `name`, `item_group_name`, `parent_item_group`, `is_group`,
   `modified`;
 - `Item`: `name`, `item_name`, `disabled`, `item_group`, `stock_uom`,
-  `is_stock_item`, `modified`.
+  `is_stock_item`, `modified`;
+- `Workstation`: `name`, `workstation_name`, `disabled`, `workstation_type`,
+  `modified`. Optional Workstation fields are checked against installed metadata.
+  Machine identity follows the observed Mold Trial Report Workstation Link.
+  Machine booking, operational availability and actual parameters are not inferred.
 
 Each catalog is sorted by ERPNext key and limited to 10,000 records. Exceeding
 the limit, an invalid field shape, an unsupported environment, or ambiguous
@@ -86,10 +90,10 @@ is modified.
    bench --site <erpnext-test-site> execute npi_erpnext_connector.master_data_worker.reconcile_master_catalogs
    ```
 
-6. Inspect the read-only `NPI ERP Master Data Delivery` rows. All four catalog
+6. Inspect the read-only `NPI ERP Master Data Delivery` rows. All five catalog
    kinds must be `delivered`; `pending`, `retry`, and `permanent_failure` are
    not success.
-7. On LaunchFlow, verify exactly four `NPI ERP Master Catalog Head` rows, each
+7. On LaunchFlow, verify exactly five `NPI ERP Master Catalog Head` rows, each
    with the expected source environment, current source version, payload hash,
    record count, and recent synchronization time.
 8. Compare bounded counts and selected known keys through the fixed
@@ -102,14 +106,14 @@ is modified.
    event/request/hash is retried as an exact replay.
 
 The five-minute recovery job retries pending deliveries with bounded
-exponential backoff. The fifteen-minute reconciliation queues all four source
+exponential backoff. The fifteen-minute reconciliation queues all five source
 catalogs and creates a new immutable version only when a catalog hash changes.
 A reviewed permanent failure may be retried only through
 `npi_erpnext_connector.master_data_worker.retry_failed_master_data_delivery`.
 
 ## Monitoring and rollback
 
-Monitor oldest pending/retry age, permanent failures, four-head freshness,
+Monitor oldest pending/retry age, permanent failures, five-head freshness,
 source versions, counts, and hashes. Do not export event JSON or master record
 values into deployment evidence.
 

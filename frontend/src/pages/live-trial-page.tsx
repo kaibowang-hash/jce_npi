@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ERPMasterSelect } from "../components/erp-master-select";
 
 import {
   trialEvidenceRoles,
@@ -1647,32 +1648,28 @@ function TrialExecutionSection({
             <fieldset className="trial-live__execution-fieldset trial-live__editor-wide">
               <legend>{t("Observed material identity")}</legend>
               <div className="trial-live__execution-grid">
-                <label>
-                  <span>{t("Source system")}</span>
-                  <Select
-                    aria-label={t("Material source system")}
+                <div>
+                  <span>{t("Material")}</span>
+                  <ERPMasterSelect
+                    kind="item"
+                    label={t("Material")}
+                    required
                     disabled={processing}
-                    onChange={(event) => {
+                    value={prepareEditor.materialSourceObjectId}
+                    onChange={(record) => {
                       setPrepareEditor((current) => ({
                         ...current,
-                        materialSourceSystem: event.target.value as
-                          | "NPI_ONE"
-                          | "ERPNEXT",
+                        materialSourceSystem: "ERPNEXT",
+                        materialSourceObjectId: record?.sourceKey ?? "",
+                        materialLabel: record?.displayName ?? "",
                       }));
                     }}
-                    value={prepareEditor.materialSourceSystem}
-                  >
-                    <option value="NPI_ONE">{t("NPI One")}</option>
-                    <option data-language-exempt="identifier" value="ERPNEXT">
-                      ERPNext
-                    </option>
-                  </Select>
-                </label>
+                  />
+                </div>
                 {(
                   [
-                    ["materialSourceObjectId", t("Material source object ID")],
                     ["materialLotBatchCode", t("Lot or batch code")],
-                    ["materialLabel", t("Material label")],
+
                     ["materialColor", t("Material color")],
                     ["materialAdditive", t("Material additive")],
                   ] as const
@@ -1997,46 +1994,23 @@ function TrialExecutionSection({
           >
             <fieldset className="trial-live__execution-fieldset">
               <legend>{t("Confirmed machine")}</legend>
-              <Select
-                aria-label={t("Machine source system")}
+              <ERPMasterSelect
+                kind="machine"
+                label={t("Confirmed machine")}
+                required
                 disabled={processing}
-                onChange={(event) => {
-                  setActualEditor((current) => ({
-                    ...current,
-                    resourceSourceSystem: event.target.value as
-                      | "NPI_ONE"
-                      | "ERPNEXT",
-                  }));
-                }}
-                value={actualEditor.resourceSourceSystem}
-              >
-                <option value="NPI_ONE">{t("NPI One")}</option>
-                <option data-language-exempt="identifier" value="ERPNEXT">
-                  ERPNext
-                </option>
-              </Select>
-              <TextInput
-                aria-label={t("Actual machine source object ID")}
-                disabled={processing}
-                onChange={(event) => {
-                  setActualEditor((current) => ({
-                    ...current,
-                    resourceSourceObjectId: event.target.value,
-                  }));
-                }}
-                ref={firstControl}
                 value={actualEditor.resourceSourceObjectId}
-              />
-              <TextInput
-                aria-label={t("Actual machine label")}
-                disabled={processing}
-                onChange={(event) => {
+                inputRef={(element) => {
+                  firstControl.current = element;
+                }}
+                onChange={(record) => {
                   setActualEditor((current) => ({
                     ...current,
-                    resourceLabel: event.target.value,
+                    resourceSourceSystem: "ERPNEXT",
+                    resourceSourceObjectId: record?.sourceKey ?? "",
+                    resourceLabel: record?.displayName ?? "",
                   }));
                 }}
-                value={actualEditor.resourceLabel}
               />
               <SemanticStatus
                 label={t("ERP verification unavailable")}
@@ -7425,88 +7399,39 @@ export default function LiveTrialPage({
                 </label>
                 <fieldset className="trial-live__resource-editor">
                   <legend>{t("Proposed machine")}</legend>
-                  <Select
-                    aria-label={t("Machine source system")}
+                  <ERPMasterSelect
+                    kind="machine"
+                    label={t("Proposed machine")}
+                    required
                     disabled={processing}
-                    onChange={(event) => {
-                      setEditor({
-                        ...editor,
-                        machineSourceSystem: event.target.value as
-                          | "NPI_ONE"
-                          | "ERPNEXT",
-                      });
-                    }}
-                    value={editor.machineSourceSystem}
-                  >
-                    <option value="NPI_ONE">{t("NPI One")}</option>
-                    <option value="ERPNEXT">{t("ERPNext")}</option>
-                  </Select>
-                  <TextInput
-                    aria-label={t("Machine source object ID")}
-                    disabled={processing}
-                    onChange={(event) => {
-                      setEditor({
-                        ...editor,
-                        machineSourceObjectId: event.target.value,
-                      });
-                    }}
-                    placeholder={t("Machine source object ID")}
                     value={editor.machineSourceObjectId}
-                  />
-                  <TextInput
-                    aria-label={t("Machine label")}
-                    disabled={processing}
-                    onChange={(event) => {
+                    onChange={(record) => {
                       setEditor({
                         ...editor,
-                        machineLabel: event.target.value,
+                        machineSourceSystem: "ERPNEXT",
+                        machineSourceObjectId: record?.sourceKey ?? "",
+                        machineLabel: record?.displayName ?? "",
                       });
                     }}
-                    placeholder={t("Machine label")}
-                    value={editor.machineLabel}
                   />
                 </fieldset>
                 <fieldset className="trial-live__resource-editor">
                   <legend>{t("Proposed material")}</legend>
-                  <Select
-                    aria-label={t("Material source system")}
+                  <ERPMasterSelect
+                    kind="item"
+                    label={t("Proposed material")}
+                    required
                     disabled={processing}
-                    onChange={(event) => {
-                      setEditor({
-                        ...editor,
-                        materialSourceSystem: event.target.value as
-                          | "NPI_ONE"
-                          | "ERPNEXT",
-                      });
-                    }}
-                    value={editor.materialSourceSystem}
-                  >
-                    <option value="NPI_ONE">{t("NPI One")}</option>
-                    <option value="ERPNEXT">{t("ERPNext")}</option>
-                  </Select>
-                  <TextInput
-                    aria-label={t("Material source object ID")}
-                    disabled={processing}
-                    onChange={(event) => {
-                      setEditor({
-                        ...editor,
-                        materialSourceObjectId: event.target.value,
-                      });
-                    }}
-                    placeholder={t("Material source object ID")}
                     value={editor.materialSourceObjectId}
-                  />
-                  <TextInput
-                    aria-label={t("Material label")}
-                    disabled={processing}
-                    onChange={(event) => {
+                    onChange={(record) => {
                       setEditor({
                         ...editor,
-                        materialLabel: event.target.value,
+                        materialSourceSystem: "ERPNEXT",
+                        materialSourceObjectId: record?.sourceKey ?? "",
+                        materialLabel: record?.displayName ?? "",
+                        materialUnit: record?.stockUom ?? "",
                       });
                     }}
-                    placeholder={t("Material label")}
-                    value={editor.materialLabel}
                   />
                   <TextInput
                     aria-label={t("Material quantity")}

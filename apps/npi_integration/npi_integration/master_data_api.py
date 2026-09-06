@@ -50,7 +50,7 @@ _PUT_FIELDS = frozenset(
         "payloadHash",
     }
 )
-_GET_FIELDS = frozenset({"kind", "query", "limit", "offset"})
+_GET_FIELDS = frozenset({"kind", "query", "limit", "offset", "projectId"})
 
 
 class MasterDataRoutesDisabled(NpiProblem):
@@ -158,6 +158,7 @@ def get_master_catalog(
     query: Any = None,
     limit: Any = None,
     offset: Any = None,
+    projectId: Any = None,
     **request_fields: Any,
 ) -> dict[str, Any] | None:
     headers = {"X-Request-ID": response_request_id()}
@@ -183,7 +184,7 @@ def get_master_catalog(
             query=selected_query,
             limit=selected_limit,
             offset=selected_offset,
-            allowed_source_keys=_allowed_source_keys(principal, selected_kind),
+            allowed_source_keys=_project_source_keys(principal, selected_kind, projectId),
         )
 
     return frappe_domain_call(
@@ -191,6 +192,36 @@ def get_master_catalog(
         cache_control="private, no-store",
         response_headers=headers,
     )
+
+
+def _project_source_keys(principal, kind, project_id):
+    allowed = _allowed_source_keys(principal, kind)
+    if project_id is None:
+        return allowed
+    from npi_core.project.frappe_repository import FrappeProjectRepository
+    from npi_core.foundation.tracing import current_trace_id
+    from npi_core.project_api import ProjectUnavailable
+
+    try:
+        identifier = UUID(str(project_id))
+        if str(identifier) != project_id or identifier.int == 0:
+            raise ValueError()
+    except (ValueError, TypeError, AttributeError) as error:
+        raise _problem("projectId", _("Enter a valid project ID.")) from error
+    repository = FrappeProjectRepository(
+        principal=principal, request_id=str(_request_id()),
+        trace_id=current_trace_id.get(),
+    )
+    cockpit = repository.project_cockpit(identifier)
+    if cockpit is None:
+        raise ProjectUnavailable()
+    if kind is MasterCatalogKind.CUSTOMER:
+        keys = frozenset(
+            value["sourceObjectId"] for value in cockpit["references"]
+            if value["type"] == "customer" and value["sourceSystem"] == "ERPNEXT"
+        )
+        return keys if allowed is None else allowed & keys
+    return allowed
 
 
 def _routes_are_disabled() -> bool:

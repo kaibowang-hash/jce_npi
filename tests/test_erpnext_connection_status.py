@@ -133,14 +133,14 @@ class ERPNextConnectionStatusTest(unittest.TestCase):
         self.assertEqual(stale["connectionState"], "partially_connected")
         self.assertFalse(stale["capabilities"]["authorizationSynchronization"])
 
-    def test_master_data_requires_all_four_fresh_catalogs(self) -> None:
+    def test_master_data_requires_all_five_fresh_catalogs(self) -> None:
         self.master_heads = [
             {
                 "catalog_kind": kind,
                 "source_environment": "test",
                 "last_synchronized_at": self.now - timedelta(minutes=10),
             }
-            for kind in ("customer", "supplier", "item_group", "item")
+            for kind in ("customer", "supplier", "item_group", "item", "machine")
         ]
         result = self.module._status(now=self.now)
         self.assertTrue(result["capabilities"]["masterDataSynchronization"])

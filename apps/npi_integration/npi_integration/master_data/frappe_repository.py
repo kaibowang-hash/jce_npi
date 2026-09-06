@@ -311,7 +311,7 @@ def _api_entry(kind: MasterCatalogKind, row: Any) -> dict[str, object]:
         "enabled": bool(row.get("enabled")),
         "sourceModifiedAt": _api_time(row.get("source_modified_at")),
     }
-    if kind in {MasterCatalogKind.CUSTOMER, MasterCatalogKind.SUPPLIER}:
+    if kind in {MasterCatalogKind.CUSTOMER, MasterCatalogKind.SUPPLIER, MasterCatalogKind.MACHINE}:
         result["groupKey"] = row.get("group_key") or None
     elif kind is MasterCatalogKind.ITEM_GROUP:
         result["parentKey"] = row.get("parent_key") or None

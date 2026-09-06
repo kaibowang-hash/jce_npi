@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import require_erp_catalog_reference
+
 import hashlib
 import json
 from collections.abc import Mapping, Sequence
@@ -788,6 +790,8 @@ class FrappeToolingRepository(
         if requirement is None:
             return None
         self._require_customer_reference(project, customer)
+        if customer is not None and customer["sourceSystem"] == "ERPNEXT":
+            require_erp_catalog_reference("customer", customer["sourceObjectId"], "customer.sourceObjectId")
         now = self._now()
         tooling_set = ToolingSet(
             global_id=self._new_uuid(),

@@ -1,4 +1,5 @@
 {{complete}} of {{total}} complete,已完成 {{complete}} 項，共 {{total}} 項
+Object page sections,工程物件頁分區,aria-label
 {{count}} exact versions,{{count}} 個精確版本
 {{count}} item awaiting linkage,{{count}} 項等待關聯
 {{count}} notifications,{{count}} 條通知
@@ -470,7 +471,6 @@ No additional permission is required.,無需額外權限。
 Discarded prototype changes cannot be restored.,已放棄的原型變更無法復原。
 Cancel keeps the current workspace and its unsaved changes.,取消將保留目前工程工作區及其未儲存的變更。
 This prototype does not persist an audit record. A submitted navigation decision would record the actor and outcome without field content.,此原型不會持久儲存稽核記錄。提交後的導覽決策會記錄操作人與結果，但不記錄欄位內容。
-Object page sections,工程物件頁分區,aria-label
 Expand inspector,展開檢查器
 Collapse inspector,收合檢查器
 Inspector width,檢查器寬度
@@ -4115,7 +4115,6 @@ Custody responsibility,保管責任
 Customer confirmation,客戶確認
 Customer confirmation required,需要客戶確認
 Customer reference,客戶引用
-Customer source,客戶來源
 Declared,申報數量
 Declared and received accessories,申報與實收附件
 Difference observed,發現差異
@@ -4166,7 +4165,6 @@ Transport document,運輸單據
 Transport provider,運輸服務方
 Transport reference,運輸引用
 Water circuit,水路
-NPI One,NPI One
 A Part Revision is unavailable for this process chain.,此製程鏈無法使用該零件修訂。
 A Tooling Applicability is unavailable for this revision.,此修訂無法使用某個模具適用關係。
 A Tooling Revision is unavailable for this process chain.,此製程鏈無法使用某個模具修訂。
@@ -5888,13 +5886,7 @@ Trial objective,試模目標
 Planned start (UTC),計畫開始時間（世界協調時間）
 Planned end (UTC),計畫結束時間（世界協調時間）
 Proposed machine,建議機台
-Machine source system,機台來源系統
-Machine source object ID,機台來源物件識別碼
-Machine label,機台標籤
 Proposed material,建議材料
-Material source system,材料來源系統
-Material source object ID,材料來源物件識別碼
-Material label,材料標籤
 Material quantity,材料數量
 Material unit,材料單位
 Responsible Project member stable IDs,負責專案成員的穩定識別碼
@@ -6178,8 +6170,6 @@ Parameter {{index}} upper limit,參數 {{index}} 上限
 Parameter {{index}} required,參數 {{index}} 必填
 Add parameter,新增參數
 Confirmed machine,已確認設備
-Actual machine source object ID,實際設備來源物件識別
-Actual machine label,實際設備標籤
 ERP verification unavailable,企業資源規劃系統驗證無法使用
 Execution context,執行上下文
 Operator user,操作員使用者
@@ -9500,3 +9490,12 @@ Latest Result,最新結果
 Formal ERP Project ID,正式 ERPNext 專案編號
 Exact Replay,精確重放
 NPI ERP Project Publish Result,NPI ERPNext 專案發佈結果
+"Search ERPNext by code or name","按編碼或名稱搜尋 ERPNext"
+"Show ERPNext choices","顯示 ERPNext 選項"
+"Clear selection","清除選擇"
+"Loading ERPNext choices","正在載入 ERPNext 選項"
+"ERPNext choices are unavailable or out of date. Refresh after synchronization.","ERPNext 選項不可用或已過期。請在同步後重新整理。"
+"No matching ERPNext records are available in this scope.","目前範圍內沒有相符的 ERPNext 記錄。"
+"Select an available ERPNext record after refreshing the choices.","請重新整理選項後選擇可用的 ERPNext 記錄。"
+"Enter a valid project ID.","請輸入有效的專案識別碼。"
+"machine","機台"

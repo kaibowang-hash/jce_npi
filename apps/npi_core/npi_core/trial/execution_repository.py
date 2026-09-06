@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import require_erp_catalog_reference
+
 import hashlib
 import json
 import mimetypes
@@ -1307,6 +1309,8 @@ class FrappeTrialExecutionRepository(FrappeTrialRepository):
             raise TrialExecutionReferenceUnavailable()
 
     def _material(self, value: Mapping[str, Any]) -> TrialMaterialObservation:
+        if value["sourceSystem"] == "ERPNEXT":
+            require_erp_catalog_reference("item", value["sourceObjectId"], "material.sourceObjectId")
         return TrialMaterialObservation(
             source_system=value["sourceSystem"],
             source_object_id=value["sourceObjectId"],
@@ -1352,6 +1356,9 @@ class FrappeTrialExecutionRepository(FrappeTrialRepository):
         created_at,
         predecessor=None,
     ) -> TrialRoundActualRevision:
+        for resource in resources:
+            if resource["sourceSystem"] == "ERPNEXT" and resource["kind"] == "machine":
+                require_erp_catalog_reference("machine", resource["sourceObjectId"], "resources.sourceObjectId")
         value = TrialRoundActualRevision(
             global_id=uuid4(),
             actual_global_id=actual_global_id,

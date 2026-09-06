@@ -6,13 +6,13 @@ current_phase: 9
 updated_at: '2026-09-06T19:39:00+07:00'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX
-current_task_status: IMPLEMENTATION_COMPLETE
-current_task_completed_stage: LIVE_AUTHENTICATED_VERIFICATION_PASS
-current_task_next_stage: COMPLETE
-current_task_next_stage_status: NONE
-resumed_product_task: COMPLETE
-resumed_product_task_status: COMPLETE
+current_task: PA-13-ERP-MASTER-DATA-SELECTORS
+current_task_status: IN_PROGRESS
+current_task_completed_stage: SOURCE_FACTS_VERIFIED
+current_task_next_stage: IMPLEMENTATION_AND_VALIDATION
+current_task_next_stage_status: IN_PROGRESS
+resumed_product_task: PA-13-ERP-MASTER-DATA-SELECTORS
+resumed_product_task_status: IN_PROGRESS
 tooling_import_collection_contract_hotfix:
   task_id: PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX
   target_environment: LAUNCHFLOW_ONLY

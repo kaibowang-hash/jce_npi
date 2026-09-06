@@ -1,5 +1,16 @@
 # Phase 9 Requirement Anchor
 
+## PA-13 authorized ERP master-data selectors
+
+`PA-13-ERP-MASTER-DATA-SELECTORS` applies `INT-001`, `INT-002`,
+`NFR-SEC-003` and `FR-TX-012` to the user's requested customer/material/machine
+dropdowns. Reuse permission-scoped projections, add the evidenced Workstation
+mapping, preserve exact ERP identity (including Unicode/spaces), and validate
+enabled/current choices on new commands. Published template reference rules,
+ERP field ownership, immutable histories and idempotent replay do not change.
+Level 3, backups and authenticated live evidence are required for activation;
+production ERPNext and JCE-Core remain prohibited.
+
 Status: `P9-08 AND PHASE 9 PASS — V1.2 TECHNICAL IMPLEMENTATION COMPLETE`
 
 This anchor records the product-code authorization boundary and completed atomic

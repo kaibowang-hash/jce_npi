@@ -108,10 +108,10 @@ class ERPNextMasterDataWorkerTest(unittest.TestCase):
 
     def test_reconciliation_queues_each_closed_catalog_kind(self) -> None:
         self.module.reconcile_master_catalogs()
-        self.assertEqual(len(self.enqueued), 4)
+        self.assertEqual(len(self.enqueued), 5)
         self.assertEqual(
             {call[1]["catalog_kind"] for call in self.enqueued},
-            {"customer", "supplier", "item_group", "item"},
+            {"customer", "supplier", "item_group", "item", "machine"},
         )
         self.assertTrue(
             all(call[1]["enqueue_after_commit"] for call in self.enqueued)
@@ -193,6 +193,18 @@ class ERPNextMasterDataWorkerTest(unittest.TestCase):
         )
         self.assertEqual(record["sourceKey"], "CUSTOMER-001")
         self.assertEqual(record["displayName"], "Customer name")
+
+    def test_machine_mapping_preserves_the_erp_workstation_name(self) -> None:
+        repository = sys.modules["npi_erpnext_connector.master_data_repository"]
+        record = repository._record(repository.MasterCatalogKind.MACHINE, {
+            "name": "机台 550-02", "workstation_name": "机台 550-02",
+            "workstation_type": "Injection", "disabled": 1,
+            "modified": datetime(2026, 9, 6, 2, 0),
+        })
+        self.assertEqual(record["sourceKey"], "机台 550-02")
+        self.assertEqual(record["displayName"], "机台 550-02")
+        self.assertEqual(record["groupKey"], "Injection")
+        self.assertFalse(record["enabled"])
 
 
 if __name__ == "__main__":

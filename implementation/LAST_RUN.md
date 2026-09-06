@@ -1,5 +1,16 @@
 # Last Run
 
+## PA-13 ERP master-data selectors — local validation
+
+The user requested ERPNext-derived dropdowns and explicitly authorized changing
+them now. Customer, material and Workstation selectors, exact ERP identities,
+Project-template customer support, server validation and translations are implemented.
+Local full repository (3182), frontend (1190), affected browser (16) checks pass.
+ERPNext-test connector preflight is read-only at version 0.10.0. Online LaunchFlow
+SSH was rejected before connection by automatic safety review; explicit deployment
+scope clarification is pending. No production ERPNext or JCE-Core contact, no
+business writes and no live deployment occurred. See PA-13 evidence and CURRENT_TASK.
+
 ## PA-12 Tooling import collection contract hotfix deployed — `IMPLEMENTATION_COMPLETE` — 2026-09-06T12:38:27Z
 
 - Exact repair `2e9fedaf18ab9d0cc74e3b509180e47a0f245f02` restores the

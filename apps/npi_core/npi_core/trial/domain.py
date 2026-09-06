@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import erp_source_id
+
 import hashlib
 import json
 import re
@@ -231,7 +233,7 @@ class TrialResourceProposal:
         object.__setattr__(
             self,
             "source_object_id",
-            _key(self.source_object_id, "resources.sourceObjectId"),
+            erp_source_id(self.source_object_id, "resources.sourceObjectId") if self.source_system == "ERPNEXT" else _key(self.source_object_id, "resources.sourceObjectId"),
         )
         object.__setattr__(self, "label", _text(self.label, "resources.label", 140))
         if (self.quantity is None) != (self.unit is None):

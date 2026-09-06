@@ -56,7 +56,7 @@ def _latest_master_data_confirmation() -> tuple[datetime | None, str | None]:
         "NPI ERP Master Catalog Head",
         fields=["catalog_kind", "last_synchronized_at", "source_environment"],
         order_by="catalog_kind asc",
-        page_length=5,
+        page_length=6,
     )
     if not rows:
         return None, None
@@ -65,7 +65,7 @@ def _latest_master_data_confirmation() -> tuple[datetime | None, str | None]:
     if len(environments) != 1 or not environments.issubset(_TEST_ENVIRONMENTS):
         raise RuntimeError("ERPNext master data environment is unsupported.")
     environment = str(next(iter(environments)))
-    expected_kinds = {"customer", "supplier", "item_group", "item"}
+    expected_kinds = {"customer", "supplier", "item_group", "item", "machine"}
     if len(rows) != len(expected_kinds) or kinds != expected_kinds:
         return None, environment
     confirmations = [_utc(row.get("last_synchronized_at")) for row in rows]

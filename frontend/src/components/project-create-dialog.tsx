@@ -18,6 +18,7 @@ import type { ProjectType } from "../domain/view-models";
 import { useI18n } from "../i18n/runtime";
 import { Button, focusControl, Select, TextInput } from "../ui-adapters/npi-ui";
 import { RequestFailurePanel } from "./problem-details-panel";
+import { ERPMasterSelect } from "./erp-master-select";
 
 type LoadState =
   | { kind: "loading" }
@@ -51,6 +52,7 @@ export function ProjectCreateDialog({
   const { sessionCommandContext, t } = useI18n();
   const [loadState, setLoadState] = useState<LoadState>({ kind: "loading" });
   const [businessCode, setBusinessCode] = useState("");
+  const [customerSourceKey, setCustomerSourceKey] = useState("");
   const [title, setTitle] = useState("");
   const [targetSop, setTargetSop] = useState(defaultTargetSop);
   const [templateKey, setTemplateKey] = useState("");
@@ -145,7 +147,9 @@ export function ProjectCreateDialog({
     [loadState, templateKey],
   );
   const requiresReferences = Boolean(
-    selectedTemplate?.referenceRules.some((rule) => rule.required),
+    selectedTemplate?.referenceRules.some(
+      (rule) => rule.required && rule.type !== "customer",
+    ),
   );
   useEffect(() => {
     if (!selectedTemplate || initialFieldFocused.current) return;
@@ -156,6 +160,10 @@ export function ProjectCreateDialog({
     sessionCommandContext &&
     selectedTemplate &&
     !requiresReferences &&
+    (!selectedTemplate.referenceRules.some(
+      (rule) => rule.type === "customer" && rule.required,
+    ) ||
+      customerSourceKey) &&
     businessCode.trim() &&
     title.trim() &&
     targetSop &&
@@ -186,6 +194,12 @@ export function ProjectCreateDialog({
       .create(
         {
           businessCode: businessCode.trim(),
+          ...(customerSourceKey &&
+          selectedTemplate.referenceRules.some(
+            (rule) => rule.type === "customer",
+          )
+            ? { customerSourceKey }
+            : {}),
           expectedVersion: selectedTemplate.expectedVersion,
           projectType,
           targetSop,
@@ -339,6 +353,26 @@ export function ProjectCreateDialog({
                 value={targetSop}
               />
             </label>
+            {selectedTemplate?.referenceRules.some(
+              (rule) => rule.type === "customer",
+            ) ? (
+              <div className="project-create-dialog__field">
+                <span>{t("Customer")}</span>
+                <ERPMasterSelect
+                  kind="customer"
+                  label={t("Customer")}
+                  value={customerSourceKey}
+                  disabled={submitting}
+                  required={selectedTemplate.referenceRules.some(
+                    (rule) => rule.type === "customer" && rule.required,
+                  )}
+                  onChange={(record) => {
+                    changePayload();
+                    setCustomerSourceKey(record?.sourceKey ?? "");
+                  }}
+                />
+              </div>
+            ) : null}
             <div className="project-create-dialog__owner">
               <span>{t("Project owner")}</span>
               <strong

@@ -28,6 +28,7 @@ class MasterCatalogKind(str, Enum):
     SUPPLIER = "supplier"
     ITEM_GROUP = "item_group"
     ITEM = "item"
+    MACHINE = "machine"
 
 
 @dataclass(frozen=True, slots=True)

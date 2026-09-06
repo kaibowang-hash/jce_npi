@@ -1,6 +1,8 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { LiveERPMasterDataSource } from "../../src/api/erp-master-data-source";
+import { masterPage } from "../support/erp-master-fixture";
 
 import type {
   ToolingImportCorrectionArtifact,
@@ -315,9 +317,14 @@ describe("Tooling List import workspace", () => {
         screen.getByRole("button", { name: "Register controlled workbook" }),
       ).toBeEnabled();
     });
-    await user.type(
-      screen.getByLabelText("Customer scope"),
-      "SYNTHETIC-CUSTOMER",
+    vi.spyOn(LiveERPMasterDataSource.prototype, "load").mockImplementation(
+      (kind) => Promise.resolve(masterPage(kind)),
+    );
+    await user.click(screen.getByRole("combobox", { name: "Customer" }));
+    await user.click(
+      await screen.findByRole("option", {
+        name: "SYNTHETIC-CUSTOMER — Synthetic customer",
+      }),
     );
     await user.type(
       screen.getByLabelText("File Revision identity"),

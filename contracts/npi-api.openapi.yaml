@@ -131,7 +131,7 @@ paths:
       operationId: replaceErpnextMasterCatalog
       description: >-
         Atomically replaces one complete ERPNext-owned Customer, Supplier,
-        Item Group, or Item catalog. The authenticated service actor cannot
+        Item Group, Item, or Workstation catalog. The authenticated service actor cannot
         select a DocType or field set; source versions, exact replay and
         removed-record tombstones are server enforced.
       x-required-transport-role: NPI API User
@@ -166,11 +166,12 @@ paths:
       description: >-
         Returns one authenticated read-only current ERPNext master catalog page.
         Customer and Supplier rows are restricted by the caller's ERPNext-owned
-        authorization projection; Item and Item Group are shared internal
+        authorization projection; Item, Item Group and Workstation are shared internal
         references. Raw support DocTypes are not readable through this route.
       parameters:
         - $ref: "#/components/parameters/RequestId"
         - { in: query, name: kind, required: true, schema: { $ref: "#/components/schemas/ERPMasterCatalogKind" } }
+        - { in: query, name: projectId, schema: { type: string, format: uuid }, description: Optional accessible project scope; customer choices must match its ERPNext customer references. }
         - { in: query, name: query, schema: { type: string, minLength: 1, maxLength: 100 } }
         - { in: query, name: limit, schema: { type: integer, minimum: 1, maximum: 200, default: 100 } }
         - { in: query, name: offset, schema: { type: integer, minimum: 0, maximum: 50000, default: 0 } }
@@ -10648,7 +10649,7 @@ components:
             reportingSynchronization: { type: boolean }
     ERPMasterCatalogKind:
       type: string
-      enum: [customer, supplier, item_group, item]
+      enum: [customer, supplier, item_group, item, machine]
     ERPMasterCustomerRecord:
       type: object
       additionalProperties: false
@@ -11391,7 +11392,7 @@ components:
           type: string
           minLength: 1
           maxLength: 128
-          pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$"
+          description: Exact ERPNext name including Unicode and spaces; NPI names retain the governed identifier syntax.
     ErpProjectBinding:
       type: object
       additionalProperties: false
@@ -16456,7 +16457,7 @@ components:
           enum: [machine, auxiliary_equipment, material]
         sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
         sourceObjectId:
-          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+          { type: string, minLength: 1, maxLength: 128, description: Exact ERPNext name including Unicode and spaces; NPI names retain governed identifier syntax. }
         label: { type: string, minLength: 1, maxLength: 140 }
         quantity: { type: [integer, "null"], minimum: 1 }
         unit: { type: [string, "null"], minLength: 1, maxLength: 32 }
@@ -16472,7 +16473,7 @@ components:
           enum: [machine, auxiliary_equipment, material]
         sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
         sourceObjectId:
-          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+          { type: string, minLength: 1, maxLength: 128, description: Exact ERPNext name including Unicode and spaces; NPI names retain governed identifier syntax. }
         label: { type: string, minLength: 1, maxLength: 140 }
         quantity: { type: [integer, "null"], minimum: 1 }
         unit: { type: [string, "null"], minLength: 1, maxLength: 32 }
@@ -16909,7 +16910,7 @@ components:
       properties:
         sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
         sourceObjectId:
-          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+          { type: string, minLength: 1, maxLength: 128, description: Exact ERPNext name including Unicode and spaces; NPI names retain governed identifier syntax. }
         lotBatchCode:
           { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
         label: { type: string, minLength: 1, maxLength: 140 }
@@ -16924,7 +16925,7 @@ components:
       properties:
         sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
         sourceObjectId:
-          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+          { type: string, minLength: 1, maxLength: 128, description: Exact ERPNext name including Unicode and spaces; NPI names retain governed identifier syntax. }
         lotBatchCode:
           { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
         label: { type: string, minLength: 1, maxLength: 140 }
@@ -17004,7 +17005,7 @@ components:
         kind: { type: string, enum: [machine, auxiliary_equipment] }
         sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
         sourceObjectId:
-          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+          { type: string, minLength: 1, maxLength: 128, description: Exact ERPNext name including Unicode and spaces; NPI names retain governed identifier syntax. }
         label: { type: string, minLength: 1, maxLength: 140 }
     TrialActualResource:
       type: object
@@ -17014,7 +17015,7 @@ components:
         kind: { type: string, enum: [machine, auxiliary_equipment] }
         sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
         sourceObjectId:
-          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+          { type: string, minLength: 1, maxLength: 128, description: Exact ERPNext name including Unicode and spaces; NPI names retain governed identifier syntax. }
         label: { type: string, minLength: 1, maxLength: 140 }
         erpVerification: { type: string, const: unavailable }
     TrialEnvironmentObservationInput:

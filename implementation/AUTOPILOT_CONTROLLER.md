@@ -1,5 +1,16 @@
 # V1.2 Autopilot Controller
 
+## PA-13 ERP master-data selectors
+
+The user's 2026-09-06 request to change ERPNext-derived manual fields into
+dropdowns is authorized for implementation now. Active task:
+`PA-13-ERP-MASTER-DATA-SELECTORS`. Preserve the dirty main checkout; implement
+in the existing isolated full-integration worktree. Customer/item catalogs are
+existing integration data; add only the evidenced Workstation machine mapping.
+No machine booking, permission expansion or production ERPNext contact is
+authorized. Release requires exact Level 3 and backup/live evidence, not merely
+successful compilation. Previous PA-12 completion remains historical.
+
 Updated: `2026-08-26T23:45:00Z`
 
 ## Authority and operating mode

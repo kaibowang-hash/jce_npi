@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ERPMasterSelect } from "../components/erp-master-select";
 
 import {
   type ToolingImportBatchCollection,
@@ -1182,28 +1183,29 @@ export default function ToolingImportWorkspace({
                 )}
               </p>
               <div className="tooling-import__form-grid">
-                <label className="field-control">
+                <div className="field-control">
                   <span>{t("Customer scope")}</span>
-                  <TextInput
+                  <ERPMasterSelect
+                    kind="customer"
+                    label={t("Customer")}
+                    projectId={projectId}
                     disabled={
                       !currentCollection.permissions.registerSource ||
                       processing
                     }
-                    maxLength={128}
-                    onChange={(event) => {
-                      const value = event.currentTarget.value;
+                    onChange={(record) => {
                       setSourceDraft((current) => ({
                         ...current,
-                        customerScopeId: value,
+                        customerScopeId: record?.sourceKey ?? "",
                       }));
                     }}
-                    ref={(element) => {
+                    inputRef={(element) => {
                       dirtyReturnFocus.current = element;
                     }}
                     required
                     value={sourceDraft.customerScopeId}
                   />
-                </label>
+                </div>
                 <label className="field-control">
                   <span>{t("File Revision identity")}</span>
                   <TextInput

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ERPMasterSelect } from "../components/erp-master-select";
 
 import type {
   ControlledDocumentPageViewModel,
@@ -1173,38 +1174,23 @@ export default function ToolingSetWorkspace({
                     value={editor.physicalSerial}
                   />
                 </label>
-                <label>
-                  <span>{t("Customer source")}</span>
-                  <Select
+                <div>
+                  <span>{t("Customer")}</span>
+                  <ERPMasterSelect
+                    kind="customer"
+                    label={t("Customer")}
+                    projectId={projectId}
                     disabled={processing}
-                    onChange={(event) => {
-                      setEditor({
-                        ...editor,
-                        customerSourceSystem: event.currentTarget
-                          .value as SetEditorState["customerSourceSystem"],
-                      });
-                    }}
-                    value={editor.customerSourceSystem}
-                  >
-                    <option value="">{t("Not linked")}</option>
-                    <option value="NPI_ONE">{t("NPI One")}</option>
-                    <option value="ERPNEXT">{t("ERPNext")}</option>
-                  </Select>
-                </label>
-                <label>
-                  <span>{t("Customer reference")}</span>
-                  <TextInput
-                    disabled={processing || !editor.customerSourceSystem}
-                    maxLength={128}
-                    onChange={(event) => {
-                      setEditor({
-                        ...editor,
-                        customerSourceObjectId: event.currentTarget.value,
-                      });
-                    }}
                     value={editor.customerSourceObjectId}
+                    onChange={(record) => {
+                      setEditor({
+                        ...editor,
+                        customerSourceSystem: record ? "ERPNEXT" : "",
+                        customerSourceObjectId: record?.sourceKey ?? "",
+                      });
+                    }}
                   />
-                </label>
+                </div>
                 <label className="ebom-form__wide">
                   <span>{t("Custody responsibility")}</span>
                   <TextInput

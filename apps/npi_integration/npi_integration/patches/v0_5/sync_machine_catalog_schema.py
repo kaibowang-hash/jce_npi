@@ -1,0 +1,1 @@
+from npi_integration.patches.v0_3.sync_master_data_schema import execute

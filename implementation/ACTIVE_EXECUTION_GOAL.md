@@ -1,5 +1,11 @@
 # Active Execution Goal
 
+Current authorized delta: `PA-13-ERP-MASTER-DATA-SELECTORS — IN_PROGRESS`.
+Implement searchable ERP-owned customer/material/machine choices, exact identifier
+round-trips and permission-scoped validation. Workstation source metadata was
+confirmed read-only on ERPNext-test. Previous completion below remains historical;
+PA-13 has not passed release or live verification yet.
+
 Updated: `2026-09-06T19:39:00+07:00`
 
 - Completed hotfix: `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IMPLEMENTATION_COMPLETE`.

@@ -31,6 +31,11 @@ fixtures = [
 # Installation is inert. Both hooks and scheduled jobs return without queuing or
 # contacting LaunchFlow unless the exact Site switch is explicitly set to false.
 doc_events = {
+    "Workstation": {
+        "after_insert": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_update": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+        "on_trash": "npi_erpnext_connector.hooks_runtime.queue_master_data_change",
+    },
     "User": {
         "after_insert": "npi_erpnext_connector.hooks_runtime.queue_user_change",
         "on_update": "npi_erpnext_connector.hooks_runtime.queue_user_change",

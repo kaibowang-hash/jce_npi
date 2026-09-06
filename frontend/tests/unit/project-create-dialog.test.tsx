@@ -11,6 +11,8 @@ import { ProjectCreateDialog } from "../../src/components/project-create-dialog"
 import { renderWithLocale } from "../support/render";
 import { projectCockpitFixture } from "../support/project-fixture";
 import { messagesForTest } from "../translate";
+import { LiveERPMasterDataSource } from "../../src/api/erp-master-data-source";
+import { masterPage } from "../support/erp-master-fixture";
 
 const context: ProjectCreationContext = {
   ownerUserId: "manager@example.invalid",
@@ -60,6 +62,62 @@ function dataSource(
 }
 
 describe("Project create dialog", () => {
+  it("selects the ERP customer required by a published template", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(sessionResponse()));
+    const template = context.templates[0];
+    if (!template) throw new Error("Template fixture missing");
+    const source = dataSource(() =>
+      Promise.resolve({
+        ...context,
+        templates: [
+          {
+            ...template,
+            referenceRules: [
+              { type: "customer", required: true, allowMultiple: false },
+            ],
+          },
+        ],
+      }),
+    );
+    const create = vi.spyOn(source, "create");
+    const lookup = vi
+      .spyOn(LiveERPMasterDataSource.prototype, "load")
+      .mockImplementation((kind) => Promise.resolve(masterPage(kind)));
+    const user = userEvent.setup();
+    renderWithLocale(
+      <ProjectCreateDialog
+        dataSource={source}
+        navigate={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    await user.type(
+      await screen.findByRole("textbox", { name: "Business code" }),
+      "P-26002",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: "Project title" }),
+      "Program Beta",
+    );
+    expect(
+      screen.getByRole("button", { name: "Create project" }),
+    ).toBeDisabled();
+    await user.click(screen.getByRole("combobox", { name: "Customer" }));
+    await user.click(
+      await screen.findByRole("option", {
+        name: "SYNTHETIC-CUSTOMER — Synthetic customer",
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "Create project" }));
+    await waitFor(() => {
+      expect(create).toHaveBeenCalledWith(
+        expect.objectContaining({ customerSourceKey: "SYNTHETIC-CUSTOMER" }),
+        expect.anything(),
+        expect.anything(),
+      );
+    });
+    lookup.mockRestore();
+  });
   it("creates a controlled draft for the current projected ERPNext user", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(sessionResponse()));
     const create = vi
@@ -165,7 +223,7 @@ describe("Project create dialog", () => {
           {
             ...context.templates[0],
             referenceRules: [
-              { allowMultiple: false, required: true, type: "customer" },
+              { allowMultiple: false, required: true, type: "product" },
             ],
           },
         ],

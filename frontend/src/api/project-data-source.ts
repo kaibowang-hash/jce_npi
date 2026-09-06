@@ -1,4 +1,5 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
+import { isERPSourceId } from "./erp-source-id";
 import type {
   ProjectCockpitViewModel,
   ProjectGateShellViewModel,
@@ -35,6 +36,7 @@ export interface ProjectCreationContext {
 }
 
 export interface CreateProjectDraftCommand {
+  customerSourceKey?: string;
   businessCode: string;
   title: string;
   projectType: ProjectType;
@@ -237,7 +239,13 @@ function isProjectReference(
     referenceSourceSystems.has(
       value.sourceSystem as ProjectReferenceViewModel["sourceSystem"],
     ) &&
-    isConstrainedString(value.sourceObjectId, 128, sourceObjectIdPattern) &&
+    (value.sourceSystem === "ERPNEXT"
+      ? isERPSourceId(value.sourceObjectId)
+      : isConstrainedString(
+          value.sourceObjectId,
+          128,
+          sourceObjectIdPattern,
+        )) &&
     (!Object.hasOwn(value, "globalId") || isUuid(value.globalId))
   );
 }
@@ -503,7 +511,14 @@ export class LiveProjectCreationDataSource implements ProjectCreationDataSource 
     if (
       !template ||
       !template.applicableProjectTypes.includes(command.projectType) ||
-      template.referenceRules.some((rule) => rule.required) ||
+      template.referenceRules.some(
+        (rule) =>
+          rule.required &&
+          (rule.type !== "customer" || !command.customerSourceKey),
+      ) ||
+      (command.customerSourceKey !== undefined &&
+        (!isERPSourceId(command.customerSourceKey) ||
+          !template.referenceRules.some((rule) => rule.type === "customer"))) ||
       !isConstrainedString(command.businessCode, 64, businessCodePattern) ||
       !isConstrainedString(command.title, 140) ||
       !isIsoDate(command.targetSop) ||
@@ -531,7 +546,15 @@ export class LiveProjectCreationDataSource implements ProjectCreationDataSource 
           templateGlobalId: command.templateGlobalId,
           templateVersion: command.templateVersion,
           expectedVersion: command.expectedVersion,
-          references: [],
+          references: command.customerSourceKey
+            ? [
+                {
+                  type: "customer",
+                  sourceSystem: "ERPNEXT",
+                  sourceObjectId: command.customerSourceKey,
+                },
+              ]
+            : [],
         }),
         headers: { "Idempotency-Key": context.idempotencyKey },
         method: "POST",

@@ -35,8 +35,12 @@ _SOURCE_DOCTYPES = {
     MasterCatalogKind.SUPPLIER: "Supplier",
     MasterCatalogKind.ITEM_GROUP: "Item Group",
     MasterCatalogKind.ITEM: "Item",
+    MasterCatalogKind.MACHINE: "Workstation",
 }
 _SOURCE_FIELDS = {
+    MasterCatalogKind.MACHINE: (
+        "name", "workstation_name", "disabled", "workstation_type", "modified",
+    ),
     MasterCatalogKind.CUSTOMER: (
         "name",
         "customer_name",
@@ -114,6 +118,10 @@ def enqueue_master_catalog(catalog_kind: str) -> str | None:
 def load_source_snapshot(kind: MasterCatalogKind) -> SourceMasterSnapshot:
     doctype = _SOURCE_DOCTYPES[kind]
     fields = list(_SOURCE_FIELDS[kind])
+    if kind is MasterCatalogKind.MACHINE:
+        # v15 installations may predate Workstation's optional disabled field.
+        meta = frappe.get_meta(doctype)
+        fields = [field for field in fields if field in {"name", "modified"} or meta.has_field(field)]
     rows = frappe.get_all(
         doctype,
         fields=fields,
@@ -151,6 +159,14 @@ def restore_delivery_event(delivery: object):
 def _record(kind: MasterCatalogKind, row: object) -> dict[str, object]:
     source_key = _text(row.get("name"), "ERPNext master data key")
     modified = utc_text(_datetime(row.get("modified")))
+    if kind is MasterCatalogKind.MACHINE:
+        return {
+            "sourceKey": source_key,
+            "displayName": _display_text(row.get("workstation_name") or source_key, "Workstation name"),
+            "enabled": not bool(row.get("disabled")),
+            "groupKey": _optional_text(row.get("workstation_type")),
+            "sourceModifiedAt": modified,
+        }
     if kind is MasterCatalogKind.CUSTOMER:
         return {
             "sourceKey": source_key,

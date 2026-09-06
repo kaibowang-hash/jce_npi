@@ -1,4 +1,5 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
+import { isERPSourceId } from "./erp-source-id";
 import {
   isToolingDefectRevisionCommand,
   type ToolingDefectRevisionViewModel,
@@ -1717,7 +1718,9 @@ function isResourceInput(value: unknown): value is TrialResourceProposalInput {
     member(item.kind, trialResourceKinds) &&
     member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
     typeof item.sourceObjectId === "string" &&
-    referencePattern.test(item.sourceObjectId) &&
+    (item.sourceSystem === "ERPNEXT"
+      ? isERPSourceId(item.sourceObjectId)
+      : referencePattern.test(item.sourceObjectId)) &&
     textValue(item.label, 1, 140) &&
     (item.quantity === null || whole(item.quantity, 1)) &&
     (item.unit === null || textValue(item.unit, 1, 32)) &&
@@ -2161,7 +2164,9 @@ function isMaterialObservation(
     ]) &&
     member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
     typeof item.sourceObjectId === "string" &&
-    referencePattern.test(item.sourceObjectId) &&
+    (item.sourceSystem === "ERPNEXT"
+      ? isERPSourceId(item.sourceObjectId)
+      : referencePattern.test(item.sourceObjectId)) &&
     typeof item.lotBatchCode === "string" &&
     referencePattern.test(item.lotBatchCode) &&
     textValue(item.label, 1, 140) &&
@@ -2289,7 +2294,9 @@ function isActualResource(value: unknown): value is TrialActualResource {
     member(item.kind, ["machine", "auxiliary_equipment"] as const) &&
     member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
     typeof item.sourceObjectId === "string" &&
-    referencePattern.test(item.sourceObjectId) &&
+    (item.sourceSystem === "ERPNEXT"
+      ? isERPSourceId(item.sourceObjectId)
+      : referencePattern.test(item.sourceObjectId)) &&
     textValue(item.label, 1, 140) &&
     item.erpVerification === "unavailable"
   );
@@ -4749,7 +4756,9 @@ function validMaterialInput(
     ]) &&
     member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
     typeof item.sourceObjectId === "string" &&
-    referencePattern.test(item.sourceObjectId) &&
+    (item.sourceSystem === "ERPNEXT"
+      ? isERPSourceId(item.sourceObjectId)
+      : referencePattern.test(item.sourceObjectId)) &&
     typeof item.lotBatchCode === "string" &&
     referencePattern.test(item.lotBatchCode) &&
     textValue(item.label, 1, 140) &&
@@ -4816,7 +4825,9 @@ function validActualResourceInput(
     member(item.kind, ["machine", "auxiliary_equipment"] as const) &&
     member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
     typeof item.sourceObjectId === "string" &&
-    referencePattern.test(item.sourceObjectId) &&
+    (item.sourceSystem === "ERPNEXT"
+      ? isERPSourceId(item.sourceObjectId)
+      : referencePattern.test(item.sourceObjectId)) &&
     textValue(item.label, 1, 140)
   );
 }

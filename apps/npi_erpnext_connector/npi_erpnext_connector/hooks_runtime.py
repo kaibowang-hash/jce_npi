@@ -46,6 +46,7 @@ def queue_master_data_change(document: object, method: str | None = None) -> Non
         "Supplier": MasterCatalogKind.SUPPLIER,
         "Item Group": MasterCatalogKind.ITEM_GROUP,
         "Item": MasterCatalogKind.ITEM,
+        "Workstation": MasterCatalogKind.MACHINE,
     }
     kind = kinds.get(str(getattr(document, "doctype", "")))
     if kind is None:

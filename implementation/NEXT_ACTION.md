@@ -1,5 +1,14 @@
 # Next Action
 
+Current: `PA-13-ERP-MASTER-DATA-SELECTORS — IN_PROGRESS`.
+Local frontend, backend and affected browser checks pass. Complete exact-SHA
+CI/Level 3. Online activation is held pending explicit user scope confirmation
+after automatic safety review rejected the LaunchFlow SSH preflight. Do not
+retry that host or claim deployment until the hold is resolved.
+Complete the release validation for the selector/machine-catalog vertical slice, then deploy
+the exact verified release only to LaunchFlow and ERPNext-test after backups.
+Production ERPNext, JCE-Core and business-record creation remain out of scope.
+
 Status:
 `PA-12-TOOLING-IMPORT-COLLECTION-CONTRACT-HOTFIX — IMPLEMENTATION_COMPLETE`
 

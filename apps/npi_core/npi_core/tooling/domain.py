@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import erp_source_id
+
 import hashlib
 import json
 import re
@@ -499,7 +501,7 @@ class ToolingSet:
             object.__setattr__(
                 self,
                 "customer_source_object_id",
-                _key(self.customer_source_object_id, "customerSourceObjectId"),
+                erp_source_id(self.customer_source_object_id, "customerSourceObjectId") if self.customer_source_system == "ERPNEXT" else _key(self.customer_source_object_id, "customerSourceObjectId"),
             )
         object.__setattr__(
             self,

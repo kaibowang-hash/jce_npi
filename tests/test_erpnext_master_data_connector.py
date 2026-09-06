@@ -41,7 +41,7 @@ def records(kind: SenderKind) -> tuple[dict[str, object], ...]:
         "enabled": True,
         "sourceModifiedAt": "2026-09-06T01:00:00Z",
     }
-    if kind in {SenderKind.CUSTOMER, SenderKind.SUPPLIER}:
+    if kind in {SenderKind.CUSTOMER, SenderKind.SUPPLIER, SenderKind.MACHINE}:
         return ({**common, "groupKey": "Primary"},)
     if kind is SenderKind.ITEM_GROUP:
         return ({**common, "parentKey": "All Item Groups", "isGroup": False},)
@@ -89,7 +89,7 @@ class ERPNextMasterDataConnectorTest(unittest.TestCase):
             source_environment="test",
         )
 
-    def test_all_four_erpnext_catalogs_match_the_npi_contract(self) -> None:
+    def test_all_five_erpnext_catalogs_match_the_npi_contract(self) -> None:
         for kind in SenderKind:
             with self.subTest(kind=kind.value):
                 event = self.event(kind)

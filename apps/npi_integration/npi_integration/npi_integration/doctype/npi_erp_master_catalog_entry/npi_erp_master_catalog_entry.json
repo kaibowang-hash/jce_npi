@@ -9,7 +9,7 @@
   "fields": [
     {"fieldname":"global_id","fieldtype":"Data","label":"Global ID","reqd":1,"unique":1,"read_only":1},
     {"fieldname":"tenant_id","fieldtype":"Data","label":"Tenant ID","reqd":1,"read_only":1},
-    {"fieldname":"catalog_kind","fieldtype":"Select","label":"ERPNext Master Catalog Type","options":"customer\nsupplier\nitem_group\nitem","reqd":1,"read_only":1},
+    {"fieldname":"catalog_kind","fieldtype":"Select","label":"ERPNext Master Catalog Type","options":"customer\nsupplier\nitem_group\nitem\nmachine","reqd":1,"read_only":1},
     {"fieldname":"source_key","fieldtype":"Data","label":"ERPNext Master Data Key","reqd":1,"read_only":1},
     {"fieldname":"display_name","fieldtype":"Data","label":"Display Name","reqd":1,"read_only":1},
     {"fieldname":"enabled","fieldtype":"Check","label":"Enabled","read_only":1},

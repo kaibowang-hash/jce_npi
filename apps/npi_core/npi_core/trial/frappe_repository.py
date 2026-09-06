@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import require_erp_catalog_reference
+
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -617,6 +619,9 @@ class FrappeTrialRepository:
             )
             for value in resources
         )
+        for resource in resource_values:
+            if resource.source_system == "ERPNEXT" and resource.kind.value in {"machine", "material"}:
+                require_erp_catalog_reference("item" if resource.kind.value == "material" else "machine", resource.source_object_id, "resources.sourceObjectId")
         measurement = TrialMeasurementPlanIntent(
             description=measurement_plan.get("description"),
             document_revision_global_id=measurement_plan.get(

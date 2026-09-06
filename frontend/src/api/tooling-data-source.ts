@@ -1,4 +1,5 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
+import { isERPSourceId } from "./erp-source-id";
 import {
   isCreatePartControlledSpecificationCommand,
   isCreateToolingProcessChainRevisionCommand,
@@ -762,7 +763,9 @@ function isExternalReference(
     hasExactKeys(value, ["sourceSystem", "sourceObjectId"]) &&
     (value.sourceSystem === "NPI_ONE" || value.sourceSystem === "ERPNEXT") &&
     typeof value.sourceObjectId === "string" &&
-    referencePattern.test(value.sourceObjectId)
+    (value.sourceSystem === "ERPNEXT"
+      ? isERPSourceId(value.sourceObjectId)
+      : referencePattern.test(value.sourceObjectId))
   );
 }
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import require_erp_catalog_reference
+
 import re
 from datetime import date
 from typing import Any
@@ -112,6 +114,9 @@ def create_project(
         )
         if repository.get_idempotency_record(command.idempotency_key) is None:
             _require_enabled_owner(command.owner_user_id)
+            for reference in command.references:
+                if reference.source_system == "ERPNEXT" and reference.reference_type.value == "customer":
+                    require_erp_catalog_reference("customer", reference.source_object_id, "references.sourceObjectId")
         result = ProjectInstantiationService(repository).instantiate(command)
         cockpit = repository.project_cockpit(result.project.global_id)
         if cockpit is None:

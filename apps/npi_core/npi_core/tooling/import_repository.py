@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import require_erp_catalog_reference
+
 import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
@@ -829,6 +831,8 @@ class FrappeToolingImportRepository(FrappeToolingRepository):
         ]
         if len(matches) != 1:
             raise ToolingReferenceUnavailable()
+        if str(matches[0].source_system) == "ERPNEXT":
+            require_erp_catalog_reference("customer", customer_scope_id, "customerScopeId")
 
     def _import_permissions(self) -> dict[str, bool]:
         manage = self._is_internal_system_manager()

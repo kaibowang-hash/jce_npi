@@ -6,6 +6,8 @@ import type { TrialDataSource } from "../../src/api/trial-data-source";
 import type { FormalQualityLinkDataSource } from "../../src/api/formal-quality-link-data-source";
 import { NpiApiError, NpiTransportError } from "../../src/api/http";
 import LiveTrialPage from "../../src/pages/live-trial-page";
+import { LiveERPMasterDataSource } from "../../src/api/erp-master-data-source";
+import { masterPage } from "../support/erp-master-fixture";
 import { renderWithLocale } from "../support/render";
 import {
   trialExecutionIds,
@@ -234,6 +236,9 @@ describe("live Trial planning page", () => {
   });
 
   it("creates a controlled Plan with exact resource and member references", async () => {
+    vi.spyOn(LiveERPMasterDataSource.prototype, "load").mockImplementation(
+      (kind) => Promise.resolve(masterPage(kind)),
+    );
     installAuthenticatedSession();
     const user = userEvent.setup();
     const createPlan = vi
@@ -268,22 +273,24 @@ describe("live Trial planning page", () => {
       screen.getByLabelText("Trial objective"),
       "Verify controlled T0 scope",
     );
-    await user.type(
-      screen.getByLabelText("Machine source object ID"),
-      "IM-550-02",
+    await user.click(
+      screen.getByRole("combobox", { name: "Proposed machine" }),
     );
-    await user.type(
-      screen.getByLabelText("Machine label"),
-      "Injection machine 550T",
+    await user.click(
+      await screen.findByRole("option", {
+        name: "IM-550-02 — Injection machine 550T",
+      }),
     );
-    await user.type(
-      screen.getByLabelText("Material source object ID"),
-      "MAT-PA66-GF30",
+    await user.click(
+      screen.getByRole("combobox", { name: "Proposed material" }),
     );
-    await user.type(
-      screen.getByLabelText("Material label"),
-      "PA66-GF30 natural",
+    await user.click(
+      await screen.findByRole("option", {
+        name: "MAT-PA66-GF30 — PA66-GF30 natural",
+      }),
     );
+    expect(screen.getByLabelText("Material unit")).toHaveValue("kg");
+    await user.type(screen.getByLabelText("Material quantity"), "1");
     await user.type(
       screen.getByLabelText("Responsible Project member stable IDs"),
       trialPlanningIds.member,

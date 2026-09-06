@@ -9,7 +9,7 @@
   "fields": [
     {"fieldname":"global_id","fieldtype":"Data","label":"Global ID","reqd":1,"unique":1,"read_only":1},
     {"fieldname":"tenant_id","fieldtype":"Data","label":"Tenant ID","reqd":1,"read_only":1},
-    {"fieldname":"catalog_kind","fieldtype":"Select","label":"ERPNext Master Catalog Type","options":"customer\nsupplier\nitem_group\nitem","reqd":1,"read_only":1},
+    {"fieldname":"catalog_kind","fieldtype":"Select","label":"ERPNext Master Catalog Type","options":"customer\nsupplier\nitem_group\nitem\nmachine","reqd":1,"read_only":1},
     {"fieldname":"source_environment","fieldtype":"Data","label":"Source Environment","reqd":1,"read_only":1},
     {"fieldname":"event_id","fieldtype":"Data","label":"Source Event ID","reqd":1,"unique":1,"read_only":1},
     {"fieldname":"event_hash","fieldtype":"Data","label":"Source Event Hash","reqd":1,"read_only":1},

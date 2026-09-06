@@ -21,7 +21,7 @@ class ERPNextMasterDataMetadataTest(unittest.TestCase):
             '("GET", "/api/npi/v1/integration/erpnext/master-data")', bff
         )
         hooks = (ERP / "hooks.py").read_text()
-        for doctype in ("Customer", "Supplier", "Item Group", "Item"):
+        for doctype in ("Customer", "Supplier", "Item Group", "Item", "Workstation"):
             self.assertIn(f'"{doctype}": {{', hooks)
         self.assertIn("recover_master_data_deliveries", hooks)
         self.assertIn("reconcile_master_catalogs", hooks)
@@ -30,6 +30,8 @@ class ERPNextMasterDataMetadataTest(unittest.TestCase):
         self.assertIn('"delivered_at",', repository)
         self.assertIn("patches.v0_6.sync_master_data_schema", (ERP / "patches.txt").read_text())
         self.assertIn("patches.v0_3.sync_master_data_schema", (NPI / "patches.txt").read_text())
+        self.assertIn("patches.v0_11.sync_machine_catalog_schema", (ERP / "patches.txt").read_text())
+        self.assertIn("patches.v0_5.sync_machine_catalog_schema", (NPI / "patches.txt").read_text())
 
     def test_support_doctypes_are_read_only_and_non_exportable(self) -> None:
         paths = (

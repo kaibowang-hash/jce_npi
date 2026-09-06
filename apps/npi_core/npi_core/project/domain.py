@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import erp_source_id
+
 import hashlib
 import json
 import re
@@ -289,7 +291,8 @@ class TypedReference:
         object.__setattr__(
             self,
             "source_object_id",
-            _require_text(
+            erp_source_id(self.source_object_id, "references.sourceObjectId")
+            if self.source_system is ReferenceSourceSystem.ERPNEXT else _require_text(
                 self.source_object_id,
                 "references.sourceObjectId",
                 maximum_length=128,

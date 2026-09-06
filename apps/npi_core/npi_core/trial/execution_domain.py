@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from npi_core.foundation.erp_reference import erp_source_id
+
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
@@ -296,7 +298,7 @@ class TrialMaterialObservation:
         object.__setattr__(
             self,
             "source_object_id",
-            _key(self.source_object_id, "material.sourceObjectId"),
+            erp_source_id(self.source_object_id, "material.sourceObjectId") if self.source_system == "ERPNEXT" else _key(self.source_object_id, "material.sourceObjectId"),
         )
         object.__setattr__(
             self,
@@ -585,7 +587,7 @@ class TrialActualResourceObservation:
         object.__setattr__(
             self,
             "source_object_id",
-            _key(self.source_object_id, "resources.sourceObjectId"),
+            erp_source_id(self.source_object_id, "resources.sourceObjectId") if self.source_system == "ERPNEXT" else _key(self.source_object_id, "resources.sourceObjectId"),
         )
         object.__setattr__(self, "label", _text(self.label, "resources.label", 140))
 

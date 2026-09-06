@@ -13,7 +13,7 @@
   "fields":[
     {"fieldname":"event_id","fieldtype":"Data","label":"Event ID","reqd":1,"unique":1,"read_only":1},
     {"fieldname":"stream_key","fieldtype":"Data","label":"Stream Key","reqd":1,"unique":1,"read_only":1},
-    {"fieldname":"catalog_kind","fieldtype":"Select","label":"Master Catalog Type","options":"customer\nsupplier\nitem_group\nitem","reqd":1,"read_only":1},
+    {"fieldname":"catalog_kind","fieldtype":"Select","label":"Master Catalog Type","options":"customer\nsupplier\nitem_group\nitem\nmachine","reqd":1,"read_only":1},
     {"fieldname":"source_version","fieldtype":"Int","label":"Source Version","reqd":1,"read_only":1},
     {"fieldname":"source_snapshot_hash","fieldtype":"Data","label":"Source Snapshot Hash","reqd":1,"read_only":1},
     {"fieldname":"event_hash","fieldtype":"Data","label":"Event Hash","reqd":1,"read_only":1},

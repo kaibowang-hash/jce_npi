@@ -17,6 +17,13 @@ identity:
   mapping_store_owner: NPI_ONE
 
 objects:
+  WorkstationReference:
+    owner_system: ERPNEXT
+    erp_view: Workstation
+    fields:
+      name_workstation_name_disabled_workstation_type: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: ERP_WINS}
+      selected_trial_resource_reference: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: REFERENCE_ONLY, conflict: EXACT_ERP_IDENTITY}
+      booking_capacity_and_live_machine_parameters: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: NONE, conflict: NOT_OBSERVED_BY_MASTER_CATALOG}
   EngineeringChange:
     owner_system: NPI_ONE_CHANGE_CONTROL_SERVICE
     erp_view: formal_change_observation_link

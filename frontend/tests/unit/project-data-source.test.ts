@@ -320,6 +320,53 @@ describe("live Project creation data source", () => {
     );
   });
 
+  it("submits the exact Unicode ERP customer allowed by the selected template", async () => {
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementation(
+        <T>(): Promise<T> => Promise.resolve(projectCockpitFixture() as T),
+      );
+    const source = new LiveProjectCreationDataSource(http);
+    const creation = {
+      ...creationContext,
+      templates: [
+        {
+          ...creationTemplate,
+          referenceRules: [
+            { type: "customer" as const, required: true, allowMultiple: false },
+          ],
+        },
+      ],
+    };
+    await source.create(
+      {
+        businessCode: "P-26002",
+        title: "Customer project",
+        projectType: "new_tool",
+        targetSop: "2027-01-31",
+        templateGlobalId: creationTemplate.globalId,
+        templateVersion: 1,
+        expectedVersion: 2,
+        customerSourceKey: "客户 A",
+      },
+      creation,
+      {
+        csrfToken: "c".repeat(32),
+        idempotencyKey: "11111111-1111-4111-8111-111111111111",
+        signal: new AbortController().signal,
+      },
+    );
+    const call = request.mock.calls[0];
+    if (!call || typeof call[1]?.body !== "string")
+      throw new Error("Project request body missing");
+    expect(JSON.parse(call[1].body)).toMatchObject({
+      references: [
+        { type: "customer", sourceSystem: "ERPNEXT", sourceObjectId: "客户 A" },
+      ],
+    });
+  });
+
   it("fails before transport for stale templates, required references and invalid command context", async () => {
     const http = new NpiHttpClient();
     const request = vi.spyOn(http, "request");

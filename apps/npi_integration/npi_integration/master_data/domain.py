@@ -34,9 +34,13 @@ class MasterCatalogKind(str, Enum):
     SUPPLIER = "supplier"
     ITEM_GROUP = "item_group"
     ITEM = "item"
+    MACHINE = "machine"
 
 
 _RECORD_FIELDS = {
+    MasterCatalogKind.MACHINE: frozenset(
+        {"sourceKey", "displayName", "enabled", "groupKey", "sourceModifiedAt"}
+    ),
     MasterCatalogKind.CUSTOMER: frozenset(
         {"sourceKey", "displayName", "enabled", "groupKey", "sourceModifiedAt"}
     ),
@@ -88,7 +92,7 @@ class MasterRecord:
                 value["sourceModifiedAt"], "sourceModifiedAt"
             ),
         }
-        if kind in {MasterCatalogKind.CUSTOMER, MasterCatalogKind.SUPPLIER}:
+        if kind in {MasterCatalogKind.CUSTOMER, MasterCatalogKind.SUPPLIER, MasterCatalogKind.MACHINE}:
             normalized["groupKey"] = _optional_text(
                 value["groupKey"], "groupKey", 255
             )

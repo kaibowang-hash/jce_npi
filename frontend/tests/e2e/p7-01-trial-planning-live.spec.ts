@@ -1,4 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
+import { translate } from "../translate";
+import { masterPage } from "../support/erp-master-fixture";
+import type { ERPMasterKind } from "../../src/api/erp-master-data-source";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type { TrialPermissions } from "../../src/api/trial-data-source";
@@ -112,6 +115,15 @@ async function installTrialApi(
   options: ApiOptions = {},
 ): Promise<ObservedRequest[]> {
   const observed: ObservedRequest[] = [];
+  await page.route(
+    /\/api\/npi\/v1\/integration\/erpnext\/master-data\?/u,
+    async (route) => {
+      const kind = new URL(route.request().url()).searchParams.get(
+        "kind",
+      ) as ERPMasterKind;
+      await fulfillJson(route, masterPage(kind));
+    },
+  );
   let roundAttempts = 0;
   await page.route(trialEndpoint, async (route) => {
     const request = route.request();
@@ -287,6 +299,45 @@ test.describe("P7-01 live Trial planning workspace", () => {
     });
   }
 
+  for (const locale of ["en", "zh", "zh-TW"] as const) {
+    test(`ERP master dropdown keyboard and localized states ${locale}`, async ({
+      page,
+    }, testInfo) => {
+      await installSession(page, locale);
+      await installTrialApi(page, { empty: true });
+      await page.goto(
+        `/projects/${trialPlanningIds.project}/trials?lang=${locale}`,
+        { waitUntil: "domcontentloaded" },
+      );
+      await page
+        .getByRole("button", {
+          name: translate(locale, "Create Trial Plan"),
+          exact: true,
+        })
+        .click();
+      const machine = page.getByRole("combobox", {
+        name: translate(locale, "Proposed machine"),
+      });
+      await machine.fill("550");
+      await expect(
+        page.getByRole("option", {
+          name: "IM-550-02 — Injection machine 550T",
+        }),
+      ).toBeVisible();
+      await expectNoMixedLanguage(page, locale);
+      await expectNoDocumentOverflow(page);
+      await expectAxeClean(page);
+      await page.screenshot({
+        path: testInfo.outputPath(`erp-master-machine-${locale}.png`),
+        fullPage: true,
+      });
+      await machine.press("ArrowDown");
+      await machine.press("Enter");
+      await expect(machine).toHaveValue("IM-550-02 — Injection machine 550T");
+      await expect(machine).toBeFocused();
+    });
+  }
+
   test("creates one immutable Plan from exact Tooling, member and resource references", async ({
     page,
   }) => {
@@ -303,10 +354,14 @@ test.describe("P7-01 live Trial planning workspace", () => {
       .getByLabel("Tooling Master stable ID")
       .fill(trialPlanningIds.toolingMaster);
     await page.getByLabel("Trial objective").fill("Verify governed T0 scope");
-    await page.getByLabel("Machine source object ID").fill("IM-550-02");
-    await page.getByLabel("Machine label").fill("Injection machine 550T");
-    await page.getByLabel("Material source object ID").fill("MAT-PA66-GF30");
-    await page.getByLabel("Material label").fill("PA66-GF30 natural");
+    await page.getByRole("combobox", { name: "Proposed machine" }).click();
+    await page
+      .getByRole("option", { name: "IM-550-02 — Injection machine 550T" })
+      .click();
+    await page.getByRole("combobox", { name: "Proposed material" }).click();
+    await page
+      .getByRole("option", { name: "MAT-PA66-GF30 — PA66-GF30 natural" })
+      .click();
     await page.getByLabel("Material quantity").fill("80");
     await page.getByLabel("Material unit").fill("kg");
     await page

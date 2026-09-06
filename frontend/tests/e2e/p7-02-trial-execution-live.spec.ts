@@ -1,4 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
+import { masterPage } from "../support/erp-master-fixture";
+import type { ERPMasterKind } from "../../src/api/erp-master-data-source";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type {
@@ -115,6 +117,15 @@ async function installTrialApi(
   options: ApiOptions = {},
 ): Promise<ObservedRequest[]> {
   const observed: ObservedRequest[] = [];
+  await page.route(
+    /\/api\/npi\/v1\/integration\/erpnext\/master-data\?/u,
+    async (route) => {
+      const kind = new URL(route.request().url()).searchParams.get(
+        "kind",
+      ) as ERPMasterKind;
+      await fulfillJson(route, masterPage(kind));
+    },
+  );
   let executionAttempts = 0;
   const execution = options.execution ?? trialExecutionWorkspace();
   await page.route(trialEndpoint, async (route) => {
@@ -315,11 +326,10 @@ test.describe("P7-02 live Trial execution workspace", () => {
     await openExecution(page, "en");
 
     await page.getByRole("button", { name: "Start Trial Round" }).click();
-    await page.getByLabel("Machine source system").selectOption("ERPNEXT");
-    await page.getByLabel("Actual machine source object ID").fill("IM-550-02");
+    await page.getByRole("combobox", { name: "Confirmed machine" }).click();
     await page
-      .getByLabel("Actual machine label")
-      .fill("Injection machine 550T");
+      .getByRole("option", { name: "IM-550-02 — Injection machine 550T" })
+      .click();
     await page
       .getByLabel("Execution started at (UTC)")
       .fill("2026-08-10T08:35");

@@ -5,3 +5,4 @@ npi_erpnext_connector.patches.v0_5.sync_trial_summary_schema
 npi_erpnext_connector.patches.v0_6.sync_master_data_schema
 npi_erpnext_connector.patches.v0_9.sync_engineering_change_schema
 npi_erpnext_connector.patches.v0_10.sync_project_publish_schema
+npi_erpnext_connector.patches.v0_11.sync_machine_catalog_schema
