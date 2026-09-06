@@ -150,6 +150,19 @@ class DevcontainerVerifierTest(unittest.TestCase):
                 "tests/test_erpnext_item_sandbox_adapter.py:generic-api-key:226"
             ),
             (
+                "576465c9e41801960f9a867db738a5e16148e0d7:"
+                "tests/test_project_publish_connector_runtime.py:generic-api-key:163"
+            ),
+            (
+                "576465c9e41801960f9a867db738a5e16148e0d7:"
+                "tests/test_project_publish_connector_runtime.py:generic-api-key:169"
+            ),
+            (
+                "740a41ce83e04a14198694d442d2ffc4a7283804:"
+                "tests/test_erpnext_engineering_change_sandbox_adapter.py:"
+                "generic-api-key:40"
+            ),
+            (
                 "bfa9c9bb4fa70d0c66938b940b286c7f9bbb3d47:"
                 "frontend/tests/unit/item-publish-data-source.test.ts:generic-api-key:26"
             ),
