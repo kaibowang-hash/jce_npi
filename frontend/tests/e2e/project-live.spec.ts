@@ -311,9 +311,7 @@ test.describe("live Project cockpit BFF path", () => {
     await installSuccess(page, { ...fixture, references: [] });
     await openLiveProject(page);
 
-    await expect(
-      page.getByText("This project has no governed object references."),
-    ).toBeVisible();
+    await expect(page.locator(".scenario-banner--empty")).toHaveCount(0);
     await expect(
       page.getByText("No governed references are attached to this project."),
     ).toBeVisible();
@@ -521,12 +519,17 @@ test.describe("trilingual live Project non-normal state purity", () => {
               page.locator(".state-surface--loading"),
             ).toHaveAttribute("aria-busy", "true");
           } else if (state === "empty") {
-            await expect(page.locator(".scenario-banner--empty")).toContainText(
-              translate(
-                locale,
-                "This project has no governed object references.",
-              ),
+            await expect(page.locator(".scenario-banner--empty")).toHaveCount(
+              0,
             );
+            await expect(
+              page.getByText(
+                translate(
+                  locale,
+                  "No governed references are attached to this project.",
+                ),
+              ),
+            ).toBeVisible();
             await expectLoadedProject(page);
           } else if (state === "read_only") {
             await expect(
@@ -769,7 +772,15 @@ async function prepareLiveVisualCase(
   else if (fixture.state === "loading") {
     await expect(page.locator(".state-surface--loading")).toBeVisible();
   } else if (fixture.state === "empty") {
-    await expect(page.locator(".scenario-banner--empty")).toBeVisible();
+    await expect(page.locator(".scenario-banner--empty")).toHaveCount(0);
+    await expect(
+      page.getByText(
+        translate(
+          fixture.locale,
+          "No governed references are attached to this project.",
+        ),
+      ),
+    ).toBeVisible();
   } else if (fixture.state === "read_only") {
     await expect(page.locator(".scenario-banner--read_only")).toBeVisible();
   } else {

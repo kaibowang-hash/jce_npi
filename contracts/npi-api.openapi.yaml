@@ -11392,6 +11392,24 @@ components:
           minLength: 1
           maxLength: 128
           pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$"
+    ErpProjectBinding:
+      type: object
+      additionalProperties: false
+      description: >
+        Project-level ERPNext source identity kept separate from governed object
+        references and from ERP business-fact observation availability.
+      required: [sourceSystem, state, sourceObjectId, lastProcessedAt]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        state: { type: string, enum: [bound, unbound, conflicted, unavailable] }
+        sourceObjectId:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 280 }
+            - { type: "null" }
+        lastProcessedAt:
+          oneOf:
+            - { type: string, format: date-time }
+            - { type: "null" }
     CreateProjectDraft:
       type: object
       additionalProperties: false
@@ -13225,9 +13243,10 @@ components:
     ProjectCockpit:
       type: object
       additionalProperties: false
-      required: [project, templateRef, references, gates, permissions]
+      required: [project, erpProjectBinding, templateRef, references, gates, permissions]
       properties:
         project: { $ref: "#/components/schemas/ProjectCockpitProject" }
+        erpProjectBinding: { $ref: "#/components/schemas/ErpProjectBinding" }
         templateRef: { $ref: "#/components/schemas/ProjectTemplateReference" }
         references:
           type: array
@@ -25050,7 +25069,7 @@ components:
     ProjectPortfolioErpTruth:
       type: object
       additionalProperties: false
-      required: [sourceSystem, availability, reasonCode, observedKinds, freshestAt]
+      required: [sourceSystem, availability, reasonCode, observedKinds, freshestAt, projectBinding]
       properties:
         sourceSystem: { type: string, const: ERPNEXT }
         availability: { $ref: "#/components/schemas/ReportingAvailability" }
@@ -25063,6 +25082,8 @@ components:
           items: { type: string, minLength: 1, maxLength: 128 }
         freshestAt:
           oneOf: [{ type: string, format: date-time }, { type: "null" }]
+        projectBinding:
+          $ref: "#/components/schemas/ErpProjectBinding"
     ProjectPortfolioItem:
       type: object
       additionalProperties: false

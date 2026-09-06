@@ -10,6 +10,7 @@ import type {
   ReportingAvailability,
   ReportingDataSource,
   ReportingFilters,
+  ErpProjectBindingState,
 } from "../api/reporting-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import {
@@ -52,6 +53,30 @@ function availabilityTone(
 ): "success" | "warning" | "danger" | "neutral" {
   if (value === "available") return "success";
   if (value === "stale" || value === "partial") return "warning";
+  return "danger";
+}
+
+function projectBindingLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: ErpProjectBindingState,
+): string {
+  switch (state) {
+    case "bound":
+      return t("Project linked");
+    case "unbound":
+      return t("Project not linked");
+    case "conflicted":
+      return t("Project link conflict");
+    case "unavailable":
+      return t("Project link data unavailable");
+  }
+}
+
+function projectBindingTone(
+  state: ErpProjectBindingState,
+): "success" | "warning" | "danger" {
+  if (state === "bound") return "success";
+  if (state === "unbound") return "warning";
   return "danger";
 }
 
@@ -409,7 +434,7 @@ function PortfolioTable({
             <th>{t("Current Gate")}</th>
             <th>{t("Active work")}</th>
             <th>{t("Health")}</th>
-            <th>{t("ERPNext truth")}</th>
+            <th>{t("ERPNext link and facts")}</th>
           </tr>
         </thead>
         <tbody>
@@ -488,17 +513,34 @@ function PortfolioTable({
                 <span className="reporting-table__truth">
                   <SourceSystemIdentity sourceSystem="ERPNEXT" />
                   <SemanticStatus
-                    label={availabilityLabel(t, item.erp.availability)}
-                    tone={availabilityTone(item.erp.availability)}
+                    label={projectBindingLabel(
+                      t,
+                      item.erp.projectBinding.state,
+                    )}
+                    tone={projectBindingTone(item.erp.projectBinding.state)}
                   />
                 </span>
-                {item.erp.freshestAt ? (
+                {item.erp.projectBinding.sourceObjectId ? (
                   <small className="reporting-table__secondary">
+                    {t("ERPNext Project")}:{" "}
+                    <span data-language-exempt="identifier">
+                      {item.erp.projectBinding.sourceObjectId}
+                    </span>
+                  </small>
+                ) : null}
+                {item.erp.reasonCode === "erp_projection_not_observed" ? (
+                  <small className="reporting-table__secondary">
+                    {t("No ERP fact observations yet.")}
+                  </small>
+                ) : item.erp.freshestAt ? (
+                  <small className="reporting-table__secondary">
+                    {t("ERP facts")}:{" "}
+                    {availabilityLabel(t, item.erp.availability)} ·{" "}
                     {formatDateTime(locale, item.erp.freshestAt)}
                   </small>
                 ) : (
                   <small className="reporting-table__secondary">
-                    {t("No observation")}
+                    {t("ERP fact data unavailable.")}
                   </small>
                 )}
               </td>

@@ -137,6 +137,13 @@ export interface ProjectGateShellViewModel {
   version: number;
 }
 
+export interface ErpProjectBindingViewModel {
+  sourceSystem: "ERPNEXT";
+  state: "bound" | "unbound" | "conflicted" | "unavailable";
+  sourceObjectId: string | null;
+  lastProcessedAt: string | null;
+}
+
 export interface ProjectCockpitViewModel {
   project: {
     globalId: string;
@@ -157,6 +164,7 @@ export interface ProjectCockpitViewModel {
       syncState: "local";
     };
   };
+  erpProjectBinding: ErpProjectBindingViewModel;
   templateRef: {
     globalId: string;
     code: string;

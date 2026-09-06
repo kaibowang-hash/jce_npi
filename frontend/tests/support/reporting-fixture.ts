@@ -86,6 +86,12 @@ export function portfolioFixture(
           reasonCode: "projection_stale",
           observedKinds: ["customer", "item"],
           freshestAt: "2026-08-31T12:00:00Z",
+          projectBinding: {
+            sourceSystem: "ERPNEXT",
+            state: "bound",
+            sourceObjectId: "SYN-ERP-PROJECT-001",
+            lastProcessedAt: "2026-08-31T11:55:00Z",
+          },
         },
         detailRoute: `/projects/${reportingProjectId}`,
       },

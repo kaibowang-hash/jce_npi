@@ -317,7 +317,14 @@ class Phase4ProjectContractTests(unittest.TestCase):
 
     def test_cockpit_response_is_exact_closed_and_contains_no_future_metrics(self) -> None:
         exact_properties = {
-            "ProjectCockpit": {"project", "templateRef", "references", "gates", "permissions"},
+            "ProjectCockpit": {
+                "project",
+                "erpProjectBinding",
+                "templateRef",
+                "references",
+                "gates",
+                "permissions",
+            },
             "ProjectCockpitProject": {
                 "globalId",
                 "businessCode",
@@ -337,6 +344,12 @@ class Phase4ProjectContractTests(unittest.TestCase):
             "GateShell": {"globalId", "key", "title", "sequence", "state", "version"},
             "ProjectPermissions": {"canView", "canContribute", "canAdminister"},
             "ProjectSourceStatus": {"sourceSystem", "editableIn", "syncState"},
+            "ErpProjectBinding": {
+                "sourceSystem",
+                "state",
+                "sourceObjectId",
+                "lastProcessedAt",
+            },
         }
         for schema_name, properties in exact_properties.items():
             with self.subTest(schema=schema_name):

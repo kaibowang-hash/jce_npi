@@ -67,6 +67,30 @@ type ProjectLoadState =
       failure: RequestFailure;
     };
 
+function projectBindingLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: ProjectCockpitViewModel["erpProjectBinding"]["state"],
+): string {
+  switch (state) {
+    case "bound":
+      return t("Project linked");
+    case "unbound":
+      return t("Project not linked");
+    case "conflicted":
+      return t("Project link conflict");
+    case "unavailable":
+      return t("Project link data unavailable");
+  }
+}
+
+function projectBindingTone(
+  state: ProjectCockpitViewModel["erpProjectBinding"]["state"],
+): "success" | "warning" | "danger" {
+  if (state === "bound") return "success";
+  if (state === "unbound") return "warning";
+  return "danger";
+}
+
 function classifyFailure(failure: RequestFailure): FailureKind {
   if (failure.kind === "request_not_ready") return "validation";
   if (failure.kind === "network") return "retryable";
@@ -307,7 +331,6 @@ function ProjectCockpit({
   };
   const currentCockpit = { ...cockpit, project };
   const readOnly = !permissions.canContribute;
-  const empty = references.length === 0;
   return (
     <article className="page page--object">
       {readOnly ? (
@@ -321,12 +344,6 @@ function ProjectCockpit({
               "You have view-only access. Project commands are not available in this cockpit.",
             )}
           </span>
-        </div>
-      ) : null}
-      {empty ? (
-        <div className="scenario-banner scenario-banner--empty" role="status">
-          <SemanticStatus label={t("Empty")} />
-          <span>{t("This project has no governed object references.")}</span>
         </div>
       ) : null}
       <ObjectHeader
@@ -413,11 +430,29 @@ function ProjectCockpit({
                   label: t("Governed references"),
                   value: formatNumber(locale, references.length, 0),
                 },
+                {
+                  label: t("ERPNext Project link"),
+                  value: (
+                    <SemanticStatus
+                      label={projectBindingLabel(
+                        t,
+                        currentCockpit.erpProjectBinding.state,
+                      )}
+                      tone={projectBindingTone(
+                        currentCockpit.erpProjectBinding.state,
+                      )}
+                    />
+                  ),
+                },
               ]}
             />
             <SectionAnchors
               sections={[
                 { id: "project-gates", label: t("Gate shells") },
+                {
+                  id: "erp-project-binding",
+                  label: t("ERPNext Project link"),
+                },
                 { id: "project-references", label: t("Governed references") },
                 {
                   id: "project-context",
@@ -426,6 +461,60 @@ function ProjectCockpit({
               ]}
             />
             <div className="engineering-layout engineering-layout--project">
+              <Panel
+                className="erp-project-binding-panel"
+                id="erp-project-binding"
+                scrollableBody
+                title={t("ERPNext Project link")}
+              >
+                <table className="data-table data-table--compact">
+                  <thead>
+                    <tr>
+                      <th>{t("Source")}</th>
+                      <th>{t("Status")}</th>
+                      <th>{t("ERPNext Project")}</th>
+                      <th>{t("Last processed")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <SourceSystemIdentity sourceSystem="ERPNEXT" />
+                      </td>
+                      <td>
+                        <SemanticStatus
+                          label={projectBindingLabel(
+                            t,
+                            currentCockpit.erpProjectBinding.state,
+                          )}
+                          tone={projectBindingTone(
+                            currentCockpit.erpProjectBinding.state,
+                          )}
+                        />
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {currentCockpit.erpProjectBinding.sourceObjectId ?? "—"}
+                      </td>
+                      <td>
+                        {currentCockpit.erpProjectBinding.lastProcessedAt ? (
+                          <time
+                            dateTime={
+                              currentCockpit.erpProjectBinding.lastProcessedAt
+                            }
+                          >
+                            {formatDateTime(
+                              locale,
+                              currentCockpit.erpProjectBinding.lastProcessedAt,
+                            )}
+                          </time>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Panel>
               <Panel id="project-gates" scrollableBody title={t("Gate shells")}>
                 <table className="data-table data-table--compact">
                   <thead>

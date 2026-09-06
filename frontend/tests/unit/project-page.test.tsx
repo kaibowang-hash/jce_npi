@@ -63,6 +63,8 @@ describe("live Project cockpit states", () => {
     ).toBeVisible();
     expect(dataSource.load).toHaveBeenCalledOnce();
     expect(screen.getByText("SYNTHETIC-PROJECT-TEMPLATE")).toBeVisible();
+    expect(screen.getAllByText("Project linked").length).toBeGreaterThan(0);
+    expect(screen.getByText("SYN-ERP-PROJECT-001")).toBeVisible();
     expect(screen.getByText("Synthetic feasibility shell")).toBeVisible();
     expect(screen.getByText("SYN-CUSTOMER-001")).toBeVisible();
     for (const label of ["Gate shells", "Governed references"]) {
@@ -155,7 +157,7 @@ describe("live Project cockpit states", () => {
     ).toBeUndefined();
   });
 
-  it("renders the loaded empty state without pretending Gates or references exist", async () => {
+  it("keeps the project active while its governed-reference section is empty", async () => {
     const fixture = projectCockpitFixture();
     const emptyFixture = {
       ...fixture,
@@ -170,14 +172,15 @@ describe("live Project cockpit states", () => {
     );
 
     expect(
-      await screen.findByText(
-        "This project has no governed object references.",
-      ),
+      await screen.findByText("Synthetic feasibility shell"),
     ).toBeVisible();
-    expect(screen.getByText("Synthetic feasibility shell")).toBeVisible();
+    expect(
+      screen.queryByText("This project has no governed object references."),
+    ).toBeNull();
     expect(
       screen.getByText("No governed references are attached to this project."),
     ).toBeVisible();
+    expect(screen.getByText("SYN-ERP-PROJECT-001")).toBeVisible();
   });
 
   it.each([

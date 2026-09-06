@@ -495,6 +495,7 @@ class FrappeReportingRepository:
     ) -> dict[str, dict[str, object]]:
         if not project_ids:
             return {}
+        bindings = self._erp_project_bindings(project_ids)
         try:
             rows = frappe.get_all(
                 "NPI ERP Projection Head",
@@ -508,7 +509,10 @@ class FrappeReportingRepository:
         except Exception as error:
             if _missing_doctype(error):
                 return {
-                    project_id: _erp_summary((), "erp_projection_store_unavailable")
+                    project_id: {
+                        **_erp_summary((), "erp_projection_store_unavailable"),
+                        "projectBinding": bindings[project_id],
+                    }
                     for project_id in project_ids
                 }
             raise
@@ -520,9 +524,74 @@ class FrappeReportingRepository:
             scope="ERP projection",
         )
         return {
-            project_id: _erp_summary(grouped.get(project_id, ()))
+            project_id: {
+                **_erp_summary(grouped.get(project_id, ())),
+                "projectBinding": bindings[project_id],
+            }
             for project_id in project_ids
         }
+
+    def _erp_project_bindings(
+        self, project_ids: Sequence[str]
+    ) -> dict[str, dict[str, object]]:
+        defaults = {
+            project_id: _erp_project_binding("unbound")
+            for project_id in project_ids
+        }
+        try:
+            rows = frappe.get_all(
+                "NPI Project Source Binding",
+                filters={
+                    "tenant_id": self.principal.tenant_id,
+                    "source_system": "ERPNEXT",
+                    "target_system": "NPI_ONE",
+                    "source_object_type": "Project",
+                    "bound_project_global_id": ["in", sorted(project_ids)],
+                },
+                fields=[
+                    "bound_project_global_id",
+                    "source_object_id",
+                    "stream_state",
+                    "last_processed_at",
+                ],
+                order_by="bound_project_global_id asc, updated_at desc, source_object_id asc",
+                limit_page_length=(len(project_ids) * 2) + 1,
+            )
+        except Exception as error:
+            if _missing_doctype(error):
+                return {
+                    project_id: _erp_project_binding("unavailable")
+                    for project_id in project_ids
+                }
+            raise
+        requested = frozenset(project_ids)
+        grouped = _group_rows(
+            rows,
+            "bound_project_global_id",
+            requested,
+            max_per_key=2,
+            scope="ERP Project source binding",
+        )
+        for project_id, project_rows in grouped.items():
+            if len(project_rows) > 1:
+                defaults[project_id] = _erp_project_binding("conflicted")
+                continue
+            row = project_rows[0]
+            state = str(_value(row, "stream_state"))
+            defaults[project_id] = _erp_project_binding(
+                "bound" if state == "bound" else "conflicted",
+                source_object_id=(
+                    str(_value(row, "source_object_id"))
+                    if state == "bound"
+                    else None
+                ),
+                last_processed_at=(
+                    _optional_utc(_value(row, "last_processed_at", None))
+                    if state == "bound"
+                    else None
+                ),
+            )
+        return defaults
 
     @staticmethod
     def _project_search_results(projects: Sequence[Any], query: str) -> list[dict[str, object]]:
@@ -844,6 +913,20 @@ def _erp_summary(
             ),
             default=None,
         ),
+    }
+
+
+def _erp_project_binding(
+    state: str,
+    *,
+    source_object_id: str | None = None,
+    last_processed_at: str | None = None,
+) -> dict[str, object]:
+    return {
+        "sourceSystem": SourceSystem.ERPNEXT.value,
+        "state": state,
+        "sourceObjectId": source_object_id,
+        "lastProcessedAt": last_processed_at,
     }
 
 

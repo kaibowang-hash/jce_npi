@@ -5,6 +5,11 @@ export type ReportingAvailability =
   | "stale"
   | "partial"
   | "unavailable";
+export type ErpProjectBindingState =
+  | "bound"
+  | "unbound"
+  | "conflicted"
+  | "unavailable";
 export type GlobalSearchKind =
   | "project"
   | "customer"
@@ -103,6 +108,12 @@ export interface ProjectPortfolioItem {
     reasonCode: string | null;
     observedKinds: readonly string[];
     freshestAt: string | null;
+    projectBinding: {
+      sourceSystem: "ERPNEXT";
+      state: ErpProjectBindingState;
+      sourceObjectId: string | null;
+      lastProcessedAt: string | null;
+    };
   };
   detailRoute: string;
 }
@@ -500,12 +511,31 @@ function projectPortfolioItem(value: unknown): value is ProjectPortfolioItem {
       "reasonCode",
       "observedKinds",
       "freshestAt",
+      "projectBinding",
     ]) &&
     value.erp.sourceSystem === "ERPNEXT" &&
     AVAILABILITY.has(value.erp.availability as ReportingAvailability) &&
     stringOrNull(value.erp.reasonCode, 128) &&
     stringArray(value.erp.observedKinds, 100) &&
     (value.erp.freshestAt === null || dateTime(value.erp.freshestAt)) &&
+    object(value.erp.projectBinding) &&
+    exact(value.erp.projectBinding, [
+      "sourceSystem",
+      "state",
+      "sourceObjectId",
+      "lastProcessedAt",
+    ]) &&
+    value.erp.projectBinding.sourceSystem === "ERPNEXT" &&
+    ["bound", "unbound", "conflicted", "unavailable"].includes(
+      String(value.erp.projectBinding.state),
+    ) &&
+    stringOrNull(value.erp.projectBinding.sourceObjectId, 280) &&
+    (value.erp.projectBinding.lastProcessedAt === null ||
+      dateTime(value.erp.projectBinding.lastProcessedAt)) &&
+    (value.erp.projectBinding.state === "bound"
+      ? value.erp.projectBinding.sourceObjectId !== null
+      : value.erp.projectBinding.sourceObjectId === null &&
+        value.erp.projectBinding.lastProcessedAt === null) &&
     validDetailRoute(value.detailRoute, value.globalId)
   );
 }

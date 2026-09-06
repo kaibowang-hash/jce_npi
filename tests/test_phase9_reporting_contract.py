@@ -54,6 +54,8 @@ class Phase9ReportingContractTest(unittest.TestCase):
         self.assertIn("currentGate", row)
         self.assertIn("work", row)
         self.assertIn("erp", row)
+        self.assertIn("projectBinding", schema("ProjectPortfolioErpTruth"))
+        self.assertIn("bound", schema("ErpProjectBinding"))
 
     def test_kpis_freeze_four_calculations_and_allow_no_fake_point(self) -> None:
         definition = schema("KpiDefinition")

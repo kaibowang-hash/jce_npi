@@ -335,6 +335,10 @@ class FrappeProjectRepository:
             return None
         snapshot = _snapshot_from_project_document(document)
         gates = self._load_gate_documents(project_global_id, snapshot)
+        erp_project_binding = self._erp_project_binding(
+            tenant_id=str(document.tenant_id),
+            project_global_id=str(project_global_id),
+        )
         references = []
         for row in document.references:
             reference: dict[str, Any] = {
@@ -365,6 +369,7 @@ class FrappeProjectRepository:
                     "syncState": "local",
                 },
             },
+            "erpProjectBinding": erp_project_binding,
             "templateRef": {
                 "globalId": str(snapshot.template_global_id),
                 "code": snapshot.template_code,
@@ -389,6 +394,48 @@ class FrappeProjectRepository:
                 "canAdminister": system_manager,
             },
         }
+
+    @staticmethod
+    def _erp_project_binding(
+        *,
+        tenant_id: str,
+        project_global_id: str,
+    ) -> dict[str, object]:
+        try:
+            rows = frappe.get_all(
+                "NPI Project Source Binding",
+                filters={
+                    "tenant_id": tenant_id,
+                    "source_system": "ERPNEXT",
+                    "target_system": "NPI_ONE",
+                    "source_object_type": "Project",
+                    "bound_project_global_id": project_global_id,
+                },
+                fields=["source_object_id", "stream_state", "last_processed_at"],
+                order_by="updated_at desc, source_object_id asc",
+                limit_page_length=3,
+            )
+        except Exception as error:
+            if _missing_doctype(error):
+                return _erp_project_binding_view("unavailable")
+            raise
+        if not rows:
+            return _erp_project_binding_view("unbound")
+        if len(rows) > 1:
+            return _erp_project_binding_view("conflicted")
+        row = rows[0]
+        state = str(row.stream_state)
+        if state != "bound":
+            return _erp_project_binding_view("conflicted")
+        return _erp_project_binding_view(
+            "bound",
+            source_object_id=str(row.source_object_id),
+            last_processed_at=(
+                _datetime_iso(row.last_processed_at)
+                if row.last_processed_at
+                else None
+            ),
+        )
 
     def _load_instantiation(self, project_global_id: UUID) -> ProjectInstantiation:
         document = frappe.get_doc(
@@ -468,6 +515,27 @@ def _optional_doc(doctype: str, name: str):
         return frappe.get_doc(doctype, name)
     except frappe.DoesNotExistError:
         return None
+
+
+def _erp_project_binding_view(
+    state: str,
+    *,
+    source_object_id: str | None = None,
+    last_processed_at: str | None = None,
+) -> dict[str, object]:
+    return {
+        "sourceSystem": "ERPNEXT",
+        "state": state,
+        "sourceObjectId": source_object_id,
+        "lastProcessedAt": last_processed_at,
+    }
+
+
+def _missing_doctype(error: Exception) -> bool:
+    return (
+        type(error).__name__ in {"DoesNotExistError", "ProgrammingError"}
+        and "DocType" in str(error)
+    )
 
 
 def _json_array(value: object) -> list[object]:

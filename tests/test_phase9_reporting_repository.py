@@ -167,6 +167,17 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
             ]
         if doctype == "NPI ERP Projection Head":
             return []
+        if doctype == "NPI Project Source Binding":
+            visible = set(kwargs["filters"]["bound_project_global_id"][1])
+            project_id = list(self.projects)[0]
+            return [
+                Row(
+                    bound_project_global_id=project_id,
+                    source_object_id="ERP-PROJECT-001",
+                    stream_state="bound",
+                    last_processed_at=NOW,
+                )
+            ] if project_id in visible else []
         if doctype == "NPI Tooling Master":
             visible = set(kwargs["filters"]["originating_project_global_id"][1])
             return [
@@ -210,6 +221,12 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
         self.assertEqual(item["work"]["decisionCount"], 1)
         self.assertEqual(item["erp"]["availability"], "unavailable")
         self.assertEqual(item["erp"]["reasonCode"], "erp_projection_not_observed")
+        self.assertEqual(item["erp"]["projectBinding"], {
+            "sourceSystem": "ERPNEXT",
+            "state": "bound",
+            "sourceObjectId": "ERP-PROJECT-001",
+            "lastProcessedAt": "2026-09-03T08:00:00Z",
+        })
         self.assertNotIn("cost", item)
 
     def test_search_filters_every_object_through_visible_projects(self) -> None:
@@ -354,6 +371,7 @@ class Phase9ReportingRepositoryTest(unittest.TestCase):
                 "NPI Project Reference",
                 "NPI Domain Work Item",
                 "NPI Gate Shell",
+                "NPI Project Source Binding",
                 "NPI ERP Projection Head",
             ],
         )

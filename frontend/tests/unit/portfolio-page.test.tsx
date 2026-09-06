@@ -3,7 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import PortfolioPage from "../../src/pages/portfolio-page";
-import { SyntheticReportingDataSource } from "../support/reporting-fixture";
+import {
+  portfolioFixture,
+  SyntheticReportingDataSource,
+} from "../support/reporting-fixture";
 import { renderWithLocale } from "../support/render";
 
 describe("Portfolio reporting workspace", () => {
@@ -29,7 +32,71 @@ describe("Portfolio reporting workspace", () => {
     expect(within(table).getByText("SYN-PROJECT-001")).toBeVisible();
     expect(within(table).getByText("Yellow")).toBeVisible();
     expect(within(table).getByText("JCE Core")).toBeVisible();
-    expect(within(table).getByText("Stale")).toBeVisible();
+    expect(within(table).getByText("Project linked")).toBeVisible();
+    expect(within(table).getByText("SYN-ERP-PROJECT-001")).toBeVisible();
+    expect(within(table).getByText(/ERP facts.*Stale/u)).toBeVisible();
+  });
+
+  it("does not label an unobserved project as an unavailable ERPNext system", async () => {
+    const dataSource = new SyntheticReportingDataSource();
+    vi.spyOn(dataSource, "loadPortfolio").mockResolvedValue({
+      ...portfolioFixture(),
+      items: portfolioFixture().items.map((item) => ({
+        ...item,
+        erp: {
+          ...item.erp,
+          availability: "unavailable",
+          reasonCode: "erp_projection_not_observed",
+          observedKinds: [],
+          freshestAt: null,
+        },
+      })),
+    });
+    renderWithLocale(
+      <PortfolioPage
+        dataSource={dataSource}
+        navigate={vi.fn()}
+        view="portfolio"
+      />,
+      "en",
+      "/portfolio",
+    );
+
+    expect(await screen.findByText("Project linked")).toBeVisible();
+    expect(screen.getByText("No ERP fact observations yet.")).toBeVisible();
+    expect(screen.queryByText("Unavailable")).toBeNull();
+  });
+
+  it("distinguishes an unbound NPI project from ERPNext service availability", async () => {
+    const dataSource = new SyntheticReportingDataSource();
+    vi.spyOn(dataSource, "loadPortfolio").mockResolvedValue({
+      ...portfolioFixture(),
+      items: portfolioFixture().items.map((item) => ({
+        ...item,
+        erp: {
+          ...item.erp,
+          projectBinding: {
+            sourceSystem: "ERPNEXT",
+            state: "unbound",
+            sourceObjectId: null,
+            lastProcessedAt: null,
+          },
+        },
+      })),
+    });
+    renderWithLocale(
+      <PortfolioPage
+        dataSource={dataSource}
+        navigate={vi.fn()}
+        view="portfolio"
+      />,
+      "en",
+      "/portfolio",
+    );
+
+    expect(await screen.findByText("Project not linked")).toBeVisible();
+    expect(screen.queryByText("SYN-ERP-PROJECT-001")).toBeNull();
+    expect(screen.getByText(/ERP facts.*Stale/u)).toBeVisible();
   });
 
   it("shows fixed KPI definitions and honest availability", async () => {

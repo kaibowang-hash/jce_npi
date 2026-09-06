@@ -242,6 +242,27 @@ function isProjectReference(
   );
 }
 
+function isErpProjectBinding(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  const state = String(value.state);
+  return (
+    hasExactKeys(value, [
+      "sourceSystem",
+      "state",
+      "sourceObjectId",
+      "lastProcessedAt",
+    ]) &&
+    value.sourceSystem === "ERPNEXT" &&
+    ["bound", "unbound", "conflicted", "unavailable"].includes(state) &&
+    (value.sourceObjectId === null ||
+      isConstrainedString(value.sourceObjectId, 280)) &&
+    (value.lastProcessedAt === null || isUtcTimestamp(value.lastProcessedAt)) &&
+    (state === "bound"
+      ? value.sourceObjectId !== null
+      : value.sourceObjectId === null && value.lastProcessedAt === null)
+  );
+}
+
 function isGate(value: unknown): value is ProjectGateShellViewModel {
   if (!isRecord(value)) return false;
   return (
@@ -279,12 +300,14 @@ export function isProjectCockpitResponse(
   if (
     !hasExactKeys(value, [
       "project",
+      "erpProjectBinding",
       "templateRef",
       "references",
       "gates",
       "permissions",
     ]) ||
     !isProject(value.project) ||
+    !isErpProjectBinding(value.erpProjectBinding) ||
     !isTemplateReference(value.templateRef) ||
     !Array.isArray(value.references) ||
     value.references.length > 100 ||

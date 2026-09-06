@@ -168,7 +168,8 @@ class StubFrappeStore:
         filters: Mapping[str, object],
         fields: list[str],
         order_by: str,
-        page_length: int,
+        page_length: int | None = None,
+        limit_page_length: int | None = None,
     ) -> list[AttrDict]:
         documents = [
             document
@@ -182,11 +183,25 @@ class StubFrappeStore:
                     -int(document.get("template_version", 0)),
                 )
             )
+        elif (
+            doctype == "NPI Project Source Binding"
+            and order_by == "updated_at desc, source_object_id asc"
+        ):
+            documents.sort(
+                key=lambda document: (
+                    str(document.get("updated_at")),
+                    str(document.get("source_object_id")),
+                ),
+                reverse=True,
+            )
         else:
             raise AssertionError(f"Unexpected order: {order_by}")
+        limit = page_length if page_length is not None else limit_page_length
+        if limit is None:
+            raise AssertionError("A bounded page length is required.")
         return [
             AttrDict({field: document.get(field) for field in fields})
-            for document in documents[:page_length]
+            for document in documents[:limit]
         ]
 
     def insert(self, raw_values: Mapping[str, Any]) -> AttrDict:
@@ -797,8 +812,21 @@ class Phase4ProjectApiTest(unittest.TestCase):
         self.assertEqual(headers["Cache-Control"], "private, no-store")
         self.assertEqual(
             set(result),
-            {"project", "templateRef", "references", "gates", "permissions"},
+            {
+                "project",
+                "erpProjectBinding",
+                "templateRef",
+                "references",
+                "gates",
+                "permissions",
+            },
         )
+        self.assertEqual(result["erpProjectBinding"], {
+            "sourceSystem": "ERPNEXT",
+            "state": "unbound",
+            "sourceObjectId": None,
+            "lastProcessedAt": None,
+        })
         self.assertEqual(
             set(result["project"]),
             {
@@ -995,6 +1023,37 @@ class Phase4ProjectApiTest(unittest.TestCase):
             "canContribute": True,
             "canAdminister": True,
         })
+
+    def test_cockpit_keeps_erp_project_binding_separate_from_governed_references(self) -> None:
+        created = self._create_and_commit()
+        project_id = created["project"]["globalId"]
+        processed_at = datetime(2026, 7, 23, 13, 0, tzinfo=UTC)
+        self.store.seed(
+            "NPI Project Source Binding",
+            "synthetic-binding",
+            {
+                "tenant_id": "TENANT-A",
+                "source_system": "ERPNEXT",
+                "target_system": "NPI_ONE",
+                "source_object_type": "Project",
+                "source_object_id": "ERP-PROJECT-001",
+                "bound_project_global_id": project_id,
+                "stream_state": "bound",
+                "last_processed_at": processed_at,
+                "updated_at": processed_at,
+            },
+        )
+
+        self._reset_response()
+        result = self._get_cockpit(project_id)
+
+        self.assertEqual(result["erpProjectBinding"], {
+            "sourceSystem": "ERPNEXT",
+            "state": "bound",
+            "sourceObjectId": "ERP-PROJECT-001",
+            "lastProcessedAt": "2026-07-23T13:00:00Z",
+        })
+        self.assertEqual(len(result["references"]), 2)
 
     def test_unrelated_and_missing_projects_return_the_same_idor_safe_problem(self) -> None:
         created = self._create_and_commit()

@@ -123,6 +123,18 @@ describe("Project cockpit response validation", () => {
       (fixture: Record<string, unknown>) => ({ ...fixture, debug: true }),
     ],
     [
+      "invalid ERP Project binding identity",
+      (fixture: Record<string, unknown>) => ({
+        ...fixture,
+        erpProjectBinding: {
+          sourceSystem: "ERPNEXT",
+          state: "bound",
+          sourceObjectId: null,
+          lastProcessedAt: null,
+        },
+      }),
+    ],
+    [
       "unknown nested fields",
       (fixture: Record<string, unknown>) => ({
         ...fixture,

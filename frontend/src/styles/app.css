@@ -1245,6 +1245,10 @@ textarea::placeholder {
     );
 }
 
+.erp-project-binding-panel {
+  grid-column: 1 / -1;
+}
+
 .tooling-live__layout {
   grid-template-columns: 260px minmax(480px, 1fr) var(
       --npi-inspector-width,
@@ -2434,8 +2438,8 @@ textarea::placeholder {
 }
 
 .reporting-table__truth {
-  display: flex;
-  align-items: center;
+  display: grid;
+  justify-items: start;
   gap: var(--npi-space-1);
 }
 

@@ -548,7 +548,6 @@ The project response could not be used safely,无法安全使用项目响应
 No project data was displayed. Share the displayed reference ID with support before trying another action.,未显示任何项目数据。请先将显示的参考编号提供给支持人员，再尝试其他操作。
 Reload project,重新加载项目
 You have view-only access. Project commands are not available in this cockpit.,您仅有查看权限。此驾驶舱不提供项目命令。
-This project has no governed object references.,此项目没有受治理的对象引用。
 Project type,项目类型
 Owner,负责人
 Draft,草稿
@@ -8940,7 +8939,6 @@ Type and owner,类型和负责人
 Current Gate,当前阶段门
 Active work,进行中的工作
 Health,健康状态
-ERPNext truth,ERPNext 事实
 {{overdue}} overdue · {{blockers}} blockers,{{overdue}} 项逾期 · {{blockers}} 项阻断
 Latest value,最新值
 Definition,定义
@@ -9466,3 +9464,14 @@ Project owner,项目负责人
 This template requires project references and is not available in quick create.,此模板需要项目引用，无法用于快捷创建。
 Your ERPNext permissions do not allow creating a project.,您的 ERPNext 权限不允许创建项目。
 Factory,工厂
+ERP facts,企业资源计划事实
+ERP fact data unavailable.,企业资源计划事实数据不可用。
+ERPNext link and facts,ERPNext 链接与事实
+ERPNext Project,ERPNext 项目
+ERPNext Project link,ERPNext 项目链接
+Last processed,最近处理时间
+No ERP fact observations yet.,尚无企业资源计划事实观察。
+Project link conflict,项目链接冲突
+Project link data unavailable,项目链接数据不可用
+Project linked,项目已链接
+Project not linked,项目未链接
