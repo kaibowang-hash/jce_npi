@@ -12158,3 +12158,20 @@ P9-01 Level 3.
 - Final closure requires exact-SHA ordinary CI and one diagnostics-off Level 3
   on this sanitized completion checkpoint.
 - Controller marker: `PA-09 exact production hotfix deployed and browser-verified; final exact-SHA ordinary CI and Level 3 required`.
+
+## 2026-09-06 PA-11 ERPNext bidirectional trial integration
+
+- Controller marker: `PA-11 ERPNext bidirectional trial integration`.
+- The user explicitly authorized direct completion of the NPI One and
+  ERPNext-test integration and requested readiness for trial. The bounded task
+  is `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION` with base checkpoint
+  `57b64feb3d8598384ae0f1e6eff9d4e19609a1e0`.
+- The task completes the missing signed NPI-to-ERPNext Project command and
+  retains the existing ERPNext-to-NPI Project, authorization and master-data
+  paths. It preserves single-field ownership, actual-user attribution, durable
+  idempotency/retry/reconciliation, loop suppression, ERPNext v15/v16 support,
+  translation and industrial UI rules.
+- No production ERPNext or `JCE-Core` access is authorized. Exact-SHA ordinary
+  CI and complete Level 3 must pass before encrypted backups,
+  test-environment deployment and live exchange. Only complete live evidence
+  may advance the task to ready for trial.

@@ -1,6 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-09-05T23:46:46+07:00`
+Updated: `2026-09-06T15:00:00+07:00`
+
+- Active integration task: `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION — IN_PROGRESS_LEVEL_3`.
+- The authorized outcome is a real bidirectional test-environment connection:
+  ERPNext-test continues to publish Project/User/permission/master-data truth
+  into NPI One, while an NPI-created Project creates exactly one formal ERPNext
+  Project and stores the returned ERPNext identity.
+- Exact business-user attribution is mandatory. The signed command carries the
+  NPI actor, ERPNext validates that enabled System User, and the formal Project
+  owner is that actor; the Website User transport account remains separate.
+- Candidate `576465c9e41801960f9a867db738a5e16148e0d7` passes local repository
+  `3171/3171`, frontend `1174/1174`, browser E2E `475/475`, and disposable
+  ERPNext v15 install plus double migration. GitHub ordinary and Level 3 gates,
+  encrypted backups, ERPNext-test v16 deployment, and live exchange remain
+  required before the task may be called ready for trial.
+- Production ERPNext and `JCE-Core` remain excluded. Controller marker:
+  `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION`.
 
 - Completed integration hotfix: `PA-10-ERP-AUTHORIZATION-HOTFIX — IMPLEMENTATION_COMPLETE`.
 - Exact product SHA `118fb6b90aa47aca8a2e790f9c834cd5b74ee843`

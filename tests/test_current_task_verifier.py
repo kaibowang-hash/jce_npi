@@ -34,45 +34,62 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "PA-10-ERP-AUTHORIZATION-HOTFIX")
+        self.assertEqual(
+            value["task_id"],
+            "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
+        )
         self.assertEqual(value["task_kind"], "product")
-        self.assertEqual(value["status"], "IMPLEMENTATION_COMPLETE")
+        self.assertEqual(value["status"], "IN_PROGRESS_LEVEL_3")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], "COMPLETE")
-        self.assertEqual(value["requirement_ids"], ["INT-012", "NFR-SEC-003"])
+        self.assertEqual(
+            value["requirement_ids"],
+            [
+                "INT-001",
+                "INT-002",
+                "INT-003",
+                "INT-004",
+                "INT-005",
+                "INT-008",
+                "INT-012",
+                "NFR-INT-001",
+                "NFR-SEC-003",
+            ],
+        )
         self.assertEqual(
             value["base_checkpoint"],
-            "7a707d4e7dad1ecc083f5c9f0fff1911c02efdc4",
+            "57b64feb3d8598384ae0f1e6eff9d4e19609a1e0",
         )
         self.assertEqual(
             value["predecessor_product_checkpoint"],
-            "7a707d4e7dad1ecc083f5c9f0fff1911c02efdc4",
+            "57b64feb3d8598384ae0f1e6eff9d4e19609a1e0",
         )
         self.assertEqual(
             value["expected_state"],
             {
-                "phase_status_current_task": "PA-10-ERP-AUTHORIZATION-HOTFIX",
+                "phase_status_current_task": "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
                 "phase_status_execution_hold": "NONE",
                 "phase_status_resumed_product_task": "COMPLETE",
-                "active_goal_marker": "PA-10-ERP-AUTHORIZATION-HOTFIX",
-                "next_action_marker": "PA-10-ERP-AUTHORIZATION-HOTFIX",
-                "controller_marker": "PA-10 ERP authorization ownership hotfix",
+                "active_goal_marker": "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
+                "next_action_marker": "PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
+                "controller_marker": "PA-11 ERPNext bidirectional trial integration",
             },
         )
         for invariant in (
-            "ERPNEXT_REMAINS_AUTHORIZATION_OWNER",
-            "ONLY_EXPLICITLY_MAPPED_ROLES_AND_SCOPES_ARE_PROJECTED",
-            "BUILT_IN_AND_TRANSPORT_SERVICE_IDENTITIES_REMAIN_PROTECTED",
-            "UNKNOWN_DISABLED_EXPIRED_OR_UNMAPPED_PRINCIPALS_FAIL_CLOSED",
-            "AUTHORIZATION_ENFORCEMENT_REMAINS_DISABLED_DURING_PARTIAL_MAPPING",
-            "EXACT_IMMUTABLE_DEPLOYMENT_REQUIRES_ENCRYPTED_BACKUP_AND_ROLLBACK",
+            "ERPNEXT_OWNS_FORMAL_PROJECT_AND_ITEM_IDENTITIES",
+            "NPI_OWNS_NPI_ENGINEERING_PROCESS_TRUTH",
+            "BUSINESS_ACTOR_IS_VISIBLE_AND_TRANSPORT_IDENTITY_IS_SEPARATE",
+            "OUTBOX_INBOX_IDEMPOTENCY_RETRY_RECONCILIATION_AND_LOOP_SUPPRESSION_ARE_REQUIRED",
+            "UNKNOWN_DISABLED_OR_UNAUTHORIZED_PRINCIPALS_FAIL_CLOSED",
+            "LEVEL_3_AND_LIVE_TEST_EXCHANGE_ARE_REQUIRED_BEFORE_READY_FOR_TRIAL",
         ):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue(
             {
-                "apps/npi_integration/npi_integration/authorization_projection/frappe_repository.py",
-                "implementation/evidence/erpnext-test/authorization-sync-hotfix-0.5.1.md",
-                "tests/test_phase9_authorization_projection_repository.py",
+                "apps/npi_integration/npi_integration/project_publish/worker.py",
+                "apps/npi_erpnext_connector/npi_erpnext_connector/project_publish_api.py",
+                "implementation/evidence/erpnext-test/bidirectional-project-integration-0.10.0.md",
+                "tests/test_project_publish_worker.py",
                 "tests/test_current_task_verifier.py",
             }.issubset(set(value["allowed_paths"]))
         )

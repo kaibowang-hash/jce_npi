@@ -1,6 +1,20 @@
 # Next Action
 
 Status:
+`PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION — IN_PROGRESS_LEVEL_3`
+
+Finish the exact-SHA ordinary and Level 3 gates for candidate
+`576465c9e41801960f9a867db738a5e16148e0d7`. Only after both pass, take
+encrypted backups and deploy the immutable candidate to LaunchFlow and
+ERPNext-test, enable the fixed non-production Project profiles, and verify one
+real NPI-to-ERPNext Project create plus the existing ERPNext-to-NPI path. The
+live proof must include actor ownership, formal ID return, exact replay,
+uncertain-result reconciliation, loop suppression, all five downstream profile
+families, refreshed User/permission/master-data projections and honest
+connection status. Production ERPNext and `JCE-Core` remain prohibited. Marker:
+`PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION`.
+
+Status:
 `PA-10-ERP-AUTHORIZATION-HOTFIX — IMPLEMENTATION_COMPLETE`
 
 Exact product SHA `118fb6b90aa47aca8a2e790f9c834cd5b74ee843`

@@ -9,6 +9,18 @@ allocation for Phase 9. P9-00 exact SHA
 final P9-08 and Phase 9 evidence below now closes the technical implementation
 without granting production activation or readiness.
 
+## PA-11 authorized test-integration delta
+
+On 2026-09-06 the user separately authorized a ready-for-trial integration
+delta after the prior Phase 9 closeout. `PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION`
+allocates `INT-001`, `INT-002`, `INT-003`, `INT-004`, `INT-005`, `INT-008`,
+`INT-012`, `NFR-INT-001` and `NFR-SEC-003` only to the existing LaunchFlow and
+ERPNext-test environments. The delta completes the missing NPI-to-ERPNext
+Project command while retaining the existing ERPNext-to-NPI Project, User,
+permission and master-data direction. It may activate only after exact-SHA
+ordinary and Level 3 gates, encrypted backups and live test-environment
+verification. Production ERPNext and `JCE-Core` remain out of scope.
+
 ## Authority and fixed boundaries
 
 - The approved LaunchFlow architecture, data ownership, OpenAPI/event contracts,

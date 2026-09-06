@@ -834,7 +834,10 @@ class V12ReconciliationTests(unittest.TestCase):
             "facts_status: PASS_BOUNDED_COMPATIBILITY_RECONCILIATION_LEVEL_3",
             phase_status,
         )
-        self.assertIn("current_task: PA-10-ERP-AUTHORIZATION-HOTFIX", phase_status)
+        self.assertIn(
+            "current_task: PA-11-ERPNEXT-BIDIRECTIONAL-TRIAL-INTEGRATION",
+            phase_status,
+        )
         self.assertIn("task_id: PA-08-DEPLOYMENT", phase_status)
         self.assertIn("p9_07:", phase_status)
         self.assertIn("final_level_3: 33730710124_PASS", phase_status)
@@ -843,8 +846,8 @@ class V12ReconciliationTests(unittest.TestCase):
             "evidence_class: CONTROLLED_NON_PRODUCTION_TECHNICAL_UAT",
             phase_status,
         )
-        self.assertIn("overall_status: IMPLEMENTATION_COMPLETE", phase_status)
-        self.assertIn("technical_implementation_complete: true", phase_status)
+        self.assertIn("overall_status: IN_PROGRESS_TRIAL_INTEGRATION", phase_status)
+        self.assertIn("technical_implementation_complete: false", phase_status)
         self.assertIn("level_3: 33975755695_ATTEMPT_2_PASS", phase_status)
         self.assertIn("project_master_sync: NOT_IMPLEMENTED", phase_status)
         self.assertIn(
