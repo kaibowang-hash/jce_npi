@@ -63,6 +63,17 @@ class ProjectPublishMetadataTest(unittest.TestCase):
         self.assertIn("PROJECT_PUBLISH_ATTEMPT_LIMIT_REACHED", worker)
         self.assertIn('request_state in {"failed_retryable", "uncertain"}', worker)
 
+    def test_predecessor_runtime_does_not_freeze_the_independent_outbox(self) -> None:
+        source = (ROOT / "scripts/verify_released_trial_summary_runtime.py").read_text(
+            encoding="utf-8"
+        )
+        for doctype in (
+            "NPI ERP Project Publish Request",
+            "NPI ERP Project Publish Attempt",
+            "NPI ERP Project Publish Result",
+        ):
+            self.assertIn(f'"integration:{doctype}"', source)
+
     def test_receiver_is_operation_specific_v15_v16_and_loop_suppressed(self) -> None:
         api = (ERP / "project_publish_api.py").read_text(encoding="utf-8")
         repository = (ERP / "project_repository.py").read_text(encoding="utf-8")

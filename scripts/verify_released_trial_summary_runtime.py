@@ -762,6 +762,14 @@ def cumulative_protected_context(
         "trial:NPI Trial Round Lifecycle Event",
         "trial:NPI Trial Command Idempotency",
         "trial:NPI Trial Conclusion Revision",
+        # Project publication is an independent Outbox stream. A Project
+        # created by an earlier cumulative fixture may be claimed or completed
+        # between these snapshots, so P7-07 must not freeze that worker state
+        # while proving every other predecessor stream remains unchanged. The
+        # PA-11 runtime tests verify this stream's own invariants directly.
+        "integration:NPI ERP Project Publish Request",
+        "integration:NPI ERP Project Publish Attempt",
+        "integration:NPI ERP Project Publish Result",
         "audit:non-p706",
     }
     return {

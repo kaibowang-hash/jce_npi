@@ -232,6 +232,7 @@
     "implementation/PHASE_STATUS.yaml",
     "implementation/phase-9-requirement-anchor.md",
     "implementation/evidence/erpnext-test/bidirectional-project-integration-0.10.0.md",
+    "scripts/verify_released_trial_summary_runtime.py",
     "scripts/verify_devcontainer.py",
     "tests/test_erpnext_connector_item_metadata.py",
     "tests/test_current_task_verifier.py",
