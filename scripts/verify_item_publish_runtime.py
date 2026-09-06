@@ -625,13 +625,15 @@ def legacy_reconciliation_failure_message(
 ) -> str | None:
     """Classify only value-free reconciliation problem response predicates."""
 
-    if not _legacy_reconciliation_response_diagnostics_enabled():
-        return None
-    diagnostic = _sanitized_server_log_diagnostic(
-        result.trace_id,
-        cursors,
-        code_prefix="P803_CREATE_",
-        allowed_codes=_CREATE_SERVER_DIAGNOSTIC_CODES,
+    diagnostic = (
+        _sanitized_server_log_diagnostic(
+            result.trace_id,
+            cursors,
+            code_prefix="P803_CREATE_",
+            allowed_codes=_CREATE_SERVER_DIAGNOSTIC_CODES,
+        )
+        if _legacy_reconciliation_response_diagnostics_enabled()
+        else None
     )
     if diagnostic is not None:
         exception_type, code, trace_id = diagnostic

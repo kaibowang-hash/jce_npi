@@ -627,6 +627,16 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("diagnostic_code=P803_CREATE_AUDIT_APPEND", rendered)
         self.assertNotIn("P803_LEGACY_RECONCILIATION_STATUS", rendered)
 
+        disabled_rendered = module.legacy_reconciliation_failure_message(
+            cases[3][0],
+            None,
+        )
+        self.assertIn(
+            "diagnostic_code=P803_LEGACY_RECONCILIATION_CODE_PROJECT_HISTORY_LOCKED",
+            disabled_rendered,
+        )
+        self.assertNotIn("private", disabled_rendered.casefold())
+
     def test_legacy_full_boundary_diagnostic_is_exact_three_key_and_first_wins(
         self,
     ) -> None:
