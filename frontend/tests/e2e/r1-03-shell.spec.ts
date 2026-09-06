@@ -31,6 +31,8 @@ const navigationPreferenceEndpoint =
 const cockpitEndpoint = /\/api\/npi\/v1\/projects\/[^/?]+\/cockpit(?:\?.*)?$/u;
 const learningEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/learning(?:\?.*)?$/u;
+const projectCreationContextEndpoint =
+  /\/api\/npi\/v1\/projects\/creation-context(?:\?.*)?$/u;
 
 interface NavigationPreferenceRequest {
   body: { collapsed: boolean };
@@ -49,6 +51,7 @@ interface ProjectHarness {
 function sessionBootstrap(
   locale: TestLocale,
   navigationCollapsed: boolean,
+  canCreateProject = false,
 ): Readonly<Record<string, unknown>> {
   return {
     allowedLanguages: ["en", "zh", "zh-TW"],
@@ -58,6 +61,7 @@ function sessionBootstrap(
       version: "f".repeat(64),
     },
     csrfToken,
+    canCreateProject,
     deploymentEnvironment: "production",
     language: locale,
     preferences: { navigationCollapsed },
@@ -100,6 +104,7 @@ async function installSession(
   page: Page,
   locale: TestLocale,
   initialCollapsed = false,
+  canCreateProject = false,
 ): Promise<SessionHarness> {
   let confirmedCollapsed = initialCollapsed;
   const preferenceRequests: NavigationPreferenceRequest[] = [];
@@ -108,7 +113,7 @@ async function installSession(
     expectSafeGet(route);
     await fulfillApi(
       route,
-      sessionBootstrap(locale, confirmedCollapsed),
+      sessionBootstrap(locale, confirmedCollapsed, canCreateProject),
       "trace-r1-03-session-bootstrap",
     );
   });
@@ -138,7 +143,7 @@ async function installSession(
 
     await fulfillApi(
       route,
-      sessionBootstrap(locale, confirmedCollapsed),
+      sessionBootstrap(locale, confirmedCollapsed, canCreateProject),
       "trace-r1-03-navigation-preference",
     );
   });
@@ -239,6 +244,66 @@ async function expectCollapsedProjectTooltip(
 }
 
 test.describe("R1-03 application Shell behavior", () => {
+  for (const locale of ["en", "zh", "zh-TW"] as const) {
+    test(`opens ERPNext-authorized Project creation with a language-pure ${locale} form`, async ({
+      page,
+    }) => {
+      await installSession(page, locale, false, true);
+      await page.route(projectCreationContextEndpoint, async (route) => {
+        expectSafeGet(route);
+        await fulfillApi(
+          route,
+          {
+            ownerUserId: "manager@example.invalid",
+            templates: [
+              {
+                applicableProjectTypes: ["new_tool", "tool_change"],
+                code: "NEW-TOOL",
+                expectedVersion: 2,
+                globalId: "11111111-1111-4111-8111-111111111111",
+                referenceRules: [],
+                title: "New Tool Project",
+                version: 1,
+              },
+            ],
+            tenantId: "TENANT-A",
+          },
+          "trace-r1-03-project-creation-context",
+        );
+      });
+      await page.goto(`/work?lang=${locale}`, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
+      const quickCreate = page.getByRole("button", {
+        name: translate(locale, "Quick create"),
+      });
+      await quickCreate.click();
+      await page
+        .getByRole("button", { name: translate(locale, "Create project") })
+        .click();
+
+      const dialog = page.getByRole("dialog", {
+        name: translate(locale, "Create project"),
+      });
+      await expect(dialog).toBeVisible();
+      await expect(
+        dialog.getByRole("textbox", {
+          name: translate(locale, "Business code"),
+        }),
+      ).toBeFocused();
+      await expect(dialog.getByText("manager@example.invalid")).toBeVisible();
+      await expectNoMixedLanguage(page, locale);
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .analyze();
+      expect(results.violations).toEqual([]);
+      await page.keyboard.press("Escape");
+      await expect(dialog).toHaveCount(0);
+      await expect(quickCreate).toBeFocused();
+    });
+  }
+
   test("persists full-to-collapsed navigation through the exact session preference boundary", async ({
     page,
   }) => {

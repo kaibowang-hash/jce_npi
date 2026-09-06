@@ -8,6 +8,7 @@ import type { AppRoute } from "../../src/app/router";
 import type { ERPConnectionStatusDataSource } from "../../src/api/erp-connection-status-data-source";
 import { LiveMyWorkDataSource } from "../../src/api/my-work-data-source";
 import type { ProjectControlsDataSource } from "../../src/api/project-controls-data-source";
+import type { ProjectCreationDataSource } from "../../src/api/project-data-source";
 import { NpiTransportError } from "../../src/api/http";
 import { GlobalSearchPanel } from "../../src/components/global-search-panel";
 import { NotificationCenter } from "../../src/components/notification-center";
@@ -101,6 +102,7 @@ function sessionBootstrap(
   navigationCollapsed = false,
   isSystemManager = false,
   deploymentEnvironment: "production" | "sandbox" = "production",
+  canCreateProject = false,
 ): Readonly<Record<string, unknown>> {
   return {
     allowedLanguages: ["en", "zh", "zh-TW"],
@@ -110,6 +112,7 @@ function sessionBootstrap(
       version: "a".repeat(64),
     },
     csrfToken,
+    canCreateProject,
     deploymentEnvironment,
     isSystemManager,
     language,
@@ -125,6 +128,64 @@ function response(body: unknown, status = 200, traceId?: string): Response {
 }
 
 describe("application shell behavior", () => {
+  it("opens Project creation from global quick-create when ERPNext grants the capability", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          response(
+            sessionBootstrap(
+              "en",
+              "a".repeat(32),
+              false,
+              false,
+              "production",
+              true,
+            ),
+          ),
+        ),
+    );
+    const loadCreationContext = vi
+      .fn<ProjectCreationDataSource["loadCreationContext"]>()
+      .mockResolvedValue({
+        ownerUserId: "phase3@example.invalid",
+        templates: [],
+        tenantId: "TENANT-A",
+      });
+    const projectCreationDataSource: ProjectCreationDataSource = {
+      create: vi.fn(),
+      loadCreationContext,
+    };
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell
+        navigate={vi.fn()}
+        projectCreationDataSource={projectCreationDataSource}
+        route={route("work", "/work")}
+      >
+        <p>Live My Work workspace</p>
+      </AppShell>,
+      "en",
+      "/work",
+    );
+
+    await screen.findByText("Language is managed by the Frappe session.");
+    const quickCreate = screen.getByRole("button", { name: "Quick create" });
+    await user.click(quickCreate);
+    await user.click(
+      await screen.findByRole("button", { name: "Create project" }),
+    );
+    expect(
+      await screen.findByRole("dialog", { name: "Create project" }),
+    ).toBeVisible();
+    expect(loadCreationContext).toHaveBeenCalledTimes(1);
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(quickCreate).toHaveFocus();
+    });
+  });
+
   it.each([
     ["production", "Production environment"],
     ["sandbox", "Sandbox environment"],

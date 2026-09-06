@@ -71,6 +71,9 @@ _ROUTES = {
         "npi_core.localization_api.set_current_user_navigation_preference"
     ),
     ("POST", "/api/npi/v1/projects"): "npi_core.project_api.create_project",
+    ("GET", "/api/npi/v1/projects/creation-context"): (
+        "npi_core.project_api.get_project_creation_context"
+    ),
     ("PUT", "/api/npi/v1/integration/erpnext/user-authorization"): (
         "npi_integration.authorization_projection_api.replace_user_authorization"
     ),

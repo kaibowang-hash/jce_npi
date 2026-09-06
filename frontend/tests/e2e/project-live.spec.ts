@@ -257,9 +257,12 @@ test.describe("live Project cockpit BFF path", () => {
       await expectLoadedProject(page);
 
       await expect(page.locator(".prototype-banner")).toContainText(
+        translate(locale, "ERPNext is not connected."),
+      );
+      await expect(page.locator(".prototype-banner")).toContainText(
         translate(
           locale,
-          "Live project data. No production ERPNext system is connected.",
+          "Language persistence uses the prototype fallback because no Frappe Site is active.",
         ),
       );
       await expect(page.getByText("SYNTHETIC-PROJECT-TEMPLATE")).toBeVisible();

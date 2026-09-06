@@ -179,6 +179,7 @@ class Phase4ProjectContractTests(unittest.TestCase):
     def test_project_command_and_query_are_explicit_business_operations(self) -> None:
         create = _indented_block("  /projects:")
         cockpit = _indented_block("  /projects/{projectId}/cockpit:")
+        creation_context = _indented_block("  /projects/creation-context:")
 
         self.assertIn("operationId: createProjectDraft", create)
         self.assertIn("x-required-roles: [System Manager]", create)
@@ -198,6 +199,14 @@ class Phase4ProjectContractTests(unittest.TestCase):
         self.assertIn("unauthorized Project both return the", cockpit)
         self.assertIn("configured Site tenant", cockpit)
         self.assertNotIn('"403":', cockpit)
+
+        self.assertIn("operationId: getProjectCreationContext", creation_context)
+        self.assertIn("x-required-roles: [System Manager]", creation_context)
+        self.assertIn('$ref: "#/components/parameters/RequestId"', creation_context)
+        self.assertIn(
+            '$ref: "#/components/schemas/ProjectCreationContext"',
+            creation_context,
+        )
 
     def test_project_problem_statuses_are_complete_and_non_leaking(self) -> None:
         create = _indented_block("  /projects:")
@@ -253,6 +262,34 @@ class Phase4ProjectContractTests(unittest.TestCase):
         self.assertIn("minimum: 1", _field("CreateProjectDraft", "expectedVersion"))
         self.assertIn("maxLength: 128", _field("CreateProjectDraft", "tenantId"))
         self.assertIn("maxLength: 64", _field("CreateProjectDraft", "businessCode"))
+
+    def test_creation_context_is_closed_bounded_and_actor_bound(self) -> None:
+        self.assertEqual(
+            _required_fields("ProjectCreationContext"),
+            ("tenantId", "ownerUserId", "templates"),
+        )
+        self.assertEqual(
+            _property_names("ProjectCreationContext"),
+            {"tenantId", "ownerUserId", "templates"},
+        )
+        self.assertIn("maxItems: 50", _field("ProjectCreationContext", "templates"))
+        self.assertIn("format: email", _field("ProjectCreationContext", "ownerUserId"))
+        self.assertEqual(
+            set(_required_fields("ProjectCreationTemplate")),
+            {
+                "globalId",
+                "code",
+                "version",
+                "expectedVersion",
+                "title",
+                "applicableProjectTypes",
+                "referenceRules",
+            },
+        )
+        self.assertIn(
+            "enum: [customer, factory, product, part, tooling, order]",
+            _field("ProjectCreationReferenceRule", "type"),
+        )
 
     def test_typed_reference_is_closed_and_does_not_accept_null_identity(self) -> None:
         reference = _schema("ProjectObjectReference")

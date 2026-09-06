@@ -100,6 +100,8 @@ function referenceTypeLabel(
   switch (type) {
     case "customer":
       return t("Customer");
+    case "factory":
+      return t("Factory");
     case "product":
       return t("Product");
     case "part":

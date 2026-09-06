@@ -2466,7 +2466,6 @@ Open Trial prototype,打开试模原型
 Open the existing Trial prototype workspace.,打开现有的试模原型工作区。
 Execution,执行
 Creation capabilities for this Project are unavailable.,此项目的创建能力不可用。
-Open an authorized live Project before using contextual quick-create.,使用上下文快捷创建前，请先打开已授权的实时项目。
 The authenticated session is not ready. Reconcile the session before creating a record.,身份验证会话尚未就绪。创建记录前请先对账会话状态。
 Your current Project capability does not allow creating a learning record.,您在当前项目中的能力不允许创建学习记录。
 Open command palette,打开命令面板
@@ -9458,3 +9457,12 @@ Master Data Record Count,主数据记录数量
 Last Synchronized At,最后同步时间
 NPI ERP Master Snapshot,NPI 企业资源计划主数据快照
 Exact Master Data Snapshot,精确主数据快照
+Business code,业务编码
+Create a controlled project draft from a published template.,从已发布模板创建受控项目草稿。
+Create project,创建项目
+Loading project creation options,正在加载项目创建选项
+No published project template is available.,没有可用的已发布项目模板。
+Project owner,项目负责人
+This template requires project references and is not available in quick create.,此模板需要项目引用，无法用于快捷创建。
+Your ERPNext permissions do not allow creating a project.,您的 ERPNext 权限不允许创建项目。
+Factory,工厂

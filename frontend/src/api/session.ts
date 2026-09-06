@@ -6,6 +6,7 @@ export type DeploymentEnvironment = "production" | "sandbox";
 export interface SessionBootstrap {
   userId: string;
   isSystemManager?: boolean;
+  canCreateProject?: boolean;
   deploymentEnvironment?: DeploymentEnvironment;
   language: Locale;
   allowedLanguages: readonly Locale[];

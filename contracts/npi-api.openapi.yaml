@@ -761,6 +761,52 @@ paths:
         default:
           $ref: "#/components/responses/ProjectError"
 
+  /projects/creation-context:
+    get:
+      tags: [Projects]
+      operationId: getProjectCreationContext
+      description: >
+        Returns the current internal creator identity and a bounded list of
+        verified published Project Template versions. ERPNext-owned authorization
+        projection roles are enforced when projection enforcement is enabled.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Current creator and published template choices
+          headers:
+            X-Request-ID:
+              description: Validated request identifier supplied by the caller
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support and audit correlation
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
+            Cache-Control:
+              description: Prevents shared or browser persistence of actor-bound choices
+              required: true
+              schema: { type: string, const: "private, no-store" }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectCreationContext"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default:
+          $ref: "#/components/responses/ProjectError"
+
   /projects/{projectId}/cockpit:
     get:
       tags: [Projects]
@@ -11168,12 +11214,15 @@ components:
     SessionBootstrap:
       type: object
       additionalProperties: false
-      required: [userId, isSystemManager, deploymentEnvironment, language, allowedLanguages, csrfToken, catalog, preferences]
+      required: [userId, isSystemManager, canCreateProject, deploymentEnvironment, language, allowedLanguages, csrfToken, catalog, preferences]
       properties:
         userId: { type: string }
         isSystemManager:
           type: boolean
           description: Current Frappe session has the System Manager role and may open the Frappe administration Desk
+        canCreateProject:
+          type: boolean
+          description: Current internal principal has the projected System Manager role required by the Project creation command
         deploymentEnvironment:
           type: string
           enum: [production, sandbox]
@@ -11251,6 +11300,60 @@ components:
       type: string
       description: Controlled Project classification; it must equal the selected published template version's Project type
       enum: [customer_owned_tool, new_tool, tool_change]
+    ProjectCreationReferenceRule:
+      type: object
+      additionalProperties: false
+      required: [type, required, allowMultiple]
+      properties:
+        type:
+          type: string
+          enum: [customer, factory, product, part, tooling, order]
+        required: { type: boolean }
+        allowMultiple: { type: boolean }
+    ProjectCreationTemplate:
+      type: object
+      additionalProperties: false
+      required: [globalId, code, version, expectedVersion, title, applicableProjectTypes, referenceRules]
+      properties:
+        globalId: { type: string, format: uuid }
+        code:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          }
+        version: { type: integer, minimum: 1 }
+        expectedVersion: { type: integer, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        applicableProjectTypes:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ProjectType" }
+        referenceRules:
+          type: array
+          maxItems: 6
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ProjectCreationReferenceRule" }
+    ProjectCreationContext:
+      type: object
+      additionalProperties: false
+      required: [tenantId, ownerUserId, templates]
+      properties:
+        tenantId:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$"
+        ownerUserId:
+          { type: string, format: email, minLength: 3, maxLength: 254 }
+        templates:
+          type: array
+          maxItems: 50
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ProjectCreationTemplate" }
     ProjectTemplateReference:
       type: object
       additionalProperties: false

@@ -129,6 +129,89 @@ def create_project(
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_project_creation_context(
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    """Return the authenticated creator and verified published templates."""
+    success_headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        actor = authenticated_user()
+        principal = authenticated_principal(actor)
+        if not _is_internal_system_manager(principal):
+            raise PermissionDenied()
+        reject_unexpected_request_fields(frozenset(), request_fields)
+        request_id = _request_id()
+        success_headers["X-Request-ID"] = request_id
+        repository = FrappeProjectRepository(
+            principal=principal,
+            request_id=request_id,
+            trace_id=current_trace_id.get() or "project-create-context",
+        )
+        rows = frappe.get_all(
+            "NPI Project Template Version",
+            filters={"publication_state": "published"},
+            fields=["template_global_id", "template_version"],
+            order_by="template_code asc, template_version desc",
+            page_length=51,
+        )
+        if len(rows) > 50:
+            raise RuntimeError("Published Project template count exceeds the fixed bound.")
+        templates: list[dict[str, Any]] = []
+        seen: set[tuple[str, int]] = set()
+        for row in rows:
+            template_global_id = _uuid_value(
+                row.get("template_global_id"),
+                "templateGlobalId",
+            )
+            template_version = _positive_integer(
+                row.get("template_version"),
+                "templateVersion",
+            )
+            key = (str(template_global_id), template_version)
+            if key in seen:
+                raise RuntimeError("Published Project template identity is duplicated.")
+            seen.add(key)
+            template = repository.get_template_version(
+                template_global_id,
+                template_version,
+            )
+            if template is None:
+                continue
+            templates.append(
+                {
+                    "globalId": str(template.template_global_id),
+                    "code": template.template_code,
+                    "version": template.template_version,
+                    "expectedVersion": template.version,
+                    "title": template.title,
+                    "applicableProjectTypes": [
+                        value.value for value in template.applicable_project_types
+                    ],
+                    "referenceRules": [
+                        {
+                            "type": rule.reference_type.value,
+                            "required": rule.required,
+                            "allowMultiple": rule.allow_multiple,
+                        }
+                        for rule in template.reference_rules
+                    ],
+                }
+            )
+        return {
+            "tenantId": str(principal.tenant_id),
+            "ownerUserId": actor,
+            "templates": templates,
+        }
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_project_cockpit(**request_fields: Any) -> dict[str, Any] | None:
     """Return an IDOR-safe live Project cockpit for its owner or an administrator."""
     success_headers = {"X-Request-ID": response_request_id()}

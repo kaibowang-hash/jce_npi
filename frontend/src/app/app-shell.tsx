@@ -18,6 +18,10 @@ import {
   ProjectControlsRequestCancelledError,
   type ProjectControlsDataSource,
 } from "../api/project-controls-data-source";
+import {
+  LiveProjectCreationDataSource,
+  type ProjectCreationDataSource,
+} from "../api/project-data-source";
 import type { ReportingDataSource } from "../api/reporting-data-source";
 import type { CollaborationDataSource } from "../api/collaboration-data-source";
 import type {
@@ -43,6 +47,9 @@ import {
 import { RequestFailurePanel } from "../components/problem-details-panel";
 import { GlobalSearchPanel } from "../components/global-search-panel";
 import { NotificationCenter } from "../components/notification-center";
+import { ProjectCreateDialog } from "../components/project-create-dialog";
+
+const defaultProjectCreationDataSource = new LiveProjectCreationDataSource();
 
 interface NavigationItem {
   active?: boolean;
@@ -72,7 +79,8 @@ interface ERPConnectionLoadState {
 type QuickCreateState =
   | { kind: "idle" }
   | { kind: "checking" }
-  | { kind: "available"; projectId: string }
+  | { kind: "learning_available"; projectId: string }
+  | { kind: "project_available" }
   | { kind: "unavailable"; reason: string }
   | { kind: "failed"; failure: RequestFailure };
 
@@ -118,6 +126,7 @@ export function AppShell({
   route,
   navigate,
   projectControlsDataSource,
+  projectCreationDataSource = defaultProjectCreationDataSource,
   reportingDataSource,
   collaborationDataSource,
   erpConnectionStatusDataSource,
@@ -126,6 +135,7 @@ export function AppShell({
   route: AppRoute;
   navigate: (target: string) => void;
   projectControlsDataSource?: ProjectControlsDataSource | undefined;
+  projectCreationDataSource?: ProjectCreationDataSource | undefined;
   reportingDataSource: ReportingDataSource;
   collaborationDataSource: CollaborationDataSource;
   erpConnectionStatusDataSource?: ERPConnectionStatusDataSource | undefined;
@@ -158,6 +168,7 @@ export function AppShell({
   const [navigationTooltip, setNavigationTooltip] =
     useState<NavigationTooltipState | null>(null);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [projectCreateOpen, setProjectCreateOpen] = useState(false);
   const [quickCreateState, setQuickCreateState] = useState<QuickCreateState>({
     kind: "idle",
   });
@@ -635,27 +646,32 @@ export function AppShell({
 
   const checkQuickCreate = useCallback((): void => {
     quickCreateRequest.current?.abort();
-    if (
-      !isLiveProjectContext ||
-      !route.projectGlobalId ||
-      !projectControlsDataSource
-    ) {
-      setQuickCreateState({
-        kind: "unavailable",
-        reason: isLiveProjectContext
-          ? t("Creation capabilities for this Project are unavailable.")
-          : t(
-              "Open an authorized live Project before using contextual quick-create.",
-            ),
-      });
-      return;
-    }
     if (!sessionCommandContext) {
       setQuickCreateState({
         kind: "unavailable",
         reason: t(
           "The authenticated session is not ready. Reconcile the session before creating a record.",
         ),
+      });
+      return;
+    }
+    if (!isLiveProjectContext) {
+      setQuickCreateState({
+        ...(sessionCommandContext.canCreateProject
+          ? { kind: "project_available" as const }
+          : {
+              kind: "unavailable" as const,
+              reason: t(
+                "Your ERPNext permissions do not allow creating a project.",
+              ),
+            }),
+      });
+      return;
+    }
+    if (!route.projectGlobalId || !projectControlsDataSource) {
+      setQuickCreateState({
+        kind: "unavailable",
+        reason: t("Creation capabilities for this Project are unavailable."),
       });
       return;
     }
@@ -668,7 +684,10 @@ export function AppShell({
         if (controller.signal.aborted) return;
         setQuickCreateState(
           page.permissions.canCreate
-            ? { kind: "available", projectId: route.projectGlobalId ?? "" }
+            ? {
+                kind: "learning_available",
+                projectId: route.projectGlobalId ?? "",
+              }
             : {
                 kind: "unavailable",
                 reason: t(
@@ -696,6 +715,21 @@ export function AppShell({
     sessionCommandContext,
     t,
   ]);
+
+  const closeProjectCreate = useCallback((): void => {
+    setProjectCreateOpen(false);
+    queueMicrotask(() => {
+      void focusControl(document.getElementById("quick-create-trigger"));
+    });
+  }, []);
+
+  const handleProjectCreated = useCallback(
+    (target: string): void => {
+      setProjectCreateOpen(false);
+      navigate(target);
+    },
+    [navigate],
+  );
 
   useEffect(() => {
     quickCreateRequest.current?.abort();
@@ -1133,7 +1167,7 @@ export function AppShell({
                     <p aria-busy="true">
                       {t("Checking current Project capabilities")}
                     </p>
-                  ) : quickCreateState.kind === "available" ? (
+                  ) : quickCreateState.kind === "learning_available" ? (
                     <Button
                       icon="add"
                       onClick={() => {
@@ -1145,6 +1179,16 @@ export function AppShell({
                       }}
                     >
                       {t("Create Project learning record")}
+                    </Button>
+                  ) : quickCreateState.kind === "project_available" ? (
+                    <Button
+                      icon="add"
+                      onClick={() => {
+                        setQuickCreateOpen(false);
+                        setProjectCreateOpen(true);
+                      }}
+                    >
+                      {t("Create project")}
                     </Button>
                   ) : quickCreateState.kind === "failed" ? (
                     <div className="quick-create__failure">
@@ -1428,6 +1472,13 @@ export function AppShell({
         open={commandPaletteOpen}
         returnFocusTarget={commandPaletteReturnFocusTarget}
       />
+      {projectCreateOpen ? (
+        <ProjectCreateDialog
+          dataSource={projectCreationDataSource}
+          navigate={handleProjectCreated}
+          onClose={closeProjectCreate}
+        />
+      ) : null}
       {effectiveNavigationCollapsed && navigationTooltip
         ? createPortal(
             <span

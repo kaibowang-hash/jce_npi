@@ -26,6 +26,7 @@ export interface SessionCommandContext {
   readonly userId: string;
   readonly csrfToken: string;
   readonly isSystemManager?: true;
+  readonly canCreateProject?: true;
   readonly deploymentEnvironment?: DeploymentEnvironment;
 }
 
@@ -196,6 +197,7 @@ function isConsistentBootstrap(
     "preferences",
     "catalog",
     ...(candidate.isSystemManager === undefined ? [] : ["isSystemManager"]),
+    ...(candidate.canCreateProject === undefined ? [] : ["canCreateProject"]),
     ...(candidate.deploymentEnvironment === undefined
       ? []
       : ["deploymentEnvironment"]),
@@ -219,6 +221,8 @@ function isConsistentBootstrap(
     candidate.userId.trim().length > 0 &&
     (candidate.isSystemManager === undefined ||
       typeof candidate.isSystemManager === "boolean") &&
+    (candidate.canCreateProject === undefined ||
+      typeof candidate.canCreateProject === "boolean") &&
     (candidate.deploymentEnvironment === undefined ||
       isDeploymentEnvironment(candidate.deploymentEnvironment)) &&
     typeof candidate.csrfToken === "string" &&
@@ -332,6 +336,7 @@ export function I18nProvider({
             userId: bootstrap.userId,
             csrfToken: bootstrap.csrfToken,
             ...(bootstrap.isSystemManager ? { isSystemManager: true } : {}),
+            ...(bootstrap.canCreateProject ? { canCreateProject: true } : {}),
             ...(bootstrap.deploymentEnvironment
               ? { deploymentEnvironment: bootstrap.deploymentEnvironment }
               : {}),
@@ -499,6 +504,7 @@ export function I18nProvider({
             userId: bootstrap.userId,
             csrfToken: bootstrap.csrfToken,
             ...(bootstrap.isSystemManager ? { isSystemManager: true } : {}),
+            ...(bootstrap.canCreateProject ? { canCreateProject: true } : {}),
             ...(bootstrap.deploymentEnvironment
               ? { deploymentEnvironment: bootstrap.deploymentEnvironment }
               : {}),

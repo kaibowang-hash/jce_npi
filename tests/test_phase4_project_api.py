@@ -161,6 +161,34 @@ class StubFrappeStore:
                 return values if as_dict else tuple(values[field] for field in fields)
         return None
 
+    def get_all(
+        self,
+        doctype: str,
+        *,
+        filters: Mapping[str, object],
+        fields: list[str],
+        order_by: str,
+        page_length: int,
+    ) -> list[AttrDict]:
+        documents = [
+            document
+            for document in self.documents.get(doctype, {}).values()
+            if all(document.get(key) == value for key, value in filters.items())
+        ]
+        if order_by == "template_code asc, template_version desc":
+            documents.sort(
+                key=lambda document: (
+                    str(document.get("template_code")),
+                    -int(document.get("template_version", 0)),
+                )
+            )
+        else:
+            raise AssertionError(f"Unexpected order: {order_by}")
+        return [
+            AttrDict({field: document.get(field) for field in fields})
+            for document in documents[:page_length]
+        ]
+
     def insert(self, raw_values: Mapping[str, Any]) -> AttrDict:
         values = _as_frappe_value(raw_values)
         doctype = str(values["doctype"])
@@ -338,6 +366,7 @@ class Phase4ProjectApiTest(unittest.TestCase):
             raise AssertionError(f"Unexpected get_doc call: {first!r}, {second!r}")
 
         self.frappe.get_doc = get_doc
+        self.frappe.get_all = self.store.get_all
 
         sessions = types.ModuleType("frappe.sessions")
         sessions.get_csrf_token = lambda: "csrf-" + ("a" * 48)
@@ -518,6 +547,18 @@ class Phase4ProjectApiTest(unittest.TestCase):
         )
         return self.project_api.get_project_cockpit(**request_fields)
 
+    def _get_creation_context(
+        self,
+        **request_fields: object,
+    ) -> dict[str, Any] | None:
+        self.frappe.local.form_dict = AttrDict(
+            {
+                "cmd": "npi_core.project_api.get_project_creation_context",
+                **request_fields,
+            }
+        )
+        return self.project_api.get_project_creation_context(**request_fields)
+
     def assert_problem(
         self,
         result: dict[str, object] | None,
@@ -562,6 +603,72 @@ class Phase4ProjectApiTest(unittest.TestCase):
         problem = self.assert_problem(result, 403, "CSRF_TOKEN_INVALID")
         self.assertTrue(problem["retryable"])
         self.assertEqual(self.store.count("NPI Engineering Project"), 0)
+
+    def test_creation_context_is_internal_manager_only_and_returns_verified_templates(
+        self,
+    ) -> None:
+        self.frappe.session.user = "manager@example.invalid"
+
+        result = self._get_creation_context()
+
+        self.assertEqual(self.frappe.local.response.http_status_code, 200)
+        self.assertEqual(
+            result,
+            {
+                "tenantId": "TENANT-A",
+                "ownerUserId": "manager@example.invalid",
+                "templates": [
+                    {
+                        "globalId": str(TEMPLATE_ID),
+                        "code": "SYNTHETIC-P4-TEST",
+                        "version": 1,
+                        "expectedVersion": self.template.version,
+                        "title": "Synthetic P4 Test Template",
+                        "applicableProjectTypes": [
+                            "customer_owned_tool",
+                            "new_tool",
+                        ],
+                        "referenceRules": [
+                            {
+                                "type": "customer",
+                                "required": True,
+                                "allowMultiple": False,
+                            },
+                            {
+                                "type": "product",
+                                "required": False,
+                                "allowMultiple": False,
+                            },
+                        ],
+                    }
+                ],
+            },
+        )
+        headers = self.frappe.flags.npi_response_headers
+        self.assertEqual(headers["Cache-Control"], "private, no-store")
+        self.assertEqual(headers["X-Request-ID"], REQUEST_ID)
+
+        for actor, expected_status, expected_code in (
+            ("Guest", 401, "AUTHENTICATION_REQUIRED"),
+            ("owner@example.invalid", 403, "PERMISSION_DENIED"),
+            ("external-manager@example.invalid", 403, "PERMISSION_DENIED"),
+        ):
+            with self.subTest(actor=actor):
+                self._reset_response()
+                self.frappe.session.user = actor
+                denied = self._get_creation_context()
+                self.assert_problem(denied, expected_status, expected_code)
+
+    def test_creation_context_rejects_unexpected_query_fields(self) -> None:
+        self.frappe.session.user = "manager@example.invalid"
+
+        result = self._get_creation_context(expand="all")
+
+        problem = self.assert_problem(result, 422, "VALIDATION_FAILED")
+        self.assertEqual(
+            problem["fieldErrors"],
+            [{"path": "expand", "message": "This field is not allowed."}],
+        )
 
     def test_create_fails_closed_for_tenant_scope_and_external_manager(self) -> None:
         result = self._create(self._payload(tenantId="TENANT-B"))
@@ -987,6 +1094,17 @@ class Phase4ProjectApiTest(unittest.TestCase):
 
         self.frappe.local.form_dict = AttrDict()
         self.frappe.local.request = types.SimpleNamespace(
+            path="/api/npi/v1/projects/creation-context", method="GET"
+        )
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.project_api.get_project_creation_context",
+        )
+        self.assertEqual(self.frappe.flags.npi_route_params, {})
+
+        self.frappe.local.form_dict = AttrDict()
+        self.frappe.local.request = types.SimpleNamespace(
             path=f"/api/npi/v1/projects/{REFERENCE_ID}/cockpit",
             method="GET",
         )
@@ -1014,6 +1132,11 @@ class Phase4ProjectApiTest(unittest.TestCase):
     def test_endpoint_decorators_keep_transport_open_but_domain_checks_closed(self) -> None:
         self.assertEqual(self.project_api.create_project.allowed_methods, ("POST",))
         self.assertTrue(self.project_api.create_project.allow_guest)
+        self.assertEqual(
+            self.project_api.get_project_creation_context.allowed_methods,
+            ("GET",),
+        )
+        self.assertTrue(self.project_api.get_project_creation_context.allow_guest)
         self.assertEqual(
             self.project_api.get_project_cockpit.allowed_methods,
             ("GET",),

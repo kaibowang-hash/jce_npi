@@ -144,6 +144,20 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         def __init__(self) -> None:
             self.rollback_count = 0
 
+        def get_value(
+            self,
+            doctype: str,
+            _name: str,
+            fieldname: str,
+        ) -> object:
+            if doctype != "User":
+                raise AssertionError(f"Unexpected DocType read: {doctype}")
+            if fieldname == "user_type":
+                return "System User"
+            if fieldname == "enabled":
+                return 1
+            raise AssertionError(f"Unexpected User field read: {fieldname}")
+
         def rollback(self) -> None:
             self.rollback_count += 1
 
@@ -211,7 +225,10 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         self.frappe.PermissionError = self.StubPermissionError
         self.frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         self.frappe._ = lambda source: source
-        self.frappe.conf = {"npi_deployment_environment": "production"}
+        self.frappe.conf = {
+            "npi_deployment_environment": "production",
+            "npi_tenant_id": "TENANT-A",
+        }
         self.frappe.db = self.database
         self.frappe.flags = types.SimpleNamespace(npi_bff_request=False)
         self.frappe.session = types.SimpleNamespace(user="engineer@example.invalid")
@@ -332,6 +349,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
             {
                 "userId",
                 "isSystemManager",
+                "canCreateProject",
                 "deploymentEnvironment",
                 "language",
                 "allowedLanguages",
@@ -342,6 +360,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         )
         self.assertEqual(result["language"], "zh-TW")
         self.assertIs(result["isSystemManager"], False)
+        self.assertIs(result["canCreateProject"], False)
         self.assertEqual(result["deploymentEnvironment"], "production")
         self.assertEqual(result["allowedLanguages"], ["en", "zh", "zh-TW"])
         self.assertEqual(result["csrfToken"], self.csrf_token)
@@ -380,6 +399,7 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         result = self.adapter.get_session_bootstrap()
 
         self.assertIs(result["isSystemManager"], True)
+        self.assertIs(result["canCreateProject"], True)
 
     def test_bootstrap_requires_an_exact_deployment_environment(self) -> None:
         for value in (None, "", "test", "Production", True):
@@ -996,7 +1016,7 @@ class LocalizationContractTest(unittest.TestCase):
         self.assertIn("name: X-Frappe-CSRF-Token", contract)
         self.assertIn(
             (
-                "required: [userId, isSystemManager, deploymentEnvironment, "
+                "required: [userId, isSystemManager, canCreateProject, deploymentEnvironment, "
                 "language, allowedLanguages, csrfToken, catalog, preferences]"
             ),
             contract,

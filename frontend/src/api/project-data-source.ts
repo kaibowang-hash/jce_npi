@@ -14,6 +14,51 @@ export interface ProjectCockpitDataSource {
   ) => Promise<ProjectCockpitViewModel>;
 }
 
+export interface ProjectCreationTemplate {
+  globalId: string;
+  code: string;
+  version: number;
+  expectedVersion: number;
+  title: string;
+  applicableProjectTypes: readonly ProjectType[];
+  referenceRules: readonly Readonly<{
+    type: ProjectReferenceViewModel["type"];
+    required: boolean;
+    allowMultiple: boolean;
+  }>[];
+}
+
+export interface ProjectCreationContext {
+  tenantId: string;
+  ownerUserId: string;
+  templates: readonly ProjectCreationTemplate[];
+}
+
+export interface CreateProjectDraftCommand {
+  businessCode: string;
+  title: string;
+  projectType: ProjectType;
+  targetSop: string;
+  templateGlobalId: string;
+  templateVersion: number;
+  expectedVersion: number;
+}
+
+export interface ProjectCreationCommandContext {
+  csrfToken: string;
+  idempotencyKey: string;
+  signal: AbortSignal;
+}
+
+export interface ProjectCreationDataSource {
+  loadCreationContext(signal: AbortSignal): Promise<ProjectCreationContext>;
+  create(
+    command: CreateProjectDraftCommand,
+    creation: ProjectCreationContext,
+    context: ProjectCreationCommandContext,
+  ): Promise<ProjectCockpitViewModel>;
+}
+
 export class ProjectRequestCancelledError extends Error {
   constructor() {
     super("The project request was cancelled.");
@@ -30,6 +75,7 @@ const snapshotHashPattern = /^[0-9a-f]{64}$/u;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
 const businessCodePattern = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/u;
 const tenantIdPattern = /^[A-Za-z0-9][A-Za-z0-9._:@/-]*$/u;
+const idempotencyKeyPattern = /^[!-~]{16,255}$/u;
 const sourceObjectIdPattern = /^[A-Za-z0-9][A-Za-z0-9._:@/-]*$/u;
 const gateKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
 const projectTypes = new Set<ProjectType>([
@@ -47,6 +93,7 @@ const projectStates = new Set<ProjectLifecycleState>([
 ]);
 const referenceTypes = new Set<ProjectReferenceViewModel["type"]>([
   "customer",
+  "factory",
   "product",
   "part",
   "tooling",
@@ -272,6 +319,73 @@ export function isProjectCockpitResponse(
   );
 }
 
+function isCreationTemplate(value: unknown): value is ProjectCreationTemplate {
+  if (!isRecord(value)) return false;
+  return (
+    hasExactKeys(value, [
+      "globalId",
+      "code",
+      "version",
+      "expectedVersion",
+      "title",
+      "applicableProjectTypes",
+      "referenceRules",
+    ]) &&
+    isUuid(value.globalId) &&
+    isConstrainedString(value.code, 64, businessCodePattern) &&
+    isPositiveInteger(value.version) &&
+    isPositiveInteger(value.expectedVersion) &&
+    isConstrainedString(value.title, 140) &&
+    Array.isArray(value.applicableProjectTypes) &&
+    value.applicableProjectTypes.length > 0 &&
+    value.applicableProjectTypes.length <= projectTypes.size &&
+    value.applicableProjectTypes.every(
+      (item) =>
+        typeof item === "string" && projectTypes.has(item as ProjectType),
+    ) &&
+    new Set(value.applicableProjectTypes).size ===
+      value.applicableProjectTypes.length &&
+    Array.isArray(value.referenceRules) &&
+    value.referenceRules.length <= referenceTypes.size &&
+    value.referenceRules.every(
+      (rule) =>
+        isRecord(rule) &&
+        hasExactKeys(rule, ["type", "required", "allowMultiple"]) &&
+        typeof rule.type === "string" &&
+        referenceTypes.has(rule.type as ProjectReferenceViewModel["type"]) &&
+        typeof rule.required === "boolean" &&
+        typeof rule.allowMultiple === "boolean",
+    ) &&
+    new Set(
+      value.referenceRules.map((rule) =>
+        isRecord(rule) && typeof rule.type === "string" ? rule.type : "",
+      ),
+    ).size === value.referenceRules.length
+  );
+}
+
+export function isProjectCreationContextResponse(
+  value: unknown,
+): value is ProjectCreationContext {
+  if (!isRecord(value)) return false;
+  return (
+    hasExactKeys(value, ["tenantId", "ownerUserId", "templates"]) &&
+    isConstrainedString(value.tenantId, 128, tenantIdPattern) &&
+    typeof value.ownerUserId === "string" &&
+    emailPattern.test(value.ownerUserId) &&
+    Array.isArray(value.templates) &&
+    value.templates.length <= 50 &&
+    value.templates.every(isCreationTemplate) &&
+    new Set(
+      value.templates.map((template) =>
+        isRecord(template)
+          ? `${template.globalId}:${String(template.version)}`
+          : "",
+      ),
+    ).size === value.templates.length
+  );
+}
+
 function clientReference(): string {
   return `client-${globalThis.crypto.randomUUID()}`;
 }
@@ -304,5 +418,88 @@ export class LiveProjectCockpitDataSource implements ProjectCockpitDataSource {
       if (signal.aborted) throw new ProjectRequestCancelledError();
       throw error;
     }
+  }
+}
+
+export class LiveProjectCreationDataSource implements ProjectCreationDataSource {
+  constructor(private readonly http = new NpiHttpClient()) {}
+
+  async loadCreationContext(
+    signal: AbortSignal,
+  ): Promise<ProjectCreationContext> {
+    try {
+      return await this.http.request<ProjectCreationContext>(
+        "/projects/creation-context",
+        { signal },
+        {
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: isProjectCreationContextResponse,
+        },
+      );
+    } catch (error) {
+      if (signal.aborted) throw new ProjectRequestCancelledError();
+      throw error;
+    }
+  }
+
+  async create(
+    command: CreateProjectDraftCommand,
+    creation: ProjectCreationContext,
+    context: ProjectCreationCommandContext,
+  ): Promise<ProjectCockpitViewModel> {
+    const template = creation.templates.find(
+      (candidate) =>
+        candidate.globalId === command.templateGlobalId &&
+        candidate.version === command.templateVersion &&
+        candidate.expectedVersion === command.expectedVersion,
+    );
+    if (
+      !template ||
+      !template.applicableProjectTypes.includes(command.projectType) ||
+      template.referenceRules.some((rule) => rule.required) ||
+      !isConstrainedString(command.businessCode, 64, businessCodePattern) ||
+      !isConstrainedString(command.title, 140) ||
+      !isIsoDate(command.targetSop) ||
+      context.csrfToken.length < 32 ||
+      context.csrfToken.length > 128 ||
+      !idempotencyKeyPattern.test(context.idempotencyKey) ||
+      context.signal.aborted
+    ) {
+      throw new NpiTransportError(
+        "request_not_ready",
+        clientReference(),
+        "client",
+      );
+    }
+    return this.http.request<ProjectCockpitViewModel>(
+      "/projects",
+      {
+        body: JSON.stringify({
+          tenantId: creation.tenantId,
+          businessCode: command.businessCode,
+          title: command.title,
+          projectType: command.projectType,
+          ownerUserId: creation.ownerUserId,
+          targetSop: command.targetSop,
+          templateGlobalId: command.templateGlobalId,
+          templateVersion: command.templateVersion,
+          expectedVersion: command.expectedVersion,
+          references: [],
+        }),
+        headers: { "Idempotency-Key": context.idempotencyKey },
+        method: "POST",
+        signal: context.signal,
+      },
+      {
+        csrfToken: context.csrfToken,
+        requireIdempotencyReplay: true,
+        requirePrivateNoStore: true,
+        requireRequestIdEcho: true,
+        requireTraceId: true,
+        validate: isProjectCockpitResponse,
+      },
+    );
   }
 }

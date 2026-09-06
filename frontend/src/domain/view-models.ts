@@ -115,6 +115,7 @@ export type ProjectType = "customer_owned_tool" | "new_tool" | "tool_change";
 
 export type ProjectReferenceType =
   | "customer"
+  | "factory"
   | "product"
   | "part"
   | "tooling"

@@ -1,12 +1,36 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  isProjectCreationContextResponse,
   isProjectCockpitResponse,
   LiveProjectCockpitDataSource,
+  LiveProjectCreationDataSource,
   ProjectRequestCancelledError,
+  type ProjectCreationContext,
 } from "../../src/api/project-data-source";
 import { NpiHttpClient, NpiTransportError } from "../../src/api/http";
 import { projectCockpitFixture } from "../support/project-fixture";
+
+const creationContext: ProjectCreationContext = {
+  ownerUserId: "manager@example.invalid",
+  templates: [
+    {
+      applicableProjectTypes: ["new_tool", "tool_change"],
+      code: "NEW-TOOL",
+      expectedVersion: 2,
+      globalId: "11111111-1111-4111-8111-111111111111",
+      referenceRules: [
+        { allowMultiple: false, required: false, type: "factory" },
+      ],
+      title: "New Tool Project",
+      version: 1,
+    },
+  ],
+  tenantId: "TENANT-A",
+};
+const creationTemplate = creationContext.templates[0];
+if (!creationTemplate)
+  throw new Error("The creation fixture needs one template.");
 
 describe("live Project cockpit data source", () => {
   it("loads the exact same-origin BFF path with cancellation and strict validation", async () => {
@@ -169,5 +193,182 @@ describe("Project cockpit response validation", () => {
       unknown
     >;
     expect(isProjectCockpitResponse(mutate(fixture))).toBe(false);
+  });
+});
+
+describe("live Project creation data source", () => {
+  it("loads the actor-bound creation context and accepts the complete closed shape", async () => {
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementation(
+        <T>(): Promise<T> => Promise.resolve(creationContext as T),
+      );
+    const dataSource = new LiveProjectCreationDataSource(http);
+    const controller = new AbortController();
+
+    await expect(
+      dataSource.loadCreationContext(controller.signal),
+    ).resolves.toEqual(creationContext);
+    expect(request).toHaveBeenCalledWith(
+      "/projects/creation-context",
+      { signal: controller.signal },
+      {
+        requirePrivateNoStore: true,
+        requireRequestIdEcho: true,
+        requireTraceId: true,
+        validate: isProjectCreationContextResponse,
+      },
+    );
+    expect(isProjectCreationContextResponse(creationContext)).toBe(true);
+  });
+
+  it("submits the current user, exact template version and empty references", async () => {
+    const created = projectCockpitFixture();
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementation(<T>(): Promise<T> => Promise.resolve(created as T));
+    const dataSource = new LiveProjectCreationDataSource(http);
+    const controller = new AbortController();
+
+    await expect(
+      dataSource.create(
+        {
+          businessCode: "P-26001",
+          expectedVersion: 2,
+          projectType: "new_tool",
+          targetSop: "2027-01-31",
+          templateGlobalId: creationTemplate.globalId,
+          templateVersion: 1,
+          title: "Program Alpha",
+        },
+        creationContext,
+        {
+          csrfToken: "c".repeat(32),
+          idempotencyKey: "11111111-1111-4111-8111-111111111111",
+          signal: controller.signal,
+        },
+      ),
+    ).resolves.toEqual(created);
+    expect(request).toHaveBeenCalledWith(
+      "/projects",
+      {
+        body: JSON.stringify({
+          tenantId: "TENANT-A",
+          businessCode: "P-26001",
+          title: "Program Alpha",
+          projectType: "new_tool",
+          ownerUserId: "manager@example.invalid",
+          targetSop: "2027-01-31",
+          templateGlobalId: "11111111-1111-4111-8111-111111111111",
+          templateVersion: 1,
+          expectedVersion: 2,
+          references: [],
+        }),
+        headers: {
+          "Idempotency-Key": "11111111-1111-4111-8111-111111111111",
+        },
+        method: "POST",
+        signal: controller.signal,
+      },
+      {
+        csrfToken: "c".repeat(32),
+        requireIdempotencyReplay: true,
+        requirePrivateNoStore: true,
+        requireRequestIdEcho: true,
+        requireTraceId: true,
+        validate: isProjectCockpitResponse,
+      },
+    );
+  });
+
+  it("fails before transport for stale templates, required references and invalid command context", async () => {
+    const http = new NpiHttpClient();
+    const request = vi.spyOn(http, "request");
+    const dataSource = new LiveProjectCreationDataSource(http);
+    const signal = new AbortController().signal;
+    const command = {
+      businessCode: "P-26001",
+      expectedVersion: 2,
+      projectType: "new_tool" as const,
+      targetSop: "2027-01-31",
+      templateGlobalId: creationTemplate.globalId,
+      templateVersion: 1,
+      title: "Program Alpha",
+    };
+
+    await expect(
+      dataSource.create(command, creationContext, {
+        csrfToken: "short",
+        idempotencyKey: "short",
+        signal,
+      }),
+    ).rejects.toMatchObject({ kind: "request_not_ready" });
+    await expect(
+      dataSource.create(
+        command,
+        {
+          ...creationContext,
+          templates: [
+            {
+              ...creationTemplate,
+              referenceRules: [
+                { allowMultiple: false, required: true, type: "customer" },
+              ],
+            },
+          ],
+        },
+        {
+          csrfToken: "c".repeat(32),
+          idempotencyKey: "11111111-1111-4111-8111-111111111111",
+          signal,
+        },
+      ),
+    ).rejects.toMatchObject({ kind: "request_not_ready" });
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it("rejects duplicate template and reference-rule identities", () => {
+    expect(
+      isProjectCreationContextResponse({
+        ...creationContext,
+        templates: [creationContext.templates[0], creationContext.templates[0]],
+      }),
+    ).toBe(false);
+    expect(
+      isProjectCreationContextResponse({
+        ...creationContext,
+        templates: [
+          {
+            ...creationContext.templates[0],
+            referenceRules: [
+              { allowMultiple: false, required: false, type: "factory" },
+              { allowMultiple: true, required: false, type: "factory" },
+            ],
+          },
+        ],
+      }),
+    ).toBe(false);
+  });
+
+  it("converts an aborted creation-context request into a cancellation result", async () => {
+    const http = new NpiHttpClient();
+    vi.spyOn(http, "request").mockImplementation(
+      <T>(_path: string, init: RequestInit = {}): Promise<T> =>
+        new Promise<T>((_resolve, reject) => {
+          init.signal?.addEventListener("abort", () => {
+            reject(
+              new NpiTransportError("network", "request-aborted", "request"),
+            );
+          });
+        }),
+    );
+    const dataSource = new LiveProjectCreationDataSource(http);
+    const controller = new AbortController();
+    const request = dataSource.loadCreationContext(controller.signal);
+
+    controller.abort();
+    await expect(request).rejects.toBeInstanceOf(ProjectRequestCancelledError);
   });
 });

@@ -25,6 +25,7 @@ from .foundation.localization import (
     validate_language_code,
 )
 from .request_security import (
+    authenticated_principal,
     authenticated_user,
     reject_unexpected_request_fields,
     require_csrf_token,
@@ -101,6 +102,7 @@ def _session_bootstrap(
     *,
     navigation_collapsed: bool | None = None,
 ) -> dict[str, Any]:
+    principal = authenticated_principal(user_id)
     resolved_language = validate_language_code(language or get_user_lang(user_id))
     resolved_navigation_collapsed = (
         _navigation_collapsed_preference(user_id)
@@ -110,6 +112,9 @@ def _session_bootstrap(
     return {
         "userId": user_id,
         "isSystemManager": "System Manager" in frappe.get_roles(user_id),
+        "canCreateProject": (
+            not principal.is_external and "System Manager" in principal.roles
+        ),
         "deploymentEnvironment": _deployment_environment(),
         "language": resolved_language,
         "allowedLanguages": list(ALLOWED_LANGUAGE_CODES),

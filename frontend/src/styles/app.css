@@ -5760,6 +5760,58 @@ textarea::placeholder {
   background: var(--npi-color-surface-subtle);
 }
 
+.project-create-dialog .impact-review__surface {
+  width: min(760px, 100%);
+}
+
+.project-create-dialog .impact-review__header {
+  border-left-color: var(--npi-color-brand-primary);
+  background: var(--npi-color-surface-subtle);
+}
+
+.project-create-dialog__message {
+  margin-inline: var(--npi-space-4);
+}
+
+.project-create-dialog__retry {
+  margin-top: var(--npi-space-2);
+}
+
+.project-create-dialog__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--npi-space-3) var(--npi-space-4);
+  margin: var(--npi-space-4);
+}
+
+.project-create-dialog__field,
+.project-create-dialog__owner {
+  display: grid;
+  align-content: start;
+  gap: var(--npi-space-1);
+  min-width: 0;
+}
+
+.project-create-dialog__field--wide {
+  grid-column: 1 / -1;
+}
+
+.project-create-dialog__owner-value {
+  min-height: 32px;
+  padding-block: var(--npi-space-1);
+  overflow-wrap: anywhere;
+}
+
+@media (width <= 640px) {
+  .project-create-dialog__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .project-create-dialog__field--wide {
+    grid-column: auto;
+  }
+}
+
 .page--work .table-tools .npi-input {
   width: 160px;
 }
