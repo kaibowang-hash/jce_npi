@@ -1727,10 +1727,16 @@ def seed_legacy(
     _require_disposable_legacy_fixture(fixture_run_id, project_id)
     rows = _rows(
         "NPI Item Publish Request",
-        {"project_global_id": project_id},
+        {
+            "project_global_id": project_id,
+            "state": "synthetic_verified",
+        },
         ["global_id"],
     )
-    require(rows, "P8-03 legacy fixture source request is unavailable")
+    require(
+        len(rows) == 1,
+        "P8-03 legacy fixture source request is unavailable",
+    )
     source_request_id = str(rows[0]["global_id"])
     source_request = frappe.get_doc("NPI Item Publish Request", source_request_id)
     require(

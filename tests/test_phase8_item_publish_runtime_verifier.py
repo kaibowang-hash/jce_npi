@@ -1517,6 +1517,8 @@ class Phase8ItemPublishRuntimeVerifierTest(unittest.TestCase):
         seed_text = ast.unparse(functions["seed_legacy"])
         self.assertIn("disposition", seed_text)
         self.assertIn("ready", seed_text)
+        self.assertIn("'state': 'synthetic_verified'", seed_text)
+        self.assertIn("len(rows) == 1", seed_text)
         self.assertIn("_TRACE_PATTERN.fullmatch(legacy_trace_id)", seed_text)
         self.assertIn("trace_id=legacy_trace_id", seed_text)
         seed = functions["seed_legacy"]
