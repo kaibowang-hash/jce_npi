@@ -963,7 +963,7 @@ class Phase4ProjectContractTests(unittest.TestCase):
         self.assertEqual(POLICY_LABEL_SOURCE_REGISTRY["schemaVersion"], 1)
         self.assertEqual(
             POLICY_LABEL_SOURCES,
-            ("Draft", "Identified", "Not started", "Open", "Requested"),
+            ("Cancelled", "Closed", "Completed", "Draft", "Identified", "In progress", "Not started", "Open", "Requested"),
         )
         self.assertEqual(len(POLICY_LABEL_SOURCES), len(set(POLICY_LABEL_SOURCES)))
 

@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import type {
   DomainWorkItemQuery,
@@ -61,6 +69,11 @@ import { ProjectReadinessWorkspace } from "./project-readiness-workspace";
 import { ProjectProductionTransitionWorkspace } from "./project-production-transition-workspace";
 import { ProjectChangeWorkspace } from "./project-change-workspace";
 import { ProjectMeetingWorkspace } from "./project-meeting-workspace";
+
+const ProjectSetupWorkspace = lazy(async () => {
+  const module = await import("./project-setup-workspace");
+  return { default: module.ProjectSetupWorkspace };
+});
 
 type ProjectWorkspaceTab =
   | "overview"
@@ -1597,12 +1610,37 @@ export function ProjectWorkspace({
         />
       );
     } else {
-      content =
-        activeTab === "team" ? (
-          <TeamWorkspace context={contextState.value} />
-        ) : (
-          <PlanWorkspace context={contextState.value} />
-        );
+      content = (
+        <>
+          {contextDataSource.setup ? (
+            <Suspense
+              fallback={
+                <p role="status">{t("Loading project setup options")}</p>
+              }
+            >
+              <ProjectSetupWorkspace
+                context={contextState.value}
+                dataSource={contextDataSource.setup}
+                key={`${cockpit.project.globalId}:${activeTab}`}
+                section={activeTab}
+                onChanged={(version) => {
+                  onProjectChanged({ ...cockpit.project, version });
+                }}
+                reload={() => {
+                  setContextAttempt((value) => value + 1);
+                }}
+                reportWorkspaceDirty={reportWorkspaceDirty}
+                requestWorkspaceTransition={requestWorkspaceTransition}
+              />
+            </Suspense>
+          ) : null}
+          {activeTab === "team" ? (
+            <TeamWorkspace context={contextState.value} />
+          ) : (
+            <PlanWorkspace context={contextState.value} />
+          )}
+        </>
+      );
     }
   } else if (activeTab === "work-items") {
     if (!domainWorkItemsDataSource) {

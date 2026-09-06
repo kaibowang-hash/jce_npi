@@ -1,8 +1,12 @@
 {
   "schemaVersion": 1,
   "labelSources": [
+    "Cancelled",
+    "Closed",
+    "Completed",
     "Draft",
     "Identified",
+    "In progress",
     "Not started",
     "Open",
     "Requested"

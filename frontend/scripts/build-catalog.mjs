@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
+  browserCatalogEntries,
   catalogFromRows,
   extractTranslationSources,
   frontendRoot,
@@ -34,7 +35,7 @@ for (const locale of locales) {
   if (unused.length > 0)
     throw new Error(`${locale} has unused sources: ${unused.join(" | ")}`);
   catalogs[locale] = Object.fromEntries(
-    [...catalog.entries()].sort(([left], [right]) => left.localeCompare(right)),
+    browserCatalogEntries(catalog, sources),
   );
 }
 

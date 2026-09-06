@@ -1,4 +1,8 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
+import {
+  LiveProjectSetupDataSource,
+  type ProjectSetupDataSource,
+} from "./project-setup-data-source";
 import type {
   DomainWorkItemKind,
   DomainWorkItemPageViewModel,
@@ -20,6 +24,7 @@ import type {
 import { isProjectPolicyLabelSource } from "../generated/project-policy-label-sources";
 
 export interface ProjectWorkContextDataSource {
+  readonly setup?: ProjectSetupDataSource;
   load: (
     projectId: string,
     expectedProjectVersion: number,
@@ -184,7 +189,7 @@ function utcCalendarDayDifference(current: string, baseline: string): number {
   );
 }
 
-function isPolicyReference(
+export function isPolicyReference(
   value: unknown,
 ): value is ProjectWorkPolicyReference {
   return (
@@ -384,7 +389,9 @@ function isDependency(value: unknown): value is ProjectDependencyViewModel {
   );
 }
 
-function isBaseline(value: unknown): value is ProjectPlanBaselineViewModel {
+export function isBaseline(
+  value: unknown,
+): value is ProjectPlanBaselineViewModel {
   return (
     isRecord(value) &&
     hasExactKeys(value, [
@@ -877,7 +884,10 @@ function matchesDomainWorkItemQuery(
 }
 
 export class LiveProjectWorkContextDataSource implements ProjectWorkContextDataSource {
-  constructor(private readonly http = new NpiHttpClient()) {}
+  readonly setup: ProjectSetupDataSource;
+  constructor(private readonly http = new NpiHttpClient()) {
+    this.setup = new LiveProjectSetupDataSource(http);
+  }
 
   async load(
     projectId: string,

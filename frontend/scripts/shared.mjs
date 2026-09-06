@@ -303,6 +303,17 @@ export async function extractTranslationSources() {
   return sources;
 }
 
+// Backend-only messages are localized by Frappe before they reach the browser.
+// Keep the complete CSV audit while shipping only React's literal source set.
+export function browserCatalogEntries(catalog, sources) {
+  const prefix = path.join("frontend", "src") + path.sep;
+  return [...catalog.entries()]
+    .filter(([source]) =>
+      sources.get(source)?.some((file) => file.startsWith(prefix)),
+    )
+    .sort(([left], [right]) => left.localeCompare(right));
+}
+
 export function parseCsv(content, sourceName) {
   const rows = [];
   let row = [];

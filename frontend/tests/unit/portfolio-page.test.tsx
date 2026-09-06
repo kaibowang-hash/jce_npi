@@ -201,8 +201,11 @@ describe("Portfolio reporting workspace", () => {
       }),
     ).toHaveAttribute("href", "/app");
     expect(
-      screen.getByText("Available through its governed command workspace"),
-    ).toBeVisible();
+      screen.getByRole("link", { name: "Configure project templates" }),
+    ).toHaveAttribute("href", "/app/npi-project-template");
+    expect(
+      screen.getByRole("link", { name: "Configure project template versions" }),
+    ).toHaveAttribute("href", "/app/npi-project-template-version");
     expect(
       screen.queryByRole("button", { name: "Open controlled configuration" }),
     ).toBeNull();

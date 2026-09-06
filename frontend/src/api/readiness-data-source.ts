@@ -1,4 +1,8 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
+import {
+  projectPolicyLabelSources,
+  type ProjectPolicyLabelSource,
+} from "../generated/project-policy-label-sources";
 
 export const readinessProjectTypes = [
   "customer_owned_tool",
@@ -222,12 +226,7 @@ export interface ReadinessSourceOption {
   sourceVersion: number;
   snapshotHash: string;
   label: string;
-  stateLabelSource:
-    | "Draft"
-    | "Identified"
-    | "Not started"
-    | "Open"
-    | "Requested";
+  stateLabelSource: ProjectPolicyLabelSource;
   stateTerminal: boolean;
 }
 
@@ -456,7 +455,7 @@ const sourceStateSet = new Set<ReadinessSourceState>([
 ]);
 const sourceOptionStateLabels = new Set<
   ReadinessSourceOption["stateLabelSource"]
->(["Draft", "Identified", "Not started", "Open", "Requested"]);
+>(projectPolicyLabelSources);
 const unavailableReasons: Readonly<
   Record<ReadinessExternalSourceKind, string>
 > = {

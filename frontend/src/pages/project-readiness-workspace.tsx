@@ -40,7 +40,9 @@ import {
 } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import { governedPolicyLabel } from "../i18n/copy";
 import { FormalQualityLinkInspector } from "./formal-quality-link-inspector";
+import { ReadinessTemplateSetup } from "./readiness-template-setup";
 import type { FormalQualityLinkDataSource } from "../api/formal-quality-link-data-source";
 
 type ResourceState =
@@ -221,18 +223,7 @@ function sourceOptionStateLabel(
   t: ReturnType<typeof useI18n>["t"],
   source: ReadinessSourceOption["stateLabelSource"],
 ): string {
-  switch (source) {
-    case "Draft":
-      return t("Draft");
-    case "Identified":
-      return t("Identified");
-    case "Not started":
-      return t("Not started");
-    case "Open":
-      return t("Open");
-    case "Requested":
-      return t("Requested");
-  }
+  return governedPolicyLabel(t, source);
 }
 
 function externalUnavailableReason(
@@ -446,6 +437,7 @@ function EmptyState({
   onInitialized,
   projectId,
   reportWorkspaceDirty,
+  requestWorkspaceTransition,
   workspace,
 }: {
   dataSource: ReadinessDataSource;
@@ -453,10 +445,12 @@ function EmptyState({
   onInitialized: (workspace: ReadinessWorkspace, replayed: boolean) => void;
   projectId: string;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
+  requestWorkspaceTransition?: RequestWorkspaceTransition | undefined;
   workspace: ReadinessWorkspace;
 }): React.JSX.Element {
   const { sessionCommandContext, t } = useI18n();
   const [catalogAttempt, setCatalogAttempt] = useState(0);
+  const [managingTemplate, setManagingTemplate] = useState(false);
   const [catalogState, setCatalogState] = useState<
     | { kind: "idle" }
     | { kind: "loading" }
@@ -535,6 +529,7 @@ function EmptyState({
 
   useEffect(() => {
     if (!reportWorkspaceDirty) return undefined;
+    if (managingTemplate) return undefined;
     if (!dirty) {
       reportWorkspaceDirty(null);
       return undefined;
@@ -549,7 +544,7 @@ function EmptyState({
     return () => {
       reportWorkspaceDirty(null);
     };
-  }, [dirty, projectId, reportWorkspaceDirty]);
+  }, [dirty, managingTemplate, projectId, reportWorkspaceDirty]);
 
   const execute = useCallback(
     (operation: RetryableInitialization): void => {
@@ -658,9 +653,47 @@ function EmptyState({
     setReview(operation);
   };
 
+  if (managingTemplate)
+    return (
+      <ReadinessTemplateSetup
+        dataSource={dataSource}
+        projectId={projectId}
+        reportWorkspaceDirty={reportWorkspaceDirty}
+        requestWorkspaceTransition={requestWorkspaceTransition}
+        onClose={() => {
+          setManagingTemplate(false);
+        }}
+        onPublished={() => {
+          setManagingTemplate(false);
+          setCatalogState({ kind: "loading" });
+          setCatalogAttempt((value) => value + 1);
+        }}
+      />
+    );
+
   return (
     <div className="readiness-workspace__empty" data-testid="readiness-empty">
       <Panel title={t("NPI readiness has not been initialized")}>
+        {workspace.permissions.canManageTemplates ? (
+          <Button
+            disabled={commandState.kind === "processing"}
+            onClick={(event) => {
+              const perform = () => {
+                setDraft({
+                  assignments: {},
+                  industryKey: "",
+                  templateRevisionGlobalId: "",
+                });
+                setManagingTemplate(true);
+              };
+              if (requestWorkspaceTransition)
+                requestWorkspaceTransition(perform, event.currentTarget);
+              else perform();
+            }}
+          >
+            {t("Configure readiness template")}
+          </Button>
+        ) : null}
         <SemanticStatus label={t("No retained instance")} tone="warning" />
         <p>
           {t(
@@ -1793,6 +1826,7 @@ export function ProjectReadinessWorkspace({
         }}
         projectId={projectId}
         reportWorkspaceDirty={reportWorkspaceDirty}
+        requestWorkspaceTransition={requestWorkspaceTransition}
         workspace={resource.value}
       />
     );

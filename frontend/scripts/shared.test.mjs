@@ -4,10 +4,35 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  browserCatalogEntries,
   extractTranslationSources,
   extractTypeScriptTranslationCalls,
   repositoryRoot,
 } from "./shared.mjs";
+
+test("ships the complete React source set while retaining Frappe-only messages in its source catalog", () => {
+  const catalog = new Map([
+    ["Shared", "共用"],
+    ["Server validation", "伺服器驗證"],
+    ["Save:Project", "儲存"],
+  ]);
+  const sources = new Map([
+    [
+      "Shared",
+      [
+        path.join("apps", "npi_core", "api.py"),
+        path.join("frontend", "src", "i18n", "copy.ts"),
+      ],
+    ],
+    ["Server validation", [path.join("apps", "npi_core", "api.py")]],
+    ["Save:Project", [path.join("frontend", "src", "pages", "project.tsx")]],
+  ]);
+  assert.deepEqual(browserCatalogEntries(catalog, sources), [
+    ["Save:Project", "儲存"],
+    ["Shared", "共用"],
+  ]);
+  assert.equal(catalog.get("Server validation"), "伺服器驗證");
+});
 
 test("extracts every governed policy label from literal translator calls", async () => {
   const registry = JSON.parse(

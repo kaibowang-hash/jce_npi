@@ -180,6 +180,7 @@ function configurationLabel(
       return t("Gate templates");
     case "project_work_policies":
       return t("Project work policies");
+    case "readiness_templates":
     case "npi_readiness_templates":
       return t("NPI readiness templates");
     case "production_transition_policies":
@@ -825,6 +826,16 @@ function ConfigurationTable({
         </div>
       </section>
       <h2>{t("Controlled configuration")}</h2>
+      <p>
+        {t(
+          "Project templates define applicable project types and ordered Gates. Configure the template record first, then its draft version, and publish the reviewed version for new projects.",
+        )}
+      </p>
+      <p>
+        {t(
+          "Work policies define collaboration roles and task states. Published versions and existing Project template snapshots remain unchanged when a new version is created.",
+        )}
+      </p>
       <div className="engineering-table reporting-table">
         <table className="data-table data-table--compact">
           <thead>
@@ -851,7 +862,69 @@ function ConfigurationTable({
                     ? t("Versioned commands")
                     : t("Operation-specific command")}
                 </td>
-                <td>{t("Available through its governed command workspace")}</td>
+                <td>
+                  {item.key === "project_templates" ? (
+                    <>
+                      <a
+                        className="table-link"
+                        href="/app/npi-project-template"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t("Configure project templates")}
+                      </a>
+                      {" · "}
+                      <a
+                        className="table-link"
+                        href="/app/npi-project-template-version"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t("Configure project template versions")}
+                      </a>
+                    </>
+                  ) : item.key === "gate_templates" ? (
+                    <>
+                      <a
+                        className="table-link"
+                        href="/app/npi-gate-template"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t("Configure Gate templates")}
+                      </a>
+                      {" · "}
+                      <a
+                        className="table-link"
+                        href="/app/npi-gate-template-version"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t("Configure Gate template versions")}
+                      </a>
+                    </>
+                  ) : item.key === "project_work_policies" ? (
+                    <a
+                      className="table-link"
+                      href="/app/npi-project-work-policy-version"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t("Configure project work policies")}
+                    </a>
+                  ) : item.key === "npi_readiness_templates" ||
+                    item.key === "readiness_templates" ? (
+                    <span>
+                      {t("Project")}
+                      {" → "}
+                      {t("NPI readiness")}
+                      {" → "}
+                      {t("Configure readiness template")}
+                    </span>
+                  ) : (
+                    t("Available through its governed command workspace")
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -339,6 +339,14 @@ function knownPolicyLabel(
   labelSource: ProjectPolicyLabelSource,
 ): string {
   switch (labelSource) {
+    case "Cancelled":
+      return t("Cancelled");
+    case "Closed":
+      return t("Closed");
+    case "Completed":
+      return t("Completed");
+    case "In progress":
+      return t("In progress");
     case "Draft":
       return t("Draft");
     case "Identified":

@@ -1,0 +1,50 @@
+.project-setup {
+  margin-block: var(--npi-space-3);
+}
+
+.project-setup-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--npi-space-2);
+  margin-block: var(--npi-space-2);
+}
+
+.project-setup fieldset {
+  border: var(--npi-border-default) solid transparent;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.project-setup label {
+  display: grid;
+  gap: var(--npi-space-1);
+}
+
+.project-setup-policy {
+  max-width: 32rem;
+}
+
+.project-setup-grid {
+  max-width: 100%;
+  overflow: auto;
+  margin-block: var(--npi-space-3);
+}
+
+.project-setup-grid input:not([type="checkbox"]),
+.project-setup-grid select {
+  min-width: 9rem;
+}
+
+.project-setup-grid td:nth-child(2) input {
+  min-width: 18rem;
+}
+
+.project-setup-dependencies {
+  padding-block: var(--npi-space-2);
+}
+
+.project-setup-note {
+  color: var(--npi-color-text-secondary);
+}

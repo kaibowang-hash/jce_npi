@@ -1712,7 +1712,7 @@ Terminal,終態
 Frozen dependencies,已凍結相依項
 Dependency kind,相依類別
 Exception validity,豁免有效性
-Approved through recorded expiry,"已核准，有效至記錄的到期時間"
+Approved through recorded expiry,已核准，有效至記錄的到期時間
 Not valid,無效
 Decision opinion,決策意見
 A Gate dependency change requires your review.,階段門相依項發生變更，需要您評審。
@@ -2538,7 +2538,7 @@ Publisher authority policy required,需要發佈者權限策略
 Grid settings,網格設定
 My Work grid,我的工作網格
 Resize {{column}} column,調整{{column}}欄的寬度
-"Use Left and Right Arrow keys to resize. Press Home or End for the limit, or Enter to fit the rendered rows.","使用左方向鍵和右方向鍵調整寬度。按起始鍵或結束鍵設為邊界值，或按輸入鍵配合已呈現的資料列。"
+"Use Left and Right Arrow keys to resize. Press Home or End for the limit, or Enter to fit the rendered rows.",使用左方向鍵和右方向鍵調整寬度。按起始鍵或結束鍵設為邊界值，或按輸入鍵配合已呈現的資料列。
 Worklist grid,工作清單網格
 Select the supported My Work table schema.,請選擇支援的「我的工作」表格結構描述。
 Select a Project available in My Work.,請選擇「我的工作」中可用的專案。
@@ -2621,7 +2621,7 @@ Pane layout is confirmed by the server.,窗格版面配置已由伺服器確認�
 Saving pane layout,正在儲存窗格版面配置
 Session verification is required before pane layout can be saved.,儲存窗格版面配置前需要驗證工作階段。
 Resize inspector,調整檢查器大小
-"Drag to resize. Use Left and Right Arrow keys, Home or End for a limit, or double-click to reset.","拖曳以調整大小。使用左方向鍵和右方向鍵調整寬度，按起始鍵或結束鍵設為邊界值，或按兩下重設。"
+"Drag to resize. Use Left and Right Arrow keys, Home or End for a limit, or double-click to reset.",拖曳以調整大小。使用左方向鍵和右方向鍵調整寬度，按起始鍵或結束鍵設為邊界值，或按兩下重設。
 Reload pane layout,重新載入窗格版面配置
 Stored pane layout was invalid. The default layout is active.,儲存的窗格版面配置無效。目前使用預設版面配置。
 Select the supported My Work inspector schema.,請選擇支援的「我的工作」檢查器結構描述。
@@ -2994,7 +2994,7 @@ Release policy,發布策略
 Replacement revision,替代修訂版
 Controlled reason,受控原因
 I confirm this exact action using my authenticated session.,我確認使用已驗證的工作階段執行此精確操作。
-"The confirmation, exact input hashes, actor, time, request ID and trace ID will be retained.","系統將保留確認記錄、精確輸入雜湊、操作人、時間、請求編號和追蹤編號。"
+"The confirmation, exact input hashes, actor, time, request ID and trace ID will be retained.",系統將保留確認記錄、精確輸入雜湊、操作人、時間、請求編號和追蹤編號。
 Reviewer progress,評審人進度
 Reviewer slot,評審人位置
 Assigned user,已指派使用者
@@ -3407,8 +3407,8 @@ Line {{number}} effective to,第 {{number}} 列生效結束日期
 Line {{number}} attributes,第 {{number}} 列屬性
 key=value; key=value,屬性鍵=屬性值；屬性鍵=屬性值
 Remove line {{number}},移除第 {{number}} 列
-"Line identity, hierarchy, alternates, effectivity, quantities and attributes are validated by the exact EBOM policy.","列識別、階層、替代關係、生效範圍、數量和屬性均由精確 EBOM 策略驗證。"
-"Complete the exact policy, reason and every required EBOM line field before continuing.","繼續前，請完整填寫精確策略、原因和每個必填 EBOM 列欄位。"
+"Line identity, hierarchy, alternates, effectivity, quantities and attributes are validated by the exact EBOM policy.",列識別、階層、替代關係、生效範圍、數量和屬性均由精確 EBOM 策略驗證。
+"Complete the exact policy, reason and every required EBOM line field before continuing.",繼續前，請完整填寫精確策略、原因和每個必填 EBOM 列欄位。
 Creating EBOM,正在建立 EBOM
 Creating immutable EBOM revision,正在建立不可變 EBOM 修訂版
 Submitting EBOM for review,正在提交 EBOM 以供審查
@@ -3425,7 +3425,7 @@ EBOM working revisions,EBOM 工作修訂版
 NPI-owned working structures,NPI 主責的工作結構
 Create EBOM,建立 EBOM
 Working structure,工作結構
-"This workspace does not create formal ERPNext Items, MBOMs, routings or production execution.","此工作區不會建立正式 ERPNext 物料、MBOM、製程路線或生產執行記錄。"
+"This workspace does not create formal ERPNext Items, MBOMs, routings or production execution.",此工作區不會建立正式 ERPNext 物料、MBOM、製程路線或生產執行記錄。
 You can inspect EBOM history but cannot create or change it.,您可以檢視 EBOM 歷史，但不能建立或變更內容。
 EBOM creation is unavailable because no accepted synthetic EBOM policy is published.,由於尚未發佈已接受的合成 EBOM 策略，因此無法建立 EBOM。
 No EBOM working structure,沒有 EBOM 工作結構
@@ -4012,7 +4012,7 @@ Master identity,主檔識別
 Originating Project,發起專案
 Select or create a logical Tooling Master to inspect exact identity truth.,請選擇或建立邏輯模具主檔以檢查精確識別事實。
 Downstream capability truth,下游能力事實
-"No lifecycle, Tooling Revision, Trial or ERPNext success is inferred by this workspace.","此工作區不會推斷生命週期、模具修訂、試模或 ERPNext 成功。"
+"No lifecycle, Tooling Revision, Trial or ERPNext success is inferred by this workspace.",此工作區不會推斷生命週期、模具修訂、試模或 ERPNext 成功。
 Command,命令
 Requirement kind,需求類型
 Applicability relationship,適用關係
@@ -4020,7 +4020,7 @@ New relationship,新建關係
 Part title,零件標題
 Revision label,修訂標籤
 Tooling data is read only because this session has no mutation capability.,此工作階段沒有變更能力，因此模具開發資料為唯讀。
-"The server, not the browser, controls each available Tooling action.","每個可用模具開發操作均由伺服器控制，而不是由瀏覽器決定。"
+"The server, not the browser, controls each available Tooling action.",每個可用模具開發操作均由伺服器控制，而不是由瀏覽器決定。
 A successor Tooling Intake requires its exact predecessor.,後續模具接收記錄必須引用精確的前序版本。
 Accessory Snapshot,配件快照
 Arrival photo evidence must use an image file.,到廠照片證據必須使用圖像檔案。
@@ -4158,7 +4158,7 @@ Select clean exact File Revision,選擇乾淨的精確文件修訂
 Select controlled document,選擇受控文件
 Select one intake and one clean exact File Revision.,請選擇一次驗收和一個乾淨的精確文件修訂。
 Select to inspect,選擇以檢查
-"Set custody, arrival inspection, differences and exact file evidence are retained without lifecycle or ERPNext inference.","模具套保管、到廠檢查、差異和精確檔案證據會被保留，且不會推斷生命週期或 ERPNext 事實。"
+"Set custody, arrival inspection, differences and exact file evidence are retained without lifecycle or ERPNext inference.",模具套保管、到廠檢查、差異和精確檔案證據會被保留，且不會推斷生命週期或 ERPNext 事實。
 Set snapshot hash,模具套快照雜湊
 Transport,運輸
 Transport document,運輸單據
@@ -6611,7 +6611,7 @@ Select a conclusion code allowed by the exact policy.,請選擇精確策略允�
 The one-page Trial summary input has invalid controlled fields.,試模單頁摘要輸入包含無效的受控欄位。
 Trial review references must match the exact comparison scope.,試模審查參照必須與精確比較範圍相符。
 The end date must not be before the start date.,結束日期不能早於開始日期。
-"Select one complete exact predecessor, or leave it empty.","請選擇一個完整、精確的前序版本，或將其留空。"
+"Select one complete exact predecessor, or leave it empty.",請選擇一個完整、精確的前序版本，或將其留空。
 Controlled quality report,受控品質報告
 Internal sample review,內部樣件審查
 Customer evidence,客戶證據
@@ -6690,7 +6690,7 @@ A conclusion cannot be submitted until every policy-required reference kind is b
 One-page conclusion summary,單頁結論摘要
 Conclusion,結論
 Input changes,輸入變化
-"{{changed}} changed, {{same}} unchanged","{{changed}} 項已變化，{{same}} 項未變化"
+"{{changed}} changed, {{same}} unchanged",{{changed}} 項已變化，{{same}} 項未變化
 Policy blockers,策略阻斷項目
 Blocking rule,阻斷規則
 Exact source,精確來源
@@ -6812,671 +6812,671 @@ readiness_template.create,建立就緒度範本
 readiness_template.edit,編輯就緒度範本
 readiness_template.publish,發布就緒度範本
 readiness_template_version,就緒度範本版本
-"Complete","完成"
-"Project snapshot","專案快照"
-"Project work item","專案工作項目"
-"Released document","已發布文件"
-"Tooling capacity scenario","模具容量情境"
-"Trial input lock","試模輸入鎖"
-"Trial actual","試模實際值"
-"Trial sample","試模樣品"
-"Trial cavity result","試模型腔結果"
-"Trial defect","試模缺陷"
-"Trial defect verification","試模缺陷驗證"
-"Trial comparison","試模比較"
-"Trial review reference","試模審查參照"
-"Trial conclusion","試模結論"
-"Controlled quality result","受控品質結果"
-"Formal ERP material specification","企業資源規劃系統正式材料規格"
-"Formal ERP quality result","企業資源規劃系統正式品質結果"
-"Formal ERP run-at-rate result","企業資源規劃系統正式量產節拍驗證結果"
-"Formal HR qualification","正式人力資源資格"
-"Formal ERP supplier execution","企業資源規劃系統正式供應商執行結果"
-"Incomplete P0 item","未完成的 P0 項目"
-"Failed mandatory quality result","失敗的強制品質結果"
-"Required source unavailable","必要來源無法使用"
-"Controlled confirmation","受控確認"
-"Exact evidence","精確證據"
-"Exact source result","精確來源結果"
-"The formal ERP material specification provider is unavailable.","企業資源規劃系統正式材料規格提供者無法使用。"
-"The formal ERP quality provider is unavailable.","企業資源規劃系統正式品質提供者無法使用。"
-"The formal ERP run-at-rate provider is unavailable.","企業資源規劃系統正式量產節拍驗證提供者無法使用。"
-"The formal HR qualification provider is unavailable.","正式人力資源資格提供者無法使用。"
-"The formal ERP supplier execution provider is unavailable.","企業資源規劃系統正式供應商執行提供者無法使用。"
-"The formal source provider is unavailable.","正式來源提供者無法使用。"
-"Loading NPI readiness","正在載入 NPI 就緒度"
-"Input drift","輸入已漂移"
-"NPI readiness access is not available","NPI 就緒度存取無法使用"
-"The NPI readiness workspace is out of date","NPI 就緒度工作區已過期"
-"NPI readiness data is unavailable","NPI 就緒度資料無法使用"
-"No protected readiness data was displayed.","未顯示任何受保護的就緒度資料。"
-"Reload the exact retained revision before continuing.","繼續前請重新載入精確保留的修訂。"
-"This template uses Project or customer item selectors that this browser cannot resolve safely.","此範本使用瀏覽器無法安全解析的專案或客戶項目選擇器。"
-"Enter a valid industry key.","請輸入有效的產業鍵。"
-"The selected template does not apply to this industry key.","所選範本不適用於此產業鍵。"
-"No readiness items apply to this industry key.","沒有適用於此產業鍵的就緒度項目。"
-"No exact Project members are available.","沒有可用的精確專案成員。"
-"Assign an owner and due date to every applicable item.","請為每個適用項目指派負責人和截止日期。"
-"Select an exact Project member.","請選擇精確的專案成員。"
-"NPI readiness has not been initialized","NPI 就緒度尚未初始化"
-"No retained instance","沒有保留的執行個體"
-"No readiness score or blocker state is shown until an authorized administrator initializes an exact published template.","獲授權的管理員使用精確的已發布範本完成初始化前，不顯示就緒度分數或阻斷狀態。"
-"You have read-only access to this workspace.","您對此工作區只有唯讀權限。"
-"Loading eligible readiness templates","正在載入符合條件的就緒度範本"
-"Template catalog unavailable","範本目錄無法使用"
-"No eligible published readiness template","沒有符合條件的已發布就緒度範本"
-"An administrator must publish an applicable template before this Project can be initialized.","管理員必須先發布適用範本，才能初始化此專案。"
-"No safely initializable readiness template","沒有可安全初始化的就緒度範本"
-"Eligible templates use Project or customer item selectors that this browser cannot resolve safely. No initialization command is available.","符合條件的範本使用瀏覽器無法安全解析的專案或客戶項目選擇器，因此不提供初始化命令。"
-"No Project members available","沒有可用的專案成員"
-"Initialization is blocked until an exact member is available in this Project.","此專案中有精確成員可用之前，初始化將被阻斷。"
-"Published readiness template","已發布的就緒度範本"
-"Select published template","選擇已發布範本"
-"{{template}} — browser initialization unavailable","{{template}} — 瀏覽器初始化無法使用"
-"Industry key","產業鍵"
-"Exact item assignments","精確項目指派"
-"The server confirms final item applicability from the frozen Project context.","伺服器根據已凍結的專案內容確認最終項目適用性。"
-"Owner for {{item}}","{{item}} 的負責人"
-"Select owner","選擇負責人"
-"Due date for {{item}}","{{item}} 的截止日期"
-"Review readiness initialization","審查就緒度初始化"
-"Session verification is required before initialization.","初始化前需要工作階段驗證。"
-"Initialize NPI readiness","初始化 NPI 就緒度"
-"Template","範本"
-"Template revision","範本修訂"
-"The command, receipt, actor and exact snapshot are audited atomically.","命令、收據、操作者和精確快照將以不可分割方式稽核。"
-"A failure creates no partial instance. Retry uses the same command identity.","失敗不會建立部分執行個體；重試使用相同的命令身分。"
-"Creates revision 1 from the exact published template and frozen Project context.","根據精確的已發布範本和已凍結的專案內容建立修訂 1。"
-"The retained readiness instance and its revision history cannot be overwritten.","保留的就緒度執行個體及其修訂歷史不能被覆寫。"
-"An enabled internal System Manager is required.","需要已啟用的內部系統管理員。"
-"New readiness instance","新建就緒度執行個體"
-"Unavailable formal sources","無法使用的正式來源"
-"These formal projections are explicit holds. This workspace performs no ERP or external network call.","這些正式投影是明確的保留項目；此工作區不會呼叫企業資源規劃系統或外部網路。"
-"Initializing exact Project readiness","正在初始化精確的專案就緒度"
-"Saving exact readiness revision","正在儲存精確的就緒度修訂"
-"The server replayed the sealed readiness response.","伺服器已重播密封的就緒度回應。"
-"The exact Project readiness instance was initialized.","精確的專案就緒度執行個體已初始化。"
-"The exact readiness revision was saved.","精確的就緒度修訂已儲存。"
-"Validation failed","驗證失敗"
-"The retained readiness revision changed. Reload before editing again.","保留的就緒度修訂已變更，請重新載入後再編輯。"
-"Readiness item","就緒度項目"
-"Select a readiness item to inspect its exact retained facts.","請選擇就緒度項目以檢查其精確保留事實。"
-"Historical revision","歷史修訂"
-"Read-only workspace","唯讀工作區"
-"Item key","項目鍵"
-"Weight","權重"
-"Blocking level","阻斷層級"
-"Completion rule","完成規則"
-"Item version","項目版本"
-"Reason code","原因代碼"
-"No exact evidence is retained for this item.","此項目未保留精確證據。"
-"Revise exact item","修訂精確項目"
-"Item state","項目狀態"
-"Exact Work Item sources","精確工作項目來源"
-"This item has no server-offered Work Item source selection.","此項目沒有伺服器提供的工作項目來源選項。"
-"Review readiness revision","審查就緒度修訂"
-"Enter the controlled confirmation before completion.","完成前請輸入受控確認內容。"
-"You can inspect exact retained readiness history but cannot revise it.","您可以檢查精確保留的就緒度歷史，但不能修訂。"
-"Session verification required","需要工作階段驗證"
-"Reload the session before revising readiness items.","修訂就緒度項目前請重新載入工作階段。"
-"Readiness blockers and score","就緒度阻斷項目和分數"
-"{{count}} active blockers","{{count}} 個目前阻斷項目"
-"No active blockers","沒有目前阻斷項目"
-"Readiness state","就緒度狀態"
-"Not ready","未就緒"
-"Total score","總分"
-"Earned weight","已取得權重"
-"Applicable weight","適用權重"
-"Formula","公式"
-"Score","分數"
-"Categories","類別"
-"Readiness categories","就緒度類別"
-"All categories","所有類別"
-"Readiness items","就緒度項目"
-"Inspect readiness item {{item}}","檢查就緒度項目 {{item}}"
-"No active blocker","沒有目前阻斷項目"
-"Readiness history","就緒度歷史"
-"Active blockers","目前阻斷項目"
-"Append readiness revision","追加就緒度修訂"
-"Proposed state","建議狀態"
-"The successor revision, receipt, actor and exact source references are audited atomically.","後續修訂、收據、操作者和精確來源參照將以不可分割方式稽核。"
-"A failure creates no partial successor. Retry uses the same command identity.","失敗不會建立部分後續修訂；重試使用相同的命令身分。"
-"Appends one immutable successor and lets the server derive scores and blockers again.","追加一個不可變後續修訂，並由伺服器重新衍生分數和阻斷項目。"
-"The retained revision cannot be overwritten; corrections require another successor.","保留的修訂不能被覆寫；更正需要另一個後續修訂。"
-"An enabled internal System Manager with exact Project access is required.","需要已啟用且擁有精確專案存取權限的內部系統管理員。"
-"The live NPI readiness data source is not configured.","未設定即時 NPI 就緒度資料來源。"
-"No exact owner candidates","沒有精確的負責人候選"
-"Retained owner","已保留的負責人"
-"Change at least one readiness item field.","請至少變更一個就緒度項目欄位。"
-"A production transition command response can only be sealed once.","生產移交命令回應只能密封一次。"
-"A production transition command response must be sealed after success.","生產移交命令回應必須在成功後密封。"
-"Acknowledged At","確認時間"
-"Handover Acknowledgement Intent","生產移交確認意圖"
-"Handover Acknowledgement Slot Key","生產移交確認槽位鍵"
-"Handover Acknowledgement Slot Snapshot","生產移交確認槽位快照"
-"Handover Acknowledgement Snapshot","生產移交確認快照"
-"Handover Object Manifest Snapshot","生產移交物件清單快照"
-"Handover Object Requirement Snapshot","生產移交物件要求快照"
-"Handover Package Global ID","生產移交包全域識別碼"
-"Handover Package Revision","生產移交包修訂"
-"Handover Package Revision Global ID","生產移交包修訂全域識別碼"
-"Handover Package Revision Reason","生產移交包修訂原因"
-"Handover Package Revision Snapshot","生產移交包修訂快照"
-"Handover Package Snapshot Hash","生產移交包快照雜湊"
-"Handover Package Version","生產移交包版本"
-"Handover Package Version Key Hash","生產移交包版本鍵雜湊"
-"NPI Handover Acknowledgement","NPI 生產移交確認"
-"NPI Handover Package Revision","NPI 生產移交包修訂"
-"NPI Observation Period Revision","NPI 投產後觀察期修訂"
-"NPI Production Transition Command Idempotency","NPI 生產移交命令冪等記錄"
-"NPI Production Transition Policy","NPI 生產移交策略"
-"NPI Production Transition Policy Version","NPI 生產移交策略版本"
-"NPI production transition history cannot be changed.","不能變更 NPI 生產移交歷史。"
-"NPI production transition history cannot be deleted.","不能刪除 NPI 生產移交歷史。"
-"NPI production transition policy versions can only be changed through the guarded policy repository.","只能透過受控策略儲存庫變更 NPI 生產移交策略版本。"
-"NPI production transition records can only be changed through an authorized command.","只能透過授權命令變更 NPI 生產移交記錄。"
-"Observation Conclusion Rule Snapshot","觀察結論規則快照"
-"Observation Context Reference Snapshot","觀察上下文參照快照"
-"Observation Period Global ID","投產後觀察期全域識別碼"
-"Observation Period Revision Reason","投產後觀察期修訂原因"
-"Observation Period Revision Snapshot","投產後觀察期修訂快照"
-"Observation Period State","投產後觀察期狀態"
-"Observation Period Version","投產後觀察期版本"
-"Observation Period Version Key Hash","投產後觀察期版本鍵雜湊"
-"Observation Provider Source Snapshot","觀察提供方來源快照"
-"Observation Retrospective Evidence Snapshot","觀察回顧證據快照"
-"Observation Retrospective Note","觀察回顧說明"
-"Observation Source Requirement Snapshot","觀察來源要求快照"
-"Observation Technical Disposition","觀察技術處置結論"
-"Observation Window Days","觀察視窗天數"
-"Predecessor Handover Package Revision Global ID","前序生產移交包修訂全域識別碼"
-"Predecessor Observation Period Revision Global ID","前序投產後觀察期修訂全域識別碼"
-"Predecessor Production Transition Policy Version Global ID","前序生產移交策略版本全域識別碼"
-"Production Transition Acknowledgement Slot Snapshot","生產移交確認槽位快照"
-"Production Transition Policy Applicability Snapshot","生產移交策略適用性快照"
-"Production Transition Policy Business Version","生產移交策略業務版本"
-"Production Transition Policy Code","生產移交策略代碼"
-"Production Transition Policy Global ID","生產移交策略全域識別碼"
-"Production Transition Policy Snapshot Hash","生產移交策略快照雜湊"
-"Production Transition Policy Title","生產移交策略標題"
-"Production Transition Policy Version","生產移交策略版本"
-"Production Transition Policy Version Global ID","生產移交策略版本全域識別碼"
-"Production Transition Policy Version Key Hash","生產移交策略版本鍵雜湊"
-"Production Transition Policy Version Snapshot","生產移交策略版本快照"
-"Production Transition Policy Version Title","生產移交策略版本標題"
-"Production Transition Project Snapshot","生產移交專案快照"
-"Production Transition Receiving Group Snapshot","生產移交接收群組快照"
-"Project Member Global ID","專案成員全域識別碼"
-"Project Member Optimistic Version","專案成員樂觀鎖版本"
-"Project Member Snapshot Hash","專案成員快照雜湊"
-"Project Role Assignment Global ID","專案角色指派全域識別碼"
-"Project Role Assignment Optimistic Version","專案角色指派樂觀鎖版本"
-"Project Role Assignment Snapshot Hash","專案角色指派快照雜湊"
-"Readiness Instance Revision Global ID","就緒度實例修訂全域識別碼"
-"Readiness Instance Revision Snapshot Hash","就緒度實例修訂快照雜湊"
-"Readiness Instance Revision Version","就緒度實例修訂版本"
-"Select a supported production transition command operation.","請選擇支援的生產移交命令操作。"
-"Select all required values exactly once.","請準確且僅選擇一次所有必填值。"
-"The production transition command does not match its Project.","生產移交命令與其專案不相符。"
-"The production transition command scope is invalid.","生產移交命令範圍無效。"
-"Unresolved Action Rule Snapshot","未解決行動規則快照"
-"Unresolved Work Item Selector Snapshot","未解決工作項目選擇器快照"
-"Unresolved Work Item Snapshot","未解決工作項目快照"
-"acknowledge_exact_package_slot","確認精確生產移交包槽位"
-"handover_acknowledgement","生產移交確認"
-"handover_package_revision","生產移交包修訂"
-"not_evaluable","不可評估"
-"observation_period.create","建立投產後觀察期"
-"observation_period.revise","修訂投產後觀察期"
-"observation_period_revision","投產後觀察期修訂"
-"production_handover.acknowledge","確認生產移交"
-"production_handover.create","建立生產移交包"
-"production_handover.revise","修訂生產移交包"
-"production_transition_policy","生產移交策略"
-"production_transition_policy.create","建立生產移交策略"
-"production_transition_policy.edit","編輯生產移交策略"
-"production_transition_policy.next_version","建立下一生產移交策略版本"
-"production_transition_policy.publish","發布生產移交策略"
-"production_transition_policy_version","生產移交策略版本"
-"Enter a valid Production Transition Policy code.","請輸入有效的生產移交策略代碼。"
-"Enter a valid Production Transition Policy title.","請輸入有效的生產移交策略標題。"
-"Enter a valid immutable production transition snapshot.","請輸入有效且不可變的生產移交快照。"
-"Handover Acknowledgement fields do not match the exact snapshot.","生產移交確認欄位與精確快照不相符。"
-"Handover Package fields do not match the exact snapshot.","生產移交包欄位與精確快照不相符。"
-"Observation Period fields do not match the exact snapshot.","投產後觀察期欄位與精確快照不相符。"
-"Production Transition Policy fields do not match the exact snapshot.","生產移交策略欄位與精確快照不相符。"
-"Stored JSON does not match the exact production transition snapshot.","儲存的結構化資料與精確生產移交快照不相符。"
-"Stored list does not match the exact production transition snapshot.","儲存的清單與精確生產移交快照不相符。"
-"The Handover Acknowledgement does not match its Project.","生產移交確認與其專案不相符。"
-"The Production Transition Policy is unavailable.","生產移交策略無法使用。"
-"The exact Handover Package revision is unavailable.","精確生產移交包修訂無法使用。"
-"The exact Project transition snapshot is unavailable.","精確專案移交快照無法使用。"
-"The exact Readiness Instance revision is unavailable.","精確就緒度實例修訂無法使用。"
-"The predecessor Handover Package revision is unavailable.","前序生產移交包修訂無法使用。"
-"The predecessor Observation Period revision is unavailable.","前序投產後觀察期修訂無法使用。"
-"The predecessor Production Transition Policy version is unavailable.","前序生產移交策略版本無法使用。"
-"The published Production Transition Policy version is unavailable.","已發布的生產移交策略版本無法使用。"
-"Production transition version key hash does not match.","生產移交版本鍵雜湊不相符。"
-"A published Production Transition Policy version cannot be changed.","不能變更已發布的生產移交策略版本。"
-"Actual SOP cannot define a metric threshold.","實際 SOP 不能定義指標閾值。"
-"Add receiving groups, acknowledgement slots, and handover requirements before publishing.","發布前請新增接收群組、確認槽位和生產移交要求。"
-"All five server-fixed unavailable providers are required in canonical order.","必須按規範順序包含全部五個伺服器固定的無法使用提供方。"
-"Conflicting acknowledgement facts are not allowed.","不允許相互衝突的確認事實。"
-"Define all five mandatory observation providers exactly once.","請為五個必要觀察提供方各定義一次。"
-"Define at least one sender slot and one receiver slot.","請至少定義一個傳送方槽位和一個接收方槽位。"
-"Enter a finite decimal value.","請輸入有限小數值。"
-"Enter a supported object count.","請輸入支援的物件數量。"
-"Enter a supported observation window.","請輸入支援的觀察視窗。"
-"Enter a valid integer.","請輸入有效整數。"
-"Enter only supported policy changes.","請僅輸入支援的策略變更。"
-"Enter valid Project applicability.","請輸入有效的專案適用性。"
-"Enter valid acknowledgement facts.","請輸入有效的確認事實。"
-"Explicitly acknowledge this exact package slot.","請明確確認此精確生產移交包槽位。"
-"Freeze exactly one Project member and role for every required acknowledgement slot.","請為每個必要確認槽位準確凍結一名專案成員及其角色。"
-"Only the enabled member frozen for this slot can acknowledge it.","只有為此槽位凍結且已啟用的成員才能確認。"
-"Policy versions must be contiguous.","策略版本必須連續。"
-"Publish the current Production Transition Policy version first.","請先發布目前生產移交策略版本。"
-"Select a handover requirement defined by this policy.","請選擇此策略定義的生產移交要求。"
-"Select a receiving group defined by this policy.","請選擇此策略定義的接收群組。"
-"Select a supported Project type.","請選擇支援的專案類型。"
-"Select a supported snapshot schema version.","請選擇支援的快照結構版本。"
-"Select an exact Project Work Policy version.","請選擇精確的專案工作策略版本。"
-"Select an exact handover-package revision.","請選擇精確的生產移交包修訂。"
-"Select an exact published policy version.","請選擇精確的已發布策略版本。"
-"Select an exact readiness-instance revision.","請選擇精確的就緒度實例修訂。"
-"Select an exact same-tenant Project snapshot.","請選擇精確的同租戶專案快照。"
-"Select at least one Project role.","請至少選擇一個專案角色。"
-"Select at least one Project type.","請至少選擇一個專案類型。"
-"Select at least one source kind.","請至少選擇一種來源類型。"
-"Select at least one technical disposition.","請至少選擇一個技術處置結論。"
-"Select exact Project member and role assignments.","請選擇精確的專案成員和角色指派。"
-"Select one exact required acknowledgement slot.","請選擇一個精確的必要確認槽位。"
-"Select only source kinds allowed by the handover requirement.","請僅選擇生產移交要求允許的來源類型。"
-"Select the closed unavailable reason for this provider.","請選擇此提供方閉集內的無法使用原因。"
-"Select the exact current handover revision.","請選擇精確的目前生產移交修訂。"
-"Select the exact current observation revision.","請選擇精確的目前觀察期修訂。"
-"Select the exact package revision from this handover stream.","請選擇此生產移交流中的精確包修訂。"
-"Select the exact preceding handover revision.","請選擇精確的前序生產移交修訂。"
-"Select the exact preceding observation revision.","請選擇精確的前序觀察期修訂。"
-"Select the exact preceding published policy version.","請選擇精確的前序已發布策略版本。"
-"Select the exact preceding revision from this handover stream.","請選擇此生產移交流中的精確前序修訂。"
-"Select the exact preceding revision from this observation stream.","請選擇此觀察期流中的精確前序修訂。"
-"Select the exact preceding version from this policy stream.","請選擇此策略流中的精確前序版本。"
-"Select the exact required handover objects.","請選擇精確的必要生產移交物件。"
-"Target SOP must remain planned-only context.","目標 SOP 必須維持為僅計畫上下文。"
-"The Project hash does not match its canonical projection.","專案雜湊與其規範投影不相符。"
-"The Project member and role assignment do not match.","專案成員與角色指派不相符。"
-"The acknowledgement does not match its frozen actor slot.","確認事實與其凍結的操作者槽位不相符。"
-"The acknowledgement identifier is not canonical.","確認識別碼不符合規範。"
-"The acknowledgement intent is invalid.","確認意圖無效。"
-"The acknowledgement member and role must be enabled and currently effective for this Project.","確認成員和角色必須已啟用且目前對該專案有效。"
-"The first handover revision cannot have a predecessor.","首個生產移交修訂不能有前序修訂。"
-"The first observation revision cannot have a predecessor.","首個觀察期修訂不能有前序修訂。"
-"The first policy version cannot have a predecessor.","首個策略版本不能有前序版本。"
-"The frozen acknowledgement slot does not satisfy the policy.","凍結的確認槽位不符合策略。"
-"The frozen member hash does not match its projection.","凍結的成員雜湊與其投影不相符。"
-"The frozen member or role changed; create a handover successor.","凍結的成員或角色已變更；請建立生產移交後續修訂。"
-"The frozen role hash does not match its projection.","凍結的角色雜湊與其投影不相符。"
-"The handover package revision identifier is not canonical.","生產移交包修訂識別碼不符合規範。"
-"The member effectivity interval is invalid.","成員有效期區間無效。"
-"The not-evaluable disposition is required.","必須包含不可評估處置結論。"
-"The observation-period revision identifier is not canonical.","觀察期修訂識別碼不符合規範。"
-"The policy cannot claim production or Gate authority.","該策略不能宣告生產或階段門權限。"
-"The production transition record was changed by another user.","生產移交記錄已被其他使用者變更。"
-"The published policy does not apply to this Project.","已發布策略不適用於此專案。"
-"The published policy must retain all five mandatory observation providers.","已發布策略必須保留全部五個必要觀察提供方。"
-"The readiness reference must match an exact manifest source.","就緒度參照必須與精確清單來源相符。"
-"The role effectivity interval is invalid.","角色有效期區間無效。"
-"The snapshot must contain exactly the canonical fields and values.","快照必須準確包含規範欄位和值。"
-"The unresolved-action selector is server-fixed.","未解決行動選擇器由伺服器固定。"
-"Unavailable mandatory providers require the not-evaluable disposition.","必要提供方無法使用時必須採用不可評估處置結論。"
-"Unavailable providers cannot retain observed dates or production authority.","無法使用的提供方不能保留觀察日期或生產權限。"
-"Unavailable providers must remain identity-free and valueless.","無法使用的提供方必須維持無身分且無數值。"
-"Unresolved actions must use canonical UUID order.","未解決行動必須按規範 UUID 順序排列。"
-"A new Production Transition Policy version must start as draft.","新的生產移交策略版本必須以草稿狀態開始。"
-"The manifest role must match the published handover requirement.","清單角色必須與已發佈的移交要求相符。"
-"Context references must use the context usage.","上下文參照必須使用上下文用途。"
-"Retrospective references must use the retrospective usage.","回顧參照必須使用回顧用途。"
-"Repeated observation references must identify the same exact source version.","重複的觀察參照必須識別相同的精確來源版本。"
-"Production transition","生產移交"
-"The live Production Transition data source is not configured.","尚未設定即時生產移交資料來源。"
-"Readiness instance revision","就緒度執行個體修訂"
-"Trial defect revision","試模缺陷修訂"
-"Actual SOP","實際 SOP"
-"First-batch yield","首批良率"
-"Customer complaints","客戶投訴"
-"Production cycle time","生產節拍"
-"Tooling stability","模具穩定性"
-"The actual SOP provider is unavailable.","實際 SOP 提供方無法使用。"
-"The first-batch yield provider is unavailable.","首批良率提供方無法使用。"
-"The customer complaint provider is unavailable.","客戶投訴提供方無法使用。"
-"The production cycle time provider is unavailable.","生產節拍提供方無法使用。"
-"The Tooling stability provider is unavailable.","模具穩定性提供方無法使用。"
-"Sender","移交方"
-"Receiver","接收方"
-"Loading production transition","正在載入生產移交"
-"Production transition access is not available","無法存取生產移交"
-"The production transition workspace is out of date","生產移交工作區已過期"
-"Production transition data is unavailable","生產移交資料無法使用"
-"No protected production transition data was displayed.","未顯示任何受保護的生產移交資料。"
-"Reload the exact current package before continuing.","繼續前請重新載入精確的目前生產移交包。"
-"Reload current data","重新載入目前資料"
-"Handover history","生產移交歷史"
-"Package revision {{version}}","生產移交包修訂 {{version}}"
-"Current package","目前生產移交包"
-"Superseded package","已被取代的生產移交包"
-"No handover package has been retained.","未保留任何生產移交包。"
-"Observation history","投產後觀察歷史"
-"Observation revision {{version}}","投產後觀察修訂 {{version}}"
-"No observation revision has been retained.","未保留任何投產後觀察修訂。"
-"Unresolved action pages","未解決行動分頁"
-"Page {{page}} of {{pages}}","第 {{page}} 頁，共 {{pages}} 頁"
-"The exact acknowledgement is being appended. Do not submit it again.","正在附加精確確認。請勿重複提交。"
-"Refresh failed","重新整理失敗"
-"The acknowledgement response was accepted, but current data could not be refreshed. Reload before making another decision.","已接受確認回應，但無法重新整理目前資料。做出其他決定前請重新載入。"
-"Acknowledgement retained","已保留確認"
-"The original acknowledgement result was replayed safely.","已安全重播原始確認結果。"
-"The immutable acknowledgement fact is now retained.","現已保留不可變確認事實。"
-"Retry exact acknowledgement","重試精確確認"
-"Reload current package","重新載入目前生產移交包"
-"Production transition inspector","生產移交檢查器"
-"Fully acknowledged","已全部確認"
-"Acknowledgements pending","等待確認"
-"Fully acknowledged is a server-derived fact only. It is not a signature, approval, production acceptance, Gate result, G7 closure, or Project completion.","「全部確認」僅為伺服器衍生事實，不是簽署、核准、生產驗收、階段門結果、G7 關閉或專案完成。"
-"Eligible slot","可確認槽位"
-"Current actor","目前操作者"
-"Acknowledge exact slot","確認精確槽位"
-"No exact current slot is eligible for this actor.","目前操作者沒有可確認的精確目前槽位。"
-"Session verification is required before an acknowledgement can be prepared.","必須先驗證工作階段，才能準備確認。"
-"Selected exact fact","已選取的精確事實"
-"Slot key","槽位鍵"
-"Receiving group","接收群組"
-"Project role","專案角色"
-"Acknowledgement","確認"
-"Acknowledged","已確認"
-"Acknowledged at","確認時間"
-"Source kind","來源類型"
-"Manifest role","清單角色"
-"Source identity","來源識別"
-"Work item kind","工作項目類型"
-"Work item identity","工作項目識別"
-"Retained state","保留狀態"
-"Select a retained row to inspect its exact facts.","請選取保留的資料列以檢查其精確事實。"
-"Handover package","生產移交包"
-"This immutable technical package does not close G7 or change Project, Work Item, Tooling, Gate, or ERP truth.","此不可變技術包不會關閉 G7，也不會變更專案、工作項目、模具開發、階段門或企業資源規劃系統事實。"
-"Package revision","生產移交包修訂"
-"Frozen receiving groups and acknowledgement slots","已凍結的接收群組與確認槽位"
-"Slot","槽位"
-"Frozen handover manifest","已凍結的生產移交清單"
-"Exact identity","精確識別"
-"No exact manifest sources are retained.","未保留任何精確清單來源。"
-"Unresolved actions at package freeze","生產移交包凍結時的未解決行動"
+Complete,完成
+Project snapshot,專案快照
+Project work item,專案工作項目
+Released document,已發布文件
+Tooling capacity scenario,模具容量情境
+Trial input lock,試模輸入鎖
+Trial actual,試模實際值
+Trial sample,試模樣品
+Trial cavity result,試模型腔結果
+Trial defect,試模缺陷
+Trial defect verification,試模缺陷驗證
+Trial comparison,試模比較
+Trial review reference,試模審查參照
+Trial conclusion,試模結論
+Controlled quality result,受控品質結果
+Formal ERP material specification,企業資源規劃系統正式材料規格
+Formal ERP quality result,企業資源規劃系統正式品質結果
+Formal ERP run-at-rate result,企業資源規劃系統正式量產節拍驗證結果
+Formal HR qualification,正式人力資源資格
+Formal ERP supplier execution,企業資源規劃系統正式供應商執行結果
+Incomplete P0 item,未完成的 P0 項目
+Failed mandatory quality result,失敗的強制品質結果
+Required source unavailable,必要來源無法使用
+Controlled confirmation,受控確認
+Exact evidence,精確證據
+Exact source result,精確來源結果
+The formal ERP material specification provider is unavailable.,企業資源規劃系統正式材料規格提供者無法使用。
+The formal ERP quality provider is unavailable.,企業資源規劃系統正式品質提供者無法使用。
+The formal ERP run-at-rate provider is unavailable.,企業資源規劃系統正式量產節拍驗證提供者無法使用。
+The formal HR qualification provider is unavailable.,正式人力資源資格提供者無法使用。
+The formal ERP supplier execution provider is unavailable.,企業資源規劃系統正式供應商執行提供者無法使用。
+The formal source provider is unavailable.,正式來源提供者無法使用。
+Loading NPI readiness,正在載入 NPI 就緒度
+Input drift,輸入已漂移
+NPI readiness access is not available,NPI 就緒度存取無法使用
+The NPI readiness workspace is out of date,NPI 就緒度工作區已過期
+NPI readiness data is unavailable,NPI 就緒度資料無法使用
+No protected readiness data was displayed.,未顯示任何受保護的就緒度資料。
+Reload the exact retained revision before continuing.,繼續前請重新載入精確保留的修訂。
+This template uses Project or customer item selectors that this browser cannot resolve safely.,此範本使用瀏覽器無法安全解析的專案或客戶項目選擇器。
+Enter a valid industry key.,請輸入有效的產業鍵。
+The selected template does not apply to this industry key.,所選範本不適用於此產業鍵。
+No readiness items apply to this industry key.,沒有適用於此產業鍵的就緒度項目。
+No exact Project members are available.,沒有可用的精確專案成員。
+Assign an owner and due date to every applicable item.,請為每個適用項目指派負責人和截止日期。
+Select an exact Project member.,請選擇精確的專案成員。
+NPI readiness has not been initialized,NPI 就緒度尚未初始化
+No retained instance,沒有保留的執行個體
+No readiness score or blocker state is shown until an authorized administrator initializes an exact published template.,獲授權的管理員使用精確的已發布範本完成初始化前，不顯示就緒度分數或阻斷狀態。
+You have read-only access to this workspace.,您對此工作區只有唯讀權限。
+Loading eligible readiness templates,正在載入符合條件的就緒度範本
+Template catalog unavailable,範本目錄無法使用
+No eligible published readiness template,沒有符合條件的已發布就緒度範本
+An administrator must publish an applicable template before this Project can be initialized.,管理員必須先發布適用範本，才能初始化此專案。
+No safely initializable readiness template,沒有可安全初始化的就緒度範本
+Eligible templates use Project or customer item selectors that this browser cannot resolve safely. No initialization command is available.,符合條件的範本使用瀏覽器無法安全解析的專案或客戶項目選擇器，因此不提供初始化命令。
+No Project members available,沒有可用的專案成員
+Initialization is blocked until an exact member is available in this Project.,此專案中有精確成員可用之前，初始化將被阻斷。
+Published readiness template,已發布的就緒度範本
+Select published template,選擇已發布範本
+{{template}} — browser initialization unavailable,{{template}} — 瀏覽器初始化無法使用
+Industry key,產業鍵
+Exact item assignments,精確項目指派
+The server confirms final item applicability from the frozen Project context.,伺服器根據已凍結的專案內容確認最終項目適用性。
+Owner for {{item}},{{item}} 的負責人
+Select owner,選擇負責人
+Due date for {{item}},{{item}} 的截止日期
+Review readiness initialization,審查就緒度初始化
+Session verification is required before initialization.,初始化前需要工作階段驗證。
+Initialize NPI readiness,初始化 NPI 就緒度
+Template,範本
+Template revision,範本修訂
+"The command, receipt, actor and exact snapshot are audited atomically.",命令、收據、操作者和精確快照將以不可分割方式稽核。
+A failure creates no partial instance. Retry uses the same command identity.,失敗不會建立部分執行個體；重試使用相同的命令身分。
+Creates revision 1 from the exact published template and frozen Project context.,根據精確的已發布範本和已凍結的專案內容建立修訂 1。
+The retained readiness instance and its revision history cannot be overwritten.,保留的就緒度執行個體及其修訂歷史不能被覆寫。
+An enabled internal System Manager is required.,需要已啟用的內部系統管理員。
+New readiness instance,新建就緒度執行個體
+Unavailable formal sources,無法使用的正式來源
+These formal projections are explicit holds. This workspace performs no ERP or external network call.,這些正式投影是明確的保留項目；此工作區不會呼叫企業資源規劃系統或外部網路。
+Initializing exact Project readiness,正在初始化精確的專案就緒度
+Saving exact readiness revision,正在儲存精確的就緒度修訂
+The server replayed the sealed readiness response.,伺服器已重播密封的就緒度回應。
+The exact Project readiness instance was initialized.,精確的專案就緒度執行個體已初始化。
+The exact readiness revision was saved.,精確的就緒度修訂已儲存。
+Validation failed,驗證失敗
+The retained readiness revision changed. Reload before editing again.,保留的就緒度修訂已變更，請重新載入後再編輯。
+Readiness item,就緒度項目
+Select a readiness item to inspect its exact retained facts.,請選擇就緒度項目以檢查其精確保留事實。
+Historical revision,歷史修訂
+Read-only workspace,唯讀工作區
+Item key,項目鍵
+Weight,權重
+Blocking level,阻斷層級
+Completion rule,完成規則
+Item version,項目版本
+Reason code,原因代碼
+No exact evidence is retained for this item.,此項目未保留精確證據。
+Revise exact item,修訂精確項目
+Item state,項目狀態
+Exact Work Item sources,精確工作項目來源
+This item has no server-offered Work Item source selection.,此項目沒有伺服器提供的工作項目來源選項。
+Review readiness revision,審查就緒度修訂
+Enter the controlled confirmation before completion.,完成前請輸入受控確認內容。
+You can inspect exact retained readiness history but cannot revise it.,您可以檢查精確保留的就緒度歷史，但不能修訂。
+Session verification required,需要工作階段驗證
+Reload the session before revising readiness items.,修訂就緒度項目前請重新載入工作階段。
+Readiness blockers and score,就緒度阻斷項目和分數
+{{count}} active blockers,{{count}} 個目前阻斷項目
+No active blockers,沒有目前阻斷項目
+Readiness state,就緒度狀態
+Not ready,未就緒
+Total score,總分
+Earned weight,已取得權重
+Applicable weight,適用權重
+Formula,公式
+Score,分數
+Categories,類別
+Readiness categories,就緒度類別
+All categories,所有類別
+Readiness items,就緒度項目
+Inspect readiness item {{item}},檢查就緒度項目 {{item}}
+No active blocker,沒有目前阻斷項目
+Readiness history,就緒度歷史
+Active blockers,目前阻斷項目
+Append readiness revision,追加就緒度修訂
+Proposed state,建議狀態
+"The successor revision, receipt, actor and exact source references are audited atomically.",後續修訂、收據、操作者和精確來源參照將以不可分割方式稽核。
+A failure creates no partial successor. Retry uses the same command identity.,失敗不會建立部分後續修訂；重試使用相同的命令身分。
+Appends one immutable successor and lets the server derive scores and blockers again.,追加一個不可變後續修訂，並由伺服器重新衍生分數和阻斷項目。
+The retained revision cannot be overwritten; corrections require another successor.,保留的修訂不能被覆寫；更正需要另一個後續修訂。
+An enabled internal System Manager with exact Project access is required.,需要已啟用且擁有精確專案存取權限的內部系統管理員。
+The live NPI readiness data source is not configured.,未設定即時 NPI 就緒度資料來源。
+No exact owner candidates,沒有精確的負責人候選
+Retained owner,已保留的負責人
+Change at least one readiness item field.,請至少變更一個就緒度項目欄位。
+A production transition command response can only be sealed once.,生產移交命令回應只能密封一次。
+A production transition command response must be sealed after success.,生產移交命令回應必須在成功後密封。
+Acknowledged At,確認時間
+Handover Acknowledgement Intent,生產移交確認意圖
+Handover Acknowledgement Slot Key,生產移交確認槽位鍵
+Handover Acknowledgement Slot Snapshot,生產移交確認槽位快照
+Handover Acknowledgement Snapshot,生產移交確認快照
+Handover Object Manifest Snapshot,生產移交物件清單快照
+Handover Object Requirement Snapshot,生產移交物件要求快照
+Handover Package Global ID,生產移交包全域識別碼
+Handover Package Revision,生產移交包修訂
+Handover Package Revision Global ID,生產移交包修訂全域識別碼
+Handover Package Revision Reason,生產移交包修訂原因
+Handover Package Revision Snapshot,生產移交包修訂快照
+Handover Package Snapshot Hash,生產移交包快照雜湊
+Handover Package Version,生產移交包版本
+Handover Package Version Key Hash,生產移交包版本鍵雜湊
+NPI Handover Acknowledgement,NPI 生產移交確認
+NPI Handover Package Revision,NPI 生產移交包修訂
+NPI Observation Period Revision,NPI 投產後觀察期修訂
+NPI Production Transition Command Idempotency,NPI 生產移交命令冪等記錄
+NPI Production Transition Policy,NPI 生產移交策略
+NPI Production Transition Policy Version,NPI 生產移交策略版本
+NPI production transition history cannot be changed.,不能變更 NPI 生產移交歷史。
+NPI production transition history cannot be deleted.,不能刪除 NPI 生產移交歷史。
+NPI production transition policy versions can only be changed through the guarded policy repository.,只能透過受控策略儲存庫變更 NPI 生產移交策略版本。
+NPI production transition records can only be changed through an authorized command.,只能透過授權命令變更 NPI 生產移交記錄。
+Observation Conclusion Rule Snapshot,觀察結論規則快照
+Observation Context Reference Snapshot,觀察上下文參照快照
+Observation Period Global ID,投產後觀察期全域識別碼
+Observation Period Revision Reason,投產後觀察期修訂原因
+Observation Period Revision Snapshot,投產後觀察期修訂快照
+Observation Period State,投產後觀察期狀態
+Observation Period Version,投產後觀察期版本
+Observation Period Version Key Hash,投產後觀察期版本鍵雜湊
+Observation Provider Source Snapshot,觀察提供方來源快照
+Observation Retrospective Evidence Snapshot,觀察回顧證據快照
+Observation Retrospective Note,觀察回顧說明
+Observation Source Requirement Snapshot,觀察來源要求快照
+Observation Technical Disposition,觀察技術處置結論
+Observation Window Days,觀察視窗天數
+Predecessor Handover Package Revision Global ID,前序生產移交包修訂全域識別碼
+Predecessor Observation Period Revision Global ID,前序投產後觀察期修訂全域識別碼
+Predecessor Production Transition Policy Version Global ID,前序生產移交策略版本全域識別碼
+Production Transition Acknowledgement Slot Snapshot,生產移交確認槽位快照
+Production Transition Policy Applicability Snapshot,生產移交策略適用性快照
+Production Transition Policy Business Version,生產移交策略業務版本
+Production Transition Policy Code,生產移交策略代碼
+Production Transition Policy Global ID,生產移交策略全域識別碼
+Production Transition Policy Snapshot Hash,生產移交策略快照雜湊
+Production Transition Policy Title,生產移交策略標題
+Production Transition Policy Version,生產移交策略版本
+Production Transition Policy Version Global ID,生產移交策略版本全域識別碼
+Production Transition Policy Version Key Hash,生產移交策略版本鍵雜湊
+Production Transition Policy Version Snapshot,生產移交策略版本快照
+Production Transition Policy Version Title,生產移交策略版本標題
+Production Transition Project Snapshot,生產移交專案快照
+Production Transition Receiving Group Snapshot,生產移交接收群組快照
+Project Member Global ID,專案成員全域識別碼
+Project Member Optimistic Version,專案成員樂觀鎖版本
+Project Member Snapshot Hash,專案成員快照雜湊
+Project Role Assignment Global ID,專案角色指派全域識別碼
+Project Role Assignment Optimistic Version,專案角色指派樂觀鎖版本
+Project Role Assignment Snapshot Hash,專案角色指派快照雜湊
+Readiness Instance Revision Global ID,就緒度實例修訂全域識別碼
+Readiness Instance Revision Snapshot Hash,就緒度實例修訂快照雜湊
+Readiness Instance Revision Version,就緒度實例修訂版本
+Select a supported production transition command operation.,請選擇支援的生產移交命令操作。
+Select all required values exactly once.,請準確且僅選擇一次所有必填值。
+The production transition command does not match its Project.,生產移交命令與其專案不相符。
+The production transition command scope is invalid.,生產移交命令範圍無效。
+Unresolved Action Rule Snapshot,未解決行動規則快照
+Unresolved Work Item Selector Snapshot,未解決工作項目選擇器快照
+Unresolved Work Item Snapshot,未解決工作項目快照
+acknowledge_exact_package_slot,確認精確生產移交包槽位
+handover_acknowledgement,生產移交確認
+handover_package_revision,生產移交包修訂
+not_evaluable,不可評估
+observation_period.create,建立投產後觀察期
+observation_period.revise,修訂投產後觀察期
+observation_period_revision,投產後觀察期修訂
+production_handover.acknowledge,確認生產移交
+production_handover.create,建立生產移交包
+production_handover.revise,修訂生產移交包
+production_transition_policy,生產移交策略
+production_transition_policy.create,建立生產移交策略
+production_transition_policy.edit,編輯生產移交策略
+production_transition_policy.next_version,建立下一生產移交策略版本
+production_transition_policy.publish,發布生產移交策略
+production_transition_policy_version,生產移交策略版本
+Enter a valid Production Transition Policy code.,請輸入有效的生產移交策略代碼。
+Enter a valid Production Transition Policy title.,請輸入有效的生產移交策略標題。
+Enter a valid immutable production transition snapshot.,請輸入有效且不可變的生產移交快照。
+Handover Acknowledgement fields do not match the exact snapshot.,生產移交確認欄位與精確快照不相符。
+Handover Package fields do not match the exact snapshot.,生產移交包欄位與精確快照不相符。
+Observation Period fields do not match the exact snapshot.,投產後觀察期欄位與精確快照不相符。
+Production Transition Policy fields do not match the exact snapshot.,生產移交策略欄位與精確快照不相符。
+Stored JSON does not match the exact production transition snapshot.,儲存的結構化資料與精確生產移交快照不相符。
+Stored list does not match the exact production transition snapshot.,儲存的清單與精確生產移交快照不相符。
+The Handover Acknowledgement does not match its Project.,生產移交確認與其專案不相符。
+The Production Transition Policy is unavailable.,生產移交策略無法使用。
+The exact Handover Package revision is unavailable.,精確生產移交包修訂無法使用。
+The exact Project transition snapshot is unavailable.,精確專案移交快照無法使用。
+The exact Readiness Instance revision is unavailable.,精確就緒度實例修訂無法使用。
+The predecessor Handover Package revision is unavailable.,前序生產移交包修訂無法使用。
+The predecessor Observation Period revision is unavailable.,前序投產後觀察期修訂無法使用。
+The predecessor Production Transition Policy version is unavailable.,前序生產移交策略版本無法使用。
+The published Production Transition Policy version is unavailable.,已發布的生產移交策略版本無法使用。
+Production transition version key hash does not match.,生產移交版本鍵雜湊不相符。
+A published Production Transition Policy version cannot be changed.,不能變更已發布的生產移交策略版本。
+Actual SOP cannot define a metric threshold.,實際 SOP 不能定義指標閾值。
+"Add receiving groups, acknowledgement slots, and handover requirements before publishing.",發布前請新增接收群組、確認槽位和生產移交要求。
+All five server-fixed unavailable providers are required in canonical order.,必須按規範順序包含全部五個伺服器固定的無法使用提供方。
+Conflicting acknowledgement facts are not allowed.,不允許相互衝突的確認事實。
+Define all five mandatory observation providers exactly once.,請為五個必要觀察提供方各定義一次。
+Define at least one sender slot and one receiver slot.,請至少定義一個傳送方槽位和一個接收方槽位。
+Enter a finite decimal value.,請輸入有限小數值。
+Enter a supported object count.,請輸入支援的物件數量。
+Enter a supported observation window.,請輸入支援的觀察視窗。
+Enter a valid integer.,請輸入有效整數。
+Enter only supported policy changes.,請僅輸入支援的策略變更。
+Enter valid Project applicability.,請輸入有效的專案適用性。
+Enter valid acknowledgement facts.,請輸入有效的確認事實。
+Explicitly acknowledge this exact package slot.,請明確確認此精確生產移交包槽位。
+Freeze exactly one Project member and role for every required acknowledgement slot.,請為每個必要確認槽位準確凍結一名專案成員及其角色。
+Only the enabled member frozen for this slot can acknowledge it.,只有為此槽位凍結且已啟用的成員才能確認。
+Policy versions must be contiguous.,策略版本必須連續。
+Publish the current Production Transition Policy version first.,請先發布目前生產移交策略版本。
+Select a handover requirement defined by this policy.,請選擇此策略定義的生產移交要求。
+Select a receiving group defined by this policy.,請選擇此策略定義的接收群組。
+Select a supported Project type.,請選擇支援的專案類型。
+Select a supported snapshot schema version.,請選擇支援的快照結構版本。
+Select an exact Project Work Policy version.,請選擇精確的專案工作策略版本。
+Select an exact handover-package revision.,請選擇精確的生產移交包修訂。
+Select an exact published policy version.,請選擇精確的已發布策略版本。
+Select an exact readiness-instance revision.,請選擇精確的就緒度實例修訂。
+Select an exact same-tenant Project snapshot.,請選擇精確的同租戶專案快照。
+Select at least one Project role.,請至少選擇一個專案角色。
+Select at least one Project type.,請至少選擇一個專案類型。
+Select at least one source kind.,請至少選擇一種來源類型。
+Select at least one technical disposition.,請至少選擇一個技術處置結論。
+Select exact Project member and role assignments.,請選擇精確的專案成員和角色指派。
+Select one exact required acknowledgement slot.,請選擇一個精確的必要確認槽位。
+Select only source kinds allowed by the handover requirement.,請僅選擇生產移交要求允許的來源類型。
+Select the closed unavailable reason for this provider.,請選擇此提供方閉集內的無法使用原因。
+Select the exact current handover revision.,請選擇精確的目前生產移交修訂。
+Select the exact current observation revision.,請選擇精確的目前觀察期修訂。
+Select the exact package revision from this handover stream.,請選擇此生產移交流中的精確包修訂。
+Select the exact preceding handover revision.,請選擇精確的前序生產移交修訂。
+Select the exact preceding observation revision.,請選擇精確的前序觀察期修訂。
+Select the exact preceding published policy version.,請選擇精確的前序已發布策略版本。
+Select the exact preceding revision from this handover stream.,請選擇此生產移交流中的精確前序修訂。
+Select the exact preceding revision from this observation stream.,請選擇此觀察期流中的精確前序修訂。
+Select the exact preceding version from this policy stream.,請選擇此策略流中的精確前序版本。
+Select the exact required handover objects.,請選擇精確的必要生產移交物件。
+Target SOP must remain planned-only context.,目標 SOP 必須維持為僅計畫上下文。
+The Project hash does not match its canonical projection.,專案雜湊與其規範投影不相符。
+The Project member and role assignment do not match.,專案成員與角色指派不相符。
+The acknowledgement does not match its frozen actor slot.,確認事實與其凍結的操作者槽位不相符。
+The acknowledgement identifier is not canonical.,確認識別碼不符合規範。
+The acknowledgement intent is invalid.,確認意圖無效。
+The acknowledgement member and role must be enabled and currently effective for this Project.,確認成員和角色必須已啟用且目前對該專案有效。
+The first handover revision cannot have a predecessor.,首個生產移交修訂不能有前序修訂。
+The first observation revision cannot have a predecessor.,首個觀察期修訂不能有前序修訂。
+The first policy version cannot have a predecessor.,首個策略版本不能有前序版本。
+The frozen acknowledgement slot does not satisfy the policy.,凍結的確認槽位不符合策略。
+The frozen member hash does not match its projection.,凍結的成員雜湊與其投影不相符。
+The frozen member or role changed; create a handover successor.,凍結的成員或角色已變更；請建立生產移交後續修訂。
+The frozen role hash does not match its projection.,凍結的角色雜湊與其投影不相符。
+The handover package revision identifier is not canonical.,生產移交包修訂識別碼不符合規範。
+The member effectivity interval is invalid.,成員有效期區間無效。
+The not-evaluable disposition is required.,必須包含不可評估處置結論。
+The observation-period revision identifier is not canonical.,觀察期修訂識別碼不符合規範。
+The policy cannot claim production or Gate authority.,該策略不能宣告生產或階段門權限。
+The production transition record was changed by another user.,生產移交記錄已被其他使用者變更。
+The published policy does not apply to this Project.,已發布策略不適用於此專案。
+The published policy must retain all five mandatory observation providers.,已發布策略必須保留全部五個必要觀察提供方。
+The readiness reference must match an exact manifest source.,就緒度參照必須與精確清單來源相符。
+The role effectivity interval is invalid.,角色有效期區間無效。
+The snapshot must contain exactly the canonical fields and values.,快照必須準確包含規範欄位和值。
+The unresolved-action selector is server-fixed.,未解決行動選擇器由伺服器固定。
+Unavailable mandatory providers require the not-evaluable disposition.,必要提供方無法使用時必須採用不可評估處置結論。
+Unavailable providers cannot retain observed dates or production authority.,無法使用的提供方不能保留觀察日期或生產權限。
+Unavailable providers must remain identity-free and valueless.,無法使用的提供方必須維持無身分且無數值。
+Unresolved actions must use canonical UUID order.,未解決行動必須按規範 UUID 順序排列。
+A new Production Transition Policy version must start as draft.,新的生產移交策略版本必須以草稿狀態開始。
+The manifest role must match the published handover requirement.,清單角色必須與已發佈的移交要求相符。
+Context references must use the context usage.,上下文參照必須使用上下文用途。
+Retrospective references must use the retrospective usage.,回顧參照必須使用回顧用途。
+Repeated observation references must identify the same exact source version.,重複的觀察參照必須識別相同的精確來源版本。
+Production transition,生產移交
+The live Production Transition data source is not configured.,尚未設定即時生產移交資料來源。
+Readiness instance revision,就緒度執行個體修訂
+Trial defect revision,試模缺陷修訂
+Actual SOP,實際 SOP
+First-batch yield,首批良率
+Customer complaints,客戶投訴
+Production cycle time,生產節拍
+Tooling stability,模具穩定性
+The actual SOP provider is unavailable.,實際 SOP 提供方無法使用。
+The first-batch yield provider is unavailable.,首批良率提供方無法使用。
+The customer complaint provider is unavailable.,客戶投訴提供方無法使用。
+The production cycle time provider is unavailable.,生產節拍提供方無法使用。
+The Tooling stability provider is unavailable.,模具穩定性提供方無法使用。
+Sender,移交方
+Receiver,接收方
+Loading production transition,正在載入生產移交
+Production transition access is not available,無法存取生產移交
+The production transition workspace is out of date,生產移交工作區已過期
+Production transition data is unavailable,生產移交資料無法使用
+No protected production transition data was displayed.,未顯示任何受保護的生產移交資料。
+Reload the exact current package before continuing.,繼續前請重新載入精確的目前生產移交包。
+Reload current data,重新載入目前資料
+Handover history,生產移交歷史
+Package revision {{version}},生產移交包修訂 {{version}}
+Current package,目前生產移交包
+Superseded package,已被取代的生產移交包
+No handover package has been retained.,未保留任何生產移交包。
+Observation history,投產後觀察歷史
+Observation revision {{version}},投產後觀察修訂 {{version}}
+No observation revision has been retained.,未保留任何投產後觀察修訂。
+Unresolved action pages,未解決行動分頁
+Page {{page}} of {{pages}},第 {{page}} 頁，共 {{pages}} 頁
+The exact acknowledgement is being appended. Do not submit it again.,正在附加精確確認。請勿重複提交。
+Refresh failed,重新整理失敗
+"The acknowledgement response was accepted, but current data could not be refreshed. Reload before making another decision.",已接受確認回應，但無法重新整理目前資料。做出其他決定前請重新載入。
+Acknowledgement retained,已保留確認
+The original acknowledgement result was replayed safely.,已安全重播原始確認結果。
+The immutable acknowledgement fact is now retained.,現已保留不可變確認事實。
+Retry exact acknowledgement,重試精確確認
+Reload current package,重新載入目前生產移交包
+Production transition inspector,生產移交檢查器
+Fully acknowledged,已全部確認
+Acknowledgements pending,等待確認
+"Fully acknowledged is a server-derived fact only. It is not a signature, approval, production acceptance, Gate result, G7 closure, or Project completion.",「全部確認」僅為伺服器衍生事實，不是簽署、核准、生產驗收、階段門結果、G7 關閉或專案完成。
+Eligible slot,可確認槽位
+Current actor,目前操作者
+Acknowledge exact slot,確認精確槽位
+No exact current slot is eligible for this actor.,目前操作者沒有可確認的精確目前槽位。
+Session verification is required before an acknowledgement can be prepared.,必須先驗證工作階段，才能準備確認。
+Selected exact fact,已選取的精確事實
+Slot key,槽位鍵
+Receiving group,接收群組
+Project role,專案角色
+Acknowledgement,確認
+Acknowledged,已確認
+Acknowledged at,確認時間
+Source kind,來源類型
+Manifest role,清單角色
+Source identity,來源識別
+Work item kind,工作項目類型
+Work item identity,工作項目識別
+Retained state,保留狀態
+Select a retained row to inspect its exact facts.,請選取保留的資料列以檢查其精確事實。
+Handover package,生產移交包
+"This immutable technical package does not close G7 or change Project, Work Item, Tooling, Gate, or ERP truth.",此不可變技術包不會關閉 G7，也不會變更專案、工作項目、模具開發、階段門或企業資源規劃系統事實。
+Package revision,生產移交包修訂
+Frozen receiving groups and acknowledgement slots,已凍結的接收群組與確認槽位
+Slot,槽位
+Frozen handover manifest,已凍結的生產移交清單
+Exact identity,精確識別
+No exact manifest sources are retained.,未保留任何精確清單來源。
+Unresolved actions at package freeze,生產移交包凍結時的未解決行動
 "The unresolved action result exceeds the maximum of 10,000 rows.","未解決行動結果超過 10,000 列上限。"
-"No unresolved actions were present at package freeze.","生產移交包凍結時不存在未解決行動。"
-"Observation inspector","投產後觀察檢查器"
-"Not evaluable","不可評估"
-"Observation is technical review truth only. It is not formal production stability, acceptance, approval, or a Gate decision.","投產後觀察僅代表技術評審事實，不是正式生產穩定性、驗收、核准或階段門決定。"
-"Provider state","提供方狀態"
-"Usage","用途"
-"Review context","評審上下文"
-"Retrospective evidence","回顧證據"
-"Select an unavailable provider or exact reference.","請選取無法使用的提供方或精確參照。"
-"Observation period","投產後觀察期"
-"Actual SOP and all mandatory production providers remain unavailable. No observed window, zero value, success, or stable conclusion is inferred.","實際 SOP 與所有必要的生產提供方仍無法使用。不得推斷觀察期間、零值、成功或穩定結論。"
-"Observation revision","投產後觀察修訂"
-"Observation state","投產後觀察狀態"
-"Technical disposition","技術處置結論"
-"Observed window","觀察期間"
-"Mandatory external providers","必要的外部提供方"
-"Provider","提供方"
-"Exact observation references","精確觀察參照"
-"No exact observation references are retained.","未保留任何精確觀察參照。"
-"Retrospective note and authority boundary","回顧說明與權限邊界"
-"Retrospective note","回顧說明"
-"Authority boundary","權限邊界"
-"Handover package reference","生產移交包參照"
-"Every frozen slot is acknowledged.","所有凍結槽位均已確認。"
-"You do not have permission to acknowledge a frozen slot.","您無權確認凍結槽位。"
-"The acknowledgement permission does not match the current actor and frozen slot.","確認權限與目前操作者和凍結槽位不相符。"
-"Production transition views","生產移交檢視"
-"NPI technical truth only","僅限 NPI 技術事實"
-"No production transition history","無生產移交歷史"
-"No handover package or observation revision has been retained. This workspace does not create or revise them.","未保留任何生產移交包或投產後觀察修訂。此工作區不會建立或修訂這些物件。"
-"No exact handover fact is available to inspect.","沒有可檢查的精確生產移交事實。"
-"The actor-bound acknowledgement, receipt, and audit are appended atomically.","操作者綁定的確認、收據與稽核以原子方式附加。"
-"A failed transaction retains no partial acknowledgement. Retry uses the same command identity.","失敗的交易不會保留部分確認。重試使用相同的命令識別。"
-"Appends one immutable acknowledgement fact to this exact current package and frozen slot.","向此精確目前生產移交包與凍結槽位附加一筆不可變確認事實。"
-"The acknowledgement fact cannot be overwritten or copied to a successor package.","確認事實不能被覆寫，也不能複製到後續生產移交包。"
-"Only the authenticated enabled member frozen into this exact slot can acknowledge it.","只有凍結到此精確槽位中的已啟用且通過身分驗證的成員才能確認。"
-"Review exact acknowledgement","評審精確確認"
-"Retained state key","保留狀態鍵"
-"Unrecognized state","無法識別的狀態"
-"Select one exact eligible slot before acknowledging.","確認前請選擇一個精確的可確認槽位。"
-"A Released Trial Summary successor must remain in the same summary stream.","已發佈試模總結的後續修訂必須保留在同一摘要流中。"
-"A summary successor requires a newly decided Trial conclusion.","摘要後續修訂需要一筆新作出決定的試模結論。"
-"Enter a complete bounded source manifest.","請輸入完整且受限的來源清單。"
-"Enter a valid JSON object.","請輸入有效的結構化資料物件。"
-"Enter a valid source manifest.","請輸入有效的來源清單。"
-"Enter exact summary source references.","請輸入精確的摘要來源參照。"
-"Enter the exact supported fields.","請輸入精確的支援欄位。"
-"NPI Released Trial Summary Revision","NPI 已發佈試模總結修訂"
-"Only an approved or rejected Trial conclusion can be retained.","只能保留已核准或已駁回的試模結論。"
-"Only the first summary revision may omit its exact predecessor.","只有第一版摘要修訂可以不填寫其精確前序修訂。"
-"Predecessor Released Trial Summary Revision Global ID","前序已發佈試模總結修訂全域識別碼"
-"Released Trial Summary Global ID","已發佈試模總結全域識別碼"
-"Released Trial Summary Presentation Projection","已發佈試模總結呈現投影"
-"Released Trial Summary Presentation Projection Hash","已發佈試模總結呈現投影雜湊"
-"Released Trial Summary Redaction Manifest","已發佈試模總結去識別清單"
-"Released Trial Summary Redaction Manifest Hash","已發佈試模總結去識別清單雜湊"
-"Released Trial Summary Revision Reason","已發佈試模總結修訂原因"
-"Released Trial Summary Revision Snapshot","已發佈試模總結修訂快照"
-"Released Trial Summary Source Manifest","已發佈試模總結來源清單"
-"Released Trial Summary Source Manifest Hash","已發佈試模總結來源清單雜湊"
-"Released Trial Summary Version","已發佈試模總結版本"
-"Released Trial Summary Version Key Hash","已發佈試模總結版本鍵雜湊"
-"Released Trial Summary fields do not match the exact snapshot.","已發佈試模總結欄位與精確快照不相符。"
-"Released Trial Summary presentation does not match the exact snapshot.","已發佈試模總結呈現內容與精確快照不相符。"
-"Released Trial Summary redaction does not match the exact snapshot.","已發佈試模總結去識別資訊與精確快照不相符。"
-"Released Trial Summary sources do not match the exact snapshot.","已發佈試模總結來源與精確快照不相符。"
-"Retain every exact Trial review reference.","請保留每一筆精確的試模評審參照。"
-"Select a supported Released Trial Summary schema.","請選擇支援的已發佈試模總結架構。"
-"Select a supported summary presentation schema.","請選擇支援的摘要呈現架構。"
-"Select a supported summary source kind.","請選擇支援的摘要來源類型。"
-"Select a valid Trial conclusion code.","請選擇有效的試模結論代碼。"
-"Select the exact current Released Trial Summary revision.","請選擇精確的目前已發佈試模總結修訂。"
-"Select the exact decided Trial conclusion revision.","請選擇精確的已決定試模結論修訂。"
-"Summary source references must be unique.","摘要來源參照必須唯一。"
-"Summary source references must use canonical order.","摘要來源參照必須使用規範順序。"
-"The Released Trial Summary derived hash does not match.","已發佈試模總結衍生雜湊不相符。"
-"The Released Trial Summary is unavailable.","已發佈試模總結無法使用。"
-"The Released Trial Summary redaction rules cannot be changed.","已發佈試模總結去識別規則不能變更。"
-"The Released Trial Summary snapshot hash does not match.","已發佈試模總結快照雜湊不相符。"
-"The Released Trial Summary source was changed by another user.","已發佈試模總結來源已由其他使用者變更。"
-"The Released Trial Summary workspace is temporarily unavailable.","已發佈試模總結工作區暫時無法使用。"
-"The complete summary presentation is too large.","完整摘要呈現內容過大。"
-"The exact Trial Plan source does not match the summary.","精確試模計畫來源與摘要不相符。"
-"The exact Trial Round source does not match the summary.","精確試模輪次來源與摘要不相符。"
-"The exact Trial conclusion source does not match the summary.","精確試模結論來源與摘要不相符。"
-"The presentation projection does not match the exact summary sources.","呈現投影與精確摘要來源不相符。"
-"The summary presentation contains a forbidden private locator.","摘要呈現內容包含禁止的私有定位資訊。"
-"The summary presentation contains a forbidden sensitive field.","摘要呈現內容包含禁止的敏感欄位。"
-"The summary source manifest contains duplicate truth.","摘要來源清單包含重複事實。"
-"The summary source manifest is incomplete.","摘要來源清單不完整。"
-"The summary routes are disabled while a reviewed forward fix is applied.","套用經評審的前向修正期間，摘要路由已停用。"
-"Trial Conclusion Revision","試模結論修訂"
-"Trial Conclusion Revision Global ID","試模結論修訂全域識別碼"
-"Trial Conclusion Snapshot Hash","試模結論快照雜湊"
+No unresolved actions were present at package freeze.,生產移交包凍結時不存在未解決行動。
+Observation inspector,投產後觀察檢查器
+Not evaluable,不可評估
+"Observation is technical review truth only. It is not formal production stability, acceptance, approval, or a Gate decision.",投產後觀察僅代表技術評審事實，不是正式生產穩定性、驗收、核准或階段門決定。
+Provider state,提供方狀態
+Usage,用途
+Review context,評審上下文
+Retrospective evidence,回顧證據
+Select an unavailable provider or exact reference.,請選取無法使用的提供方或精確參照。
+Observation period,投產後觀察期
+"Actual SOP and all mandatory production providers remain unavailable. No observed window, zero value, success, or stable conclusion is inferred.",實際 SOP 與所有必要的生產提供方仍無法使用。不得推斷觀察期間、零值、成功或穩定結論。
+Observation revision,投產後觀察修訂
+Observation state,投產後觀察狀態
+Technical disposition,技術處置結論
+Observed window,觀察期間
+Mandatory external providers,必要的外部提供方
+Provider,提供方
+Exact observation references,精確觀察參照
+No exact observation references are retained.,未保留任何精確觀察參照。
+Retrospective note and authority boundary,回顧說明與權限邊界
+Retrospective note,回顧說明
+Authority boundary,權限邊界
+Handover package reference,生產移交包參照
+Every frozen slot is acknowledged.,所有凍結槽位均已確認。
+You do not have permission to acknowledge a frozen slot.,您無權確認凍結槽位。
+The acknowledgement permission does not match the current actor and frozen slot.,確認權限與目前操作者和凍結槽位不相符。
+Production transition views,生產移交檢視
+NPI technical truth only,僅限 NPI 技術事實
+No production transition history,無生產移交歷史
+No handover package or observation revision has been retained. This workspace does not create or revise them.,未保留任何生產移交包或投產後觀察修訂。此工作區不會建立或修訂這些物件。
+No exact handover fact is available to inspect.,沒有可檢查的精確生產移交事實。
+"The actor-bound acknowledgement, receipt, and audit are appended atomically.",操作者綁定的確認、收據與稽核以原子方式附加。
+A failed transaction retains no partial acknowledgement. Retry uses the same command identity.,失敗的交易不會保留部分確認。重試使用相同的命令識別。
+Appends one immutable acknowledgement fact to this exact current package and frozen slot.,向此精確目前生產移交包與凍結槽位附加一筆不可變確認事實。
+The acknowledgement fact cannot be overwritten or copied to a successor package.,確認事實不能被覆寫，也不能複製到後續生產移交包。
+Only the authenticated enabled member frozen into this exact slot can acknowledge it.,只有凍結到此精確槽位中的已啟用且通過身分驗證的成員才能確認。
+Review exact acknowledgement,評審精確確認
+Retained state key,保留狀態鍵
+Unrecognized state,無法識別的狀態
+Select one exact eligible slot before acknowledging.,確認前請選擇一個精確的可確認槽位。
+A Released Trial Summary successor must remain in the same summary stream.,已發佈試模總結的後續修訂必須保留在同一摘要流中。
+A summary successor requires a newly decided Trial conclusion.,摘要後續修訂需要一筆新作出決定的試模結論。
+Enter a complete bounded source manifest.,請輸入完整且受限的來源清單。
+Enter a valid JSON object.,請輸入有效的結構化資料物件。
+Enter a valid source manifest.,請輸入有效的來源清單。
+Enter exact summary source references.,請輸入精確的摘要來源參照。
+Enter the exact supported fields.,請輸入精確的支援欄位。
+NPI Released Trial Summary Revision,NPI 已發佈試模總結修訂
+Only an approved or rejected Trial conclusion can be retained.,只能保留已核准或已駁回的試模結論。
+Only the first summary revision may omit its exact predecessor.,只有第一版摘要修訂可以不填寫其精確前序修訂。
+Predecessor Released Trial Summary Revision Global ID,前序已發佈試模總結修訂全域識別碼
+Released Trial Summary Global ID,已發佈試模總結全域識別碼
+Released Trial Summary Presentation Projection,已發佈試模總結呈現投影
+Released Trial Summary Presentation Projection Hash,已發佈試模總結呈現投影雜湊
+Released Trial Summary Redaction Manifest,已發佈試模總結去識別清單
+Released Trial Summary Redaction Manifest Hash,已發佈試模總結去識別清單雜湊
+Released Trial Summary Revision Reason,已發佈試模總結修訂原因
+Released Trial Summary Revision Snapshot,已發佈試模總結修訂快照
+Released Trial Summary Source Manifest,已發佈試模總結來源清單
+Released Trial Summary Source Manifest Hash,已發佈試模總結來源清單雜湊
+Released Trial Summary Version,已發佈試模總結版本
+Released Trial Summary Version Key Hash,已發佈試模總結版本鍵雜湊
+Released Trial Summary fields do not match the exact snapshot.,已發佈試模總結欄位與精確快照不相符。
+Released Trial Summary presentation does not match the exact snapshot.,已發佈試模總結呈現內容與精確快照不相符。
+Released Trial Summary redaction does not match the exact snapshot.,已發佈試模總結去識別資訊與精確快照不相符。
+Released Trial Summary sources do not match the exact snapshot.,已發佈試模總結來源與精確快照不相符。
+Retain every exact Trial review reference.,請保留每一筆精確的試模評審參照。
+Select a supported Released Trial Summary schema.,請選擇支援的已發佈試模總結架構。
+Select a supported summary presentation schema.,請選擇支援的摘要呈現架構。
+Select a supported summary source kind.,請選擇支援的摘要來源類型。
+Select a valid Trial conclusion code.,請選擇有效的試模結論代碼。
+Select the exact current Released Trial Summary revision.,請選擇精確的目前已發佈試模總結修訂。
+Select the exact decided Trial conclusion revision.,請選擇精確的已決定試模結論修訂。
+Summary source references must be unique.,摘要來源參照必須唯一。
+Summary source references must use canonical order.,摘要來源參照必須使用規範順序。
+The Released Trial Summary derived hash does not match.,已發佈試模總結衍生雜湊不相符。
+The Released Trial Summary is unavailable.,已發佈試模總結無法使用。
+The Released Trial Summary redaction rules cannot be changed.,已發佈試模總結去識別規則不能變更。
+The Released Trial Summary snapshot hash does not match.,已發佈試模總結快照雜湊不相符。
+The Released Trial Summary source was changed by another user.,已發佈試模總結來源已由其他使用者變更。
+The Released Trial Summary workspace is temporarily unavailable.,已發佈試模總結工作區暫時無法使用。
+The complete summary presentation is too large.,完整摘要呈現內容過大。
+The exact Trial Plan source does not match the summary.,精確試模計畫來源與摘要不相符。
+The exact Trial Round source does not match the summary.,精確試模輪次來源與摘要不相符。
+The exact Trial conclusion source does not match the summary.,精確試模結論來源與摘要不相符。
+The presentation projection does not match the exact summary sources.,呈現投影與精確摘要來源不相符。
+The summary presentation contains a forbidden private locator.,摘要呈現內容包含禁止的私有定位資訊。
+The summary presentation contains a forbidden sensitive field.,摘要呈現內容包含禁止的敏感欄位。
+The summary source manifest contains duplicate truth.,摘要來源清單包含重複事實。
+The summary source manifest is incomplete.,摘要來源清單不完整。
+The summary routes are disabled while a reviewed forward fix is applied.,套用經評審的前向修正期間，摘要路由已停用。
+Trial Conclusion Revision,試模結論修訂
+Trial Conclusion Revision Global ID,試模結論修訂全域識別碼
+Trial Conclusion Snapshot Hash,試模結論快照雜湊
 released_trial_summary.retain,保留已發佈試模總結
 released_trial_summary.revise,修訂已發佈試模總結
 released_trial_summary_revision,已發佈試模總結修訂
-"Trial Plan revision","試模計畫修訂"
-"Input lock revision","輸入鎖定修訂"
-"Trial Actual revision","試模實績修訂"
-"Sample Batch revision","樣品批次修訂"
-"Cavity Result revision","模穴結果修訂"
-"Tooling defect revision","模具缺陷修訂"
-"Defect verification revision","缺陷驗證修訂"
-"Round comparison snapshot","輪次比較快照"
-"Review reference revision","評審參照修訂"
-"Trial conclusion revision","試模結論修訂"
-"Actual parameters","實際參數"
-"Samples","樣品"
-"Cavity results","模穴結果"
-"Defects and actions","缺陷與措施"
-"Controlled references","受控參照"
-"Technical blockers","技術阻斷項"
-"Informational","資訊"
-"Retain technical summary","保留技術摘要"
-"Revise technical summary","修訂技術摘要"
-"Released Trial Summary","已發佈試模總結"
-"Immutable technical retention from the exact decided conclusion","對精確已決定結論進行不可變技術留存"
-"Released Summary is read only in this session.","已發佈試模總結在此工作階段中為唯讀。"
-"The server rechecks Project visibility and exact technical authority for every retain or revise command.","伺服器會為每個保留或修訂命令重新檢查專案可見性和精確技術權限。"
-"The exact Round, decided conclusion, predecessor and source graph are being verified atomically.","正在以原子方式驗證精確試模輪次、已決定結論、前置版本和來源圖譜。"
-"The exact prior summary command response was replayed safely.","精確的先前摘要命令回應已安全重播。"
-"The technical summary and audit history were retained immutably.","技術摘要和稽核歷程已不可變留存。"
-"Summary retained; current history could not be refreshed","摘要已保留；無法重新整理目前歷程"
-"The server replayed the accepted command. Do not submit it again.","伺服器已重播被接受的命令。請勿再次提交。"
-"The server accepted the command. Do not submit it again.","伺服器已接受該命令。請勿再次提交。"
-"Reload summary history","重新載入摘要歷程"
-"Summary source graph exceeds the safe retention boundary","摘要來源圖譜超出安全留存邊界"
-"Released Summary command failed","已發佈試模總結命令失敗"
-"Reload current summary","重新載入目前摘要"
-"Immutable summary history","不可變摘要歷程"
-"No technical summary has been retained.","尚未保留任何技術摘要。"
-"The current decided conclusion is eligible for technical retention when authority is available.","目前已決定結論在具備權限時可進行技術留存。"
-"A unique current approved or rejected conclusion is required first.","必須先有唯一的目前已核准或已拒絕結論。"
-"Selected technical summary","已選擇的技術摘要"
-"Summary stable ID","摘要穩定識別碼"
-"Revision stable ID","修訂穩定識別碼"
-"Source manifest entries","來源清單項目"
-"Controlled output mapping","受控輸出對應"
-"Retained by","留存人"
-"This is an NPI-owned technical summary. It is not approval, signature, production acceptance, Gate truth or external publication.","這是由 NPI 主責的技術摘要。它不代表核准、簽署、生產驗收、階段門事實或外部發佈。"
-"Safe presentation facts","安全呈現事實"
-"Fact group","事實組"
-"Fact","事實"
-"Sources","來源"
-"No facts are retained in this group.","此組中未留存任何事實。"
-"Previous","上一頁"
-"Page","頁"
-"Next","下一頁"
-"Exact source manifest","精確來源清單"
-"No immutable summary revision is available.","沒有可用的不可變摘要修訂。"
-"Summary authority inspector","摘要權限檢查器"
-"Current decided conclusion","目前已決定結論"
-"Exact predecessor required","需要精確前置版本"
-"Redaction rules applied","已套用去識別規則"
-"Sensitive field classes excluded","已排除敏感欄位類別"
-"External projection","外部投影"
-"Formal release","正式發佈"
-"Customer approval","客戶核准"
-"Signature","簽署"
-"Production acceptance","生產驗收"
-"Structural redaction excludes private locators, file content, credentials, provider payloads and unapproved external projection.","結構化去識別排除私有定位資訊、檔案內容、認證資訊、提供者承載資料和未核准的外部投影。"
-"Round snapshot","輪次快照"
-"Conclusion snapshot","結論快照"
-"New summary stream","新摘要串流"
-"Appends one immutable technical summary from the exact complete source graph.","從精確完整的來源圖譜附加一份不可變技術摘要。"
-"The server rechecks Project membership and technical retain or revise authority.","伺服器會重新檢查專案成員身分以及技術保留或修訂權限。"
-"Retained summary revisions and controlled outputs are never overwritten or deleted.","已留存的摘要修訂和受控輸出永不覆寫或刪除。"
-"A failed command changes no summary, receipt or audit row. Retry preserves the same command identity.","失敗的命令不會變更摘要、回執或稽核資料列。重試會保留相同命令識別。"
-"Actor, reason, request, trace, exact sources, redaction and predecessor are retained.","會留存執行者、原因、請求、追蹤、精確來源、去識別規則和前置版本。"
-"Review immutable technical summary command","評審不可變技術摘要命令"
-"Released Summary workspace unavailable","已發佈試模總結工作區無法使用"
-"Reviewed scan entry","已評審掃描輸入"
-"Input assistance","輸入輔助"
-"Scanned value","掃描值"
-"Scan or enter an exact authorized reference. Review it before use.","掃描或輸入精確授權參照，使用前先進行評審。"
-"Review scanned value","評審掃描值"
-"Use reviewed value","使用已評審值"
-"Enter a reference before review.","請先輸入參照再評審。"
-"The scanned value is too long.","掃描值過長。"
-"The scanned value contains unsupported control characters.","掃描值包含不支援的控制字元。"
-"No authorized reference matches this value.","沒有與此值相符的授權參照。"
-"More than one authorized reference matches this value.","有多個授權參照與此值相符。"
-"Reviewed reference","已評審參照"
-"Ready to use. No command has been submitted.","可以使用。尚未提交任何命令。"
-"Reference applied. No command has been submitted.","已套用參照。尚未提交任何命令。"
-"Scan entry is unavailable in this state.","目前狀態下掃描輸入無法使用。"
-"Desktop engineering analysis","桌面工程分析"
-"Same authorized workspace","相同授權工作區"
-"Complex engineering tables remain available on desktop. Continue from this same authorized link.","複雜工程表格仍可在桌面使用。請透過相同授權連結繼續操作。"
-"Trial field summary","試模現場摘要"
-"Trial Plan stable ID","試模計畫穩定識別碼"
-"Not selected","未選取"
-"Files not in clean state","未處於安全掃描狀態的檔案"
-"Open blocking defects","未關閉的阻斷缺陷"
-"Session command context","工作階段命令上下文"
-"Evidence photo action","證據照片操作"
-"Trial defect action","試模缺陷操作"
-"Capture or choose one image. Selection remains local until you start the private upload.","拍攝或選取一張圖片。在您開始私密上傳前，所選檔案只保留在本機。"
-"Trial evidence photo","試模證據照片"
-"Gate field review","階段門現場評審"
-"Unsafe file evidence","不安全的檔案證據"
-"Project global ID","專案全域識別碼"
-"Gate global ID","階段門全域識別碼"
-"Adapter Contract Version","配接器合約版本"
-"Adapter Mode","配接器模式"
-"An available projection cannot use an unavailable disposition.","可用投影不能使用不可用處置狀態。"
-"An available projection head requires confirmed current truth.","可用投影頭需要已確認的目前事實。"
-"An unavailable projection cannot become confirmed current truth.","不可用投影不能成為已確認的目前事實。"
-"Application Disposition","應用處置狀態"
-"Correlation ID","關聯識別碼"
-"Current Projection Observation","目前投影觀察"
-"Current Projection Payload Hash","目前投影負載雜湊"
-"Current Source Modified At","目前來源修改時間"
-"Current Source Version","目前來源版本"
-"Current projection fields must be present together.","目前投影欄位必須同時存在。"
-"ERP projection heads can only be changed by the controlled projection service.","企業資源規劃投影頭只能由受控投影服務變更。"
-"ERP projection observation and head records cannot be deleted.","企業資源規劃投影觀察和投影頭記錄不能刪除。"
-"ERP projection observation history cannot be changed.","企業資源規劃投影觀察歷史不能變更。"
-"ERP projection observations can only be appended by the controlled projection service.","企業資源規劃投影觀察只能由受控投影服務追加。"
-"ERP projection system ownership is invalid.","企業資源規劃投影系統主責無效。"
-"Event Key Hash","事件鍵雜湊"
-"Event Version","事件版本"
-"Fresh or stale projection truth requires a policy reference.","新鮮或過期的投影事實需要策略參照。"
-"Freshness Policy Reference","新鮮度策略參照"
-"Last Refresh Projection Observation","最近重新整理投影觀察"
-"Projection Availability","投影可用性"
-"Projection Freshness","投影新鮮度"
-"Projection Head Hash","投影頭雜湊"
-"Projection Head Snapshot","投影頭快照"
-"Projection Kind","投影種類"
-"Projection Observation Hash","投影觀察雜湊"
-"Projection Observation Snapshot","投影觀察快照"
-"Projection Payload","投影負載"
-"Projection Payload Hash","投影負載雜湊"
-"Projection Scope Global ID","投影範圍全域識別碼"
-"Projection Scope Kind","投影範圍種類"
-"Projection Stream Key Hash","投影串流鍵雜湊"
-"Received At","接收時間"
-"Schema Version","綱要版本"
-"Select the supported projection adapter contract.","請選擇受支援的投影配接器合約。"
-"Select the supported projection event version.","請選擇受支援的投影事件版本。"
-"Select the supported projection schema version.","請選擇受支援的投影綱要版本。"
-"Sensitivity","敏感等級"
-"Source Environment","來源環境"
-"Source Modified At","來源修改時間"
-"Synthetic projection proof must remain non-authoritative.","合成投影證明必須保持非權威狀態。"
-"Target System","目標系統"
-"The ERP projection input is invalid.","企業資源規劃投影輸入無效。"
-"The exact current projection observation is unavailable.","精確的目前投影觀察不可用。"
-"The exact last refresh projection observation is unavailable.","精確的最近重新整理投影觀察不可用。"
-"The projection event does not match its operation-specific kind.","投影事件與其操作專用種類不符。"
-"The projection event key hash does not match its fields.","投影事件鍵雜湊與其欄位不符。"
-"The projection head does not match its operation-specific stream.","投影頭與其操作專用串流不符。"
-"The projection head hash does not match its fields.","投影頭雜湊與其欄位不符。"
-"The projection head optimistic version must advance by one.","投影頭樂觀鎖版本必須遞增一。"
-"The projection head snapshot does not match its fields.","投影頭快照與其欄位不符。"
-"The projection observation hash does not match its fields.","投影觀察雜湊與其欄位不符。"
-"The projection observation snapshot does not match its fields.","投影觀察快照與其欄位不符。"
-"The projection payload does not match its exact fields.","投影負載與其精確欄位不符。"
-"The projection payload hash does not match its fields.","投影負載雜湊與其欄位不符。"
-"The projection stream key hash does not match its fields.","投影串流鍵雜湊與其欄位不符。"
-"Unavailable Reason Code","不可用原因代碼"
-"NPI ERP Projection Head","NPI 企業資源規劃投影頭"
-"NPI ERP Projection Observation","NPI 企業資源規劃投影觀察"
+Trial Plan revision,試模計畫修訂
+Input lock revision,輸入鎖定修訂
+Trial Actual revision,試模實績修訂
+Sample Batch revision,樣品批次修訂
+Cavity Result revision,模穴結果修訂
+Tooling defect revision,模具缺陷修訂
+Defect verification revision,缺陷驗證修訂
+Round comparison snapshot,輪次比較快照
+Review reference revision,評審參照修訂
+Trial conclusion revision,試模結論修訂
+Actual parameters,實際參數
+Samples,樣品
+Cavity results,模穴結果
+Defects and actions,缺陷與措施
+Controlled references,受控參照
+Technical blockers,技術阻斷項
+Informational,資訊
+Retain technical summary,保留技術摘要
+Revise technical summary,修訂技術摘要
+Released Trial Summary,已發佈試模總結
+Immutable technical retention from the exact decided conclusion,對精確已決定結論進行不可變技術留存
+Released Summary is read only in this session.,已發佈試模總結在此工作階段中為唯讀。
+The server rechecks Project visibility and exact technical authority for every retain or revise command.,伺服器會為每個保留或修訂命令重新檢查專案可見性和精確技術權限。
+"The exact Round, decided conclusion, predecessor and source graph are being verified atomically.",正在以原子方式驗證精確試模輪次、已決定結論、前置版本和來源圖譜。
+The exact prior summary command response was replayed safely.,精確的先前摘要命令回應已安全重播。
+The technical summary and audit history were retained immutably.,技術摘要和稽核歷程已不可變留存。
+Summary retained; current history could not be refreshed,摘要已保留；無法重新整理目前歷程
+The server replayed the accepted command. Do not submit it again.,伺服器已重播被接受的命令。請勿再次提交。
+The server accepted the command. Do not submit it again.,伺服器已接受該命令。請勿再次提交。
+Reload summary history,重新載入摘要歷程
+Summary source graph exceeds the safe retention boundary,摘要來源圖譜超出安全留存邊界
+Released Summary command failed,已發佈試模總結命令失敗
+Reload current summary,重新載入目前摘要
+Immutable summary history,不可變摘要歷程
+No technical summary has been retained.,尚未保留任何技術摘要。
+The current decided conclusion is eligible for technical retention when authority is available.,目前已決定結論在具備權限時可進行技術留存。
+A unique current approved or rejected conclusion is required first.,必須先有唯一的目前已核准或已拒絕結論。
+Selected technical summary,已選擇的技術摘要
+Summary stable ID,摘要穩定識別碼
+Revision stable ID,修訂穩定識別碼
+Source manifest entries,來源清單項目
+Controlled output mapping,受控輸出對應
+Retained by,留存人
+"This is an NPI-owned technical summary. It is not approval, signature, production acceptance, Gate truth or external publication.",這是由 NPI 主責的技術摘要。它不代表核准、簽署、生產驗收、階段門事實或外部發佈。
+Safe presentation facts,安全呈現事實
+Fact group,事實組
+Fact,事實
+Sources,來源
+No facts are retained in this group.,此組中未留存任何事實。
+Previous,上一頁
+Page,頁
+Next,下一頁
+Exact source manifest,精確來源清單
+No immutable summary revision is available.,沒有可用的不可變摘要修訂。
+Summary authority inspector,摘要權限檢查器
+Current decided conclusion,目前已決定結論
+Exact predecessor required,需要精確前置版本
+Redaction rules applied,已套用去識別規則
+Sensitive field classes excluded,已排除敏感欄位類別
+External projection,外部投影
+Formal release,正式發佈
+Customer approval,客戶核准
+Signature,簽署
+Production acceptance,生產驗收
+"Structural redaction excludes private locators, file content, credentials, provider payloads and unapproved external projection.",結構化去識別排除私有定位資訊、檔案內容、認證資訊、提供者承載資料和未核准的外部投影。
+Round snapshot,輪次快照
+Conclusion snapshot,結論快照
+New summary stream,新摘要串流
+Appends one immutable technical summary from the exact complete source graph.,從精確完整的來源圖譜附加一份不可變技術摘要。
+The server rechecks Project membership and technical retain or revise authority.,伺服器會重新檢查專案成員身分以及技術保留或修訂權限。
+Retained summary revisions and controlled outputs are never overwritten or deleted.,已留存的摘要修訂和受控輸出永不覆寫或刪除。
+"A failed command changes no summary, receipt or audit row. Retry preserves the same command identity.",失敗的命令不會變更摘要、回執或稽核資料列。重試會保留相同命令識別。
+"Actor, reason, request, trace, exact sources, redaction and predecessor are retained.",會留存執行者、原因、請求、追蹤、精確來源、去識別規則和前置版本。
+Review immutable technical summary command,評審不可變技術摘要命令
+Released Summary workspace unavailable,已發佈試模總結工作區無法使用
+Reviewed scan entry,已評審掃描輸入
+Input assistance,輸入輔助
+Scanned value,掃描值
+Scan or enter an exact authorized reference. Review it before use.,掃描或輸入精確授權參照，使用前先進行評審。
+Review scanned value,評審掃描值
+Use reviewed value,使用已評審值
+Enter a reference before review.,請先輸入參照再評審。
+The scanned value is too long.,掃描值過長。
+The scanned value contains unsupported control characters.,掃描值包含不支援的控制字元。
+No authorized reference matches this value.,沒有與此值相符的授權參照。
+More than one authorized reference matches this value.,有多個授權參照與此值相符。
+Reviewed reference,已評審參照
+Ready to use. No command has been submitted.,可以使用。尚未提交任何命令。
+Reference applied. No command has been submitted.,已套用參照。尚未提交任何命令。
+Scan entry is unavailable in this state.,目前狀態下掃描輸入無法使用。
+Desktop engineering analysis,桌面工程分析
+Same authorized workspace,相同授權工作區
+Complex engineering tables remain available on desktop. Continue from this same authorized link.,複雜工程表格仍可在桌面使用。請透過相同授權連結繼續操作。
+Trial field summary,試模現場摘要
+Trial Plan stable ID,試模計畫穩定識別碼
+Not selected,未選取
+Files not in clean state,未處於安全掃描狀態的檔案
+Open blocking defects,未關閉的阻斷缺陷
+Session command context,工作階段命令上下文
+Evidence photo action,證據照片操作
+Trial defect action,試模缺陷操作
+Capture or choose one image. Selection remains local until you start the private upload.,拍攝或選取一張圖片。在您開始私密上傳前，所選檔案只保留在本機。
+Trial evidence photo,試模證據照片
+Gate field review,階段門現場評審
+Unsafe file evidence,不安全的檔案證據
+Project global ID,專案全域識別碼
+Gate global ID,階段門全域識別碼
+Adapter Contract Version,配接器合約版本
+Adapter Mode,配接器模式
+An available projection cannot use an unavailable disposition.,可用投影不能使用不可用處置狀態。
+An available projection head requires confirmed current truth.,可用投影頭需要已確認的目前事實。
+An unavailable projection cannot become confirmed current truth.,不可用投影不能成為已確認的目前事實。
+Application Disposition,應用處置狀態
+Correlation ID,關聯識別碼
+Current Projection Observation,目前投影觀察
+Current Projection Payload Hash,目前投影負載雜湊
+Current Source Modified At,目前來源修改時間
+Current Source Version,目前來源版本
+Current projection fields must be present together.,目前投影欄位必須同時存在。
+ERP projection heads can only be changed by the controlled projection service.,企業資源規劃投影頭只能由受控投影服務變更。
+ERP projection observation and head records cannot be deleted.,企業資源規劃投影觀察和投影頭記錄不能刪除。
+ERP projection observation history cannot be changed.,企業資源規劃投影觀察歷史不能變更。
+ERP projection observations can only be appended by the controlled projection service.,企業資源規劃投影觀察只能由受控投影服務追加。
+ERP projection system ownership is invalid.,企業資源規劃投影系統主責無效。
+Event Key Hash,事件鍵雜湊
+Event Version,事件版本
+Fresh or stale projection truth requires a policy reference.,新鮮或過期的投影事實需要策略參照。
+Freshness Policy Reference,新鮮度策略參照
+Last Refresh Projection Observation,最近重新整理投影觀察
+Projection Availability,投影可用性
+Projection Freshness,投影新鮮度
+Projection Head Hash,投影頭雜湊
+Projection Head Snapshot,投影頭快照
+Projection Kind,投影種類
+Projection Observation Hash,投影觀察雜湊
+Projection Observation Snapshot,投影觀察快照
+Projection Payload,投影負載
+Projection Payload Hash,投影負載雜湊
+Projection Scope Global ID,投影範圍全域識別碼
+Projection Scope Kind,投影範圍種類
+Projection Stream Key Hash,投影串流鍵雜湊
+Received At,接收時間
+Schema Version,綱要版本
+Select the supported projection adapter contract.,請選擇受支援的投影配接器合約。
+Select the supported projection event version.,請選擇受支援的投影事件版本。
+Select the supported projection schema version.,請選擇受支援的投影綱要版本。
+Sensitivity,敏感等級
+Source Environment,來源環境
+Source Modified At,來源修改時間
+Synthetic projection proof must remain non-authoritative.,合成投影證明必須保持非權威狀態。
+Target System,目標系統
+The ERP projection input is invalid.,企業資源規劃投影輸入無效。
+The exact current projection observation is unavailable.,精確的目前投影觀察不可用。
+The exact last refresh projection observation is unavailable.,精確的最近重新整理投影觀察不可用。
+The projection event does not match its operation-specific kind.,投影事件與其操作專用種類不符。
+The projection event key hash does not match its fields.,投影事件鍵雜湊與其欄位不符。
+The projection head does not match its operation-specific stream.,投影頭與其操作專用串流不符。
+The projection head hash does not match its fields.,投影頭雜湊與其欄位不符。
+The projection head optimistic version must advance by one.,投影頭樂觀鎖版本必須遞增一。
+The projection head snapshot does not match its fields.,投影頭快照與其欄位不符。
+The projection observation hash does not match its fields.,投影觀察雜湊與其欄位不符。
+The projection observation snapshot does not match its fields.,投影觀察快照與其欄位不符。
+The projection payload does not match its exact fields.,投影負載與其精確欄位不符。
+The projection payload hash does not match its fields.,投影負載雜湊與其欄位不符。
+The projection stream key hash does not match its fields.,投影串流鍵雜湊與其欄位不符。
+Unavailable Reason Code,不可用原因代碼
+NPI ERP Projection Head,NPI 企業資源規劃投影頭
+NPI ERP Projection Observation,NPI 企業資源規劃投影觀察
 applied_current,已套用為目前
 available,可用
 confidential,機密
@@ -7497,169 +7497,169 @@ tool_asset_status,模具資產狀態
 tooling_procurement_cost,模具採購成本
 unavailable_current,目前不可用
 unknown,未知
-"ERP projection access is temporarily unavailable.","企業資源規劃投影存取暫時不可用。"
-"Select a supported projection kind.","請選擇支援的投影類型。"
-"Customer master","客戶主資料"
-"Supplier master","供應商主資料"
-"Formal Item master","正式物料主資料"
-"Tooling procurement and cost","模具採購與成本"
-"Project cost","專案成本"
-"Formal quality status","正式品質狀態"
-"Tool Asset status","模具資產狀態"
-"Tooling master","模具主檔"
-"Engineering Item","工程物料"
-"Readiness","NPI 就緒度"
-"Synthetic evidence","合成證據"
-"Fresh","新鮮"
-"Unknown freshness","新鮮度未知"
-"Current observation","目前觀察"
-"Unavailable observation","不可用觀察"
-"Superseded observation","已取代觀察"
-"Exact duplicate","精確重複"
-"Conflicted observation","衝突觀察"
-"Synthetic observation","合成觀察"
-"Formal value withheld","已隱藏正式值"
-"No authoritative current value is displayed for this observation.","此觀察不顯示任何權威目前值。"
-"Code","編碼"
-"Display name","顯示名稱"
-"Status code","狀態代碼"
-"Item code","物料編碼"
-"Stock unit","庫存單位"
-"Supplier code","供應商編碼"
-"Supplier name","供應商名稱"
-"Cost type","成本類型"
-"Posting date","過帳日期"
-"Amount","金額"
-"Row kind","列類型"
-"Amount or hours","金額或工時"
-"Hours","小時"
-"Record kind","記錄類型"
-"Result code","結果代碼"
-"Formal Asset ID","正式資產識別碼"
-"Asset state","資產狀態"
-"Current location","目前位置"
-"Expected life shots","預期壽命模次"
-"Maintenance due","維護到期日"
-"Movement records","移動記錄"
-"Repair records","維修記錄"
-"Spare records","備件記錄"
-"ERP projection details","企業資源規劃投影詳細資料"
-"Select an ERP projection observation to inspect it.","請選擇一個企業資源規劃投影觀察以檢查詳細資料。"
-"Scope ID","範圍識別碼"
-"Source modified at","來源修改時間"
-"Received at","接收時間"
-"No, read only","否，唯讀"
-"Confirmed formal values","已確認正式值"
-"Loading ERP projections","正在載入企業資源規劃投影"
-"ERP projection access is not available","企業資源規劃投影存取不可用"
-"ERP projection data could not be used safely","無法安全使用企業資源規劃投影資料"
-"No protected ERP projection values were displayed.","未顯示任何受保護的企業資源規劃投影值。"
-"No observations","無觀察"
-"No ERP projection observations are available for this project.","此專案沒有可用的企業資源規劃投影觀察。"
-"Projection","投影"
-"Freshness","新鮮度"
-"Inspect {{projection}}","檢查{{projection}}"
-"ERPNext governed projections","ERPNext 受控投影"
-"ERPNext owns these formal values. NPI One displays validated observations and never edits or refreshes them here.","ERPNext 主責這些正式值。NPI One 在此僅顯示已驗證觀察，絕不編輯或重新整理這些值。"
-"Stale observation","過時觀察"
-"Loan","借出"
-"Return","歸還"
-"Archive","封存"
-"Scrap","報廢"
-"Loading ERPNext Asset projection","正在載入 ERPNext 資產投影"
-"ERPNext Asset projection access is not available.","ERPNext 資產投影存取不可用。"
-"ERPNext Asset projection could not be used safely.","無法安全使用 ERPNext 資產投影。"
-"No protected formal Asset values were displayed.","未顯示任何受保護的正式資產值。"
-"Formal Asset value withheld","已隱藏正式資產值"
-"Only a fresh, confirmed current observation can display formal Asset truth.","只有新鮮且已確認的目前觀察才能顯示正式資產真值。"
-"Confirmed current","已確認目前值"
-"This formal Asset projection is read only and owned by ERPNext.","此正式資產投影為唯讀並由 ERPNext 主責。"
-"Physical Set ID","實體模具套識別碼"
-"Asset movements","資產移動"
-"From location","原位置"
-"To location","目標位置"
-"Asset repairs","資產維修"
-"Summary","摘要"
-"Downtime hours","停機小時"
-"Completed at","完成時間"
-"Asset spares","資產備件"
-"Formal Item ID","正式物料識別碼"
-"Stock on hand","現有庫存"
-"Minimum stock","最低庫存"
-"A bound Project source stream requires the exact Project result.","已綁定的專案來源流必須包含精確的專案結果。"
-"Actor ID","操作人識別碼"
-"An authenticated Inbox receipt requires verified signature evidence.","已驗證的收件匣回執必須包含已驗證的簽章證據。"
-"An unbound Project source stream cannot contain a Project result.","未綁定的專案來源流不能包含專案結果。"
-"Authenticated","已驗證"
-"Bound Inbox Message","已綁定收件匣訊息"
-"Bound Payload Hash","已綁定承載資料雜湊"
-"Bound Policy Hash","已綁定策略雜湊"
-"Bound Policy Snapshot","已綁定策略快照"
-"Bound Project Global ID","已綁定專案全域識別碼"
-"Bound Source Version","已綁定來源版本"
-"Canonical Event Hash","規範事件雜湊"
-"Claim Token","認領權杖"
-"Claimed At","認領時間"
-"Highest Inbox Message","最高版本收件匣訊息"
-"Highest Payload Hash","最高版本承載資料雜湊"
-"Highest Received Version","已接收最高版本"
-"Inbound Project receipt and source-binding history cannot be deleted.","入站專案回執和來源綁定歷程不可刪除。"
-"Inbound Project receipts can only be changed by the controlled integration service.","入站專案回執只能由受控整合服務變更。"
-"Intake Policy Hash","接收策略雜湊"
-"Intake Policy Snapshot","接收策略快照"
-"Last Error At","最近錯誤時間"
-"Last Processed At","最近處理時間"
-"Last Processing Code","最近處理代碼"
-"Lease Expires At","租約到期時間"
-"Legacy Inbox history cannot be promoted or changed.","舊版收件匣歷程不可升級或變更。"
-"NPI Project Source Binding","NPI 專案來源綁定"
-"Processing Disposition","處理處置"
-"Project Result Hash","專案結果雜湊"
-"Project source binding fields must be present together.","專案來源綁定欄位必須同時提供。"
-"Project source bindings can only be changed by the controlled integration service.","專案來源綁定只能由受控整合服務變更。"
-"Project source-binding system ownership is invalid.","專案來源綁定的系統主責無效。"
-"Raw Body","原始本文"
-"Raw Body Hash","原始本文雜湊"
-"Receipt Hash","回執雜湊"
-"Receipt ID","回執識別碼"
-"Receipt Snapshot","回執快照"
-"Sales Order","銷售訂單"
-"Select a supported Project source stream state.","請選擇受支援的專案來源流狀態。"
-"Select the supported Project source-binding schema version.","請選擇受支援的專案來源綁定結構描述版本。"
-"Select the supported authenticated Inbox schema version.","請選擇受支援的已驗證收件匣結構描述版本。"
-"Signed At","簽章時間"
-"Signing Key ID","簽章金鑰識別碼"
-"Source Key Hash","來源鍵雜湊"
-"Source Profile ID","來源設定識別碼"
-"Source Profile Version","來源設定版本"
-"Source Stream State","來源流狀態"
-"The Inbox payload does not match the signed event.","收件匣承載資料與已簽章事件不相符。"
-"The Inbox receipt fields do not match the signed event.","收件匣回執欄位與已簽章事件不相符。"
-"The Inbox receipt hash does not match its snapshot.","收件匣回執雜湊與其快照不相符。"
-"The Inbox receipt snapshot does not match its immutable fields.","收件匣回執快照與其不可變欄位不相符。"
-"The Project source binding version must advance by one.","專案來源綁定版本必須遞增一。"
-"The Project source key hash does not match its identity.","專案來源鍵雜湊與其識別不相符。"
-"The Project source-binding identity is invalid.","專案來源綁定識別無效。"
-"The authenticated Inbox event is invalid.","已驗證的收件匣事件無效。"
-"The bound policy hash does not match its snapshot.","已綁定策略雜湊與其快照不相符。"
-"The canonical event hash does not match the signed event.","規範事件雜湊與已簽章事件不相符。"
-"The intake policy hash does not match its snapshot.","接收策略雜湊與其快照不相符。"
-"The raw Inbox body does not match its canonical event.","收件匣原始本文與其規範事件不相符。"
-"The raw body hash does not match the signed body.","原始本文雜湊與已簽章本文不相符。"
-"The Project source version conflicts with existing history.","專案來源版本與現有歷史記錄衝突。"
-"The authenticated Project source event conflicts with existing history.","已驗證的專案來源事件與現有歷史記錄衝突。"
-"The authenticated Project source event is invalid.","已驗證的專案來源事件無效。"
-"The inbound Project service is unavailable.","入站專案服務無法使用。"
-"The webhook media type is not supported.","網路掛鉤媒體類型不受支援。"
-"The webhook request body is too large.","網路掛鉤請求本文過大。"
-"Webhook authentication failed.","網路掛鉤驗證失敗。"
-"bound","已綁定"
-"project_created","已建立專案"
-"project_replayed","已重放專案"
-"received_after_creation","建立後收到"
-"unbound","未綁定"
-"The Inbox processing state is invalid.","收件匣處理狀態無效。"
-"The Inbox processing transition is not allowed.","不允許此收件匣處理狀態轉換。"
+ERP projection access is temporarily unavailable.,企業資源規劃投影存取暫時不可用。
+Select a supported projection kind.,請選擇支援的投影類型。
+Customer master,客戶主資料
+Supplier master,供應商主資料
+Formal Item master,正式物料主資料
+Tooling procurement and cost,模具採購與成本
+Project cost,專案成本
+Formal quality status,正式品質狀態
+Tool Asset status,模具資產狀態
+Tooling master,模具主檔
+Engineering Item,工程物料
+Readiness,NPI 就緒度
+Synthetic evidence,合成證據
+Fresh,新鮮
+Unknown freshness,新鮮度未知
+Current observation,目前觀察
+Unavailable observation,不可用觀察
+Superseded observation,已取代觀察
+Exact duplicate,精確重複
+Conflicted observation,衝突觀察
+Synthetic observation,合成觀察
+Formal value withheld,已隱藏正式值
+No authoritative current value is displayed for this observation.,此觀察不顯示任何權威目前值。
+Code,編碼
+Display name,顯示名稱
+Status code,狀態代碼
+Item code,物料編碼
+Stock unit,庫存單位
+Supplier code,供應商編碼
+Supplier name,供應商名稱
+Cost type,成本類型
+Posting date,過帳日期
+Amount,金額
+Row kind,列類型
+Amount or hours,金額或工時
+Hours,小時
+Record kind,記錄類型
+Result code,結果代碼
+Formal Asset ID,正式資產識別碼
+Asset state,資產狀態
+Current location,目前位置
+Expected life shots,預期壽命模次
+Maintenance due,維護到期日
+Movement records,移動記錄
+Repair records,維修記錄
+Spare records,備件記錄
+ERP projection details,企業資源規劃投影詳細資料
+Select an ERP projection observation to inspect it.,請選擇一個企業資源規劃投影觀察以檢查詳細資料。
+Scope ID,範圍識別碼
+Source modified at,來源修改時間
+Received at,接收時間
+"No, read only",否，唯讀
+Confirmed formal values,已確認正式值
+Loading ERP projections,正在載入企業資源規劃投影
+ERP projection access is not available,企業資源規劃投影存取不可用
+ERP projection data could not be used safely,無法安全使用企業資源規劃投影資料
+No protected ERP projection values were displayed.,未顯示任何受保護的企業資源規劃投影值。
+No observations,無觀察
+No ERP projection observations are available for this project.,此專案沒有可用的企業資源規劃投影觀察。
+Projection,投影
+Freshness,新鮮度
+Inspect {{projection}},檢查{{projection}}
+ERPNext governed projections,ERPNext 受控投影
+ERPNext owns these formal values. NPI One displays validated observations and never edits or refreshes them here.,ERPNext 主責這些正式值。NPI One 在此僅顯示已驗證觀察，絕不編輯或重新整理這些值。
+Stale observation,過時觀察
+Loan,借出
+Return,歸還
+Archive,封存
+Scrap,報廢
+Loading ERPNext Asset projection,正在載入 ERPNext 資產投影
+ERPNext Asset projection access is not available.,ERPNext 資產投影存取不可用。
+ERPNext Asset projection could not be used safely.,無法安全使用 ERPNext 資產投影。
+No protected formal Asset values were displayed.,未顯示任何受保護的正式資產值。
+Formal Asset value withheld,已隱藏正式資產值
+"Only a fresh, confirmed current observation can display formal Asset truth.",只有新鮮且已確認的目前觀察才能顯示正式資產真值。
+Confirmed current,已確認目前值
+This formal Asset projection is read only and owned by ERPNext.,此正式資產投影為唯讀並由 ERPNext 主責。
+Physical Set ID,實體模具套識別碼
+Asset movements,資產移動
+From location,原位置
+To location,目標位置
+Asset repairs,資產維修
+Summary,摘要
+Downtime hours,停機小時
+Completed at,完成時間
+Asset spares,資產備件
+Formal Item ID,正式物料識別碼
+Stock on hand,現有庫存
+Minimum stock,最低庫存
+A bound Project source stream requires the exact Project result.,已綁定的專案來源流必須包含精確的專案結果。
+Actor ID,操作人識別碼
+An authenticated Inbox receipt requires verified signature evidence.,已驗證的收件匣回執必須包含已驗證的簽章證據。
+An unbound Project source stream cannot contain a Project result.,未綁定的專案來源流不能包含專案結果。
+Authenticated,已驗證
+Bound Inbox Message,已綁定收件匣訊息
+Bound Payload Hash,已綁定承載資料雜湊
+Bound Policy Hash,已綁定策略雜湊
+Bound Policy Snapshot,已綁定策略快照
+Bound Project Global ID,已綁定專案全域識別碼
+Bound Source Version,已綁定來源版本
+Canonical Event Hash,規範事件雜湊
+Claim Token,認領權杖
+Claimed At,認領時間
+Highest Inbox Message,最高版本收件匣訊息
+Highest Payload Hash,最高版本承載資料雜湊
+Highest Received Version,已接收最高版本
+Inbound Project receipt and source-binding history cannot be deleted.,入站專案回執和來源綁定歷程不可刪除。
+Inbound Project receipts can only be changed by the controlled integration service.,入站專案回執只能由受控整合服務變更。
+Intake Policy Hash,接收策略雜湊
+Intake Policy Snapshot,接收策略快照
+Last Error At,最近錯誤時間
+Last Processed At,最近處理時間
+Last Processing Code,最近處理代碼
+Lease Expires At,租約到期時間
+Legacy Inbox history cannot be promoted or changed.,舊版收件匣歷程不可升級或變更。
+NPI Project Source Binding,NPI 專案來源綁定
+Processing Disposition,處理處置
+Project Result Hash,專案結果雜湊
+Project source binding fields must be present together.,專案來源綁定欄位必須同時提供。
+Project source bindings can only be changed by the controlled integration service.,專案來源綁定只能由受控整合服務變更。
+Project source-binding system ownership is invalid.,專案來源綁定的系統主責無效。
+Raw Body,原始本文
+Raw Body Hash,原始本文雜湊
+Receipt Hash,回執雜湊
+Receipt ID,回執識別碼
+Receipt Snapshot,回執快照
+Sales Order,銷售訂單
+Select a supported Project source stream state.,請選擇受支援的專案來源流狀態。
+Select the supported Project source-binding schema version.,請選擇受支援的專案來源綁定結構描述版本。
+Select the supported authenticated Inbox schema version.,請選擇受支援的已驗證收件匣結構描述版本。
+Signed At,簽章時間
+Signing Key ID,簽章金鑰識別碼
+Source Key Hash,來源鍵雜湊
+Source Profile ID,來源設定識別碼
+Source Profile Version,來源設定版本
+Source Stream State,來源流狀態
+The Inbox payload does not match the signed event.,收件匣承載資料與已簽章事件不相符。
+The Inbox receipt fields do not match the signed event.,收件匣回執欄位與已簽章事件不相符。
+The Inbox receipt hash does not match its snapshot.,收件匣回執雜湊與其快照不相符。
+The Inbox receipt snapshot does not match its immutable fields.,收件匣回執快照與其不可變欄位不相符。
+The Project source binding version must advance by one.,專案來源綁定版本必須遞增一。
+The Project source key hash does not match its identity.,專案來源鍵雜湊與其識別不相符。
+The Project source-binding identity is invalid.,專案來源綁定識別無效。
+The authenticated Inbox event is invalid.,已驗證的收件匣事件無效。
+The bound policy hash does not match its snapshot.,已綁定策略雜湊與其快照不相符。
+The canonical event hash does not match the signed event.,規範事件雜湊與已簽章事件不相符。
+The intake policy hash does not match its snapshot.,接收策略雜湊與其快照不相符。
+The raw Inbox body does not match its canonical event.,收件匣原始本文與其規範事件不相符。
+The raw body hash does not match the signed body.,原始本文雜湊與已簽章本文不相符。
+The Project source version conflicts with existing history.,專案來源版本與現有歷史記錄衝突。
+The authenticated Project source event conflicts with existing history.,已驗證的專案來源事件與現有歷史記錄衝突。
+The authenticated Project source event is invalid.,已驗證的專案來源事件無效。
+The inbound Project service is unavailable.,入站專案服務無法使用。
+The webhook media type is not supported.,網路掛鉤媒體類型不受支援。
+The webhook request body is too large.,網路掛鉤請求本文過大。
+Webhook authentication failed.,網路掛鉤驗證失敗。
+bound,已綁定
+project_created,已建立專案
+project_replayed,已重放專案
+received_after_creation,建立後收到
+unbound,未綁定
+The Inbox processing state is invalid.,收件匣處理狀態無效。
+The Inbox processing transition is not allowed.,不允許此收件匣處理狀態轉換。
 A mapped Item request requires exact update target truth.,已映射的物料請求必須包含準確的更新目標事實。
 A new Item publish attempt must start before adapter execution.,新的物料發佈嘗試必須在適配器執行前啟動。
 A non-terminal Item Outbox message cannot reference a terminal result.,非終態物料寄件匣訊息不能參照終態結果。
@@ -7851,7 +7851,7 @@ Historical Item publish evidence,歷史物料發佈證據
 Historical read-only evidence,歷史唯讀證據
 Reconciliation boundary,對帳邊界
 The historical Item publish request is read-only and requires reconciliation before any new request can be queued.,歷史物料發佈請求為唯讀，在排入任何新請求前需要對帳。
-"No target execution, adapter attempt, result or mapping authority is available from this historical record.","此歷史記錄不提供目標執行、配接器嘗試、結果或映射權威性。"
+"No target execution, adapter attempt, result or mapping authority is available from this historical record.",此歷史記錄不提供目標執行、配接器嘗試、結果或映射權威性。
 Select exact Item source,選擇準確物料來源
 Source node,來源節點
 The Item execution data source is not configured. No target system was contacted.,物料執行資料來源未設定。未連絡任何目標系統。
@@ -7913,7 +7913,7 @@ Active Item Publish binding,作用中物料發佈繫結
 Last Item Publish binding,最近物料發佈繫結
 The Item source stream key hash does not match its identity.,物料來源串流鍵雜湊與其身分不符。
 The Item source stream guard version must advance by one.,物料來源串流守衛版本必須遞增一位。
-"{label} must contain request, target key, and state.","{label}必須包含請求、目標鍵與狀態。"
+"{label} must contain request, target key, and state.",{label}必須包含請求、目標鍵與狀態。
 {label} contains an invalid state.,{label}包含無效狀態。
 Item publish stream guards can only be changed by the controlled Item execution service.,物料發佈串流守衛只能由受控物料執行服務變更。
 Executable Item publish requests require a target key and service actor.,可執行物料發佈請求需要目標鍵與服務主體。
@@ -8699,161 +8699,161 @@ The Engineering Change integration actor lacks the required role.,工程變更�
 The Engineering Change integration profile is not active for this Project.,此專案的工程變更整合設定檔未啟用。
 The signed Engineering Change event could not be accepted.,無法接受已簽署的工程變更事件。
 identity_conflict,識別衝突
-"Receive engineering change event","接收工程變更事件"
-"Publish change implementation summary","發佈變更實施摘要"
-"Ready to close","可關閉"
-"MBOM","MBOM"
-"Process","製程"
-"Inventory and work in progress","庫存與在製品"
-"Affected","受影響"
-"Not affected","不受影響"
-"Loading engineering changes","正在載入工程變更"
-"Engineering change access is unavailable","無法存取工程變更"
-"The engineering change changed before this action completed","此動作完成前工程變更已發生變化"
-"The engineering change response could not be used safely","無法安全使用工程變更回應"
-"Engineering changes are unavailable","工程變更無法使用"
-"Reload the exact current revision before continuing.","請重新載入精確的目前修訂版後再繼續。"
-"No unverified engineering change data was displayed.","未顯示任何未經驗證的工程變更資料。"
-"Implementation summary request state","實施摘要請求狀態"
-"Retry required","需要重試"
-"New engineering change","新增工程變更"
-"Revise engineering change","修訂工程變更"
-"Change reason","變更原因"
-"Rationale","依據"
-"Review engineering change","檢閱工程變更"
-"Review engineering change revision","檢閱工程變更修訂版"
-"Engineering change inspector","工程變更檢查器"
-"Change ID","變更識別碼"
-"Events","事件"
-"ERP formal observation","ERPNext 正式觀測"
-"Document name","單據名稱"
-"Raw ERP status","ERPNext 原始狀態"
-"No formal ERP engineering change has been observed.","尚未觀測到 ERPNext 正式工程變更。"
-"Request implementation summary","請求實施摘要"
-"Close engineering change","關閉工程變更"
-"Revision {{revision}}","修訂版 {{revision}}"
-"{{count}} affected areas","{{count}} 個受影響領域"
-"{{count}} pending assessments","{{count}} 個待評估項目"
-"Session verification is required before any command.","執行任何命令前都需要驗證工作階段。"
-"Impact assessment matrix","影響評估矩陣"
-"Area","領域"
-"Affected controlled objects","受影響的受控物件"
-"Objects","物件"
-"Implementation tasks","實施任務"
-"Effectivity rules","生效規則"
-"Disposition and revalidation","處置與再驗證"
-"Dispositions","處置"
-"Revalidation requirements","再驗證要求"
-"Project membership and backend permission are required.","需要專案成員資格和後端權限。"
-"Change control","變更控制"
-"Control NPI-owned impact, version, effectivity and closure evidence while ERP formal change truth remains read only.","控制 NPI 主責的影響、版本、生效和關閉證據，同時保持 ERPNext 正式變更事實唯讀。"
-"No engineering changes have been recorded for this Project.","此專案尚未記錄工程變更。"
-"Engineering changes","工程變更"
-"Drifted","已漂移"
-"Create engineering change","建立工程變更"
-"Append engineering change revision","附加工程變更修訂版"
-"Project ID","專案識別碼"
-"The command, actor, receipt and exact version are audited.","命令、執行者、回條和精確版本均會稽核。"
-"A failed transaction retains no partial revision. Retry uses the same command identity.","失敗的交易不會保留部分修訂版。重試使用相同的命令識別。"
-"Creates the first immutable engineering change revision.","建立第一個不可變的工程變更修訂版。"
-"Appends one immutable successor revision.","附加一個不可變的後續修訂版。"
-"Closes the exact ready engineering change revision.","關閉精確的可關閉工程變更修訂版。"
-"Queues an exact implementation summary for ERP delivery.","將精確的實施摘要排入佇列以傳送至 ERPNext。"
-"The queued operation remains visible for retry and reconciliation.","已排入佇列的作業保持可見，以便重試和對帳。"
-"Immutable revisions and closure facts cannot be overwritten.","不可變修訂版和關閉事實不能被覆寫。"
-"Backend Project membership and operation permission are required.","需要後端專案成員資格和作業權限。"
-"Review engineering change command","檢閱工程變更命令"
-"The live Change Control data source is not configured.","尚未設定即時變更控制資料來源。"
-"Engineering change detail","工程變更詳細資料"
-"Portfolio and reporting are temporarily unavailable.","專案組合與報表暫時無法使用。"
-"Enter a page size from 1 to 100.","請輸入 1 至 100 之間的每頁數量。"
-"Enter a valid reference.","請輸入有效的參照。"
-"Enter at least two search characters.","請輸入至少兩個搜尋字元。"
-"Enter between 2 and 100 search characters.","請輸入 2 至 100 個搜尋字元。"
-"Select at least one search object type.","請至少選擇一種搜尋物件類型。"
-"Select supported search object types.","請選擇受支援的搜尋物件類型。"
-"Search object types must be unique.","搜尋物件類型不得重複。"
-"Select a supported Project state.","請選擇受支援的專案狀態。"
-"Enter a month in YYYY-MM format.","請輸入四位年份與兩位月份，並以連字號分隔。"
-"Use a valid pagination cursor.","請使用有效的分頁游標。"
-"The pagination cursor does not match these filters.","分頁游標與這些篩選條件不相符。"
-"Select a range of no more than 24 months.","請選擇不超過 24 個月的時間範圍。"
-"A sealed idempotency response cannot be changed.","已封存的冪等回應不可變更。"
-"Add meeting actions or decisions.","請新增會議行動項或決策項。"
-"An idempotency response must be sealed after success.","冪等回應只能在作業成功後封存。"
-"Collaboration records can only be changed by an authorized NPI operation.","協作記錄只能由已授權的 NPI 作業變更。"
-"Complete every meeting template section.","請完整填寫會議範本的每個部分。"
-"Content Hash","內容雜湊"
-"Controlled collaboration history cannot be deleted.","受控協作歷史不可刪除。"
-"Critical audit notifications cannot be disabled.","關鍵稽核通知不可停用。"
-"Critical blocker notifications cannot be disabled.","關鍵阻斷通知不可停用。"
-"Critical blocker requires attention","關鍵阻斷項需要處理"
-"Delivery Key Hash","傳遞鍵雜湊"
-"Enter a valid UTC date and time.","請輸入有效的世界協調時間日期和時間。"
-"Enter a valid meeting action or decision.","請輸入有效的會議行動項或決策項。"
-"Gate review requires attention","階段門檢閱需要處理"
-"Link ID","連結識別碼"
-"Meeting Attendees","會議參與人"
-"Meeting Global ID","會議全域識別碼"
-"Meeting Sections","會議內容區段"
-"Meeting content does not match its hash.","會議內容與其雜湊不符。"
-"Meeting identity and time are required.","會議識別碼和時間為必填項。"
-"Meeting item keys must be unique and limited to 50.","會議事項鍵不得重複，且最多 50 個。"
-"Meeting minutes are immutable.","會議紀錄不可變更。"
-"Meeting minutes start at version one.","會議紀錄必須從版本一開始。"
-"Meeting work link identity is required.","會議工作項連結識別碼為必填項。"
-"Meeting work links are immutable.","會議工作項連結不可變更。"
-"Message Parameters","訊息參數"
-"Notification Email Types","通知郵件類型"
-"Notification email failure requires a code.","通知郵件失敗時必須提供錯誤代碼。"
-"Notification email state is inconsistent.","通知郵件狀態不一致。"
-"Notification identity is required.","通知識別碼為必填項。"
-"Notification message does not match its source.","通知訊息與其來源不符。"
-"Notification preference identity is required.","通知偏好識別碼為必填項。"
-"Notification source version and due time are required.","通知來源版本和到期時間為必填項。"
-"Notification target must stay inside its Project.","通知目標必須位於所屬專案內。"
-"Notification title does not match its type.","通知標題與其類型不符。"
-"Notification: {title}. Due at {due_at}.","通知：{title}。截止時間：{due_at}。"
-"Select 1 to 100 unique meeting attendees.","請選擇 1 至 100 名不重複的會議參與人。"
-"Select a supported notification state.","請選擇受支援的通知狀態。"
-"Select an action or decision request.","請選擇行動項或決策請求。"
-"Select meeting attendees.","請選擇會議參與人。"
-"Select supported notification email types.","請選擇受支援的通知郵件類型。"
-"Select the supported meeting template.","請選擇受支援的會議範本。"
-"Select unique non-critical notification email types.","請選擇不重複的非關鍵通知郵件類型。"
-"The notification is unavailable.","此通知無法使用。"
-"Work Item Global ID","工作項全域識別碼"
-"Work item due soon","工作項即將到期"
-"Work item overdue","工作項已逾期"
-"{field} has an invalid structure.","{field} 的結構無效。"
-"{field} must be a valid identifier.","{field} 必須是有效識別碼。"
-"Idempotency identity is invalid.","冪等識別碼無效。"
-"Select a supported parent operation.","請選擇受支援的父操作。"
-"NPI Collaboration Idempotency","NPI 協作冪等性"
-"NPI Internal Notification","NPI 內部通知"
-"Recipient User ID","接收使用者識別碼"
-"Notification Source Type","通知來源類型"
-"Notification Type","通知類型"
-"due_reminder","到期提醒"
-"overdue_escalation","逾期升級"
-"critical_blocker","關鍵阻斷項"
-"gate_attention","階段門關注"
-"Critical Audit Notification","關鍵稽核通知"
-"Title Source","標題來源"
-"Target Route","目標路由"
-"Source Due At","來源截止時間"
-"Email Delivery State","郵件傳遞狀態"
-"Failure Code","失敗代碼"
-"Read At","已讀時間"
-"NPI Meeting Minute","NPI 會議紀錄"
-"Meeting Title","會議標題"
-"Meeting Time","會議時間"
-"NPI Meeting Work Link","NPI 會議工作項連結"
-"Meeting Item Key","會議項目鍵"
-"NPI Notification Preference","NPI 通知偏好"
-"User ID","使用者識別碼"
-"Critical Audit Email","關鍵稽核郵件"
-"factory","工廠"
+Receive engineering change event,接收工程變更事件
+Publish change implementation summary,發佈變更實施摘要
+Ready to close,可關閉
+MBOM,MBOM
+Process,製程
+Inventory and work in progress,庫存與在製品
+Affected,受影響
+Not affected,不受影響
+Loading engineering changes,正在載入工程變更
+Engineering change access is unavailable,無法存取工程變更
+The engineering change changed before this action completed,此動作完成前工程變更已發生變化
+The engineering change response could not be used safely,無法安全使用工程變更回應
+Engineering changes are unavailable,工程變更無法使用
+Reload the exact current revision before continuing.,請重新載入精確的目前修訂版後再繼續。
+No unverified engineering change data was displayed.,未顯示任何未經驗證的工程變更資料。
+Implementation summary request state,實施摘要請求狀態
+Retry required,需要重試
+New engineering change,新增工程變更
+Revise engineering change,修訂工程變更
+Change reason,變更原因
+Rationale,依據
+Review engineering change,檢閱工程變更
+Review engineering change revision,檢閱工程變更修訂版
+Engineering change inspector,工程變更檢查器
+Change ID,變更識別碼
+Events,事件
+ERP formal observation,ERPNext 正式觀測
+Document name,單據名稱
+Raw ERP status,ERPNext 原始狀態
+No formal ERP engineering change has been observed.,尚未觀測到 ERPNext 正式工程變更。
+Request implementation summary,請求實施摘要
+Close engineering change,關閉工程變更
+Revision {{revision}},修訂版 {{revision}}
+{{count}} affected areas,{{count}} 個受影響領域
+{{count}} pending assessments,{{count}} 個待評估項目
+Session verification is required before any command.,執行任何命令前都需要驗證工作階段。
+Impact assessment matrix,影響評估矩陣
+Area,領域
+Affected controlled objects,受影響的受控物件
+Objects,物件
+Implementation tasks,實施任務
+Effectivity rules,生效規則
+Disposition and revalidation,處置與再驗證
+Dispositions,處置
+Revalidation requirements,再驗證要求
+Project membership and backend permission are required.,需要專案成員資格和後端權限。
+Change control,變更控制
+"Control NPI-owned impact, version, effectivity and closure evidence while ERP formal change truth remains read only.",控制 NPI 主責的影響、版本、生效和關閉證據，同時保持 ERPNext 正式變更事實唯讀。
+No engineering changes have been recorded for this Project.,此專案尚未記錄工程變更。
+Engineering changes,工程變更
+Drifted,已漂移
+Create engineering change,建立工程變更
+Append engineering change revision,附加工程變更修訂版
+Project ID,專案識別碼
+"The command, actor, receipt and exact version are audited.",命令、執行者、回條和精確版本均會稽核。
+A failed transaction retains no partial revision. Retry uses the same command identity.,失敗的交易不會保留部分修訂版。重試使用相同的命令識別。
+Creates the first immutable engineering change revision.,建立第一個不可變的工程變更修訂版。
+Appends one immutable successor revision.,附加一個不可變的後續修訂版。
+Closes the exact ready engineering change revision.,關閉精確的可關閉工程變更修訂版。
+Queues an exact implementation summary for ERP delivery.,將精確的實施摘要排入佇列以傳送至 ERPNext。
+The queued operation remains visible for retry and reconciliation.,已排入佇列的作業保持可見，以便重試和對帳。
+Immutable revisions and closure facts cannot be overwritten.,不可變修訂版和關閉事實不能被覆寫。
+Backend Project membership and operation permission are required.,需要後端專案成員資格和作業權限。
+Review engineering change command,檢閱工程變更命令
+The live Change Control data source is not configured.,尚未設定即時變更控制資料來源。
+Engineering change detail,工程變更詳細資料
+Portfolio and reporting are temporarily unavailable.,專案組合與報表暫時無法使用。
+Enter a page size from 1 to 100.,請輸入 1 至 100 之間的每頁數量。
+Enter a valid reference.,請輸入有效的參照。
+Enter at least two search characters.,請輸入至少兩個搜尋字元。
+Enter between 2 and 100 search characters.,請輸入 2 至 100 個搜尋字元。
+Select at least one search object type.,請至少選擇一種搜尋物件類型。
+Select supported search object types.,請選擇受支援的搜尋物件類型。
+Search object types must be unique.,搜尋物件類型不得重複。
+Select a supported Project state.,請選擇受支援的專案狀態。
+Enter a month in YYYY-MM format.,請輸入四位年份與兩位月份，並以連字號分隔。
+Use a valid pagination cursor.,請使用有效的分頁游標。
+The pagination cursor does not match these filters.,分頁游標與這些篩選條件不相符。
+Select a range of no more than 24 months.,請選擇不超過 24 個月的時間範圍。
+A sealed idempotency response cannot be changed.,已封存的冪等回應不可變更。
+Add meeting actions or decisions.,請新增會議行動項或決策項。
+An idempotency response must be sealed after success.,冪等回應只能在作業成功後封存。
+Collaboration records can only be changed by an authorized NPI operation.,協作記錄只能由已授權的 NPI 作業變更。
+Complete every meeting template section.,請完整填寫會議範本的每個部分。
+Content Hash,內容雜湊
+Controlled collaboration history cannot be deleted.,受控協作歷史不可刪除。
+Critical audit notifications cannot be disabled.,關鍵稽核通知不可停用。
+Critical blocker notifications cannot be disabled.,關鍵阻斷通知不可停用。
+Critical blocker requires attention,關鍵阻斷項需要處理
+Delivery Key Hash,傳遞鍵雜湊
+Enter a valid UTC date and time.,請輸入有效的世界協調時間日期和時間。
+Enter a valid meeting action or decision.,請輸入有效的會議行動項或決策項。
+Gate review requires attention,階段門檢閱需要處理
+Link ID,連結識別碼
+Meeting Attendees,會議參與人
+Meeting Global ID,會議全域識別碼
+Meeting Sections,會議內容區段
+Meeting content does not match its hash.,會議內容與其雜湊不符。
+Meeting identity and time are required.,會議識別碼和時間為必填項。
+Meeting item keys must be unique and limited to 50.,會議事項鍵不得重複，且最多 50 個。
+Meeting minutes are immutable.,會議紀錄不可變更。
+Meeting minutes start at version one.,會議紀錄必須從版本一開始。
+Meeting work link identity is required.,會議工作項連結識別碼為必填項。
+Meeting work links are immutable.,會議工作項連結不可變更。
+Message Parameters,訊息參數
+Notification Email Types,通知郵件類型
+Notification email failure requires a code.,通知郵件失敗時必須提供錯誤代碼。
+Notification email state is inconsistent.,通知郵件狀態不一致。
+Notification identity is required.,通知識別碼為必填項。
+Notification message does not match its source.,通知訊息與其來源不符。
+Notification preference identity is required.,通知偏好識別碼為必填項。
+Notification source version and due time are required.,通知來源版本和到期時間為必填項。
+Notification target must stay inside its Project.,通知目標必須位於所屬專案內。
+Notification title does not match its type.,通知標題與其類型不符。
+Notification: {title}. Due at {due_at}.,通知：{title}。截止時間：{due_at}。
+Select 1 to 100 unique meeting attendees.,請選擇 1 至 100 名不重複的會議參與人。
+Select a supported notification state.,請選擇受支援的通知狀態。
+Select an action or decision request.,請選擇行動項或決策請求。
+Select meeting attendees.,請選擇會議參與人。
+Select supported notification email types.,請選擇受支援的通知郵件類型。
+Select the supported meeting template.,請選擇受支援的會議範本。
+Select unique non-critical notification email types.,請選擇不重複的非關鍵通知郵件類型。
+The notification is unavailable.,此通知無法使用。
+Work Item Global ID,工作項全域識別碼
+Work item due soon,工作項即將到期
+Work item overdue,工作項已逾期
+{field} has an invalid structure.,{field} 的結構無效。
+{field} must be a valid identifier.,{field} 必須是有效識別碼。
+Idempotency identity is invalid.,冪等識別碼無效。
+Select a supported parent operation.,請選擇受支援的父操作。
+NPI Collaboration Idempotency,NPI 協作冪等性
+NPI Internal Notification,NPI 內部通知
+Recipient User ID,接收使用者識別碼
+Notification Source Type,通知來源類型
+Notification Type,通知類型
+due_reminder,到期提醒
+overdue_escalation,逾期升級
+critical_blocker,關鍵阻斷項
+gate_attention,階段門關注
+Critical Audit Notification,關鍵稽核通知
+Title Source,標題來源
+Target Route,目標路由
+Source Due At,來源截止時間
+Email Delivery State,郵件傳遞狀態
+Failure Code,失敗代碼
+Read At,已讀時間
+NPI Meeting Minute,NPI 會議紀錄
+Meeting Title,會議標題
+Meeting Time,會議時間
+NPI Meeting Work Link,NPI 會議工作項連結
+Meeting Item Key,會議項目鍵
+NPI Notification Preference,NPI 通知偏好
+User ID,使用者識別碼
+Critical Audit Email,關鍵稽核郵件
+factory,工廠
 KPI reporting,關鍵績效指標報告
 Administration capabilities,管理功能
 Reporting,報告
@@ -9226,7 +9226,7 @@ data_exchange_export,資料交換匯出
 controlled_print,受控列印
 quality_revision,品質修訂
 change_revision,變更修訂
-"The Data Exchange definition or source changed after it was reviewed.",資料交換定義或來源在審查後發生變更。
+The Data Exchange definition or source changed after it was reviewed.,資料交換定義或來源在審查後發生變更。
 Reload the exact version and try the operation again.,重新載入精確版本後重試此操作。
 The requested Data Exchange record is unavailable.,要求的資料交換記錄無法使用。
 Data Exchange is temporarily unavailable.,資料交換暫時無法使用。
@@ -9331,10 +9331,10 @@ External verification required,需要外部核驗
 Implementation required,需要實施
 Sign-in and MFA,登入和多重要素驗證
 Self signup,自助註冊
-"User, role and scope management","使用者、角色和範圍管理"
+"User, role and scope management",使用者、角色和範圍管理
 Configure Microsoft Entra sign-in on this LaunchFlow Site.,在此 LaunchFlow 站點設定 Microsoft Entra 登入。
 Disable self signup for every enabled login provider.,為所有已啟用的登入提供方停用自助註冊。
-"Manage enabled users, NPI roles and approved scopes in JCE Core.","在 JCE Core 中管理已啟用使用者、NPI 角色和已核准範圍。"
+"Manage enabled users, NPI roles and approved scopes in JCE Core.",在 JCE Core 中管理已啟用使用者、NPI 角色和已核准範圍。
 Authorization projection ingress,授權投影入口
 Keep disabled until the ERPNext sender and Sandbox tests pass.,在 ERPNext 發送器和沙箱測試通過前保持停用。
 Verify ERPNext sender and Sandbox evidence before production use.,正式使用前核驗 ERPNext 發送器和沙箱證據。
@@ -9349,7 +9349,7 @@ ERPNext business adapters,ERPNext 業務配接器
 Implement and verify each operation-specific ERPNext business adapter.,逐項實施並驗證操作專用 ERPNext 業務配接器。
 Local support administration,本機支援管理
 Production activation readiness,正式環境啟用就緒狀態
-"Only server-observed, non-secret configuration is shown. User and permission ownership is not duplicated in LaunchFlow.","僅顯示伺服器觀測到的非敏感設定。LaunchFlow 不重複承擔使用者和權限主責。"
+"Only server-observed, non-secret configuration is shown. User and permission ownership is not duplicated in LaunchFlow.",僅顯示伺服器觀測到的非敏感設定。LaunchFlow 不重複承擔使用者和權限主責。
 System of authority,主責系統
 Required action,所需操作
 LaunchFlow Site environment,LaunchFlow 站點環境
@@ -9490,12 +9490,156 @@ Latest Result,最新結果
 Formal ERP Project ID,正式 ERPNext 專案編號
 Exact Replay,精確重放
 NPI ERP Project Publish Result,NPI ERPNext 專案發佈結果
-"Search ERPNext by code or name","按編碼或名稱搜尋 ERPNext"
-"Show ERPNext choices","顯示 ERPNext 選項"
-"Clear selection","清除選擇"
-"Loading ERPNext choices","正在載入 ERPNext 選項"
-"ERPNext choices are unavailable or out of date. Refresh after synchronization.","ERPNext 選項不可用或已過期。請在同步後重新整理。"
-"No matching ERPNext records are available in this scope.","目前範圍內沒有相符的 ERPNext 記錄。"
-"Select an available ERPNext record after refreshing the choices.","請重新整理選項後選擇可用的 ERPNext 記錄。"
-"Enter a valid project ID.","請輸入有效的專案識別碼。"
-"machine","機台"
+Search ERPNext by code or name,按編碼或名稱搜尋 ERPNext
+Show ERPNext choices,顯示 ERPNext 選項
+Clear selection,清除選擇
+Loading ERPNext choices,正在載入 ERPNext 選項
+ERPNext choices are unavailable or out of date. Refresh after synchronization.,ERPNext 選項不可用或已過期。請在同步後重新整理。
+No matching ERPNext records are available in this scope.,目前範圍內沒有相符的 ERPNext 記錄。
+Select an available ERPNext record after refreshing the choices.,請重新整理選項後選擇可用的 ERPNext 記錄。
+Enter a valid project ID.,請輸入有效的專案識別碼。
+machine,機台
+Add dependency,新增依賴關係
+Add plan item,新增計畫項
+Add team assignment,新增職責分配
+Add team assignments,新增團隊職責
+An administrator must create and publish a Project Work Policy before team and plan setup.,管理員須先建立並發布專案工作策略，才能設定團隊和計畫。
+An authorized administrator is required. Responsibilities do not grant approval authority.,此操作需要獲授權的管理員，職責分配不授予審批權限。
+An authorized administrator must configure the Project team and plan.,專案團隊與計畫須由獲授權的管理員設定。
+Back to readiness,返回就緒度
+Blocking level {{row}},阻斷等級 {{row}}
+Capture plan baseline,建立計畫基線
+Captured baselines and published template snapshots cannot be overwritten.,已建立的基線和已發布的範本快照不可覆寫。
+Configure Gate template versions,設定階段門範本版本
+Configure Gate templates,設定階段門範本
+Configure project template versions,設定專案範本版本
+Configure project templates,設定專案範本
+Configure project work policies,設定專案工作策略
+Configure readiness template,設定就緒度範本
+Confirm customer requirements and target delivery,確認客戶要求與目標交期
+Confirm project setup,確認專案設定
+Confirm supplier capacity and material lead times,確認供應商產能與物料交期
+Create template drafts,建立範本草稿
+"Creates an unpublished new-tool Project template and work policy for Engineering, Quality, Purchasing, Sales, Warehouse and Materials Control.",建立適用於工程、品質、採購、銷售、倉儲和物料控制協作的新模具專案範本與工作策略草稿。
+Creating template drafts,正在建立範本草稿
+Customer requirements and opportunity review,客戶需求與機會評審
+Customer requirements and sample approval evidence,客戶要求與樣品核准證據
+"Customer requirements, sample feedback, approval evidence and delivery commitments",客戶需求、樣品回饋、核准證據與交付承諾
+Define inspection criteria and sample requirements,定義檢驗標準與樣件要求
+Defined by the published work policy,由已發佈的工作策略定義
+Department,部門
+Dependencies,依賴關係
+Edit inputs,修改輸入
+Edit project plan,編輯專案計畫
+Effective from {{row}},第 {{row}} 行生效日期
+Effective to {{row}},第 {{row}} 行失效日期
+Engineering,工程
+Engineering release and process instructions,工程發佈與製程作業指導
+Execute trial rounds and close tooling defects,執行試模並關閉模具缺陷
+Failures retain your inputs. Retry sends the same command identity and contents.,失敗時保留輸入，重試會傳送相同標識和內容的請求。
+Feasibility and project authorization,可行性與立項批准
+"Feasibility, DFM, tooling, trials, process instructions and technical handover",可行性、DFM、模具、試模、製程指導與技術移交
+Gate key,階段門編碼
+Gate key {{row}},階段門編碼 {{row}}
+Gate keys must exist in the Project that uses this template. This setup does not add Gates to existing Projects.,使用此範本的專案必須已有對應的階段門編碼。此設定不會為現有專案新增階段門。
+Gates,階段門
+Initialize project roles,初始化專案角色
+Initializes the published role definitions without named members or dates. Existing access and approval permissions remain unchanged.,依已發佈的角色定義初始化，無需指定人員或日期。現有存取與審批權限維持不變。
+Injection-moulding collaboration template,注塑協作範本
+Inspection plan and sample validation,檢驗計畫與樣品驗證
+"Inspection planning, sample validation, defect evidence and quality controls",檢驗策劃、樣品驗證、缺陷證據與品質控制
+Loading project setup options,正在載入專案設定選項
+Material availability and pilot supply plan,物料齊套與試產供應計畫
+"Material demand, arrival coordination, pilot supply and shortage follow-up",物料需求、到貨協調、試產供應與缺料跟進
+Materials control,物料控制
+Member email,成員電子郵件
+Member email {{row}},第 {{row}} 行成員電子郵件
+Milestone {{row}},第 {{row}} 行里程碑
+Monitor launch issues and record lessons learned,跟進量產導入問題並記錄經驗
+More policies,更多策略
+NPI and pilot production readiness,NPI 與試產就緒
+No published Project work policy,沒有已發布的專案工作策略
+Parent item {{row}},第 {{row}} 行父項
+Plan code {{row}},第 {{row}} 行計畫編碼
+Plan owner {{row}},第 {{row}} 行計畫負責人
+Plan setup,計畫設定
+Plan state {{row}},第 {{row}} 行計畫狀態
+Plan title {{row}},第 {{row}} 行計畫標題
+Planned finish {{row}},第 {{row}} 行計畫完成日期
+Planned start {{row}},第 {{row}} 行計畫開始日期
+Predecessor,前置項
+Predecessor {{row}},第 {{row}} 行前置項
+Prepare material purchasing and arrival plan,制定物料採購與到貨計畫
+"Prepare receiving, lot identification and storage",準備收貨、批次標識與存儲安排
+Product design and DFM baseline,產品設計與 DFM 基線
+Production handover and launch review,量產移交與導入評審
+Progress (%),進度（%）
+Progress {{row}},第 {{row}} 行進度
+Project setup saved,專案設定已儲存
+"Project templates define applicable project types and ordered Gates. Configure the template record first, then its draft version, and publish the reviewed version for new projects.",專案範本定義適用的專案類型與階段門順序。先設定範本主檔，再設定草稿版本；審閱後發布，供新專案使用。
+Publish readiness template,發佈就緒度範本
+Published template versions cannot be overwritten.,已發佈的範本版本不可覆寫。
+Published work policy,已發布的工作策略
+Publishes the reviewed readiness template for new-tool Projects. Project initialization remains a separate action.,將已審閱的就緒度範本發佈給新模具專案使用。專案初始化仍需單獨執行。
+Purchasing,採購
+Readiness item {{row}},就緒度項 {{row}}
+Readiness template draft saved,就緒度範本草稿已儲存
+"Receiving, lot identification, storage, traceability and packaging",收貨、批次標識、倉儲、追溯與包裝
+"Receiving, traceability and packaging readiness",收貨、追溯與包裝準備
+Remove assignment {{row}},移除第 {{row}} 行分配
+Remove plan item {{row}},移除第 {{row}} 行計畫項
+Required {{row}},必填 {{row}}
+Responsibilities do not grant access or Gate approval authority. Existing assignments are retained.,職責分配不授予存取或階段門審批權限，現有分配將保留。
+Responsibility key {{row}},第 {{row}} 行職責編碼
+Responsibility {{row}},第 {{row}} 行職責
+Retry exact draft creation,重試原草稿建立請求
+Retry exact setup command,重試原設定請求
+Retry exact template command,重試相同範本命令
+Review DFM and freeze the design inputs,評審 DFM 並凍結設計輸入
+"Review every owner, date and dependency before saving. Existing plan items are retained.",儲存前請核對各項負責人、日期和依賴關係，現有計畫項將保留。
+Review moulding feasibility and project risks,評審注塑可行性與專案風險
+"Review pilot material, packaging and capacity readiness",評審試產物料、包裝與產能準備情況
+Review production handover evidence and open actions,評審量產移交證據與未完成行動
+Review project setup,覆核專案設定
+Review project template draft,審閱專案範本草稿
+Review template publication,審閱範本發佈
+"Review the draft in administration, configure Gate evidence and approval requirements, then publish the versions. Existing Projects keep their original Gate snapshots.",請在管理後台審閱草稿，設定階段門證據和審批要求後發布版本。現有專案保留原階段門快照。
+Review this six-department new-tool readiness draft. Each required item needs an exact released document; incomplete P0 items block readiness.,請審閱這份六部門新模具就緒度草稿。每個必填項都需要精確的已發佈文件；未完成的 P0 項會阻斷就緒度。
+Review tooling design and manufacturing plan,評審模具設計與製造計畫
+Review work policy draft,審閱工作策略草稿
+Role definitions,角色定義
+Role {{row}},第 {{row}} 行角色
+Sales,銷售
+Save readiness template draft,儲存就緒度範本草稿
+Saves the reviewed Project configuration using its exact current version.,基於專案的精確目前版本儲存已覆核的設定。
+Saving project setup,正在儲存專案設定
+Saving readiness template,正在儲存就緒度範本
+"Select a published work policy, assign responsibilities, then save the plan and its baseline.",選擇已發布的工作策略，分配職責，然後儲存計畫並建立基線。
+Select plan item,選擇計畫項
+Select published policy,選擇已發布策略
+Select role,選擇角色
+Set up project plan,設定專案計畫
+Successor,後續項
+Successor {{row}},第 {{row}} 行後續項
+Suggested responsibilities,建議職責
+Supplier and purchased material readiness,供應商與外購物料準備
+"Supplier capacity, external services, purchasing and material arrival",供應商產能、外協服務、採購與物料到貨
+Team setup,團隊設定
+Template code,範本編碼
+Template configuration,範本設定
+Template drafts created,範本草稿已建立
+Template title,範本名稱
+The Project changed. Reload its current version before reviewing another setup command.,專案已變更。請重新載入目前版本，再覆核新的設定請求。
+"The actor, Project version and applied changes are audited.",操作者、專案版本及套用的變更均記錄稽核。
+This Project keeps its previously bound work policy version.,此專案保留已綁定的工作策略版本。
+Tooling completion and trial readiness,模具完工與試模準備
+Tooling design and manufacturing authorization,模具設計與製造批准
+Track customer sample feedback,跟進客戶樣件回饋
+Trial validation and sample approval review,試模驗證與樣件批准評審
+Use injection-moulding task draft,採用注塑任務草稿
+"Verify dimensions, appearance and sample evidence",驗證尺寸、外觀與樣件證據
+Verify process instructions and quality controls,核對工藝指導書與品質控制要求
+"Verify tooling, machine and trial material readiness",核對模具、機台與試模材料準備情況
+Warehouse,倉儲
+Weight {{row}},權重 {{row}}
+Work policies define collaboration roles and task states. Published versions and existing Project template snapshots remain unchanged when a new version is created.,工作策略定義協作角色與任務狀態。建立新版本時，已發布版本和現有專案的範本快照保持不變。

@@ -58,7 +58,17 @@ describe("controlled display copy", () => {
       projectPolicyLabelSources.map((source) =>
         governedPolicyLabel(translator, source),
       ),
-    ).toEqual(["草稿", "已识别", "未开始", "待处理", "已请求"]);
+    ).toEqual([
+      "已取消",
+      "已关闭",
+      "已完成",
+      "草稿",
+      "已识别",
+      "进行中",
+      "未开始",
+      "待处理",
+      "已请求",
+    ]);
     expect(translatedSources).toEqual(projectPolicyLabelSources);
     translatedSources.length = 0;
     expect(governedPolicyLabel(translator, "Draft")).toBe("草稿");

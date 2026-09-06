@@ -688,6 +688,9 @@ _PROJECT_TOOLING_APPLICABILITIES_ROUTE = re.compile(
 _PROJECT_WORK_CONTEXT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/work-context$"
 )
+_PROJECT_SETUP_OPTIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/setup-options$"
+)
 _PROJECT_DOMAIN_WORK_ITEMS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/domain-work-items$"
 )
@@ -934,6 +937,14 @@ _GATE_REVIEW_COMMAND_ROUTES = (
     ),
 )
 _PROJECT_WORK_COMMAND_ROUTES = (
+    (
+        re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):initialize-work-roles$"),
+        "npi_core.project_work_api.initialize_project_work_roles",
+    ),
+    (
+        re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):prepare-injection-template$"),
+        "npi_core.project_work_api.prepare_project_injection_template",
+    ),
     (
         re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):configure-team$"),
         "npi_core.project_work_api.configure_project_team",
@@ -1705,6 +1716,11 @@ def route_request() -> None:
         match = _PROJECT_CONTROLLED_PRINT_ROUTE.fullmatch(path)
         if match is not None:
             command = "npi_core.controlled_print_api.get_controlled_print_snapshot"
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_SETUP_OPTIONS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.project_work_api.get_project_setup_options"
             route_params = match.groupdict()
     if command is None and request.method == "GET":
         match = _PROJECT_WORK_CONTEXT_ROUTE.fullmatch(path)
@@ -2735,6 +2751,7 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "GET" and (
         _PROJECT_COCKPIT_ROUTE.fullmatch(path) is not None
         or _PROJECT_WORK_CONTEXT_ROUTE.fullmatch(path) is not None
+        or _PROJECT_SETUP_OPTIONS_ROUTE.fullmatch(path) is not None
         or _PROJECT_ERP_PROJECTIONS_ROUTE.fullmatch(path) is not None
         or _PROJECT_FORMAL_QUALITY_LINKS_ROUTE.fullmatch(path) is not None
         or _PROJECT_FORMAL_QUALITY_LINK_ROUTE.fullmatch(path) is not None

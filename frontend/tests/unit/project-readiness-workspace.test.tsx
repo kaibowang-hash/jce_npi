@@ -1134,3 +1134,103 @@ describe("Project readiness workspace", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+it("lets an administrator review, save and explicitly publish a six-department readiness template before initialization", async () => {
+  enableCommandSession();
+  const empty = {
+    ...workspace(),
+    currentRevision: null,
+    revisions: [],
+    permissions: {
+      ...workspace().permissions,
+      canManageTemplates: true,
+      canInitialize: true,
+    },
+  };
+  let saved = template();
+  const createTemplate = vi.fn<ReadinessDataSource["createTemplate"]>(
+    (command) => {
+      saved = {
+        ...saved,
+        ...command,
+        publicationState: "draft",
+        optimisticVersion: 1,
+      };
+      return Promise.resolve({ template: saved, replayed: false });
+    },
+  );
+  const publishTemplate = vi.fn<ReadinessDataSource["publishTemplate"]>(() =>
+    Promise.resolve({
+      template: {
+        ...saved,
+        publicationState: "published",
+        optimisticVersion: 2,
+      },
+      replayed: false,
+    }),
+  );
+  const listEligibleTemplates = vi.fn<
+    ReadinessDataSource["listEligibleTemplates"]
+  >(() => Promise.resolve({ projectGlobalId: ids.project, templates: [] }));
+  const initialize = vi.fn<ReadinessDataSource["initialize"]>();
+  const source = createDataSource({
+    loadWorkspace: () => Promise.resolve(empty),
+    createTemplate,
+    publishTemplate,
+    listEligibleTemplates,
+    initialize,
+  });
+  renderWithLocale(
+    <ProjectReadinessWorkspace
+      dataSource={source}
+      projectId={ids.project}
+      members={members}
+    />,
+    "en",
+  );
+  await userEvent.click(
+    await screen.findByRole("button", { name: "Configure readiness template" }),
+  );
+  await userEvent.type(screen.getByLabelText("Template code"), "INJECTION-RDY");
+  await userEvent.type(
+    screen.getByLabelText("Template title"),
+    "Injection readiness review",
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: "Save readiness template draft" }),
+  );
+  await screen.findByText("Readiness template draft saved");
+  expect(createTemplate).toHaveBeenCalledOnce();
+  expect(saved.categories.map((row) => row.key)).toEqual([
+    "engineering",
+    "quality",
+    "purchasing",
+    "sales",
+    "warehouse",
+    "materials_control",
+  ]);
+  expect(
+    saved.items.every(
+      (row) => row.gateKey === "G6" && row.completionRule === "exact_evidence",
+    ),
+  ).toBe(true);
+  expect(publishTemplate).not.toHaveBeenCalled();
+  await userEvent.click(
+    screen.getByRole("button", { name: "Review template publication" }),
+  );
+  expect(
+    await screen.findByRole("dialog", { name: "Review template publication" }),
+  ).toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", { name: "Publish readiness template" }),
+  );
+  await screen.findByText("No eligible published readiness template");
+  expect(publishTemplate).toHaveBeenCalledWith(
+    saved.templateGlobalId,
+    saved.templateVersion,
+    { expectedOptimisticVersion: 1 },
+    expect.anything(),
+  );
+  expect(listEligibleTemplates).toHaveBeenCalledTimes(2);
+  expect(initialize).not.toHaveBeenCalled();
+});

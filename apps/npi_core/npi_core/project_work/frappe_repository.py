@@ -130,6 +130,121 @@ class FrappeProjectWorkRepository:
             return None
         return self._work_context_for(project)
 
+    def setup_options(self, project_id: UUID, *, after: str | None = None):
+        """Bounded, permission-checked published policies for Project setup."""
+        project = self._authorized_project(project_id, ProjectAccess.ADMINISTER)
+        if project is None or not self._is_internal_system_manager():
+            return None
+        current = _project_policy_ref(project)
+        next_cursor = None
+        if current is not None:
+            references = [current]
+        else:
+            filters = {"publication_state": "published"}
+            if after is not None:
+                filters["name"] = [">", after]
+            rows = frappe.get_list(
+                "NPI Project Work Policy Version",
+                filters=filters,
+                fields=["name", "policy_global_id", "policy_version", "snapshot_hash"],
+                order_by="name asc",
+                limit_page_length=51,
+            )
+            if len(rows) > 50:
+                next_cursor = str(rows[49].name)
+            references = [
+                {
+                    "globalId": row.policy_global_id,
+                    "version": row.policy_version,
+                    "snapshotHash": row.snapshot_hash,
+                }
+                for row in rows[:50]
+            ]
+        policies = []
+        for reference in references:
+            policy = self._load_policy(reference)
+            document = frappe.get_doc(
+                "NPI Project Work Policy Version",
+                f"{policy['ref']['globalId']}:{policy['ref']['version']}",
+            )
+            policies.append(
+                {
+                    "reference": policy["ref"],
+                    "title": str(document.title),
+                    "roleKeys": list(policy["snapshot"].role_keys),
+                    "wbsLifecycle": policy["snapshot"].wbs_lifecycle.canonical_dict(),
+                }
+            )
+        return {
+            "projectId": str(project_id),
+            "projectVersion": int(project.optimistic_version),
+            "policies": policies,
+            "nextCursor": next_cursor,
+        }
+
+    def prepare_injection_template(
+        self,
+        project_id: UUID,
+        *,
+        idempotency_key: str,
+        expected_project_version: int,
+        template_code: str,
+        title: str,
+    ):
+        from npi_core.project.domain import validate_template_code
+        from npi_core.project_work.injection_template import draft_documents
+
+        project = self._locked_authorized_project(project_id, ProjectAccess.ADMINISTER)
+        if project is None or not self._is_internal_system_manager():
+            return None
+        payload_hash = _payload_hash(
+            {
+                "projectId": project_id,
+                "expectedProjectVersion": expected_project_version,
+                "templateCode": template_code,
+                "title": title,
+            }
+        )
+        replay = self._idempotency_replay(idempotency_key, payload_hash)
+        if replay is not None:
+            return WorkCommandOutcome(replay, replayed=True)
+        self._require_project_version(project, expected_project_version)
+        require_mutable_project(project)
+        template_code = validate_template_code(template_code)
+        with _controlled_work_write_scope():
+            receipt = self._insert_idempotency(
+                idempotency_key, payload_hash, project, "project.setup_template.prepare"
+            )
+            if isinstance(receipt, dict):
+                return WorkCommandOutcome(receipt, replayed=True)
+            root, version, policy = [
+                frappe.get_doc(value).insert()
+                for value in draft_documents(template_code, title)
+            ]
+            response = {
+                "projectId": str(project_id),
+                "projectVersion": int(project.optimistic_version),
+                "templateGlobalId": str(root.global_id),
+                "policyGlobalId": str(policy.policy_global_id),
+                "templateVersion": 1,
+                "policyVersion": 1,
+                "publicationState": "draft",
+            }
+            self._append_audit(
+                operation="project.setup_template.prepare",
+                global_id=project_id,
+                object_version=int(project.optimistic_version),
+                result="created",
+                summary={
+                    "templateGlobalId": str(root.global_id),
+                    "templateVersionGlobalId": str(version.global_id),
+                    "policyGlobalId": str(policy.policy_global_id),
+                    "publicationState": "draft",
+                },
+            )
+            self._seal_idempotency(receipt, response)
+            return WorkCommandOutcome(response)
+
     def locked_project_for_parent_command(self, project_id: UUID):
         """Return the same ADMINISTER-checked lock used by parent domain commands."""
 

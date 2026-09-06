@@ -34,13 +34,13 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "PA-13-ERP-MASTER-DATA-SELECTORS")
+        self.assertEqual(value["task_id"], "PROJECT-INITIALIZATION-RELEASE")
         self.assertEqual(value["task_kind"], "product")
         self.assertEqual(value["status"], "IN_PROGRESS")
         self.assertEqual(value["completion_gate"], "LEVEL_3")
         self.assertEqual(value["authorized_next_task"], value["task_id"])
-        self.assertEqual(value["requirement_ids"], ["INT-001", "INT-002", "NFR-SEC-003", "FR-TX-012"])
-        self.assertEqual(value["base_checkpoint"], "07ae1fefc0c8e1ed299106e6579952ca5008b5e2")
+        self.assertEqual(value["requirement_ids"], ["FR-PM-001", "FR-PM-005", "FR-PM-006"])
+        self.assertEqual(value["base_checkpoint"], "695afbbbf60b3a28740c5990f83b637a4a06a01b")
         self.assertEqual(value["predecessor_product_checkpoint"], value["base_checkpoint"])
         self.assertEqual(value["expected_state"]["phase_status_current_task"], value["task_id"])
         self.assertEqual(value["expected_state"]["phase_status_resumed_product_task"], value["task_id"])
@@ -48,9 +48,9 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         for invariant in ("ERP_OWNS_MASTER_DATA_AND_FORMAL_CODES", "SERVER_SIDE_AUTHORIZATION_AND_CHOICE_VALIDATION", "STALE_MISSING_DISABLED_RECORDS_FAIL_CLOSED", "NO_PRODUCTION_ERPNEXT_OR_JCE_CORE_CONTACT", "EXACT_LEVEL_3_BACKUP_AND_LIVE_VERIFICATION_REQUIRED"):
             self.assertIn(invariant, value["frozen_invariants"])
         self.assertTrue({
-            "frontend/src/components/erp-master-select.tsx",
-            "apps/npi_erpnext_connector/npi_erpnext_connector/master_data_repository.py",
-            "tests/test_erp_master_selection.py",
+            "frontend/src/pages/project-setup-workspace.tsx",
+            "apps/npi_core/npi_core/project_work_api.py",
+            "tests/test_project_setup.py",
         }.issubset(set(value["allowed_paths"])))
         self.assertFalse([path for path in value["allowed_paths"] if "*" in path])
 

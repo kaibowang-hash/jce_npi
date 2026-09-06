@@ -24,7 +24,11 @@ class ProjectWorkPolicyLabelRegistryTest(unittest.TestCase):
             POLICY_LABEL_SOURCES,
             frozenset(
                 {
+                    "Cancelled",
+                    "Closed",
+                    "Completed",
                     "Draft",
+                    "In progress",
                     "Identified",
                     "Not started",
                     "Open",
@@ -75,10 +79,10 @@ class ProjectWorkPolicyLabelRegistryTest(unittest.TestCase):
         )
         for path in translations:
             with self.subTest(path=path):
-                self.assertIn("Completed", load_runtime_catalog(path))
+                self.assertIn("Approved", load_runtime_catalog(path))
 
         with self.assertRaises(RequestValidationFailed) as context:
-            LifecycleState("completed", "Completed", terminal=True)
+            LifecycleState("approved", "Approved", terminal=True)
         self.assertEqual(
             context.exception.field_errors,
             [

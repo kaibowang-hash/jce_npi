@@ -153,6 +153,12 @@ class WorkCommandOutcomeLike(Protocol):
 class ProjectWorkRepositoryLike(Protocol):
     def work_context(self, project_id: UUID) -> dict[str, Any] | None: ...
 
+    def setup_options(
+        self, project_id: UUID, *, after: str | None = None
+    ) -> dict[str, Any] | None: ...
+
+    def prepare_injection_template(self, project_id: UUID, **values: Any): ...
+
     def configure_team(
         self,
         project_id: UUID,
@@ -257,6 +263,106 @@ def get_project_work_context(**request_fields: Any) -> dict[str, Any] | None:
         handle,
         cache_control="private, no-store",
         response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_project_setup_options(after: Any = None, **request_fields: Any):
+    """Read published setup policies without changing Project or user access."""
+    success_headers = {"X-Request-ID": response_request_id()}
+
+    def handle():
+        actor = authenticated_user()
+        principal = authenticated_principal(actor)
+        if principal.is_external or "System Manager" not in principal.roles:
+            raise PermissionDenied()
+        reject_unexpected_request_fields(frozenset({"after"}), request_fields)
+        if after is not None and (
+            not isinstance(after, str)
+            or re.fullmatch(
+                r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}:[1-9][0-9]{0,8}", after
+            )
+            is None
+        ):
+            raise _field_problem("after", _("Enter a valid value."))
+        request_id = _request_id()
+        repository = _repository_from_principal(principal, request_id)
+        response = repository.setup_options(_route_project_id(), after=after)
+        if response is None:
+            raise ProjectUnavailable()
+        success_headers["X-Request-ID"] = request_id
+        return _response_dict(response)
+
+    return frappe_domain_call(
+        handle, cache_control="private, no-store", response_headers=success_headers
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def prepare_project_injection_template(
+    expectedProjectVersion: Any = None,
+    templateCode: Any = None,
+    title: Any = None,
+    **request_fields: Any,
+):
+    """Create a reviewable Project template and collaboration policy draft only."""
+    headers = _command_response_headers()
+
+    def handle():
+        request_id, key, repository = _command_context(
+            frozenset({"expectedProjectVersion", "templateCode", "title"}),
+            request_fields,
+        )
+        outcome = repository.prepare_injection_template(
+            _route_project_id(),
+            idempotency_key=key,
+            expected_project_version=_positive_integer(
+                expectedProjectVersion, "expectedProjectVersion"
+            ),
+            template_code=_text(templateCode, "templateCode", maximum_length=64),
+            title=_text(title, "title", maximum_length=140),
+        )
+        return _command_response(
+            outcome, request_id=request_id, success_headers=headers
+        )
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def initialize_project_work_roles(
+    expectedProjectVersion: Any = None,
+    workPolicyRef: Any = None,
+    **request_fields: Any,
+):
+    """Bind published role definitions without creating personal assignments."""
+    headers = _command_response_headers()
+
+    def handle():
+        request_id, key, repository = _command_context(
+            frozenset({"expectedProjectVersion", "workPolicyRef"}), request_fields
+        )
+        outcome = repository.configure_team(
+            _route_project_id(),
+            idempotency_key=key,
+            expected_project_version=_positive_integer(
+                expectedProjectVersion, "expectedProjectVersion"
+            ),
+            work_policy_ref=_work_policy_ref(workPolicyRef),
+            members=(),
+            role_assignments=(),
+            substitutions=(),
+            raci_assignments=(),
+        )
+        return _command_response(outcome, request_id=request_id, success_headers=headers)
+
+    return frappe_domain_call(
+        handle, cache_control="private, no-store", response_headers=headers
     )
 
 

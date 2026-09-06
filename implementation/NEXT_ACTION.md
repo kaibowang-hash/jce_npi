@@ -1,5 +1,14 @@
 # Next Action
 
+## PROJECT-INITIALIZATION-RELEASE — 2026-09-06
+
+PROJECT-INITIALIZATION-RELEASE isolated LaunchFlow release authorized; exact gates before production switch.
+The user explicitly requested production deployment after the role-only correction.
+Use online base 695afbbbf60b3a28740c5990f83b637a4a06a01b and preserve unrelated shared changes.
+First unfinished step: verify this exact candidate, then backup/build/switch and authenticated smoke checks.
+No ERPNext production contact, schema downgrade or business approval is authorized.
+
+
 Current: `PA-13-ERP-MASTER-DATA-SELECTORS — IN_PROGRESS`.
 Local frontend, backend and affected browser checks pass. The user's explicit
 “允许” now resolves both previous authorization holds: push code and controlled

@@ -1254,6 +1254,132 @@ paths:
         default:
           $ref: "#/components/responses/ProjectError"
 
+  /projects/{projectId}/setup-options:
+    get:
+      tags: [Projects, Work]
+      operationId: getProjectSetupOptions
+      description: >
+        Internal System Manager only, with existing Project tenant/access checks.
+        Reads at most 50 validated published work policies in name order. A bound
+        Project returns only its exact policy. No user directory or draft policy
+        is exposed. Follow nextCursor to continue an unbound catalog.
+      x-required-roles: [System Manager]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - name: after
+          in: query
+          schema: { type: string, maxLength: 46, pattern: "^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}:[1-9][0-9]{0,8}$" }
+      responses:
+        "200":
+          description: Exact Project version and published setup options; private, no-store
+          headers:
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+            X-Trace-ID: { required: true, schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectSetupOptions" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}:prepare-injection-template:
+    post:
+      tags: [Projects, Work]
+      operationId: prepareProjectInjectionTemplate
+      description: >
+        Atomically creates one unpublished new-tool Project Template version and
+        one unpublished six-department Project Work Policy version. The original
+        draft proposal contains G0-G7 shells; evidence, approvers, customer rules,
+        personnel and dates are not inferred. Existing Project snapshots and
+        Project versions are unchanged. Existing internal System Manager and
+        tenant authorization, CSRF, exact Project version, audit and actor-scoped
+        idempotency apply. No production defaults are installed by migration.
+      x-required-roles: [System Manager]
+      x-audit-operation: project.setup_template.prepare
+      x-transaction-boundary: project-root
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [expectedProjectVersion, templateCode, title]
+              properties:
+                expectedProjectVersion: { type: integer, minimum: 1 }
+                templateCode: { type: string, minLength: 1, maxLength: 64 }
+                title: { type: string, minLength: 1, maxLength: 140 }
+      responses:
+        "201":
+          description: Drafts created together, or exact original receipt replayed
+          headers:
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+            X-Trace-ID: { required: true, schema: { type: string } }
+            Idempotency-Replayed: { required: true, schema: { type: boolean } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectSetupDrafts" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}:initialize-work-roles:
+    post:
+      tags: [Projects, Work]
+      operationId: initializeProjectWorkRoles
+      description: >
+        Bind exact published Project Work Policy role definitions without named
+        members, personal role assignments, RACI records, dates or access grants.
+        Uses the existing atomic Project team command with empty upsert arrays;
+        existing records are retained. Advances the exact Project version once,
+        audits project.team.configure and supports actor-scoped exact replay.
+      x-required-roles: [System Manager]
+      x-audit-operation: project.team.configure
+      x-transaction-boundary: project-root
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [expectedProjectVersion, workPolicyRef]
+              properties:
+                expectedProjectVersion: { type: integer, minimum: 1 }
+                workPolicyRef: { $ref: "#/components/schemas/ProjectWorkPolicyRef" }
+      responses:
+        "200":
+          description: Role definitions initialized; private, no-store
+          headers:
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+            X-Trace-ID: { required: true, schema: { type: string } }
+            Idempotency-Replayed: { required: true, schema: { type: boolean } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectWorkContext" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}:configure-team:
     post:
       tags: [Projects, Work]
@@ -11830,7 +11956,7 @@ components:
           }
         statusLabelSource:
           type: string
-          enum: [Draft, Identified, Not started, Open, Requested]
+          enum: [Cancelled, Closed, Completed, Draft, Identified, In progress, Not started, Open, Requested]
           description: Literal English source string from the exact immutable Project Work Policy version
         progressPercent:
           { type: integer, minimum: 0, maximum: 100 }
@@ -12008,7 +12134,7 @@ components:
           }
         stateLabelSource:
           type: string
-          enum: [Draft, Identified, Not started, Open, Requested]
+          enum: [Cancelled, Closed, Completed, Draft, Identified, In progress, Not started, Open, Requested]
           description: Literal English source string from the exact kind-specific lifecycle in workPolicyRef
         overdue:
           type: boolean
@@ -12043,6 +12169,61 @@ components:
                 pattern: "^[A-Za-z0-9._~:-]{1,500}$",
               }
             - { type: "null" }
+    ProjectSetupOptions:
+      type: object
+      additionalProperties: false
+      required: [projectId, projectVersion, policies, nextCursor]
+      properties:
+        projectId: { type: string, format: uuid }
+        projectVersion: { type: integer, minimum: 1 }
+        nextCursor:
+          oneOf:
+            - { type: string, maxLength: 46, pattern: "^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}:[1-9][0-9]{0,8}$" }
+            - { type: "null" }
+        policies:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            required: [reference, title, roleKeys, wbsLifecycle]
+            properties:
+              reference: { $ref: "#/components/schemas/ProjectWorkPolicyRef" }
+              title: { type: string, minLength: 1, maxLength: 280 }
+              roleKeys:
+                type: array
+                minItems: 1
+                uniqueItems: true
+                items: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+              wbsLifecycle:
+                type: object
+                additionalProperties: false
+                required: [initialStateKey, states]
+                properties:
+                  initialStateKey: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+                  states:
+                    type: array
+                    minItems: 1
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [key, labelSource, terminal]
+                      properties:
+                        key: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+                        labelSource: { type: string, enum: [Cancelled, Closed, Completed, Draft, Identified, In progress, Not started, Open, Requested] }
+                        terminal: { type: boolean }
+    ProjectSetupDrafts:
+      type: object
+      additionalProperties: false
+      required: [projectId, projectVersion, templateGlobalId, policyGlobalId, templateVersion, policyVersion, publicationState]
+      properties:
+        projectId: { type: string, format: uuid }
+        projectVersion: { type: integer, minimum: 1 }
+        templateGlobalId: { type: string, format: uuid }
+        policyGlobalId: { type: string, format: uuid }
+        templateVersion: { type: integer, const: 1 }
+        policyVersion: { type: integer, const: 1 }
+        publicationState: { type: string, const: draft }
     ProjectWorkContext:
       type: object
       additionalProperties: false
@@ -14158,7 +14339,7 @@ components:
           }
         stateLabelSource:
           type: string
-          enum: [Draft, Identified, Not started, Open, Requested]
+          enum: [Cancelled, Closed, Completed, Draft, Identified, In progress, Not started, Open, Requested]
           description: Literal English source string from the exact Project Work lifecycle
         version: { type: integer, minimum: 1 }
     GateReviewBlocker:
@@ -14183,7 +14364,7 @@ components:
           }
         stateLabelSource:
           type: string
-          enum: [Draft, Identified, Not started, Open, Requested]
+          enum: [Cancelled, Closed, Completed, Draft, Identified, In progress, Not started, Open, Requested]
           description: Literal English source string from the exact Project Work lifecycle
         dueAt:
           {
@@ -23282,7 +23463,7 @@ components:
         stateLabelSource:
           type: string
           description: Literal English source string from the canonical Project Work policy label registry.
-          enum: [Draft, Identified, Not started, Open, Requested]
+          enum: [Cancelled, Closed, Completed, Draft, Identified, In progress, Not started, Open, Requested]
         stateTerminal: { type: boolean }
     ReadinessPermissions:
       type: object

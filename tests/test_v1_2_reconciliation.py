@@ -835,7 +835,7 @@ class V12ReconciliationTests(unittest.TestCase):
             phase_status,
         )
         self.assertIn(
-            "current_task: PA-13-ERP-MASTER-DATA-SELECTORS",
+            "current_task: PROJECT-INITIALIZATION-RELEASE",
             phase_status,
         )
         self.assertIn("task_id: PA-08-DEPLOYMENT", phase_status)
